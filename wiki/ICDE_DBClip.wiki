@@ -1,0 +1,5 @@
+#summary DBClip providing overview of project.
+
+=DBClip providing overview of project.=
+
+<wiki:video url="http://www.youtube.com/watch?v=9FLGoozloDQ"/>
