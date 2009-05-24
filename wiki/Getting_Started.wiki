@@ -33,16 +33,16 @@ You can run the java source code without any parameters (in which case default v
 
 Some of the most common SNEE paramters are:
 
- * -query			
+ * *-query=*<file>			
 the file containing the query text to be optimized  
- * -schema-file			
-the file containing the physical schema to be used, which  describes the sources of the streams being queried
- * -network-topology-file	
-the file describing the network topology
- * -qos-acquisition-interval	
-the rate at which sensor readings should be acquired
- * -qos-max-delivery-time	
-the maximum permissable delivery time for query results.
+ * *-schema-file=*<file>	
+The file containing the physical schema to be used, which specifies which nodes are the sources of the streams being queried, and the sink node.
+ * *-network-topology-file=*<file>
+The file describing the network topology.
+ * *-qos-acquisition-interval=*<val_in_ms>
+The rate at which sensor readings should be acquired, in milliseconds.
+ * *-qos-max-delivery-time=*<val_in_ms>
+the maximum permissable delivery time for query results, in millseconds.
 	
 All filenames may be specified in a relative or absolute manner.  There are example queries, physical schemas annd networks in the input subdirectory of the SNEE release. The contents of the subdirectories of input directory are as follows:
 
@@ -50,4 +50,3 @@ All filenames may be specified in a relative or absolute manner.  There are exam
  * Pipes: Contains the queries/physical schema for the pipe-monitoring scenario used in our SSDBM paper.
  * Building: Contains the queries and physical schema for a building monitoring scenario.  
  * Networks: Contains various network topology files, for networks of varying size, area and layouts (e.g., grid/random.)
-
