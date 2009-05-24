@@ -6,3 +6,7 @@ This page explains how to install SNEE and get it running, and is aimed at mainl
 
 Note that SNEE developers are directed to the [Installing_Developer_Environment instructions for SNEE developers].
 
+===Get the code===
+
+Download the latest release from the [http://code.google.com/p/snee/downloads/list downloads section], and unzip it to the directory of your choice.
+
