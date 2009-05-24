@@ -7,7 +7,7 @@ This page explains how to install SNEE and get it running, and is aimed at mainl
 ===Dependencies===
  * Java SDK 1.5 or newer
  * antlr (2.7.5 is recommended).  This is included in the zip file.
- * GraphViz (I've got version 2.20.2 for the Mac, 2.20.3 had a bug and does not work)
+ * GraphViz (Note for Mac users: Version 2.20.3 has a bug and does not work, please use 2.20.2 instead).
 
 ===Installation===
 
@@ -24,8 +24,10 @@ This page explains how to install SNEE and get it running, and is aimed at mainl
 {{{
 [GraphViz]
 #Location of the GraphViz executable
-exe = c:/Program Files/Graphviz2.20/bin/dot.exe
+exe = /usr/bin/dot
 }}}
+
+(Note: If you do not have GraphViz installed, you will need to run SNEE with the -generate-graphs=false parameter.)
 
 ===Running the query optimizer===
 
