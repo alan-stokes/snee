@@ -51,7 +51,7 @@ The rate at which sensor readings should be acquired, in milliseconds.
  * *-qos-max-delivery-time=**<val_in_ms*>
 the maximum permissable delivery time for query results, in millseconds.
 	
-All filenames may be specified in a relative or absolute manner.  There are example queries, physical schemas annd networks in the input subdirectory of the SNEE release. The contents of the subdirectories of input directory are as follows:
+All filenames may be specified in a relative or absolute manner.  There are example queries, physical schemas and networks in the input subdirectory of the SNEE release. The contents of the subdirectories of input directory are as follows:
 
  * Hilltop: Contains the queries/physical schema for the environmental monitoring scenario used in our ICDE'08 paper.
  * Pipes: Contains the queries/physical schema for the pipe-monitoring scenario used in our SSDBM paper.
