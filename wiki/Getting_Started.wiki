@@ -1,0 +1,8 @@
+#summary How to install SNEE and get it running.
+
+= Getting Started =
+
+This page explains how to install SNEE and get it running, and is aimed at mainly at users.
+
+Note that SNEE developers are directed to the [Installing_Developer_Environment instructions for SNEE developers].
+
