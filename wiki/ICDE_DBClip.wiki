@@ -1,5 +1,7 @@
-#summary DBClip providing overview of project.
+#summary DBClip providing overview SNEE architecture.
 
 =DBClip providing overview of project.=
 
 <wiki:video url="http://www.youtube.com/watch?v=9FLGoozloDQ"/>
+
+This video accompanied the paper [An Architecture for Query Optimization in Sensor Networks|http://dias-mc.cs.manchester.ac.uk/ICDE08-poster-paper.pdf]
