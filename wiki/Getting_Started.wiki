@@ -1,4 +1,4 @@
-#summary How to install SNEE and get it running.
+#summary How to install SNEE and get it running quickly.
 
 = Getting Started =
 
