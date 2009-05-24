@@ -15,7 +15,8 @@ This page explains how to install SNEE and get it running, and is aimed at mainl
  # Cd into the SNEE folder and create folders named *bin* and *output* if they are not already there.
  # Compile the Java source code:
 {{{
-	> javac -sourcepath src -classpath "src;lib/antlr-2.7.5.jar" src/uk/ac/manchester/cs/diasmc/querycompiler/QueryCompiler.java -d bin
+	> javac -sourcepath src -classpath "src;lib/antlr-2.7.5.jar" \ src/uk/ac/manchester/cs/diasmc/querycompiler/QueryCompiler.java \ 
+-d bin
 }}}
  # In the input folder, make a copy of example-local.ini and rename it to local.ini.  You the need to edit the file and fill in the path of the GraphViz executable.
 {{{
