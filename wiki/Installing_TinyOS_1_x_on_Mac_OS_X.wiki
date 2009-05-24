@@ -1,5 +1,5 @@
+#summary This page provides instructions for installing TinyOS on Mac OS X.
 #labels Phase-Deploy
-#This page provides instructions for installing TinyOS on Mac OS X.
 
 =Installing TinyOS 1.x on Mac OS X.=
 
