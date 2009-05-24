@@ -1,8 +1,8 @@
-#This page explains how to install the development environment for SNEE.
+#summary Instructions for developers to install the developer environment for SNEE.
 
 = Introduction =
 
-This page explains how to install the development environment for SNEE.  Users of SNEE are recommended to use the QuickStart instructions.
+This page explains how to install the developer environment for SNEE.  Users of SNEE are recommended to use the QuickStart instructions.
 
 ===Dependencies===
 
@@ -70,4 +70,3 @@ From within Eclipse
    > make micaz sim
    > python runTossim.py
 }}}
-
