@@ -4,4 +4,4 @@
 
 <wiki:video url="http://www.youtube.com/watch?v=9FLGoozloDQ"/>
 
-This video accompanied the paper [http://dias-mc.cs.manchester.ac.uk/ICDE08-poster-paper.pdf|An Architecture for Query Optimization in Sensor Networks]
+This video accompanied the paper [http://dias-mc.cs.manchester.ac.uk/ICDE08-poster-paper.pdf| An Architecture for Query Optimization in Sensor Networks]
