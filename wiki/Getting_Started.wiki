@@ -2,11 +2,28 @@
 
 = Getting Started =
 
-This page explains how to install SNEE and get it running, and is aimed at mainly at users.
+This page explains how to install SNEE and get it running, and is aimed at mainly at users.  Note that SNEE developers are directed to the [Installing_Developer_Environment instructions for SNEE developers].
 
-Note that SNEE developers are directed to the [Installing_Developer_Environment instructions for SNEE developers].
+===Dependencies===
+ * Java SDK 1.5 or newer
+ * antlr (2.7.5 is recommended).  This is included in the zip file.
+ * GraphViz (I've got version 2.20.2 for the Mac, 2.20.3 had a bug and does not work)
 
-===Get the code===
+===Installation===
 
-Download the latest release from the [http://code.google.com/p/snee/downloads/list downloads section], and unzip it to the directory of your choice.
+ # Download the latest release from the [http://code.google.com/p/snee/downloads/list downloads section], and unzip it to the directory of your choice.
+ # Cd into the SNEE folder and create folders named bin and output if they are not already there.
+ # Compile the Java source code:
+{{{
+     > javac -sourcepath src -classpath "src;lib/antlr-2.7.5.jar" src/uk/ac/manchester/cs/diasmc/querycompiler/QueryCompiler.java -d bin
+}}}
+ # In the input folder, make a copy of example-local.ini and rename it to local.ini.  You the need to edit the file and fill in the path of the GraphViz executable.
+{{{
+[GraphViz]
+#Location of the GraphViz executable
+exe = c:/Program Files/Graphviz2.20/bin/dot.exe
+}}}
+
+
+===Running the query optimizer===
 
