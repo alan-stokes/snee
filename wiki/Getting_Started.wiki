@@ -20,7 +20,7 @@ This page explains how to install SNEE and get it running, and is aimed at mainl
   src/uk/ac/manchester/cs/diasmc/querycompiler/QueryCompiler.java \
   -d bin
 }}}
- # In the input folder, make a copy of example-local.ini and rename it to local.ini.  You the need to edit the file and fill in the path of the GraphViz executable.
+ # In the input folder, make a copy of example-local.ini and rename it to local.ini.  Then edit local.ini and add the location of the GraphViz executable.
 {{{
 [GraphViz]
 #Location of the GraphViz executable
