@@ -58,7 +58,7 @@ For the end of a public method:
 
 ===Naming===
 
-All names of classes, variables, etc., should be in English and should be meaningful.
+All names of classes, variables, etc., should be in English and should be meaningful.  Please see the following naming conventions suggested by [http://java.sun.com/docs/codeconv/html/CodeConventions.doc8.html#367].
 
 
 ===Other===
@@ -69,4 +69,3 @@ Always use curly braces after an if statement condition, even if it only one lin
 	if (<<condition>>) {
 		<<action>>
 	}
-
