@@ -1,0 +1,57 @@
+#summary This page describes the SNEE developer coding conventions.
+
+===Small is nice===
+
+Keep methods small. Keep classes small. Wrap lines at 70 characters.
+
+===Testing===
+
+Every public method should have a test associated with it, and tests should cover all the functionality of the method.
+
+===Logger===
+
+We are using the org.apache.log4j.Logger package.  Our convention is to add logger statement at the start and end of each method.
+
+For the start of a private method:
+
+{{{
+	private void processLogicalSchema(String logicalSchemaFile) 
+	throws SchemaMetadataException, MetadataException, 
+	TypeMappingException, UnsupportedAttributeTypeException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER processLogicalSchema() with " +
+					logicalSchemaFile);
+		}
+}}}
+
+Note that all the method parameters are displayed.
+
+For the end of a private method:
+
+{{{
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN processLogicalSchema() #extents=" + 
+					_schema.size());
+		}
+	}
+}}}
+
+For the start of a public method:
+
+{{{
+	public void addExtent(ExtentMetadata extent) 
+	throws MetadataException {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER addExtent() with " + extent);
+
+}}}
+
+For the end of a public method:
+
+{{{
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN addExtent()");
+		}
+	}
+}}}
+
