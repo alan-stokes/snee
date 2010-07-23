@@ -38,7 +38,7 @@ For the end of a private method:
 
 For the start of a public method:
 
-{{{
+{{{
 	public void addExtent(ExtentMetadata extent) 
 	throws MetadataException {
 		if (logger.isDebugEnabled())
@@ -58,7 +58,7 @@ For the end of a public method:
 
 ===Naming===
 
-All names of classes, variables, ..., should be in English and should be meaningful.
+All names of classes, variables, etc., should be in English and should be meaningful.
 
 
 ===Other===
@@ -69,6 +69,4 @@ Always use curly braces after an if statement condition, even if it only one lin
 	if (<<condition>>) {
 		<<action>>
 	}
-
-
 
