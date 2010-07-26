@@ -20,14 +20,23 @@
 = Obtain and Build the Source Code =
 
  * Configure Maven
-  * settings.xml in ~/.m2
-   * On lines 127 and 133 add your techideas username
-   * On lines 128 and 134 add your password
+  * Edit the settings.xml (in ~/.m2 on my machine) and add two servers with the id ssg4e.internal and ssg4e.snapshot
+{{{
+<server>
+	<id>serverid</id>
+	<username>your-techideas-username</username>
+	<pasword>your-techideas-password</password>
+</server>
+}}}
+  * A sample settings.xml file is available from the Downloads section of this site.
+  * Note: Eventually we will get rid of this dependency.
 
  * Using the SVN Repository Browser in Eclipse, add the Google SVN URL to your list of SVN repositories:
    * https://snee.googlecode.com/svn/trunk
    * (this is accessed using your google username and password)
-   * Right-click on snee folder, and select ‘Check out as Maven Project’.  Follow the steps; this will result in a project named 'compiler' in the workspace. (Unfortunately, it is not possible to change the name of the project due to maven; the workaround is to have multiple workspaces in Eclipse)
+   * Right-click on snee folder, and select ‘Check out as Maven Project’.  Follow the steps. 
+   * This will result in a project named 'compiler', a module, and a parent project called 'SNEE', in the workspace.  Eventually we will have other modules like core-api, datasource, evaluator and metadata there. 
+   * (Unfortunately, it is not possible to change the name of the project due to maven; the workaround is to have multiple workspaces in Eclipse)
 
  * Eclipse, right-click pom.xml, Run As mvn package
 
