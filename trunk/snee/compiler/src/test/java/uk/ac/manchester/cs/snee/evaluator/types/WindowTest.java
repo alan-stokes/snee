@@ -58,7 +58,9 @@ public class WindowTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
-		PropertyConfigurator.configure("etc/log4j.properties");
+		PropertyConfigurator.configure(
+				WindowTest.class.getClassLoader().
+				getResource("etc/log4j.properties"));
 	}
 
 	@AfterClass

@@ -86,7 +86,9 @@ public class SNEEControllerTest extends EasyMockSupport {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
-		PropertyConfigurator.configure("etc/log4j.properties");
+		PropertyConfigurator.configure(
+				SNEEControllerTest.class.getClassLoader().getResource(
+						"etc/log4j.properties"));
 	}
 
 	@AfterClass

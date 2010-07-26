@@ -14,7 +14,6 @@ import org.apache.log4j.PropertyConfigurator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class SNEEPropertiesTest {
@@ -22,7 +21,9 @@ public class SNEEPropertiesTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
-		PropertyConfigurator.configure("etc/log4j.properties");
+		PropertyConfigurator.configure(
+				SNEEPropertiesTest.class.getClassLoader().getResource(
+						"etc/log4j.properties"));
 	}
 
 	private Properties props;

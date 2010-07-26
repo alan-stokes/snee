@@ -39,7 +39,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -55,7 +54,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
@@ -72,7 +70,9 @@ public class TupleTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
-		PropertyConfigurator.configure("etc/log4j.properties");
+		PropertyConfigurator.configure(
+				TupleTest.class.getClassLoader().
+				getResource("etc/log4j.properties"));
 	}
 
 	@AfterClass

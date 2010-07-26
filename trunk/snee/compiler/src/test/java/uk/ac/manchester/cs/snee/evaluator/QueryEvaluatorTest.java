@@ -50,7 +50,9 @@ public class QueryEvaluatorTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
-		PropertyConfigurator.configure("etc/log4j.properties");
+		PropertyConfigurator.configure(
+				QueryEvaluatorTest.class.getClassLoader().getResource(
+						"etc/log4j.properties"));
 	}
 
 	@AfterClass

@@ -22,7 +22,9 @@ public class WebServiceSourceMetadataTest extends EasyMockSupport {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
-		PropertyConfigurator.configure("etc/log4j.properties");
+		PropertyConfigurator.configure(
+				WebServiceSourceMetadataTest.class.getClassLoader().
+				getResource("etc/log4j.properties"));
 	}
 
 	private WebServiceSourceMetadata serviceMetadata;

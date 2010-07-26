@@ -1,12 +1,10 @@
 package uk.ac.manchester.cs.snee.evaluator.operators;
 
 import static org.easymock.EasyMock.expect;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -22,13 +20,8 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.Operator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.operators.ProjectOperator;
-import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.Field;
-import uk.ac.manchester.cs.snee.evaluator.types.Output;
-import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
-import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
 public class ProjectOperatorImplTest extends EasyMockSupport {
@@ -37,8 +30,8 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
 		PropertyConfigurator.configure(
-				ProjectOperatorImplTest.class.getResource(
-						"etc/log4j.properties"));
+				ProjectOperatorImplTest.class.getClassLoader().
+				getResource("etc/log4j.properties"));
 	}
 
 	final Expression mockExpression = createMock(Expression.class);

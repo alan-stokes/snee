@@ -37,6 +37,9 @@ package uk.ac.manchester.cs.snee.evaluator.types;
 
 import static org.junit.Assert.assertEquals;
 
+import java.net.URL;
+import java.util.Properties;
+
 import org.apache.log4j.PropertyConfigurator;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -45,11 +48,6 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Properties;
-
-import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
@@ -63,7 +61,9 @@ public class FieldTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
-		PropertyConfigurator.configure("etc/log4j.properties");
+		PropertyConfigurator.configure(
+				FieldTest.class.getClassLoader().
+				getResource("etc/log4j.properties"));
 	}
 
 	@AfterClass

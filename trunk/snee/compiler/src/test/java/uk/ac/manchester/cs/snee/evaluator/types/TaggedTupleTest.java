@@ -58,7 +58,9 @@ public class TaggedTupleTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
-		PropertyConfigurator.configure("etc/log4j.properties");
+		PropertyConfigurator.configure(
+				TaggedTupleTest.class.getClassLoader().
+				getResource("etc/log4j.properties"));
 	}
 
 	@AfterClass

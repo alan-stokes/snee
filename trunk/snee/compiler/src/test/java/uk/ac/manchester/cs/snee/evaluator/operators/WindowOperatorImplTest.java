@@ -1,9 +1,6 @@
 package uk.ac.manchester.cs.snee.evaluator.operators;
 
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.junit.After;
@@ -14,8 +11,6 @@ import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.Operator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.WindowOperator;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 
@@ -28,7 +23,9 @@ public class WindowOperatorImplTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
-		PropertyConfigurator.configure("etc/log4j.properties");
+		PropertyConfigurator.configure(
+				WindowOperatorImplTest.class.getClassLoader().
+				getResource("etc/log4j.properties"));
 	}
 	
 	@Before

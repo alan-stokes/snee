@@ -68,7 +68,9 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
-		PropertyConfigurator.configure("etc/log4j.properties");
+		PropertyConfigurator.configure(
+				StreamResultSetImplTest.class.getClassLoader().
+				getResource("etc/log4j.properties"));
 	}
 
 	@AfterClass

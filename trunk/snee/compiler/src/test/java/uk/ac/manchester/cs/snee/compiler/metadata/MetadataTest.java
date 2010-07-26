@@ -2,21 +2,9 @@ package uk.ac.manchester.cs.snee.compiler.metadata;
 
 import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.net.MalformedURLException;
 import java.util.Properties;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.easymock.classextension.EasyMockSupport;
@@ -25,9 +13,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
@@ -38,11 +23,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceDoesNotExistException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.WebServiceSourceMetadata;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.data.webservice.PullSourceWrapper;
 
@@ -57,7 +38,9 @@ public class MetadataTest extends EasyMockSupport {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
-		PropertyConfigurator.configure("etc/log4j.properties");
+		PropertyConfigurator.configure(
+				MetadataTest.class.getClassLoader().getResource(
+						"etc/log4j.properties"));
 	}
 
 //	String logicalSchemaFilename = "testLogicalSchema";
