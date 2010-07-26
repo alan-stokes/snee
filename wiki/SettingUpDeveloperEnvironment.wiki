@@ -46,4 +46,4 @@
 == Building the Project ==
 
  * Within the Eclipse package explorer, right-click on the SNEE project and select 'Run As' -> 'Maven package'
-* Tip: If you update from the SVN, and experience problems building the project, try right-clicking on the SNEE project and selecting 'Run As' -> 'Maven clean'
+ * Tip: If you update from the SVN, and experience problems building the project, try right-clicking on the SNEE project and selecting 'Run As' -> 'Maven clean'
