@@ -106,7 +106,7 @@ public class Metadata {
 	 * @throws MetadataException 
 	 * @throws SourceMetadataException 
 	 */
-	//FIXME: Check what circumstances each of these excepetions is thrown
+	//FIXME: Check what circumstances each of these exceptions is thrown
 	public Metadata() 
 	throws TypeMappingException, SchemaMetadataException, SNEEConfigurationException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException {
 		if (logger.isDebugEnabled())
