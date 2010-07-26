@@ -1,0 +1,34 @@
+#summary This page describes how to set up the developer environment for the new version of SNEE.
+
+= Tools Installation =
+
+ * Install a Subversion Client
+  * http://subversion.tigris.org/
+
+ * Install Maven
+  * http://maven.apache.org/
+
+ * Install Eclipse
+  * http://www.eclipse.org/downloads
+
+ * Install Eclipse Plugins
+  * Subclipse (for SVN support)
+    * http://subclipse.tigris.org/
+  * m2eclipse (for Maven support, including the extras)
+    * http://m2eclipse.sonatype.org/installing-m2eclipse.html
+
+= Obtain and Build the Source Code =
+
+ * Configure Maven
+  * settings.xml in ~/.m2
+   * On lines 127 and 133 add your techideas username
+   * On lines 128 and 134 add your password
+
+ * Using the SVN Repository Browser in Eclipse, add the Google SVN URL to your list of SVN repositories:
+   * https://snee.googlecode.com/svn/trunk
+   * (this is accessed using your google username and password)
+   * Right-click on snee folder, and select ‘Check out as Maven Project’.  Follow the steps; this will result in a project named 'compiler' in the workspace. (Unfortunately, it is not possible to change the name of the project due to maven; the workaround is to have multiple workspaces in Eclipse)
+
+ * Eclipse, right-click pom.xml, Run As mvn package
+
+ * Right click on the compiler module project, go to the maven context menu, select ‘update project configuration’.
