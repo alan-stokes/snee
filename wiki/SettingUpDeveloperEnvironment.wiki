@@ -28,7 +28,7 @@
 	<pasword>your-techideas-password</password>
 </server>
 }}}
-  * A sample settings.xml file is available from the Downloads section of this site.
+  * A [http://code.google.com/p/snee/downloads/detail?name=settings.xml&can=2&q= sample settings.xml] file is available from the Downloads section of this site.
   * Note: Eventually we will get rid of this dependency.
 
  * Using the SVN Repository Browser in Eclipse, add the Google SVN URL to your list of SVN repositories:
