@@ -348,7 +348,7 @@ public class SNEEController implements SNEE {
 					queryID + "\n\tquery: " + query);
 		}
 			try {
-				LAF queryPlan = _compiler.compileDSMSQuery(queryID, query);
+				LAF queryPlan = _compiler.compileQuery(queryID, query);
 				_queryPlans.put(queryID, queryPlan);
 			} catch (Exception e) {
 				String msg = "Problem compiling query.";

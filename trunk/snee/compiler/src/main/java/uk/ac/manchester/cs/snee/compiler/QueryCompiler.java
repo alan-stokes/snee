@@ -117,15 +117,25 @@ public class QueryCompiler {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER: queryID: " + queryID + 
 					" dir: " + outputDir + "\n\tquery: " + query);
+		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting parsing for queryID " + queryID);
+		CommonAST ast = doParsing(queryID, outputDir, query);
 
-		CommonAST ast = parseQuery(queryID, outputDir, query);
 		if (logger.isInfoEnabled()) 
-			logger.info("Starting Logical Optimisation for query " + 
+			logger.info("Starting Translation for query " + 
 					queryID);
-		LAF laf = doLogicalOptimization(queryID, outputDir, ast);
-			
+		LAF laf = doTranslation(queryID, outputDir, ast);
+		
+		if (logger.isInfoEnabled()) 
+			logger.info("Starting Rewriting for query " + 
+					queryID);
+		LAF lafPrime = doLogicalRewriting(laf);
+		
+		//TODO: Invoke Source Allocator
+		
+		//TODO: Invoke Source Planner
+		
 			// Physical Optimisation
 			//		logger.info("Starting Physical Optimization");
 			//		PAF paf = PhysicalOptimization.doPhysicalOptimization(
@@ -133,12 +143,13 @@ public class QueryCompiler {
 			//				queryName);
 			//		return paf;
 
+		//TODO: Return a query evaluation plan
 		if (logger.isTraceEnabled())
-			logger.trace("RETURN: " + laf);
-		return laf;
+			logger.trace("RETURN: " + lafPrime);
+		return lafPrime;
 	}
 
-	private CommonAST parseQuery(int queryID, String outputDir, 
+	private CommonAST doParsing(int queryID, String outputDir, 
 			String query) 
 	throws ParserException, RecognitionException, TokenStreamException {
 		if (logger.isTraceEnabled())
@@ -153,7 +164,7 @@ public class QueryCompiler {
 		return parseTree;
 	}
 	
-	private LAF doLogicalOptimization(int queryID, 
+	private LAF doTranslation(int queryID, 
 			String queryPlanOutputDir, CommonAST parseTree) 
 	throws TypeMappingException, SourceDoesNotExistException, 
 	SchemaMetadataException, ParserValidationException, 
@@ -164,15 +175,26 @@ public class QueryCompiler {
 			logger.trace("ENTER queryID: " + queryID + "\n\tquery: " + 
 					parseTree);
 		Translator translator = new Translator(_schemaMetadata);
-		Operator root = translator.mainTranslate(parseTree);    
+		LAF laf = translator.translate(parseTree, queryID);    
 
-		LAF laf = new LAF(root, "query" + queryID);//, 
 //				qosCollection.get(queryID).getMaxAcquisitionInterval());
 		laf.exportGraph(queryPlanOutputDir, laf.getName(), "");
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN: "+laf);
 		return laf;
 
 	}
 
+	private LAF doLogicalRewriting(LAF laf) {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER laf: " + laf);
+		//TODO: Placeholder for rewriting step, currently merged with translation step
+		LAF lafPrime = laf;
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN: "+lafPrime);
+		return lafPrime;		
+	}
+	
 //	/**
 //	 * Invoke the multi-site optimizer phase.
 //	 * @param queryID the ID of the query.
@@ -368,7 +390,7 @@ public class QueryCompiler {
 	 * @throws SNEEConfigurationException 
 	 */
 //TODO: Change to return a query plan that is interpretable by a dispatcher
-	public LAF compileDSMSQuery(int queryID, String query) 
+	public LAF compileQuery(int queryID, String query) 
 	throws SNEEException, SourceDoesNotExistException, 
 	TypeMappingException, SchemaMetadataException, 
 	ParserValidationException, OptimizationException, 

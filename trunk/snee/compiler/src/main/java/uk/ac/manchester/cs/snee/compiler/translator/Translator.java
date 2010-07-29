@@ -18,6 +18,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParserTokenTypes;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlTreeWalker;
+import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
@@ -640,13 +641,13 @@ public class Translator {
 		return operator;
 	}
 
-	public Operator mainTranslate(AST ast) 
+	public LAF translate(AST ast, int queryID) 
 	throws SchemaMetadataException, ParserValidationException, 
 	OptimizationException, SourceDoesNotExistException,
 	ParserException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER mainTranslate(): " + ast);
+			logger.debug("ENTER translate(): " + ast);
 		DeliverOperator operator;
 		if (ast==null) {
 			String msg = "No parse tree available.";
@@ -657,8 +658,9 @@ public class Translator {
 			operator = new DeliverOperator(queryRoot, _boolType);
 		}
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN mainTranslate() op=" + operator);
-		return operator;
+			logger.debug("RETURN translate() op=" + operator);
+		LAF laf = new LAF(operator, "query" + queryID);
+		return laf;
 	}
 
 	private Operator applyWhereOrGroupBy(AST ast, Operator input) 
