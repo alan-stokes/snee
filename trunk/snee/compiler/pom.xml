@@ -7,7 +7,7 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.ac.manchester.cs.snee</groupId>
-	<artifactId>compiler</artifactId>
+	<artifactId>snee-compiler</artifactId>
 	<name>SNEE Compiler</name>
 	<version>0.0.4-SNAPSHOT</version>
 	<description>Compiles a SNEEql query into a query plan</description>

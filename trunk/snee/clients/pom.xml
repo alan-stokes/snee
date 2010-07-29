@@ -16,7 +16,7 @@
   <dependencies>
   	<dependency>
   		<groupId>uk.ac.manchester.cs.snee</groupId>
-  		<artifactId>compiler</artifactId>
+  		<artifactId>snee-compiler</artifactId>
   		<version>0.0.4-SNAPSHOT</version>
   		<scope>provided</scope>
   	</dependency>
