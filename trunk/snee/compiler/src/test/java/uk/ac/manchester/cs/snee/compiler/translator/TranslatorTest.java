@@ -87,7 +87,7 @@ public class TranslatorTest {
 		CommonAST parseTree = (CommonAST)parser.getAST();
 		System.out.println("Parse tree: " + parseTree.toStringList());
 		logger.info("Parse tree: " + parseTree.toStringList());
-		translator.mainTranslate(parseTree);
+		translator.translate(parseTree, 1);
 	}
 	
 	//TODO: Write tests for queries

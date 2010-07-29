@@ -178,7 +178,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	ExtentDoesNotExistException, EvaluatorException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		//Record expected calls to the mock objects
-		expect(mockQueryCompiler.compileDSMSQuery(1, mQuery)).andReturn(mockPlan);
+		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
 		expect(mockDispatcher.stopQuery(1)).andReturn(true);
 		
@@ -197,9 +197,9 @@ public class SNEEControllerTest extends EasyMockSupport {
 	ExtentDoesNotExistException, EvaluatorException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		//Record expected calls to the mock objects
-		expect(mockQueryCompiler.compileDSMSQuery(1, mQuery)).andReturn(mockPlan);
+		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
-		expect(mockQueryCompiler.compileDSMSQuery(2, mQuery)).andReturn(mockPlan);
+		expect(mockQueryCompiler.compileQuery(2, mQuery)).andReturn(mockPlan);
 		mockDispatcher.startQuery(2, mockResultset, mockPlan);
 		mockDispatcher.close();
 		
@@ -235,7 +235,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	ExtentDoesNotExistException, EvaluatorException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		//Record expected calls to the mock objects
-		expect(mockQueryCompiler.compileDSMSQuery(1, mQuery)).andReturn(mockPlan);
+		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
 		
 		//Test
