@@ -433,7 +433,7 @@ public class Translator {
 		}
 		if (logger.isDebugEnabled()) { 
 			for (int i = 0; i < operators.length; i++)
-				logger.debug("OP"+i+": "+operators[i]+"£");
+				logger.debug("OP"+i+": "+operators[i]);
 		}
 		if (operators.length == 1) {
 			if (logger.isDebugEnabled())
@@ -454,7 +454,7 @@ public class Translator {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Operator list sorted");
 			for (int i = 0; i < operators.length; i++)
-				logger.trace("OP"+i+": "+operators[i]+"£");
+				logger.trace("OP"+i+": "+operators[i]);
 		}
 		temp = operators[operators.length-1];
 		for (int i = 0; i < operators.length-1; i++){
