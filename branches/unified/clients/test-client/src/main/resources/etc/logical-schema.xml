@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://snee.cs.man.ac.uk/namespace/logicalschema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/logicalschema ../../schema/logicalSchema.xsd">
+	
+      <stream name="HerneBay_Tide" type="push">
+    	<column name="timestamp">
+        	<type class ="timestamp"/>
+         </column>
+         <column name="Observed">
+          	<type class ="float"/>
+         </column>
+         <column name="Tz">
+          	<type class ="float"/>
+         </column>
+         <column name="Hs">
+          	<type class ="float"/>
+         </column>
+         <column name="Hmax">
+          	<type class ="float"/>
+         </column>
+         <column name="Tp">
+          	<type class ="float"/>
+         </column>
+     </stream>
+     
+     <stream name="HerneBay_Met" type="push">
+     	<column name="timestamp">
+     		<type class="timestamp"/>
+     	</column>
+         <column name="Air_pressure">
+          	<type class ="float"/>
+         </column>
+         <column name="Wind_speed">
+          	<type class ="float"/>
+         </column>
+         <column name="Gust_speed">
+          	<type class ="float"/>
+         </column>
+         <column name="WDir">
+          	<type class ="float"/>
+         </column>
+         <column name="TAir">
+          	<type class ="float"/>
+         </column>
+     </stream>
+     
+</schema>
