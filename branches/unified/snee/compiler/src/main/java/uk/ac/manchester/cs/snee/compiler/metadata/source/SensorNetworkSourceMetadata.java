@@ -62,7 +62,7 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 			logger.debug("ENTER SensorNetworkSourceMetadata()");
 		}
 		for(String extent : _extentNames) {
-			setSoureSites(xml.getElementsByTagName("sites"), extent);
+			setSourceSites(xml.getElementsByTagName("sites"), extent);
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SensorNetworkSourceMetadata()");
@@ -92,7 +92,7 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 	 * @param extentName Name of the extent
 	 * @throws SourceMetadataException
 	 */
-	private void setSoureSites(NodeList nodesxml, String extentName) 
+	private void setSourceSites(NodeList nodesxml, String extentName) 
 	throws SourceMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER setSourceSites() for " + extentName + 
