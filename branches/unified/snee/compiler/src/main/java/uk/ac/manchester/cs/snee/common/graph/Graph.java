@@ -711,7 +711,7 @@ public class Graph implements Cloneable {
 			Runtime rt = Runtime.getRuntime();
 			if (logger.isTraceEnabled()) {
 				logger.trace(
-						SNEEProperties.getSetting("graphviz.exe") +
+						SNEEProperties.getSetting(SNEEPropertyNames.GRAPHVIZ_EXE) +
 						"-Tpng " + 
 						"-o" + outputFullPath + " " + inputFullPath);
 			}

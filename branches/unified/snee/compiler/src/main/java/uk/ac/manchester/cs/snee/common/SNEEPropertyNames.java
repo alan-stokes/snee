@@ -66,10 +66,56 @@ public final class SNEEPropertyNames {
     	"compiler.output_root_dir";
     
     /**
+     * Using equivalence-preserving transformation removes unrequired
+     * operators (e.g., a NOW window combined with a RSTREAM).
+     * TODO: currently in physical rewriter, move this to logical rewriter
+     * TODO: consider removing this option
+     */
+    public static final String LOGICAL_REWRITER_REMOVE_UNREQUIRED_OPS =
+    	"compiler.logicalrewriter.remove_unrequired_operators";
+    
+    /**
+     * Pushes project operators as close to the leaves of the operator
+     * tree as possible.
+     * TODO: currently in physical rewriter, move this to logical rewriter
+     * TODO: consider removing this option 
+     */
+    public static final String LOGICAL_REWRITER_PUSH_PROJECT_DOWN =
+    	"compiler.logicalrewriter.push_project_down";
+    
+    /**
+     * Combines leaf operators (receive, acquire, scan) and select 
+     * into a single operator.
+     * TODO: currently in physical rewriter, move this to logical rewriter
+     * TODO: consider removing this option
+     */
+    public static final String LOGICAL_REWRITER_COMBINE_LEAF_SELECT =
+    	"compiler.logicalrewriter.combine_leaf_and_select";
+ 
+    /**
+     * Sets the random seed used for generating routing trees.
+     */
+    public static final String ROUTER_RANDOM_SEED =
+    	"compiler.router.random_seed";
+    
+    /**
+     * Removes unnecessary exchange operators from the DAF
+     */
+    public static final String WHERE_SCHED_REMOVE_REDUNDANT_EXCHANGES =
+    	"compiler.where_sched.remove_redundant_exchanges";
+    
+    /**
+     * Instructs where-scheduler to decrease buffering factor
+     * to enable a shorter acquisition interval.
+     */
+    public static final String WHEN_SCHED_DECREASE_BETA_FOR_VALID_ALPHA =
+    	"compiler.when_sched.decrease_beta_for_valid_alpha";
+    
+    /**
 	 * The name of the file with the logical schema.
 	 * Optional
 	 */
-	public static String INPUTS_SCHEMA_FILE =
+	public static String INPUTS_LOGICAL_SCHEMA_FILE =
 		"logical_schema";
 	
     /**
@@ -83,8 +129,8 @@ public final class SNEEPropertyNames {
 	 * The name of the file with the operator metadata.
 	 * Optional
 	 */
-	public static String INPUTS_COST_PARAMETERS =
-		"cost_parameters";
+	public static String INPUTS_COST_PARAMETERS_FILE =
+		"cost_parameters_file";
 
 	/**
 	 * The name of the file with the type definitions.

@@ -127,13 +127,13 @@ public class SNEEPropertiesTest {
 		SNEEProperties.initialise(props);
 		props.list(System.out);
 		assertEquals("true", 
-				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_SCHEMA_FILE));
+				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE));
 	}
 	
 	@Test
 	public void testGetFile_exists() 
 	throws SNEEConfigurationException {
-		props.setProperty(SNEEPropertyNames.INPUTS_SCHEMA_FILE, 
+		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, 
 				"logical-schema.xml");
 		SNEEProperties.initialise(props);
 		props.list(System.out);
@@ -141,7 +141,7 @@ public class SNEEPropertiesTest {
 			SNEEPropertiesTest.class.getClassLoader().getResource("logical-schema.xml");
 		System.out.println(fileURL);
 		assertEquals(fileURL.getFile(), 
-				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_SCHEMA_FILE));
+				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE));
 	}
 
 }

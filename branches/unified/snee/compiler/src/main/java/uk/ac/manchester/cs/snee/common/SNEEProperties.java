@@ -55,9 +55,12 @@ public class SNEEProperties {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER validateProperties()");
 		validateGraphVizSettings();
+		validateDir(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, true);
+		validateFileLocation(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE);
+		validateFileLocation(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE);
+		validateFileLocation(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE);
 		validateFileLocation(SNEEPropertyNames.INPUTS_TYPES_FILE);
 		validateFileLocation(SNEEPropertyNames.INPUTS_UNITS_FILE);
-		validateDir(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, true);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN validateProperties()");
 	}

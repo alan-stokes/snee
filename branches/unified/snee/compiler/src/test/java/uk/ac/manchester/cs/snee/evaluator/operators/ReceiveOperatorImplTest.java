@@ -40,7 +40,7 @@ public class ReceiveOperatorImplTest {
 		Properties props = new Properties();
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "units.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_SCHEMA_FILE, "logical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "logical-schema.xml");
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
 		SNEEProperties.initialise(props);
 		

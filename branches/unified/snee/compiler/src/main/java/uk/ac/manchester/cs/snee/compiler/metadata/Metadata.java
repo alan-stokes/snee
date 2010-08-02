@@ -116,9 +116,9 @@ public class Metadata {
 		timeType = _types.getType(Constants.TIME_TYPE);
 		timeType.setSorted(true);
 		idType = _types.getType(Constants.ID_TYPE);
-		if (SNEEProperties.isSet(SNEEPropertyNames.INPUTS_SCHEMA_FILE)) {
+		if (SNEEProperties.isSet(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE)) {
 			processLogicalSchema(
-					SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_SCHEMA_FILE));
+					SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE));
 		}
 		if (SNEEProperties.isSet(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE)) {
 			processPhyscialSchema(
