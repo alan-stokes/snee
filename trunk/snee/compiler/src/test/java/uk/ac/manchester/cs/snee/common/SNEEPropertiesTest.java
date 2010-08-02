@@ -6,6 +6,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Properties;
@@ -132,16 +133,19 @@ public class SNEEPropertiesTest {
 	
 	@Test
 	public void testGetFile_exists() 
-	throws SNEEConfigurationException {
+	throws SNEEConfigurationException, MalformedURLException {
 		props.setProperty(SNEEPropertyNames.INPUTS_SCHEMA_FILE, 
 				"logical-schema.xml");
 		SNEEProperties.initialise(props);
 		props.list(System.out);
 		URL fileURL = 
-			SNEEPropertiesTest.class.getClassLoader().getResource("logical-schema.xml");
+			SNEEPropertiesTest.class.getClassLoader().
+			getResource("logical-schema.xml");
 		System.out.println(fileURL);
-		assertEquals(fileURL.getFile(), 
-				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_SCHEMA_FILE));
+		//XXX: Have to test as a URL otherwise there is a file separator issue when this test is run on windows.
+		File file = new File(SNEEProperties.getFilename(
+				SNEEPropertyNames.INPUTS_SCHEMA_FILE));
+		assertEquals(fileURL, file.toURI().toURL());
 	}
 
 }
