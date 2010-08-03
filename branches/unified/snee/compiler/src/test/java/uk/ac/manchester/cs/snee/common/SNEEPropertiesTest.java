@@ -31,6 +31,9 @@ public class SNEEPropertiesTest {
 	@Before
 	public void setUp() throws Exception {
 		props = new Properties();
+		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");		
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");

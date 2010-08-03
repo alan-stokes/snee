@@ -52,6 +52,8 @@ public class MetadataTest extends EasyMockSupport {
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "units.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "logical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "physical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "cost-parameters.xml");
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
 		SNEEProperties.initialise(props);
 	}
