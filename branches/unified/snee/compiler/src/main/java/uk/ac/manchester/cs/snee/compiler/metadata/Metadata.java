@@ -121,7 +121,7 @@ public class Metadata {
 					SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE));
 		}
 		if (SNEEProperties.isSet(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE)) {
-			processPhyscialSchema(
+			processPhysicalSchema(
 					SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE));
 		}
 		if (logger.isDebugEnabled())
@@ -257,7 +257,7 @@ public class Metadata {
 		return attributes;
 	}
 
-	private void processPhyscialSchema(String physicalSchemaFile) 
+	private void processPhysicalSchema(String physicalSchemaFile) 
 	throws MetadataException, SourceMetadataException 
 	{
 		if (logger.isTraceEnabled())
@@ -266,7 +266,7 @@ public class Metadata {
 		Document physicalSchemaDoc = parseFile(physicalSchemaFile);
 		Element root = (Element) physicalSchemaDoc.getFirstChild();
 		logger.trace("Root:" + root);
-		//		addSensorNetworkSources(root.getElementsByTagName("sensor_network"));
+		addSensorNetworkSources(root.getElementsByTagName("sensor_network"));
 		addUdpSources(root.getElementsByTagName("udp_source"));
 		if (logger.isInfoEnabled())
 			logger.info("Physical schema successfully read in from " + 
@@ -277,15 +277,15 @@ public class Metadata {
 					_sources.size());
 	}
 
-	//	private void addSensorNetworkSources(Element networks) {
-	//		if (logger.isTraceEnabled())
-	//			logger.trace("ENTER addSensorNetworkSources() #=" + 
-	//					networks.getLength());
-	//		logger.trace("Create sensor network source");
-	//		//FIXME: Create sensor network metadata element
-	//		if (logger.isTraceEnabled())
-	//			logger.trace("RETURN addSensorNetworkSources()");
-	//	}
+		private void addSensorNetworkSources(NodeList networks) {
+			if (logger.isTraceEnabled())
+				logger.trace("ENTER addSensorNetworkSources() #=" + 
+						networks.getLength());
+			logger.trace("Create sensor network source");
+			//FIXME: Create sensor network metadata element
+			if (logger.isTraceEnabled())
+				logger.trace("RETURN addSensorNetworkSources()");
+		}
 
 	private void addUdpSources(NodeList udpSources) 
 	throws SourceMetadataException {

@@ -150,7 +150,7 @@ public class Units {
 		private static Units instance = new Units();
 	}
 
-	public Units getInstance() {
+	public static Units getInstance() {
 		return UnitsHolder.instance;
 	}
 

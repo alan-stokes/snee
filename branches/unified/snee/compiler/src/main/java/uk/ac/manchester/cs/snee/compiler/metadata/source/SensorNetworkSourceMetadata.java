@@ -41,19 +41,28 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Topology;
+
 /**
- * Maintains metadata required about an in-network query processing
- * sensor network 
+ * Maintains metadata required about a sensor network capable of
+ * in-network query processing
  */
 public class SensorNetworkSourceMetadata extends SourceMetadata {
 
 	Logger logger = 
 		Logger.getLogger(SensorNetworkSourceMetadata.class.getName());
 
+	//TODO: Ixent doesn't understand what this is for.
 	private int _cardinality = 100;
 
 	private int[] _sourceNodes;
 
+	//Sink node id of the sensor network
+	private int gateway;
+
+	//Sensor Network topology
+	private Topology topology;
+	
 	public SensorNetworkSourceMetadata(String sourceName, 
 			List<String> extentNames, Element xml) 
 	throws SourceMetadataException {

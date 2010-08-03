@@ -26,8 +26,11 @@
 	</tuple_generator>
 
 	<sensor_network>
-		<topology>10-node-topology.xml</topology>
-		<sinks>9</sinks>
+		<description>
+			<gateway>9</gateway>
+			<topology>10-node-topology.xml</topology>
+			<site-resources>tmotesky-site-resources.xml</site-resources>
+		</description>
 		<extents>
 			<extent name="PullStream">
 				<sites>4 5 7</sites>
