@@ -25,6 +25,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlLexer;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
@@ -50,7 +51,8 @@ public class TranslatorTest {
 	public void setUp() 
 	throws TypeMappingException, SchemaMetadataException, 
 	SNEEConfigurationException, MetadataException, 
-	UnsupportedAttributeTypeException, SourceMetadataException {
+	UnsupportedAttributeTypeException, SourceMetadataException, 
+	TopologyReaderException {
 		Properties props = new Properties();
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");

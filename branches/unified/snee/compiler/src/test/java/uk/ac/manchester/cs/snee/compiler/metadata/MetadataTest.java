@@ -24,6 +24,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.data.webservice.PullSourceWrapper;
 
@@ -218,7 +219,8 @@ public class MetadataTest extends EasyMockSupport {
 	public void testGetSourceMetaData_testSchema() 
 	throws TypeMappingException, SchemaMetadataException, 
 	MetadataException, UnsupportedAttributeTypeException, 
-	SNEEConfigurationException, SourceMetadataException {
+	SNEEConfigurationException, SourceMetadataException,
+	TopologyReaderException {
 		Metadata schema = new Metadata(); 
 //			new Metadata("test/logical-schema.xml");
 		assertEquals(2, schema.getPushedExtents().size());
@@ -230,7 +232,8 @@ public class MetadataTest extends EasyMockSupport {
 	public void testGetSourceMetaData_invalidExtentName() 
 	throws SchemaMetadataException, MetadataException, 
 	TypeMappingException, UnsupportedAttributeTypeException,
-	SNEEConfigurationException, SourceMetadataException 
+	SNEEConfigurationException, SourceMetadataException,
+	TopologyReaderException 
 	{
 		Metadata schema = new Metadata(); 
 //			new Metadata("test/logical-schema.xml");
@@ -242,7 +245,8 @@ public class MetadataTest extends EasyMockSupport {
 	throws TypeMappingException, SchemaMetadataException, 
 	MalformedURLException, SNEEDataSourceException, 
 	SNEEConfigurationException, MetadataException, 
-	UnsupportedAttributeTypeException, SourceMetadataException 
+	UnsupportedAttributeTypeException, SourceMetadataException, 
+	TopologyReaderException 
 	{
 		Metadata schema = new Metadata();
 		schema.addWebServiceSource("bad url");
@@ -253,7 +257,8 @@ public class MetadataTest extends EasyMockSupport {
 	throws SNEEDataSourceException, SchemaMetadataException, 
 	TypeMappingException, MalformedURLException, 
 	SNEEConfigurationException, MetadataException, 
-	UnsupportedAttributeTypeException, SourceMetadataException 
+	UnsupportedAttributeTypeException, SourceMetadataException,
+	TopologyReaderException 
 	{
 		//Instantiate mock
 		final PullSourceWrapper mockSourceWrapper = createMock(PullSourceWrapper.class);
@@ -278,7 +283,8 @@ public class MetadataTest extends EasyMockSupport {
 	throws SNEEDataSourceException, SchemaMetadataException, 
 	TypeMappingException, MalformedURLException, 
 	SNEEConfigurationException, MetadataException,
-	UnsupportedAttributeTypeException, SourceMetadataException 
+	UnsupportedAttributeTypeException, SourceMetadataException, 
+	TopologyReaderException 
 	{
 		//Instantiate mock
 		final PullSourceWrapper mockSourceWrapper = createMock(PullSourceWrapper.class);

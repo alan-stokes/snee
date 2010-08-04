@@ -113,6 +113,8 @@ public class SNEEProperties {
 			throw new SNEEConfigurationException(message);
 		}
 		logger.debug(propName + " exists as a system property");
+		
+		//TODO: Pull this functionality out into a separate method in Utils class.
 		//Test absolute file location
 		File file = new File(fileName);
 		if (!file.exists()) {

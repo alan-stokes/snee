@@ -71,6 +71,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.UDPSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.WebServiceSourceMetadata;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.data.webservice.PullSourceWrapper;
 
@@ -106,10 +107,14 @@ public class Metadata {
 	 * @throws UnsupportedAttributeTypeException 
 	 * @throws MetadataException 
 	 * @throws SourceMetadataException 
+	 * @throws TopologyReaderException 
 	 */
 	//FIXME: Check what circumstances each of these exceptions is thrown
 	public Metadata() 
-	throws TypeMappingException, SchemaMetadataException, SNEEConfigurationException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException {
+	throws TypeMappingException, SchemaMetadataException, 
+	SNEEConfigurationException, MetadataException, 
+	UnsupportedAttributeTypeException, SourceMetadataException, 
+	TopologyReaderException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER Metadata()");
 		String typesFile = SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_TYPES_FILE);
@@ -259,7 +264,7 @@ public class Metadata {
 	}
 
 	private void processPhysicalSchema(String physicalSchemaFile) 
-	throws MetadataException, SourceMetadataException 
+	throws MetadataException, SourceMetadataException, TopologyReaderException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER processPhysicalSchema() with " +
@@ -279,16 +284,38 @@ public class Metadata {
 	}
 
 		private void addSensorNetworkSources(NodeList wsnSources) 
-		throws MetadataException {
+		throws MetadataException, SourceMetadataException, 
+		TopologyReaderException {
 			if (logger.isTraceEnabled())
 				logger.trace("ENTER addSensorNetworkSources() #=" + 
 						wsnSources.getLength());
-			logger.trace("Create sensor network source");
+			logger.trace("Create sensor network sources");
 			for (int i = 0; i < wsnSources.getLength(); i++) {
-				logger.trace("Create Sensor Network Source");
-//				SourceMetadata source =
-//					new SensorNetworkSourceMetadata(sourceName, extentNames, xml);
-//				_sources.add(source);
+				Element wsnElem = (Element) wsnSources.item(i);
+				NamedNodeMap attrs = wsnElem.getAttributes();
+				String sourceName = attrs.getNamedItem("name").getNodeValue();
+				logger.trace("WSN sourceName="+sourceName);
+				Node topologyElem = wsnElem.getElementsByTagName("topology").
+					item(0).getFirstChild();
+				String topologyFile = topologyElem.getNodeValue();
+				logger.trace("topologyFile="+topologyFile);
+				Node resElem = wsnElem.getElementsByTagName(
+						"site-resources").item(0).getFirstChild();
+				String resFile = resElem.getNodeValue();
+				logger.trace("resourcesFile="+resFile);
+				Node gatewayElem = wsnElem.getElementsByTagName("gateways").
+					item(0).getFirstChild();
+				logger.trace("gateway="+gatewayElem.getNodeValue());
+				int gateway = new Integer(gatewayElem.getNodeValue()).intValue();;				
+				List<String> extentNames = new ArrayList<String>();
+				Element extentsElem = (Element) wsnElem.
+					getElementsByTagName("extents").item(0);
+				extentNames.addAll(parseExtents(extentsElem));
+				logger.trace("extentNames="+extentNames.toString());
+				SourceMetadata source = new SensorNetworkSourceMetadata(
+						sourceName, extentNames, extentsElem, topologyFile, 
+						resFile, gateway);
+				_sources.add(source);
 			}
 			if (logger.isTraceEnabled())
 				logger.trace("RETURN addSensorNetworkSources()");

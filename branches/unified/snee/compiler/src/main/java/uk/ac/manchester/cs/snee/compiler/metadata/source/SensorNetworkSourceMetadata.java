@@ -42,6 +42,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Topology;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReader;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 
 /**
  * Maintains metadata required about a sensor network capable of
@@ -64,12 +66,15 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 	private Topology topology;
 	
 	public SensorNetworkSourceMetadata(String sourceName, 
-			List<String> extentNames, Element xml) 
-	throws SourceMetadataException {
+			List<String> extentNames, Element xml,
+			String topFile, String resFile, int gateway) 
+	throws SourceMetadataException, TopologyReaderException {
 		super(sourceName, extentNames, SourceType.SENSOR_NETWORK);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SensorNetworkSourceMetadata()");
 		}
+		topology = TopologyReader.readNetworkTopology(topFile, resFile);
+		//TODO: Not sure that this will work.
 		for(String extent : _extentNames) {
 			setSourceSites(xml.getElementsByTagName("sites"), extent);
 		}

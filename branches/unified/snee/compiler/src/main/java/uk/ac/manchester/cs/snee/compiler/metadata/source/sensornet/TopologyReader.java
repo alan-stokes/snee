@@ -73,7 +73,9 @@ public class TopologyReader {
 	    final String topologyFile) throws TopologyReaderException {
     	
     	try {
-			Utils.validateXMLFile(topologyFile, "input/network-topology.xsd");
+    		//TODO: get maven to do this?
+			Utils.validateXMLFile(topologyFile, 
+    			"../src/main/resources/schema/network-topology.xsd");
 		
 			final Units units = Units.getInstance();
 			final long energyScalingFactor = units.getEnergyScalingFactor(Utils
@@ -111,7 +113,7 @@ public class TopologyReader {
 			    }
 			}
     	} catch (Exception e) {
-    		throw new TopologyReaderException("IO Error reading topology file.");
+    		throw new TopologyReaderException(e.getMessage());
     	}
     }
 
@@ -179,7 +181,8 @@ public class TopologyReader {
 
     	try {
     		
-			Utils.validateXMLFile(siteResourceFile, "input/site-resources.xsd");
+			Utils.validateXMLFile(siteResourceFile, 
+					"../src/main/resources/schema/site-resources.xsd");
 		
 			final Units units = Units.getInstance();
 			final long energyScalingFactor = units.getEnergyScalingFactor(Utils
@@ -230,7 +233,7 @@ public class TopologyReader {
 			    //TODO: in future, flash memory as well...
 			}
     	} catch (Exception e) {
-    		throw new TopologyReaderException("IO Error reading site resources file");
+    		throw new TopologyReaderException(e.getMessage());
     	}
 
     }
