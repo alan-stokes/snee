@@ -66,6 +66,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.UDPSourceMetadata;
@@ -277,12 +278,18 @@ public class Metadata {
 					_sources.size());
 	}
 
-		private void addSensorNetworkSources(NodeList networks) {
+		private void addSensorNetworkSources(NodeList wsnSources) 
+		throws MetadataException {
 			if (logger.isTraceEnabled())
 				logger.trace("ENTER addSensorNetworkSources() #=" + 
-						networks.getLength());
+						wsnSources.getLength());
 			logger.trace("Create sensor network source");
-			//FIXME: Create sensor network metadata element
+			for (int i = 0; i < wsnSources.getLength(); i++) {
+				logger.trace("Create Sensor Network Source");
+				SourceMetadata source =
+					new SensorNetworkSourceMetadata(sourceName, extentNames, xml);
+				_sources.add(source);
+			}
 			if (logger.isTraceEnabled())
 				logger.trace("RETURN addSensorNetworkSources()");
 		}

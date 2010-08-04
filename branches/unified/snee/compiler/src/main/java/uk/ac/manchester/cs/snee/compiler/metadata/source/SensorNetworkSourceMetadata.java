@@ -73,6 +73,7 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 		for(String extent : _extentNames) {
 			setSourceSites(xml.getElementsByTagName("sites"), extent);
 		}
+		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SensorNetworkSourceMetadata()");
 	}

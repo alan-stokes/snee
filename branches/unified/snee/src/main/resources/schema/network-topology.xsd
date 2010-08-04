@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+targetNamespace="http://dias-mc.cs.manchester.ac.uk" 
+xmlns="http://dias-mc.cs.manchester.ac.uk"
+elementFormDefault="qualified">
+
+<xs:element name="network-topology">
+	<xs:complexType>
+		<xs:sequence>
+			<xs:element name="units">
+			    <xs:complexType>
+			    	<xs:sequence>
+						<xs:element name="energy" type="energyUnits"/>
+						<xs:element name="memory" type="memoryUnits"/>
+						<xs:element name="time" type="timeUnits"/>
+			      	</xs:sequence>
+			    </xs:complexType>
+			</xs:element>
+			
+			<xs:element name="radio-links">
+			    <xs:complexType>
+			    	<xs:sequence>
+				<xs:element name="radio-link" maxOccurs="unbounded">
+				    <xs:complexType>
+						<xs:attribute name="source">
+							<xs:simpleType>
+							  <xs:restriction base="xs:decimal">
+							    <xs:minInclusive value="0"/>
+							  </xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						
+						<xs:attribute name="dest">
+							<xs:simpleType>
+							  <xs:restriction base="xs:decimal">
+							    <xs:minInclusive value="0"/>
+							  </xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+						
+						
+						<xs:attribute name="bidirectional" type="xs:boolean" default="true"/>
+
+						<xs:attribute name="energy">
+							<xs:simpleType>
+							  <xs:restriction base="xs:decimal">
+							    <xs:minInclusive value="0"/>
+							  </xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+
+						<xs:attribute name="time">
+							<xs:simpleType>
+							  <xs:restriction base="xs:decimal">
+							    <xs:minInclusive value="0"/>
+							  </xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+				
+						<xs:attribute name="radio-loss">
+							<xs:simpleType>
+							  <xs:restriction base="xs:decimal">
+							    <xs:minInclusive value="0"/>
+							    <xs:maxInclusive value="1"/>
+							  </xs:restriction>
+							</xs:simpleType>
+						</xs:attribute>
+				    </xs:complexType>				
+				</xs:element>
+			      	</xs:sequence>
+			    </xs:complexType>
+			</xs:element>						
+		</xs:sequence>
+	</xs:complexType>
+</xs:element>
+
+<xs:simpleType name="timeUnits">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="MILLISECONDS"/>
+    <xs:enumeration value="SECONDS"/>
+    <xs:enumeration value="MINUTES"/>
+    <xs:enumeration value="HOURS"/>
+    <xs:enumeration value="DAYS"/>
+    <xs:enumeration value="MONTHS"/>
+    <xs:enumeration value="YEARS"/>
+  </xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="energyUnits">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="MILLIJOULES"/>
+    <xs:enumeration value="JOULES"/>
+    <xs:enumeration value="KILOJOULES"/>
+    <xs:enumeration value="MEGAJOULES"/>
+  </xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="memoryUnits">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="BYTES"/>
+    <xs:enumeration value="KILOBYTES"/>
+    <xs:enumeration value="MEGABYTES"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+</xs:schema>
+

@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+targetNamespace="http://dias-mc.cs.manchester.ac.uk" 
+xmlns="http://dias-mc.cs.manchester.ac.uk"
+elementFormDefault="qualified">
+
+<xs:element name="units">
+	<xs:complexType>
+		<xs:sequence>
+			<xs:element name = "time">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name = "base-unit" type="timeUnits"/>
+						<xs:element name = "unit" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name = "name" type="timeUnits"/>
+									<xs:element name = "scaling-factor" type="xs:positiveInteger"/>	
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>									
+				</xs:complexType>					
+			</xs:element>		
+			
+			<xs:element name = "energy">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name = "base-unit" type="energyUnits"/>
+						<xs:element name = "unit" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name = "name" type="energyUnits"/>
+									<xs:element name = "scaling-factor" type="xs:positiveInteger"/>	
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>									
+				</xs:complexType>					
+			</xs:element>		
+			
+			<xs:element name = "memory">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name = "base-unit" type="memoryUnits"/>
+						<xs:element name = "unit" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name = "name" type="memoryUnits"/>
+									<xs:element name = "scaling-factor" type="xs:positiveInteger"/>	
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>									
+				</xs:complexType>					
+			</xs:element>					
+			
+		</xs:sequence>	
+	</xs:complexType>
+</xs:element>		
+
+<xs:simpleType name="timeUnits">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="MILLISECONDS"/>
+    <xs:enumeration value="SECONDS"/>
+    <xs:enumeration value="MINUTES"/>
+    <xs:enumeration value="HOURS"/>
+    <xs:enumeration value="DAYS"/>
+    <xs:enumeration value="WEEKS"/>
+    <xs:enumeration value="MONTHS"/>
+    <xs:enumeration value="YEARS"/>
+  </xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="energyUnits">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="MILLIJOULES"/>
+    <xs:enumeration value="JOULES"/>
+    <xs:enumeration value="KILOJOULES"/>
+    <xs:enumeration value="MEGAJOULES"/>
+  </xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="memoryUnits">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="BYTES"/>
+    <xs:enumeration value="KILOBYTES"/>
+    <xs:enumeration value="MEGABYTES"/>
+  </xs:restriction>
+</xs:simpleType>
+
+
+</xs:schema>

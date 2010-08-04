@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<source xmlns="http://snee.cs.man.ac.uk/namespace/physicalschema"
+<source xmlns="http://snee.cs.man.ac.uk/namespace/physical-schema"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physicalschema ../../schema/physicalSchema.xsd">
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../../schema/physical-schema.xsd">
 
 <!-- 
 	<sensor_network>
