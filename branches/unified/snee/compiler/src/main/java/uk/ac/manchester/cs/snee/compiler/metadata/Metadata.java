@@ -286,9 +286,9 @@ public class Metadata {
 			logger.trace("Create sensor network source");
 			for (int i = 0; i < wsnSources.getLength(); i++) {
 				logger.trace("Create Sensor Network Source");
-				SourceMetadata source =
-					new SensorNetworkSourceMetadata(sourceName, extentNames, xml);
-				_sources.add(source);
+//				SourceMetadata source =
+//					new SensorNetworkSourceMetadata(sourceName, extentNames, xml);
+//				_sources.add(source);
 			}
 			if (logger.isTraceEnabled())
 				logger.trace("RETURN addSensorNetworkSources()");
