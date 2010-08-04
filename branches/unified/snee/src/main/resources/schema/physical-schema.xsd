@@ -35,12 +35,12 @@
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              	
  -->
 
-<xs:schema targetNamespace="http://snee.cs.man.ac.uk/namespace/physicalschema" 
+<xs:schema targetNamespace="http://snee.cs.man.ac.uk/namespace/physical-schema" 
 	elementFormDefault="qualified" 
 	xmlns:xs="http://www.w3.org/2001/XMLSchema" 
-	xmlns="http://snee.cs.man.ac.uk/namespace/physicalschema">
+	xmlns="http://snee.cs.man.ac.uk/namespace/physical-schema">
 
-	<xs:simpleType name="sinksType">
+	<xs:simpleType name="gatewaysType">
 		<xs:list itemType="xs:integer"/>
 	</xs:simpleType>
 	
@@ -77,7 +77,8 @@
 	<xs:complexType name="sensor_networkType">
 		<xs:sequence>
 			<xs:element name="topology" type="xs:anyURI" minOccurs="1" maxOccurs="1" />
-			<xs:element name="sinks" type="sinksType" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="site-resources" type="xs:anyURI" minOccurs="1" maxOccurs="1" />
+			<xs:element name="gateways" type="gatewaysType" minOccurs="1" maxOccurs="1"/>
 			<xs:element ref="extents" minOccurs="1" maxOccurs="unbounded"/>
 		</xs:sequence>
 		<xs:attribute name="name" use="required"/>
