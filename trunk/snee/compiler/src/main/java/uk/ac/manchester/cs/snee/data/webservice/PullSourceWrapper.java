@@ -50,7 +50,7 @@ public class PullSourceWrapper {
 		Logger.getLogger(PullSourceWrapper.class.getName());
 
 	private DateFormat dateFormat = 
-		new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
 	private Types _types;
 
