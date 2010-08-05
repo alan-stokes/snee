@@ -69,6 +69,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTyp
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataUtils;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.UDPSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.WebServiceSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
@@ -303,10 +304,11 @@ public class Metadata {
 						"site-resources").item(0).getFirstChild();
 				String resFile = resElem.getNodeValue();
 				logger.trace("resourcesFile="+resFile);
-				Node gatewayElem = wsnElem.getElementsByTagName("gateways").
+				Node gatewaysElem = wsnElem.getElementsByTagName("gateways").
 					item(0).getFirstChild();
-				logger.trace("gateway="+gatewayElem.getNodeValue());
-				int gateway = new Integer(gatewayElem.getNodeValue()).intValue();;				
+				logger.trace("gateway="+gatewaysElem.getNodeValue());
+				int[] gateways = SourceMetadataUtils.convertNodes(
+						gatewaysElem.getNodeValue());
 				List<String> extentNames = new ArrayList<String>();
 				Element extentsElem = (Element) wsnElem.
 					getElementsByTagName("extents").item(0);
@@ -314,7 +316,7 @@ public class Metadata {
 				logger.trace("extentNames="+extentNames.toString());
 				SourceMetadata source = new SensorNetworkSourceMetadata(
 						sourceName, extentNames, extentsElem, topologyFile, 
-						resFile, gateway);
+						resFile, gateways);
 				_sources.add(source);
 			}
 			if (logger.isTraceEnabled())
