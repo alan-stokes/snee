@@ -33,9 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.metadata.source;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -44,6 +42,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import uk.ac.manchester.cs.snee.compiler.metadata.MetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReader;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
@@ -92,6 +91,7 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 		this._gateways = gateways;
 		this._topology = TopologyReader.readNetworkTopology(topFile, resFile);
 		setSourceSites(xml.getElementsByTagName("extent"));
+		verifyGateways();
 		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SensorNetworkSourceMetadata()");
@@ -115,6 +115,19 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 //		return result;
 //	}
 	
+	private void verifyGateways() throws SourceMetadataException {
+
+		for (int i=0; i<_gateways.length; i++) {
+			int g = _gateways[i];
+			if (_topology.getNode(g)==null) {
+				throw new SourceMetadataException("Gateway node id "+g+
+						" specified in the physical schema not found in "+
+						"the topology file.");
+			}
+		}
+		
+	}
+
 	/**
 	 * Set which sites the sensed extents are available from
 	 * @param nodesxml configuration information
@@ -130,10 +143,10 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 			Node extentElem = nodesxml.item(i);
 			NamedNodeMap attrs = extentElem.getAttributes();
 			String extentName = attrs.getNamedItem("name").getNodeValue();
-			logger.info("extentName="+extentName);
+			logger.trace("extentName="+extentName);
 			Node sitesElem = extentElem.getChildNodes().item(1);
 			String sitesText = sitesElem.getFirstChild().getNodeValue();
-			logger.info("sites="+sitesText);
+			logger.trace("sites="+sitesText);
 			if (sourceSitesText.length()==0) {
 				sourceSitesText.append(sitesText);
 			} else {
@@ -146,7 +159,7 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 				throw new SourceMetadataException(message);
 			}
 			_extentToSitesMapping.put(extentName, sites);
-			logger.info("Extent "+extentName+": added source sites "+
+			logger.trace("Extent "+extentName+": added source sites "+
 					sites.toString());
 		}
 		if (logger.isTraceEnabled())

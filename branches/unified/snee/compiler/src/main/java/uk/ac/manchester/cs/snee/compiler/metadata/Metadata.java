@@ -310,10 +310,8 @@ public class Metadata {
 				int[] gateways = SourceMetadataUtils.convertNodes(
 						gatewaysElem.getNodeValue());
 				List<String> extentNames = new ArrayList<String>();
-				Element extentsElem = (Element) wsnElem.
-					getElementsByTagName("extents").item(0);
-				extentNames.addAll(parseExtents(extentsElem));
-				logger.trace("extentNames="+extentNames.toString());
+				Element extentsElem = parseSensorNetworkExtentNames(wsnElem,
+						extentNames);
 				SourceMetadata source = new SensorNetworkSourceMetadata(
 						sourceName, extentNames, extentsElem, topologyFile, 
 						resFile, gateways);
@@ -321,6 +319,33 @@ public class Metadata {
 			}
 			if (logger.isTraceEnabled())
 				logger.trace("RETURN addSensorNetworkSources()");
+		}
+
+		private Element parseSensorNetworkExtentNames(Element wsnElem,
+				List<String> extentNames) throws MetadataException {
+			if (logger.isTraceEnabled())
+				logger.trace("ENTER parseSensorNetworkExtentNames() ");
+			Element extentsElem = (Element) wsnElem.
+				getElementsByTagName("extents").item(0);
+			extentNames.addAll(parseExtents(extentsElem));
+			for (String extentName : extentNames) {
+				if (!_schema.containsKey(extentName)) {
+					throw new MetadataException("Physical schema refers "+
+							"to extent '"+extentName+"' which is not "+
+							"present in the logical schema.");
+				}
+				ExtentMetadata em =_schema.get(extentName);
+				if (em.getExtentType()!=ExtentType.SENSED) {
+					throw new MetadataException(extentName+" is has extent " +
+							"type "+em.getExtentName()+", and therefore "+
+							"cannot use a sensor network capable of "+
+							"in-network processing as a data source.");
+				}
+			}
+			logger.trace("extentNames="+extentNames.toString());
+			if (logger.isTraceEnabled())
+				logger.trace("RETURN parseSensorNetworkExtentNames() ");
+			return extentsElem;
 		}
 
 	private void addUdpSources(NodeList udpSources) 

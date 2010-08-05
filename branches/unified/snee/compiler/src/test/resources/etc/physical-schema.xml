@@ -9,11 +9,8 @@
 		<site-resources>src/test/resources/etc/tmotesky-site-resources.xml</site-resources>
 		<gateways>9</gateways>
 		<extents>
-			<extent name="InFlow">
+			<extent name="PullStream">
 				<sites>4,5,7</sites>
-			</extent>
-			<extent name="OutFlow">
-				<sites>0,2,4</sites>
 			</extent>
 		</extents>
 	</sensor_network>

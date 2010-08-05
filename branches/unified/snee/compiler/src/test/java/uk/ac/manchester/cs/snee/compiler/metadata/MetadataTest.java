@@ -216,7 +216,7 @@ public class MetadataTest extends EasyMockSupport {
 //	}
 
 	@Test
-	public void testGetSourceMetaData_testSchema() 
+	public void testGetSourceMetaData_testLogicalSchema() 
 	throws TypeMappingException, SchemaMetadataException, 
 	MetadataException, UnsupportedAttributeTypeException, 
 	SNEEConfigurationException, SourceMetadataException,
