@@ -47,6 +47,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.MetadataException;
@@ -56,6 +57,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
@@ -180,29 +182,33 @@ public class SNEEController implements SNEE {
 
 		} catch (TypeMappingException e) {
 			String msg = "Problem instantiating logical schema " + 
-				SNEEProperties.getSetting("INPUTS_SCHEMA_FILE") + ". " + e;
+				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE) + ". " + e;
 			logger.fatal(msg);
 			throw new SNEEException(msg, e);
 		} catch (SchemaMetadataException e) {
 			String msg = "Problem instantiating logical schema " + 
-				SNEEProperties.getSetting("INPUTS_SCHEMA_FILE") + ". " + e;
+				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE) + ". " + e;
 			logger.fatal(msg);
 			throw new SNEEException(msg, e);
 		} catch (SourceMetadataException e) {
 			String msg = "Problem instantiating physical schema " + 
-				SNEEProperties.getSetting("INPUTS_PHYSICAL_SCHEMA_FILE") + ". " + e;
+				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE) + ". " + e;
 			logger.fatal(msg);
 			throw new SNEEException(msg, e);
 		} catch (MetadataException e) {
 			String msg = "Problem instantiating schema " +
-				SNEEProperties.getSetting("INPUTS_SCHEMA_FILE") + ". " + e;
+				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE) + ". " + e;
 			logger.fatal(msg);
 			throw new SNEEException(msg, e);
 		} catch (UnsupportedAttributeTypeException e) {
 			String msg = "Problem instantiating logical schema " + 
-				SNEEProperties.getSetting("INPUTS_SCHEMA_FILE") + ". " + e;
+				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE) + ". " + e;
 			logger.fatal(msg);
 			throw new SNEEException(msg, e);
+		} catch (TopologyReaderException e) {
+			String msg = "Problem reading topology file ";
+			logger.fatal(msg);
+			throw new SNEEException(msg, e);			
 		}
 		
 		logger.info("SNEE configured");
@@ -213,7 +219,8 @@ public class SNEEController implements SNEE {
 	protected Metadata initialiseSchema() 
 	throws MetadataException, SchemaMetadataException, 
 	TypeMappingException, UnsupportedAttributeTypeException, 
-	SourceMetadataException, SNEEConfigurationException 
+	SourceMetadataException, SNEEConfigurationException, 
+	TopologyReaderException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseSchema()");

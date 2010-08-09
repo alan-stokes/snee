@@ -32,6 +32,9 @@ public class SNEEPropertiesTest {
 	@Before
 	public void setUp() throws Exception {
 		props = new Properties();
+//		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
+//		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
+//		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");		
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
@@ -118,8 +121,7 @@ public class SNEEPropertiesTest {
 		props.setProperty(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS, "true");
 		SNEEProperties.initialise(props);
 		props.list(System.out);
-		assertEquals("true", 
-				SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS));
+		SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS);
 	}
 	
 	@Test(expected=SNEEConfigurationException.class)
@@ -127,24 +129,23 @@ public class SNEEPropertiesTest {
 	throws SNEEConfigurationException {
 		SNEEProperties.initialise(props);
 		props.list(System.out);
-		assertEquals("true", 
-				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_SCHEMA_FILE));
+		SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE);
 	}
 	
 	@Test
 	public void testGetFile_exists() 
 	throws SNEEConfigurationException, MalformedURLException {
-		props.setProperty(SNEEPropertyNames.INPUTS_SCHEMA_FILE, 
-				"logical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, 
+				"etc/logical-schema.xml");
 		SNEEProperties.initialise(props);
 		props.list(System.out);
 		URL fileURL = 
 			SNEEPropertiesTest.class.getClassLoader().
-			getResource("logical-schema.xml");
+			getResource("etc/logical-schema.xml");
 		System.out.println(fileURL);
 		//XXX: Have to test as a URL otherwise there is a file separator issue when this test is run on windows.
 		File file = new File(SNEEProperties.getFilename(
-				SNEEPropertyNames.INPUTS_SCHEMA_FILE));
+				SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE));
 		assertEquals(fileURL, file.toURI().toURL());
 	}
 

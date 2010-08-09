@@ -58,7 +58,7 @@ public abstract class SourceMetadata {
 	protected SourceType _sourceType;
 
 	/**
-	 * Instantiates a source metadata object to caputre common source
+	 * Instantiates a source metadata object to capture common source
 	 * metadata
 	 * @param sourceName name used to identify the source
 	 * @param extentNames names of the extents available from this source

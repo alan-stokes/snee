@@ -24,6 +24,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.data.webservice.PullSourceWrapper;
 
@@ -49,9 +50,11 @@ public class MetadataTest extends EasyMockSupport {
 	@Before
 	public void setUp() throws Exception {
 		Properties props = new Properties();
-		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "Types.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "units.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_SCHEMA_FILE, "logical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
 		SNEEProperties.initialise(props);
 	}
@@ -213,10 +216,11 @@ public class MetadataTest extends EasyMockSupport {
 //	}
 
 	@Test
-	public void testGetSourceMetaData_testSchema() 
+	public void testGetSourceMetaData_testLogicalSchema() 
 	throws TypeMappingException, SchemaMetadataException, 
 	MetadataException, UnsupportedAttributeTypeException, 
-	SNEEConfigurationException, SourceMetadataException {
+	SNEEConfigurationException, SourceMetadataException,
+	TopologyReaderException {
 		Metadata schema = new Metadata(); 
 //			new Metadata("test/logical-schema.xml");
 		assertEquals(2, schema.getPushedExtents().size());
@@ -228,7 +232,8 @@ public class MetadataTest extends EasyMockSupport {
 	public void testGetSourceMetaData_invalidExtentName() 
 	throws SchemaMetadataException, MetadataException, 
 	TypeMappingException, UnsupportedAttributeTypeException,
-	SNEEConfigurationException, SourceMetadataException 
+	SNEEConfigurationException, SourceMetadataException,
+	TopologyReaderException 
 	{
 		Metadata schema = new Metadata(); 
 //			new Metadata("test/logical-schema.xml");
@@ -240,7 +245,8 @@ public class MetadataTest extends EasyMockSupport {
 	throws TypeMappingException, SchemaMetadataException, 
 	MalformedURLException, SNEEDataSourceException, 
 	SNEEConfigurationException, MetadataException, 
-	UnsupportedAttributeTypeException, SourceMetadataException 
+	UnsupportedAttributeTypeException, SourceMetadataException, 
+	TopologyReaderException 
 	{
 		Metadata schema = new Metadata();
 		schema.addWebServiceSource("bad url");
@@ -251,7 +257,8 @@ public class MetadataTest extends EasyMockSupport {
 	throws SNEEDataSourceException, SchemaMetadataException, 
 	TypeMappingException, MalformedURLException, 
 	SNEEConfigurationException, MetadataException, 
-	UnsupportedAttributeTypeException, SourceMetadataException 
+	UnsupportedAttributeTypeException, SourceMetadataException,
+	TopologyReaderException 
 	{
 		//Instantiate mock
 		final PullSourceWrapper mockSourceWrapper = createMock(PullSourceWrapper.class);
@@ -276,7 +283,8 @@ public class MetadataTest extends EasyMockSupport {
 	throws SNEEDataSourceException, SchemaMetadataException, 
 	TypeMappingException, MalformedURLException, 
 	SNEEConfigurationException, MetadataException,
-	UnsupportedAttributeTypeException, SourceMetadataException 
+	UnsupportedAttributeTypeException, SourceMetadataException, 
+	TopologyReaderException 
 	{
 		//Instantiate mock
 		final PullSourceWrapper mockSourceWrapper = createMock(PullSourceWrapper.class);

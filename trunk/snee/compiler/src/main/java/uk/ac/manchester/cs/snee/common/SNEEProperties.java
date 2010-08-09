@@ -55,9 +55,18 @@ public class SNEEProperties {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER validateProperties()");
 		validateGraphVizSettings();
+		validateDir(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, true);
+		if (isSet(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE)) {
+			validateFileLocation(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE);			
+		}
+		if (isSet(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE)) {
+			validateFileLocation(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE);
+		}
+		if (isSet(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE)) {
+			validateFileLocation(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE);			
+		}
 		validateFileLocation(SNEEPropertyNames.INPUTS_TYPES_FILE);
 		validateFileLocation(SNEEPropertyNames.INPUTS_UNITS_FILE);
-		validateDir(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, true);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN validateProperties()");
 	}
@@ -104,6 +113,8 @@ public class SNEEProperties {
 			throw new SNEEConfigurationException(message);
 		}
 		logger.debug(propName + " exists as a system property");
+		
+		//TODO: Pull this functionality out into a separate method in Utils class.
 		//Test absolute file location
 		File file = new File(fileName);
 		if (!file.exists()) {

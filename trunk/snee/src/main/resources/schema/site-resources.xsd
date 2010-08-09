@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+targetNamespace="http://dias-mc.cs.manchester.ac.uk" 
+xmlns="http://dias-mc.cs.manchester.ac.uk"
+elementFormDefault="qualified">
+
+<xs:element name="site-resources">
+	<xs:complexType>
+		<xs:sequence>
+			<xs:element name="units">
+			    <xs:complexType>
+				<xs:sequence>
+					<xs:element name="energy" type="energyUnits"/>
+					<xs:element name="memory" type="memoryUnits"/>
+				</xs:sequence>
+			    </xs:complexType>				
+			</xs:element>
+			<xs:element name="sites">
+			    <xs:complexType>
+			    	<xs:sequence>
+			    		<xs:element name="default" maxOccurs="1">
+					    <xs:complexType>
+						<xs:sequence>
+							<xs:element name="energy-stock" type="xs:positiveInteger"/>
+							<xs:element name="ram" type="xs:positiveInteger"/>
+							<xs:element name="flash-memory" type="xs:positiveInteger"/>
+						</xs:sequence>
+					    </xs:complexType>
+			    		</xs:element>
+					<xs:element name="site" maxOccurs="unbounded">
+					    <xs:complexType>
+						<xs:complexContent>
+    							<xs:restriction base="xs:anyType">
+								<xs:sequence>
+									<xs:element name="energy-stock" type="xs:positiveInteger"/>
+									<xs:element name="ram" type="xs:positiveInteger"/>
+									<xs:element name="flash-memory" type="xs:positiveInteger"/>
+								</xs:sequence>
+								<xs:attribute name="id" type="xs:string" use="required"/>
+							</xs:restriction>
+						</xs:complexContent>
+					    </xs:complexType>
+					</xs:element>			
+			      	</xs:sequence>
+			    </xs:complexType>
+			</xs:element>
+		</xs:sequence>	
+	</xs:complexType>
+</xs:element>
+			
+<xs:simpleType name="energyUnits">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="MILLIJOULES"/>
+    <xs:enumeration value="JOULES"/>
+    <xs:enumeration value="KILOJOULES"/>
+    <xs:enumeration value="MEGAJOULES"/>
+  </xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="memoryUnits">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="BYTES"/>
+    <xs:enumeration value="KILOBYTES"/>
+    <xs:enumeration value="MEGABYTES"/>
+  </xs:restriction>
+</xs:simpleType>
+    
+</xs:schema>
+

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<schema xmlns="http://snee.cs.man.ac.uk/namespace/logicalschema"
+<schema xmlns="http://snee.cs.man.ac.uk/namespace/logical-schema"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/logicalschema ../schema/logicalSchema.xsd">
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/logical-schema ../schema/logical-schema.xsd">
 
       <stream name="TestStream" type="push">
     	<column name="timestamp">

@@ -66,10 +66,13 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataUtils;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.UDPSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.WebServiceSourceMetadata;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.data.webservice.PullSourceWrapper;
 
@@ -105,10 +108,14 @@ public class Metadata {
 	 * @throws UnsupportedAttributeTypeException 
 	 * @throws MetadataException 
 	 * @throws SourceMetadataException 
+	 * @throws TopologyReaderException 
 	 */
 	//FIXME: Check what circumstances each of these exceptions is thrown
 	public Metadata() 
-	throws TypeMappingException, SchemaMetadataException, SNEEConfigurationException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException {
+	throws TypeMappingException, SchemaMetadataException, 
+	SNEEConfigurationException, MetadataException, 
+	UnsupportedAttributeTypeException, SourceMetadataException, 
+	TopologyReaderException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER Metadata()");
 		String typesFile = SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_TYPES_FILE);
@@ -116,12 +123,12 @@ public class Metadata {
 		timeType = _types.getType(Constants.TIME_TYPE);
 		timeType.setSorted(true);
 		idType = _types.getType(Constants.ID_TYPE);
-		if (SNEEProperties.isSet(SNEEPropertyNames.INPUTS_SCHEMA_FILE)) {
+		if (SNEEProperties.isSet(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE)) {
 			processLogicalSchema(
-					SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_SCHEMA_FILE));
+					SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE));
 		}
 		if (SNEEProperties.isSet(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE)) {
-			processPhyscialSchema(
+			processPhysicalSchema(
 					SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE));
 		}
 		if (logger.isDebugEnabled())
@@ -257,8 +264,8 @@ public class Metadata {
 		return attributes;
 	}
 
-	private void processPhyscialSchema(String physicalSchemaFile) 
-	throws MetadataException, SourceMetadataException 
+	private void processPhysicalSchema(String physicalSchemaFile) 
+	throws MetadataException, SourceMetadataException, TopologyReaderException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER processPhysicalSchema() with " +
@@ -266,7 +273,7 @@ public class Metadata {
 		Document physicalSchemaDoc = parseFile(physicalSchemaFile);
 		Element root = (Element) physicalSchemaDoc.getFirstChild();
 		logger.trace("Root:" + root);
-		//		addSensorNetworkSources(root.getElementsByTagName("sensor_network"));
+		addSensorNetworkSources(root.getElementsByTagName("sensor_network"));
 		addUdpSources(root.getElementsByTagName("udp_source"));
 		if (logger.isInfoEnabled())
 			logger.info("Physical schema successfully read in from " + 
@@ -277,15 +284,69 @@ public class Metadata {
 					_sources.size());
 	}
 
-	//	private void addSensorNetworkSources(Element networks) {
-	//		if (logger.isTraceEnabled())
-	//			logger.trace("ENTER addSensorNetworkSources() #=" + 
-	//					networks.getLength());
-	//		logger.trace("Create sensor network source");
-	//		//FIXME: Create sensor network metadata element
-	//		if (logger.isTraceEnabled())
-	//			logger.trace("RETURN addSensorNetworkSources()");
-	//	}
+		private void addSensorNetworkSources(NodeList wsnSources) 
+		throws MetadataException, SourceMetadataException, 
+		TopologyReaderException {
+			if (logger.isTraceEnabled())
+				logger.trace("ENTER addSensorNetworkSources() #=" + 
+						wsnSources.getLength());
+			logger.trace("Create sensor network sources");
+			for (int i = 0; i < wsnSources.getLength(); i++) {
+				Element wsnElem = (Element) wsnSources.item(i);
+				NamedNodeMap attrs = wsnElem.getAttributes();
+				String sourceName = attrs.getNamedItem("name").getNodeValue();
+				logger.trace("WSN sourceName="+sourceName);
+				Node topologyElem = wsnElem.getElementsByTagName("topology").
+					item(0).getFirstChild();
+				String topologyFile = topologyElem.getNodeValue();
+				logger.trace("topologyFile="+topologyFile);
+				Node resElem = wsnElem.getElementsByTagName(
+						"site-resources").item(0).getFirstChild();
+				String resFile = resElem.getNodeValue();
+				logger.trace("resourcesFile="+resFile);
+				Node gatewaysElem = wsnElem.getElementsByTagName("gateways").
+					item(0).getFirstChild();
+				logger.trace("gateway="+gatewaysElem.getNodeValue());
+				int[] gateways = SourceMetadataUtils.convertNodes(
+						gatewaysElem.getNodeValue());
+				List<String> extentNames = new ArrayList<String>();
+				Element extentsElem = parseSensorNetworkExtentNames(wsnElem,
+						extentNames);
+				SourceMetadata source = new SensorNetworkSourceMetadata(
+						sourceName, extentNames, extentsElem, topologyFile, 
+						resFile, gateways);
+				_sources.add(source);
+			}
+			if (logger.isTraceEnabled())
+				logger.trace("RETURN addSensorNetworkSources()");
+		}
+
+		private Element parseSensorNetworkExtentNames(Element wsnElem,
+				List<String> extentNames) throws MetadataException {
+			if (logger.isTraceEnabled())
+				logger.trace("ENTER parseSensorNetworkExtentNames() ");
+			Element extentsElem = (Element) wsnElem.
+				getElementsByTagName("extents").item(0);
+			extentNames.addAll(parseExtents(extentsElem));
+			for (String extentName : extentNames) {
+				if (!_schema.containsKey(extentName)) {
+					throw new MetadataException("Physical schema refers "+
+							"to extent '"+extentName+"' which is not "+
+							"present in the logical schema.");
+				}
+				ExtentMetadata em =_schema.get(extentName);
+				if (em.getExtentType()!=ExtentType.SENSED) {
+					throw new MetadataException(extentName+" is has extent " +
+							"type "+em.getExtentName()+", and therefore "+
+							"cannot use a sensor network capable of "+
+							"in-network processing as a data source.");
+				}
+			}
+			logger.trace("extentNames="+extentNames.toString());
+			if (logger.isTraceEnabled())
+				logger.trace("RETURN parseSensorNetworkExtentNames() ");
+			return extentsElem;
+		}
 
 	private void addUdpSources(NodeList udpSources) 
 	throws SourceMetadataException {

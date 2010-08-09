@@ -66,6 +66,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.UDPSourceMetadata;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
 /**
@@ -109,11 +110,13 @@ public class ConstantRatePushStreamGenerator {
 	 * @throws MetadataException 
 	 * @throws SourceMetadataException 
 	 * @throws SNEEConfigurationException 
+	 * @throws TopologyReaderException 
 	 */
 	public ConstantRatePushStreamGenerator() 
 	throws TypeMappingException, MetadataException, 
 	SchemaMetadataException, UnsupportedAttributeTypeException,
-	SourceMetadataException, SNEEConfigurationException 
+	SourceMetadataException, SNEEConfigurationException, 
+	TopologyReaderException 
 	{
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ConstantRatePushStreamGenerator()");

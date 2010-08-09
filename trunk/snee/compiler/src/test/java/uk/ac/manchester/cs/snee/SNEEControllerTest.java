@@ -97,7 +97,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 
 	@Before
 	public void setUp() throws Exception {
-		_snee = new SNEEController("snee.properties") {
+		_snee = new SNEEController("etc/snee.properties") {
 			
 			protected Metadata initialiseSchema() 
 			throws TypeMappingException, SchemaMetadataException, 
