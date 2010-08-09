@@ -80,7 +80,9 @@ public class SNEEClientUsingCCO extends SNEEClient {
 			System.exit(1);
 		} else {	
 			// Configure logging
-			PropertyConfigurator.configure("etc/log4j.properties");
+			PropertyConfigurator.configure(
+					SNEEClientUsingCCO.class.getClassLoader().
+					getResource("etc/log4j.properties"));
 			
 			String query = args[0];
 			long duration = Long.valueOf(args[1]);

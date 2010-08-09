@@ -50,7 +50,7 @@ public class PullSourceWrapper {
 		Logger.getLogger(PullSourceWrapper.class.getName());
 
 	private DateFormat dateFormat = 
-		new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
 	private Types _types;
 
@@ -317,6 +317,9 @@ public class PullSourceWrapper {
 			if (logger.isTraceEnabled())
 				logger.trace("Processing dataset with format " + formatURI);
 			List<Object> datasets = dataset.getDatasetData().getContent();
+			if (logger.isTraceEnabled()) {
+				logger.trace("Number of datasets: " + datasets.size());
+			}
 			for (Object data : datasets) {
 				tuples.addAll(processDataset((String) data));
 			}
@@ -336,7 +339,7 @@ public class PullSourceWrapper {
 	throws TypeMappingException, SchemaMetadataException,
 			SNEEDataSourceException, SNEEException {
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER processDataset()");
+			logger.trace("ENTER processDataset() with " + data);
 		List<Tuple> tuples = new ArrayList<Tuple>();
 		try {
 			WebRowSet wrs = new WebRowSetImpl();

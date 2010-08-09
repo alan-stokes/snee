@@ -84,7 +84,10 @@ public class PullServiceReceiver implements SourceReceiver {
 		//FIXME:This is very CCO dependent!!!
 		long sqlTsValue = ((Integer) tuple.getValue("timestamp")).longValue();
 		lastTs =  new Timestamp(sqlTsValue*1000);
-		logger.trace("timestamp " + lastTs + " " + lastTs.getTime());
+		if (logger.isTraceEnabled()) {
+			logger.trace("timestamp " + lastTs + " " +
+					lastTs.getTime());
+		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN receive() with " + tuple);
 		return tuple;

@@ -187,7 +187,7 @@ public class PullStreamServiceClient {
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN getStreamItemsFromService() with " +
-					"response size: " + response);
+					"response: " + response.toString());
 		return response;
 	}
 
