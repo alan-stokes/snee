@@ -10,7 +10,23 @@ Every public method should have a test associated with it, and tests should cove
 
 ===Logger===
 
-We are using the org.apache.log4j.Logger package.  Our convention is to add logger statement at the start and end of each method.
+We are using the Apache Logger package.  You should include it by importing the respective classs:
+
+{{{
+import org.apache.log4j.Logger;
+}}}
+
+and then creating an instance of the logger as a field variable of the class:
+
+{{{
+	/**
+	 * Logger for this class.
+	 */
+	private Logger logger = 
+		Logger.getLogger(QueryCompiler.class.getName());
+}}}
+
+Our convention is to add logger statement at the start and end of each method.
 
 For the start of a private method:
 
