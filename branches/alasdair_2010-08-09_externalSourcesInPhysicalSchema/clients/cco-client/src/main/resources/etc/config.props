@@ -1,0 +1,1 @@
+"(SELECT DateTime, Timestamp, TAir FROM envdata_sandownpier_met) UNION (SELECT DateTime, Timestamp, TAir FROM envdata_lymington_met) UNION (SELECT DateTime, Timestamp, TAir FROM envdata_arunplatform_met) UNION (SELECT DateTime, Timestamp, TAir FROM envdata_weymouth_met) UNION (SELECT DateTime, Timestamp, TAir FROM envdata_westbaypier_met);" 900
