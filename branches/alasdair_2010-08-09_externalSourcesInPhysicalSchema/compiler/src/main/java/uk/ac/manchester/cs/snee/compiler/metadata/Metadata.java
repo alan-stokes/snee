@@ -70,6 +70,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SensorNetworkSourceMeta
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataUtils;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.UDPSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.WebServiceSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
@@ -109,13 +110,15 @@ public class Metadata {
 	 * @throws MetadataException 
 	 * @throws SourceMetadataException 
 	 * @throws TopologyReaderException 
+	 * @throws MalformedURLException 
+	 * @throws SNEEDataSourceException 
 	 */
-	//FIXME: Check what circumstances each of these exceptions is thrown
 	public Metadata() 
 	throws TypeMappingException, SchemaMetadataException, 
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
-	TopologyReaderException {
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER Metadata()");
 		String typesFile = SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_TYPES_FILE);
@@ -180,7 +183,7 @@ public class Metadata {
 			logger.trace("RETURN processLogicalSchema() #extents=" + 
 					_schema.size());
 	}
-	
+
 	/**
 	 * Add a given extent object to the schema 
 	 * @param extent the object that represents the extent
@@ -199,7 +202,7 @@ public class Metadata {
 		_schema.put(extentName, extent);
 		if (logger.isTraceEnabled()) {
 			logger.trace("Extent " + extentName + 
-				" successfully added to the schema.");
+			" successfully added to the schema.");
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN addExtent()");
@@ -265,7 +268,10 @@ public class Metadata {
 	}
 
 	private void processPhysicalSchema(String physicalSchemaFile) 
-	throws MetadataException, SourceMetadataException, TopologyReaderException 
+	throws MetadataException, SourceMetadataException, 
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException, SchemaMetadataException, 
+	TypeMappingException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER processPhysicalSchema() with " +
@@ -275,6 +281,7 @@ public class Metadata {
 		logger.trace("Root:" + root);
 		addSensorNetworkSources(root.getElementsByTagName("sensor_network"));
 		addUdpSources(root.getElementsByTagName("udp_source"));
+		addServiceSources(root.getElementsByTagName("service_source"));
 		if (logger.isInfoEnabled())
 			logger.info("Physical schema successfully read in from " + 
 					physicalSchemaFile + ". Number of sources=" + 
@@ -284,69 +291,151 @@ public class Metadata {
 					_sources.size());
 	}
 
-		private void addSensorNetworkSources(NodeList wsnSources) 
-		throws MetadataException, SourceMetadataException, 
-		TopologyReaderException {
-			if (logger.isTraceEnabled())
-				logger.trace("ENTER addSensorNetworkSources() #=" + 
-						wsnSources.getLength());
-			logger.trace("Create sensor network sources");
-			for (int i = 0; i < wsnSources.getLength(); i++) {
-				Element wsnElem = (Element) wsnSources.item(i);
-				NamedNodeMap attrs = wsnElem.getAttributes();
-				String sourceName = attrs.getNamedItem("name").getNodeValue();
-				logger.trace("WSN sourceName="+sourceName);
-				Node topologyElem = wsnElem.getElementsByTagName("topology").
-					item(0).getFirstChild();
-				String topologyFile = topologyElem.getNodeValue();
-				logger.trace("topologyFile="+topologyFile);
-				Node resElem = wsnElem.getElementsByTagName(
-						"site-resources").item(0).getFirstChild();
-				String resFile = resElem.getNodeValue();
-				logger.trace("resourcesFile="+resFile);
-				Node gatewaysElem = wsnElem.getElementsByTagName("gateways").
-					item(0).getFirstChild();
-				logger.trace("gateway="+gatewaysElem.getNodeValue());
-				int[] gateways = SourceMetadataUtils.convertNodes(
-						gatewaysElem.getNodeValue());
-				List<String> extentNames = new ArrayList<String>();
-				Element extentsElem = parseSensorNetworkExtentNames(wsnElem,
-						extentNames);
-				SourceMetadata source = new SensorNetworkSourceMetadata(
-						sourceName, extentNames, extentsElem, topologyFile, 
-						resFile, gateways);
-				_sources.add(source);
-			}
-			if (logger.isTraceEnabled())
-				logger.trace("RETURN addSensorNetworkSources()");
+	private void addSensorNetworkSources(NodeList wsnSources) 
+	throws MetadataException, SourceMetadataException, 
+	TopologyReaderException {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER addSensorNetworkSources() #=" + 
+					wsnSources.getLength());
+		logger.trace("Create sensor network sources");
+		for (int i = 0; i < wsnSources.getLength(); i++) {
+			Element wsnElem = (Element) wsnSources.item(i);
+			NamedNodeMap attrs = wsnElem.getAttributes();
+			String sourceName = attrs.getNamedItem("name").getNodeValue();
+			logger.trace("WSN sourceName="+sourceName);
+			Node topologyElem = wsnElem.getElementsByTagName("topology").
+			item(0).getFirstChild();
+			String topologyFile = topologyElem.getNodeValue();
+			logger.trace("topologyFile="+topologyFile);
+			Node resElem = wsnElem.getElementsByTagName(
+			"site-resources").item(0).getFirstChild();
+			String resFile = resElem.getNodeValue();
+			logger.trace("resourcesFile="+resFile);
+			Node gatewaysElem = wsnElem.getElementsByTagName("gateways").
+			item(0).getFirstChild();
+			logger.trace("gateway="+gatewaysElem.getNodeValue());
+			int[] gateways = SourceMetadataUtils.convertNodes(
+					gatewaysElem.getNodeValue());
+			List<String> extentNames = new ArrayList<String>();
+			Element extentsElem = parseSensorNetworkExtentNames(wsnElem,
+					extentNames);
+			SourceMetadata source = new SensorNetworkSourceMetadata(
+					sourceName, extentNames, extentsElem, topologyFile, 
+					resFile, gateways);
+			_sources.add(source);
 		}
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN addSensorNetworkSources()");
+	}
 
-		private Element parseSensorNetworkExtentNames(Element wsnElem,
-				List<String> extentNames) throws MetadataException {
-			if (logger.isTraceEnabled())
-				logger.trace("ENTER parseSensorNetworkExtentNames() ");
-			Element extentsElem = (Element) wsnElem.
-				getElementsByTagName("extents").item(0);
-			extentNames.addAll(parseExtents(extentsElem));
-			for (String extentName : extentNames) {
-				if (!_schema.containsKey(extentName)) {
-					throw new MetadataException("Physical schema refers "+
-							"to extent '"+extentName+"' which is not "+
-							"present in the logical schema.");
-				}
-				ExtentMetadata em =_schema.get(extentName);
-				if (em.getExtentType()!=ExtentType.SENSED) {
-					throw new MetadataException(extentName+" is has extent " +
-							"type "+em.getExtentName()+", and therefore "+
-							"cannot use a sensor network capable of "+
-							"in-network processing as a data source.");
+	private Element parseSensorNetworkExtentNames(Element wsnElem,
+			List<String> extentNames) throws MetadataException {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER parseSensorNetworkExtentNames() ");
+		Element extentsElem = (Element) wsnElem.
+		getElementsByTagName("extents").item(0);
+		extentNames.addAll(parseExtents(extentsElem));
+		for (String extentName : extentNames) {
+			if (!_schema.containsKey(extentName)) {
+				throw new MetadataException("Physical schema refers "+
+						"to extent '"+extentName+"' which is not "+
+				"present in the logical schema.");
+			}
+			ExtentMetadata em =_schema.get(extentName);
+			if (em.getExtentType()!=ExtentType.SENSED) {
+				throw new MetadataException(extentName+" is has extent " +
+						"type "+em.getExtentName()+", and therefore "+
+						"cannot use a sensor network capable of "+
+				"in-network processing as a data source.");
+			}
+		}
+		logger.trace("extentNames="+extentNames.toString());
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN parseSensorNetworkExtentNames() ");
+		return extentsElem;
+	}
+
+	private void addServiceSources(NodeList serviceSources) 
+	throws SourceMetadataException, MalformedURLException,
+	SNEEDataSourceException, SchemaMetadataException, 
+	TypeMappingException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER addServiceSources() #sources=" + 
+					serviceSources.getLength());
+		}
+		for (int i = 0; i < serviceSources.getLength(); i++) {
+			logger.trace("Create service source");
+			Node serviceNode = serviceSources.item(i);
+			NamedNodeMap attrs = serviceNode.getAttributes();
+			String sourceName = 
+				attrs.getNamedItem("name").getNodeValue();
+			NodeList nodes = serviceNode.getChildNodes();
+			String epr = "";
+			SourceType interfaceType = null;
+			for (int j = 0; j < nodes.getLength(); j++) {
+				Node node = nodes.item(j);
+				if (node.getNodeName().equalsIgnoreCase("interface-type")) {
+					String it = node.getFirstChild().getNodeValue();
+					if (it.equals("pull-stream")) {
+						interfaceType = SourceType.PULL_STREAM_SERVICE;
+					} else if (it.equals("push-stream")) {
+						interfaceType = SourceType.PUSH_STREAM_SERVICE;
+					} else {
+						String message = 
+							"Unsupported interface type " + it;
+						logger.warn(message);
+						throw new SourceMetadataException(message);
+					}
+					if (logger.isTraceEnabled())
+						logger.trace("Interface type:" + interfaceType);
+				} else if (node.getNodeName().equalsIgnoreCase(
+						"endpoint-reference")) {					
+					epr = node.getFirstChild().getNodeValue();
 				}
 			}
-			logger.trace("extentNames="+extentNames.toString());
-			if (logger.isTraceEnabled())
-				logger.trace("RETURN parseSensorNetworkExtentNames() ");
-			return extentsElem;
+			_sources.add(
+					createServiceSource(interfaceType, epr, sourceName));
 		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN addServiceSources() #sources=" +
+					_sources.size());
+		}
+	}
+
+	private SourceMetadata createServiceSource(SourceType interfaceType,
+			String epr, String serviceName) 
+	throws SourceMetadataException, MalformedURLException,
+	SNEEDataSourceException, SchemaMetadataException, 
+	TypeMappingException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER createServiceSource() with name=" +
+					serviceName + " type=" + interfaceType + " epr=" +
+					epr);
+		}
+		SourceMetadata source = null;
+		PullSourceWrapper sourceWrapper;
+		switch (interfaceType) {
+		case PULL_STREAM_SERVICE:
+			sourceWrapper = createPullSource(epr);
+			break;
+		case PUSH_STREAM_SERVICE:
+			String message = 
+				"Push-stream services are not currently supported.";
+			logger.warn(message);
+			throw new SourceMetadataException(message);
+		default:
+			message = 
+				"Unknown interface type.";
+			logger.warn(message);
+			throw new SourceMetadataException(message);
+		}
+		source = createServiceSourceMetadata(serviceName, epr, 
+				sourceWrapper);
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN createServiceSource() with " + source);
+		}
+		return source;
+	}
 
 	private void addUdpSources(NodeList udpSources) 
 	throws SourceMetadataException {
@@ -479,7 +568,32 @@ public class Metadata {
 	SchemaMetadataException, TypeMappingException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER addWebServiceSource() with " + url);
+		//TODO: Generalise for other service types
 		PullSourceWrapper pullSource = createPullSource(url);
+		WebServiceSourceMetadata source = 
+			createServiceSourceMetadata("", url, pullSource);
+		_sources.add(source);
+		if (logger.isInfoEnabled())
+			logger.info("Web service successfully added from " + 
+					url + ". Number of extents=" + _schema.size());
+		if (logger.isTraceEnabled()) {
+			logger.trace("Available extents:\n\t" + _schema.keySet());
+		}
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN addWebServiceSource() #extents=" +
+					_schema.size() + " #sources=" + _sources.size());
+	}
+
+	private WebServiceSourceMetadata createServiceSourceMetadata(
+			String sourceName,
+			String url, PullSourceWrapper pullSource) 
+	throws SNEEDataSourceException, SchemaMetadataException,
+	TypeMappingException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER createServiceSourceMetadata() with " +
+					"name=" + sourceName +
+					" url=" + url + " sourceWrapper=" + pullSource);
+		}
 		List<String> resources = pullSource.getResourceNames();
 		List<String> extentNames = new ArrayList<String>();
 		//FIXME: Why do I have 44 resources but only 43 extents?
@@ -500,24 +614,15 @@ public class Metadata {
 						" of extent type " + extent.getExtentType());
 		}
 		WebServiceSourceMetadata source = 
-			new WebServiceSourceMetadata("", extentNames, url, 
+			new WebServiceSourceMetadata(sourceName, extentNames, url, 
 					resourcesByExtent, pullSource);
-		_sources.add(source);
-		if (logger.isInfoEnabled())
-			logger.info("Web service successfully added from " + 
-					url + ". Number of extents=" + _schema.size());
-		if (logger.isTraceEnabled()) {
-			logger.trace("Available extents:\n\t" + _schema.keySet());
-		}
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN addWebServiceSource() #extents=" +
-					_schema.size() + " #sources=" + _sources.size());
+		return source;
 	}
 
 	protected PullSourceWrapper createPullSource(String url)
 	throws MalformedURLException {
-		PullSourceWrapper ccoClient = new PullSourceWrapper(url, _types);
-		return ccoClient;
+		PullSourceWrapper pullClient = new PullSourceWrapper(url, _types);
+		return pullClient;
 	}
 
 	/**
@@ -595,6 +700,25 @@ public class Metadata {
 		return _types;
 	}
 
+	/**
+	 * Retrieve the details of all data sources.
+	 * 
+	 * @return details of all data sources
+	 */
+	public List<SourceMetadata> getSources() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER/RETURN getSources() #sources=" + 
+					_sources.size());
+		return _sources;
+	}
+
+	/**
+	 * Retrieve details of the sources that publish data for the 
+	 * given extent.
+	 * 
+	 * @param extentName the name of the extent to find the sources for
+	 * @return details of the sources
+	 */
 	public List<SourceMetadata> getSources(String extentName) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getSources() for " + extentName);

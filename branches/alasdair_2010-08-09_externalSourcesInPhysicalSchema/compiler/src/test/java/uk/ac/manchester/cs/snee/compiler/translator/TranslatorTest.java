@@ -3,6 +3,7 @@ package uk.ac.manchester.cs.snee.compiler.translator;
 import static org.junit.Assert.fail;
 
 import java.io.StringReader;
+import java.net.MalformedURLException;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -29,6 +30,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReade
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlLexer;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
+import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import antlr.CommonAST;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -52,7 +54,8 @@ public class TranslatorTest {
 	throws TypeMappingException, SchemaMetadataException, 
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
-	TopologyReaderException {
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException {
 		Properties props = new Properties();
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");

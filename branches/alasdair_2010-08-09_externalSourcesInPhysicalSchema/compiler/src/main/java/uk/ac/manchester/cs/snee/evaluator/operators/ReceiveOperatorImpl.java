@@ -193,7 +193,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			case UDP_SOURCE:
 				instantiateUdpDataSource(source);
 				break;
-			case PULL_WEB_SERVICE:
+			case PULL_STREAM_SERVICE:
 				instantiatePullServiceDataSource(source);
 				break;
 			default:

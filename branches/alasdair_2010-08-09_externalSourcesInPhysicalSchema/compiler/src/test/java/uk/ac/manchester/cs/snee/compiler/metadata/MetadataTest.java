@@ -2,8 +2,11 @@ package uk.ac.manchester.cs.snee.compiler.metadata;
 
 import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -30,11 +33,8 @@ import uk.ac.manchester.cs.snee.data.webservice.PullSourceWrapper;
 
 public class MetadataTest extends EasyMockSupport {
 
-//	String[] colTypes = {"real", "integer", "double", "numeric",
-//			"decimal", "smallint", "bit", "tinyint", "date",
-//			"time", "timestamp", "varchar", "char", "longvarchar",
-//			"boolean"};
 	String[] colTypes = {"integer", "float", "string", "boolean"};
+	private Properties props;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -44,188 +44,83 @@ public class MetadataTest extends EasyMockSupport {
 						"etc/log4j.properties"));
 	}
 
-//	String logicalSchemaFilename = "testLogicalSchema";
-//	String physicalSchemaFilename = "test/physical-schema.xml";
-
 	@Before
 	public void setUp() throws Exception {
-		Properties props = new Properties();
+		props = new Properties();
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
-		SNEEProperties.initialise(props);
 	}
-
-//	private File createTestSchemaFile(String[][] extents) {
-//		File file = createFileName();
-//		try {
-//			Transformer transformer = 
-//				TransformerFactory.newInstance().newTransformer();
-//			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-//			
-//			Document doc = createDocument(extents);
-//			
-//			StreamResult result = new StreamResult(
-//					new FileOutputStream(file));
-//			DOMSource source = new DOMSource(doc);
-//			transformer.transform(source, result);
-//		} catch (Exception e) {
-//			fail("Error writing test schema file.");
-//		}
-//		return file;
-//	}
-//
-//	private File createFileName() {
-//		File logicalSchemaFile;
-//		do {
-//			logicalSchemaFilename += "-1";
-//			logicalSchemaFile = new File(logicalSchemaFilename + ".xml");
-//		} while (logicalSchemaFile.exists());
-//		logicalSchemaFilename += ".xml";
-//		return logicalSchemaFile;
-//	}
-	
-//	private Document createDocument(String[][] extents) 
-//	throws ParserConfigurationException {
-//		DocumentBuilderFactory factory = 
-//			DocumentBuilderFactory.newInstance();
-//		DocumentBuilder builder = factory.newDocumentBuilder();
-//		DOMImplementation impl = builder.getDOMImplementation();
-//		Document doc = impl.createDocument(null, null, null);
-//		Element schemaElement = doc.createElement("schema");
-//		doc.appendChild(schemaElement);
-//
-//		for (int i = 0; i < extents.length; i++) {
-//			schemaElement.appendChild(createExtentElement(doc, 
-//					extents[i][0], extents[i][1], extents[i][2]));
-//		}
-//		return doc;
-//	}
-	
-//	private Element createExtentElement(Document doc, String name, 
-//			String extentType, String streamType) {
-//		
-//		Element pushElement = doc.createElement(extentType);
-//		pushElement.setAttribute("name", name);	
-//		if (extentType.equals("stream"))
-//			pushElement.setAttribute("type", streamType);
-//		
-//		for (int i = 0; i < colTypes.length; i++) {
-//			Element col = createColumnElement(doc, colTypes[i]+"Col", 
-//					colTypes[i]);
-//			pushElement.appendChild(col);
-//		}
-//		
-//		return pushElement;
-//	}
-
-//	private Element createColumnElement(Document doc, String name, 
-//			String type) {
-//		Element colElement = doc.createElement("column");
-//		colElement.setAttribute("name", name);
-//		Element typeElement = doc.createElement("type");
-//		typeElement.setAttribute("class", type);
-//		colElement.appendChild(typeElement);
-//		return colElement;
-//	}
 	
 	@After
 	public void tearDown() throws Exception {
 	}
 
-//	@Test
-//	public void testPushStreamMetaData() 
-//	throws TypeMappingException, SchemaMetadataException, 
-//	MetadataException, UnsupportedAttributeTypeException, 
-//	SNEEConfigurationException, SourceMetadataException {
-//		String[][] streams = {{"PushTest", "stream", "push"}, 
-//				{"PushStream", "stream", "push"}};
-//		File file = createTestSchemaFile(streams);
-//		Metadata schema = new Metadata();
-////			new Metadata(logicalSchemaFilename);
-//		file.delete();
-//		assertEquals(2, schema.getPushedExtents().size());
-//		assertEquals(0, schema.getAcquireExtents().size());
-//		assertEquals(0, schema.getStoredExtents().size());
-//	}
-//
-//	@Test
-//	public void testPullStreamMetaData() 
-//	throws TypeMappingException, SchemaMetadataException, 
-//	MetadataException, UnsupportedAttributeTypeException, 
-//	SNEEConfigurationException, SourceMetadataException {
-//		String[][] streams = {{"PullTest", "stream", "pull"},
-//				{"stream", "stream", "pull"}};
-//		File file = createTestSchemaFile(streams);
-//		Metadata schema = new Metadata(); 
-////			new Metadata(logicalSchemaFilename);
-//		file.delete();
-//		assertEquals(0, schema.getPushedExtents().size());
-//		assertEquals(2, schema.getAcquireExtents().size());
-//		assertEquals(0, schema.getStoredExtents().size());
-//	}
-//
-//	@Test
-//	public void testTableStreamMetaData() 
-//	throws TypeMappingException, SchemaMetadataException, 
-//	MetadataException, UnsupportedAttributeTypeException, 
-//	SNEEConfigurationException, SourceMetadataException {
-//		String[][] tables = {{"TableTest","table", ""}};
-//		File file = createTestSchemaFile(tables);
-//		Metadata schema = new Metadata(); 
-////			new Metadata(logicalSchemaFilename);
-//		file.delete();
-//		assertEquals(0, schema.getPushedExtents().size());
-//		assertEquals(0, schema.getAcquireExtents().size());
-//		assertEquals(1, schema.getStoredExtents().size());
-//	}
-//	
-//	@Test
-//	public void testStreamMetaData_oldForm() 
-//	throws TypeMappingException, SchemaMetadataException, 
-//	MetadataException, UnsupportedAttributeTypeException, 
-//	SNEEConfigurationException, SourceMetadataException {
-//		String[][] streams = {{"PullTest", "stream", ""}};
-//		File file = createTestSchemaFile(streams);
-//		Metadata schema = new Metadata(); 
-////			new Metadata(logicalSchemaFilename);
-//		file.delete();
-//		assertEquals(0, schema.getPushedExtents().size());
-//		assertEquals(0, schema.getAcquireExtents().size());
-//		assertEquals(0, schema.getStoredExtents().size());
-//	}
-//	
-//	@Test
-//	public void testGetSourceMetaData_validExtentName() 
-//	throws TypeMappingException, SchemaMetadataException, 
-//	MetadataException, UnsupportedAttributeTypeException, 
-//	SNEEConfigurationException, SourceMetadataException {
-//		String[][] streams = {{"PushTest", "stream", "push"}};
-//		File file = createTestSchemaFile(streams);
-//		Metadata schema = new Metadata(); 
-////			new Metadata(logicalSchemaFilename);
-//		file.delete();
-//		assertEquals(1, schema.getPushedExtents().size());
-//		assertEquals(0, schema.getAcquireExtents().size());
-//		assertEquals(0, schema.getStoredExtents().size());
-//		ExtentMetadata extentMetadata = schema.getExtentMetadata("PushTest");
-//		assertEquals(true, extentMetadata.getExtentName().equalsIgnoreCase("PushTest"));
-//	}
+	@Test
+	public void testPushStreamMetaData() 
+	throws TypeMappingException, SchemaMetadataException, 
+	SNEEConfigurationException, MetadataException, 
+	UnsupportedAttributeTypeException, SourceMetadataException, 
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException {
+		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
+		SNEEProperties.initialise(props);
+
+		Metadata schema = new Metadata();
+		assertEquals(2, schema.getPushedExtents().size());
+	}
 
 	@Test
-	public void testGetSourceMetaData_testLogicalSchema() 
+	public void testPullStreamMetaData() 
+	throws TypeMappingException, SchemaMetadataException, 
+	SNEEConfigurationException, MetadataException, 
+	UnsupportedAttributeTypeException, SourceMetadataException, 
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException {
+		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
+		SNEEProperties.initialise(props);
+
+		Metadata schema = new Metadata();
+		assertEquals(1, schema.getAcquireExtents().size());
+	}
+
+	@Test
+	public void testTableStreamMetaData() 
 	throws TypeMappingException, SchemaMetadataException, 
 	MetadataException, UnsupportedAttributeTypeException, 
 	SNEEConfigurationException, SourceMetadataException,
-	TopologyReaderException {
+	TopologyReaderException, MalformedURLException, 
+	SNEEDataSourceException {
+		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
+		SNEEProperties.initialise(props);
+
 		Metadata schema = new Metadata(); 
-//			new Metadata("test/logical-schema.xml");
-		assertEquals(2, schema.getPushedExtents().size());
-		assertEquals(1, schema.getAcquireExtents().size());
 		assertEquals(1, schema.getStoredExtents().size());
+	}
+
+	@Test
+	public void testGetSourceMetaData_validExtentName() 
+	throws TypeMappingException, SchemaMetadataException, 
+	MetadataException, UnsupportedAttributeTypeException, 
+	SNEEConfigurationException, SourceMetadataException,
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException {
+		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
+		SNEEProperties.initialise(props);
+
+		Metadata schema = new Metadata(); 
+		ExtentMetadata extentMetadata = 
+			schema.getExtentMetadata("PushStream");
+		assertEquals("PushStream".toLowerCase(), 
+				extentMetadata.getExtentName());
 	}
 
 	@Test(expected=ExtentDoesNotExistException.class)
@@ -233,10 +128,16 @@ public class MetadataTest extends EasyMockSupport {
 	throws SchemaMetadataException, MetadataException, 
 	TypeMappingException, UnsupportedAttributeTypeException,
 	SNEEConfigurationException, SourceMetadataException,
-	TopologyReaderException 
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException 
 	{
+		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
+		SNEEProperties.initialise(props);
+
 		Metadata schema = new Metadata(); 
-//			new Metadata("test/logical-schema.xml");
+		
 		schema.getExtentMetadata("Random");
 	}
 
@@ -252,6 +153,82 @@ public class MetadataTest extends EasyMockSupport {
 		schema.addWebServiceSource("bad url");
 	}
 	
+	/**
+	 * @throws TypeMappingException
+	 * @throws SchemaMetadataException
+	 * @throws SNEEConfigurationException
+	 * @throws MetadataException
+	 * @throws UnsupportedAttributeTypeException
+	 * @throws SourceMetadataException
+	 * @throws TopologyReaderException
+	 * @throws SNEEDataSourceException 
+	 * @throws MalformedURLException 
+	 */
+	@Test
+	public void testPullStreamServiceSource() 
+	throws TypeMappingException, SchemaMetadataException, 
+	SNEEConfigurationException, MetadataException, 
+	UnsupportedAttributeTypeException, SourceMetadataException, 
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException {
+		final PullSourceWrapper mockWrapper = 
+			createMock(PullSourceWrapper.class);
+		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
+		List<String> mockResourceList = new ArrayList<String>();
+		mockResourceList.add("resource1");
+		mockResourceList.add("resource2");
+		expect(mockWrapper.getResourceNames()).
+			andReturn(mockResourceList);
+		expect(mockWrapper.getSchema("resource1")).andReturn(mockExtent);
+		expect(mockExtent.getExtentName()).andReturn("extent1");
+		expect(mockExtent.getExtentType()).andReturn(ExtentType.PUSHED);
+		expect(mockWrapper.getSchema("resource2")).andReturn(mockExtent);
+		expect(mockExtent.getExtentName()).andReturn("extent2");
+		expect(mockExtent.getExtentType()).andReturn(ExtentType.PUSHED);
+		replayAll();
+
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, 
+				"etc/physical-schema_pull-stream-source.xml");
+		SNEEProperties.initialise(props);
+
+		Metadata schema = new Metadata() {
+			protected PullSourceWrapper createPullSource(String url)
+			throws MalformedURLException {
+				return mockWrapper;
+			}
+		};
+		//Expect 1 source which provides 2 extents
+		assertEquals(1, schema.getSources().size());
+		assertEquals(2, schema.getExtentNames().size());
+	}
+	
+	@Test(expected=SourceMetadataException.class)
+	public void testPushStreamServiceSource() 
+	throws TypeMappingException, SchemaMetadataException, 
+	SNEEConfigurationException, MetadataException, 
+	UnsupportedAttributeTypeException, SourceMetadataException, 
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException {
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, 
+				"etc/physical-schema_push-stream-source.xml");
+		SNEEProperties.initialise(props);
+		new Metadata();
+	}
+	
+	@Test(expected=SourceMetadataException.class)
+	public void testQueryServiceSource() 
+	throws TypeMappingException, SchemaMetadataException, 
+	SNEEConfigurationException, MetadataException, 
+	UnsupportedAttributeTypeException, SourceMetadataException, 
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException {
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, 
+				"etc/physical-schema_query-source.xml");
+		SNEEProperties.initialise(props);
+		new Metadata();
+	}
+	
+	@Ignore
 	@Test(expected=ExtentDoesNotExistException.class)
 	public void testAddWebServiceSource_unknownSource() 
 	throws SNEEDataSourceException, SchemaMetadataException, 
@@ -260,9 +237,12 @@ public class MetadataTest extends EasyMockSupport {
 	UnsupportedAttributeTypeException, SourceMetadataException,
 	TopologyReaderException 
 	{
+		//FIXME: Rewrite test so that it is not contacting an external service!
 		//Instantiate mock
-		final PullSourceWrapper mockSourceWrapper = createMock(PullSourceWrapper.class);
-		final ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
+		final PullSourceWrapper mockSourceWrapper = 
+			createMock(PullSourceWrapper.class);
+		final ExtentMetadata mockExtent = 
+			createMock(ExtentMetadata.class);
 		String resourceName = "cco:pull:HerneBay_met";
 		String streamName = "envdata_hernebay_met";
 		//Record mocks

@@ -209,6 +209,14 @@ public class SNEEController implements SNEE {
 			String msg = "Problem reading topology file ";
 			logger.fatal(msg);
 			throw new SNEEException(msg, e);			
+		} catch (MalformedURLException e) {
+			String msg = "Problem creating link to external service ";
+			logger.fatal(msg);
+			throw new SNEEException(msg, e);			
+		} catch (SNEEDataSourceException e) {
+			String msg = "Problem creating link to external service ";
+			logger.fatal(msg);
+			throw new SNEEException(msg, e);			
 		}
 		
 		logger.info("SNEE configured");
@@ -220,7 +228,8 @@ public class SNEEController implements SNEE {
 	throws MetadataException, SchemaMetadataException, 
 	TypeMappingException, UnsupportedAttributeTypeException, 
 	SourceMetadataException, SNEEConfigurationException, 
-	TopologyReaderException 
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseSchema()");
