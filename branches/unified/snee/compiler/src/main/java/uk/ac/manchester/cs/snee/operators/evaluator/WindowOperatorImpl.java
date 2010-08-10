@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.evaluator.operators;
+package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.Observable;
 
@@ -9,7 +9,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.operators.logical.Operator;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
-abstract class WindowOperatorImpl extends EvaluatorPhysicalOperator {
+public abstract class WindowOperatorImpl extends EvaluatorPhysicalOperator {
 	//XXX test for window operator
 
 	Logger logger = Logger.getLogger(this.getClass().getName());

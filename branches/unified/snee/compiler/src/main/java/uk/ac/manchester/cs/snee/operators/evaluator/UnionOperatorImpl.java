@@ -33,7 +33,7 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.evaluator.operators;
+package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.ArrayList;
 import java.util.Collection;

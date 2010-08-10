@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.evaluator.operators;
+package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.Stack;
 
@@ -114,7 +114,7 @@ public abstract class EvaluationOperator extends EvaluatorPhysicalOperator {
 		return retVal;
 	}
 	
-	protected Object evaluate(Object obj2, Object obj1, MultiType type){
+	public Object evaluate(Object obj2, Object obj1, MultiType type){
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER evaluate() with " + obj2 + " " + 
 					obj1 + " type " + type);

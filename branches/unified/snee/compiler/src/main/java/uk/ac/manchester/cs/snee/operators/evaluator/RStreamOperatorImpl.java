@@ -33,7 +33,7 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.evaluator.operators;
+package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,35 +47,34 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
+import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
+import uk.ac.manchester.cs.snee.evaluator.types.Window;
 import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
 
-public class DeliverOperatorImpl extends EvaluatorPhysicalOperator {
-	//XXX: Write test for deliver operator
+public class RStreamOperatorImpl extends EvaluatorPhysicalOperator {
+	//XXX: Write test for rstream operator
 	
-	Logger logger = Logger.getLogger(DeliverOperatorImpl.class.getName());
+	Logger logger = Logger.getLogger(RStreamOperatorImpl.class.getName());
 
-	DeliverOperator deliverOp;
-	
-	int nextIndex = 0;
+	RStreamOperator rstreamOp;
 
-	public DeliverOperatorImpl(Operator op) 
+	public RStreamOperatorImpl(Operator op) 
 	throws SNEEException, SchemaMetadataException {
 		super(op);
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER DeliverOperatorImpl() " + op);
-			logger.debug("Attribute List: " + op.getAttributes());
-			logger.debug("Expression List: " + op.getExpressions());
+			logger.debug("ENTER RStreamOperatorImpl() " + op);
 		}
 
 		// Instantiate deliver operator
-		deliverOp = (DeliverOperator) op;
+		rstreamOp = (RStreamOperator) op;
 		
 		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN DeliverOperatorImpl()");
+			logger.debug("RETURN RStreamOperatorImpl()");
 		}
 	}
-
+//
 //	@Override
 //	public Collection<Output> getNext() 
 //	throws ReceiveTimeoutException, SNEEException, EndOfResultsException {
@@ -89,14 +88,26 @@ public class DeliverOperatorImpl extends EvaluatorPhysicalOperator {
 //		Collection<Output> bagOfItems = child.getNext();
 //
 //		for (Output item : bagOfItems) {
-//			item.setIndex(nextIndex);
-//			nextIndex++;
-//			result.add(item);
+//			if (item instanceof Window) {
+//				Window window = (Window)item;
+//				// Stream all tuples out of the window
+//				for (Tuple tuple : window.getTuples()) {
+//					if (logger.isTraceEnabled()) {
+//						logger.trace("Stream tuple: " + tuple);
+//					}
+//					//XXX-AG: Imposing a new tick on the tuple 
+//					result.add(new TaggedTuple(tuple));
+//				}
+//
+//			} else {
+//				String msg = "Item type (" + item.getClass().getSimpleName() +
+//					" is not supported or unknown.";
+//				logger.warn(msg);
+//				throw new SNEEException(msg);
+//			}
 //		}
-//		
 //		if (logger.isDebugEnabled()) {
-//			logger.debug("RETURN getNext() number of items: " + 
-//					result.size());
+//			logger.debug("RETURN getNext() number of tuples " + bagOfItems.size());
 //		}
 //		return result;
 //	}
@@ -105,31 +116,41 @@ public class DeliverOperatorImpl extends EvaluatorPhysicalOperator {
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER update() with " + observed);
-		List<Output> resultList = new ArrayList<Output>();
+		List<Output> result = new ArrayList<Output>();
 		if (observed instanceof List<?>) {
-			List<Output> outputList = (List<Output>) observed;
-			for (Output output : outputList) {
-				resultList.add(deliverResult(output));
-			}
-		} else if (observed instanceof Output) {
-			resultList.add(deliverResult((Output) observed));
+			for (Object ob : (List) observed) 
+				processOutput(ob, result);
+		} else if (observed instanceof Window) {
+			processOutput(observed, result);
+		} else {
+			String msg = "Item type (" + observed.getClass().getSimpleName() +
+				" is not supported or unknown.";
+			logger.warn(msg);
+//			throw new SNEEException(msg);
 		}
-		if (!resultList.isEmpty()) {
+		if (!result.isEmpty()) {
 			setChanged();
-			notifyObservers(resultList);
+			notifyObservers(result);
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN update()");
 	}
 
-	private Output deliverResult(Output observed) {
+	private void processOutput(Object observed, 
+			List<Output> result) {
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER deliverResult() with " + observed);
-		observed.setIndex(nextIndex);
-		nextIndex++;
+			logger.trace("ENTER processOutput() with " + observed);
+		Window window = (Window)observed;
+		// Stream all tuples out of the window
+		for (Tuple tuple : window.getTuples()) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Stream tuple: " + tuple);
+			}
+			//XXX-AG: Imposing a new tick on the tuple 
+			result.add(new TaggedTuple(tuple));
+		}
 		if (logger.isTraceEnabled())
-			logger.trace("RETURN deliverResult() with " + observed);
-		return observed;
+			logger.trace("RETURN processOutput()");
 	}
 
 }

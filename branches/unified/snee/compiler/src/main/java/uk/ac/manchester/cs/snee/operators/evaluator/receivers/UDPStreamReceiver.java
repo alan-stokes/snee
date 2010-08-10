@@ -33,7 +33,7 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
  *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.evaluator.operators.receivers;
+package uk.ac.manchester.cs.snee.operators.evaluator.receivers;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -51,9 +51,9 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
-import uk.ac.manchester.cs.snee.evaluator.operators.EvaluatorPhysicalOperator;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
+import uk.ac.manchester.cs.snee.operators.evaluator.EvaluatorPhysicalOperator;
 
 public class UDPStreamReceiver implements SourceReceiver {
 

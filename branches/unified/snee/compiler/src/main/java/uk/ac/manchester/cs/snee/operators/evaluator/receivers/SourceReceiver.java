@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.evaluator.operators.receivers;
+package uk.ac.manchester.cs.snee.operators.evaluator.receivers;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;

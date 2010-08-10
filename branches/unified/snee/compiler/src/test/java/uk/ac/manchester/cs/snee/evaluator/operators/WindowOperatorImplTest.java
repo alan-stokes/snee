@@ -13,6 +13,8 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
+import uk.ac.manchester.cs.snee.operators.evaluator.DeliverOperatorImpl;
+import uk.ac.manchester.cs.snee.operators.evaluator.WindowOperatorImpl;
 
 public class WindowOperatorImplTest {
 	

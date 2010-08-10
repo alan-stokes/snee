@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.evaluator.operators.receivers;
+package uk.ac.manchester.cs.snee.operators.evaluator.receivers;
 
 import java.sql.Timestamp;
 import java.util.List;

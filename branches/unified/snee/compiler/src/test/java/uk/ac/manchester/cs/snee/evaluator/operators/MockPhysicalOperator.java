@@ -6,6 +6,7 @@ import java.util.Observable;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
+import uk.ac.manchester.cs.snee.operators.evaluator.EvaluatorPhysicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.Operator;
 
 public class MockPhysicalOperator extends EvaluatorPhysicalOperator {

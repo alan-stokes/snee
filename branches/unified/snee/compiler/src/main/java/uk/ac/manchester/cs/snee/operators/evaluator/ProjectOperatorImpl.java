@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.evaluator.operators;
+package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,7 +68,7 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 	 * Stops the recursive nature of the constructor
 	 * @param op
 	 */
-	protected ProjectOperatorImpl(ProjectOperator op)
+	public ProjectOperatorImpl(ProjectOperator op)
 	{
 		logger.debug("ENTER ProjectOperatorImpl()");
 		project = op;
@@ -233,7 +233,7 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		return projectedTuple;
 	}
 
-	protected Field evaluateSingleExpression(Expression exp, Tuple t) 
+	public Field evaluateSingleExpression(Expression exp, Tuple t) 
 	throws SNEEException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER evaluateSingleExpression() with " + 
