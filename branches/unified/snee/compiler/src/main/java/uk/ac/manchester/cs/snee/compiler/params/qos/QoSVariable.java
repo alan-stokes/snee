@@ -31,32 +31,27 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.common;
+package uk.ac.manchester.cs.snee.compiler.params.qos;
 
-import java.util.Iterator;
+/**
+ * Represents a QoS Variable.
+ */
+public enum QoSVariable {
 
-import javax.xml.XMLConstants;
-import javax.xml.namespace.NamespaceContext;
+    ACQUISITION_INTERVAL, DELIVERY_TIME, TOTAL_ENERGY, LIFETIME;
 
-public class SNEENamespaceContext implements NamespaceContext {
-
-    public String getNamespaceURI(final String prefix) {
-	if (prefix == null) {
-	    throw new NullPointerException("Null prefix");
-	} else if ("snee".equals(prefix)) {
-	    return "http://snee.cs.manchester.ac.uk";
-	} else if ("xml".equals(prefix)) {
-	    return XMLConstants.XML_NS_URI;
-	}
-	return XMLConstants.NULL_NS_URI;
+    public static QoSVariable strToOptimizationVariable(final 
+    String optVarStr) {
+		if (optVarStr.equals("ACQUISITION_INTERVAL")) {
+		    return QoSVariable.ACQUISITION_INTERVAL;
+		} else if (optVarStr.equals("DELIVERY_TIME")) {
+		    return QoSVariable.DELIVERY_TIME;
+		} else if (optVarStr.equals("TOTAL_ENERGY")) {
+		    return QoSVariable.TOTAL_ENERGY;
+		} else if (optVarStr.equals("LIFETIME")) {
+		    return QoSVariable.LIFETIME;
+		} else {
+		    return null;
+		}
     }
-
-    public String getPrefix(final String namespaceURI) {
-	throw new UnsupportedOperationException();
-    }
-
-    public Iterator getPrefixes(final String namespaceURI) {
-	throw new UnsupportedOperationException();
-    }
-
 }

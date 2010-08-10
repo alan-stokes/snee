@@ -31,7 +31,7 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.common;
+package uk.ac.manchester.cs.snee.compiler.params.qos;
 
 import java.util.Iterator;
 

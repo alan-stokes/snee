@@ -31,32 +31,30 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.common;
+package uk.ac.manchester.cs.snee.compiler.params.qos;
 
-import java.util.Iterator;
+public enum QoSOptimizationType {
 
-import javax.xml.XMLConstants;
-import javax.xml.namespace.NamespaceContext;
+    MINIMIZE("minimize"), MAXIMIZE("maximize");
 
-public class SNEENamespaceContext implements NamespaceContext {
+    public final String cvxRep;
 
-    public String getNamespaceURI(final String prefix) {
-	if (prefix == null) {
-	    throw new NullPointerException("Null prefix");
-	} else if ("snee".equals(prefix)) {
-	    return "http://snee.cs.manchester.ac.uk";
-	} else if ("xml".equals(prefix)) {
-	    return XMLConstants.XML_NS_URI;
+    private QoSOptimizationType(final String str) {
+	this.cvxRep = str;
+    }
+
+    @Override
+    public String toString() {
+	return this.cvxRep;
+    }
+
+    public static QoSOptimizationType strToOptimizationType(final String optVarStr) {
+	if (optVarStr.equals("MINIMIZE")) {
+	    return QoSOptimizationType.MINIMIZE;
+	} else if (optVarStr.equals("MAXIMIZE")) {
+	    return QoSOptimizationType.MAXIMIZE;
+	} else {
+	    return null;
 	}
-	return XMLConstants.NULL_NS_URI;
     }
-
-    public String getPrefix(final String namespaceURI) {
-	throw new UnsupportedOperationException();
-    }
-
-    public Iterator getPrefixes(final String namespaceURI) {
-	throw new UnsupportedOperationException();
-    }
-
 }

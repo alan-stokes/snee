@@ -31,32 +31,14 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.common;
+package uk.ac.manchester.cs.snee.compiler.params.qos;
 
-import java.util.Iterator;
+public class QoSException extends Exception {
 
-import javax.xml.XMLConstants;
-import javax.xml.namespace.NamespaceContext;
+    private static final long serialVersionUID = -1026710816037022011L;
 
-public class SNEENamespaceContext implements NamespaceContext {
-
-    public String getNamespaceURI(final String prefix) {
-	if (prefix == null) {
-	    throw new NullPointerException("Null prefix");
-	} else if ("snee".equals(prefix)) {
-	    return "http://snee.cs.manchester.ac.uk";
-	} else if ("xml".equals(prefix)) {
-	    return XMLConstants.XML_NS_URI;
-	}
-	return XMLConstants.NULL_NS_URI;
-    }
-
-    public String getPrefix(final String namespaceURI) {
-	throw new UnsupportedOperationException();
-    }
-
-    public Iterator getPrefixes(final String namespaceURI) {
-	throw new UnsupportedOperationException();
+    public QoSException(final String errMsg) {
+    	super(errMsg);
     }
 
 }

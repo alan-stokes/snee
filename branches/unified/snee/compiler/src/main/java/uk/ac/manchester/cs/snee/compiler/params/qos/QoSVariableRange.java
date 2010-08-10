@@ -31,32 +31,78 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.common;
+package uk.ac.manchester.cs.snee.compiler.params.qos;
 
-import java.util.Iterator;
+import org.apache.log4j.Logger;
 
-import javax.xml.XMLConstants;
-import javax.xml.namespace.NamespaceContext;
+/**
+ * Class to represent an interval for a QoS variable.  A point is 
+ * represented by setting the lower and upper bounds to the same value.
+ *
+ */
+public class QoSVariableRange {
 
-public class SNEENamespaceContext implements NamespaceContext {
+	/**
+     * Logger for this class.
+     */
+    private Logger logger = 
+            Logger.getLogger(QoSVariableRange.class.getName());
+	
+	/**
+	 * The lower bound of the QoS Variable.
+	 */
+    private long minValue;
 
-    public String getNamespaceURI(final String prefix) {
-	if (prefix == null) {
-	    throw new NullPointerException("Null prefix");
-	} else if ("snee".equals(prefix)) {
-	    return "http://snee.cs.manchester.ac.uk";
-	} else if ("xml".equals(prefix)) {
-	    return XMLConstants.XML_NS_URI;
-	}
-	return XMLConstants.NULL_NS_URI;
+	/**
+	 * The upper bound of the QoS Variable.
+	 */
+    private long maxValue;
+
+    /**
+     * Create an instance of the QoS variable range.
+     * @param minValue
+     * @param maxValue
+     */
+    public QoSVariableRange(final long minValue, final long maxValue) {
+    	if (logger.isDebugEnabled())
+            logger.debug("ENTER QoSVariableRange() with minValue=" + 
+            		minValue+" maxValue="+maxValue);
+    	this.minValue = minValue;
+    	this.maxValue = maxValue;
+    	if (logger.isDebugEnabled())
+            logger.debug("RETURN QoSVariableRange()");
     }
 
-    public String getPrefix(final String namespaceURI) {
-	throw new UnsupportedOperationException();
+    /**
+     * get the upper bound
+     * @return
+     */
+    public long getMaxValue() {
+    	return this.maxValue;
     }
 
-    public Iterator getPrefixes(final String namespaceURI) {
-	throw new UnsupportedOperationException();
+    /**
+     * set the upper bound
+     * @param maxValue
+     */
+    public void setMaxValue(final long maxValue) {
+	this.maxValue = maxValue;
+    }
+
+    /**
+     * Get the lower bound
+     * @return
+     */
+    public long getMinValue() {
+    	return this.minValue;
+    }
+
+    /**
+     * Set the lower bound
+     * @param minValue
+     */
+    public void setMinValue(final long minValue) {
+    	this.minValue = minValue;
     }
 
 }
