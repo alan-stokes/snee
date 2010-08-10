@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.UDPSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
 /**
@@ -111,12 +113,15 @@ public class ConstantRatePushStreamGenerator {
 	 * @throws SourceMetadataException 
 	 * @throws SNEEConfigurationException 
 	 * @throws TopologyReaderException 
+	 * @throws SNEEDataSourceException 
+	 * @throws MalformedURLException 
 	 */
 	public ConstantRatePushStreamGenerator() 
 	throws TypeMappingException, MetadataException, 
 	SchemaMetadataException, UnsupportedAttributeTypeException,
 	SourceMetadataException, SNEEConfigurationException, 
-	TopologyReaderException 
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException 
 	{
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ConstantRatePushStreamGenerator()");

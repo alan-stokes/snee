@@ -63,7 +63,7 @@ public class WebServiceSourceMetadata extends PullSourceMetadata {
 	public WebServiceSourceMetadata(String sourceName, 
 			List<String> extentNames, String url, 
 			Map<String, String> resources, PullSourceWrapper pullSource) {
-		super(sourceName, extentNames, SourceType.PULL_WEB_SERVICE);
+		super(sourceName, extentNames, SourceType.PULL_STREAM_SERVICE);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER WebServiceSourceMetadata() with " + url);
 		}

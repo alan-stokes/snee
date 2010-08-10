@@ -97,13 +97,36 @@
 	</xs:complexType>
 	<xs:element name="udp_source" type="udp_sourceType" />
 
+	<!-- External service information -->
+
+	<xs:simpleType name="interfaceType">
+		<xs:restriction base="xs:token">
+			<xs:enumeration value="pull-stream"/>
+			<xs:enumeration value="push-stream"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:complexType name="serviceType">
+		<xs:sequence>
+			<xs:element name="interface-type" type="interfaceType"
+				minOccurs="1" maxOccurs="1" />
+			<xs:element name="endpoint-reference" type="xs:anyURI"
+				minOccurs="1" maxOccurs="1" />
+		</xs:sequence>
+		<xs:attribute name="name" use="required"/>
+	</xs:complexType>
+	<xs:element name="service_source" type="serviceType"/>
+
+	<!-- Document root element -->
+
 	<xs:element name="source">
 		<xs:complexType>
 			<xs:choice minOccurs="1" maxOccurs="unbounded">
 				<xs:element ref="sensor_network"/>
+				<xs:element ref="service_source"/>
 				<xs:element ref="udp_source"/>
 			</xs:choice>
 		</xs:complexType>
 	</xs:element>
-
+	
 </xs:schema>

@@ -15,6 +15,8 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistExcep
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 
 public class SNEEClientUsingCCO extends SNEEClient {
@@ -28,13 +30,16 @@ public class SNEEClientUsingCCO extends SNEEClient {
 
 	public SNEEClientUsingCCO(String query, double duration) 
 	throws SNEEException, IOException, SchemaMetadataException, 
-	TypeMappingException, SNEEDataSourceException, ExtentDoesNotExistException, SNEEConfigurationException {
+	TypeMappingException, SNEEDataSourceException,
+	ExtentDoesNotExistException, SNEEConfigurationException, 
+	SourceMetadataException {
 		super(query, duration);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClientUsingCCO()");
 		//Set sleep to 10 minutes
 		_sleepDuration = 600000;
-		controller.addServiceSource(serviceUrl);
+		controller.addServiceSource("CCO-WS", serviceUrl, 
+				SourceType.PULL_STREAM_SERVICE);
 //		Collection<String> extents = controller.getExtents();
 //		Iterator<String> it = extents.iterator();
 //		System.out.println("Extents:");
