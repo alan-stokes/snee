@@ -31,7 +31,7 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
  *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.compiler.queryplan.operators;
+package uk.ac.manchester.cs.snee.operators.logical;
 
 import java.util.List;
 
@@ -44,41 +44,87 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 
-public class UnionOperator extends OperatorImplementation 
+//STUB.
+public class ScanOperator extends OperatorImplementation 
 implements Operator {
 
-	private Logger logger = 
-		Logger.getLogger(UnionOperator.class.getName());
-
-	public UnionOperator(Operator left, Operator right, AttributeType boolType) {
+	private Logger logger = Logger.getLogger(ScanOperator.class.getName());
+	
+	public ScanOperator(AttributeType boolType) 
+	{
 		super(boolType);
-		this.setOperatorName("UNION");
-		setOperatorDataType(OperatorDataType.STREAM);
-		setChildren(new Operator[] {left, right});
+		String message = "Stub Method called";
+		logger.warn(message);
+		throw new AssertionError(message);
+	}
+
+	public OperatorImplementation shallowClone() {
+		String message = "Stub Method called";
+		logger.warn(message);
+		throw new AssertionError(message);
 	}
 
 	@Override
 	public String toString() {
-		return this.getText() + "[ " + getInput(0).toString() 
-			+ "," + getInput(1).toString() + " ]";
+		String message = "Stub Method called";
+		logger.warn(message);
+		throw new AssertionError(message);
 	}
 
 	public int getCardinality(CardinalityType card) {
-		int left = getInput(0).getCardinality(card);
-		int right = getInput(1).getCardinality(card);
-		return left + right;
+		String message = "Stub Method called";
+		logger.warn(message);
+		throw new AssertionError(message);
 	}
 
+//	/** {@inheritDoc} */
+//	public int getCardinality(CardinalityType card, 
+//			Site node, DAF daf) {
+//		return getInputCardinality(card, node, daf, 0);
+//	}
+
+//	/** {@inheritDoc} */
+//	public AlphaBetaExpression getCardinality(CardinalityType card, 
+//			Site node, DAF daf, boolean round) {
+//		return null;
+//	}
+
+//	public int getPhysicalMaxCardinality(Site node, DAF daf) {
+//		throw new AssertionError("Stub Method called");
+//	}
+
+//	public double getTimeCost(CardinalityType card, Site node, DAF daf) {
+//		throw new AssertionError("Stub Method called");
+//	}
+
+//	/** {@inheritDoc} */
+//	public double getTimeCost(CardinalityType card, int numberOfInstances) {
+//		throw new AssertionError("Stub Method called");
+//	}
+
+//	/** {@inheritDoc} */
+//	public AlphaBetaExpression getTimeExpression(
+//			CardinalityType card, Site node, 
+//			DAF daf, boolean round) {
+//		throw new AssertionError("Stub Method called");
+//	}
+
 	public boolean isAttributeSensitive() {
-		return false;
+		String message = "Stub Method called";
+		logger.warn(message);
+		throw new AssertionError(message);
 	}
 
 	public boolean isLocationSensitive() {
-		return false;
+		String message = "Stub Method called";
+		logger.warn(message);
+		throw new AssertionError(message);
 	}
 
 	public boolean isRecursive() {
-		return false;
+		String message = "Stub Method called";
+		logger.warn(message);
+		throw new AssertionError(message);
 	}
 
 	/** {@inheritDoc}
@@ -89,7 +135,9 @@ implements Operator {
 	}
 
 	public boolean isRemoveable() {
-		return false;
+		String message = "Stub Method called";
+		logger.warn(message);
+		throw new AssertionError(message);
 	}
 
 	/**
@@ -98,13 +146,7 @@ implements Operator {
 	public boolean pushProjectionDown(List<Expression> projectExpressions, 
 			List<Attribute> projectAttributes) 
 	throws OptimizationException {
-		boolean accepted = false;
-		if (getInput(0).pushProjectionDown(
-				projectExpressions, projectAttributes) &&
-			getInput(1).pushProjectionDown(
-						projectExpressions, projectAttributes))
-			accepted  = true;
-		return accepted;
+		return false;
 	}
 
 	/**
@@ -117,11 +159,7 @@ implements Operator {
 	 */
 	public boolean pushSelectDown(Expression predicate) 
 	throws SchemaMetadataException, AssertionError, TypeMappingException {
-		boolean accepted = false;
-		if (getInput(0).pushSelectDown(predicate) &&
-				getInput(1).pushSelectDown(predicate))
-			accepted = true;
-		return accepted ;
+		return this.getInput(0).pushSelectDown(predicate);
 	}
 
 	/** 
@@ -132,18 +170,36 @@ implements Operator {
 	public void pushLocalNameDown(String newLocalName) {
 		throw new AssertionError("Unexpected call to pushLocalNameDown()"); 
 	}
+	//Call to default methods in OperatorImplementation
 
-	/** 
-	 * {@inheritDoc} 
-	 * Output attributes are the same as the left operator
-	 */    
+//	/** {@inheritDoc} */
+//	public int[] getSourceSites() {
+//		return super.defaultGetSourceSites();
+//	}
+
+//	/** {@inheritDoc} */    
+//	public int getOutputQueueCardinality(Site node, DAF daf) {
+//		return super.defaultGetOutputQueueCardinality(node, daf);
+//	}
+
+//	/** {@inheritDoc} */    
+//	public int getOutputQueueCardinality(int numberOfInstances) {
+//		return super.defaultGetOutputQueueCardinality(numberOfInstances);
+//	}
+
+	/** {@inheritDoc} */    
 	public List<Attribute> getAttributes() {
-		return getInput(0).getAttributes();
+		return super.defaultGetAttributes();
 	}
 
 	/** {@inheritDoc} */    
 	public List<Expression> getExpressions() {
 		return super.defaultGetExpressions();
 	}
+
+//	/** {@inheritDoc} */    
+//	public int getDataMemoryCost(Site node, DAF daf) {
+//		return super.defaultGetDataMemoryCost(node, daf);
+//	}
 
 }

@@ -6,8 +6,8 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.Operator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.WindowOperator;
+import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
 abstract class WindowOperatorImpl extends EvaluatorPhysicalOperator {
 	//XXX test for window operator

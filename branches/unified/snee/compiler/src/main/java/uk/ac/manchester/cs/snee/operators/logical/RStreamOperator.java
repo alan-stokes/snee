@@ -31,7 +31,7 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.compiler.queryplan.operators;
+package uk.ac.manchester.cs.snee.operators.logical;
 
 import java.util.List;
 

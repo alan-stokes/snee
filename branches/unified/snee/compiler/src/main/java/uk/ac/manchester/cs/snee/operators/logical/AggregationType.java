@@ -31,7 +31,7 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.compiler.queryplan.operators;
+package uk.ac.manchester.cs.snee.operators.logical;
 
 /**
  * Represents the type of data that the operator will output. 
@@ -40,36 +40,18 @@ package uk.ac.manchester.cs.snee.compiler.queryplan.operators;
  * @author Christian
  *
  */
-public enum CardinalityType {
+public enum AggregationType {
+	/** Average of all values. */
+	AVG ("avg"),
+	/** Count of all values. */
+	COUNT ("count"),
+	/** mximumof all values. */
+	MAX ("maxt"),	
+	/** Count of all values. */
+	MIN ("min"),
+	/** Count of all values. */
+	SUM ("sum");
 
-	/** 
-	 * Consider only selection that will always reduce cardinality.
-	 * For example ones based on site or time.
-	 */  
-	MAX ("max"),
-	/** Consider the average cardinality with all known info. */
-	AVERAGE ("average"),
-	/** 
-	 * Consider the minimum cardinality.
-	 * Calculated for an evaluation 
-	 * where selection will remove as many tuples as possible.
-	 * However assuming far previous evaluations will have passed tuples.
-	 * (This for row windows) 
-	 */
-	MINIMUM ("min"),
-	/**
-	 * Considers the physical maximum cardinality.
-	 * Provides the average considering selectivity.
-	 * However assuming far previous evaluations will have passed tuples.
-	 * If Positive and negative tuples are used they are each counted.
-	 */
-	PHYSICAL_AVG ("Physical Average"),
-	/**
-	 * Considers the physical maximum cardinality.
-	 * If Positive and negative tuples are used they are each counted.
-	 */
-	PHYSICAL_MAX ("Physical Max");
-	
 	/** Hold the string representation of the selected value. */
 	private String strRep;
 	
@@ -77,7 +59,7 @@ public enum CardinalityType {
 	 * 
 	 * @param s One of the Enum Values
 	 */
-	private CardinalityType(String s) {
+	private AggregationType(String s) {
 		this.strRep = s;
 	}	
 	

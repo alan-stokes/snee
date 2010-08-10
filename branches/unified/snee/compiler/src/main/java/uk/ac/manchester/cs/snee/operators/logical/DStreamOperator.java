@@ -31,11 +31,10 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
  *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.compiler.queryplan.operators;
+package uk.ac.manchester.cs.snee.operators.logical;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
@@ -44,37 +43,101 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 
-//STUB.
-public class ScanOperator extends OperatorImplementation 
+/**
+ * Operator for converting windows to stream 
+ * by outputting tuples no longer in the window.
+ * @author Christian
+ *
+ */
+public class DStreamOperator extends OperatorImplementation 
 implements Operator {
 
-	private Logger logger = Logger.getLogger(ScanOperator.class.getName());
-	
-	public ScanOperator(AttributeType boolType) 
-	{
+//	/**
+//	 * Constructs a new DStream operator.
+//	 * 
+//	 * @param token A DStream Operator token
+//	 */
+//	public DStreamOperator(AST token) {
+//		super();
+//		Operator inputOperator = 
+//			OperatorFactory.convertAST(token.getFirstChild());
+//
+//		this.setOperatorName("ISTREAM");
+//		this.setNesCTemplateName("istream never set");
+//		this.setOperatorDataType(OperatorDataType.STREAM);
+//		this.setParamStr("");
+//
+//		setChildren(new Operator[] {inputOperator});
+//	}  
+
+	/**
+	 * Constructor.
+	 * @param inputOperator Previous Operator in the plan.
+	 */
+	public DStreamOperator(Operator inputOperator, AttributeType boolType) {
 		super(boolType);
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
+
+		this.setOperatorName("ISTREAM");
+//		this.setNesCTemplateName("istream never set");
+		this.setOperatorDataType(OperatorDataType.STREAM);
+		this.setParamStr("");
+
+		setChildren(new Operator[] {inputOperator});
+	}  
+
+	//used by clone method
+//	/**
+//	 * Constructor that creates a new operator 
+//	 * based on a model of an existing operator.
+//	 * 
+//	 * Used by both the clone method and the constuctor of the physical methods.
+//	 * @param model Operator to copy.
+//	 */
+//	protected DStreamOperator(DStreamOperator model) {
+//		super(model);
+//	}  
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean pushProjectionDown(List<Expression> projectExpressions, 
+			List<Attribute> projectAttributes) 
+	throws OptimizationException {
+		return getInput(0).pushProjectionDown(
+				projectExpressions, projectAttributes);
 	}
 
-	public OperatorImplementation shallowClone() {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * Push is passed on to the child operator.
+	 * 
+	 * @return The result of the push to the child.
+	 * @throws AssertionError 
+	 * @throws SchemaMetadataException 
+	 * @throws TypeMappingException 
+	 */
+	public boolean pushSelectDown(Expression predicate) 
+	throws SchemaMetadataException, AssertionError, TypeMappingException {
+		return this.getInput(0).pushSelectDown(predicate);
 	}
 
-	@Override
-	public String toString() {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
+	/** 
+	 * {@inheritDoc}
+	 * Push passed on to child.
+	 */   
+	public void pushLocalNameDown(String newLocalName) {
+		getInput(0).pushLocalNameDown(newLocalName); 
 	}
-
+	/**
+	 * Calculated the cardinality based on the requested type. 
+	 * 
+	 * @param card Type of cardinailty to be considered.
+	 * 
+	 * @return The Cardinality calulated as requested.
+	 */
 	public int getCardinality(CardinalityType card) {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
+		return (this.getInput(0)).getCardinality(card);
 	}
 
 //	/** {@inheritDoc} */
@@ -86,14 +149,58 @@ implements Operator {
 //	/** {@inheritDoc} */
 //	public AlphaBetaExpression getCardinality(CardinalityType card, 
 //			Site node, DAF daf, boolean round) {
-//		return null;
+//		return getInputCardinality(card, node, daf, round, 0);
 //	}
 
-//	public int getPhysicalMaxCardinality(Site node, DAF daf) {
-//		throw new AssertionError("Stub Method called");
+	/**
+	 * Used to determine if the operator is Attribute sensitive.
+	 * 
+	 * @return false.
+	 */
+	public boolean isAttributeSensitive() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	public boolean isLocationSensitive() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	public boolean isRecursive() {
+		return false;
+	}
+
+	/** {@inheritDoc}
+	 * @return false;
+	 */
+	public boolean acceptsPredicates() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	public String toString() {
+		return this.getText() + "[ " + super.getInput(0).toString() + " ]";
+	}
+
+//	/** 
+//	 * Creates a new operator based on this.
+//	 * @return A new operator similar to this one.
+//	 */
+//	public DStreamOperator shallowClone() {
+//		DStreamOperator clonedOp = new DStreamOperator(this);
+//		return clonedOp;
 //	}
 
-//	public double getTimeCost(CardinalityType card, Site node, DAF daf) {
+//	/**
+//	 * Stub.
+//	 * @param card stub
+//	 * @param node stub
+//	 * @param daf stub.
+//	 * @return error.
+//	 */
+//	public double getTimeCost(CardinalityType card, 
+//			Site node, DAF daf) {
 //		throw new AssertionError("Stub Method called");
 //	}
 
@@ -109,67 +216,16 @@ implements Operator {
 //		throw new AssertionError("Stub Method called");
 //	}
 
-	public boolean isAttributeSensitive() {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
-	}
-
-	public boolean isLocationSensitive() {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
-	}
-
-	public boolean isRecursive() {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
-	}
-
-	/** {@inheritDoc}
-	 * @return false;
-	 */
-	public boolean acceptsPredicates() {
-		return false;
-	}
-
-	public boolean isRemoveable() {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
-	}
-
 	/**
-	 * {@inheritDoc}
-	 */
-	public boolean pushProjectionDown(List<Expression> projectExpressions, 
-			List<Attribute> projectAttributes) 
-	throws OptimizationException {
-		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
+	 * Some operators do not change the data in any way those could be removed.
+	 * This operator does not change the data so can be removed. 
 	 * 
-	 * @return False. As scan can not handle predicate.
-	 * @throws AssertionError 
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
+	 * @return true;
 	 */
-	public boolean pushSelectDown(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException {
-		return this.getInput(0).pushSelectDown(predicate);
+	public boolean isRemoveable() {
+		return false; 
 	}
 
-	/** 
-	 * {@inheritDoc}
-	 * Should never be called as there is always a project or aggregation 
-	 * between this operator and the rename operator.
-	 */   
-	public void pushLocalNameDown(String newLocalName) {
-		throw new AssertionError("Unexpected call to pushLocalNameDown()"); 
-	}
 	//Call to default methods in OperatorImplementation
 
 //	/** {@inheritDoc} */

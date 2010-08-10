@@ -16,15 +16,15 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpres
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.AggregationOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.AggregationType;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.Operator;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.Field;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
+import uk.ac.manchester.cs.snee.operators.logical.Operator;
 
 public class AggregationOperatorImpl extends EvaluatorPhysicalOperator {
 	//TODO: Refactor to form specific implementations for each operator

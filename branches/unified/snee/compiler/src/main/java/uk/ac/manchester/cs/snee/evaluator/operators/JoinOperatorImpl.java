@@ -17,14 +17,14 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.JoinOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.Operator;
 import uk.ac.manchester.cs.snee.evaluator.EvaluatorException;
 import uk.ac.manchester.cs.snee.evaluator.types.CircularList;
 import uk.ac.manchester.cs.snee.evaluator.types.Field;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
+import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
+import uk.ac.manchester.cs.snee.operators.logical.Operator;
 
 
 public class JoinOperatorImpl extends EvaluationOperator {

@@ -44,11 +44,11 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.DeliverOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.Operator;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
+import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.logical.Operator;
 
 public class DeliverOperatorImpl extends EvaluatorPhysicalOperator {
 	//XXX: Write test for deliver operator

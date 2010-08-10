@@ -47,17 +47,17 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.AggregationOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.DeliverOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.JoinOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.Operator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.ProjectOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.RStreamOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.ReceiveOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.SelectOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.UnionOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.WindowOperator;
 import uk.ac.manchester.cs.snee.evaluator.EvaluatorException;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
+import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
+import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
+import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
+import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
+import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
+import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
+import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
 public abstract class EvaluatorPhysicalOperator 
 extends Observable 

@@ -31,12 +31,10 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
  *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.compiler.queryplan.operators;
+package uk.ac.manchester.cs.snee.operators.logical;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
@@ -46,62 +44,66 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 
 /**
- * Encapsulates a Deliver operator, 
- * which should be placed on the destination site of query plan results.
- * @author Ixent Galpin, Christian Brenninkmeijer and Steven Lynden 
+ * Insert Stream Operator.
+ * Returns all data in this window but not in the previous.
+ * @author Christian
+ *
  */
-public class DeliverOperator extends OperatorImplementation {
-
-	/** Standard Java Logger. */
-	private Logger logger = Logger.getLogger(DeliverOperator.class.getName());
+public class IStreamOperator extends OperatorImplementation 
+implements Operator {
 
 //	/**
-//	 * Constructs a new Deliver operator.
+//	 * Constructs a new IStream operator.
 //	 * 
-//	 * @param token A DeleiverOperator token
+//	 * @param token A IStream Operator token
 //	 */
-//	public DeliverOperator(AST token) {
+//	public IStreamOperator(AST token) {
 //		super();
 //		Operator inputOperator 
 //		= OperatorFactory.convertAST(token.getFirstChild());
 //
-//		this.setOperatorName("DELIVER");
-//		this.setNesCTemplateName("deliver");
-//		this.setOperatorDataType(inputOperator.getOperatorDataType());
+//		this.setOperatorName("ISTREAM");
+//		this.setNesCTemplateName("istream never set");
+//		this.setOperatorDataType(OperatorDataType.STREAM);
 //		this.setParamStr("");
 //
 //		setChildren(new Operator[] {inputOperator});
 //	}  
 
 	/**
-	 * Constructor that places a Deliver at the top of a tree.
-	 * @param inputOperator Previous operator.
+	 * Constructor.
+	 * @param inputOperator previous Operator.
 	 */
-	public DeliverOperator(Operator inputOperator, AttributeType boolType) {
+	public IStreamOperator(Operator inputOperator, AttributeType boolType) {
 		super(boolType);
 
-		this.setOperatorName("DELIVER");
-//		this.setNesCTemplateName("deliver");
-		this.setOperatorDataType(inputOperator.getOperatorDataType());
+		this.setOperatorName("ISTREAM");
+//		this.setNesCTemplateName("istream never set");
+		this.setOperatorDataType(OperatorDataType.STREAM);
 		this.setParamStr("");
 
 		setChildren(new Operator[] {inputOperator});
-		if (inputOperator == null) {
-			throw new AssertionError("input operator can not be null.");
-		}
 	}  
 
+	//used by clone method
 //	/**
 //	 * Constructor that creates a new operator 
 //	 * based on a model of an existing operator.
 //	 * 
-//	 * Used by the clone method.
-//	 * 
-//	 * @param model Another DeliverOperator on which to base new one.
+//	 * Used by both the clone method and the constuctor of the physical methods.
+//	 * @param model Operator to be cloned.
 //	 */
-//	protected DeliverOperator(DeliverOperator model) {
+//	protected IStreamOperator(IStreamOperator model) {
 //		super(model);
-//	}
+//	}  
+
+	/**
+	 * Returns this operator's input operator.
+	 * @return Child operator.
+	 */
+	public Operator getInputOperator() {
+		return super.getInput(0);   
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -130,28 +132,28 @@ public class DeliverOperator extends OperatorImplementation {
 
 	/** 
 	 * {@inheritDoc}
-	 * Should never be called as deliver is after the rename operator.
+	 * Push passed on to child.
 	 */   
 	public void pushLocalNameDown(String newLocalName) {
-		throw new AssertionError("Unexpected call to pushLocalNameDown()"); 
+		getInput(0).pushLocalNameDown(newLocalName); 
 	}
 
 	/**
 	 * Calculated the cardinality based on the requested type. 
 	 * 
-	 * @param card Type of cardinality to be considered.
+	 * @param card Type of cardinailty to be considered.
 	 * 
-	 * @return The Cardinality calculated as requested.
+	 * @return The Cardinality calulated as requested.
 	 */
 	public int getCardinality(CardinalityType card) {
 		return (this.getInput(0)).getCardinality(card);
 	}
 
-//	/** {@inheritDoc} */
-//	public int getCardinality(CardinalityType card, 
-//			Site node, DAF daf) {
-//		return getInputCardinality(card, node, daf, 0);
-//	}
+	//	/** {@inheritDoc} */
+	//	public int getCardinality(CardinalityType card, 
+	//			Site node, DAF daf) {
+	//		return getInputCardinality(card, node, daf, 0);
+	//	}
 
 	//	/** {@inheritDoc} */
 	//	public AlphaBetaExpression getCardinality(CardinalityType card, 
@@ -170,7 +172,7 @@ public class DeliverOperator extends OperatorImplementation {
 
 	/** {@inheritDoc} */
 	public boolean isLocationSensitive() {
-		return true;
+		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -187,101 +189,45 @@ public class DeliverOperator extends OperatorImplementation {
 
 	/** {@inheritDoc} */
 	public String toString() {
-		return this.getText() + "[ " + super.getInput(0).toString() + " ]";  
+		return this.getText() + "[ " + super.getInput(0).toString() + " ]";
 	}
 
-//	/** {@inheritDoc} */
-//	public DeliverOperator shallowClone() {
-//		DeliverOperator clonedOp = new DeliverOperator(this);
+//	/**
+//	 * Produces a copy of this Operator.
+//	 * @return A copy of this operator.
+//	 */	
+//	public IStreamOperator shallowClone() {
+//		IStreamOperator clonedOp = new IStreamOperator(this);
 //		return clonedOp;
 //	}
 
-	//	/** 
-	//     * Calculates the physical size of the state of this operator.
-	//     * 
-	//     * This cost model assumes that deliver is instantaneous
-	//     * so this operator has ne need to ever store data.
-	//     * 
-	//     * Does not included the size of the input 
-	//     * as these are assumed passed by reference.
-	//     *
-	//     * Does not include the size of the code itself.
-	//     * 
-	//     * @param node Physical mote on which this operator has been placed.
-	//     * @param daf Distributed query plan this operator is part of.
-	//     * @return OutputQueueCardinality * PhytsicalTuplesSize
-	//     */
-	//    public int getDataMemoryCost(Site node, DAF daf) {
-	//    	return 0;
-	//    }
-
-	//    /** Constant for length of per tuple overhead String. */ 	
-	//    private static int DELIVER_OVERHEAD = 10; //"DELIVER (" ++ ")";
-	//    
-	//    /** Maximum String length to represent an attribute. */
-	//    private static int ATTRIBUTE_STRING_LENGTH = 5; //unit16 max = 65536
-	//    
-	//    /** Maximum size of a deliver packet. */
-	//    public static int DELIVER_PAYLOAD_SIZE = 28;
-
-	//    /**
-	//     * Objains the size of the String needed to represent this tuple.
-	//     * @return Output String size in bytes
-	//     */
-	//    private int packetsPerTuple() {
-	//		int tupleSize = DELIVER_OVERHEAD;
-	//		ArrayList<Attribute> attributes = getAttributes(); 
-	//		for (int i = 0; i < attributes.size(); i++) {
-	//			String attrName = CodeGenUtils.getDeliverName(attributes.get(i));			
-	//			tupleSize += attrName.length() + ATTRIBUTE_STRING_LENGTH;
-	//			logger.trace("TuplesSize now " + tupleSize);
-	//		}
-	//		return (int) Math.ceil(tupleSize / DELIVER_PAYLOAD_SIZE);
-	//    }
-
-	//    private double getTimeCost(int tuples) { 
-	//		int packets = packetsPerTuple() * tuples;
-	//		double duration = getOverheadTimeCost()
-	//			+ CostParameters.getDeliverTuple() * packets;
-	//		return duration;
-	//    }
-
-	//	/** {@inheritDoc} */
+	//	/** STUB.
+	//     * {@inheritDoc} */
 	//    public double getTimeCost(CardinalityType card, 
 	//    		Site node, DAF daf) {
-	//		int tuples 
-	//			= this.getInputCardinality(card, node, daf, 0);
-	//		return getTimeCost(tuples);
+	//    	throw new AssertionError("Stub method called");
 	//    }
 
 	//    /** {@inheritDoc} */
 	//	public double getTimeCost(CardinalityType card, int numberOfInstances) {
-	//		int tuples = this.getInputCardinality(card, 0, numberOfInstances);
-	//		return getTimeCost(tuples);
-	//	}
+	//	   	throw new AssertionError("Stub Method called");
+	//    }
 
 	//	/** {@inheritDoc} */
 	//	public AlphaBetaExpression getTimeExpression(
 	//			CardinalityType card, Site node, 
 	//			DAF daf, boolean round) {
-	//		AlphaBetaExpression result = new AlphaBetaExpression();
-	//		result.addBetaTerm(getOverheadTimeCost());
-	//		AlphaBetaExpression tuples 
-	//			= this.getInputCardinality(card, node, daf, round, 0);
-	//		tuples.multiplyBy(packetsPerTuple());
-	//		tuples.multiplyBy(CostParameters.getDeliverTuple());
-	//		result.add(tuples);
-	//		return result;
-	//	}
+	//    	throw new AssertionError("Stub Method called");
+	//    }
 
 	/**
 	 * Some operators do not change the data in any way those could be removed.
-	 * This operator does change the data so can not be. 
+	 * This operator does not change the data so can be removed. 
 	 * 
-	 * @return False. 
+	 * @return true;
 	 */
 	public boolean isRemoveable() {
-		return false;
+		return false; 
 	}
 
 	//Call to default methods in OperatorImplementation
@@ -291,14 +237,14 @@ public class DeliverOperator extends OperatorImplementation {
 	//    	return super.defaultGetSourceSites();
 	//    }
 
-	// 	/** {@inheritDoc} */    
-	//    public int getOutputQueueCardinality(int numberOfInstances) {
-	//    	return super.defaultGetOutputQueueCardinality(numberOfInstances);
+	//	/** {@inheritDoc} */    
+	//    public int getOutputQueueCardinality(Site node, DAF daf) {
+	//    	return super.defaultGetOutputQueueCardinality(node, daf);
 	//    }
 
 	// 	/** {@inheritDoc} */    
-	//    public int getOutputQueueCardinality(Site node, DAF daf) {
-	//    	return super.defaultGetOutputQueueCardinality(node, daf);
+	//    public int getOutputQueueCardinality(int numberOfInstances) {
+	//    	return super.defaultGetOutputQueueCardinality(numberOfInstances);
 	//    }
 
 	/** {@inheritDoc} */    
@@ -310,4 +256,10 @@ public class DeliverOperator extends OperatorImplementation {
 	public List<Expression> getExpressions() {
 		return super.defaultGetExpressions();
 	}
+
+	//	/** {@inheritDoc} */    
+	//	public int getDataMemoryCost(Site node, DAF daf) {
+	//		return super.defaultGetDataMemoryCost(node, daf);
+	//	}
+
 }

@@ -38,7 +38,7 @@
  * 30-Jul-2009	Raj	Changed isRemoveable to return false.
  * 
  */
-package uk.ac.manchester.cs.snee.compiler.queryplan.operators;
+package uk.ac.manchester.cs.snee.operators.logical;
 
 import java.util.ArrayList;
 import java.util.List;
