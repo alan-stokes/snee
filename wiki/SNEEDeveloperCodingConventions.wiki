@@ -87,6 +87,8 @@ Briefly, the mode of operation is as follows:
  * It is important to keep the feature branch synchronised with the trunk.  Periodically, merge in changes from trunk to feature branch (once or twice a week if poss).  This prevents the feature branch and the trunk from drifting too far apart.   See [http://svnbook.red-bean.com/nightly/en/svn.branchmerge.basicmerging.html#svn.branchemerge.basicmerging.stayinsync Keeping a branch in Sync].
  * When the feature is complete, we may agree to reintegrate the branch back into the trunk.  The procedure is described in [http://svnbook.red-bean.com/nightly/en/svn.branchmerge.basicmerging.html#svn.branchemerge.basicmerging.reintegrate Reintegrating a Branch].
 
+Note: The links above should be used mainly to understand the concepts involved. We recommend using the Subclipse plugin to carry out branching and merging operations, as it provides an easy-to-use interface.
+
 ===Other===
 
 Always use curly braces after an if statement condition, even if it only one line long, i.e.,
