@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
-targetNamespace="http://dias-mc.cs.manchester.ac.uk" 
-xmlns="http://dias-mc.cs.manchester.ac.uk"
+targetNamespace="http://snee.cs.manchester.ac.uk" 
+xmlns="http://snee.cs.manchester.ac.uk"
 elementFormDefault="qualified">
 
-<xs:element name="qos-specification">
+<xs:element name="query-parameters">
 	<xs:complexType>
 		<xs:sequence>
-			<xs:element name="expectations">
+			<xs:element name="qos-expectations">
 			    <xs:complexType>
 			    	<xs:sequence>
 					<xs:element name="optimization-goal">
@@ -71,16 +71,6 @@ elementFormDefault="qualified">
 			      	</xs:sequence>
 			    </xs:complexType>
 			</xs:element>
-
-			<xs:element name="query-duration" minOccurs="0" maxOccurs="1">
-				<xs:complexType>
-					<xs:sequence>
-						<xs:element name="units" type="timeUnits"/>
-						<xs:element name="equals" type="xs:positiveInteger"/>
-					</xs:sequence>
-				</xs:complexType>
-			</xs:element>
-						
 		</xs:sequence>
 	</xs:complexType>
 </xs:element>

@@ -13,6 +13,7 @@ import uk.ac.manchester.cs.snee.SNEEController;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.evaluator.EvaluatorException;
 import uk.ac.manchester.cs.snee.evaluator.StreamResultSet;
 import uk.ac.manchester.cs.snee.evaluator.StreamResultSetImpl;
@@ -66,13 +67,13 @@ public abstract class SNEEClient implements Observer {
 	}
 	
 	public void run() 
-	throws SNEEException, SchemaMetadataException, EvaluatorException {
+	throws SNEEException, SchemaMetadataException, EvaluatorException, QoSException {
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER");
 		System.out.println("Query: " + this._query);
 
 		//		try {
-		int queryId1 = controller.addQuery(_query);
+		int queryId1 = controller.addQuery(_query, null);
 		//		int queryId2 = controller.addQuery(query);
 
 		long startTime = System.currentTimeMillis();
