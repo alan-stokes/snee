@@ -7,6 +7,8 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistExcep
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.evaluator.EvaluatorException;
 import uk.ac.manchester.cs.snee.evaluator.StreamResultSet;
@@ -14,17 +16,21 @@ import uk.ac.manchester.cs.snee.evaluator.StreamResultSet;
 public interface SNEE {
 
 	/**
-	 * Adds a SSG4Env Pull Stream Interface web service source to the 
-	 * set of available data for querying.
-	 * @param url
+	 * Adds a service source to the set of available data for querying.
+	 * @param name name of the service
+	 * @param url endpoint reference for the interface
+	 * @param interfaceType type of the interface
 	 * @throws MalformedURLException
 	 * @throws SchemaMetadataException
 	 * @throws TypeMappingException
 	 * @throws SNEEDataSourceException
+	 * @throws SourceMetadataException 
 	 */
-	public void addServiceSource(String url) 
+	public void addServiceSource(String name, String url, 
+			SourceType interfaceType) 
 	throws MalformedURLException, SchemaMetadataException, 
-	TypeMappingException, SNEEDataSourceException;
+	TypeMappingException, SNEEDataSourceException, 
+	SourceMetadataException;
 	
 	/**
 	 * Return a list of the extent names available in the schema

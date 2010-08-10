@@ -393,8 +393,7 @@ public class Metadata {
 					epr = node.getFirstChild().getNodeValue();
 				}
 			}
-			_sources.add(
-					createServiceSource(interfaceType, epr, sourceName));
+			createServiceSource(interfaceType, epr, sourceName);
 		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN addServiceSources() #sources=" +
@@ -402,7 +401,7 @@ public class Metadata {
 		}
 	}
 
-	private SourceMetadata createServiceSource(SourceType interfaceType,
+	private void createServiceSource(SourceType interfaceType,
 			String epr, String serviceName) 
 	throws SourceMetadataException, MalformedURLException,
 	SNEEDataSourceException, SchemaMetadataException, 
@@ -412,7 +411,6 @@ public class Metadata {
 					serviceName + " type=" + interfaceType + " epr=" +
 					epr);
 		}
-		SourceMetadata source = null;
 		PullSourceWrapper sourceWrapper;
 		switch (interfaceType) {
 		case PULL_STREAM_SERVICE:
@@ -429,12 +427,10 @@ public class Metadata {
 			logger.warn(message);
 			throw new SourceMetadataException(message);
 		}
-		source = createServiceSourceMetadata(serviceName, epr, 
-				sourceWrapper);
+		createServiceSourceMetadata(serviceName, epr, sourceWrapper);
 		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN createServiceSource() with " + source);
+			logger.trace("RETURN createServiceSource()");
 		}
-		return source;
 	}
 
 	private void addUdpSources(NodeList udpSources) 
@@ -557,22 +553,25 @@ public class Metadata {
 	 * Adds a web service source. The schema of the source is read
 	 * and added to the logical schema. The source is added to the set
 	 * of data sources.
+	 * @param name TODO
 	 * @param url URL for the web service interface 
+	 * @param sourceType the service type of the interface
 	 * @throws MalformedURLException invalid url passed to method
 	 * @throws TypeMappingException 
 	 * @throws SchemaMetadataException 
 	 * @throws SNEEDataSourceException 
+	 * @throws SourceMetadataException 
 	 */
-	public void addWebServiceSource(String url) 
+	public void addServiceSource(String name, String url, 
+			SourceType sourceType) 
 	throws MalformedURLException, SNEEDataSourceException, 
-	SchemaMetadataException, TypeMappingException {
+	SchemaMetadataException, TypeMappingException,
+	SourceMetadataException {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER addWebServiceSource() with " + url);
-		//TODO: Generalise for other service types
-		PullSourceWrapper pullSource = createPullSource(url);
-		WebServiceSourceMetadata source = 
-			createServiceSourceMetadata("", url, pullSource);
-		_sources.add(source);
+			logger.debug("ENTER addServiceSource() with name=" +
+					name + " sourceType=" + sourceType + 
+					" epr= "+ url);
+		createServiceSource(sourceType, url, "");
 		if (logger.isInfoEnabled())
 			logger.info("Web service successfully added from " + 
 					url + ". Number of extents=" + _schema.size());
@@ -580,11 +579,11 @@ public class Metadata {
 			logger.trace("Available extents:\n\t" + _schema.keySet());
 		}
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN addWebServiceSource() #extents=" +
+			logger.debug("RETURN addServiceSource() #extents=" +
 					_schema.size() + " #sources=" + _sources.size());
 	}
 
-	private WebServiceSourceMetadata createServiceSourceMetadata(
+	private void createServiceSourceMetadata(
 			String sourceName,
 			String url, PullSourceWrapper pullSource) 
 	throws SNEEDataSourceException, SchemaMetadataException,
@@ -616,7 +615,10 @@ public class Metadata {
 		WebServiceSourceMetadata source = 
 			new WebServiceSourceMetadata(sourceName, extentNames, url, 
 					resourcesByExtent, pullSource);
-		return source;
+		_sources.add(source);
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN createServiceSourceMetadata()");
+		}
 	}
 
 	protected PullSourceWrapper createPullSource(String url)

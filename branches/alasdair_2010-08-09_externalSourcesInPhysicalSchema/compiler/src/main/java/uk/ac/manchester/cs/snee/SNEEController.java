@@ -57,6 +57,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
@@ -418,12 +419,16 @@ public class SNEEController implements SNEE {
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.SNEE#addServiceSource(java.lang.String)
 	 */
-	public void addServiceSource(String url) 
+	public void addServiceSource(String name, String url, 
+			SourceType interfaceType) 
 	throws MalformedURLException, SchemaMetadataException, 
-	TypeMappingException, SNEEDataSourceException {
+	TypeMappingException, SNEEDataSourceException, 
+	SourceMetadataException {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER addServiceSource() with " + url);
-		_schema.addWebServiceSource(url);
+			logger.debug("ENTER addServiceSource() with name=" +
+					name + " type=" + interfaceType + " url="+ url);
+		_schema.addServiceSource(name, url, 
+				SourceType.PULL_STREAM_SERVICE);
 		logger.info("Web service source added with url \n\t" + url);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN addServiceSource()");

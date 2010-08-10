@@ -48,7 +48,9 @@ public enum SourceType {
 	/** Source is a UDP source */
 	UDP_SOURCE ("UDP source", false),
 	/** Data is a table with a relation (bag of tuples). */
-	RELATIONAL ("DBMS",false);
+	RELATIONAL ("DBMS",false),
+	/** Source is a query end point */
+	QUERY_SERVICE ("quere service source", true);
 	
 	/** Hold the string representation of the selected value. */
 	private final String _stringRepresentation;
