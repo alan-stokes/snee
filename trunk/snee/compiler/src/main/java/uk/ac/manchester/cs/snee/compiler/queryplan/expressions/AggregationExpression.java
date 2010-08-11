@@ -39,8 +39,8 @@ import java.util.List;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.AggregationType;
 import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
 
 /** Expression to hold an aggregation. */
 public class AggregationExpression implements Expression {

@@ -74,8 +74,8 @@ public class TopologyReader {
     	
     	try {
     		//TODO: get maven to do this?
-			Utils.validateXMLFile(topologyFile, 
-    			"../src/main/resources/schema/network-topology.xsd");
+//			Utils.validateXMLFile(topologyFile, 
+//    			"../src/main/resources/schema/network-topology.xsd");
 		
 			final Units units = Units.getInstance();
 			final long energyScalingFactor = units.getEnergyScalingFactor(Utils
@@ -181,8 +181,8 @@ public class TopologyReader {
 
     	try {
     		
-			Utils.validateXMLFile(siteResourceFile, 
-					"../src/main/resources/schema/site-resources.xsd");
+//			Utils.validateXMLFile(siteResourceFile, 
+//					"../src/main/resources/schema/site-resources.xsd");
 		
 			final Units units = Units.getInstance();
 			final long energyScalingFactor = units.getEnergyScalingFactor(Utils

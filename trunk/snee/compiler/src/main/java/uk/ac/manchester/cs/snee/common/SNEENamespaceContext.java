@@ -44,8 +44,7 @@ public class SNEENamespaceContext implements NamespaceContext {
 	if (prefix == null) {
 	    throw new NullPointerException("Null prefix");
 	} else if ("snee".equals(prefix)) {
-		//FIXME: Update namespace to snee.cs.manchester.ac.uk
-	    return "http://dias-mc.cs.manchester.ac.uk";
+	    return "http://snee.cs.manchester.ac.uk";
 	} else if ("xml".equals(prefix)) {
 	    return XMLConstants.XML_NS_URI;
 	}

@@ -9,6 +9,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.evaluator.EvaluatorException;
 import uk.ac.manchester.cs.snee.evaluator.StreamResultSet;
@@ -58,9 +59,10 @@ public interface SNEE {
 	 * @throws SNEEException
 	 * @throws SchemaMetadataException 
 	 * @throws EvaluatorException 
+	 * @throws QoSException 
 	 */
-	public int addQuery(String query) 
-	throws SNEEException, SchemaMetadataException, EvaluatorException;
+	public int addQuery(String query, String parametersFile) 
+	throws SNEEException, SchemaMetadataException, EvaluatorException, QoSException;
 
 	/**
 	 * Retrieve the ResultSet for a specified query if it exists.
