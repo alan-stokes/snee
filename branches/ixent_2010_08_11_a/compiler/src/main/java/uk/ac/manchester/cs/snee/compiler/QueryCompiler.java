@@ -45,6 +45,8 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.compiler.allocator.SourceAllocator;
+import uk.ac.manchester.cs.snee.compiler.allocator.SourceAllocatorException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
@@ -53,6 +55,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceDoesNotExistExcep
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlLexer;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
+import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
 import uk.ac.manchester.cs.snee.compiler.translator.Translator;
@@ -112,7 +115,8 @@ public class QueryCompiler {
 	throws SourceDoesNotExistException, TypeMappingException, 
 	SchemaMetadataException, ParserValidationException, 
 	OptimizationException, ParserException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException, SNEEConfigurationException 
+	RecognitionException, TokenStreamException, SNEEConfigurationException, 
+	SourceAllocatorException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER: queryID: " + queryID + 
@@ -133,6 +137,7 @@ public class QueryCompiler {
 		LAF lafPrime = doLogicalRewriting(laf);
 		
 		//TODO: Invoke Source Allocator
+		DLAF dlaf = doSourceAllocation(laf);
 		
 		//TODO: Invoke Source Planner
 		
@@ -148,7 +153,7 @@ public class QueryCompiler {
 			logger.trace("RETURN: " + lafPrime);
 		return lafPrime;
 	}
-
+	
 	private CommonAST doParsing(int queryID, String outputDir, 
 			String query) 
 	throws ParserException, RecognitionException, TokenStreamException {
@@ -187,15 +192,27 @@ public class QueryCompiler {
 
 	private LAF doLogicalRewriting(LAF laf) {
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER laf: " + laf);
-		//TODO: Placeholder for rewriting step, currently merged with translation step
+			logger.trace("ENTER doLogicalRewriting: " + laf);
+		//TODO: Placeholder for rewriting step, currently merged with
+		//translation step
 		LAF lafPrime = laf;
 		if (logger.isTraceEnabled())
-			logger.trace("RETURN: "+lafPrime);
+			logger.trace("RETURN: doLogicalRewriting "+lafPrime);
 		return lafPrime;		
 	}
 	
-//	/**
+		
+	private DLAF doSourceAllocation(LAF lafPrime) throws 
+	SourceAllocatorException {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER doSourceAllocation: " + lafPrime);
+		SourceAllocator allocator = new SourceAllocator();
+		DLAF dlaf = allocator.allocateSources(lafPrime);
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN doSourceAllocation: " + dlaf);
+		return dlaf;
+	}
+/**
 //	 * Invoke the multi-site optimizer phase.
 //	 * @param queryID the ID of the query.
 //	 * @param queryName the name of the query.
@@ -388,6 +405,7 @@ public class QueryCompiler {
 	 * @throws TokenStreamException 
 	 * @throws RecognitionException 
 	 * @throws SNEEConfigurationException 
+	 * @throws SourceAllocatorException 
 	 */
 //TODO: Change to return a query plan that is interpretable by a dispatcher
 	public LAF compileQuery(int queryID, String query) 
@@ -395,7 +413,8 @@ public class QueryCompiler {
 	TypeMappingException, SchemaMetadataException, 
 	ParserValidationException, OptimizationException, 
 	ParserException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException, SNEEConfigurationException 
+	RecognitionException, TokenStreamException, SNEEConfigurationException, 
+	SourceAllocatorException 
 	 {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER: queryID: " + queryID + "\n\tquery: " + query);

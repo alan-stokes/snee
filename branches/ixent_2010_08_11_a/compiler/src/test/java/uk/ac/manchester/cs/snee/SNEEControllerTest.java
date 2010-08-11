@@ -54,6 +54,7 @@ import org.junit.Test;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
+import uk.ac.manchester.cs.snee.compiler.allocator.SourceAllocatorException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.MetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
@@ -184,7 +185,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	ParserValidationException, OptimizationException, ParserException, 
 	ExtentDoesNotExistException, EvaluatorException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException,
-	QoSException {
+	QoSException, SourceAllocatorException {
 		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
@@ -204,7 +205,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	ParserValidationException, OptimizationException, ParserException, 
 	ExtentDoesNotExistException, EvaluatorException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException,
-	QoSException {
+	QoSException, SourceAllocatorException {
 		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
@@ -243,7 +244,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	ParserValidationException, OptimizationException, ParserException, 
 	ExtentDoesNotExistException, EvaluatorException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException, 
-	QoSException {
+	QoSException, SourceAllocatorException {
 		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);

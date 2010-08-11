@@ -97,23 +97,23 @@ public class LAF extends Graph {
 //		this.setAcquisitionInterval(acquisitionInterval);
 	}
 
-//	/**
-//	 * Constructor used by clone.
-//	 * @param laf The LAF to be cloned
-//	 * @param inName The name to be assigned to the new data structure.
-//	 */
-//	public LAF(LAF laf, String inName) {
-//		super(laf, inName);
-//
-//		rootOp = (Operator) nodes.get(laf.rootOp.getID());
-//
-//		Iterator<Operator> opIter = laf.leafOperators.iterator();
-//		while (opIter.hasNext()) {
-//			String opID = opIter.next().getID();
-//			this.leafOperators.add((Operator) nodes.get(opID));
-//		}
-//
-//	}
+	/**
+	 * Constructor used by clone.
+	 * @param laf The LAF to be cloned
+	 * @param inName The name to be assigned to the new data structure.
+	 */
+	public LAF(LAF laf, String inName) {
+		super(laf, inName);
+
+		rootOp = (LogicalOperator) nodes.get(laf.rootOp.getID());
+
+		Iterator<LogicalOperator> opIter = laf.leafOperators.iterator();
+		while (opIter.hasNext()) {
+			String opID = opIter.next().getID();
+			this.leafOperators.add((LogicalOperator) nodes.get(opID));
+		}
+
+	}
 
 	/**
 	 * Resets the candidate counter; use prior to compiling the next query.
