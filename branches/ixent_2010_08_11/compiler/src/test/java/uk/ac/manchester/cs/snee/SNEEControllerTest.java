@@ -61,6 +61,8 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceDoesNotExistException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
@@ -257,28 +259,34 @@ public class SNEEControllerTest extends EasyMockSupport {
 	@Test(expected=MalformedURLException.class)
 	public void testAddServiceSource_invalidURL() 
 	throws MalformedURLException, SchemaMetadataException, 
-	TypeMappingException, SNEEDataSourceException 
+	TypeMappingException, SNEEDataSourceException, SourceMetadataException 
 	{
 		//Record responses
 		String testUrl = "not a url";
 		//Have to use expectLastCall method since method had void return type 
-		mockSchema.addWebServiceSource(testUrl);
+		mockSchema.addServiceSource("bad url", testUrl, 
+				SourceType.PULL_STREAM_SERVICE);
 		expectLastCall().andThrow(new MalformedURLException());
 		//Test
 		replayAll();
-		_snee.addServiceSource(testUrl);
+		_snee.addServiceSource("bad url", testUrl,
+				SourceType.PULL_STREAM_SERVICE);
 		verifyAll();
 	}
 
 	@Test
 	public void testAddServiceSource_validURL() 
 	throws MalformedURLException, SchemaMetadataException, 
-	TypeMappingException, SNEEDataSourceException 
+	TypeMappingException, SNEEDataSourceException, SourceMetadataException 
 	{
-		//FIXME: Setup expected answers from mock objects
 		String url = 
 			"http://webgis1.geodata.soton.ac.uk:8080/CCO/services/PullStream?wsdl";
-		_snee.addServiceSource(url);
+		mockSchema.addServiceSource("CCO-WS", url, 
+				SourceType.PULL_STREAM_SERVICE);
+		replayAll();
+		_snee.addServiceSource("CCO-WS", url, 
+				SourceType.PULL_STREAM_SERVICE);
+		verifyAll();
 	}
 	
 }

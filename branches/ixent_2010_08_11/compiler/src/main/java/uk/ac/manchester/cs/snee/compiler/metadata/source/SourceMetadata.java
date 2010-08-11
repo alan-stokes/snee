@@ -126,7 +126,7 @@ public abstract class SourceMetadata {
 	 * @return true if this source provides streaming data
 	 */
 	public boolean isStream() {
-		if (_sourceType == SourceType.PULL_WEB_SERVICE || 
+		if (_sourceType == SourceType.PULL_STREAM_SERVICE || 
 				_sourceType == SourceType.UDP_SOURCE ||
 				_sourceType == SourceType.SENSOR_NETWORK) {
 			return true;
