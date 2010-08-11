@@ -33,10 +33,8 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
  *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.evaluator.operators;
+package uk.ac.manchester.cs.snee.operators.evaluator;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Observable;
 import java.util.Timer;
@@ -55,20 +53,19 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.UDPSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.WebServiceSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.Operator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.ReceiveOperator;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.EvaluatorException;
-import uk.ac.manchester.cs.snee.evaluator.operators.receivers.PullServiceReceiver;
-import uk.ac.manchester.cs.snee.evaluator.operators.receivers.SourceReceiver;
-import uk.ac.manchester.cs.snee.evaluator.operators.receivers.UDPStreamReceiver;
 import uk.ac.manchester.cs.snee.evaluator.types.CircularList;
 import uk.ac.manchester.cs.snee.evaluator.types.Field;
-import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
+import uk.ac.manchester.cs.snee.operators.evaluator.receivers.PullServiceReceiver;
+import uk.ac.manchester.cs.snee.operators.evaluator.receivers.SourceReceiver;
+import uk.ac.manchester.cs.snee.operators.evaluator.receivers.UDPStreamReceiver;
+import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
 
 public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	//XXX: Write test for receive operator
