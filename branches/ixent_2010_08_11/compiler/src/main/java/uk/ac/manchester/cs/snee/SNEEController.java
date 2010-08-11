@@ -58,6 +58,8 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
@@ -266,8 +268,9 @@ public class SNEEController implements SNEE {
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.SNEE#addQuery(java.lang.String)
 	 */
-	public int addQuery(String query) 
-	throws SNEEException, SchemaMetadataException, EvaluatorException 
+	public int addQuery(String query, String queryParamsFile) 
+	throws SNEEException, SchemaMetadataException, EvaluatorException, 
+	QoSException 
 	{
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER addQuery() with " + query);
@@ -278,8 +281,16 @@ public class SNEEController implements SNEE {
 		}
 		int queryId = getNextQueryId();
 		if (logger.isInfoEnabled()) 
-			logger.info("Compiling query " + queryId + "\n\t" + query);
-		compileQuery(queryId, query);
+			logger.info("Assigned ID " + queryId + " to query\n");
+		if (logger.isInfoEnabled()) 
+			logger.info("Reading query " + queryId + " parameters\n");
+		QueryParameters queryParams = null;
+		if (queryParamsFile != null) {
+			queryParams = new QueryParameters(queryId, queryParamsFile);
+		}
+		if (logger.isInfoEnabled()) 
+			logger.info("Compiling query " + queryId + "\n");
+		compileQuery(queryId, query, queryParams);
 		if (logger.isInfoEnabled())
 			logger.info("Successfully compiled query " + queryId);
 		dispatchQuery(queryId);
@@ -348,7 +359,7 @@ public class SNEEController implements SNEE {
 		return queryId;
 	}
 
-	private void compileQuery(int queryID, String query) 
+	private void compileQuery(int queryID, String query, QueryParameters queryParams) 
 	throws SNEEException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER compilerQuery() with queryID " + 

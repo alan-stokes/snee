@@ -46,6 +46,7 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
@@ -215,7 +216,7 @@ public class Utils {
 		// an instance document.
 		Validator validator = schema.newValidator();
 		// Validate the DOM tree.
-		//validator.validate(new DOMSource(document));
+		validator.validate(new DOMSource(document));
 	}
 
 	public static String doXPathStrQuery(String xmlFile, String query)
@@ -243,7 +244,7 @@ public class Utils {
 		return result;
 	}
 
-	public  int doXPathIntQuery(String xmlFile, String query)
+	public static  int doXPathIntQuery(String xmlFile, String query)
 	throws XPathExpressionException, FileNotFoundException {
 		XPathFactory factory = XPathFactory.newInstance();
 		XPath xPath = factory.newXPath();

@@ -48,8 +48,8 @@ import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Graph;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.Operator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.WindowOperator;
+import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
 public class LAF extends Graph {
 	

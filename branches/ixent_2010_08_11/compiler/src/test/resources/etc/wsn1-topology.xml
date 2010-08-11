@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 
 <network-topology
-xmlns="http://dias-mc.cs.manchester.ac.uk"
+xmlns="http://snee.cs.manchester.ac.uk"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://dias-mc.cs.manchester.ac.uk network-topology.xsd">
+xsi:schemaLocation="http://snee.cs.manchester.ac.uk network-topology.xsd">
 
 <units>
 	<energy>MILLIJOULES</energy>

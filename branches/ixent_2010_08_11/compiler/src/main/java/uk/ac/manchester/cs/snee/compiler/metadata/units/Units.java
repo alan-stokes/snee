@@ -88,9 +88,9 @@ public class Units {
 	throws ParserConfigurationException, SAXException, IOException, 
 	XPathExpressionException, SNEEConfigurationException {
 
-		Utils.validateXMLFile(
-				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_UNITS_FILE),
-				"../src/main/resources/schema/units.xsd");
+//		Utils.validateXMLFile(
+//				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_UNITS_FILE),
+//				"../src/main/resources/schema/units.xsd");
 
 		// parse file
 		String timeBaseUnit = Utils.doXPathStrQuery(

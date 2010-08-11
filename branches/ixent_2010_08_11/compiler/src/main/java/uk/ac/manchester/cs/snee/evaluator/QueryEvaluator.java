@@ -46,12 +46,12 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.DeliverOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.Operator;
-import uk.ac.manchester.cs.snee.evaluator.operators.DeliverOperatorImpl;
-import uk.ac.manchester.cs.snee.evaluator.operators.EvaluatorPhysicalOperator;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
+import uk.ac.manchester.cs.snee.operators.evaluator.DeliverOperatorImpl;
+import uk.ac.manchester.cs.snee.operators.evaluator.EvaluatorPhysicalOperator;
+import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.logical.Operator;
 
 public class QueryEvaluator implements Observer {//Runnable {
 	private boolean executing = false;
