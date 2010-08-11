@@ -51,7 +51,7 @@ import uk.ac.manchester.cs.snee.evaluator.EvaluatorException;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
@@ -70,7 +70,7 @@ implements Observer
 	
 	protected EvaluatorPhysicalOperator child;
 
-	private Operator m_op;
+	private LogicalOperator m_op;
 	
 	public static int RECEIVE_TIMEOUT = 50000;
 	
@@ -78,14 +78,14 @@ implements Observer
 		
 	}
 	
-	public EvaluatorPhysicalOperator(Operator op) 
+	public EvaluatorPhysicalOperator(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER EvaluatorOperator() " + op);
 		}
 		m_op = op;
 		// Instantiate the child operator
-		Iterator<Operator> iter = op.childOperatorIterator();
+		Iterator<LogicalOperator> iter = op.childOperatorIterator();
 		child = getEvaluatorOperator(iter.next());		
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN EvaluatorOperator()");
@@ -146,7 +146,7 @@ implements Observer
 		_schema = schema;
 	}
 	
-	public EvaluatorPhysicalOperator getEvaluatorOperator(Operator op) 
+	public EvaluatorPhysicalOperator getEvaluatorOperator(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
 		EvaluatorPhysicalOperator phyOp = null;
 		if (op instanceof ReceiveOperator) {

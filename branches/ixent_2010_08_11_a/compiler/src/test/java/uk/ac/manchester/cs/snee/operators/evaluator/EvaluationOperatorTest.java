@@ -25,7 +25,7 @@ import uk.ac.manchester.cs.snee.evaluator.types.Field;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.operators.evaluator.EvaluationOperator;
 import uk.ac.manchester.cs.snee.operators.evaluator.EvaluatorPhysicalOperator;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class EvaluationOperatorTest extends EasyMockSupport {
 
@@ -39,7 +39,7 @@ public class EvaluationOperatorTest extends EasyMockSupport {
 
 	final Expression mockExpression = createMock(Expression.class);
 	final Tuple mockTuple = createMock(Tuple.class);
-	final Operator mockOp = createMock(Operator.class);
+	final LogicalOperator mockOp = createMock(LogicalOperator.class);
 	final Iterator mockIt = createMock(Iterator.class);
 	final EvaluatorPhysicalOperator mockPhyOp = createMock(EvaluatorPhysicalOperator.class);
 	final List<Attribute> mockQPAttributesList = createMock(List.class);

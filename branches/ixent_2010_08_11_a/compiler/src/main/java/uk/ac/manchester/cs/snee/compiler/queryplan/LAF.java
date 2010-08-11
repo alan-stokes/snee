@@ -48,7 +48,7 @@ import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Graph;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
 public class LAF extends Graph {
@@ -56,13 +56,13 @@ public class LAF extends Graph {
 	/**
 	 * The root of the operator tree.
 	 */
-	protected Operator rootOp;
+	protected LogicalOperator rootOp;
 
 	/**
 	 *  Set of leaf operators in the query plan.
 	 */
-	private HashSet<Operator> leafOperators = 
-		new HashSet<Operator>();
+	private HashSet<LogicalOperator> leafOperators = 
+		new HashSet<LogicalOperator>();
 
 	/**
 	 * Logger for this class.
@@ -89,7 +89,7 @@ public class LAF extends Graph {
 	 * @param acquisitionInterval Acquisition interval of the whole query.
 	 *  (Alpha)
 	 */
-	public LAF(Operator inRootOp, String queryName){//,
+	public LAF(LogicalOperator inRootOp, String queryName){//,
 //			long acquisitionInterval) {
 		this.name = generateName(queryName);
 		this.rootOp = inRootOp;
@@ -139,14 +139,14 @@ public class LAF extends Graph {
 	 * passed to it.
 	 * @param op The current operator being processed
 	 */
-	public void updateNodesAndEdgesColls(Operator op) {
+	public void updateNodesAndEdgesColls(LogicalOperator op) {
 		this.nodes.put(op.getID(), op);
 
 		/* Post-order traversal of operator tree */
 		if (!op.isLeaf()) {
 			for (int childIndex = 0; childIndex < op.getInDegree(); 
 			childIndex++) {
-				Operator c = (Operator) op.getInput(childIndex);
+				LogicalOperator c = (LogicalOperator) op.getInput(childIndex);
 
 				this.updateNodesAndEdgesColls(c);
 				EdgeImplementation e = new EdgeImplementation(this
@@ -161,7 +161,7 @@ public class LAF extends Graph {
 	 * Returns the root operator in the tree.
 	 * @return the root operator.
 	 */
-	public Operator getRootOperator() {
+	public LogicalOperator getRootOperator() {
 		return this.rootOp;
 	}
 
@@ -186,8 +186,8 @@ public class LAF extends Graph {
 	 * @param opList the operator list being created
 	 * @param traversalOrder the traversal order desired 
 	 */
-	private void doOperatorIterator(Operator op,
-			ArrayList<Operator> opList, 
+	private void doOperatorIterator(LogicalOperator op,
+			ArrayList<LogicalOperator> opList, 
 			TraversalOrder traversalOrder) {
 
 		if (traversalOrder == TraversalOrder.PRE_ORDER) {
@@ -210,11 +210,11 @@ public class LAF extends Graph {
 	 * @param traversalOrder the order to traverse the operator tree
 	 * @return an iterator for the operator tree
 	 */
-	public Iterator<Operator> operatorIterator(
+	public Iterator<LogicalOperator> operatorIterator(
 			TraversalOrder traversalOrder) {
 
-		ArrayList<Operator> opList = 
-			new ArrayList<Operator>();
+		ArrayList<LogicalOperator> opList = 
+			new ArrayList<LogicalOperator>();
 		this.doOperatorIterator(this.getRootOperator(), opList, 
 				traversalOrder);
 
@@ -229,10 +229,10 @@ public class LAF extends Graph {
 	 */
 	public void setAcquisitionInterval(double acquisitionInterval) {
 		this.acInt = acquisitionInterval;
-		Iterator<Operator> opIter = 
+		Iterator<LogicalOperator> opIter = 
 			operatorIterator(TraversalOrder.PRE_ORDER);
 		while (opIter.hasNext()) {
-			Operator op = opIter.next();
+			LogicalOperator op = opIter.next();
 			if (op instanceof WindowOperator) {
 				((WindowOperator) op).setAcquisitionInterval(acInt);
 			}
@@ -308,7 +308,7 @@ public class LAF extends Graph {
 			 */
 			Iterator j = this.nodes.keySet().iterator();
 			while (j.hasNext()) {
-				Operator op = (Operator) this.nodes
+				LogicalOperator op = (LogicalOperator) this.nodes
 				.get((String) j.next());
 				out.print("\"" + op.getID() + "\" [fontsize=9 ");
 
@@ -341,7 +341,7 @@ public class LAF extends Graph {
 			Iterator i = this.edges.keySet().iterator();
 			while (i.hasNext()) {
 				Edge e = this.edges.get((String) i.next());
-				Operator sourceNode = (Operator) this.nodes
+				LogicalOperator sourceNode = (LogicalOperator) this.nodes
 				.get(e.getSourceID());
 
 				out.print("\"" + e.getSourceID() + "\"" + edgeSymbol + "\""

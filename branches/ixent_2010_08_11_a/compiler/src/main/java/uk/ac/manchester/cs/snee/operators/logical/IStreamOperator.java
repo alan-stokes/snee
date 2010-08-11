@@ -49,8 +49,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
  * @author Christian
  *
  */
-public class IStreamOperator extends OperatorImplementation 
-implements Operator {
+public class IStreamOperator extends LogicalOperatorImpl 
+implements LogicalOperator {
 
 //	/**
 //	 * Constructs a new IStream operator.
@@ -74,7 +74,7 @@ implements Operator {
 	 * Constructor.
 	 * @param inputOperator previous Operator.
 	 */
-	public IStreamOperator(Operator inputOperator, AttributeType boolType) {
+	public IStreamOperator(LogicalOperator inputOperator, AttributeType boolType) {
 		super(boolType);
 
 		this.setOperatorName("ISTREAM");
@@ -82,7 +82,7 @@ implements Operator {
 		this.setOperatorDataType(OperatorDataType.STREAM);
 		this.setParamStr("");
 
-		setChildren(new Operator[] {inputOperator});
+		setChildren(new LogicalOperator[] {inputOperator});
 	}  
 
 	//used by clone method
@@ -101,7 +101,7 @@ implements Operator {
 	 * Returns this operator's input operator.
 	 * @return Child operator.
 	 */
-	public Operator getInputOperator() {
+	public LogicalOperator getInputOperator() {
 		return super.getInput(0);   
 	}
 

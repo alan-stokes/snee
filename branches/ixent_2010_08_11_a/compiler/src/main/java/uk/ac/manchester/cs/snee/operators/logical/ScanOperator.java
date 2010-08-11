@@ -45,8 +45,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 
 //STUB.
-public class ScanOperator extends OperatorImplementation 
-implements Operator {
+public class ScanOperator extends LogicalOperatorImpl 
+implements LogicalOperator {
 
 	private Logger logger = Logger.getLogger(ScanOperator.class.getName());
 	
@@ -58,7 +58,7 @@ implements Operator {
 		throw new AssertionError(message);
 	}
 
-	public OperatorImplementation shallowClone() {
+	public LogicalOperatorImpl shallowClone() {
 		String message = "Stub Method called";
 		logger.warn(message);
 		throw new AssertionError(message);

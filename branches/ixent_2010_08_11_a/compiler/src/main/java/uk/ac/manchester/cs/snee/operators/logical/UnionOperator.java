@@ -44,17 +44,17 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 
-public class UnionOperator extends OperatorImplementation 
-implements Operator {
+public class UnionOperator extends LogicalOperatorImpl 
+implements LogicalOperator {
 
 	private Logger logger = 
 		Logger.getLogger(UnionOperator.class.getName());
 
-	public UnionOperator(Operator left, Operator right, AttributeType boolType) {
+	public UnionOperator(LogicalOperator left, LogicalOperator right, AttributeType boolType) {
 		super(boolType);
 		this.setOperatorName("UNION");
 		setOperatorDataType(OperatorDataType.STREAM);
-		setChildren(new Operator[] {left, right});
+		setChildren(new LogicalOperator[] {left, right});
 	}
 
 	@Override

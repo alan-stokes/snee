@@ -14,7 +14,7 @@ import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 
@@ -35,7 +35,7 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 
 	private long nextWindowEvalTime;
 	
-	public TimeWindowOperatorImpl(Operator op) 
+	public TimeWindowOperatorImpl(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException{
 		super(op);
 		if (logger.isDebugEnabled()) {

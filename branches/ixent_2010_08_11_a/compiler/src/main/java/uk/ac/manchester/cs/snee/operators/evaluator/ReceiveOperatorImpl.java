@@ -64,7 +64,7 @@ import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.operators.evaluator.receivers.PullServiceReceiver;
 import uk.ac.manchester.cs.snee.operators.evaluator.receivers.SourceReceiver;
 import uk.ac.manchester.cs.snee.operators.evaluator.receivers.UDPStreamReceiver;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
 
 public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
@@ -126,7 +126,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	 * @param op
 	 * @throws SchemaMetadataException 
 	 */
-	public ReceiveOperatorImpl(Operator op) 
+	public ReceiveOperatorImpl(LogicalOperator op) 
 	throws SchemaMetadataException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ReceiveOperatorImpl() with " + op);

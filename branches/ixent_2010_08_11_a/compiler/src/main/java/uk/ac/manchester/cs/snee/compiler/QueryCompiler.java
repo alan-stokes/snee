@@ -56,7 +56,7 @@ import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
 import uk.ac.manchester.cs.snee.compiler.translator.Translator;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import antlr.CommonAST;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
