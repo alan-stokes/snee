@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>clients</artifactId>
+    <groupId>uk.ac.manchester.cs.snee</groupId>
+    <version>0.0.4-SNAPSHOT</version>
+  </parent>
+  <groupId>uk.ac.manchester.cs.snee.client</groupId>
+  <artifactId>cco-client</artifactId>
+  <name>CCO Client</name>
+  <version>0.0.4-SNAPSHOT</version>
+  <description>Command line single use client that uses the CCO Pull-stream service as a data source.</description>
+  <dependencies>
+  	<dependency>
+  		<groupId>uk.ac.manchester.cs.snee.client</groupId>
+  		<artifactId>client</artifactId>
+  		<version>0.0.4-SNAPSHOT</version>
+  		<scope>provided</scope>
+  	</dependency>
+  </dependencies>
+</project>

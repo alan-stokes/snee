@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+targetNamespace="http://dias-mc.cs.manchester.ac.uk" 
+xmlns="http://dias-mc.cs.manchester.ac.uk"
+elementFormDefault="qualified">
+
+<xs:element name="qos-specification">
+	<xs:complexType>
+		<xs:sequence>
+			<xs:element name="expectations">
+			    <xs:complexType>
+			    	<xs:sequence>
+					<xs:element name="optimization-goal">
+					    <xs:complexType>
+						<xs:sequence>
+							<xs:element name="type" type="optimizationType"/>
+							<xs:element name="variable" type="optimizationVariable"/>
+							<xs:element name="weighting" type="xs:decimal"/>
+						</xs:sequence>
+					    </xs:complexType>
+					</xs:element>
+
+					<xs:element name="acquisition-interval" minOccurs="0" maxOccurs="1">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="units" type="timeUnits"/>
+								<xs:element name="constraint" type="constraintType"/>
+								<xs:element name="weighting" type="xs:decimal"/>								
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+
+					<xs:element name="delivery-time" minOccurs="0" maxOccurs="1">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="units" type="timeUnits"/>
+								<xs:element name="constraint" type="constraintType"/>
+								<xs:element name="weighting" type="xs:decimal"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+
+					<xs:element name="total-energy" minOccurs="0" maxOccurs="1">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="units" type="energyUnits"/>
+								<xs:element name="constraint" type="constraintType"/>
+								<xs:element name="weighting" type="xs:decimal"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+
+					<xs:element name="lifetime" minOccurs="0" maxOccurs="1">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="units" type="timeUnits"/>
+								<xs:element name="constraint" type="constraintType"/>
+								<xs:element name="weighting" type="xs:decimal"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+
+					<xs:element name="buffering-factor" minOccurs="0" maxOccurs="1">
+						<xs:complexType>
+							<xs:sequence>
+								<xs:element name="constraint" type="constraintType"/>
+								<xs:element name="weighting" type="xs:decimal"/>
+							</xs:sequence>
+						</xs:complexType>
+					</xs:element>
+			      	</xs:sequence>
+			    </xs:complexType>
+			</xs:element>
+
+			<xs:element name="query-duration" minOccurs="0" maxOccurs="1">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="units" type="timeUnits"/>
+						<xs:element name="equals" type="xs:positiveInteger"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+						
+		</xs:sequence>
+	</xs:complexType>
+</xs:element>
+
+<xs:simpleType name="optimizationType">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="MAXIMIZE"/>
+    <xs:enumeration value="MINIMIZE"/>
+    <xs:enumeration value="NONE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="optimizationVariable">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="ACQUISITION_INTERVAL"/>
+    <xs:enumeration value="DELIVERY_TIME"/>
+    <xs:enumeration value="TOTAL_ENERGY"/>
+    <xs:enumeration value="LIFETIME"/>    
+    <xs:enumeration value="NONE"/>
+  </xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="timeUnits">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="MILLISECONDS"/>
+    <xs:enumeration value="SECONDS"/>
+    <xs:enumeration value="MINUTES"/>
+    <xs:enumeration value="HOURS"/>
+    <xs:enumeration value="DAYS"/>
+    <xs:enumeration value="MONTHS"/>
+    <xs:enumeration value="YEARS"/>
+  </xs:restriction>
+</xs:simpleType>
+
+<xs:simpleType name="energyUnits">
+  <xs:restriction base="xs:string">
+    <xs:enumeration value="MILLIJOULES"/>
+    <xs:enumeration value="JOULES"/>
+    <xs:enumeration value="KILOJOULES"/>
+    <xs:enumeration value="MEGAJOULES"/>
+  </xs:restriction>
+</xs:simpleType>
+
+<xs:complexType name ="constraintType">
+	<xs:choice>
+		<xs:element name="less-equals" type="xs:positiveInteger"/>
+		<xs:element name="greater-equals" type="xs:positiveInteger"/>
+		<xs:element name="equals" type="xs:positiveInteger"/>
+		<xs:element name="range" type="rangeType"/>
+	</xs:choice>
+</xs:complexType>
+
+<xs:complexType name="rangeType">
+	<xs:sequence>	
+		<xs:element name="min-val"/>
+		<xs:element name="max-val"/>
+	</xs:sequence>
+</xs:complexType>
+
+
+</xs:schema>
+
