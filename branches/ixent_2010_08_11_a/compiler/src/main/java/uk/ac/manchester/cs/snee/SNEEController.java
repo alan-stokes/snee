@@ -61,7 +61,9 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import uk.ac.manchester.cs.snee.evaluator.EvaluatorException;
@@ -99,7 +101,8 @@ public class SNEEController implements SNEE {
 	/**
 	 * Stores the query plan for the registered query
 	 */
-	private Map<Integer, LAF> _queryPlans = new HashMap<Integer, LAF>();
+	private Map<Integer, QueryExecutionPlan> _queryPlans = 
+		new HashMap<Integer, QueryExecutionPlan>();
 	
 	private int _nextQueryID = 1;
 
@@ -341,11 +344,9 @@ public class SNEEController implements SNEE {
 			logger.trace("ENTER dispatchQuery() with " + queryId);
 		}
 		StreamResultSet resultSet = createStreamResultSet();
-		
-		_dispatcher.startQuery(queryId, resultSet, 
-				_queryPlans.get(queryId));
+		QueryExecutionPlan qep = _queryPlans.get(queryId);
+		_dispatcher.startQuery(queryId, resultSet, qep);
 		_queryResults.put(queryId, resultSet);
-		
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN dispatchQuery() with queryId " + queryId);
 		}
@@ -376,7 +377,8 @@ public class SNEEController implements SNEE {
 					queryID + "\n\tquery: " + query);
 		}
 			try {
-				LAF queryPlan = _compiler.compileQuery(queryID, query);
+				QueryExecutionPlan queryPlan = 
+					_compiler.compileQuery(queryID, query);
 				_queryPlans.put(queryID, queryPlan);
 			} catch (Exception e) {
 				String msg = "Problem compiling query.";

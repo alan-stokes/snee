@@ -67,6 +67,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
 import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
@@ -84,7 +85,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	final Metadata mockSchema = createMock(Metadata.class);
 	final QueryCompiler mockQueryCompiler = createMock(QueryCompiler.class);
 	final Dispatcher mockDispatcher = createMock(Dispatcher.class);
-	final LAF mockPlan = createMock(LAF.class);
+	final QueryExecutionPlan mockPlan = createMock(QueryExecutionPlan.class);
 	final StreamResultSet mockResultset = createMock(StreamResultSet.class);
 		
 	@BeforeClass

@@ -101,4 +101,16 @@ public class DLAF extends LAF {
 		this.source = source;
 	}
 	
+	public SourceType getSourceType() {
+		return this.sourceType;
+	}
+	
+	public SourceMetadata getSource() {
+		return this.source;
+	}
+
+	public LAF getLAF() {
+		return this.laf;
+	}
+	
 }

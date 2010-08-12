@@ -55,8 +55,10 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceDoesNotExistExcep
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlLexer;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
+import uk.ac.manchester.cs.snee.compiler.planner.SourcePlanner;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
 import uk.ac.manchester.cs.snee.compiler.translator.Translator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
@@ -88,70 +90,6 @@ public class QueryCompiler {
 		_schemaMetadata = schema;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN");
-	}
-	
-	/**
-	 * The single-site optimizer phase.
-	 * @param queryID Number assigned to this query
-	 * @param outputDir The directory generated for output files
-	 * @param query The string representation of the query
-	 * @return LAF representation of this query.
-	 * @throws ParserException 
-	 * @throws OptimizationException 
-	 * @throws  
-	 * @throws ParserValidationException 
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
-	 * @throws SourceDoesNotExistException 
-	 * @throws ExtentDoesNotExistException 
-	 * @throws TokenStreamException 
-	 * @throws RecognitionException 
-	 * @throws SNEEConfigurationException 
-	 */
-	//	private PAF doSingleSitePhase(int queryID, String fullQueryPath, 
-	//			String queryName) 
-	private LAF doSingleSitePhase(int queryID, String outputDir, 
-			String query) 
-	throws SourceDoesNotExistException, TypeMappingException, 
-	SchemaMetadataException, ParserValidationException, 
-	OptimizationException, ParserException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException, SNEEConfigurationException, 
-	SourceAllocatorException 
-	{
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER: queryID: " + queryID + 
-					" dir: " + outputDir + "\n\tquery: " + query);
-		
-		if (logger.isInfoEnabled()) 
-			logger.info("Starting parsing for queryID " + queryID);
-		CommonAST ast = doParsing(queryID, outputDir, query);
-
-		if (logger.isInfoEnabled()) 
-			logger.info("Starting Translation for query " + 
-					queryID);
-		LAF laf = doTranslation(queryID, outputDir, ast);
-		
-		if (logger.isInfoEnabled()) 
-			logger.info("Starting Rewriting for query " + 
-					queryID);
-		LAF lafPrime = doLogicalRewriting(laf);
-		
-		//TODO: Invoke Source Allocator
-		DLAF dlaf = doSourceAllocation(laf);
-		
-		//TODO: Invoke Source Planner
-		
-			// Physical Optimisation
-			//		logger.info("Starting Physical Optimization");
-			//		PAF paf = PhysicalOptimization.doPhysicalOptimization(
-			//				laf, 
-			//				queryName);
-			//		return paf;
-
-		//TODO: Return a query evaluation plan
-		if (logger.isTraceEnabled())
-			logger.trace("RETURN: " + lafPrime);
-		return lafPrime;
 	}
 	
 	private CommonAST doParsing(int queryID, String outputDir, 
@@ -212,6 +150,17 @@ public class QueryCompiler {
 			logger.trace("RETURN doSourceAllocation: " + dlaf);
 		return dlaf;
 	}
+	
+	private QueryExecutionPlan doSourcePlanning(DLAF dlaf) {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER doSourcePlanning: " + dlaf);
+		SourcePlanner planner = new SourcePlanner();
+		QueryExecutionPlan qep = planner.doSourcePlanning(dlaf);
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN doSourcePlanning");
+		return qep;
+	}
+	
 /**
 //	 * Invoke the multi-site optimizer phase.
 //	 * @param queryID the ID of the query.
@@ -260,91 +209,6 @@ public class QueryCompiler {
 //		return agendaList;
 //	}
 
-
-//	private static void produceCandidateSummary(ScoredCandidateList<Agenda> agendaList) throws IOException {
-//		String fname = QueryCompiler.queryPlanOutputDir + "candidates-summary.csv";
-//
-//		ArrayList<Double> alphaScores = new ArrayList<Double>();
-//		ArrayList<Double> deltaScores = new ArrayList<Double>();
-//		ArrayList<Double> epsilonScores = new ArrayList<Double>();
-//		ArrayList<Double> lambdaScores = new ArrayList<Double>();
-//		double maxAlpha = 0, maxDelta = 0, maxEpsilon = 0, maxLambda = 0;
-//
-//		Iterator<Agenda> agendaIter = agendaList.iterator();
-//		while (agendaIter.hasNext()) {
-//			Agenda agenda = agendaIter.next();
-//			RT rtCand = agenda.getDAF().getRoutingTree();
-//
-//			//rt-alpha-score
-//			RTAcquisitionIntervalScoringFunction rtAlphaScorer = 
-//				new RTAcquisitionIntervalScoringFunction(1, false); 
-//			double score = rtAlphaScorer.score(rtCand);
-//			alphaScores.add(score);
-//			maxAlpha = Math.max(maxAlpha, score);
-//
-//			//rt-delta-score
-//			RTDeliveryTimeScoringFunction rtDeltaScorer = 
-//				new RTDeliveryTimeScoringFunction(1, false); 
-//			score = rtDeltaScorer.score(rtCand);
-//			deltaScores.add(score);
-//			maxDelta = Math.max(maxDelta, score);
-//
-//			//rt-epsilon-score
-//			RTEnergyScoringFunction rtEpsilonScorer = 
-//				new RTEnergyScoringFunction(1, false); 
-//			score = rtEpsilonScorer.score(rtCand);			
-//			epsilonScores.add(score);
-//			maxEpsilon = Math.max(maxEpsilon, score);
-//
-//			//rt-lambda-score
-//			RTLifetimeScoringFunction rtLambdaScorer = 
-//				new RTLifetimeScoringFunction(1, false); 
-//			score = rtLambdaScorer.score(rtCand);
-//			lambdaScores.add(score);
-//			maxLambda = Math.max(maxLambda, score);
-//		}
-//
-//		PrintWriter out = new PrintWriter(new BufferedWriter(
-//				new FileWriter(fname)));
-//		out.println("agenda-id,rt-id,rt-alpha-score,rt-delta-score,rt-epsilon-score,rt-lambda-score,rt-final-score,beta,alpha-bms,delta-bms,pi-bms,alpha-ms,delta-ms,pi-ms");
-//
-//		agendaIter = agendaList.iterator();
-//		int i = 0;
-//		while (agendaIter.hasNext()) {
-//			Agenda agenda = agendaIter.next();
-//
-//			//agenda-id
-//			out.print(agenda.getName() + ",");
-//			RT rtCand = agenda.getDAF().getRoutingTree();
-//			//rt-id
-//			out.print(rtCand.getName() + ",");
-//
-//			//rt-alpha-score,rt-delta-score,rt-epsilon-score,rt-lambda-score 
-//			out.print(alphaScores.get(i)/maxAlpha + ",");
-//			out.print(deltaScores.get(i)/maxDelta + ",");			
-//			out.print(epsilonScores.get(i)/maxEpsilon + ",");			
-//			out.print(lambdaScores.get(i)/maxLambda + ",");			
-//
-//			//rt-final-score
-//			out.print(agenda.getDAF().getRoutingTree().getScore() + ",");
-//
-//			//beta
-//			out.print(agenda.getBufferingFactor() + ",");
-//
-//			//alpha, delta, pi in bms
-//			out.print(agenda.getAcquisitionInterval_bms() + ",");
-//			out.print(agenda.getDeliveryTime_bms() + ",");
-//			out.print(agenda.getProcessingTime_bms() + ",");
-//
-//			//alpha, delta, pi in ms
-//			out.print(agenda.getAcquisitionInterval_ms() + ",");
-//			out.print(agenda.getDeliveryTime_ms() + ",");
-//			out.println(agenda.getProcessingTime_ms());
-//
-//			i++;
-//		}
-//		out.close();
-//	}
 
 //	/**
 //	 * Invokes the code generation phase.
@@ -407,8 +271,7 @@ public class QueryCompiler {
 	 * @throws SNEEConfigurationException 
 	 * @throws SourceAllocatorException 
 	 */
-//TODO: Change to return a query plan that is interpretable by a dispatcher
-	public LAF compileQuery(int queryID, String query) 
+	public QueryExecutionPlan compileQuery(int queryID, String query) 
 	throws SNEEException, SourceDoesNotExistException, 
 	TypeMappingException, SchemaMetadataException, 
 	ParserValidationException, OptimizationException, 
@@ -420,11 +283,34 @@ public class QueryCompiler {
 			logger.debug("ENTER: queryID: " + queryID + "\n\tquery: " + query);
 		logger.info("Compiling queryID " + queryID);
 		String outputDir = createQueryDirectory(queryID);
-		//Invoke the Single-site Phase of query optimization
-		LAF laf = doSingleSitePhase(queryID, outputDir, query);
+
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER: queryID: " + queryID + 
+					" dir: " + outputDir + "\n\tquery: " + query);
+		
+		if (logger.isInfoEnabled()) 
+			logger.info("Starting parsing for queryID " + queryID);
+		CommonAST ast = doParsing(queryID, outputDir, query);
+
+		if (logger.isInfoEnabled()) 
+			logger.info("Starting Translation for query " + queryID);
+		LAF laf = doTranslation(queryID, outputDir, ast);
+		
+		if (logger.isInfoEnabled()) 
+			logger.info("Starting Logical Rewriting for query " + queryID);
+		LAF lafPrime = doLogicalRewriting(laf);
+		
+		if (logger.isInfoEnabled()) 
+			logger.info("Starting Source Allocation for query " + queryID);
+		DLAF dlaf = doSourceAllocation(lafPrime);
+		
+		if (logger.isInfoEnabled()) 
+			logger.info("Starting Source Planner for query " + queryID);
+		QueryExecutionPlan qep = doSourcePlanning(dlaf);
+
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN: " + laf.getName());
-		return laf;
+			logger.debug("RETURN: " + qep.getName());
+		return qep;
 	}
 
 	private String createQueryDirectory(int queryID) 
