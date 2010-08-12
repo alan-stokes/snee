@@ -59,6 +59,7 @@ import uk.ac.manchester.cs.snee.compiler.planner.SourcePlanner;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.rewriter.LogicalRewriter;
 import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
 import uk.ac.manchester.cs.snee.compiler.translator.Translator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
@@ -125,14 +126,13 @@ public class QueryCompiler {
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN: "+laf);
 		return laf;
-
 	}
 
 	private LAF doLogicalRewriting(int queryID, LAF laf) {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doLogicalRewriting: " + laf);
-		//TODO: Placeholder for rewriting step, currently merged with
-		//translation step
+		LogicalRewriter rewriter = new LogicalRewriter();
+		
 		LAF lafPrime = laf;
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN: doLogicalRewriting "+lafPrime);

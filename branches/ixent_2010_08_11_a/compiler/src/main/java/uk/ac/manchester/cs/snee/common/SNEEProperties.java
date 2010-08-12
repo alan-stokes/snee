@@ -239,6 +239,22 @@ public class SNEEProperties {
 		return property;
 	}
 	
+	/**
+	 * Returns the property value for a boolean property
+	 * @param propName name of the property to retrieve the value for
+	 * @return value of the specified property
+	 * @throws SNEEConfigurationException property does not exist
+	 */
+	public static boolean getBoolSetting(String propName)
+	throws SNEEConfigurationException {
+		if (logger.isInfoEnabled())
+			logger.info("ENTER getBoolSetting() with " + propName);
+		String property = getSetting(propName);
+		if (logger.isInfoEnabled())
+			logger.info("RETURN getBoolSetting() " + propName + "="+property);
+		return property.toUpperCase().equals("TRUE");
+	}
+	
 	public static String getFilename(String propertyName) 
 	throws SNEEConfigurationException {
 		if (logger.isInfoEnabled())
