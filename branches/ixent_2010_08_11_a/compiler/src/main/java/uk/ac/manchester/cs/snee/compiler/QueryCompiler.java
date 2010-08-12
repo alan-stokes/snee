@@ -128,7 +128,7 @@ public class QueryCompiler {
 
 	}
 
-	private LAF doLogicalRewriting(LAF laf) {
+	private LAF doLogicalRewriting(int queryID, LAF laf) {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doLogicalRewriting: " + laf);
 		//TODO: Placeholder for rewriting step, currently merged with
@@ -140,7 +140,7 @@ public class QueryCompiler {
 	}
 	
 		
-	private DLAF doSourceAllocation(LAF lafPrime) throws 
+	private DLAF doSourceAllocation(int queryID, LAF lafPrime) throws 
 	SourceAllocatorException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSourceAllocation: " + lafPrime);
@@ -151,64 +151,15 @@ public class QueryCompiler {
 		return dlaf;
 	}
 	
-	private QueryExecutionPlan doSourcePlanning(DLAF dlaf) {
+	private QueryExecutionPlan doSourcePlanning(int queryID, DLAF dlaf) {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSourcePlanning: " + dlaf);
 		SourcePlanner planner = new SourcePlanner();
-		QueryExecutionPlan qep = planner.doSourcePlanning(dlaf);
+		QueryExecutionPlan qep = planner.doSourcePlanning(queryID, dlaf);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doSourcePlanning");
 		return qep;
 	}
-	
-/**
-//	 * Invoke the multi-site optimizer phase.
-//	 * @param queryID the ID of the query.
-//	 * @param queryName the name of the query.
-//	 * @param paf the physical operator tree from the single-site phase.
-//	 * @return a complete query plan (comprising DAF, RT and agenda)
-//	 * @throws OptimizationException An optimization-related error.
-//	 * @throws AgendaException An agenda-related error.
-//	 */
-//	private  ScoredCandidateList<Agenda> doMultiSitePhase(int queryID, 
-//			String queryName, PAF paf) 
-//			throws OptimizationException, AgendaException {
-//
-//		// Routing	        
-//		logger.info("Starting Routing");
-//		ScoredCandidateList<RT> rtList = Routing.doRouting(
-//				paf, 
-//				sensornetMetadata,
-//				schemaMetadata,
-//				Settings.INPUTS_METADATA_SINKS.get(queryID),
-//				queryName,
-//				qosCollection.get(queryID));
-//
-//		// Partitioning
-//		logger.info("Starting Partitioning");
-//		ScoredCandidateList<FAF> fafList = Partitioning.doPartitioning(
-//				paf, 
-//				queryName);
-//
-//		// Where Scheduling
-//		logger.info("Starting Where Scheduling");
-//		ScoredCandidateList<DAF> dafList = WhereScheduling.
-//		doWhereScheduling(fafList, 
-//				rtList, 
-//				schemaMetadata,
-//				Settings.INPUTS_METADATA_SINKS.get(queryID),
-//				queryName);
-//
-//		// When Scheduling
-//		logger.info("Starting When Scheduling");
-//		ScoredCandidateList<Agenda> agendaList = WhenScheduling.
-//		doWhenScheduling(dafList, 
-//				qosCollection.get(queryID), 
-//				queryName);        
-//
-//		return agendaList;
-//	}
-
 
 //	/**
 //	 * Invokes the code generation phase.
@@ -298,15 +249,15 @@ public class QueryCompiler {
 		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Logical Rewriting for query " + queryID);
-		LAF lafPrime = doLogicalRewriting(laf);
+		LAF lafPrime = doLogicalRewriting(queryID, laf);
 		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Source Allocation for query " + queryID);
-		DLAF dlaf = doSourceAllocation(lafPrime);
+		DLAF dlaf = doSourceAllocation(queryID, lafPrime);
 		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Source Planner for query " + queryID);
-		QueryExecutionPlan qep = doSourcePlanning(dlaf);
+		QueryExecutionPlan qep = doSourcePlanning(queryID, dlaf);
 
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN: " + qep.getName());

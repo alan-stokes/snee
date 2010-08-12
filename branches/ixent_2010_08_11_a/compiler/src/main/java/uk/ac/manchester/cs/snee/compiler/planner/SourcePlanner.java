@@ -8,6 +8,11 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 
+/**
+ * The SourcePlanner is responsible for carrying out query optimization 
+ * specific to the type of source where the query is going to be evaluated.
+ *
+ */
 public class SourcePlanner {
 
 	Logger logger = Logger.getLogger(this.getClass().getName());
@@ -20,51 +25,59 @@ public class SourcePlanner {
 			logger.debug("RETURN SourcePlanner()");
 	}
 
-	public QueryExecutionPlan doSourcePlanning(DLAF dlaf) {
+	public QueryExecutionPlan doSourcePlanning(int queryID, DLAF dlaf) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER doSourcePlanning()");
 		//TODO: In the future, this will involve iterating over fragment 
 		//identified by source allocator in turn.
+		logger.info("Only source="+dlaf.getSource().getSourceName());
 		if (dlaf.getSourceType()==SourceType.SENSOR_NETWORK) {
-			SensorNetworkQueryPlan qep = doSensorNetworkSourcePlanning(dlaf);
+			SensorNetworkQueryPlan qep = doSensorNetworkSourcePlanning(dlaf,
+					queryID);
 			if (logger.isDebugEnabled())
 				logger.debug("RETURN doSourcePlanning()");
 			return qep;
 		} else {
-			EvaluatorQueryPlan qep = doEvaluatorPlanning(dlaf);
+			EvaluatorQueryPlan qep = doEvaluatorPlanning(dlaf, queryID);
 			if (logger.isDebugEnabled())
 				logger.debug("RETURN doSourcePlanning()");
 			return qep;
 		}
 	}
 
-	private SensorNetworkQueryPlan doSensorNetworkSourcePlanning(DLAF dlaf) {
+	private SensorNetworkQueryPlan doSensorNetworkSourcePlanning(DLAF dlaf,
+	int queryID) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER doSensorNetworkSourcePlanning()");		
-		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf);
-		//TODO: Add physical opt, routing, where- and when-scheduling here!
-		
-		// Physical Optimisation
-		//		logger.info("Starting Physical Optimization");
-		//		PAF paf = PhysicalOptimization.doPhysicalOptimization(
-		//				laf, 
-		//				queryName);
-		//		return paf;
+			logger.debug("ENTER doSensorNetworkSourcePlanning()");
+		//TODO: Add physical opt, routing, where- and when-scheduling here!		
+		if (logger.isInfoEnabled()) 
+			logger.info("Starting Algorithm Selection for query " + queryID);
+		//PAF paf = doSNAlgorithmSelection(dlaf);
+		if (logger.isInfoEnabled()) 
+			logger.info("Starting Routing for query " + queryID);		
+		//RT rt = doRouting(paf);
+		if (logger.isInfoEnabled()) 
+			logger.info("Starting Where-Scheduling for query " + queryID);
+		//DAF daf = doWhereScheduling(rt, paf);
+		if (logger.isInfoEnabled()) 
+			logger.info("Starting When-Scheduling for query " + queryID);
+		//Agenda agenda = doWhenScheduling(rt, paf);
+		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, 
+				"Q"+queryID); //agenda		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN doSensorNetworkSourcePlanning()");
 		return qep;
 	}
 	
-	private EvaluatorQueryPlan doEvaluatorPlanning(DLAF dlaf) {
+	private EvaluatorQueryPlan doEvaluatorPlanning(DLAF dlaf, int queryID) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER doEvaluatorPlanning()");		
-		EvaluatorQueryPlan qep = new EvaluatorQueryPlan(dlaf);
+		EvaluatorQueryPlan qep = new EvaluatorQueryPlan(dlaf,
+				"Q"+queryID);
 		//TODO: In future, do physical optimization here, rather than in 
 		//the evaluator as currently done
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN doEvaluatorPlanning()");
 		return qep;
 	}
-	
-	
 }
