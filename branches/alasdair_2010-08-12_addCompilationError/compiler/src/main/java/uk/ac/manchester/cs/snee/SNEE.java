@@ -59,10 +59,11 @@ public interface SNEE {
 	 * @throws SNEEException
 	 * @throws SchemaMetadataException 
 	 * @throws EvaluatorException 
-	 * @throws QoSException 
+	 * @throws SNEEException 
 	 */
 	public int addQuery(String query, String parametersFile) 
-	throws SNEEException, SchemaMetadataException, EvaluatorException, QoSException;
+	throws SNEECompilerException, SchemaMetadataException, 
+	EvaluatorException, SNEEException;
 
 	/**
 	 * Retrieve the ResultSet for a specified query if it exists.

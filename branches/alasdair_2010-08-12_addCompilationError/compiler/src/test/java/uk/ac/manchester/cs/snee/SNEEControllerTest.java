@@ -130,36 +130,34 @@ public class SNEEControllerTest extends EasyMockSupport {
 	public void tearDown() throws Exception {
 	}
 
-	@Test(expected=SNEEException.class)
-	public void testAddQuery_NullParams() 
-	throws SNEEException, SchemaMetadataException, EvaluatorException,
-	QoSException 
+	@Test(expected=SNEECompilerException.class)
+	public void testAddQuery_NullParams()
+	throws SchemaMetadataException, EvaluatorException, 
+	SNEECompilerException, SNEEException 
 	{
 		_snee.addQuery(null, null);	
 	}
 
-	@Test(expected=SNEEException.class)
+	@Test(expected=SNEECompilerException.class)
 	public void testAddQuery_EmptyQuery() 
-	throws SNEEException, SchemaMetadataException, EvaluatorException, 
-	QoSException 
+	throws SchemaMetadataException, EvaluatorException, 
+	SNEECompilerException, SNEEException 
 	{
 		_snee.addQuery("", null);	
 	}
 
-	@Test(expected=SNEEException.class)
+	@Test(expected=SNEECompilerException.class)
 	public void testAddQuery_WhitespaceQuery() 
-	throws SNEEException, SchemaMetadataException, EvaluatorException,
-	QoSException 
+	throws SchemaMetadataException, EvaluatorException, 
+	SNEECompilerException, SNEEException 
 	{
 		_snee.addQuery("   ", null);	
 	}
 	
 	@Test
 	public void testAddQuery_Valid() 
-	throws SNEEException, SchemaMetadataException, 
-	SourceDoesNotExistException, TypeMappingException, 
-	ParserValidationException, OptimizationException, ParserException, 
-	EvaluatorException, QoSException  
+	throws SchemaMetadataException, EvaluatorException, 
+	SNEECompilerException, SNEEException 
 	{
 		assertEquals(1, _snee.addQuery(mQuery, 
 				"src/test/resources/etc/query-parameters.xml"));
@@ -179,13 +177,12 @@ public class SNEEControllerTest extends EasyMockSupport {
 	
 	@Test
 	public void testRemoveQuery_queryAdded() 
-	throws SNEEException, SourceDoesNotExistException, 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException, SNEEException, 
 	TypeMappingException, SchemaMetadataException, 
-	ParserValidationException, OptimizationException, ParserException, 
-	ExtentDoesNotExistException, EvaluatorException,
-	RecognitionException, TokenStreamException, SNEEConfigurationException,
-	QoSException {
-		//Record expected calls to the mock objects
+	ParserValidationException, OptimizationException, ParserException,
+	SNEEConfigurationException, EvaluatorException, SNEECompilerException 
+	{		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
 		expect(mockDispatcher.stopQuery(1)).andReturn(true);
@@ -204,7 +201,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	ParserValidationException, OptimizationException, ParserException, 
 	ExtentDoesNotExistException, EvaluatorException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException,
-	QoSException {
+	QoSException, SNEECompilerException {
 		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
@@ -231,7 +228,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	throws SourceDoesNotExistException, SNEEException, 
 	TypeMappingException, SchemaMetadataException, 
 	ParserValidationException, OptimizationException, ParserException,
-	EvaluatorException, QoSException  {
+	EvaluatorException, QoSException, SNEECompilerException  {
 		int qID = _snee.addQuery(mQuery, null);
 		_snee.getResultSet(qID*20);
 	}
@@ -243,7 +240,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	ParserValidationException, OptimizationException, ParserException, 
 	ExtentDoesNotExistException, EvaluatorException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException, 
-	QoSException {
+	QoSException, SNEECompilerException {
 		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);

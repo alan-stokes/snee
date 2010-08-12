@@ -279,15 +279,15 @@ public class SNEEController implements SNEE {
 	 * @see uk.ac.manchester.cs.snee.SNEE#addQuery(java.lang.String)
 	 */
 	public int addQuery(String query, String queryParamsFile) 
-	throws SNEEException, SchemaMetadataException, EvaluatorException, 
-	QoSException 
+	throws SchemaMetadataException, EvaluatorException, 
+	SNEECompilerException, SNEEException 
 	{
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER addQuery() with " + query);
 		}
 		if (query == null || query.trim().equals("")) {
 			logger.warn("Null or empty query passed in");
-			throw new SNEEException("Null or empty query passed in.");
+			throw new SNEECompilerException("Null or empty query passed in.");
 		}
 		int queryId = getNextQueryId();
 		if (logger.isInfoEnabled()) 
@@ -296,7 +296,12 @@ public class SNEEController implements SNEE {
 			logger.info("Reading query " + queryId + " parameters\n");
 		QueryParameters queryParams = null;
 		if (queryParamsFile != null) {
-			queryParams = new QueryParameters(queryId, queryParamsFile);
+			try {
+				queryParams = new QueryParameters(queryId, queryParamsFile);
+			} catch (QoSException e) {
+				logger.warn("Throwing compilation exception. Cause " + e);
+				throw new SNEECompilerException(e.getLocalizedMessage());
+			}
 		}
 		if (logger.isInfoEnabled()) 
 			logger.info("Compiling query " + queryId + "\n");
@@ -369,8 +374,9 @@ public class SNEEController implements SNEE {
 		return queryId;
 	}
 
-	private void compileQuery(int queryID, String query, QueryParameters queryParams) 
-	throws SNEEException {
+	private void compileQuery(int queryID, String query, 
+			QueryParameters queryParams) 
+	throws SNEECompilerException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER compilerQuery() with queryID " + 
 					queryID + "\n\tquery: " + query);
@@ -381,7 +387,7 @@ public class SNEEController implements SNEE {
 			} catch (Exception e) {
 				String msg = "Problem compiling query.";
 				logger.warn(msg);
-				throw new SNEEException(msg, e);
+				throw new SNEECompilerException(msg, e);
 			}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN compileQuery()");
