@@ -151,7 +151,8 @@ public class QueryCompiler {
 		return dlaf;
 	}
 	
-	private QueryExecutionPlan doSourcePlanning(int queryID, DLAF dlaf) {
+	private QueryExecutionPlan doSourcePlanning(int queryID, DLAF dlaf) 
+	throws SNEEException, SchemaMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSourcePlanning: " + dlaf);
 		SourcePlanner planner = new SourcePlanner();

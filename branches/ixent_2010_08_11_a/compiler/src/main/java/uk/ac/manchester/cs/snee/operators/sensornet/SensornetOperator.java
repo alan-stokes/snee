@@ -36,6 +36,7 @@ package uk.ac.manchester.cs.snee.operators.sensornet;
 import java.util.Iterator;
 import java.util.List;
 
+import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 //import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
@@ -47,8 +48,11 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 //import uk.ac.manchester.cs.snee.compiler.whenScheduling.qosaware.cvx.AlphaBetaExpression;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
-public interface SensornetPhysicalOperator extends LogicalOperator {
+public interface SensornetOperator extends LogicalOperator {
 
+	SensornetOperator getSensornetOperator(LogicalOperator op) 
+	throws SNEEException, SchemaMetadataException;
+	
      /** @return the fragment to which this operator belongs. */
 //    Fragment getContainingFragment();
         

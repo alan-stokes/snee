@@ -2,11 +2,15 @@ package uk.ac.manchester.cs.snee.compiler.planner;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.sn.physical.AlgorithmSelector;
 
 /**
  * The SourcePlanner is responsible for carrying out query optimization 
@@ -25,7 +29,8 @@ public class SourcePlanner {
 			logger.debug("RETURN SourcePlanner()");
 	}
 
-	public QueryExecutionPlan doSourcePlanning(int queryID, DLAF dlaf) {
+	public QueryExecutionPlan doSourcePlanning(int queryID, DLAF dlaf) 
+	throws SNEEException, SchemaMetadataException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER doSourcePlanning()");
 		//TODO: In the future, this will involve iterating over fragment 
@@ -46,13 +51,13 @@ public class SourcePlanner {
 	}
 
 	private SensorNetworkQueryPlan doSensorNetworkSourcePlanning(DLAF dlaf,
-	int queryID) {
-		if (logger.isDebugEnabled())
+	int queryID) throws SNEEException, SchemaMetadataException {
+		if (logger.isTraceEnabled())
 			logger.debug("ENTER doSensorNetworkSourcePlanning()");
 		//TODO: Add physical opt, routing, where- and when-scheduling here!		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Algorithm Selection for query " + queryID);
-		//PAF paf = doSNAlgorithmSelection(dlaf);
+		PAF paf = doSNAlgorithmSelection(dlaf,"Q"+queryID);
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Routing for query " + queryID);		
 		//RT rt = doRouting(paf);
@@ -64,11 +69,22 @@ public class SourcePlanner {
 		//Agenda agenda = doWhenScheduling(rt, paf);
 		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, 
 				"Q"+queryID); //agenda		
-		if (logger.isDebugEnabled())
+		if (logger.isTraceEnabled())
 			logger.debug("RETURN doSensorNetworkSourcePlanning()");
 		return qep;
 	}
 	
+	private PAF doSNAlgorithmSelection(DLAF dlaf, String queryName) 
+	throws SNEEException, SchemaMetadataException {
+		if (logger.isTraceEnabled())
+			logger.debug("ENTER doSNAlgorithmSelection()");
+		AlgorithmSelector algorithmSelector = new AlgorithmSelector();
+		PAF paf = algorithmSelector.doPhysicalOptimizaton(dlaf, queryName);
+		if (logger.isTraceEnabled())
+			logger.debug("RETURN doSNAlgorithmSelection()");
+		return paf;
+	}
+
 	private EvaluatorQueryPlan doEvaluatorPlanning(DLAF dlaf, int queryID) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER doEvaluatorPlanning()");		
