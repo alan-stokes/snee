@@ -100,19 +100,19 @@ public class Dispatcher {
 			try {
 				QueryEvaluator queryEvaluator = 
 					createQueryEvaluator(queryID, laf, resultSet);
+				//		Thread evaluationThread = new Thread(queryEvaluator);
+				//		// Start query evaluation
+				//		evaluationThread.start();
+				//		if (logger.isInfoEnabled()) {
+				//			logger.info("Started evaluation of query " + queryID + ".");
+				//		}
+				//		// Add thread to set of query evaluators
+				_queryEvaluators.put(queryID, queryEvaluator);
 			} catch (SchemaMetadataException e) {
 			logger.warn("Throwing a MetadataException. Cause " + e);
 				logger.warn("Throwing a MetadataException. Cause " + e);
 				throw new MetadataException(e.getLocalizedMessage());
 			}
-	//		Thread evaluationThread = new Thread(queryEvaluator);
-	//		// Start query evaluation
-	//		evaluationThread.start();
-	//		if (logger.isInfoEnabled()) {
-	//			logger.info("Started evaluation of query " + queryID + ".");
-	//		}
-	//		// Add thread to set of query evaluators
-			_queryEvaluators.put(queryID, queryEvaluator);
 		} else {
 			//TODO: sensor network query plan
 			System.exit(-2);

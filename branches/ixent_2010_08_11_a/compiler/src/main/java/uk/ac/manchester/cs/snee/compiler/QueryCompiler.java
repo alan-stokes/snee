@@ -222,6 +222,7 @@ public class QueryCompiler {
 	 * @throws RecognitionException 
 	 * @throws SNEEConfigurationException 
 	 * @throws SourceAllocatorException 
+	 * @throws SourceAllocatorException 
 	 */
 	public QueryExecutionPlan compileQuery(int queryID, String query) 
 	throws SNEEException, SourceDoesNotExistException, 
@@ -229,7 +230,7 @@ public class QueryCompiler {
 	ParserValidationException, OptimizationException, 
 	ParserException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException, 
-	SNEEConfigurationException 
+	SNEEConfigurationException, SourceAllocatorException 
 	 {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER: queryID: " + queryID + "\n\tquery: " + query);

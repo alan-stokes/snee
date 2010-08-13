@@ -180,7 +180,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	TypeMappingException, SchemaMetadataException,
 	ParserValidationException, OptimizationException, ParserException, 
 	SNEEConfigurationException, MetadataException, EvaluatorException,
-	SNEECompilerException  
+	SNEECompilerException, SourceAllocatorException  
 	{		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
@@ -199,7 +199,8 @@ public class SNEEControllerTest extends EasyMockSupport {
 	TypeMappingException, SchemaMetadataException, 
 	ParserValidationException, OptimizationException, ParserException, 
 	EvaluatorException, RecognitionException, TokenStreamException,
-	SNEEConfigurationException, SNEECompilerException, MetadataException {
+	SNEEConfigurationException, SNEECompilerException, MetadataException, 
+	SourceAllocatorException {
 		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
@@ -238,7 +239,8 @@ public class SNEEControllerTest extends EasyMockSupport {
 	TypeMappingException, 
 	ParserValidationException, OptimizationException, ParserException, 
 	EvaluatorException, RecognitionException, TokenStreamException, 
-	SNEEConfigurationException, SNEECompilerException, MetadataException
+	SNEEConfigurationException, SNEECompilerException, MetadataException,
+	SourceAllocatorException
 	{
 		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);
