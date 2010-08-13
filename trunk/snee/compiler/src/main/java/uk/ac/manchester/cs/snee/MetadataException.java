@@ -31,7 +31,7 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
  *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.compiler.metadata;
+package uk.ac.manchester.cs.snee;
 
 /**
  * Generic metadata exception

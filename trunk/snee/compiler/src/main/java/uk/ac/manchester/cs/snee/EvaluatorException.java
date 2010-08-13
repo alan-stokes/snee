@@ -31,7 +31,7 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
  *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.evaluator;
+package uk.ac.manchester.cs.snee;
 
 /**
  * An exception raised if a problem arises when evaluating a query

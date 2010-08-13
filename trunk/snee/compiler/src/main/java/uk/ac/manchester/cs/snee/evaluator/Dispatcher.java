@@ -41,6 +41,8 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.EvaluatorException;
+import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
@@ -82,7 +84,7 @@ public class Dispatcher {
 	 */
 	public void startQuery(int queryID, StreamResultSet resultSet, 
 			LAF queryPlan) 
-	throws SNEEException, SchemaMetadataException, EvaluatorException {
+	throws SNEEException, MetadataException, EvaluatorException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER queryID " + queryID + " " + queryPlan);
 		}
@@ -91,8 +93,13 @@ public class Dispatcher {
 		 * Using a method for constructing the query evaluator so that it can be
 		 * overridden as a mock object for testing.
 		 */
-		QueryEvaluator queryEvaluator = 
-			createQueryEvaluator(queryID, queryPlan, resultSet);
+		QueryEvaluator queryEvaluator;
+		try {
+			queryEvaluator = createQueryEvaluator(queryID, queryPlan, resultSet);
+		} catch (SchemaMetadataException e) {
+			logger.warn("Throwing a MetadataException. Cause " + e);
+			throw new MetadataException(e.getLocalizedMessage());
+		}
 //		Thread evaluationThread = new Thread(queryEvaluator);
 //		// Start query evaluation
 //		evaluationThread.start();

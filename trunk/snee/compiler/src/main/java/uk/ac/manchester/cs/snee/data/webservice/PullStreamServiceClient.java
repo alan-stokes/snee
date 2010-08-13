@@ -7,8 +7,8 @@ import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import eu.semsorgrid4env.service.stream.pull.GetStreamItemRequest;
 import eu.semsorgrid4env.service.stream.pull.GetStreamNewestItemRequest;
 import eu.semsorgrid4env.service.stream.pull.InvalidCountFault;

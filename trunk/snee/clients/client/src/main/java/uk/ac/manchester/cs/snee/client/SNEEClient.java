@@ -8,13 +8,15 @@ import java.util.Observer;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.EvaluatorException;
+import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEE;
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEController;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
-import uk.ac.manchester.cs.snee.evaluator.EvaluatorException;
 import uk.ac.manchester.cs.snee.evaluator.StreamResultSet;
 import uk.ac.manchester.cs.snee.evaluator.StreamResultSetImpl;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
@@ -67,7 +69,8 @@ public abstract class SNEEClient implements Observer {
 	}
 	
 	public void run() 
-	throws SNEEException, SchemaMetadataException, EvaluatorException, QoSException {
+	throws SNEECompilerException, MetadataException, EvaluatorException,
+	SNEEException {
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER");
 		System.out.println("Query: " + this._query);

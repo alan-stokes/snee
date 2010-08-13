@@ -50,7 +50,6 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.MetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
@@ -62,9 +61,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReade
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
-import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
-import uk.ac.manchester.cs.snee.evaluator.EvaluatorException;
 import uk.ac.manchester.cs.snee.evaluator.StreamResultSet;
 import uk.ac.manchester.cs.snee.evaluator.StreamResultSetImpl;
 
@@ -279,15 +276,15 @@ public class SNEEController implements SNEE {
 	 * @see uk.ac.manchester.cs.snee.SNEE#addQuery(java.lang.String)
 	 */
 	public int addQuery(String query, String queryParamsFile) 
-	throws SNEEException, SchemaMetadataException, EvaluatorException, 
-	QoSException 
+	throws EvaluatorException, SNEECompilerException, SNEEException,
+	MetadataException 
 	{
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER addQuery() with " + query);
 		}
 		if (query == null || query.trim().equals("")) {
 			logger.warn("Null or empty query passed in");
-			throw new SNEEException("Null or empty query passed in.");
+			throw new SNEECompilerException("Null or empty query passed in.");
 		}
 		int queryId = getNextQueryId();
 		if (logger.isInfoEnabled()) 
@@ -296,7 +293,12 @@ public class SNEEController implements SNEE {
 			logger.info("Reading query " + queryId + " parameters\n");
 		QueryParameters queryParams = null;
 		if (queryParamsFile != null) {
-			queryParams = new QueryParameters(queryId, queryParamsFile);
+			try {
+				queryParams = new QueryParameters(queryId, queryParamsFile);
+			} catch (QoSException e) {
+				logger.warn("Throwing compilation exception. Cause " + e);
+				throw new SNEECompilerException(e.getLocalizedMessage());
+			}
 		}
 		if (logger.isInfoEnabled()) 
 			logger.info("Compiling query " + queryId + "\n");
@@ -335,7 +337,7 @@ public class SNEEController implements SNEE {
 	 * @throws EvaluatorException 
 	 */
 	private int dispatchQuery(int queryId) 
-	throws SNEEException, SchemaMetadataException, EvaluatorException 
+	throws SNEEException, MetadataException, EvaluatorException 
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER dispatchQuery() with " + queryId);
@@ -369,8 +371,9 @@ public class SNEEController implements SNEE {
 		return queryId;
 	}
 
-	private void compileQuery(int queryID, String query, QueryParameters queryParams) 
-	throws SNEEException {
+	private void compileQuery(int queryID, String query, 
+			QueryParameters queryParams) 
+	throws SNEECompilerException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER compilerQuery() with queryID " + 
 					queryID + "\n\tquery: " + query);
@@ -381,7 +384,7 @@ public class SNEEController implements SNEE {
 			} catch (Exception e) {
 				String msg = "Problem compiling query.";
 				logger.warn(msg);
-				throw new SNEEException(msg, e);
+				throw new SNEECompilerException(msg, e);
 			}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN compileQuery()");
@@ -432,14 +435,24 @@ public class SNEEController implements SNEE {
 	 */
 	public void addServiceSource(String name, String url, 
 			SourceType interfaceType) 
-	throws MalformedURLException, SchemaMetadataException, 
-	TypeMappingException, SNEEDataSourceException, 
-	SourceMetadataException {
+	throws MalformedURLException, SNEEDataSourceException,
+	MetadataException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER addServiceSource() with name=" +
 					name + " type=" + interfaceType + " url="+ url);
-		_schema.addServiceSource(name, url, 
-				SourceType.PULL_STREAM_SERVICE);
+		try {
+			_schema.addServiceSource(name, url, 
+					SourceType.PULL_STREAM_SERVICE);
+		} catch (SchemaMetadataException e) {
+			logger.warn("Throwing a MetadataException. Cause " + e);
+			throw new MetadataException(e.getLocalizedMessage());
+		} catch (TypeMappingException e) {
+			logger.warn("Throwing a MetadataException. Cause " + e);
+			throw new MetadataException(e.getLocalizedMessage());
+		} catch (SourceMetadataException e) {
+			logger.warn("Throwing a MetadataException. Cause " + e);
+			throw new MetadataException(e.getLocalizedMessage());
+		}
 		logger.info("Web service source added with url \n\t" + url);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN addServiceSource()");
