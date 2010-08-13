@@ -25,17 +25,17 @@ public class AlgorithmSelector {
 			logger.trace("ENTER getInstance() with " + dlaf.getName());
 		LogicalOperator rootOp = dlaf.getRootOperator();
 		
-		SensornetOperator phyOp = null;
+		SensornetOperator deliverPhyOp = null;
 		/* Query plans must have a deliver operator at their root */
 		if (rootOp instanceof DeliverOperator) {
-			phyOp = new SensornetDeliverOperator(rootOp);
+			deliverPhyOp = new SensornetDeliverOperator(rootOp);
 		} else {
 			String msg = "Unsupported operator " + rootOp.getOperatorName() +
 				". Query plans should have a DeliverOperator as their root.";
 			logger.warn(msg);
 			throw new SNEEException(msg);
 		}
-		PAF paf = new PAF(dlaf, queryName);
+		PAF paf = new PAF(deliverPhyOp, dlaf, queryName);
 		return paf;
 	}
 

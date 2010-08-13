@@ -6,25 +6,26 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.logical.IStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
-public class SensornetDeliverOperator extends SensornetOperatorImpl {
+public class SensornetNestedLoopJoinOperator extends SensornetOperatorImpl {
 	
-	Logger logger = Logger.getLogger(SensornetDeliverOperator.class.getName());
+	Logger logger = Logger.getLogger(SensornetNestedLoopJoinOperator.class.getName());
 	
-	DeliverOperator delOp;
+	IStreamOperator delOp;
 	
-	public SensornetDeliverOperator(LogicalOperator op) 
+	public SensornetNestedLoopJoinOperator(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
 		super(op);
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER SensornetDeliverOperator() " + op);
+			logger.debug("ENTER SensornetNestedLoopJoinOperator() " + op);
 			logger.debug("Attribute List: " + op.getAttributes());
 			logger.debug("Expression List: " + op.getExpressions());
 		}
-		delOp = (DeliverOperator) op;		
+		delOp = (IStreamOperator) op;		
 		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN SensornetDeliverOperator()");
+			logger.debug("RETURN SensornetNestedLoopJoinOperator()");
 		}		
 	}
 

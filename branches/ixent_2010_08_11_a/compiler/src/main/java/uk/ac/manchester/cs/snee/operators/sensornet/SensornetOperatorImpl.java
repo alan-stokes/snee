@@ -40,17 +40,28 @@ public abstract class SensornetOperatorImpl extends LogicalOperatorImpl implemen
 		SensornetOperator {
 
 	protected Logger logger = Logger.getLogger(this.getClass().getName());
-		
+	
+	/**
+	 * The logical operator associated with this physical operator.
+	 */
+	private LogicalOperator logicalOp;
+	
 	public SensornetOperatorImpl(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
 		super(op);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SensornetOperatorImpl() " + op);
 		}
-		// Instantiate the child operator
-		LogicalOperator logicalChild = op.getInput(0);
-		SensornetOperatorImpl phyChild = getSensornetOperator(logicalChild);
-		this.setInput(phyChild, 0);
+		logicalOp = op;
+		// Instantiate the child operator(s)
+		int numChildren = op.getInDegree();
+		for (int i=0; i<numChildren; i++) {
+			LogicalOperator logicalChild = op.getInput(0);
+			//TODO: Would we want this to be integrated with evaluator method?
+			SensornetOperatorImpl phyChild = getSensornetOperator(logicalChild);
+			this.setInput(phyChild, i);
+			phyChild.setOutput(this, 0);			
+		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetOperatorImpl() " + op);			
 		}
@@ -62,27 +73,27 @@ public abstract class SensornetOperatorImpl extends LogicalOperatorImpl implemen
 		SensornetOperatorImpl phyOp = null;
 		if (op instanceof AcquireOperator) {
 			phyOp = new SensornetAcquireOperator(op);
+		} else if (op instanceof AggregationOperator) {
+			phyOp = new SensornetSingleStepAggregationOperator(op);
 		} else if (op instanceof DeliverOperator) {
 			phyOp = new SensornetDeliverOperator(op);
-//		} else if (op instanceof ProjectOperator) {
-//			phyOp = new SensornetProjectOperator(op);
-//		} else if (op instanceof SelectOperator) {
-//			phyOp = new SensornetSelectOperator(op);
-//		} else if (op instanceof WindowOperator) {
+		} else if (op instanceof JoinOperator) {
+			phyOp = new SensornetNestedLoopJoinOperator(op);
+		} else if (op instanceof ProjectOperator) {
+			phyOp = new SensornetProjectOperator(op);
+		} else if (op instanceof RStreamOperator) {
+			phyOp = new SensornetRStreamOperator(op);
+		} else if (op instanceof SelectOperator) {
+			phyOp = new SensornetSelectOperator(op);
+//			} else if (op instanceof UnionOperator) {
+//			phyOp = new UnionOperatorImpl(op);
+		} else if (op instanceof WindowOperator) {
+			phyOp = new SensornetWindowOperator(op);
 //			if (((WindowOperator) op).isTimeScope()) {
 //				phyOp = new SensornetTimeWindowOperator(op);
 //			} else {
 //				phyOp = new SensornetTupleWindowOperator(op);
 //			}
-//			
-//		} else if (op instanceof RStreamOperator) {
-//			phyOp = new SensornetRStreamOperator(op);
-//		} else if (op instanceof AggregationOperator) {
-//			phyOp = new SensornetAggregationOperator(op);
-//		} else if (op instanceof JoinOperator) {
-//			phyOp = new SensornetJoinOperator(op);
-//		} else if (op instanceof UnionOperator) {
-//			phyOp = new UnionOperatorImpl(op);
 		} else {
 			String msg = "Unsupported operator " + op.getOperatorName();
 			logger.warn(msg);

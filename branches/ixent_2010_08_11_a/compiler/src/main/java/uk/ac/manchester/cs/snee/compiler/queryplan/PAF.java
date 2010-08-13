@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
 /**
  * The Sensor Network(?) Physical-algebraic form of the query plan operator tree.
@@ -28,13 +29,17 @@ public class PAF extends DLAF {
     
 	/**
 	 * Constructor for Physical-algebraic form.
+	 * @param deliverPhyOp the physical operator which is the root of the tree
 	 * @param dlaf The distributed logical-algebraic form of the query plan 
 	 * operator tree from which PAF is derived.
 	 * @param queryName The name of the query
 	 */
-	public PAF(final DLAF dlaf, final String queryName) {
+	public PAF(SensornetOperator deliverPhyOp, final DLAF dlaf, 
+	final String queryName) {
 		super(dlaf, generateName(queryName));
 		this.dlaf = dlaf;
+		this.rootOp = deliverPhyOp;
+		this.updateNodesAndEdgesColls(this.rootOp);
 	}
     
     /**
@@ -44,8 +49,8 @@ public class PAF extends DLAF {
      */
 	public PAF(final PAF paf, final String inName) {
 		super(paf, inName);
+		this.dlaf = paf.dlaf; //This is ok because the dlaf is immutable now
 		
-		this.dlaf = paf.dlaf; //This is ok because the laf is immutable now
 	}
 
     /**

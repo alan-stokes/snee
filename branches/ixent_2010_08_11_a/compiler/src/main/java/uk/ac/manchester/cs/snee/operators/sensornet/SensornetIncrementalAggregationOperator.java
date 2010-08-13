@@ -5,27 +5,29 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
-public class SensornetAcquireOperator extends SensornetOperatorImpl {
+public abstract class SensornetIncrementalAggregationOperator extends SensornetOperatorImpl {
 
 	private static Logger logger 
-	= Logger.getLogger(SensornetAcquireOperator.class.getName());
+	= Logger.getLogger(SensornetIncrementalAggregationOperator.class.getName());
 	
-	AcquireOperator acqOp;
+	AggregationOperator aggrOp;
 	
-	public SensornetAcquireOperator(LogicalOperator op) throws SNEEException,
+	public SensornetIncrementalAggregationOperator(LogicalOperator op) throws SNEEException,
 			SchemaMetadataException {
 		super(op);
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER SensornetAcquireOperator() " + op);
+			logger.debug("ENTER SensornetIncrementalAggregationOperator() " + op);
 			logger.debug("Attribute List: " + op.getAttributes());
 			logger.debug("Expression List: " + op.getExpressions());
 		}
-		acqOp = (AcquireOperator) op;		
+		aggrOp = (AggregationOperator) op;		
 		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN SensornetAcquireOperator()");
+			logger.debug("RETURN SensornetIncrementalAggregationOperator()");
 		}		
 	}
 

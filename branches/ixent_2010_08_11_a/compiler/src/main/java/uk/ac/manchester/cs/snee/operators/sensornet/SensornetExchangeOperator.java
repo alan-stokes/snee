@@ -8,23 +8,20 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
-public class SensornetDeliverOperator extends SensornetOperatorImpl {
+public class SensornetExchangeOperator extends SensornetOperatorImpl {
 	
-	Logger logger = Logger.getLogger(SensornetDeliverOperator.class.getName());
-	
-	DeliverOperator delOp;
-	
-	public SensornetDeliverOperator(LogicalOperator op) 
+	Logger logger = Logger.getLogger(SensornetExchangeOperator.class.getName());
+		
+	public SensornetExchangeOperator() 
 	throws SNEEException, SchemaMetadataException {
-		super(op);
+		super(null); ///???
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER SensornetDeliverOperator() " + op);
-			logger.debug("Attribute List: " + op.getAttributes());
-			logger.debug("Expression List: " + op.getExpressions());
+//			logger.debug("ENTER SensornetExchangeOperator() " + op);
+//			logger.debug("Attribute List: " + op.getAttributes());
+//			logger.debug("Expression List: " + op.getExpressions());
 		}
-		delOp = (DeliverOperator) op;		
 		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN SensornetDeliverOperator()");
+			logger.debug("RETURN SensornetExchangeOperator()");
 		}		
 	}
 
