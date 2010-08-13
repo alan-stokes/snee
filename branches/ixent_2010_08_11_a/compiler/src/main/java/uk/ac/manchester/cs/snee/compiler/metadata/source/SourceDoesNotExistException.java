@@ -33,7 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.metadata.source;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.MetadataException;
+import uk.ac.manchester.cs.snee.MetadataException;
 
 /**
  * 

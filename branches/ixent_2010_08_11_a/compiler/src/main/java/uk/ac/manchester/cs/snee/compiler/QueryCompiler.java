@@ -228,8 +228,8 @@ public class QueryCompiler {
 	TypeMappingException, SchemaMetadataException, 
 	ParserValidationException, OptimizationException, 
 	ParserException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException, SNEEConfigurationException, 
-	SourceAllocatorException 
+	RecognitionException, TokenStreamException, 
+	SNEEConfigurationException 
 	 {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER: queryID: " + queryID + "\n\tquery: " + query);
