@@ -42,7 +42,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.MetadataException;
+import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReader;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;

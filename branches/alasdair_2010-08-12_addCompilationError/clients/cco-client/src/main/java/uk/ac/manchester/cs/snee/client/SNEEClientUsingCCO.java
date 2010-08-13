@@ -8,6 +8,8 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import uk.ac.manchester.cs.snee.MetadataException;
+import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
@@ -17,7 +19,6 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
-import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
 
 public class SNEEClientUsingCCO extends SNEEClient {
 	
@@ -29,10 +30,9 @@ public class SNEEClientUsingCCO extends SNEEClient {
 	
 
 	public SNEEClientUsingCCO(String query, double duration) 
-	throws SNEEException, IOException, SchemaMetadataException, 
-	TypeMappingException, SNEEDataSourceException,
-	ExtentDoesNotExistException, SNEEConfigurationException, 
-	SourceMetadataException {
+	throws SNEEException, IOException, SNEEConfigurationException,
+	MetadataException, SNEEDataSourceException 
+	{
 		super(query, duration);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClientUsingCCO()");
@@ -54,7 +54,8 @@ public class SNEEClientUsingCCO extends SNEEClient {
 	}
 
 	private void displayExtentSchema(String extentName) 
-	throws ExtentDoesNotExistException {
+	throws MetadataException 
+	{
 		Iterator<String> it;
 		ExtentMetadata extent = 
 			controller.getExtentDetails(extentName);
