@@ -1,5 +1,8 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.Node;
@@ -70,7 +73,8 @@ public class PAF extends DLAF {
     	candidateCount++;
     	return queryName + "-PAF-" + candidateCount;
     }
-	
+
+    
 //    protected void exportAsDOTFile(final String fname, 
 //			TreeMap<String, StringBuffer> opLabelBuff,
 //			TreeMap<String, StringBuffer> edgeLabelBuff,

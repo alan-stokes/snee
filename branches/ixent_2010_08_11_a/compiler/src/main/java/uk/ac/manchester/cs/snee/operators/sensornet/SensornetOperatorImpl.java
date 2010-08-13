@@ -52,7 +52,11 @@ public abstract class SensornetOperatorImpl extends LogicalOperatorImpl implemen
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SensornetOperatorImpl() " + op);
 		}
-		logicalOp = op;
+		if (op instanceof SensornetOperatorImpl) {
+			logger.warn("Physical operator "+op.getID()+"instead of logical "+
+					"operator passed to physical operator constructor.");
+		}
+		this.logicalOp = op;
 		// Instantiate the child operator(s)
 		int numChildren = op.getInDegree();
 		for (int i=0; i<numChildren; i++) {
@@ -205,6 +209,14 @@ public abstract class SensornetOperatorImpl extends LogicalOperatorImpl implemen
 			TypeMappingException {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	/**
+	 * Returns the logical operator associated with this physical operator.
+	 * @return
+	 */
+	public LogicalOperator getLogicalOp() {
+		return logicalOp;
 	}
 
 }
