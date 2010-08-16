@@ -13,7 +13,7 @@
 	<description>Compiles a SNEEql query into a query plan</description>
 
 	<properties>
-		<sds.version>0.1.1-SNAPSHOT</sds.version>
+		<sds.version>0.1.1</sds.version>
 		<cxf.version>2.2.8</cxf.version>
 		<wsdl.location>${project.build.directory}/wsdl</wsdl.location>
 		<!--<wsdl.location>${basedir}/src/main/wsdl</wsdl.location>-->
