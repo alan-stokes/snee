@@ -13,6 +13,7 @@
 	<description>Compiles a SNEEql query into a query plan</description>
 
 	<properties>
+		<sds.version>0.1.1-SNAPSHOT</sds.version>
 		<cxf.version>2.2.8</cxf.version>
 		<wsdl.location>${project.build.directory}/wsdl</wsdl.location>
 		<!--<wsdl.location>${basedir}/src/main/wsdl</wsdl.location>-->
@@ -24,15 +25,10 @@
 			<artifactId>antlr</artifactId>
 			<version>2.7.5</version>
 		</dependency>
-		<!--<dependency>
-			<groupId>uk.ac.manchester.cs.snee.webservice</groupId>
-			<artifactId>webservice-api</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>-->
 		<dependency>
-			<groupId>uk.ac.manchester.cs</groupId>
+			<groupId>eu.semsorgrid4env.service.sds</groupId>
 			<artifactId>sds-wsdl</artifactId>
-			<version>0.0.1</version>
+			<version>${sds.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.easymock</groupId>
@@ -72,16 +68,11 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>uk.ac.manchester.cs</groupId>
+									<groupId>eu.semsorgrid4env.service.sds</groupId>
 									<artifactId>sds-wsdl</artifactId>
+									<version>${sds.version}</version>
 									<type>jar</type>
-									<version>0.0.1</version>
 								</artifactItem>
-								<!--
-									<artifactItem> <groupId>eu.semsorgrid4env</groupId>
-									<artifactId>StreamingDataService</artifactId> <type>jar</type>
-									<version>0.0.1</version> </artifactItem>
-								-->
 							</artifactItems>
 							<outputDirectory>${project.build.directory}/wsdl</outputDirectory>
 							<includes>**/*.wsdl,**/*.xsd</includes>
