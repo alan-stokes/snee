@@ -384,8 +384,9 @@ public class SNEEController implements SNEE {
 					_compiler.compileQuery(queryID, query);
 				_queryPlans.put(queryID, queryPlan);
 			} catch (Exception e) {
-				String msg = "Problem compiling query.";
-				logger.warn(msg);
+				String msg = "Problem compiling query: "+
+					e.getLocalizedMessage()+"\n ";
+				logger.warn(msg, e);
 				throw new SNEECompilerException(msg, e);
 			}
 		if (logger.isTraceEnabled()) {
