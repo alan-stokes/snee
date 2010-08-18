@@ -33,9 +33,12 @@ public class LAFUtils extends GraphUtils {
 	private boolean showTupleTypes = false;
 	
 	private boolean showOperatorID = false;
+
+	protected String name;
 	
 	public LAFUtils(LAF laf) {
 		this.laf = laf;
+		this.name = laf.getName();
 	}
 
 
@@ -160,7 +163,7 @@ public class LAFUtils extends GraphUtils {
 			String outputDir = SNEEProperties.getSetting(
 					SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
 					sep + laf.getQueryName() + sep + "query-plan";
-			String dotFilePath = outputDir + sep + laf.getName() + ".dot";
+			String dotFilePath = outputDir + sep + this.name + ".dot";
 			exportAsDOTFile(dotFilePath);
 			super.generateGraphImage(dotFilePath);
 		} catch (Exception e) {
@@ -169,5 +172,6 @@ public class LAFUtils extends GraphUtils {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN generateGraphImage()");
 	}
+
 	
 }

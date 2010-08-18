@@ -39,22 +39,22 @@ public class PAF extends DLAF {
 	 */
 	public PAF(SensornetOperator deliverPhyOp, final DLAF dlaf, 
 	final String queryName) {
-		super(dlaf, generateName(queryName));
+//		super(dlaf, generateName(queryName));
 		this.dlaf = dlaf;
-		this.rootOp = deliverPhyOp;
-		this.updateNodesAndEdgesColls(this.rootOp);
+//		this.rootOp = deliverPhyOp;
+//		this.updateNodesAndEdgesColls(this.rootOp);
 	}
     
-    /**
-     * Constructor used by clone.
-     * @param paf The PAF to be cloned
-     * @param inName The name to be assigned to the data structure
-     */
-	public PAF(final PAF paf, final String inName) {
-		super(paf, inName);
-		this.dlaf = paf.dlaf; //This is ok because the dlaf is immutable now
-		
-	}
+//    /**
+//     * Constructor used by clone.
+//     * @param paf The PAF to be cloned
+//     * @param inName The name to be assigned to the data structure
+//     */
+//	public PAF(final PAF paf, final String inName) {
+//		super(paf, inName);
+//		this.dlaf = paf.dlaf; //This is ok because the dlaf is immutable now
+//		
+//	}
 
     /**
      * Resets the counter; use prior to compiling the next query.
@@ -102,26 +102,26 @@ public class PAF extends DLAF {
 //    }
 
 //Should this be: replace LogicalOperator with SensorNetworkPhysicalOperator?    
-    public void replace(final Node oldNode, final Node newNode) {
-		final Node[] inputs = oldNode.getInputs();
-		for (final Node n : inputs) {
-		    n.replaceOutput(oldNode, newNode);
-		    newNode.addInput(n);
-		}
-		final Node[] outputs = oldNode.getOutputs();
-		for (final Node n : outputs) {
-		    n.replaceInput(oldNode, newNode);
-		    newNode.addOutput(n);
-		}
-		if (this.rootOp == oldNode) {
-			this.rootOp = (LogicalOperator) newNode;
-		}
-		nodes.remove(oldNode.getID());
-		nodes.put(newNode.getID(), newNode);
-    }    
- 
-	public String getProvenanceString() {
-		return this.dlaf.getProvenanceString() + "->" + this.name;
-	}    
+//    public void replace(final Node oldNode, final Node newNode) {
+//		final Node[] inputs = oldNode.getInputs();
+//		for (final Node n : inputs) {
+//		    n.replaceOutput(oldNode, newNode);
+//		    newNode.addInput(n);
+//		}
+//		final Node[] outputs = oldNode.getOutputs();
+//		for (final Node n : outputs) {
+//		    n.replaceInput(oldNode, newNode);
+//		    newNode.addOutput(n);
+//		}
+//		if (this.rootOp == oldNode) {
+//			this.rootOp = (LogicalOperator) newNode;
+//		}
+//		nodes.remove(oldNode.getID());
+//		nodes.put(newNode.getID(), newNode);
+//    }    
+// 
+//	public String getProvenanceString() {
+//		return this.dlaf.getProvenanceString() + "->" + this.name;
+//	}    
     
 }

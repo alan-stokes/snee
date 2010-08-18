@@ -12,13 +12,15 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
  * evaluator.
  *
  */
-public class DLAF extends LAF {
+public class DLAF {
 
     /**
      * Logger for this class.
      */
     private static  Logger logger = Logger.getLogger(DLAF.class.getName());
 	
+    private String name;
+    
 	/**
 	 * The logical-algebraic form of the query plan operator tree from which
 	 * DLAF is derived.
@@ -56,20 +58,20 @@ public class DLAF extends LAF {
 	 * @param queryName The name of the query
 	 */
 	public DLAF(final LAF laf, final String queryName) {
-		super(laf, generateName(queryName));
 		this.laf = laf;
+		this.name = generateName(queryName);
 	}
 	
-    /**
-     * Constructor used by clone.
-     * @param dlaf The DLAF to be cloned
-     * @param inName The name to be assigned to the data structure
-     */
-	public DLAF(final DLAF dlaf, final String inName) {
-		super(dlaf, inName);
-		
-		this.laf = dlaf.laf; //This is ok because the laf is immutable now
-	}
+//    /**
+//     * Constructor used by clone.
+//     * @param dlaf The DLAF to be cloned
+//     * @param inName The name to be assigned to the data structure
+//     */
+//	public DLAF(final DLAF dlaf, final String inName) {
+//		super(dlaf, inName);
+//		
+//		this.laf = dlaf.laf; //This is ok because the laf is immutable now
+//	}
 	
     /**
      * Resets the counter; use prior to compiling the next query.
@@ -86,7 +88,7 @@ public class DLAF extends LAF {
 	 */
     private static String generateName(final String queryName) {
     	candidateCount++;
-    	return queryName + "-PAF-" + candidateCount;
+    	return queryName + "-DLAF-" + candidateCount;
     }
     
 	public String getProvenanceString() {
@@ -111,6 +113,10 @@ public class DLAF extends LAF {
 
 	public LAF getLAF() {
 		return this.laf;
+	}
+
+	public String getName() {
+		return this.name;
 	}
 	
 }

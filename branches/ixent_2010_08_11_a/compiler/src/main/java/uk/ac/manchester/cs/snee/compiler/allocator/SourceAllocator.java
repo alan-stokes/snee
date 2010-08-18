@@ -34,7 +34,7 @@ public class SourceAllocator {
 	{
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER allocateSources() laf="+laf.getName());
-		DLAF dlaf = new DLAF(laf, laf.getName()); //TODO: should be query name??
+		DLAF dlaf = new DLAF(laf, laf.getQueryName());
 		Iterator<LogicalOperator> opIter =
 			laf.operatorIterator(TraversalOrder.PRE_ORDER);
 		List<SourceMetadata> sources = new ArrayList<SourceMetadata>();
