@@ -100,6 +100,13 @@ public abstract class SNEEClient implements Observer {
 		
 		List<Output> results1 = displayFinalResult(queryId1);
 
+		try {
+			Thread.currentThread().sleep((long) (_duration * 1000));
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		controller.close();
 		printResults(results1, queryId1);
 		//		printResults(results2, queryId2);
