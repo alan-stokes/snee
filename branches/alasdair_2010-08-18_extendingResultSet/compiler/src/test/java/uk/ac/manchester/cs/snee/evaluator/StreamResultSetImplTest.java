@@ -58,6 +58,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.StreamResultSet;
+import uk.ac.manchester.cs.snee.StreamResultSetImpl;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.types.Duration;
 

@@ -1,5 +1,6 @@
-package uk.ac.manchester.cs.snee.evaluator;
+package uk.ac.manchester.cs.snee;
 
+import java.sql.ResultSetMetaData;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,11 +9,11 @@ import java.util.Observable;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.types.Duration;
 
-public class StreamResultSetImpl extends Observable implements StreamResultSet {
+public class StreamResultSetImpl 
+extends Observable implements StreamResultSet {
 	
 	private static Logger logger = 
 		Logger.getLogger(StreamResultSetImpl.class.getName());
@@ -21,11 +22,14 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 
 	private List<String> _attributes;
 
-	public StreamResultSetImpl() {
+	private String command = null;
+
+	public StreamResultSetImpl() {//(String query) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER StreamResultSetImpl()");		
+			logger.debug("ENTER StreamResultSetImpl()");// with " + query);		
 		_attributes = new ArrayList<String>();
 		_data = createDataStore();
+//		command = query;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN StreamResultSetImpl()");
 	}
@@ -498,6 +502,22 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
     				response.size());
     	}
 		return response;
+	}
+
+	@Override
+	public ResultSetMetaData getMetadata() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getCommand() {
+		return command;
+	}
+
+	@Override
+	public void setCommand(String cmd) {
+		command = cmd;
 	}
 
 }

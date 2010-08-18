@@ -62,8 +62,6 @@ import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
-import uk.ac.manchester.cs.snee.evaluator.StreamResultSet;
-import uk.ac.manchester.cs.snee.evaluator.StreamResultSetImpl;
 
 /**
  * Controller class for SNEEql query compilation and evaluation

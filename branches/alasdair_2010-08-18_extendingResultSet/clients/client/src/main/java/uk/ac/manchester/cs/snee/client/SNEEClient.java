@@ -14,11 +14,11 @@ import uk.ac.manchester.cs.snee.SNEE;
 import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEController;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.StreamResultSet;
+import uk.ac.manchester.cs.snee.StreamResultSetImpl;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
-import uk.ac.manchester.cs.snee.evaluator.StreamResultSet;
-import uk.ac.manchester.cs.snee.evaluator.StreamResultSetImpl;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 
 public abstract class SNEEClient implements Observer {

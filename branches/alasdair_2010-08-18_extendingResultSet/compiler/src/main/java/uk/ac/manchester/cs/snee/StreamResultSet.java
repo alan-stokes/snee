@@ -1,14 +1,13 @@
-package uk.ac.manchester.cs.snee.evaluator;
+package uk.ac.manchester.cs.snee;
 
+import java.sql.ResultSetMetaData;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
-import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.types.Duration;
 
-//FIXME: Make StreamResultSet extend Observable!
 public interface StreamResultSet {
 
 	public void add(Output data);
@@ -25,6 +24,39 @@ public interface StreamResultSet {
 	 */
 	public int size();
 
+	/**
+	 * Retrieves the number, types and properties of this 
+	 * <code>StreamResultSet</code> object's columns.
+	 * 
+	 * @return the description of this <code>StreamResultSet</code> 
+	 * object's columns
+	 */
+	public ResultSetMetaData getMetadata();
+	
+	/**
+	 * Retrieves this <code>StreamResultSet</code> object's command 
+	 * property. The command property contains a command string, which 
+	 * must be an SNEEql query, that can be executed to fill the 
+	 * StreamResultSet with data. 
+	 * The default value is <code>null</code>.
+	 * 
+	 * @return the command string; may be <code>null</code>
+	 * @see StreamResultSet#setCommand(String);
+	 */
+	public String getCommand();
+	
+	/**
+	 * Sets this <code>StreamResultSet</code> object's command 
+	 * property to the given SNEEql query.
+	 *  
+	 * @param cmd the SNEEql query that will be used to get the data 
+	 * for this <code>StreamResultSet</code> object; 
+	 * may be <code>null</code>
+	 * 
+	 * @see StreamResultSet#getCommand(String)
+	 */
+	public void setCommand(String cmd);
+	
 	/**
 	 * Return all of the results available for the specified query.
 	 * 

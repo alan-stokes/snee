@@ -67,7 +67,6 @@ import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
-import uk.ac.manchester.cs.snee.evaluator.StreamResultSet;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 
