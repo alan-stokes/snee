@@ -55,7 +55,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
  * @author Christian
  *
  */
-public class JoinOperator extends OperatorImplementation implements Operator {
+public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator {
 
 	/** 	Standard Java logger. */
    private Logger logger = Logger.getLogger(JoinOperator.class.getName());
@@ -94,7 +94,7 @@ public class JoinOperator extends OperatorImplementation implements Operator {
 	 * @throws OptimizationException 
 	 * @throws SchemaMetadataException 
 	 */
-	public JoinOperator(Operator left, Operator right, AttributeType boolType) 
+	public JoinOperator(LogicalOperator left, LogicalOperator right, AttributeType boolType) 
 	throws OptimizationException, SchemaMetadataException {
 		super(boolType);
 		this.setOperatorName("JOIN");
@@ -107,13 +107,13 @@ public class JoinOperator extends OperatorImplementation implements Operator {
 		getIncomingAttributes();
 	}
 
-	private void setChildren (Operator left, Operator right) 
+	private void setChildren (LogicalOperator left, LogicalOperator right) 
 	throws OptimizationException {
 		String message = "Illegal attempt to Join Stream of tuples with " +
 		"anything but a Relation.";;
 		if (left.getOperatorDataType() == OperatorDataType.STREAM) {
 			if (right.getOperatorDataType() == OperatorDataType.RELATION) {
-				setChildren(new Operator[] {left, right});
+				setChildren(new LogicalOperator[] {left, right});
 				setOperatorDataType(OperatorDataType.STREAM);
 			} else { 
 				logger.warn(message);
@@ -122,7 +122,7 @@ public class JoinOperator extends OperatorImplementation implements Operator {
 		} else if (left.getOperatorDataType() == OperatorDataType.WINDOWS) {
 			if ((right.getOperatorDataType() == OperatorDataType.WINDOWS) ||  
 					(right.getOperatorDataType() == OperatorDataType.RELATION)) {
-				setChildren(new Operator[] {left, right});
+				setChildren(new LogicalOperator[] {left, right});
 				setOperatorDataType(OperatorDataType.WINDOWS);
 			} else {
 				logger.warn(message);
@@ -130,17 +130,17 @@ public class JoinOperator extends OperatorImplementation implements Operator {
 			}
 		} else if (left.getOperatorDataType() == OperatorDataType.RELATION) {
 			if (right.getOperatorDataType() == OperatorDataType.RELATION) {
-				setChildren(new Operator[] {left, right});
+				setChildren(new LogicalOperator[] {left, right});
 				setOperatorDataType(OperatorDataType.RELATION);
 
 			} else if (right.getOperatorDataType() == OperatorDataType.RELATION) {
 				//invert left and right so relation(s) are on the right.
-				setChildren(new Operator[] {right, left});
+				setChildren(new LogicalOperator[] {right, left});
 				setOperatorDataType(OperatorDataType.WINDOWS);
 			}
 			else  {
 				//invert left and right so relation(s) are on the right.
-				setChildren(new Operator[] {right, left});
+				setChildren(new LogicalOperator[] {right, left});
 				setOperatorDataType(OperatorDataType.STREAM);
 			}    	
 		}    

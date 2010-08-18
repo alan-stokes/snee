@@ -50,7 +50,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
  * which should be placed on the destination site of query plan results.
  * @author Ixent Galpin, Christian Brenninkmeijer and Steven Lynden 
  */
-public class DeliverOperator extends OperatorImplementation {
+public class DeliverOperator extends LogicalOperatorImpl {
 
 	/** Standard Java Logger. */
 	private Logger logger = Logger.getLogger(DeliverOperator.class.getName());
@@ -77,7 +77,7 @@ public class DeliverOperator extends OperatorImplementation {
 	 * Constructor that places a Deliver at the top of a tree.
 	 * @param inputOperator Previous operator.
 	 */
-	public DeliverOperator(Operator inputOperator, AttributeType boolType) {
+	public DeliverOperator(LogicalOperator inputOperator, AttributeType boolType) {
 		super(boolType);
 
 		this.setOperatorName("DELIVER");
@@ -85,7 +85,7 @@ public class DeliverOperator extends OperatorImplementation {
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 		this.setParamStr("");
 
-		setChildren(new Operator[] {inputOperator});
+		setChildren(new LogicalOperator[] {inputOperator});
 		if (inputOperator == null) {
 			throw new AssertionError("input operator can not be null.");
 		}

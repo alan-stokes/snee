@@ -45,14 +45,14 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 /**
  * @author Christian Brenninkmeijer, Ixent Galpin and Steven Lynden 
  */
-public class RStreamOperator extends OperatorImplementation 
-implements Operator {
+public class RStreamOperator extends LogicalOperatorImpl 
+implements LogicalOperator {
 
     /**
      * Constructor.
      * @param inputOperator Previous Operator.
      */
-    public RStreamOperator(Operator inputOperator, AttributeType boolType) {
+    public RStreamOperator(LogicalOperator inputOperator, AttributeType boolType) {
         super(boolType);
 
         this.setOperatorName("RSTREAM");
@@ -60,7 +60,7 @@ implements Operator {
         this.setOperatorDataType(OperatorDataType.STREAM);
         this.setParamStr("");
         
-        setChildren(new Operator[] {inputOperator});
+        setChildren(new LogicalOperator[] {inputOperator});
     }  
 
     //used by clone method

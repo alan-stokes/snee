@@ -46,7 +46,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
  * Parent for Project, Aggregation and Having Operator.
  * @author Christian Brenninkmeijer, Ixent Galpin
  */
-public abstract class PredicateOperator extends OperatorImplementation {
+public abstract class PredicateOperator extends LogicalOperatorImpl {
 
 	/**
 	 * The expressions for building the attributes.
@@ -59,12 +59,12 @@ public abstract class PredicateOperator extends OperatorImplementation {
 	private List <Attribute> attributes;
 
 	protected PredicateOperator (List<Expression> expressions2, 
-			List<Attribute> attributes2, Operator inputOperator,
+			List<Attribute> attributes2, LogicalOperator inputOperator,
 			AttributeType boolType) {
 		super(boolType);
 		this.expressions = expressions2;
 		this.attributes = attributes2; 
-		setChildren(new Operator[] {inputOperator});
+		setChildren(new LogicalOperator[] {inputOperator});
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 	}
 

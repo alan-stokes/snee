@@ -54,14 +54,14 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
  * extend this class.
  * @author Ixent Galpin ,Christian Brenninkmeijerand Steven Lynden
  */
-public abstract class OperatorImplementation extends NodeImplementation
-implements Operator {
+public abstract class LogicalOperatorImpl extends NodeImplementation
+implements LogicalOperator {
 
 	/**
 	 * See java.util.logging.Logger.
 	 */
 	private Logger logger = 
-		Logger.getLogger(OperatorImplementation.class.getName());
+		Logger.getLogger(LogicalOperatorImpl.class.getName());
 
 	/**
 	 * Id to be given to the next Operator to be created.
@@ -112,7 +112,7 @@ implements Operator {
 	 * Makes a clone of the operator without using a new opCount.
 	 * @param model Operator to get internal data from.
 	 */
-	protected OperatorImplementation(Operator model) {
+	protected LogicalOperatorImpl(LogicalOperator model) {
 		super(model);
 		this.operatorDataType = model.getOperatorDataType();
 		this.operatorName = model.getOperatorName();
@@ -124,7 +124,7 @@ implements Operator {
 	/**
 	 * Constructs a new operator. 
 	 */
-	public OperatorImplementation(AttributeType boolType) {
+	public LogicalOperatorImpl(AttributeType boolType) {
 		/* Assign the operator an automatic ID */
 		super(new Integer(opCount).toString());
 		_boolType = boolType;
@@ -136,7 +136,7 @@ implements Operator {
 	 * @param model Operator to get internal data from.
 	 * @param newID boolean flag expected to be true. 
 	 */
-	protected OperatorImplementation(Operator model, boolean newID) {
+	protected LogicalOperatorImpl(LogicalOperator model, boolean newID) {
 		super(new Integer(opCount).toString());
 		opCount++;        
 		assert (newID);
@@ -153,10 +153,10 @@ implements Operator {
 	 * @param children The children of an operator
 	 */
 	// TODO: Change children to arrayList type?
-	protected void setChildren(Operator[] children) {
+	protected void setChildren(LogicalOperator[] children) {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER setChildren() #children=" + children.length);
-		for (Operator element : children) {
+		for (LogicalOperator element : children) {
 			this.addInput(element);
 			element.addOutput(this);
 		}
@@ -196,8 +196,8 @@ implements Operator {
 	 * @param index Position of the operator to be returned.
 	 * @return The child operator with this index.
 	 */
-	public Operator getInput(int index) {
-		return (Operator) super.getInput(index);
+	public LogicalOperator getInput(int index) {
+		return (LogicalOperator) super.getInput(index);
 	}
 
 	/** 
@@ -205,8 +205,8 @@ implements Operator {
 	 * @param index Position of the operator to be returned.
 	 * @return The parent operator with this index.
 	 */
-	public Operator getOutput(int index) {
-		return (Operator) super.getOutput(index);
+	public LogicalOperator getOutput(int index) {
+		return (LogicalOperator) super.getOutput(index);
 	}
 
 	//	/** 
@@ -255,7 +255,7 @@ implements Operator {
 	/**
 	 * @return The output operator at index 0.
 	 */
-	public Operator getParent() {
+	public LogicalOperator getParent() {
 		return this.getOutput(0);
 	}
 
@@ -290,12 +290,12 @@ implements Operator {
 	 * Iterator to traverse the immediate children of the current operator.
 	 * @return An iterator over the children
 	 */
-	public Iterator<Operator> childOperatorIterator() {
+	public Iterator<LogicalOperator> childOperatorIterator() {
 
-		List<Operator> opList = new ArrayList<Operator>();
+		List<LogicalOperator> opList = new ArrayList<LogicalOperator>();
 
 		for (int n = 0; n < this.getInDegree(); n++) {
-			Operator op = this.getInput(n);
+			LogicalOperator op = this.getInput(n);
 			opList.add(op);
 		}
 

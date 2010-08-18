@@ -89,7 +89,7 @@ public class SNEEPropertiesTest {
 	@Test
 	public void testGenerateGraphsFalse() 
 	throws SNEEConfigurationException {
-		props.setProperty(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS, "false");
+		props.setProperty(SNEEPropertyNames.GENERATE_QEP_IMAGES, "false");
 		SNEEProperties.initialise(props);
 		assertEquals("false", SNEEProperties.getSetting("compiler.generate_graphs"));
 	}
@@ -97,10 +97,10 @@ public class SNEEPropertiesTest {
 	@Test
 	public void testGenerateGraphsTrue() 
 	throws SNEEConfigurationException {
-		props.setProperty(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS, "true");
+		props.setProperty(SNEEPropertyNames.GENERATE_QEP_IMAGES, "true");
 		props.setProperty(SNEEPropertyNames.GRAPHVIZ_EXE, "/usr/local/bin/dot");
 		SNEEProperties.initialise(props);
-		assertEquals("true", SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS));
+		assertEquals("true", SNEEProperties.getSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES));
 	}
 	
 	@Test
@@ -118,10 +118,10 @@ public class SNEEPropertiesTest {
 	@Test(expected=SNEEConfigurationException.class)
 	public void testGenerateGraphsTrueNoGraphViz() 
 	throws SNEEConfigurationException {
-		props.setProperty(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS, "true");
+		props.setProperty(SNEEPropertyNames.GENERATE_QEP_IMAGES, "true");
 		SNEEProperties.initialise(props);
 		props.list(System.out);
-		SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS);
+		SNEEProperties.getSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES);
 	}
 	
 	@Test(expected=SNEEConfigurationException.class)

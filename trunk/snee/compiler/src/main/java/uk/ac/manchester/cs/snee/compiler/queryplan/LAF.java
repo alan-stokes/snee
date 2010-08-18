@@ -48,7 +48,8 @@ import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Graph;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperatorImpl;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
 public class LAF extends Graph {
@@ -56,13 +57,13 @@ public class LAF extends Graph {
 	/**
 	 * The root of the operator tree.
 	 */
-	protected Operator rootOp;
+	protected LogicalOperator rootOp;
 
 	/**
 	 *  Set of leaf operators in the query plan.
 	 */
-	private HashSet<Operator> leafOperators = 
-		new HashSet<Operator>();
+	private HashSet<LogicalOperator> leafOperators = 
+		new HashSet<LogicalOperator>();
 
 	/**
 	 * Logger for this class.
@@ -82,6 +83,8 @@ public class LAF extends Graph {
 	/** Acquisition interval of the whole query. (Alpha)*/
 	private double acInt;
 
+	private String queryName;
+
 	/**
 	 * Main construction used by logical optimizer.
 	 * @param inRootOp The root operator of the logical query plan
@@ -89,31 +92,33 @@ public class LAF extends Graph {
 	 * @param acquisitionInterval Acquisition interval of the whole query.
 	 *  (Alpha)
 	 */
-	public LAF(Operator inRootOp, String queryName){//,
+	public LAF(LogicalOperator inRootOp, String queryName){//,
 //			long acquisitionInterval) {
 		this.name = generateName(queryName);
+		this.queryName=queryName;
 		this.rootOp = inRootOp;
 		this.updateNodesAndEdgesColls(this.rootOp);
 //		this.setAcquisitionInterval(acquisitionInterval);
 	}
 
-//	/**
-//	 * Constructor used by clone.
-//	 * @param laf The LAF to be cloned
-//	 * @param inName The name to be assigned to the new data structure.
-//	 */
-//	public LAF(LAF laf, String inName) {
-//		super(laf, inName);
-//
-//		rootOp = (Operator) nodes.get(laf.rootOp.getID());
-//
-//		Iterator<Operator> opIter = laf.leafOperators.iterator();
-//		while (opIter.hasNext()) {
-//			String opID = opIter.next().getID();
-//			this.leafOperators.add((Operator) nodes.get(opID));
-//		}
-//
-//	}
+	/**
+	 * Constructor used by clone.
+	 * @param laf The LAF to be cloned
+	 * @param inName The name to be assigned to the new data structure.
+	 */
+	public LAF(LAF laf, String inName) {
+		super(laf, inName);
+
+		logger.trace("size of nodes="+nodes.size());
+		rootOp = (LogicalOperatorImpl) nodes.get(laf.rootOp.getID());
+
+		Iterator<LogicalOperator> opIter = laf.leafOperators.iterator();
+		while (opIter.hasNext()) {
+			String opID = opIter.next().getID();
+			this.leafOperators.add((LogicalOperator) nodes.get(opID));
+		}
+
+	}
 
 	/**
 	 * Resets the candidate counter; use prior to compiling the next query.
@@ -139,14 +144,14 @@ public class LAF extends Graph {
 	 * passed to it.
 	 * @param op The current operator being processed
 	 */
-	public void updateNodesAndEdgesColls(Operator op) {
+	public void updateNodesAndEdgesColls(LogicalOperator op) {
 		this.nodes.put(op.getID(), op);
 
 		/* Post-order traversal of operator tree */
 		if (!op.isLeaf()) {
 			for (int childIndex = 0; childIndex < op.getInDegree(); 
 			childIndex++) {
-				Operator c = (Operator) op.getInput(childIndex);
+				LogicalOperator c = (LogicalOperator) op.getInput(childIndex);
 
 				this.updateNodesAndEdgesColls(c);
 				EdgeImplementation e = new EdgeImplementation(this
@@ -161,24 +166,9 @@ public class LAF extends Graph {
 	 * Returns the root operator in the tree.
 	 * @return the root operator.
 	 */
-	public Operator getRootOperator() {
+	public LogicalOperator getRootOperator() {
 		return this.rootOp;
 	}
-
-	//XXX-AG: This method is a conversion from LAF to PAF 
-//	/**
-//	 * Replaces an operator with another in the routing tree, e.g., 
-//	 * used during algorithm selection.
-//	 * @param oldOp the operator to be removed
-//	 * @param newOp the operator to take its place
-//	 */
-//	public void replaceNode(Operator oldOp,
-//			Operator newOp) {
-//		super.replaceNode(oldOp, newOp);
-//		if (oldOp == this.rootOp) {
-//			this.rootOp = newOp;
-//		}
-//	}	
 
 	/**
 	 * Helper method to recursively generate the operator iterator.
@@ -186,8 +176,8 @@ public class LAF extends Graph {
 	 * @param opList the operator list being created
 	 * @param traversalOrder the traversal order desired 
 	 */
-	private void doOperatorIterator(Operator op,
-			ArrayList<Operator> opList, 
+	private void doOperatorIterator(LogicalOperator op,
+			ArrayList<LogicalOperator> opList, 
 			TraversalOrder traversalOrder) {
 
 		if (traversalOrder == TraversalOrder.PRE_ORDER) {
@@ -210,11 +200,11 @@ public class LAF extends Graph {
 	 * @param traversalOrder the order to traverse the operator tree
 	 * @return an iterator for the operator tree
 	 */
-	public Iterator<Operator> operatorIterator(
+	public Iterator<LogicalOperator> operatorIterator(
 			TraversalOrder traversalOrder) {
 
-		ArrayList<Operator> opList = 
-			new ArrayList<Operator>();
+		ArrayList<LogicalOperator> opList = 
+			new ArrayList<LogicalOperator>();
 		this.doOperatorIterator(this.getRootOperator(), opList, 
 				traversalOrder);
 
@@ -229,10 +219,10 @@ public class LAF extends Graph {
 	 */
 	public void setAcquisitionInterval(double acquisitionInterval) {
 		this.acInt = acquisitionInterval;
-		Iterator<Operator> opIter = 
+		Iterator<LogicalOperator> opIter = 
 			operatorIterator(TraversalOrder.PRE_ORDER);
 		while (opIter.hasNext()) {
-			Operator op = opIter.next();
+			LogicalOperator op = opIter.next();
 			if (op instanceof WindowOperator) {
 				((WindowOperator) op).setAcquisitionInterval(acInt);
 			}
@@ -249,138 +239,15 @@ public class LAF extends Graph {
 		return this.acInt;
 	}
 
-	//TODO: export methods should be refactored into a support class.
-//	public void exportAsDOTFile(String fname) 
-//	throws SchemaMetadataException {
-//		exportAsDOTFile(fname, new TreeMap<String, StringBuffer>(), 
-//				new TreeMap<String, StringBuffer>(), new StringBuffer());
-//	}
-//
-//	public void exportAsDOTFile(String fname, String label) 
-//	throws SchemaMetadataException {
-//		exportAsDOTFile(fname, new TreeMap<String, StringBuffer>(), 
-//				new TreeMap<String, StringBuffer>(), new StringBuffer());
-//	}
-//
-//	protected void exportAsDOTFile(String fname,
-//			TreeMap<String, StringBuffer> opLabelBuff,
-//			TreeMap<String, StringBuffer> edgeLabelBuff,
-//			StringBuffer fragmentsBuff) throws SchemaMetadataException {
-//		exportAsDOTFile(fname, "", new TreeMap<String, StringBuffer>(), 
-//				new TreeMap<String, StringBuffer>(), new StringBuffer());
-//	}
-
-	/**
-	 * Exports the graph as a file in the DOT language used by GraphViz.
-	 * @see http://www.graphviz.org/
-	 *
-	 * @param fname the name of the output file
-	 * @throws SchemaMetadataException 
-	 */
-	protected void exportAsDOTFile(String fname,
-			String label,
-			TreeMap<String, StringBuffer> opLabelBuff,
-			TreeMap<String, StringBuffer> edgeLabelBuff,
-			StringBuffer fragmentsBuff) 
-	throws SchemaMetadataException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER LAF.exportAsDOTFile() with file:" + 
-					fname + "\tlabel: " + label);
-		}
-		try {
-			PrintWriter out = new PrintWriter(new BufferedWriter(
-					new FileWriter(fname)));
-
-			out.println("digraph \"" + (String) this.getName() + "\" {");
-			String edgeSymbol = "->";
-
-			//query plan root at the top
-			out.println("size = \"8.5,11\";"); // do not exceed size A4
-			out.println("rankdir=\"BT\";");
-			out.println("label=\"" + this.getProvenanceString() 
-					+ label + "\";");
-
-			//Draw fragments info; will be empty for LAF and PAF
-			out.println(fragmentsBuff.toString());
-
-			/**
-			 * Draw the nodes, and their properties
-			 */
-			Iterator j = this.nodes.keySet().iterator();
-			while (j.hasNext()) {
-				Operator op = (Operator) this.nodes
-				.get((String) j.next());
-				out.print("\"" + op.getID() + "\" [fontsize=9 ");
-
-//				if (op instanceof ExchangeOperator) {
-//					out.print("fontcolor = blue ");
-//				}
-
-				out.print("label = \"");
-//				if (Settings.DISPLAY_OPERATOR_DATA_TYPE) {
-					out.print("(" + op.getOperatorDataType().toString()
-							+ ") ");
-//				}
-				out.print(op.getOperatorName() + "\\n");
-
-				if (op.getParamStr() != null) {
-					out.print(op.getParamStr() + "\\n");
-				}
-				out.print("id = " + op.getID() + "\\n");
-
-				//print subclass attributes
-				if (opLabelBuff.get(op.getID()) != null) {
-					out.print(opLabelBuff.get(op.getID())); 
-				}
-				out.println("\" ]; ");
-			}
-
-			/**
-			 * Draw the edges, and their properties
-			 */
-			Iterator i = this.edges.keySet().iterator();
-			while (i.hasNext()) {
-				Edge e = this.edges.get((String) i.next());
-				Operator sourceNode = (Operator) this.nodes
-				.get(e.getSourceID());
-
-				out.print("\"" + e.getSourceID() + "\"" + edgeSymbol + "\""
-						+ e.getDestID() + "\" ");
-
-//				if (Settings.DISPLAY_OPERATOR_PROPERTIES) {
-					out.print("[fontsize=9 label = \" ");
-
-					try {
-						out.print("type: " + 
-								sourceNode.getTupleAttributesStr(3)
-								+ " \\n");
-					} catch (TypeMappingException e1) {
-						String msg = "Problem getting tuple attributes. " + e1;
-						logger.warn(msg);
-					}
-
-					//print subclass attributes
-					if (edgeLabelBuff.get(e.getID()) != null) {
-						out.print(edgeLabelBuff.get(e.getID()));
-					}
-
-					out.print("\"];\n");
-//				} else {
-//					out.println(";");
-//				}
-			}
-
-			out.println("}");
-			out.close();
-		} catch (IOException e) {
-			logger.warn("Failed to write LAF to " + fname + ".");
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN LAF.exportAsDOTFile()");
-		}
-	}
-
 	public String getProvenanceString() {
 		return this.name;
+	}
+
+	public String getQueryName() {
+		return queryName;
+	}
+
+	public void setName(String newLafName) {
+		this.name = newLafName;
 	}
 }

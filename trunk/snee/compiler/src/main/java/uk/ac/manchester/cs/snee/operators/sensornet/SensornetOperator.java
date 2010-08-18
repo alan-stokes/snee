@@ -31,11 +31,12 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
  *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.operators.logical;
+package uk.ac.manchester.cs.snee.operators.sensornet;
 
 import java.util.Iterator;
 import java.util.List;
 
+import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 //import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
@@ -45,155 +46,78 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 //import uk.ac.manchester.cs.snee.compiler.whenScheduling.qosaware.cvx.AlphaBetaExpression;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
-/**
- * Base class for all operators. Specific operators
- * extend this class. 
- * @author Ixent Galpin ,Christian Brenninkmeijer and Steven Lynden 
- */
-public interface Operator extends Node {
-	//TODO: Change to logical operators
+public interface SensornetOperator extends LogicalOperator {
 
-	//     /** @return the fragment to which this operator belongs. */
-	//    Fragment getContainingFragment();
-	//        
-	//    /** @return ID of the containing Fragment. */
-	//    String getFragID();
-	//    
-	//    /** @return True if this operator is the root of its fragment, */
-	//    boolean isFragmentRoot();
+	SensornetOperator getSensornetOperator(LogicalOperator op) 
+	throws SNEEException, SchemaMetadataException;
+	
+     /** @return the fragment to which this operator belongs. */
+//    Fragment getContainingFragment();
+        
+    /** @return ID of the containing Fragment. */
+    String getFragID();
+    
+    /** @return True if this operator is the root of its fragment, */
+    boolean isFragmentRoot();
 
-	//CB: Used by the TreeDisplayer
-	//IG: TODO: Ugly for now, but hopefully change return type to List
-	/** @return Array of the child nodes. */
-	Node[] getInputs();
-	//public Operator[] getInputs();
+    /** @return The attribute(s) by which data is partitioned. */
+    String getPartitioningAttribute();
 
-	//CB: Used by logicalOptimiser
-	/** 
-	 * Returns The child operator at the given index.
-	 * @param index The location of the required child operator.
-	 * @return The child operator at the index specified.
-	 */
-	Operator getInput(int index);
-
-	/** 
-	 * Returns The parent operator at the given index.
-	 * @param index The location of the required child operator.
-	 * @return The parent operator at the index specified.
-	 */
-	Operator getOutput(int index);
-
-	//    /** @return The attribute(s) by which data is partitioned. */
-	//    String getPartitioningAttribute();
-
-	/** {@inheritDoc} */
-	String toString();
-
-//	//CB: Used by TreeDisplay and toString for debugging
-//	//CB: IXENT feel free to add output here
-//	//CB: Should not children use to string for that.
-//	/**
-//	 * Returns text description of this operator.
-//	 * @param showProperties If True returns more information.
-//	 * @return A String representation of this operator.
-//	 */
-//	String getText(boolean showProperties);
-
+	//CB: Used by TreeDisplay and toString for debugging
+	//CB: IXENT feel free to add output here
+	//CB: Should not children use to string for that.
 	/**
 	 * Returns text description of this operator.
+	 * @param showProperties If True returns more information.
 	 * @return A String representation of this operator.
 	 */
-	String getText();
+	String getText(boolean showProperties);
 
-	/** 
-	 * Retreives the parent operator.
-	 * @return The parent operator.
-	 */
-	Operator getParent();
-
-	//    /**
-	//     * Sets the containing fragment of this operator.
-	//     * @param f the containing fragment
-	//     */
-	//    void setContainingFragment(Fragment f);
+	    /**
+	     * Sets the containing fragment of this operator.
+	     * @param f the containing fragment
+	     */
+//	    void setContainingFragment(Fragment f);
 
 	/**
-	 * Iterator to traverse the immediate children of the current operator.
-	 * @return Iterator through the child operators.
-	 */
-	Iterator<Operator> childOperatorIterator();
-
-	/** 
-	 * List of the attribute returned by this operator.
+	 * Get the source node for the operator by getting the source nodes of
+	 * it children.
 	 * 
-	 * @return List of the returned attributes.
-	 */ 
-	List<Attribute> getAttributes();
-
-	/**
-	 * Gets the expressions that describe the data returned by this operator.
-	 * @return List of expressions.
-	 */ 
-	List<Expression> getExpressions();
-
-	/**
-	 * String description of the attributes.
-	 * @param maxPerLine Number of attributes per line.
-	 * @return A multiline string representation of the attributes.
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
+	 * @return Sorted list of nodes that provide data for this operator.
 	 */
-	String getTupleAttributesStr(int maxPerLine) 
-	throws SchemaMetadataException, TypeMappingException;
+	int[] getSourceSites();
 
-//	/**
-//	 * Get the source node for the operator by getting the source nodes of
-//	 * it children.
-//	 * 
-//	 * @return Sorted list of nodes that provide data for this operator.
-//	 */
-//	int[] getSourceSites();
+	    /**
+	     * The size of the output.
+	     * This size considers distribution of the query plan.
+	     * It is the output for a specific SensorNetworkNode
+	     * 
+	     * For exchanges this is the producer cardinality
+	     * @param card CardinalityType The type of cardinality to be considered.
+	     * @param node Physical mote on which this operator has been placed.
+	     * @param daf Distributed query plan this operator is part of.
+	     * @return Sum of the cardinality of the iall nputs 
+	     * for this operator on this node.
+	     */
+//		int getCardinality(CardinalityType card, Site node, DAF daf);
 
-	/**
-	 * Calculated the cardinality based on the requested type. 
-	 * For exchanges this is the producer cardinality
-	 * 
-	 * @param card Type of cardinailty to be considered.
-	 * 
-	 * @return The Cardinality calulated as requested.
-	 */
-	int getCardinality(CardinalityType card);
-
-	//    /**
-	//     * The size of the output.
-	//     * This size considers distribution of the query plan.
-	//     * It is the output for a specific SensorNetworkNode
-	//     * 
-	//     * For exchanges this is the producer cardinality
-	//     * @param card CardinalityType The type of cardinality to be considered.
-	//     * @param node Physical mote on which this operator has been placed.
-	//     * @param daf Distributed query plan this operator is part of.
-	//     * @return Sum of the cardinality of the iall nputs 
-	//     * for this operator on this node.
-	//     */
-	//	int getCardinality(CardinalityType card, Site node, DAF daf);
-
-	//	/**
-	//     * The size of the output.
-	//     * This size considers distribution of the query plan.
-	//     * It is the output for a specific SensorNetworkNode
-	//     * 
-	//     * For exchanges this is the producer cardinality
-	//     * @param card CardinalityType The type of cardinality to be considered.
-	//     * @param node Physical mote on which this operator has been placed.
-	//     * @param daf Distributed query plan this operator is part of.
-	//	 * @param round Defines if rounding reserves should be included or not
-	//     * @return Sum of the cardinality of the iall nputs 
-	//     * for this operator on this node.
-	//     */
-	//	AlphaBetaExpression getCardinality(CardinalityType card, Site node, 
-	//			DAF daf, boolean round);
+//		/**
+//	     * The size of the output.
+//	     * This size considers distribution of the query plan.
+//	     * It is the output for a specific SensorNetworkNode
+//	     * 
+//	     * For exchanges this is the producer cardinality
+//	     * @param card CardinalityType The type of cardinality to be considered.
+//	     * @param node Physical mote on which this operator has been placed.
+//	     * @param daf Distributed query plan this operator is part of.
+//		 * @param round Defines if rounding reserves should be included or not
+//	     * @return Sum of the cardinality of the iall nputs 
+//	     * for this operator on this node.
+//	     */
+//		AlphaBetaExpression getCardinality(CardinalityType card, Site node, 
+//				DAF daf, boolean round);
 
 	/**
 	 * Used to determine if the operator is Attribute sensitive.
@@ -244,74 +168,6 @@ public interface Operator extends Node {
 //	 * @return Name to be used as template name.
 //	 */
 //	String getNesCTemplateName();
-
-	/**
-	 * Get the collection type of the data returned.
-	 * @return Stream/ window or relation.
-	 */
-	OperatorDataType getOperatorDataType();
-
-	/**
-	 * Gets the name of this operator.
-	 * @return The name of the operator.
-	 */
-	String getOperatorName();
-
-	/** 
-	 * Retrieves extra information for this operator.
-	 * @return The extra information as a String.
-	 */
-	String getParamStr();
-
-	/**
-	 * This method is will be called from the deliver down to the leaf operator.
-	 * It will help operators identify which attributes 
-	 * they need to included and in which order. 
-	 * 
-	 * @param projectExpressions 
-	 *    List of expressions used to create the attributes.
-	 * @param projectAttributes 
-	 *    List of the attribute names to assign to the output.
-	 * @return 
-	 *   True if and only if the child accepted the pushed down projection. 
-	 * 
-	 * @throws OptimizationException 
-	 *  An exception is any attribute in the list is not in the source; 
-	 */
-	boolean pushProjectionDown(List<Expression> projectExpressions, 
-			List<Attribute> projectAttributes) 
-	throws OptimizationException;
-
-	/**
-	 * Allow pushing down of a select Predicate.
-	 * 
-	 * This method is called from the root down.
-	 * If the operator is able to accept the predicate it returns true.
-	 * 
-	 * @param predicate to be pushed down.
-	 * 
-	 * @return True if and only if the operator (or its children) 
-	 *    are able to accept the predicate.
-	 * @throws AssertionError 
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
-	 */
-	boolean pushSelectDown(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException;
-
-	/** 
-	 * This method will be called by the rename operators.
-	 * 
-	 * The new localName is pushed down. 
-	 * @param newLocalName LocalName to push down.
-	 */
-	void pushLocalNameDown(String newLocalName);
-
-	/** 
-	 * Retrieve the predicate this operator will check.
-	 * @return The Predicate (which may be NOPredicate)
-	 */ 
-	Expression getPredicate();
 
 //	/**
 //	 * The physical average size of the output.
@@ -523,13 +379,5 @@ public interface Operator extends Node {
 //	 */ 
 //	AlphaBetaExpression getTimeExpression(CardinalityType card, Site node, 
 //			DAF daf, boolean round);
-
-	/**
-	 * Some operators do not change the data in any way.
-	 * these can be removed. 
-	 * 
-	 * @return True If and only if the operator can be safely removed. 
-	 */
-	boolean isRemoveable();
 
 }

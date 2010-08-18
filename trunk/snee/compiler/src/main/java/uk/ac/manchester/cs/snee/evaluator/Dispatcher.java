@@ -46,7 +46,9 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 
 public class Dispatcher {
 
@@ -77,37 +79,44 @@ public class Dispatcher {
 	 * @param resultSet The storage to be used for query results
 	 * @param queryID The identifier of the query
 	 * 
-	 * @param queryPlan PAF of the query to be evaluated
+	 * @param queryPlan query plan of the query to be evaluated
 	 * @throws SNEEException Problem opening the query plan
 	 * @throws SchemaMetadataException 
 	 * @throws EvaluatorException 
 	 */
 	public void startQuery(int queryID, StreamResultSet resultSet, 
-			LAF queryPlan) 
+			QueryExecutionPlan queryPlan) 
 	throws SNEEException, MetadataException, EvaluatorException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER queryID " + queryID + " " + queryPlan);
 		}
-		// Create thread to evaluate query
-		/*
-		 * Using a method for constructing the query evaluator so that it can be
-		 * overridden as a mock object for testing.
-		 */
-		QueryEvaluator queryEvaluator;
-		try {
-			queryEvaluator = createQueryEvaluator(queryID, queryPlan, resultSet);
-		} catch (SchemaMetadataException e) {
+		if (queryPlan instanceof EvaluatorQueryPlan) {
+			// Create thread to evaluate query
+			/*
+			 * Using a method for constructing the query evaluator so that it can be
+			 * overridden as a mock object for testing.
+			 */
+			LAF laf = queryPlan.getLAF(); //TODO: This will be a PAF in future
+			try {
+				QueryEvaluator queryEvaluator = 
+					createQueryEvaluator(queryID, laf, resultSet);
+				//		Thread evaluationThread = new Thread(queryEvaluator);
+				//		// Start query evaluation
+				//		evaluationThread.start();
+				//		if (logger.isInfoEnabled()) {
+				//			logger.info("Started evaluation of query " + queryID + ".");
+				//		}
+				//		// Add thread to set of query evaluators
+				_queryEvaluators.put(queryID, queryEvaluator);
+			} catch (SchemaMetadataException e) {
 			logger.warn("Throwing a MetadataException. Cause " + e);
-			throw new MetadataException(e.getLocalizedMessage());
+				logger.warn("Throwing a MetadataException. Cause " + e);
+				throw new MetadataException(e.getLocalizedMessage());
+			}
+		} else {
+			//TODO: sensor network query plan
+			System.exit(-2);
 		}
-//		Thread evaluationThread = new Thread(queryEvaluator);
-//		// Start query evaluation
-//		evaluationThread.start();
-//		if (logger.isInfoEnabled()) {
-//			logger.info("Started evaluation of query " + queryID + ".");
-//		}
-//		// Add thread to set of query evaluators
-		_queryEvaluators.put(queryID, queryEvaluator);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN");
 		}

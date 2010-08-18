@@ -52,7 +52,7 @@ import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.operators.evaluator.DeliverOperatorImpl;
 import uk.ac.manchester.cs.snee.operators.evaluator.EvaluatorPhysicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class QueryEvaluator implements Observer {//Runnable {
 	private boolean executing = false;
@@ -181,7 +181,7 @@ public class QueryEvaluator implements Observer {//Runnable {
 			logger.trace("RETURN openQueryPlan()");
 	}
 
-	private EvaluatorPhysicalOperator getInstance(Operator op) 
+	private EvaluatorPhysicalOperator getInstance(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER getInstance() with " + op);

@@ -51,7 +51,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 public class ProjectOperator extends PredicateOperator {
 
 	public ProjectOperator (List <Expression> expressions, 
-			List <Attribute> attributes, Operator input, 
+			List <Attribute> attributes, LogicalOperator input, 
 			AttributeType boolType){
 		super(expressions, attributes, input, boolType);
 		this.setOperatorName("PROJECT");

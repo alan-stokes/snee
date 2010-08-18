@@ -49,7 +49,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
 
 public class UnionOperatorImpl extends EvaluatorPhysicalOperator {
@@ -65,14 +65,14 @@ public class UnionOperatorImpl extends EvaluatorPhysicalOperator {
 
 	private EvaluatorPhysicalOperator rightOperator;
 
-	public UnionOperatorImpl(Operator op) 
+	public UnionOperatorImpl(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER UnionOperatorImpl() " + op);
 		}
 
 		// Create connections to child operators
-		Iterator<Operator> iter = op.childOperatorIterator();
+		Iterator<LogicalOperator> iter = op.childOperatorIterator();
 		leftOperator = getEvaluatorOperator(iter.next());
 		rightOperator = getEvaluatorOperator(iter.next());
 		

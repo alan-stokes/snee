@@ -34,7 +34,7 @@ import uk.ac.manchester.cs.snee.operators.logical.DStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.IStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.OperatorDataType;
 import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
@@ -68,20 +68,20 @@ public class Translator {
 			logger.debug("RETURN Translator()");
 	}
 
-	private Operator translateFrom(AST ast) 
+	private LogicalOperator translateFrom(AST ast) 
 	throws ParserValidationException, SchemaMetadataException, 
 	SourceDoesNotExistException, OptimizationException, ParserException, 
 	TypeMappingException, ExtentDoesNotExistException, RecognitionException {
 		if (logger.isTraceEnabled()) 
 			logger.trace("ENTER translateFrom(): ast " + ast);
 		AST source = ast.getFirstChild();
-		Operator operator = translateExtents(source);
+		LogicalOperator operator = translateExtents(source);
 		if (logger.isTraceEnabled()) 
 			logger.trace("RETURN translateFrom(): operator " + operator);
 		return operator;
 	}
 
-	private Operator translateExtents(AST ast) 
+	private LogicalOperator translateExtents(AST ast) 
 	throws ParserValidationException, SchemaMetadataException, 
 	OptimizationException, SourceDoesNotExistException, ParserException, 
 	TypeMappingException, ExtentDoesNotExistException, RecognitionException {
@@ -92,22 +92,22 @@ public class Translator {
 			logger.error(msg);
 			throw new ParserException(msg);
 		}
-		ArrayList<Operator> operators = new ArrayList<Operator>();
+		ArrayList<LogicalOperator> operators = new ArrayList<LogicalOperator>();
 		AST nextAST = ast;
 		while (nextAST != null) {
-			Operator operator = translateExtent(nextAST);
+			LogicalOperator operator = translateExtent(nextAST);
 			operators.add(operator);
 			nextAST = nextAST.getNextSibling();
 		}	
-		Operator operator = combineSources (operators.toArray(
-				new Operator[operators.size()]));
+		LogicalOperator operator = combineSources (operators.toArray(
+				new LogicalOperator[operators.size()]));
 		if (logger.isTraceEnabled()) 
 			logger.trace("RETURN translateExtents() operator " + operator);
 		return operator;
 	}
 
-	private Operator translateWindowAndLocalName(AST ast, 
-			Operator operator) 
+	private LogicalOperator translateWindowAndLocalName(AST ast, 
+			LogicalOperator operator) 
 	throws ParserValidationException, OptimizationException, ParserException,
 	RecognitionException { 
 		if (logger.isTraceEnabled())
@@ -222,7 +222,7 @@ public class Translator {
 	}
 
 	private WindowOperator createWindow (int from, AST fromUnit, int to, 
-			AST toUnit, int slide, AST slideUnit, Operator child) 
+			AST toUnit, int slide, AST slideUnit, LogicalOperator child) 
 	throws ParserValidationException, OptimizationException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER createWindow(): from " + from + " " + fromUnit +
@@ -252,7 +252,7 @@ public class Translator {
 	}
 
 	private WindowOperator createWindow (int from, int to, 
-			boolean timeScope, int slide, AST slideUnit, Operator child) 
+			boolean timeScope, int slide, AST slideUnit, LogicalOperator child) 
 	throws ParserValidationException, OptimizationException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER createWindow(): from " + from + " to " + to + 
@@ -407,7 +407,7 @@ public class Translator {
 		return rowUnit;
 	}
 
-	private void translateLocalName(AST ast, Operator operator) 
+	private void translateLocalName(AST ast, LogicalOperator operator) 
 	throws OptimizationException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER translateLocalName() with op=" + operator);
@@ -424,7 +424,7 @@ public class Translator {
 			logger.trace("RETURN translateLocalName()");
 	}
 
-	private Operator combineSources (Operator[] operators)
+	private LogicalOperator combineSources (LogicalOperator[] operators)
 	throws ParserValidationException, SchemaMetadataException, 
 	OptimizationException {
 		if (logger.isDebugEnabled()) {
@@ -440,7 +440,7 @@ public class Translator {
 				logger.debug("RETURN combineSources(): Single Source " + operators[0]);
 			return operators[0];
 		}
-		Operator temp;
+		LogicalOperator temp;
 		for (int i = 0; i < operators.length -1; i++)
 			for (int j = i+1; j < operators.length; j++) {
 				if ((operators[j].getOperatorDataType() == OperatorDataType.STREAM) || 
@@ -472,7 +472,7 @@ public class Translator {
 		return temp;
 	}
 
-	private Operator translateExtent(AST ast) 
+	private LogicalOperator translateExtent(AST ast) 
 	throws ExtentDoesNotExistException, SchemaMetadataException, 
 	TypeMappingException, SourceDoesNotExistException, 
 	ParserValidationException, OptimizationException, ParserException,
@@ -482,7 +482,7 @@ public class Translator {
 			logger.debug("ENTER translateExtent() " + ast);
 		ast.setText(ast.getText().toLowerCase());
 		AST windowAST;
-		Operator output;
+		LogicalOperator output;
 		switch (ast.getType()) {
 		case SNEEqlParserTokenTypes.RPAREN: 
 			AST subQueryAST = ast.getFirstChild();
@@ -524,7 +524,7 @@ public class Translator {
 		return output;
 	}
 
-	private Operator translateQuery(AST ast) 
+	private LogicalOperator translateQuery(AST ast) 
 	throws SchemaMetadataException, ParserValidationException, 
 	OptimizationException, SourceDoesNotExistException, 
 	ParserException, TypeMappingException, ExtentDoesNotExistException,
@@ -540,7 +540,7 @@ public class Translator {
 			logger.error(msg);
 			throw new ParserException(msg);
 		}
-		Operator operator;
+		LogicalOperator operator;
 		switch (select.getType()) {
 		case SNEEqlParserTokenTypes.LPAREN: {
 			logger.trace("Match LPAREN");
@@ -550,25 +550,25 @@ public class Translator {
 			break;
 		}
 		case SNEEqlParserTokenTypes.DSTREAM: {
-			Operator inner = translateQuery(select);
+			LogicalOperator inner = translateQuery(select);
 			operator = new DStreamOperator(inner, _boolType);
 			break;
 		}
 		case SNEEqlParserTokenTypes.ISTREAM: {
-			Operator inner = translateQuery(select); 
+			LogicalOperator inner = translateQuery(select); 
 			operator = new IStreamOperator(inner, _boolType);
 			break;
 		}
 		case SNEEqlParserTokenTypes.RSTREAM: {
-			Operator inner = translateQuery(select); 
+			LogicalOperator inner = translateQuery(select); 
 			operator = new RStreamOperator(inner, _boolType);
 			break;
 		}
 		case SNEEqlParserTokenTypes.SELECT:{
 			AST from = select.getNextSibling();
-			Operator fromOperator = translateFrom(from);
+			LogicalOperator fromOperator = translateFrom(from);
 			//TODO apply predicate	  	  
-			Operator preSelect = 
+			LogicalOperator preSelect = 
 				applyWhereOrGroupBy(from.getNextSibling(), fromOperator);
 			operator = translateSelect (select, preSelect);
 			break;
@@ -578,8 +578,8 @@ public class Translator {
 			AST firstChild = select.getFirstChild();
 //			logger.trace("Left: " + firstChild);
 //			logger.trace("Right: " + firstChild.getNextSibling());
-			Operator left = translateQuery(firstChild);
-			Operator right = translateQuery(firstChild.getNextSibling());
+			LogicalOperator left = translateQuery(firstChild);
+			LogicalOperator right = translateQuery(firstChild.getNextSibling());
 			operator = checkUnionCondition(left, right);
 //			operator = new UnionOperator(left, right);
 			break;
@@ -597,7 +597,7 @@ public class Translator {
 		return operator;
 	}
 
-	private Operator checkUnionCondition(Operator left, Operator right) 
+	private LogicalOperator checkUnionCondition(LogicalOperator left, LogicalOperator right) 
 	throws ParserException, SchemaMetadataException, TypeMappingException 
 	{
 		if (logger.isTraceEnabled())
@@ -635,7 +635,7 @@ public class Translator {
 			}
 		}
 		logger.trace("Attributes are all of the same type.");
-		Operator operator = new UnionOperator(left, right, _boolType);
+		LogicalOperator operator = new UnionOperator(left, right, _boolType);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN checkUnionCondition() with " + operator);
 		return operator;
@@ -654,7 +654,7 @@ public class Translator {
 			logger.error(msg);
 			throw new ParserException(msg);
 		} else {
-			Operator queryRoot = translateQuery(ast);
+			LogicalOperator queryRoot = translateQuery(ast);
 			operator = new DeliverOperator(queryRoot, _boolType);
 		}
 		if (logger.isDebugEnabled())
@@ -663,7 +663,7 @@ public class Translator {
 		return laf;
 	}
 
-	private Operator applyWhereOrGroupBy(AST ast, Operator input) 
+	private LogicalOperator applyWhereOrGroupBy(AST ast, LogicalOperator input) 
 	throws ParserValidationException, SchemaMetadataException, 
 	TypeMappingException, OptimizationException 
 	{
@@ -702,7 +702,7 @@ public class Translator {
 		}	
 	}
 
-	private Operator translateSelect (AST ast, Operator input) 
+	private LogicalOperator translateSelect (AST ast, LogicalOperator input) 
 	throws OptimizationException, ParserValidationException, 
 	SchemaMetadataException, TypeMappingException {
 		if (logger.isTraceEnabled())
@@ -759,7 +759,7 @@ public class Translator {
 		throw new OptimizationException(msg);
 	}
 
-	private Expression translateExpression (AST ast, Operator input) 
+	private Expression translateExpression (AST ast, LogicalOperator input) 
 	throws ParserValidationException, OptimizationException, NumberFormatException, TypeMappingException, SchemaMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER translateExpression() " + ast + " " + input);
@@ -873,7 +873,7 @@ public class Translator {
 		return expression;
 	}
 
-	private Expression getFunction(AST ast, Operator input) 
+	private Expression getFunction(AST ast, LogicalOperator input) 
 	throws ParserValidationException, OptimizationException, 
 	TypeMappingException, SchemaMetadataException {
 		if (logger.isTraceEnabled())

@@ -58,7 +58,7 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 				_myDataSource.stopTransmission();
 			} catch (Exception e) {
 				System.out.println("Execution failed. See logs for detail.");
-				logger.fatal(e);
+				logger.fatal("Execution failed", e);
 				System.exit(1);
 			}
 		}

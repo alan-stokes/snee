@@ -80,7 +80,7 @@ public class SNEEProperties {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER validateGraphVizSettings()");
 		String generateGraphs = 
-			_props.getProperty(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS);
+			_props.getProperty(SNEEPropertyNames.GENERATE_QEP_IMAGES);
 		logger.info(generateGraphs);
 		if (generateGraphs != null &&
 				generateGraphs.equals("true") &&
@@ -123,7 +123,7 @@ public class SNEEProperties {
 			URL fileUrl = SNEEProperties.class.getClassLoader().getResource(fileName);
 			try {
 				file = new File(fileUrl.toURI());
-			} catch (URISyntaxException e) {
+			} catch (Exception e) {
 				String message = "Problem reading " +
 						propName + " location. Ensure proper path. " +
 						file;
@@ -237,6 +237,22 @@ public class SNEEProperties {
 		if (logger.isInfoEnabled())
 			logger.info("RETURN getSetting() " + propName + " found.");
 		return property;
+	}
+	
+	/**
+	 * Returns the property value for a boolean property
+	 * @param propName name of the property to retrieve the value for
+	 * @return value of the specified property
+	 * @throws SNEEConfigurationException property does not exist
+	 */
+	public static boolean getBoolSetting(String propName)
+	throws SNEEConfigurationException {
+		if (logger.isInfoEnabled())
+			logger.info("ENTER getBoolSetting() with " + propName);
+		String property = getSetting(propName);
+		if (logger.isInfoEnabled())
+			logger.info("RETURN getBoolSetting() " + propName + "="+property);
+		return property.toUpperCase().equals("TRUE");
 	}
 	
 	public static String getFilename(String propertyName) 

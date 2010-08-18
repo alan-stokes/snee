@@ -53,7 +53,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
  * @author Christian
  *
  */
-public class SelectOperator extends OperatorImplementation {    
+public class SelectOperator extends LogicalOperatorImpl {    
 
 	private Logger logger =
 		Logger.getLogger(SelectOperator.class.getName());
@@ -67,7 +67,7 @@ public class SelectOperator extends OperatorImplementation {
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
 	 */
-	public SelectOperator(Expression predicate, Operator inputOperator,
+	public SelectOperator(Expression predicate, LogicalOperator inputOperator,
 			AttributeType boolType) 
 	throws SchemaMetadataException, AssertionError, TypeMappingException {
 		super(boolType);
@@ -79,7 +79,7 @@ public class SelectOperator extends OperatorImplementation {
 //		this.setNesCTemplateName("select");
 		setOperatorDataType(inputOperator.getOperatorDataType());
 
-		setChildren(new Operator[] {inputOperator});
+		setChildren(new LogicalOperator[] {inputOperator});
 
 		setPredicate(predicate);
 		this.setParamStr(getPredicate().toString());

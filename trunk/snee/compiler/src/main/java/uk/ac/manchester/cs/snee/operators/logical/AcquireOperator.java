@@ -51,7 +51,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 
-public class AcquireOperator extends OperatorImplementation {
+public class AcquireOperator extends LogicalOperatorImpl {
 
 	/** Standard Java Logger. */
 	private Logger logger = 
