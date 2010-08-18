@@ -57,6 +57,7 @@ import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlLexer;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
 import uk.ac.manchester.cs.snee.compiler.planner.SourcePlanner;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.DLAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -122,7 +123,7 @@ public class QueryCompiler {
 		Translator translator = new Translator(_schemaMetadata);
 		LAF laf = translator.translate(parseTree, queryID);    
 //				qosCollection.get(queryID).getMaxAcquisitionInterval());
-		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERAL_QEP_IMAGES)) {
+		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new LAFUtils(laf).generateGraphImage();
 		}
 		if (logger.isTraceEnabled())
@@ -136,7 +137,7 @@ public class QueryCompiler {
 			logger.trace("ENTER doLogicalRewriting: " + laf);
 		LogicalRewriter rewriter = new LogicalRewriter();
 		LAF lafPrime = rewriter.doLogicalRewriting(laf);
-		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERAL_QEP_IMAGES)) {
+		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new LAFUtils(lafPrime).generateGraphImage();
 		}
 		if (logger.isTraceEnabled())
@@ -146,11 +147,14 @@ public class QueryCompiler {
 	
 		
 	private DLAF doSourceAllocation(int queryID, LAF lafPrime) throws 
-	SourceAllocatorException {
+	SourceAllocatorException, SNEEConfigurationException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSourceAllocation: " + lafPrime);
 		SourceAllocator allocator = new SourceAllocator();
 		DLAF dlaf = allocator.allocateSources(lafPrime);
+		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
+			new DLAFUtils(dlaf).generateGraphImage();
+		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doSourceAllocation: " + dlaf);
 		return dlaf;

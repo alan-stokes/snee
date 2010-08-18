@@ -80,7 +80,7 @@ public class SNEEProperties {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER validateGraphVizSettings()");
 		String generateGraphs = 
-			_props.getProperty(SNEEPropertyNames.GENERAL_QEP_IMAGES);
+			_props.getProperty(SNEEPropertyNames.GENERATE_QEP_IMAGES);
 		logger.info(generateGraphs);
 		if (generateGraphs != null &&
 				generateGraphs.equals("true") &&

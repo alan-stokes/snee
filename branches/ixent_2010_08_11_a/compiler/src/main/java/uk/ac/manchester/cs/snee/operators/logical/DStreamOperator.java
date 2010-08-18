@@ -77,7 +77,7 @@ implements LogicalOperator {
 	public DStreamOperator(LogicalOperator inputOperator, AttributeType boolType) {
 		super(boolType);
 
-		this.setOperatorName("ISTREAM");
+		this.setOperatorName("DSTREAM");
 //		this.setNesCTemplateName("istream never set");
 		this.setOperatorDataType(OperatorDataType.STREAM);
 		this.setParamStr("");

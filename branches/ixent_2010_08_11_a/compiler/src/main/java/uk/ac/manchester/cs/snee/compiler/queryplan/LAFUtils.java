@@ -37,23 +37,10 @@ public class LAFUtils extends GraphUtils {
 	public LAFUtils(LAF laf) {
 		this.laf = laf;
 	}
-	
+
+
 	protected void exportAsDOTFile(String fname) 
 	throws SchemaMetadataException {
-		exportAsDOTFile(fname, new TreeMap<String, StringBuffer>(), 
-				new TreeMap<String, StringBuffer>(), new StringBuffer());
-	}
-
-	protected void exportAsDOTFile(String fname, String label) 
-	throws SchemaMetadataException {
-		exportAsDOTFile(fname, new TreeMap<String, StringBuffer>(), 
-				new TreeMap<String, StringBuffer>(), new StringBuffer());
-	}
-
-	protected void exportAsDOTFile(String fname,
-			TreeMap<String, StringBuffer> opLabelBuff,
-			TreeMap<String, StringBuffer> edgeLabelBuff,
-			StringBuffer fragmentsBuff) throws SchemaMetadataException {
 		exportAsDOTFile(fname, "", new TreeMap<String, StringBuffer>(), 
 				new TreeMap<String, StringBuffer>(), new StringBuffer());
 	}

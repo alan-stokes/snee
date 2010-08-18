@@ -49,6 +49,7 @@ import uk.ac.manchester.cs.snee.common.graph.Graph;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperatorImpl;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
 public class LAF extends Graph {
@@ -108,7 +109,8 @@ public class LAF extends Graph {
 	public LAF(LAF laf, String inName) {
 		super(laf, inName);
 
-		rootOp = (LogicalOperator) nodes.get(laf.rootOp.getID());
+		logger.trace("size of nodes="+nodes.size());
+		rootOp = (LogicalOperatorImpl) nodes.get(laf.rootOp.getID());
 
 		Iterator<LogicalOperator> opIter = laf.leafOperators.iterator();
 		while (opIter.hasNext()) {
