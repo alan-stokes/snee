@@ -44,18 +44,21 @@ public abstract class SNEEClient implements Observer {
 			logger.debug("RETURN SNEEClient()");
 	}
 
-	private static void printResults(Collection<Output> results, int queryId) {
-		System.out.println("\n\n************ Results for query " + queryId + " ************\n\n");
+	private static void printResults(Collection<Output> results, 
+			int queryId) {
+		System.out.println("************ Results for query " + 
+				queryId + " ************");
 		for (Output output : results) {
 			System.out.println(output);
 		}
-		System.out.println("\n\n*********************************\n\n");
+		System.out.println("*********************************");
 	}
 
 	@SuppressWarnings("unchecked")
 	public void update (Observable observation, Object arg) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER update() with " + observation + " " + arg);
+			logger.debug("ENTER update() with " + observation + " " + 
+					arg);
 		logger.trace("arg type: " + arg.getClass());
 		if (arg instanceof Collection<?>) {
 			Collection<Output> results = (Collection<Output>) arg;
@@ -101,7 +104,8 @@ public abstract class SNEEClient implements Observer {
 		List<Output> results1 = displayFinalResult(queryId1);
 
 		try {
-			Thread.currentThread().sleep((long) (_duration * 1000));
+			//XXX: Sleep included to highlight evaluator not ending bug 
+			Thread.currentThread().sleep((long) ((_duration/2) * 1000));
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
