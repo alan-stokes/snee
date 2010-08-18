@@ -1,5 +1,7 @@
 package uk.ac.manchester.cs.snee;
 
+//FIXME: Return data as ResultSet!!!
+
 import java.sql.ResultSetMetaData;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -12,11 +14,11 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.types.Duration;
 
-public class StreamResultSetImpl 
-extends Observable implements StreamResultSet {
+public class StreamResultImpl 
+extends Observable implements StreamResult {
 	
 	private static Logger logger = 
-		Logger.getLogger(StreamResultSetImpl.class.getName());
+		Logger.getLogger(StreamResultImpl.class.getName());
 
 	private List<Output> _data;
 
@@ -24,7 +26,7 @@ extends Observable implements StreamResultSet {
 
 	private String command = null;
 
-	public StreamResultSetImpl() {//(String query) {
+	public StreamResultImpl() {//(String query) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER StreamResultSetImpl()");// with " + query);		
 		_attributes = new ArrayList<String>();

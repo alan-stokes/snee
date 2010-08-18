@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.StreamResultSet;
+import uk.ac.manchester.cs.snee.StreamResult;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
@@ -67,7 +67,7 @@ public class QueryEvaluator implements Observer {//Runnable {
 	 */
 	private int _queryId;
 	
-	private StreamResultSet _results;
+	private StreamResult _results;
 
 	/**
 	 * The query plan to be evaluated
@@ -89,7 +89,7 @@ public class QueryEvaluator implements Observer {//Runnable {
 	
 	public QueryEvaluator(int queryId, LAF queryPlan, 
 			Metadata schema, 
-			StreamResultSet resultSet) 
+			StreamResult resultSet) 
 	throws SNEEException, SchemaMetadataException, EvaluatorException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER QueryEvaluator() with queryID: " + queryId + " " + 

@@ -8,7 +8,7 @@ import java.util.List;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.types.Duration;
 
-public interface StreamResultSet {
+public interface StreamResult {
 
 	public void add(Output data);
 	
@@ -53,7 +53,7 @@ public interface StreamResultSet {
 	 * for this <code>StreamResultSet</code> object; 
 	 * may be <code>null</code>
 	 * 
-	 * @see StreamResultSet#getCommand(String)
+	 * @see StreamResult#getCommand(String)
 	 */
 	public void setCommand(String cmd);
 	

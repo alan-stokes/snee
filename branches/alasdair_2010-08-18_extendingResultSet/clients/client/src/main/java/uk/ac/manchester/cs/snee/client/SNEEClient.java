@@ -14,8 +14,8 @@ import uk.ac.manchester.cs.snee.SNEE;
 import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEController;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.StreamResultSet;
-import uk.ac.manchester.cs.snee.StreamResultSetImpl;
+import uk.ac.manchester.cs.snee.StreamResult;
+import uk.ac.manchester.cs.snee.StreamResultImpl;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
@@ -88,8 +88,8 @@ public abstract class SNEEClient implements Observer {
 		System.out.println("Running query for " + _duration + 
 			" seconds.");
 
-		StreamResultSetImpl resultSet = 
-			(StreamResultSetImpl) controller.getResultSet(queryId1);
+		StreamResultImpl resultSet = 
+			(StreamResultImpl) controller.getResultSet(queryId1);
 		resultSet.addObserver(this);
 		
 		try {			
@@ -119,7 +119,7 @@ public abstract class SNEEClient implements Observer {
 	}
 
 	private List<Output> displayFinalResult(int queryId1) throws SNEEException {
-		StreamResultSet resultSet1 = controller.getResultSet(queryId1);
+		StreamResult resultSet1 = controller.getResultSet(queryId1);
 		List<Output> results1 = resultSet1.getResults();
 		//		Collection<Output> results2 = controller.getResults(queryId2);
 		System.out.println("Stopping query " + queryId1 + ".");

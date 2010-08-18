@@ -58,8 +58,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.StreamResultSet;
-import uk.ac.manchester.cs.snee.StreamResultSetImpl;
+import uk.ac.manchester.cs.snee.StreamResult;
+import uk.ac.manchester.cs.snee.StreamResultImpl;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.types.Duration;
 
@@ -79,11 +79,11 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 	public static void tearDownAfterClass() throws Exception {
 	}
 
-	private StreamResultSet _resultSet;
+	private StreamResult _resultSet;
 
 	@Before
 	public void setUp() throws Exception {
-		_resultSet = new StreamResultSetImpl() {
+		_resultSet = new StreamResultImpl() {
 			protected List<Output> createDataStore() {
 				List<Output> dataList = new ArrayList<Output>();
 				dataList.add(mockOutput);//1
@@ -233,8 +233,8 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 	@Test(expected=SNEEException.class)
 	public void testGetResultFromIndexSingleton()
 	throws SNEEException {
-		StreamResultSetImpl singletonResultSet = 
-			new StreamResultSetImpl() {
+		StreamResultImpl singletonResultSet = 
+			new StreamResultImpl() {
 			protected List<Output> createDataStore() {
 				List<Output> dataList = new ArrayList<Output>();
 				dataList.add(mockOutput);//1

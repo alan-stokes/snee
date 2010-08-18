@@ -61,7 +61,7 @@ public interface SNEE {
 	 * @return ResultSet for the query
 	 * @throws SNEEException Specified queryId does not exist
 	 */
-	public StreamResultSet getResultSet(int queryId) 
+	public StreamResult getResultSet(int queryId) 
 	throws SNEEException;
 	
 	/**
