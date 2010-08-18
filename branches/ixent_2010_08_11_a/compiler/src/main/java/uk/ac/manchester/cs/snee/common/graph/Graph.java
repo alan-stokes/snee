@@ -736,33 +736,6 @@ public class Graph implements Cloneable {
 			logger.debug("RETURN");
 	}
 	
-    public void exportGraph(String outputDir, String outputFileName, 
-    		String label) 
-    throws SchemaMetadataException, SNEEConfigurationException {
-    	//XXX-AG: Is label ever used for anything? Seems to only ever be set to "" in the in-network SNEE!
-    	if (logger.isDebugEnabled()) {
-			logger.debug("ENTER: exportGraph() dir: " + outputDir + 
-					"\tfile: " + outputFileName + "\tlabel: " + label);
-    	}
-
-    	if (SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS).equals("true"))  {
-    		logger.debug("Generating graphs");
-    		if (!outputFileName.endsWith(".dot")) {
-    			outputFileName = outputFileName + ".dot";
-    		}
-    		String dotFileFullPath = outputDir + 
-    			System.getProperty("file.separator") + outputFileName;
-    		exportAsDOTFile(dotFileFullPath, label);
-			String pngFile = dotFileFullPath.replaceAll("dot", "png");
-			convertDOT2PNG(dotFileFullPath, pngFile);
-//			String PSFile = inputFullPath.replaceAll("dot", "ps");
-//			convertDOT2PS(inputFullPath, PSFile);
-		}
-		
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN");
-    }
-
 	/**
 	 * Clones an existing graph.  The nodes and edges of the graph are also cloned.
 	 */

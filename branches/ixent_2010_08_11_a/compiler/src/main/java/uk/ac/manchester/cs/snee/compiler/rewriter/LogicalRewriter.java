@@ -32,7 +32,11 @@ public class LogicalRewriter {
 	OptimizationException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER doLogicalRewriting() laf="+laf.getName());
-	    if (SNEEProperties.getBoolSetting(SNEEPropertyNames.
+		String lafName = laf.getName();
+		String newLafName = lafName.replace("LAF", "LAF'");
+		laf.setName(newLafName);
+		logger.trace("renamed "+lafName+" to "+newLafName);
+		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.
 	    LOGICAL_REWRITER_PUSH_PROJECT_DOWN)) {
 	    	pushProjectionDown(laf);
 	    }

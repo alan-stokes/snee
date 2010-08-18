@@ -80,7 +80,7 @@ public class SNEEProperties {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER validateGraphVizSettings()");
 		String generateGraphs = 
-			_props.getProperty(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS);
+			_props.getProperty(SNEEPropertyNames.GENERAL_QEP_IMAGES);
 		logger.info(generateGraphs);
 		if (generateGraphs != null &&
 				generateGraphs.equals("true") &&
@@ -123,7 +123,7 @@ public class SNEEProperties {
 			URL fileUrl = SNEEProperties.class.getClassLoader().getResource(fileName);
 			try {
 				file = new File(fileUrl.toURI());
-			} catch (URISyntaxException e) {
+			} catch (Exception e) {
 				String message = "Problem reading " +
 						propName + " location. Ensure proper path. " +
 						file;

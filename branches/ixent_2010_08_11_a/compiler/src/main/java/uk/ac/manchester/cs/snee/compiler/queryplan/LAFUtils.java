@@ -5,39 +5,56 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
+import uk.ac.manchester.cs.snee.common.graph.GraphUtils;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
-public class LAFUtils {
-
+public class LAFUtils extends GraphUtils {
+	
 	/**
 	 * Logger for this class.
 	 */
 	private Logger logger = Logger.getLogger(LAFUtils.class.getName());
 	
-	public void exportAsDOTFile(LAF laf, String fname) 
+	private LAF laf;
+	
+	private boolean showOperatorCollectionType = false;
+	
+	private boolean showTupleTypes = false;
+	
+	private boolean showOperatorID = false;
+	
+	public LAFUtils(LAF laf) {
+		this.laf = laf;
+	}
+	
+	protected void exportAsDOTFile(String fname) 
 	throws SchemaMetadataException {
-		exportAsDOTFile(laf, fname, new TreeMap<String, StringBuffer>(), 
+		exportAsDOTFile(fname, new TreeMap<String, StringBuffer>(), 
 				new TreeMap<String, StringBuffer>(), new StringBuffer());
 	}
 
-	public void exportAsDOTFile(LAF laf, String fname, String label) 
+	protected void exportAsDOTFile(String fname, String label) 
 	throws SchemaMetadataException {
-		exportAsDOTFile(laf, fname, new TreeMap<String, StringBuffer>(), 
+		exportAsDOTFile(fname, new TreeMap<String, StringBuffer>(), 
 				new TreeMap<String, StringBuffer>(), new StringBuffer());
 	}
 
-	protected void exportAsDOTFile(LAF laf, String fname,
+	protected void exportAsDOTFile(String fname,
 			TreeMap<String, StringBuffer> opLabelBuff,
 			TreeMap<String, StringBuffer> edgeLabelBuff,
 			StringBuffer fragmentsBuff) throws SchemaMetadataException {
-		exportAsDOTFile(laf, fname, "", new TreeMap<String, StringBuffer>(), 
+		exportAsDOTFile(fname, "", new TreeMap<String, StringBuffer>(), 
 				new TreeMap<String, StringBuffer>(), new StringBuffer());
 	}
 
@@ -48,7 +65,7 @@ public class LAFUtils {
 	 * @param fname the name of the output file
 	 * @throws SchemaMetadataException 
 	 */
-	protected void exportAsDOTFile(LAF laf, String fname,
+	protected void exportAsDOTFile(String fname,
 			String label,
 			TreeMap<String, StringBuffer> opLabelBuff,
 			TreeMap<String, StringBuffer> edgeLabelBuff,
@@ -88,17 +105,19 @@ public class LAFUtils {
 //				}
 
 				out.print("label = \"");
-//				if (Settings.DISPLAY_OPERATOR_DATA_TYPE) {
+				if (showOperatorCollectionType) {
 					out.print("(" + op.getOperatorDataType().toString()
 							+ ") ");
-//				}
+				}
 				out.print(op.getOperatorName() + "\\n");
 
 				if (op.getParamStr() != null) {
 					out.print(op.getParamStr() + "\\n");
 				}
-				out.print("id = " + op.getID() + "\\n");
-
+				if (showOperatorID) {
+					out.print("id = " + op.getID() + "\\n");
+				}
+					
 				//print subclass attributes
 				if (opLabelBuff.get(op.getID()) != null) {
 					out.print(opLabelBuff.get(op.getID())); 
@@ -120,9 +139,10 @@ public class LAFUtils {
 							+ op.getID() + "\" ");				
 					out.print("[fontsize=9 label = \" ");
 					try {
-						out.print("type: " + 
-								childOp.getTupleAttributesStr(3)
-								+ " \\n");
+						if (showTupleTypes) {
+							out.print("type: " + 
+								childOp.getTupleAttributesStr(3) + " \\n");
+						}
 					} catch (TypeMappingException e1) {
 						String msg = "Problem getting tuple attributes. " + e1;
 						logger.warn(msg);
@@ -143,6 +163,24 @@ public class LAFUtils {
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN LAF.exportAsDOTFile()");
 		}
+	}
+	
+	public void generateGraphImage() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER generateGraphImage()");
+		try {
+			String sep = System.getProperty("file.separator");
+			String outputDir = SNEEProperties.getSetting(
+					SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
+					sep + laf.getQueryName() + sep + "query-plan";
+			String dotFilePath = outputDir + sep + laf.getName() + ".dot";
+			exportAsDOTFile(dotFilePath);
+			super.generateGraphImage(dotFilePath);
+		} catch (Exception e) {
+		    logger.warn("Problem generating LAF image: ", e);
+		}
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN generateGraphImage()");
 	}
 	
 }

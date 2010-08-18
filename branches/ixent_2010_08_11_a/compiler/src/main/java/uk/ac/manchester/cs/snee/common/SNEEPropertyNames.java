@@ -42,7 +42,7 @@ public final class SNEEPropertyNames {
      * Used to indicate if graphs will be generated
      * Optional
      */
-    public static final String GENERAL_GENERATE_GRAPHS = 
+    public static final String GENERAL_QEP_IMAGES = 
     	"compiler.generate_graphs";
 
     /**

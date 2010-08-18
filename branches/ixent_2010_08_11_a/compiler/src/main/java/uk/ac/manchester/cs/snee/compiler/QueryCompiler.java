@@ -58,6 +58,7 @@ import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
 import uk.ac.manchester.cs.snee.compiler.planner.SourcePlanner;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.LAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.rewriter.LogicalRewriter;
 import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
@@ -120,20 +121,24 @@ public class QueryCompiler {
 					parseTree);
 		Translator translator = new Translator(_schemaMetadata);
 		LAF laf = translator.translate(parseTree, queryID);    
-
 //				qosCollection.get(queryID).getMaxAcquisitionInterval());
-		laf.exportGraph(queryPlanOutputDir, laf.getName(), "");
+		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERAL_QEP_IMAGES)) {
+			new LAFUtils(laf).generateGraphImage();
+		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN: "+laf);
 		return laf;
 	}
 
-	private LAF doLogicalRewriting(int queryID, LAF laf) {
+	private LAF doLogicalRewriting(int queryID, LAF laf) 
+	throws SNEEConfigurationException, OptimizationException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doLogicalRewriting: " + laf);
 		LogicalRewriter rewriter = new LogicalRewriter();
-		
-		LAF lafPrime = laf;
+		LAF lafPrime = rewriter.doLogicalRewriting(laf);
+		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERAL_QEP_IMAGES)) {
+			new LAFUtils(lafPrime).generateGraphImage();
+		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN: doLogicalRewriting "+lafPrime);
 		return lafPrime;		

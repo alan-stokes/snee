@@ -82,6 +82,8 @@ public class LAF extends Graph {
 	/** Acquisition interval of the whole query. (Alpha)*/
 	private double acInt;
 
+	private String queryName;
+
 	/**
 	 * Main construction used by logical optimizer.
 	 * @param inRootOp The root operator of the logical query plan
@@ -92,6 +94,7 @@ public class LAF extends Graph {
 	public LAF(LogicalOperator inRootOp, String queryName){//,
 //			long acquisitionInterval) {
 		this.name = generateName(queryName);
+		this.queryName=queryName;
 		this.rootOp = inRootOp;
 		this.updateNodesAndEdgesColls(this.rootOp);
 //		this.setAcquisitionInterval(acquisitionInterval);
@@ -236,5 +239,13 @@ public class LAF extends Graph {
 
 	public String getProvenanceString() {
 		return this.name;
+	}
+
+	public String getQueryName() {
+		return queryName;
+	}
+
+	public void setName(String newLafName) {
+		this.name = newLafName;
 	}
 }
