@@ -43,7 +43,7 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
-public class LAF {
+public class LAF extends SNEEAlgebraicForm {
 
 	/**
 	 * Logger for this class.
@@ -60,20 +60,9 @@ public class LAF {
 	 */	
 	private Tree logicalOperatorTree;
 
-	/**
-	 * The name of this LAF.
-	 */
-	private String name;
-	
-	/**
-	 * Implicit constructor used by subclass.
-	 */
-	protected LAF() { }    
 
 	/** Acquisition interval of the whole query. (Alpha)*/
 	private double acInt;
-
-	private String queryName;
 
 	/**
 	 * Main construction used by logical optimizer.
@@ -84,8 +73,7 @@ public class LAF {
 	 */
 	public LAF(LogicalOperator rootOp, String queryName){//,
 //			long acquisitionInterval) {
-		this.name = generateName(queryName);
-		this.queryName=queryName;
+		super(queryName);
 		this.logicalOperatorTree = new Tree(rootOp);
 //		this.setAcquisitionInterval(acquisitionInterval);
 	}
@@ -104,7 +92,7 @@ public class LAF {
 	 * @param queryName	The name of the query
 	 * @return the generated name for the query plan structure
 	 */
-	private static String generateName(String queryName) {
+	public String generateName(String queryName) {
 		candidateCount++;
 		return queryName + "-LAF-" + candidateCount;
 	}
@@ -188,19 +176,7 @@ public class LAF {
 	}
 
 	public String getProvenanceString() {
-		return this.name;
-	}
-
-	public String getQueryName() {
-		return queryName;
-	}
-
-	public void setName(String newLafName) {
-		this.name = newLafName;
-	}
-
-	public String getName() {
-		return this.name;
+		return this.getName();
 	}
 
 	public void removeOperator(LogicalOperator op) throws OptimizationException {
