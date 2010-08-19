@@ -3,11 +3,16 @@ package uk.ac.manchester.cs.snee.compiler.planner;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.DLAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.PAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.sn.physical.AlgorithmSelector;
@@ -30,7 +35,7 @@ public class SourcePlanner {
 	}
 
 	public QueryExecutionPlan doSourcePlanning(int queryID, DLAF dlaf) 
-	throws SNEEException, SchemaMetadataException {
+	throws SNEEException, SchemaMetadataException, SNEEConfigurationException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER doSourcePlanning()");
 		//TODO: In the future, this will involve iterating over fragment 
@@ -51,7 +56,7 @@ public class SourcePlanner {
 	}
 
 	private SensorNetworkQueryPlan doSensorNetworkSourcePlanning(DLAF dlaf,
-	int queryID) throws SNEEException, SchemaMetadataException {
+	int queryID) throws SNEEException, SchemaMetadataException, SNEEConfigurationException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER doSensorNetworkSourcePlanning()");
 		//TODO: Add physical opt, routing, where- and when-scheduling here!		
@@ -75,11 +80,14 @@ public class SourcePlanner {
 	}
 	
 	private PAF doSNAlgorithmSelection(DLAF dlaf, String queryName) 
-	throws SNEEException, SchemaMetadataException {
+	throws SNEEException, SchemaMetadataException, SNEEConfigurationException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER doSNAlgorithmSelection()");
 		AlgorithmSelector algorithmSelector = new AlgorithmSelector();
 		PAF paf = algorithmSelector.doPhysicalOptimizaton(dlaf, queryName);
+		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
+			new PAFUtils(paf).generateGraphImage();
+		}
 		if (logger.isTraceEnabled())
 			logger.debug("RETURN doSNAlgorithmSelection()");
 		return paf;

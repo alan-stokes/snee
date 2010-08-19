@@ -75,7 +75,7 @@ public class LAFUtils extends GraphUtils {
 			//query plan root at the top
 			out.println("size = \"8.5,11\";"); // do not exceed size A4
 			out.println("rankdir=\"BT\";");
-			out.println("label=\"" + laf.getProvenanceString() 
+			out.println("label=\"" + this.name //was laf.getProvenanceString 
 					+ label + "\";");
 
 			//Draw fragments info; will be empty for LAF and PAF

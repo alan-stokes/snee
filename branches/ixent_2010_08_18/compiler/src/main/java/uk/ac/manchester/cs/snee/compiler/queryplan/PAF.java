@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.graph.Graph;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
@@ -12,14 +13,21 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 /**
  * The Sensor Network(?) Physical-algebraic form of the query plan operator tree.
  */
-public class PAF extends DLAF {
+public class PAF {
 
 	/**
 	 * The logical-algebraic form of the query plan operator tree from which
 	 * PAF is derived.
 	 */
 	private DLAF dlaf;
+
+	private String name;
+
+	//TODO: Change this to Physical Operator
+	private SensornetOperator rootOp;
 		
+	Graph physicalOperatorTree;
+	
     /**
      * Logger for this class.
      */
@@ -39,9 +47,10 @@ public class PAF extends DLAF {
 	 */
 	public PAF(SensornetOperator deliverPhyOp, final DLAF dlaf, 
 	final String queryName) {
-//		super(dlaf, generateName(queryName));
-		this.dlaf = dlaf;
-//		this.rootOp = deliverPhyOp;
+		this.dlaf=dlaf;
+		this.name = generateName(queryName);
+		//this.physicalOperatorTree.
+		//this.rootOp = deliverPhyOp;
 //		this.updateNodesAndEdgesColls(this.rootOp);
 	}
     
@@ -73,6 +82,14 @@ public class PAF extends DLAF {
     	candidateCount++;
     	return queryName + "-PAF-" + candidateCount;
     }
+
+	public DLAF getDLAF() {
+		return dlaf;
+	}
+
+	public String getName() {
+		return this.name;
+	}
 
     
 //    protected void exportAsDOTFile(final String fname, 
