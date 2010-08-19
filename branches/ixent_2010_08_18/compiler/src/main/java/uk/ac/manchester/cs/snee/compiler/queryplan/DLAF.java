@@ -12,15 +12,13 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
  * evaluator.
  *
  */
-public class DLAF {
+public class DLAF extends SNEEAlgebraicForm {
 
     /**
      * Logger for this class.
      */
     private static  Logger logger = Logger.getLogger(DLAF.class.getName());
 	
-    private String name;
-    
 	/**
 	 * The logical-algebraic form of the query plan operator tree from which
 	 * DLAF is derived.
@@ -47,31 +45,15 @@ public class DLAF {
     protected static int candidateCount = 0;
     
 	/**
-	 * Implicit constructor used by subclass.
-	 */
-	protected DLAF() { }
-	
-	/**
 	 * Constructor for DLAF
 	 * @param laf The logical-algebraic form of the query plan operator tree 
 	 * from which DLAF is derived.
 	 * @param queryName The name of the query
 	 */
 	public DLAF(final LAF laf, final String queryName) {
+		super(queryName);
 		this.laf = laf;
-		this.name = generateName(queryName);
 	}
-	
-//    /**
-//     * Constructor used by clone.
-//     * @param dlaf The DLAF to be cloned
-//     * @param inName The name to be assigned to the data structure
-//     */
-//	public DLAF(final DLAF dlaf, final String inName) {
-//		super(dlaf, inName);
-//		
-//		this.laf = dlaf.laf; //This is ok because the laf is immutable now
-//	}
 	
     /**
      * Resets the counter; use prior to compiling the next query.
@@ -86,13 +68,13 @@ public class DLAF {
 	 * @param queryName	The name of the query
 	 * @return the generated name for the query plan structure
 	 */
-    private static String generateName(final String queryName) {
+    protected String generateName(final String queryName) {
     	candidateCount++;
     	return queryName + "-DLAF-" + candidateCount;
     }
     
 	public String getProvenanceString() {
-		return this.laf.getProvenanceString() + "->" + this.name;
+		return this.getName()+"-"+this.laf.getProvenanceString();
 	}
 
 	public void setSourceType(SourceType sourceType) {
@@ -113,10 +95,6 @@ public class DLAF {
 
 	public LAF getLAF() {
 		return this.laf;
-	}
-
-	public String getName() {
-		return this.name;
 	}
 	
 }
