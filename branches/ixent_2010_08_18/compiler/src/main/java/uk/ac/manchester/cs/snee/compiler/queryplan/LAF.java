@@ -33,37 +33,17 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.TreeMap;
+
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.graph.Edge;
-import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
-import uk.ac.manchester.cs.snee.common.graph.Graph;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.common.graph.Tree;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
-import uk.ac.manchester.cs.snee.operators.logical.LogicalOperatorImpl;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
-public class LAF extends Graph {
-	
-	/**
-	 * The root of the operator tree.
-	 */
-	protected LogicalOperator rootOp;
-
-	/**
-	 *  Set of leaf operators in the query plan.
-	 */
-	private HashSet<LogicalOperator> leafOperators = 
-		new HashSet<LogicalOperator>();
+public class LAF {
 
 	/**
 	 * Logger for this class.
@@ -74,7 +54,17 @@ public class LAF extends Graph {
 	 * Counter used to assign unique id to different candidates.
 	 */
 	protected static int candidateCount = 0;
+	
+	/**
+	 * The logical operator tree.
+	 */	
+	private Tree logicalOperatorTree;
 
+	/**
+	 * The name of this LAF.
+	 */
+	private String name;
+	
 	/**
 	 * Implicit constructor used by subclass.
 	 */
@@ -92,32 +82,12 @@ public class LAF extends Graph {
 	 * @param acquisitionInterval Acquisition interval of the whole query.
 	 *  (Alpha)
 	 */
-	public LAF(LogicalOperator inRootOp, String queryName){//,
+	public LAF(LogicalOperator rootOp, String queryName){//,
 //			long acquisitionInterval) {
 		this.name = generateName(queryName);
 		this.queryName=queryName;
-		this.rootOp = inRootOp;
-		this.updateNodesAndEdgesColls(this.rootOp);
+		this.logicalOperatorTree = new Tree(rootOp);
 //		this.setAcquisitionInterval(acquisitionInterval);
-	}
-
-	/**
-	 * Constructor used by clone.
-	 * @param laf The LAF to be cloned
-	 * @param inName The name to be assigned to the new data structure.
-	 */
-	public LAF(LAF laf, String inName) {
-		super(laf, inName);
-
-		logger.trace("size of nodes="+nodes.size());
-		rootOp = (LogicalOperatorImpl) nodes.get(laf.rootOp.getID());
-
-		Iterator<LogicalOperator> opIter = laf.leafOperators.iterator();
-		while (opIter.hasNext()) {
-			String opID = opIter.next().getID();
-			this.leafOperators.add((LogicalOperator) nodes.get(opID));
-		}
-
 	}
 
 	/**
@@ -140,34 +110,11 @@ public class LAF extends Graph {
 	}
 
 	/**
-	 * Updates the nodes and edges collections according to the tree 
-	 * passed to it.
-	 * @param op The current operator being processed
-	 */
-	public void updateNodesAndEdgesColls(LogicalOperator op) {
-		this.nodes.put(op.getID(), op);
-
-		/* Post-order traversal of operator tree */
-		if (!op.isLeaf()) {
-			for (int childIndex = 0; childIndex < op.getInDegree(); 
-			childIndex++) {
-				LogicalOperator c = (LogicalOperator) op.getInput(childIndex);
-
-				this.updateNodesAndEdgesColls(c);
-				EdgeImplementation e = new EdgeImplementation(this
-						.generateEdgeID(c.getID(), op.getID()), c.getID(), op
-						.getID());
-				this.edges.put(this.generateEdgeID(c.getID(), op.getID()), e);
-			}
-		}
-	}
-
-	/**
 	 * Returns the root operator in the tree.
 	 * @return the root operator.
 	 */
 	public LogicalOperator getRootOperator() {
-		return this.rootOp;
+		return (LogicalOperator) this.logicalOperatorTree.getRoot();
 	}
 
 	/**
@@ -211,6 +158,7 @@ public class LAF extends Graph {
 		return opList.iterator();
 	}
 
+		
 	/**
 	 * Sets the acquisition interval for the Plan 
 	 * 		and the operators where required.
@@ -249,5 +197,13 @@ public class LAF extends Graph {
 
 	public void setName(String newLafName) {
 		this.name = newLafName;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public void removeOperator(LogicalOperator op) throws OptimizationException {
+		this.logicalOperatorTree.removeNode(op);
 	}
 }

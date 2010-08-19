@@ -66,7 +66,7 @@ public class LogicalRewriter {
 		    final LogicalOperator op = opIter.next();
 			if (op.isRemoveable()) {
 			    logger.trace("Removing node " + op.getText());
-			    laf.removeNode(op);
+			    laf.removeOperator(op);
 			}
 		}
 	    if (logger.isTraceEnabled())
@@ -87,7 +87,7 @@ public class LogicalRewriter {
 		    final LogicalOperator op = opIter.next();
 			if (op instanceof RStreamOperator) {
 			    logger.trace("Removing node " + op.getText());
-			    laf.removeNode(op);
+			    laf.removeOperator(op);
 			}
 		}
 		if (logger.isTraceEnabled())
