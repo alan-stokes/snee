@@ -206,19 +206,19 @@ public class SNEEController implements SNEE {
 		} catch (UnsupportedAttributeTypeException e) {
 			String msg = "Problem instantiating logical schema " + 
 				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE) + ". " + e;
-			logger.fatal(msg);
+			logger.fatal(msg, e);
 			throw new SNEEException(msg, e);
 		} catch (TopologyReaderException e) {
 			String msg = "Problem reading topology file ";
-			logger.fatal(msg);
+			logger.fatal(msg, e);
 			throw new SNEEException(msg, e);			
 		} catch (MalformedURLException e) {
 			String msg = "Problem creating link to external service ";
-			logger.fatal(msg);
+			logger.fatal(msg, e);
 			throw new SNEEException(msg, e);			
 		} catch (SNEEDataSourceException e) {
 			String msg = "Problem creating link to external service ";
-			logger.fatal(msg);
+			logger.fatal(msg, e);
 			throw new SNEEException(msg, e);			
 		}
 		

@@ -224,6 +224,7 @@ public class Metadata {
 			logger.trace("ENTER addExtent() of type " + extentType);
 		}
 		String extentName = element.getAttribute("name").toLowerCase();
+		logger.trace("extentName="+extentName);
 		Map<String, AttributeType> attributes = 
 			parseAttributes(element.getElementsByTagName("column"));
 		if (extentType == ExtentType.SENSED) {
