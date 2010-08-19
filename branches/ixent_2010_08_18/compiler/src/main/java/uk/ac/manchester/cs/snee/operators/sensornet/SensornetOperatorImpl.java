@@ -52,6 +52,7 @@ public abstract class SensornetOperatorImpl extends LogicalOperatorImpl implemen
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SensornetOperatorImpl() " + op);
 		}
+		this.setOperatorName("Sensornet"+this.getOperatorName());
 		if (op instanceof SensornetOperatorImpl) {
 			logger.warn("Physical operator "+op.getID()+"instead of logical "+
 					"operator passed to physical operator constructor.");

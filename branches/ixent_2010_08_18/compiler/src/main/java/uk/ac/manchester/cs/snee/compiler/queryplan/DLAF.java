@@ -2,8 +2,11 @@ package uk.ac.manchester.cs.snee.compiler.queryplan;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 
 /**
  * The logical algebraic form of the query plan operator tree partitioned
@@ -95,6 +98,14 @@ public class DLAF extends SNEEAlgebraicForm {
 
 	public LAF getLAF() {
 		return this.laf;
+	}
+
+	public LogicalOperator getRootOperator() {
+		return this.getLAF().getRootOperator();
+	}
+
+	public Tree getOperatorTree() {
+		return this.getLAF().getOperatorTree();
 	}
 	
 }

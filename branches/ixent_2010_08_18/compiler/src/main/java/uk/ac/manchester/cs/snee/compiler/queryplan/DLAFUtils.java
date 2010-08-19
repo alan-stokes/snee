@@ -12,6 +12,7 @@ public class DLAFUtils extends LAFUtils {
 		super(dlaf.getLAF());
 		this.dlaf = dlaf;
 		this.name = dlaf.getName();
+		this.tree = dlaf.getOperatorTree();
 	}
 
 	protected void exportAsDOTFile(String fname) 

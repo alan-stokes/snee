@@ -3,7 +3,7 @@ package uk.ac.manchester.cs.snee.compiler.queryplan;
 public abstract class SNEEAlgebraicForm {
 
 	/**
-	 * The name of this LAF.
+	 * The identifier of this *AF.
 	 */
 	private String name;
 

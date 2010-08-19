@@ -15,6 +15,8 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
 import uk.ac.manchester.cs.snee.common.graph.GraphUtils;
+import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
@@ -36,9 +38,12 @@ public class LAFUtils extends GraphUtils {
 
 	protected String name;
 	
+	protected Tree tree;
+	
 	public LAFUtils(LAF laf) {
 		this.laf = laf;
 		this.name = laf.getName();
+		this.tree = laf.getOperatorTree();
 	}
 
 
@@ -69,7 +74,7 @@ public class LAFUtils extends GraphUtils {
 			PrintWriter out = new PrintWriter(new BufferedWriter(
 					new FileWriter(fname)));
 
-			out.println("digraph \"" + (String) laf.getName() + "\" {");
+			out.println("digraph \"" + this.name + "\" {");
 			String edgeSymbol = "->";
 
 			//query plan root at the top
@@ -84,8 +89,8 @@ public class LAFUtils extends GraphUtils {
 			/**
 			 * Draw the nodes, and their properties
 			 */
-			Iterator<LogicalOperator> opIter = 
-				laf.operatorIterator(TraversalOrder.POST_ORDER);
+			Iterator<Node> opIter = 
+				tree.nodeIterator(TraversalOrder.POST_ORDER);
 			while (opIter.hasNext()) {
 				LogicalOperator op = (LogicalOperator) opIter.next();
 				out.print("\"" + op.getID() + "\" [fontsize=9 ");
@@ -118,10 +123,9 @@ public class LAFUtils extends GraphUtils {
 			/**
 			 * Draw the edges, and their properties
 			 */
-			opIter = 
-				laf.operatorIterator(TraversalOrder.POST_ORDER);
+			opIter = tree.nodeIterator(TraversalOrder.POST_ORDER);
 			while (opIter.hasNext()) {
-				LogicalOperator op = opIter.next();
+				LogicalOperator op = (LogicalOperator) opIter.next();
 				Iterator<LogicalOperator> childOpIter = op.childOperatorIterator();
 				while (childOpIter.hasNext()) {
 					LogicalOperator childOp = childOpIter.next();

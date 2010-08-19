@@ -12,6 +12,7 @@ public class PAFUtils extends DLAFUtils {
 		super(paf.getDLAF());
 		this.paf = paf;
 		this.name = paf.getName();
+		this.tree = paf.getOperatorTree();
 	}
 
 //	protected void exportAsDOTFile(String fname) 

@@ -51,8 +51,8 @@ public class Tree extends Graph {
 	 * @param nodeList the operator list being created
 	 * @param traversalOrder the traversal order desired 
 	 */
-	private void doNodeIterator(Node node,
-			ArrayList<Node> nodeList, 
+	public <N extends Node> void doNodeIterator(N node,
+			ArrayList<N> nodeList, 
 			TraversalOrder traversalOrder) {
 
 		if (traversalOrder == TraversalOrder.PRE_ORDER) {
@@ -60,7 +60,7 @@ public class Tree extends Graph {
 		}
 
 		for (int n = 0; n < node.getInDegree(); n++) {
-			this.doNodeIterator(node.getInput(n), nodeList, traversalOrder);
+			this.doNodeIterator((N)node.getInput(n), nodeList, traversalOrder);
 		}
 
 		if (traversalOrder == TraversalOrder.POST_ORDER) {
@@ -75,12 +75,12 @@ public class Tree extends Graph {
 	 * @param traversalOrder the order to traverse the operator tree
 	 * @return an iterator for the operator tree
 	 */
-	public Iterator<Node> nodeIterator(
+	public <N extends Node> Iterator<N> nodeIterator(
 			TraversalOrder traversalOrder) {
 
-		ArrayList<Node> nodeList = 
-			new ArrayList<Node>();
-		this.doNodeIterator(this.getRoot(), nodeList, 
+		ArrayList<N> nodeList = 
+			new ArrayList<N>();
+		this.doNodeIterator((N)this.getRoot(), nodeList, 
 				traversalOrder);
 
 		return nodeList.iterator();

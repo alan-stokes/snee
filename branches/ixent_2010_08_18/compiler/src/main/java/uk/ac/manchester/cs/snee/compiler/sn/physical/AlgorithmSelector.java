@@ -45,6 +45,7 @@ public class AlgorithmSelector {
 			throw new SNEEException(msg);
 		}
 		PAF paf = new PAF(deliverPhyOp, dlaf, queryName);
+		splitAggregationOperators(paf);
 		return paf;
 	}
 	
@@ -58,32 +59,31 @@ public class AlgorithmSelector {
     private void splitAggregationOperators(final PAF paf) 
     throws SNEEException, SchemaMetadataException {
 
-    logger.trace("hello");
-////		final Iterator<LogicalOperator> opIter = paf
-////			.operatorIterator(TraversalOrder.POST_ORDER);
-//		while (opIter.hasNext()) {
-//		    final SensornetOperator op = (SensornetOperator) opIter.next();
-//	
-//		    //TODO: Only split the aggregation operator if the function will
-//		    //yield efficiencies, e.g., it may not be worthwhile to split an
-//		    //operator in the case of a median, because
-//		    //it can't be incrementally computed
-//		    if (op instanceof SensornetSingleStepAggregationOperator) {
-//				//Split into three
-//		    	SensornetSingleStepAggregationOperator agg = 
-//		    		(SensornetSingleStepAggregationOperator) op;
-//		    	AggregationOperator logAggr = 
-//		    		(AggregationOperator) agg.getLogicalOp();
-//				SensornetAggrInitOperator aggrInit = 
-//					new SensornetAggrInitOperator(logAggr);
-//				SensornetAggrMergeOperator aggrMerge = 
-//					new SensornetAggrMergeOperator(logAggr);
-//				SensornetAggrEvalOperator aggrEval = 
-//					new SensornetAggrEvalOperator(logAggr);
-//XXX				paf.replacePath(op, new Node[] { aggrEval, aggrInit });
-//XXX				paf.insertNode(aggrInit, aggrEval, aggrMerge);
-//		    }
-//		}
+		final Iterator<SensornetOperator> opIter = paf
+			.operatorIterator(TraversalOrder.POST_ORDER);
+		while (opIter.hasNext()) {
+		    final SensornetOperator op = (SensornetOperator) opIter.next();
+	
+		    //TODO: Only split the aggregation operator if the function will
+		    //yield efficiencies, e.g., it may not be worthwhile to split an
+		    //operator in the case of a median, because
+		    //it can't be incrementally computed
+		    if (op instanceof SensornetSingleStepAggregationOperator) {
+				//Split into three
+		    	SensornetSingleStepAggregationOperator agg = 
+		    		(SensornetSingleStepAggregationOperator) op;
+		    	AggregationOperator logAggr = 
+		    		(AggregationOperator) agg.getLogicalOp();
+				SensornetAggrInitOperator aggrInit = 
+					new SensornetAggrInitOperator(logAggr);
+				SensornetAggrMergeOperator aggrMerge = 
+					new SensornetAggrMergeOperator(logAggr);
+				SensornetAggrEvalOperator aggrEval = 
+					new SensornetAggrEvalOperator(logAggr);
+				paf.replacePath(op, new SensornetOperator[] { aggrEval, aggrInit });
+				paf.insertNode(aggrInit, aggrEval, aggrMerge);
+		    }
+		}
     }
 
 }

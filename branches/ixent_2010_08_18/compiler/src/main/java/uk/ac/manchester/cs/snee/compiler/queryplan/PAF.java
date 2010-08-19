@@ -5,33 +5,40 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Graph;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.common.graph.Tree;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
 /**
  * The Sensor Network(?) Physical-algebraic form of the query plan operator tree.
  */
-public class PAF {
+public class PAF extends SNEEAlgebraicForm {
 
+    /**
+     * Logger for this class.
+     */
+    private static  Logger logger = Logger.getLogger(PAF.class.getName());
+	
 	/**
 	 * The logical-algebraic form of the query plan operator tree from which
 	 * PAF is derived.
 	 */
 	private DLAF dlaf;
 
-	private String name;
-
-	//TODO: Change this to Physical Operator
-	private SensornetOperator rootOp;
-		
-	Graph physicalOperatorTree;
+	/**
+	 * The tree of Physical operators
+	 */
+	Tree physicalOperatorTree;
 	
-    /**
-     * Logger for this class.
-     */
-    private static  Logger logger = Logger.getLogger(PAF.class.getName());
     
     /**
      * Counter to assign unique id to different candidates.
@@ -44,26 +51,18 @@ public class PAF {
 	 * @param dlaf The distributed logical-algebraic form of the query plan 
 	 * operator tree from which PAF is derived.
 	 * @param queryName The name of the query
+	 * @throws SNEEException 
 	 */
 	public PAF(SensornetOperator deliverPhyOp, final DLAF dlaf, 
-	final String queryName) {
+	final String queryName) throws SNEEException, SchemaMetadataException {
+		super(queryName);
 		this.dlaf=dlaf;
-		this.name = generateName(queryName);
-		//this.physicalOperatorTree.
-		//this.rootOp = deliverPhyOp;
-//		this.updateNodesAndEdgesColls(this.rootOp);
+		DeliverOperator logDelOp = 
+			(DeliverOperator) dlaf.getRootOperator();
+		SensornetDeliverOperator phyDelOp =
+			new SensornetDeliverOperator(logDelOp);
+		this.physicalOperatorTree = new Tree(phyDelOp);
 	}
-    
-//    /**
-//     * Constructor used by clone.
-//     * @param paf The PAF to be cloned
-//     * @param inName The name to be assigned to the data structure
-//     */
-//	public PAF(final PAF paf, final String inName) {
-//		super(paf, inName);
-//		this.dlaf = paf.dlaf; //This is ok because the dlaf is immutable now
-//		
-//	}
 
     /**
      * Resets the counter; use prior to compiling the next query.
@@ -71,74 +70,41 @@ public class PAF {
     public static void resetCandidateCounter() {
     	candidateCount = 0;
     }
-	
+
+	public DLAF getDLAF() {
+		return dlaf;
+	}
+
 	/**
 	 * Generates a systematic name for this query plan structure, of the form
 	 * {query-name}-{structure-type}-{counter}.
 	 * @param queryName	The name of the query
 	 * @return the generated name for the query plan structure
 	 */
-    private static String generateName(final String queryName) {
+	protected String generateName(String queryName) {
     	candidateCount++;
-    	return queryName + "-PAF-" + candidateCount;
+    	return queryName + "-PAF-" + candidateCount;	
     }
 
-	public DLAF getDLAF() {
-		return dlaf;
+	public String getProvenanceString() {
+		return this.getName()+"-"+this.dlaf.getProvenanceString();
 	}
 
-	public String getName() {
-		return this.name;
+	public void replacePath(SensornetOperator op, SensornetOperator[] nodes) {
+		this.physicalOperatorTree.replacePath(op, nodes);
 	}
 
-    
-//    protected void exportAsDOTFile(final String fname, 
-//			TreeMap<String, StringBuffer> opLabelBuff,
-//			TreeMap<String, StringBuffer> edgeLabelBuff,
-//			StringBuffer fragmentsBuff) {
-//    	
-//	    final Iterator i = this.edges.keySet().iterator();
-//	    while (i.hasNext()) {
-//			final Edge e = this.edges.get((String) i.next());
-//			final Operator sourceNode = (Operator) this.nodes
-//				.get(e.getSourceID());
-//			    
-//			StringBuffer strBuff = new StringBuffer();
-//			if (edgeLabelBuff.containsKey(e.getID())) {
-//				strBuff = edgeLabelBuff.get(e.getID());
-//			}
-//			strBuff.append("Maximum cardinality: " 
-//					+ ((Operator) sourceNode).
-//					getCardinality(CardinalityType.PHYSICAL_MAX)	+ " \\n");
-//			
-//			edgeLabelBuff.put(e.getID(), strBuff);  
-//
-//	    }
-//	    super.exportAsDOTFile(fname, "", opLabelBuff, edgeLabelBuff, 
-//	    			fragmentsBuff);
-//    }
+	public void insertNode(SensornetAggrInitOperator child,
+			SensornetAggrEvalOperator parent,
+			SensornetAggrMergeOperator newNode) {
+		this.physicalOperatorTree.insertNode(child, parent, newNode);
+	}
+	
+	public Iterator<SensornetOperator> operatorIterator(TraversalOrder order) {
+		return this.physicalOperatorTree.nodeIterator(order);
+	}
 
-//Should this be: replace LogicalOperator with SensorNetworkPhysicalOperator?    
-//    public void replace(final Node oldNode, final Node newNode) {
-//		final Node[] inputs = oldNode.getInputs();
-//		for (final Node n : inputs) {
-//		    n.replaceOutput(oldNode, newNode);
-//		    newNode.addInput(n);
-//		}
-//		final Node[] outputs = oldNode.getOutputs();
-//		for (final Node n : outputs) {
-//		    n.replaceInput(oldNode, newNode);
-//		    newNode.addOutput(n);
-//		}
-//		if (this.rootOp == oldNode) {
-//			this.rootOp = (LogicalOperator) newNode;
-//		}
-//		nodes.remove(oldNode.getID());
-//		nodes.put(newNode.getID(), newNode);
-//    }    
-// 
-//	public String getProvenanceString() {
-//		return this.dlaf.getProvenanceString() + "->" + this.name;
-//	}    
-    
+	public Tree getOperatorTree() {
+		return this.physicalOperatorTree;
+	}
 }

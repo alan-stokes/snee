@@ -38,6 +38,7 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
@@ -106,48 +107,6 @@ public class LAF extends SNEEAlgebraicForm {
 	}
 
 	/**
-	 * Helper method to recursively generate the operator iterator.
-	 * @param op the operator being visited
-	 * @param opList the operator list being created
-	 * @param traversalOrder the traversal order desired 
-	 */
-	private void doOperatorIterator(LogicalOperator op,
-			ArrayList<LogicalOperator> opList, 
-			TraversalOrder traversalOrder) {
-
-		if (traversalOrder == TraversalOrder.PRE_ORDER) {
-			opList.add(op);
-		}
-
-		for (int n = 0; n < op.getInDegree(); n++) {
-			this.doOperatorIterator(op.getInput(n), opList, traversalOrder);
-		}
-
-		if (traversalOrder == TraversalOrder.POST_ORDER) {
-			opList.add(op);
-		}
-	}	
-
-	/**
-	 * Iterator to traverse the operator tree.
-	 * The structure of the operator tree may not be modified during 
-	 * iteration
-	 * @param traversalOrder the order to traverse the operator tree
-	 * @return an iterator for the operator tree
-	 */
-	public Iterator<LogicalOperator> operatorIterator(
-			TraversalOrder traversalOrder) {
-
-		ArrayList<LogicalOperator> opList = 
-			new ArrayList<LogicalOperator>();
-		this.doOperatorIterator(this.getRootOperator(), opList, 
-				traversalOrder);
-
-		return opList.iterator();
-	}
-
-		
-	/**
 	 * Sets the acquisition interval for the Plan 
 	 * 		and the operators where required.
 	 * @param acquisitionInterval Acquisition interval of the whole query. 
@@ -155,10 +114,10 @@ public class LAF extends SNEEAlgebraicForm {
 	 */
 	public void setAcquisitionInterval(double acquisitionInterval) {
 		this.acInt = acquisitionInterval;
-		Iterator<LogicalOperator> opIter = 
-			operatorIterator(TraversalOrder.PRE_ORDER);
+		Iterator<Node> opIter = this.logicalOperatorTree.
+			nodeIterator(TraversalOrder.PRE_ORDER);
 		while (opIter.hasNext()) {
-			LogicalOperator op = opIter.next();
+			LogicalOperator op = (LogicalOperator) opIter.next();
 			if (op instanceof WindowOperator) {
 				((WindowOperator) op).setAcquisitionInterval(acInt);
 			}
@@ -181,5 +140,13 @@ public class LAF extends SNEEAlgebraicForm {
 
 	public void removeOperator(LogicalOperator op) throws OptimizationException {
 		this.logicalOperatorTree.removeNode(op);
+	}
+
+	public Iterator<LogicalOperator> operatorIterator(TraversalOrder order) {
+		return this.logicalOperatorTree.nodeIterator(order);
+	}
+
+	public Tree getOperatorTree() {
+		return this.logicalOperatorTree;
 	}
 }

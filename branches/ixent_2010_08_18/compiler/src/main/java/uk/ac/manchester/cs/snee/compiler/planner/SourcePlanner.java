@@ -43,7 +43,7 @@ public class SourcePlanner {
 		logger.info("Only source="+dlaf.getSource().getSourceName());
 		if (dlaf.getSourceType()==SourceType.SENSOR_NETWORK) {
 			SensorNetworkQueryPlan qep = doSensorNetworkSourcePlanning(dlaf,
-					queryID);
+					"query"+queryID);
 			if (logger.isDebugEnabled())
 				logger.debug("RETURN doSourcePlanning()");
 			return qep;
@@ -56,24 +56,24 @@ public class SourcePlanner {
 	}
 
 	private SensorNetworkQueryPlan doSensorNetworkSourcePlanning(DLAF dlaf,
-	int queryID) throws SNEEException, SchemaMetadataException, SNEEConfigurationException {
+	String queryName) throws SNEEException, SchemaMetadataException, SNEEConfigurationException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER doSensorNetworkSourcePlanning()");
 		//TODO: Add physical opt, routing, where- and when-scheduling here!		
 		if (logger.isInfoEnabled()) 
-			logger.info("Starting Algorithm Selection for query " + queryID);
-		PAF paf = doSNAlgorithmSelection(dlaf,"Q"+queryID);
+			logger.info("Starting Algorithm Selection for query " + queryName);
+		PAF paf = doSNAlgorithmSelection(dlaf,queryName);
 		if (logger.isInfoEnabled()) 
-			logger.info("Starting Routing for query " + queryID);		
+			logger.info("Starting Routing for query " + queryName);		
 		//RT rt = doRouting(paf);
 		if (logger.isInfoEnabled()) 
-			logger.info("Starting Where-Scheduling for query " + queryID);
+			logger.info("Starting Where-Scheduling for query " + queryName);
 		//DAF daf = doWhereScheduling(rt, paf);
 		if (logger.isInfoEnabled()) 
-			logger.info("Starting When-Scheduling for query " + queryID);
+			logger.info("Starting When-Scheduling for query " + queryName);
 		//Agenda agenda = doWhenScheduling(rt, paf);
 		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, 
-				"Q"+queryID); //agenda		
+				queryName); //agenda		
 		if (logger.isTraceEnabled())
 			logger.debug("RETURN doSensorNetworkSourcePlanning()");
 		return qep;
