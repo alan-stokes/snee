@@ -14,8 +14,11 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.sn.physical.AlgorithmSelector;
+import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 
 /**
  * The SourcePlanner is responsible for carrying out query optimization 
@@ -65,13 +68,13 @@ public class SourcePlanner {
 		PAF paf = doSNAlgorithmSelection(dlaf,queryName);
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Routing for query " + queryName);		
-		//RT rt = doRouting(paf);
+		RT rt = doSNRouting(paf, queryName);
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Where-Scheduling for query " + queryName);
-		//DAF daf = doWhereScheduling(rt, paf);
+		//DAF daf = doWhereScheduling(rt, paf, queryName);
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting When-Scheduling for query " + queryName);
-		//Agenda agenda = doWhenScheduling(rt, paf);
+		//Agenda agenda = doWhenScheduling(rt, paf, queryName);
 		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, 
 				queryName); //agenda		
 		if (logger.isTraceEnabled())
@@ -79,6 +82,7 @@ public class SourcePlanner {
 		return qep;
 	}
 	
+
 	private PAF doSNAlgorithmSelection(DLAF dlaf, String queryName) 
 	throws SNEEException, SchemaMetadataException, SNEEConfigurationException {
 		if (logger.isTraceEnabled())
@@ -92,7 +96,19 @@ public class SourcePlanner {
 			logger.debug("RETURN doSNAlgorithmSelection()");
 		return paf;
 	}
-
+	
+	private RT doSNRouting(PAF paf, String queryName) throws SNEEConfigurationException {
+		if (logger.isTraceEnabled())
+			logger.debug("ENTER doSNRouting()");
+		Router router = new Router();
+		RT rt = router.doRouting(paf, queryName);
+		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
+			new RTUtils(rt).generateGraphImage();
+		}
+		if (logger.isTraceEnabled())
+			logger.debug("RETURN doSNRouting()");
+		return null;
+	}
 	private EvaluatorQueryPlan doEvaluatorPlanning(DLAF dlaf, int queryID) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER doEvaluatorPlanning()");		

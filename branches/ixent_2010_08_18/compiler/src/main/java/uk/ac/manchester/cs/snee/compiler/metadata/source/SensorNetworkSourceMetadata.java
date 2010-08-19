@@ -200,8 +200,20 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 	 * sensing data.
 	 * @return an array of node identifiers
 	 */
-	public int[] getSourceNodes() {
+	public int[] getSourceSites() {
 		return _sourceNodes;
 	}
 
+	/**
+	 * Returns the network topology.
+	 * @return
+	 */
+	public Topology getTopology() {
+		return this._topology;
+	}
+
+	public int getGateway() {
+		return this._gateways[0];
+	}
+	
 }

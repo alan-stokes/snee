@@ -85,7 +85,17 @@ public class Site extends NodeImplementation {
     	super(id);
     }
 
-    public Site getChild(final int i) {
+    public Site(Site model) {
+    	super(model.id);
+		this.ram = model.ram;
+		this.energyStock = model.energyStock;
+		this.source = model.source;
+		this.numSources = model.numSources;
+		//this method does not link fragments or exchange components,
+		//needs to be done later
+	}
+
+	public Site getChild(final int i) {
 	return (Site) super.getInput(i);
     }
 

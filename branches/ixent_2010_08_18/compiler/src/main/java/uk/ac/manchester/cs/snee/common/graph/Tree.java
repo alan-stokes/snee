@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
@@ -85,4 +86,5 @@ public class Tree extends Graph {
 
 		return nodeList.iterator();
 	}
+
 }
