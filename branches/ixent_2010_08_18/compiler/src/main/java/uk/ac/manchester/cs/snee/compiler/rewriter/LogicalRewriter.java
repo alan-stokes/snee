@@ -31,10 +31,10 @@ public class LogicalRewriter {
 	public LAF doLogicalRewriting(LAF laf) throws SNEEConfigurationException,
 	OptimizationException {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER doLogicalRewriting() laf="+laf.getName());
-		String lafName = laf.getName();
+			logger.debug("ENTER doLogicalRewriting() laf="+laf.getID());
+		String lafName = laf.getID();
 		String newLafName = lafName.replace("LAF", "LAF'");
-		laf.setName(newLafName);
+		laf.setID(newLafName);
 		logger.trace("renamed "+lafName+" to "+newLafName);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.
 	    LOGICAL_REWRITER_PUSH_PROJECT_DOWN)) {
@@ -59,7 +59,7 @@ public class LogicalRewriter {
      */
  	private void removeUnrequiredOperators(final LAF laf) throws OptimizationException {
 		if (logger.isTraceEnabled())
-			logger.debug("ENTER removeUnrequiredOperators() laf="+laf.getName());
+			logger.debug("ENTER removeUnrequiredOperators() laf="+laf.getID());
 		final Iterator<LogicalOperator> opIter = laf
 			.operatorIterator(TraversalOrder.POST_ORDER);
 		while (opIter.hasNext()) {
@@ -80,7 +80,7 @@ public class LogicalRewriter {
  	 */
     private void removeRStream(final LAF laf) throws OptimizationException {
 		if (logger.isTraceEnabled())
-			logger.debug("ENTER removeRStream() laf="+laf.getName());
+			logger.debug("ENTER removeRStream() laf="+laf.getID());
 		final Iterator<LogicalOperator> opIter = laf
 			.operatorIterator(TraversalOrder.POST_ORDER);
 		while (opIter.hasNext()) {
@@ -102,7 +102,7 @@ public class LogicalRewriter {
     private void pushProjectionDown(final LAF laf)     
     throws OptimizationException {
 		if (logger.isTraceEnabled())
-			logger.debug("ENTER pushProjectionDown() laf="+laf.getName());
+			logger.debug("ENTER pushProjectionDown() laf="+laf.getID());
 		final LogicalOperator op 
 			= (LogicalOperator) laf.getRootOperator();
 		op.pushProjectionDown(new ArrayList<Expression>(),

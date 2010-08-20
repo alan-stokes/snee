@@ -31,7 +31,7 @@ public class AlgorithmSelector {
 	public PAF doPhysicalOptimizaton(DLAF dlaf, String queryName) 
 	throws SNEEException, SchemaMetadataException {
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER getInstance() with " + dlaf.getName());
+			logger.trace("ENTER getInstance() with " + dlaf.getID());
 		LogicalOperator rootOp = dlaf.getLAF().getRootOperator();
 		
 		SensornetOperator deliverPhyOp = null;

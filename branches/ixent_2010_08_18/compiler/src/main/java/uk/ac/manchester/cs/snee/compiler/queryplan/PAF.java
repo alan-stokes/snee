@@ -37,7 +37,7 @@ public class PAF extends SNEEAlgebraicForm {
 	/**
 	 * The tree of Physical operators
 	 */
-	Tree physicalOperatorTree;
+	private Tree physicalOperatorTree;
 	
     
     /**
@@ -56,12 +56,16 @@ public class PAF extends SNEEAlgebraicForm {
 	public PAF(SensornetOperator deliverPhyOp, final DLAF dlaf, 
 	final String queryName) throws SNEEException, SchemaMetadataException {
 		super(queryName);
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER PAF()"); 
 		this.dlaf=dlaf;
 		DeliverOperator logDelOp = 
 			(DeliverOperator) dlaf.getRootOperator();
 		SensornetDeliverOperator phyDelOp =
 			new SensornetDeliverOperator(logDelOp);
 		this.physicalOperatorTree = new Tree(phyDelOp);
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN PAF()"); 	
 	}
 
     /**
@@ -71,40 +75,88 @@ public class PAF extends SNEEAlgebraicForm {
     	candidateCount = 0;
     }
 
+    /**
+     * Gets the DLAF that this PAF is associated with.
+     * @return
+     */
 	public DLAF getDLAF() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getDLAF()"); 
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getDLAF()"); 
 		return dlaf;
 	}
 
-	/**
-	 * Generates a systematic name for this query plan structure, of the form
-	 * {query-name}-{structure-type}-{counter}.
-	 * @param queryName	The name of the query
-	 * @return the generated name for the query plan structure
-	 */
-	protected String generateName(String queryName) {
+	 /** {@inheritDoc} */
+	protected String generateID(String queryName) {
+//		if (logger.isDebugEnabled())
+//			logger.debug("ENTER generateName()"); 
     	candidateCount++;
+//		if (logger.isDebugEnabled())
+//			logger.debug("RETURN generateName()"); 
     	return queryName + "-PAF-" + candidateCount;	
     }
 
-	public String getProvenanceString() {
-		return this.getName()+"-"+this.dlaf.getProvenanceString();
+	 /** {@inheritDoc} */
+	public String getDescendantsString() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getDescendantsString()"); 
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getDescendantsString()"); 
+		return this.getID()+"-"+this.dlaf.getDescendantsString();
 	}
 
+	/**
+	 * Replace a single operator with a sequence of operators.
+	 * @param op
+	 * @param nodes
+	 */
 	public void replacePath(SensornetOperator op, SensornetOperator[] nodes) {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER replacePath()"); 
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN replacePath()"); 
 		this.physicalOperatorTree.replacePath(op, nodes);
 	}
 
+	/**
+	 * Inserts a new node between a given child and parent.
+	 * @param child
+	 * @param parent
+	 * @param newNode
+	 */
 	public void insertNode(SensornetAggrInitOperator child,
 			SensornetAggrEvalOperator parent,
 			SensornetAggrMergeOperator newNode) {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER insertNode()");
 		this.physicalOperatorTree.insertNode(child, parent, newNode);
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN insertNode()");
 	}
 	
+	/**
+	 * Generates an iterator to traverse operator tree.
+	 * @param order
+	 * @return
+	 */
 	public Iterator<SensornetOperator> operatorIterator(TraversalOrder order) {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER operatorIterator()"); 
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN operatorIterator()"); 
 		return this.physicalOperatorTree.nodeIterator(order);
 	}
 
+	/**
+	 * Returns the physical operator tree.
+	 * @return
+	 */
 	public Tree getOperatorTree() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getOperatorTree()"); 
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getOperatorTree()"); 
 		return this.physicalOperatorTree;
 	}
 }

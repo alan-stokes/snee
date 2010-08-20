@@ -271,7 +271,7 @@ public class QueryCompiler {
 		QueryExecutionPlan qep = doSourcePlanning(queryID, dlaf);
 
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN: " + qep.getName());
+			logger.debug("RETURN: " + qep.getID());
 		return qep;
 	}
 

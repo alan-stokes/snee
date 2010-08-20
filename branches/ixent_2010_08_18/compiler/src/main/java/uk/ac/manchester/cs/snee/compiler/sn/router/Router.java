@@ -6,6 +6,9 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
@@ -22,20 +25,40 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 
 public class Router {
 
+	/**
+	 * Logger for this class.
+	 */
 	private Logger logger = 
 		Logger.getLogger(Router.class.getName());
 	
-	public Metadata metadata;
-	
-	int randomSeed = 4; //TODO: read this from settings
-	
-	public void RT(Metadata m) {
-		metadata = m;
+	/**
+	 * Random seed used by Steiner tree algorithm.
+	 */
+	int randomSeed = 4;
+
+	/**
+	 * Constructor for Sensor Network Routing Decision Maker.
+	 * @throws NumberFormatException
+	 * @throws SNEEConfigurationException
+	 */
+	public Router() throws NumberFormatException, SNEEConfigurationException {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER Router()");
+		this.randomSeed= new Integer(SNEEProperties.getSetting(
+				SNEEPropertyNames.ROUTER_RANDOM_SEED)).intValue(); 
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN Router()");
 	}
 	
+	/**
+	 * Carry out the sensor network routing.
+	 * @param paf
+	 * @param queryName
+	 * @return
+	 */
 	public RT doRouting(PAF paf, String queryName) {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER doRouting() with " + paf.getName());
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER doRouting() with " + paf.getID());
 		//XXX: There is potentially one routing tree for each Sensor Network Source
 		//For now, assume only one source
 		SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) 
@@ -45,8 +68,8 @@ public class Router {
 		int[] sources = sm.getSourceSites();
 		Tree steinerTree = computeSteinerTree(network, sink, sources); 
 		RT rt = new RT(paf, queryName, steinerTree);
-		if (logger.isTraceEnabled())
-			logger.trace("RETURN doRouting()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN doRouting()");
 		return rt;
 	}
 
@@ -62,8 +85,11 @@ public class Router {
      * Wireless Sensor Networks" by Holger Karl and Andreas Willig,
      * page 309. 
      */
-    public Tree computeSteinerTree(Topology network, final int sink, final int[] sources) {
-
+    private Tree computeSteinerTree(Topology network, final int sink, 
+    		final int[] sources) {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER computeSteinerTree() with sink=" +sink+
+					" sources="+sources.toString());    	
     	Site gateway = new Site(network.getSite(sink));
     	Tree steinerTree = new Tree(gateway);
 
@@ -104,7 +130,8 @@ public class Router {
 				//add path from source node to a random destination node added to the steiner tree 
 				final String destNode = nodesAdded.get(random
 					.nextInt(nodesAdded.size()));
-				shortestPath = network.getShortestPath(sourceNodeID, destNode, linkCostMetric);
+				shortestPath = network.getShortestPath(sourceNodeID, destNode, 
+						linkCostMetric);
 		    }
 		    
 		    //now traverse shortest path from the currentSource, adding edges to the steiner tree,
@@ -122,20 +149,21 @@ public class Router {
 				    if (steinerTree.getNode(tmpCurrent)!=null) {
 				    	foundFlag = true;
 				    }
-		
-				    if (!tmpPrev.equals(tmpCurrent)) {
-				    	String linkID = network.generateEdgeID(tmpPrev, tmpCurrent);
-				    	RadioLink oldLink = (RadioLink) network.getEdge(linkID);
-				    	addExternalSiteAndRadioLinkClone(steinerTree,
-				    			network.getSite(tmpPrev), network.getSite(tmpCurrent), 
-				    			oldLink);
-				    }	
+				    if (tmpPrev.equals(tmpCurrent)) {
+				    	continue;
+				    }
+		    	    addTreeLink(steinerTree, network.getSite(tmpPrev), 
+		    	    		network.getSite(tmpCurrent));
+				    
 				    logger.trace("Added edge to steiner tree:" + tmpPrev + "-"
 					    + tmpCurrent);
 		    	}
 			}
 			nodesAdded.add(sourceNodeID.toString());
 		}
+		steinerTree.updateNodesAndEdgesColls(gateway);
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN computeSteinerTree()");
 		return steinerTree;
     }
     
@@ -143,29 +171,25 @@ public class Router {
      * Copies a radio link from another topology, and adds it to this one.
      * @param oldSource the source site
      * @param oldDest the destination site
-     * @param oldLink the link to be copied
      * @return the edge which was created
      */
-    public final RadioLink addExternalSiteAndRadioLinkClone(Tree rt,
-    		final Site oldSource, final Site oldDest, 
-    		final RadioLink oldLink) {
-    	//clone the nodes
-    	final Site newSource = new Site(oldSource);
-    	final Site newDest = new Site(oldDest);
-    	
-    	//clone the radio link
-    	RadioLink newLink = addRadioLink(rt, newSource.getID(), 
-    			newDest.getID(), false, oldLink.getRadioLossCost());
-    	newLink.setEnergyCost(oldLink.getEnergyCost());
-    	newLink.setLatencyCost(oldLink.getLatencyCost());		
-    	return newLink;
-    }   
-    
-    public RadioLink addRadioLink(Tree rt, final String id1, final String id2,
-    	    final boolean bidirectional, final double radioLossCost) {
-        	RadioLink link = (RadioLink) rt.addEdge(id1, id2,
-    		bidirectional);
-        	link.setRadioLossCost(radioLossCost);
-        	return link;
-        }
+    private final void addTreeLink(Tree rt,
+    		final Site oldSource, final Site oldDest) {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER Router()");
+    	Site source = (Site) rt.getNode(oldSource.getID());
+    	if (source==null) {
+        	source = new Site(oldSource);
+        	rt.addNode(source);
+    	}
+    	Site dest = (Site) rt.getNode(oldDest.getID());
+    	if (dest==null) {
+        	dest= new Site(oldDest);
+    		rt.addNode(dest);
+    	}
+    	source.addOutput(dest);
+    	dest.addInput(source);
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN Router()");
+    }
 }

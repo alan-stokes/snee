@@ -1,34 +1,80 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
+import org.apache.log4j.Logger;
+
 /**
  * Abstract Query Plan class.
  */
 public abstract class QueryExecutionPlan {
 
-	String name;
+	/**
+	 * Logger for this class.
+	 */
+	private Logger logger = Logger.getLogger(QueryExecutionPlan.class.getName());
+	
+	/**
+	 * Identifier of this query plan.
+	 */
+	String id;
 	
 	/**
 	 * Counter used to assign unique id to different candidates.
 	 */
 	protected static int candidateCount = 0;
 	
+	/**
+	 * Underlying DLAF.
+	 */
 	DLAF dlaf;
 	
+	/**
+	 * Constructor for QueryExecutionPlan.
+	 * @param dlaf
+	 * @param queryName
+	 */
 	protected QueryExecutionPlan(DLAF dlaf, String queryName) {
-		this.name = generateName(queryName);
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER QueryExecutionPlan()"); 
+		this.id = generateName(queryName);
 		this.dlaf = dlaf;
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER QueryExecutionPlan()"); 
 	}
 	
+	/**
+	 * Gets the underlying DLAF.
+	 * @return
+	 */
 	public DLAF getDLAF(){
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getDLAF()"); 
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getDLAF()"); 
 		return this.dlaf;
 	}
-	
+
+	/**
+	 * Gets the underlying LAF.
+	 * @return
+	 */
 	public LAF getLAF() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getLAF()"); 
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getLAF()"); 
 		return this.dlaf.getLAF();
 	}
 
-	public String getName() {
-		return this.name;
+	/**
+	 * Gets the query plan identifier.
+	 * @return
+	 */
+	public String getID() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getID()"); 
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getID()"); 
+		return this.id;
 	}
 	
 	/**
@@ -45,8 +91,12 @@ public abstract class QueryExecutionPlan {
 	 * @param queryName	The name of the query
 	 * @return the generated name for the query plan structure
 	 */
-	private static String generateName(String queryName) {
+	private String generateName(String queryName) {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER generateName()"); 
 		candidateCount++;
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN generateName()"); 
 		return queryName + "-QEP-" + candidateCount;
 	}
 }

@@ -21,6 +21,9 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
+/**
+ * Utility class for displaying LAF.
+ */
 public class LAFUtils extends GraphUtils {
 	
 	/**
@@ -28,29 +31,62 @@ public class LAFUtils extends GraphUtils {
 	 */
 	private Logger logger = Logger.getLogger(LAFUtils.class.getName());
 	
+	/**
+	 * LAF to be displayed.
+	 */
 	private LAF laf;
 	
+	/**
+	 * Determines whether collection type (STREAM, WINDOW etc.) displayed.
+	 */
 	private boolean showOperatorCollectionType = false;
 	
+	/**
+	 * Determines whether tuple type (a1:t1,...,an:tn) displayed.
+	 */
 	private boolean showTupleTypes = false;
 	
+	/**
+	 * Determines whether node id is displayed.
+	 */
 	private boolean showOperatorID = false;
 
+	/**
+	 * Name of item to be displayed.
+	 */
 	protected String name;
 	
+	/**
+	 * Tree to be displayed.
+	 */
 	protected Tree tree;
 	
+	/**
+	 * Constructor for LAFUtils.
+	 * @param laf
+	 */
 	public LAFUtils(LAF laf) {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER LAFUtils()"); 		
 		this.laf = laf;
-		this.name = laf.getName();
+		this.name = laf.getID();
 		this.tree = laf.getOperatorTree();
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN LAFUtils()");
 	}
 
-
+	/**
+	 * Generate a DOT file representation of the DLAF for Graphviz.
+	 */
 	protected void exportAsDOTFile(String fname) 
 	throws SchemaMetadataException {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER exportAsDOTFile()");
 		exportAsDOTFile(fname, "", new TreeMap<String, StringBuffer>(), 
 				new TreeMap<String, StringBuffer>(), new StringBuffer());
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN exportAsDOTFile()");
+		
 	}
 
 	/**
@@ -67,7 +103,7 @@ public class LAFUtils extends GraphUtils {
 			StringBuffer fragmentsBuff) 
 	throws SchemaMetadataException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER LAF.exportAsDOTFile() with file:" + 
+			logger.debug("ENTER exportAsDOTFile() with file:" + 
 					fname + "\tlabel: " + label);
 		}
 		try {
@@ -151,14 +187,17 @@ public class LAFUtils extends GraphUtils {
 			}
 			out.println("}");
 			out.close();
-		} catch (IOException e) {
-			logger.warn("Failed to write LAF to " + fname + ".");
+		} catch (Exception e) {
+			logger.warn("Failed to write LAF to " + fname + ".", e);
 		}
 		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN LAF.exportAsDOTFile()");
+			logger.debug("RETURN exportAsDOTFile()");
 		}
 	}
 	
+	/**
+	 * Generates graph PNG image of given algebraic form.
+	 */
 	public void generateGraphImage() {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER generateGraphImage()");
@@ -175,7 +214,5 @@ public class LAFUtils extends GraphUtils {
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN generateGraphImage()");
-	}
-
-	
+	}	
 }

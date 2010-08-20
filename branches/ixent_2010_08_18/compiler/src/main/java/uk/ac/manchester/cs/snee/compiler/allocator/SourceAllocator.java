@@ -33,7 +33,7 @@ public class SourceAllocator {
 	throws SourceAllocatorException
 	{
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER allocateSources() laf="+laf.getName());
+			logger.debug("ENTER allocateSources() laf="+laf.getID());
 		DLAF dlaf = new DLAF(laf, laf.getQueryName());
 		Iterator<LogicalOperator> opIter =
 			laf.operatorIterator(TraversalOrder.PRE_ORDER);
@@ -62,8 +62,6 @@ public class SourceAllocator {
 		}
 		SourceMetadata onlySource = sources.get(0);
 		dlaf.setSource(onlySource);
-		SourceType sourceType = onlySource.getSourceType();
-		dlaf.setSourceType(sourceType);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN allocateSources()");
 		return dlaf;

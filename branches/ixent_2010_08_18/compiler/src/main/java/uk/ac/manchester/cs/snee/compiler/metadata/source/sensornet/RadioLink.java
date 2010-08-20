@@ -64,7 +64,7 @@ public class RadioLink extends EdgeImplementation implements Edge {
      * @param sourceID The source site
      * @param targetID The destination site
      */
-    RadioLink(final String id, final String sourceID, final String targetID) {
+    public RadioLink(final String id, final String sourceID, final String targetID) {
     	super(id, sourceID, targetID);
     }
 

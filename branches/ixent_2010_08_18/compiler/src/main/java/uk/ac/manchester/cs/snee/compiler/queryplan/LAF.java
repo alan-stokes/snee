@@ -33,16 +33,13 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
-import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
 public class LAF extends SNEEAlgebraicForm {
 
@@ -61,22 +58,18 @@ public class LAF extends SNEEAlgebraicForm {
 	 */	
 	private Tree logicalOperatorTree;
 
-
-	/** Acquisition interval of the whole query. (Alpha)*/
-	private double acInt;
-
 	/**
-	 * Main construction used by logical optimizer.
-	 * @param inRootOp The root operator of the logical query plan
-	 * @param queryName The name of the query
-	 * @param acquisitionInterval Acquisition interval of the whole query.
-	 *  (Alpha)
+	 * Constructor for LAF.
+	 * @param rootOp
+	 * @param queryName
 	 */
-	public LAF(LogicalOperator rootOp, String queryName){//,
-//			long acquisitionInterval) {
+	public LAF(LogicalOperator rootOp, String queryName) {
 		super(queryName);
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER LAF()");
 		this.logicalOperatorTree = new Tree(rootOp);
-//		this.setAcquisitionInterval(acquisitionInterval);
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN LAF()");
 	}
 
 	/**
@@ -86,15 +79,13 @@ public class LAF extends SNEEAlgebraicForm {
 		candidateCount = 0;
 	}
 
-	/**
-	 * Generates a systematic name for this query plan structure, 
-	 * of the form
-	 * {query-name}-{structure-type}-{counter}.
-	 * @param queryName	The name of the query
-	 * @return the generated name for the query plan structure
-	 */
-	public String generateName(String queryName) {
+	 /** {@inheritDoc} */
+	public String generateID(String queryName) {
+//		if (logger.isDebugEnabled())
+//			logger.debug("ENTER generateID()");
 		candidateCount++;
+//		if (logger.isDebugEnabled())
+//			logger.debug("RETURN generateID()");
 		return queryName + "-LAF-" + candidateCount;
 	}
 
@@ -103,50 +94,57 @@ public class LAF extends SNEEAlgebraicForm {
 	 * @return the root operator.
 	 */
 	public LogicalOperator getRootOperator() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getRootOperator()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getRootOperator()");
 		return (LogicalOperator) this.logicalOperatorTree.getRoot();
 	}
 
-	/**
-	 * Sets the acquisition interval for the Plan 
-	 * 		and the operators where required.
-	 * @param acquisitionInterval Acquisition interval of the whole query. 
-	 * (Alpha)
-	 */
-	public void setAcquisitionInterval(double acquisitionInterval) {
-		this.acInt = acquisitionInterval;
-		Iterator<Node> opIter = this.logicalOperatorTree.
-			nodeIterator(TraversalOrder.PRE_ORDER);
-		while (opIter.hasNext()) {
-			LogicalOperator op = (LogicalOperator) opIter.next();
-			if (op instanceof WindowOperator) {
-				((WindowOperator) op).setAcquisitionInterval(acInt);
-			}
-		}
+	 /** {@inheritDoc} */
+	public String getDescendantsString() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getDescendantsString()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getDescendantsString()");
+		return this.getID();
 	}
 
 	/**
-	 * Gets the acquisition interval for the Plan 
-	 * 		and the operators where required.
-	 * @return acquisitionInterval Acquisition interval of the whole query. 
-	 * (Alpha)
+	 * Removes an operator from the operator tree.
+	 * @param op
+	 * @throws OptimizationException
 	 */
-	public double getAcquisitionInterval() {
-		return this.acInt;
-	}
-
-	public String getProvenanceString() {
-		return this.getName();
-	}
-
 	public void removeOperator(LogicalOperator op) throws OptimizationException {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER removeOperator()");
 		this.logicalOperatorTree.removeNode(op);
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN removeOperator()");
 	}
 
+	/**
+	 * Creates an iterator to traverse the operator tree.
+	 * @param order
+	 * @return
+	 */
 	public Iterator<LogicalOperator> operatorIterator(TraversalOrder order) {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER operatorIterator()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN operatorIterator()");		
 		return this.logicalOperatorTree.nodeIterator(order);
 	}
 
+	/**
+	 * Gets the operator tree.
+	 * @return
+	 */
 	public Tree getOperatorTree() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getOperatorTree()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getOperatorTree()");	
 		return this.logicalOperatorTree;
 	}
 }

@@ -6,7 +6,6 @@ import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 
 /**
  * The logical algebraic form of the query plan operator tree partitioned
@@ -20,7 +19,7 @@ public class DLAF extends SNEEAlgebraicForm {
     /**
      * Logger for this class.
      */
-    private static  Logger logger = Logger.getLogger(DLAF.class.getName());
+    private Logger logger = Logger.getLogger(DLAF.class.getName());
 	
 	/**
 	 * The logical-algebraic form of the query plan operator tree from which
@@ -55,7 +54,11 @@ public class DLAF extends SNEEAlgebraicForm {
 	 */
 	public DLAF(final LAF laf, final String queryName) {
 		super(queryName);
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER DLAF()");
 		this.laf = laf;
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN DLAF()");
 	}
 	
     /**
@@ -65,47 +68,96 @@ public class DLAF extends SNEEAlgebraicForm {
     	candidateCount = 0;
     }
 	
-	/**
-	 * Generates a systematic name for this query plan structure, of the form
-	 * {query-name}-{structure-type}-{counter}.
-	 * @param queryName	The name of the query
-	 * @return the generated name for the query plan structure
-	 */
-    protected String generateName(final String queryName) {
+	 /** {@inheritDoc} */
+    protected String generateID(final String queryName) {
+//		if (logger.isTraceEnabled())
+//			logger.trace("ENTER generateName()");    	
     	candidateCount++;
+//		if (logger.isTraceEnabled())
+//			logger.trace("ENTER generateName()");       	
     	return queryName + "-DLAF-" + candidateCount;
     }
     
-	public String getProvenanceString() {
-		return this.getName()+"-"+this.laf.getProvenanceString();
+
+    /** {@inheritDoc} */
+	public String getDescendantsString() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getProvenanceString()");   
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getProvenanceString()");  
+		return this.getID()+"-"+this.laf.getDescendantsString();
 	}
 
-	public void setSourceType(SourceType sourceType) {
-		this.sourceType = sourceType;
-	}
-
+	/**
+	 * Set the source for the entire operator tree.
+	 * @param source
+	 */
 	public void setSource(SourceMetadata source) {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER setSource()");		
 		this.source = source;
+		this.sourceType = source.getSourceType();
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN setSource()");
 	}
 	
+	/**
+	 * Get the source type for the entire operator tree.
+	 * @return
+	 */
 	public SourceType getSourceType() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getSourceType()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getSourceType()");
 		return this.sourceType;
 	}
-	
+
+	/**
+	 * Get the source for the entire operator tree.
+	 * @return
+	 */
 	public SourceMetadata getSource() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getSource()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getSource()");
 		return this.source;
 	}
 
+	/**
+	 * Get the LAF that this DLAF is descended from.
+	 * @return
+	 */
 	public LAF getLAF() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getLAF()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getLAF()");		
 		return this.laf;
 	}
 
+	/**
+	 * Delegate method; gets root operator from LAF.
+	 * @return
+	 */
 	public LogicalOperator getRootOperator() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getRootOperator()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getRootOperator()");		
 		return this.getLAF().getRootOperator();
 	}
 
+	/**
+	 * Delegate method; gets operator tree from LAF.
+	 * @return
+	 */
 	public Tree getOperatorTree() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getOperatorTree()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getOperatorTree()");		
 		return this.getLAF().getOperatorTree();
-	}
-	
+	}	
 }

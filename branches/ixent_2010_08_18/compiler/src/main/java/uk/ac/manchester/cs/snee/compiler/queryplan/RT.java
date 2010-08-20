@@ -51,11 +51,10 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Topology;
  */
 public class RT extends SNEEAlgebraicForm {
 
-	   
     /**
      * Logger for this class.
      */
-    private static  Logger logger = Logger.getLogger(
+    private Logger logger = Logger.getLogger(
     		RT.class.getName());    
     
     /**
@@ -63,8 +62,14 @@ public class RT extends SNEEAlgebraicForm {
      */
     protected static int candidateCount = 0;
 	
-	Tree routingTree;
-	     
+    /**
+     * The underlying site tree.
+     */
+	Tree siteTree;
+	
+	/**
+	 * The PAF associated with this routing tree.
+	 */
 	PAF paf;
 	
     /**
@@ -74,7 +79,12 @@ public class RT extends SNEEAlgebraicForm {
      */
 	public RT(PAF paf, final String queryName, final Tree rt) {
 		super(queryName);
-		this.routingTree = rt;
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER RT()"); 
+		this.paf = paf;
+		this.siteTree = rt;
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER RT()"); 
 	}
     
     /**
@@ -84,14 +94,13 @@ public class RT extends SNEEAlgebraicForm {
     	candidateCount = 0;
     }
 	
-	/**
-	 * Generates a systematic name for this query plan strucuture, of the form
-	 * {query-name}-{structure-type}-{counter}.
-	 * @param queryName	The name of the query
-	 * @return the generated name for the query plan structure
-	 */
-    protected String generateName(final String queryName) {
+	 /** {@inheritDoc} */
+    protected String generateID(final String queryName) {
+//		if (logger.isTraceEnabled())
+//			logger.trace("ENTER generateID()"); 
     	candidateCount++;
+//		if (logger.isTraceEnabled())
+//			logger.trace("ENTER generateID()"); 
     	return queryName + "-RT-" + candidateCount;
     }
 	
@@ -99,12 +108,25 @@ public class RT extends SNEEAlgebraicForm {
      * Gets the root site of the routing tree (i.e., the sink for the query). 
      * @return the root site/sink
      */
-    public final Site getRoot() {
-    	return (Site) this.routingTree.getRoot();
+    public Site getRoot() {
+    	if (logger.isDebugEnabled())
+			logger.debug("ENTER getRoot()");
+    	if (logger.isDebugEnabled())
+			logger.debug("RETURN getRoot()");
+    	return (Site) this.siteTree.getRoot();
     }
     
+    /**
+     * Get site with given identifier.
+     * @param id
+     * @return
+     */
     public final Site getSite(String id) {
-    	return (Site) this.routingTree.getNode(id);
+    	if (logger.isDebugEnabled())
+			logger.debug("ENTER getSite()");
+    	if (logger.isDebugEnabled())
+			logger.debug("RETURN getSite()");
+    	return (Site) this.siteTree.getNode(id);
     }
 
     /**
@@ -115,6 +137,8 @@ public class RT extends SNEEAlgebraicForm {
      * @return the path from the source to destination site
      */
     public final Path getPath(final String sourceID, final String destID) {
+    	if (logger.isDebugEnabled())
+			logger.debug("ENTER getPath()");
     	Path path = new Path();
     	Site source = this.getSite(sourceID);
     	Site current = source;
@@ -133,7 +157,8 @@ public class RT extends SNEEAlgebraicForm {
     	if (!path.getLastSite().getID().equals(destID)) {
     		return new Path();
     	}
-    	
+    	if (logger.isDebugEnabled())
+			logger.debug("RETURN getPath()");
     	return path;
     }
     
@@ -145,30 +170,61 @@ public class RT extends SNEEAlgebraicForm {
      */    
     public final Iterator<Site> siteIterator(
     		final TraversalOrder traversalOrder) {
-
-    	return this.routingTree.nodeIterator(traversalOrder);
+    	if (logger.isDebugEnabled())
+			logger.debug("ENTER siteIterator()");
+    	if (logger.isDebugEnabled())
+			logger.debug("RETURN siteIterator()");
+    	return this.siteTree.nodeIterator(traversalOrder);
     }
 
-    
+    /**
+     * Gets a list of sites.
+     * @param desiredSites
+     * @return
+     */
 	public ArrayList<Site> getSites(ArrayList<String> desiredSites) {
+    	if (logger.isDebugEnabled())
+			logger.debug("ENTER getSites()");
 		ArrayList<Site> result = new ArrayList<Site>();
-		
-		Iterator<String> siteIDIter = desiredSites.iterator();
+    	Iterator<String> siteIDIter = desiredSites.iterator();
 		while (siteIDIter.hasNext()) {
 			result.add(this.getSite(siteIDIter.next()));
 		}
+    	if (logger.isDebugEnabled())
+			logger.debug("RETURN getSites()");
 		return result;
 	}    
     
-	public String getProvenanceString() {
-		return this.getName()+"-"+this.paf.getProvenanceString();
+	 /** {@inheritDoc} */
+	public String getDescendantsString() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getDescendantsString()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getDescendantsString()");
+		return this.getID()+"-"+this.paf.getDescendantsString();
 	}
 	
+	/**
+	 * Gets the underlying PAF.
+	 * @return
+	 */
 	public PAF getPAF() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getPAF()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getPAF()");
 		return this.paf;
 	}
 
+	/**
+	 * Returns the tree of sites.
+	 * @return
+	 */
 	public Tree getSiteTree() {
-		return this.routingTree;
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getSiteTree()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getSiteTree()");
+		return this.siteTree;
 	}
 }

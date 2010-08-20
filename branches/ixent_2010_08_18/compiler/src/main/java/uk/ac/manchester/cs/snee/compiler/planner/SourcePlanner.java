@@ -27,16 +27,30 @@ import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
  */
 public class SourcePlanner {
 
+	/**
+	 * Logger for this class.
+	 */
 	Logger logger = Logger.getLogger(this.getClass().getName());
 	
-	public SourcePlanner () 
-	{
+	/**
+	 * SourcePlanner constructor.
+	 */
+	public SourcePlanner () {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER SourcePlanner()");
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SourcePlanner()");
 	}
 
+	/**
+	 * Perform the query planning specific to a particular type of source.
+	 * @param queryID
+	 * @param dlaf
+	 * @return
+	 * @throws SNEEException
+	 * @throws SchemaMetadataException
+	 * @throws SNEEConfigurationException
+	 */
 	public QueryExecutionPlan doSourcePlanning(int queryID, DLAF dlaf) 
 	throws SNEEException, SchemaMetadataException, SNEEConfigurationException {
 		if (logger.isDebugEnabled())
@@ -58,22 +72,27 @@ public class SourcePlanner {
 		}
 	}
 
+	/**
+	 * Perform the query planning for a sensor network source.
+	 * @param dlaf
+	 * @param queryName
+	 * @return
+	 * @throws SNEEException
+	 * @throws SchemaMetadataException
+	 * @throws SNEEConfigurationException
+	 */
 	private SensorNetworkQueryPlan doSensorNetworkSourcePlanning(DLAF dlaf,
 	String queryName) throws SNEEException, SchemaMetadataException, SNEEConfigurationException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER doSensorNetworkSourcePlanning()");
 		//TODO: Add physical opt, routing, where- and when-scheduling here!		
-		if (logger.isInfoEnabled()) 
-			logger.info("Starting Algorithm Selection for query " + queryName);
+		logger.info("Starting Algorithm Selection for query " + queryName);
 		PAF paf = doSNAlgorithmSelection(dlaf,queryName);
-		if (logger.isInfoEnabled()) 
-			logger.info("Starting Routing for query " + queryName);		
+		logger.info("Starting Routing for query " + queryName);		
 		RT rt = doSNRouting(paf, queryName);
-		if (logger.isInfoEnabled()) 
-			logger.info("Starting Where-Scheduling for query " + queryName);
+		logger.info("Starting Where-Scheduling for query " + queryName);
 		//DAF daf = doWhereScheduling(rt, paf, queryName);
-		if (logger.isInfoEnabled()) 
-			logger.info("Starting When-Scheduling for query " + queryName);
+		logger.info("Starting When-Scheduling for query " + queryName);
 		//Agenda agenda = doWhenScheduling(rt, paf, queryName);
 		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, 
 				queryName); //agenda		
@@ -83,6 +102,15 @@ public class SourcePlanner {
 	}
 	
 
+	/**
+	 * Invokes the sensor network physical optimizer.
+	 * @param dlaf
+	 * @param queryName
+	 * @return
+	 * @throws SNEEException
+	 * @throws SchemaMetadataException
+	 * @throws SNEEConfigurationException
+	 */
 	private PAF doSNAlgorithmSelection(DLAF dlaf, String queryName) 
 	throws SNEEException, SchemaMetadataException, SNEEConfigurationException {
 		if (logger.isTraceEnabled())
@@ -107,17 +135,27 @@ public class SourcePlanner {
 		}
 		if (logger.isTraceEnabled())
 			logger.debug("RETURN doSNRouting()");
-		return null;
+		return rt;
 	}
+	
+	/**
+	 * Invokes the evaluator query planning steps.
+	 * @param dlaf
+	 * @param queryName
+	 * @return
+	 * @throws SNEEException
+	 * @throws SchemaMetadataException
+	 * @throws SNEEConfigurationException
+	 */
 	private EvaluatorQueryPlan doEvaluatorPlanning(DLAF dlaf, int queryID) {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER doEvaluatorPlanning()");		
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER doEvaluatorPlanning()");		
 		EvaluatorQueryPlan qep = new EvaluatorQueryPlan(dlaf,
 				"Q"+queryID);
 		//TODO: In future, do physical optimization here, rather than in 
 		//the evaluator as currently done
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN doEvaluatorPlanning()");
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN doEvaluatorPlanning()");
 		return qep;
 	}
 }
