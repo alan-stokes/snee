@@ -303,7 +303,7 @@ public class SNEEController implements SNEE {
 		compileQuery(queryId, query, queryParams);
 		if (logger.isInfoEnabled())
 			logger.info("Successfully compiled query " + queryId);
-		dispatchQuery(queryId);
+		dispatchQuery(queryId, query);
 		if (logger.isInfoEnabled())
 			logger.info("Successfully started evaluation of query " + queryId);
 
@@ -328,22 +328,25 @@ public class SNEEController implements SNEE {
 		
 	/**
 	 * Dispatch the query for evaluation
+	 * @param query 
 	 * 
 	 * @return the query identifier generated for the query
 	 * @throws SNEEException Problem starting the query evaluation
 	 * @throws SchemaMetadataException 
 	 * @throws EvaluatorException 
 	 */
-	private int dispatchQuery(int queryId) 
+	private int dispatchQuery(int queryId, String query) 
 	throws SNEEException, MetadataException, EvaluatorException 
 	{
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER dispatchQuery() with " + queryId);
+			logger.trace("ENTER dispatchQuery() with " + queryId +
+					" " + query);
 		}
-		StreamResult resultSet = createStreamResultSet();
+		LAF queryPlan = _queryPlans.get(queryId);
+		StreamResult resultSet = createStreamResultSet(query, queryPlan);
 		
 		_dispatcher.startQuery(queryId, resultSet, 
-				_queryPlans.get(queryId));
+				queryPlan);
 		_queryResults.put(queryId, resultSet);
 		
 		if (logger.isTraceEnabled()) {
@@ -352,8 +355,11 @@ public class SNEEController implements SNEE {
 		return queryId;
 	}
 
-	protected StreamResult createStreamResultSet() {
-		StreamResult resultSet = new StreamResultImpl();
+	protected StreamResult createStreamResultSet(String query,
+			LAF queryPlan) 
+	throws SNEEException {
+		StreamResult resultSet = new StreamResultImpl(query, queryPlan);
+		resultSet.setCommand(query);
 		return resultSet;
 	}
 
@@ -364,7 +370,8 @@ public class SNEEController implements SNEE {
 		int queryId = _nextQueryID;
 		_nextQueryID++;
 		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN getNextQueryId() with queryId " + queryId);
+			logger.trace("RETURN getNextQueryId() with queryId " + 
+					queryId);
 		}
 		return queryId;
 	}

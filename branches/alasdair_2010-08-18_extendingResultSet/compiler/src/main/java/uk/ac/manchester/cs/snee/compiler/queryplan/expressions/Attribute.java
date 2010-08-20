@@ -35,13 +35,6 @@ package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
 import java.util.ArrayList;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
-
-/**
- * 
- * @author Christian
- *
- */
 public abstract class Attribute implements Expression {
 
 	/** Holds the localName for the extent. */

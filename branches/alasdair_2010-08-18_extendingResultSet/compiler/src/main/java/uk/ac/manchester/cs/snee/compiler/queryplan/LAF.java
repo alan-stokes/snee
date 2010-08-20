@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeMap;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.Edge;
@@ -57,6 +58,8 @@ public class LAF extends Graph {
 	 * The root of the operator tree.
 	 */
 	protected Operator rootOp;
+	
+	private QueryPlanMetadata metadata;
 
 	/**
 	 *  Set of leaf operators in the query plan.
@@ -77,7 +80,7 @@ public class LAF extends Graph {
 	/**
 	 * Implicit constructor used by subclass.
 	 */
-	protected LAF() { }    
+//	protected LAF() { }    
 
 	/** Acquisition interval of the whole query. (Alpha)*/
 	private double acInt;
@@ -88,13 +91,23 @@ public class LAF extends Graph {
 	 * @param queryName The name of the query
 	 * @param acquisitionInterval Acquisition interval of the whole query.
 	 *  (Alpha)
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
 	 */
-	public LAF(Operator inRootOp, String queryName){//,
+	public LAF(Operator inRootOp, String queryName) 
+	throws SchemaMetadataException, TypeMappingException{//,
 //			long acquisitionInterval) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER LAF() for " + queryName);
+		}
 		this.name = generateName(queryName);
 		this.rootOp = inRootOp;
 		this.updateNodesAndEdgesColls(this.rootOp);
 //		this.setAcquisitionInterval(acquisitionInterval);
+		metadata = new QueryPlanMetadata(inRootOp.getAttributes());
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN LAF()");
+		}
 	}
 
 //	/**
@@ -383,4 +396,9 @@ public class LAF extends Graph {
 	public String getProvenanceString() {
 		return this.name;
 	}
+
+	public QueryPlanMetadata getMetaData() {
+		return metadata;
+	}
+	
 }

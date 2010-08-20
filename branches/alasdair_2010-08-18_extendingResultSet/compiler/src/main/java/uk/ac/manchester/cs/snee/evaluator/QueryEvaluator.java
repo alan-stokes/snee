@@ -56,6 +56,7 @@ import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.Operator;
 
 public class QueryEvaluator implements Observer {//Runnable {
+	
 	private boolean executing = false;
 	
 	protected boolean isExecuting() {
@@ -176,7 +177,6 @@ public class QueryEvaluator implements Observer {//Runnable {
 			_rootOper.setSchema(_schema);
 			_rootOper.open();
 			_rootOper.addObserver(this);
-			_results.setAttributes(_rootOper.getAttributes());
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN openQueryPlan()");

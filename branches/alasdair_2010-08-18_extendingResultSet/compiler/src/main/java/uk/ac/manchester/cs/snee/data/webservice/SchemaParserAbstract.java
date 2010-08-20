@@ -39,6 +39,8 @@ public abstract class SchemaParserAbstract implements SchemaParser {
 		} else if (sqlType.equalsIgnoreCase("DECIMAL") ||
 				sqlType.equalsIgnoreCase("FLOAT")) {
 			type = _types.getType("float");
+		} else if (sqlType.equalsIgnoreCase("TIMESTAMP")) {
+			type = _types.getType("timestamp");
 		} else if (sqlType.equalsIgnoreCase("DATETIME")) {
 			type = _types.getType("string");
 		} else {

@@ -1,9 +1,9 @@
 package uk.ac.manchester.cs.snee;
 
+import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Timestamp;
 import java.util.Collection;
-import java.util.List;
 
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.types.Duration;
@@ -13,10 +13,6 @@ public interface StreamResult {
 	public void add(Output data);
 	
 	public void addAll(Collection<Output> data);
-
-	public List<String> getAttributes();
-
-	public void setAttributes(List<String> attributes);
 	
 	/**
 	 * Returns the current size of the result set
@@ -60,10 +56,10 @@ public interface StreamResult {
 	/**
 	 * Return all of the results available for the specified query.
 	 * 
-	 * @return A list containing all the query answers
+	 * @return A <code>ResultSet</code> containing the specified answers
 	 * @throws SNEEException
 	 */
-	public List<Output> getResults()
+	public ResultSet getResults()
 	throws SNEEException;
 
 	/**
@@ -71,30 +67,30 @@ public interface StreamResult {
 	 * 
 	 * @param count The number of result items that should be returned
 	 * 
-	 * @return A list containing the specified number of answers
+	 * @return A <code>ResultSet</code> containing the specified answers
 	 * @throws SNEEException The count parameter extends beyond the number of available result items
 	 */
-	public List<Output> getResults(int count) 
+	public ResultSet getResults(int count) 
 	throws SNEEException;
 
 	/**
 	 * Return the specified duration of results starting with the oldest available.
 	 * @param duration
 	 * 
-	 * @return A list containing the answers for the specified duration
+	 * @return A <code>ResultSet</code> containing the specified answers
 	 * @throws SNEEException
 	 */
-	public List<Output> getResults(Duration duration) 
+	public ResultSet getResults(Duration duration) 
 	throws SNEEException;
 
 	/**
 	 * Return all of the results starting from the specified index value.
 	 * @param index  
 	 * 
-	 * @return A list containing the answers from the specified index value
+	 * @return A <code>ResultSet</code> containing the specified answers
 	 * @throws SNEEException
 	 */
-	public List<Output> getResultsFromIndex(int index)
+	public ResultSet getResultsFromIndex(int index)
 	throws SNEEException;
 	
 	/**
@@ -102,10 +98,10 @@ public interface StreamResult {
 	 * @param index
 	 * @param count
 	 * 
-	 * @return A list containing the answers
+	 * @return A <code>ResultSet</code> containing the specified answers
 	 * @throws SNEEException
 	 */
-	public List<Output> getResultsFromIndex(int index, int count) 
+	public ResultSet getResultsFromIndex(int index, int count) 
 	throws SNEEException;
 
 	/**
@@ -114,20 +110,20 @@ public interface StreamResult {
 	 * @param index
 	 * @param duration
 	 * 
-	 * @return A list containing the answers
+	 * @return A <code>ResultSet</code> containing the specified answers
 	 * @throws SNEEException
 	 */
-	public List<Output> getResultsFromIndex(int index, Duration duration) 
+	public ResultSet getResultsFromIndex(int index, Duration duration) 
 	throws SNEEException;
 
 	/**
 	 * Return all of the results starting from the specified timestamp.
 	 * @param timestamp
 	 * 
-	 * @return A list containing the answers
+	 * @return A <code>ResultSet</code> containing the specified answers
 	 * @throws SNEEException
 	 */
-	public List<Output> getResultsFromTimestamp(Timestamp timestamp) 
+	public ResultSet getResultsFromTimestamp(Timestamp timestamp) 
 	throws SNEEException;
 
 	/**
@@ -136,10 +132,10 @@ public interface StreamResult {
 	 * @param timestamp
 	 * @param count
 	 * 
-	 * @return A list containing the answers
+	 * @return A <code>ResultSet</code> containing the specified answers
 	 * @throws SNEEException
 	 */
-	public List<Output> getResultsFromTimestamp(Timestamp timestamp, 
+	public ResultSet getResultsFromTimestamp(Timestamp timestamp, 
 			int count) 
 	throws SNEEException;
 
@@ -149,30 +145,30 @@ public interface StreamResult {
 	 * @param timestamp
 	 * @param duration
 	 * 
-	 * @return A list containing the answers
+	 * @return A <code>ResultSet</code> containing the specified answers
 	 * @throws SNEEException
 	 */
-	public List<Output> getResultsFromTimestamp(Timestamp timestamp, 
+	public ResultSet getResultsFromTimestamp(Timestamp timestamp, 
 			Duration duration) 
 	throws SNEEException;
 
 	/**
 	 * Return the result items.
 	 * 
-	 * @return A list containing the answers
+	 * @return A <code>ResultSet</code> containing the specified answers
 	 * @throws SNEEException
 	 */
-	public List<Output> getNewestResults()
+	public ResultSet getNewestResults()
 	throws SNEEException;
 	
 	/**
 	 * Return the specified number of result items, counting back from the most recent.
 	 * @param count
 	 * 
-	 * @return A list containing the answers
+	 * @return A <code>ResultSet</code> containing the specified answers
 	 * @throws SNEEException
 	 */
-	public List<Output> getNewestResults(int count) 
+	public ResultSet getNewestResults(int count) 
 	throws SNEEException;
 	
 	/**
@@ -180,10 +176,10 @@ public interface StreamResult {
 	 * most recent.
 	 * @param duration
 	 * 
-	 * @return A list containing the answers
+	 * @return A <code>ResultSet</code> containing the specified answers
 	 * @throws SNEEException
 	 */
-	public List<Output> getNewestResults(Duration duration) 
+	public ResultSet getNewestResults(Duration duration) 
 	throws SNEEException;
 
 }

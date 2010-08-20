@@ -34,7 +34,7 @@
 *                                                                            *
 \****************************************************************************/
 
-package uk.ac.manchester.cs.snee.evaluator;
+package uk.ac.manchester.cs.snee;
 
 import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;
@@ -43,6 +43,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,21 +60,22 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.StreamResult;
-import uk.ac.manchester.cs.snee.StreamResultImpl;
+import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.evaluator.types.Field;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
+import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
+import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.types.Duration;
 
-public class StreamResultSetImplTest extends EasyMockSupport {
+public class StreamResultImplTest extends EasyMockSupport {
 			
-	final Output mockOutput = createMock(Output.class);
+	final Output mockOutput = createMock(TaggedTuple.class);
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
 		PropertyConfigurator.configure(
-				StreamResultSetImplTest.class.getClassLoader().
+				StreamResultImplTest.class.getClassLoader().
 				getResource("etc/log4j.properties"));
 	}
 
@@ -80,10 +84,20 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 	}
 
 	private StreamResult _resultSet;
+	private String testQuery = "SELECT * FROM TestStream;";
+	private LAF mockQEP = createMock(LAF.class);
+	private ResultSetMetaData mockMetaData = 
+		createMock(ResultSetMetaData.class);
 
 	@Before
 	public void setUp() throws Exception {
-		_resultSet = new StreamResultImpl() {
+		_resultSet = new StreamResultImpl(testQuery, mockQEP) {
+			protected ResultSetMetaData createMetaData(
+					LAF queryPlan)
+			throws SQLException {
+				return mockMetaData;
+			}
+			
 			protected List<Output> createDataStore() {
 				List<Output> dataList = new ArrayList<Output>();
 				dataList.add(mockOutput);//1
@@ -99,10 +113,29 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 				return dataList;
 			}
 		}; 
+		_resultSet.setCommand("SELECT * FROM TestStream;");
 	}
 
+	private void recordResultSet(int numResults) 
+	throws SNEEException, SQLException {
+		expect(mockMetaData.getColumnCount()).andReturn(2);
+		Tuple mockTuple = createMock(Tuple.class);
+		expect(((TaggedTuple) mockOutput).getTuple()).
+			andReturn(mockTuple).times(numResults);
+		expect(mockMetaData.getColumnLabel(1)).
+			andReturn("attr").times(numResults);
+		expect(mockMetaData.getColumnLabel(2)).
+			andReturn("attr").times(numResults);
+		Field mockField = createMock(Field.class);
+		expect(mockTuple.getField("attr")).
+			andReturn(mockField).times(numResults * 2);
+		expect(mockField.getData()).
+			andReturn("data").times(numResults * 2);
+	}
+	
 	@After
 	public void tearDown() throws Exception {
+//		verifyAll();
 	}
 	
 //	private void printResultSet(int queryId, Collection<Output> results) {
@@ -119,11 +152,27 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 	}
 	
 	@Test
+	public void testGetCommand() {
+		assertEquals("SELECT * FROM TestStream;",
+				_resultSet.getCommand());
+	}
+	
+	@Test
+	public void testGetMetaData() {
+		ResultSetMetaData metadata = _resultSet.getMetadata();
+		assertNotNull(metadata);
+	}
+	
+	@Test
 	public void testGetResults() 
-	throws SNEEException {
-		List<Output> results = _resultSet.getResults();
+	throws SNEEException, SQLException {
+		recordResultSet(10);
+		replayAll();
+		ResultSet results = _resultSet.getResults();
 		assertNotNull(results);
-		assertEquals(10, results.size());
+		results.last();
+		assertEquals(10, results.getRow());
+		verifyAll();
 	}
 	
 	@Test(expected=SNEEException.class)
@@ -147,9 +196,13 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResults_count() 
-	throws SNEEException {
-		List<Output> results = _resultSet.getResults(2);
-		assertEquals(2, results.size());
+	throws SNEEException, SQLException {
+		recordResultSet(2);
+		replayAll();
+		ResultSet results = _resultSet.getResults(2);
+		results.last();
+		assertEquals(2, results.getRow());
+		verifyAll();
 	}
 	
 	@Test(expected=SNEEException.class)
@@ -170,8 +223,11 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 	public void testGetResults_invalidDuraction() 
 	throws SNEEException {
 		//Record
+//		expect(mockQEP.getMetaData()).andReturn(mockQEPMetadata);
 		long currentTime = System.currentTimeMillis();
-		expect(mockOutput.getEvalTime()).andReturn(currentTime - 10000).times(1).andReturn(currentTime);
+		expect(mockOutput.getEvalTime()).
+			andReturn(currentTime - 10000).times(1).
+			andReturn(currentTime);
 		//Test
 		replayAll();
 		/* Request a larger duration of results than exist 
@@ -182,7 +238,8 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResults_validSubDuraction() 
-	throws SNEEException {
+	throws SNEEException, SQLException {
+		recordResultSet(3);
 		/*
 		 * Record result set of 10 seconds 
 		 */
@@ -196,10 +253,10 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 			andReturn(currentTime - 4000);
 		//Test
 		replayAll();
-		List<Output> results = 
+		ResultSet results = 
 			_resultSet.getResults(new Duration(5, TimeUnit.SECONDS));
-		assertFalse(results.isEmpty());
-		assertEquals(3, results.size());
+		results.last();
+		assertEquals(3, results.getRow());
 		verifyAll();
 	}
 
@@ -217,30 +274,46 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 
 	@Test
 	public void testGetResultsFromIndex_zeroIndex() 
-	throws SNEEException {
+	throws SNEEException, SQLException {
 		/* Returns entire result set */
-		List<Output> result = _resultSet.getResultsFromIndex(0);
-		assertEquals(10, result.size());
+		recordResultSet(10);
+		replayAll();
+		ResultSet result = _resultSet.getResultsFromIndex(0);
+		result.last();
+		assertEquals(10, result.getRow());
+		verifyAll();
 	}
 
 	@Test
 	public void testGetResultsFromIndex() 
-	throws SNEEException {
-		List<Output> result = _resultSet.getResultsFromIndex(4);
-		assertEquals(6, result.size());
+	throws SNEEException, SQLException {
+		recordResultSet(6);
+		replayAll();
+		ResultSet result = _resultSet.getResultsFromIndex(4);
+		result.last();
+		assertEquals(6, result.getRow());
+		verifyAll();
 	}
 	
 	@Test(expected=SNEEException.class)
 	public void testGetResultFromIndexSingleton()
 	throws SNEEException {
 		StreamResultImpl singletonResultSet = 
-			new StreamResultImpl() {
+			new StreamResultImpl(testQuery, mockQEP) {
+			
+			protected ResultSetMetaData createMetaData(
+					LAF queryPlan)
+			throws SQLException {
+				return mockMetaData;
+			}
+			
 			protected List<Output> createDataStore() {
 				List<Output> dataList = new ArrayList<Output>();
 				dataList.add(mockOutput);//1
 				return dataList;
 			}
 		}; 
+		singletonResultSet.setCommand("SELECT * FROM TestStream;");
 		singletonResultSet.getResultsFromIndex(1);
 	}
 
@@ -277,9 +350,13 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 
 	@Test
 	public void testGetResultsFromIndexCount_zeroIndex() 
-	throws SNEEException {
-		List<Output> result = _resultSet.getResultsFromIndex(0, 7);
-		assertEquals(7, result.size());
+	throws SNEEException, SQLException {
+		recordResultSet(7);
+		replayAll();
+		ResultSet result = _resultSet.getResultsFromIndex(0, 7);
+		result.last();
+		assertEquals(7, result.getRow());
+		verifyAll();
 	}
 
 	@Test(expected=SNEEException.class)
@@ -290,9 +367,13 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 
 	@Test
 	public void testGetResultsFromIndexCount() 
-	throws SNEEException {
-		List<Output> results = _resultSet.getResultsFromIndex(4, 2);
-		assertEquals(2, results.size());
+	throws SNEEException, SQLException {
+		recordResultSet(2);
+		replayAll();
+		ResultSet results = _resultSet.getResultsFromIndex(4, 2);
+		results.last();
+		assertEquals(2, results.getRow());
+		verifyAll();
 	}
 
 	@Test(expected=SNEEException.class)
@@ -332,7 +413,8 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromTimestamp() 
-	throws SNEEException {
+	throws SNEEException, SQLException {
+		recordResultSet(5);
 		/*
 		 * Record 10 second result set with tuples 1 second apart
 		 * -> only 5 are valid for the answer set
@@ -352,8 +434,9 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 		//Test
 		replayAll();
 		Timestamp ts = new Timestamp(currentTime - 5000);
-		List<Output> result = _resultSet.getResultsFromTimestamp(ts);
-		assertEquals(5, result.size());
+		ResultSet result = _resultSet.getResultsFromTimestamp(ts);
+		result.last();
+		assertEquals(5, result.getRow());
 		verifyAll();
 	}
 
@@ -403,7 +486,8 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromTimestampCount() 
-	throws SNEEException {
+	throws SNEEException, SQLException {
+		recordResultSet(3);
 		/*
 		 * Record 10 second result set with tuples 1 second apart
 		 * ->  4 are valid for the answer set, but only 3 should be returned
@@ -421,14 +505,16 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 		//Test
 		replayAll();
 		Timestamp ts = new Timestamp(currentTime - 5000);
-		List<Output> result = _resultSet.getResultsFromTimestamp(ts, 3);
-		assertTrue("Result set should only contain 3 items.", result.size() == 3);
+		ResultSet result = _resultSet.getResultsFromTimestamp(ts, 3);
+		result.last();
+		assertEquals(3, result.getRow());
 		verifyAll();
 	}
 	
 	@Test
 	public void testGetResultsFromTimestampCount_fullSet() 
-	throws SNEEException {
+	throws SNEEException, SQLException {
+		recordResultSet(10);
 		/*
 		 * Record 10 second result set with tuples 1 second apart
 		 */
@@ -447,8 +533,9 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 		//Test
 		replayAll();
 		Timestamp ts = new Timestamp(currentTime - 10000);
-		List<Output> result = _resultSet.getResultsFromTimestamp(ts, 10);
-		assertEquals(10, result.size());
+		ResultSet result = _resultSet.getResultsFromTimestamp(ts, 10);
+		result.last();
+		assertEquals(10, result.getRow());
 		verifyAll();
 	}
 	
@@ -506,7 +593,8 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromTimestampDuration_validSubDuraction() 
-	throws SNEEException {
+	throws SNEEException, SQLException {
+		recordResultSet(2);
 		/*
 		 * Record 10 second result set with tuples second apart
 		 */
@@ -527,20 +615,24 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 		//Test
 		replayAll();
 		Timestamp ts = new Timestamp(currentTime - 5000);
-		List<Output> results = 
+		ResultSet results = 
 			_resultSet.getResultsFromTimestamp(ts, 
 					new Duration(2, TimeUnit.SECONDS));
-		assertFalse(results.isEmpty());
-		assertEquals(2, results.size());
+		results.last();
+		assertEquals(2, results.getRow());
 		verifyAll();
 	}
 	
 	@Test
 	public void testGetNewestResults_fullCount() 
-	throws SNEEException {
+	throws SNEEException, SQLException {
+		recordResultSet(10);
+		replayAll();
 		/* Request the full set back */
-		List<Output> results = _resultSet.getNewestResults(10);
-		assertEquals(10, results.size());
+		ResultSet results = _resultSet.getNewestResults(10);
+		results.last();
+		assertEquals(10, results.getRow());
+		verifyAll();
 	}
 	
 	@Test(expected=SNEEException.class)
@@ -567,14 +659,18 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetNewestResults_count() 
-	throws SNEEException {
+	throws SNEEException, SQLException {
 		/*
 		 * Test resultset contains 10 tuples
 		 * Answer set should only contain the most recent 2
 		 */
 		int count = 2;
-		List<Output> results = _resultSet.getNewestResults(count);
-		assertEquals(count, results.size());
+		recordResultSet(count);
+		replayAll();
+		ResultSet results = _resultSet.getNewestResults(count);
+		results.last();
+		assertEquals(count, results.getRow());
+		verifyAll();
 	}
 	
 	@Test(expected=SNEEException.class)
@@ -605,7 +701,8 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetNewestResults_validSubDuraction() 
-	throws SNEEException {
+	throws SNEEException, SQLException {
+		recordResultSet(5);
 		/* 
 		 * Record a tuple set with a tuple being published every second
 		 */
@@ -619,10 +716,10 @@ public class StreamResultSetImplTest extends EasyMockSupport {
 		expect(mockOutput.getEvalTime()).andReturn(currentTime - 5000);
 		//Test
 		replayAll();
-		List<Output> results = 
+		ResultSet results = 
 			_resultSet.getNewestResults(new Duration(5, TimeUnit.SECONDS));
-		assertFalse(results.isEmpty());
-		assertEquals(5, results.size());
+		results.last();
+		assertEquals(5, results.getRow());
 		verifyAll();
 	}
 	
