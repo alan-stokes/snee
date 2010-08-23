@@ -14,7 +14,7 @@ import javax.sql.rowset.RowSetMetaDataImpl;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryPlanMetadata;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
@@ -32,7 +32,7 @@ extends Observable implements StreamResult {
 
 	private ResultSetMetaData metadata;
 
-	public StreamResultImpl(String query, LAF queryPlan) 
+	public StreamResultImpl(String query, QueryExecutionPlan queryPlan) 
 	throws SNEEException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER StreamResultSetImpl() for " + query);
@@ -50,7 +50,7 @@ extends Observable implements StreamResult {
 	}
 
 	protected ResultSetMetaData createMetaData(
-			LAF queryPlan)
+			QueryExecutionPlan queryPlan)
 	throws SQLException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER createMetaData() with " + queryPlan);

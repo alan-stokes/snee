@@ -56,7 +56,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
  * 
  * @author Christian Brenninkmeijer, Ixent Galpin  
  */
-public class ReceiveOperator extends OperatorImplementation {
+public class ReceiveOperator extends LogicalOperatorImpl {
 
 	/** Standard Java Logger. */
 	private Logger logger = 

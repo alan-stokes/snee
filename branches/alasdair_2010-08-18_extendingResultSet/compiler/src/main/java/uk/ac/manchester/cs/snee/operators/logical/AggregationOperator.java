@@ -64,7 +64,7 @@ public class AggregationOperator extends PredicateOperator {
 	 * @throws OptimizationException 
 	 */
 	public AggregationOperator(List <Expression> expressions, 
-			List <Attribute> attributes, Operator inputOperator, 
+			List <Attribute> attributes, LogicalOperator inputOperator, 
 			AttributeType boolType) 
 	throws OptimizationException {
     	super(expressions, attributes, inputOperator, boolType);

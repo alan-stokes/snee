@@ -49,8 +49,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
  * @author Christian
  *
  */
-public class DStreamOperator extends OperatorImplementation 
-implements Operator {
+public class DStreamOperator extends LogicalOperatorImpl 
+implements LogicalOperator {
 
 //	/**
 //	 * Constructs a new DStream operator.
@@ -74,15 +74,15 @@ implements Operator {
 	 * Constructor.
 	 * @param inputOperator Previous Operator in the plan.
 	 */
-	public DStreamOperator(Operator inputOperator, AttributeType boolType) {
+	public DStreamOperator(LogicalOperator inputOperator, AttributeType boolType) {
 		super(boolType);
 
-		this.setOperatorName("ISTREAM");
+		this.setOperatorName("DSTREAM");
 //		this.setNesCTemplateName("istream never set");
 		this.setOperatorDataType(OperatorDataType.STREAM);
 		this.setParamStr("");
 
-		setChildren(new Operator[] {inputOperator});
+		setChildren(new LogicalOperator[] {inputOperator});
 	}  
 
 	//used by clone method

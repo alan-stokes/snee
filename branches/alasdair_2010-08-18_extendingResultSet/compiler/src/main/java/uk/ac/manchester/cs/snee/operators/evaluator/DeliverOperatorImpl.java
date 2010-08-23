@@ -45,7 +45,7 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class DeliverOperatorImpl 
 extends EvaluatorPhysicalOperator {
@@ -58,7 +58,7 @@ extends EvaluatorPhysicalOperator {
 	
 	int nextIndex = 0;
 
-	public DeliverOperatorImpl(Operator op) 
+	public DeliverOperatorImpl(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
 		super(op);
 		if (logger.isDebugEnabled()) {

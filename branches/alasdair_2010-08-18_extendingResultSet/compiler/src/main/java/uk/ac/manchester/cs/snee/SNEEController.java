@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
@@ -60,7 +61,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 
 /**
@@ -94,7 +95,8 @@ public class SNEEController implements SNEE {
 	/**
 	 * Stores the query plan for the registered query
 	 */
-	private Map<Integer, LAF> _queryPlans = new HashMap<Integer, LAF>();
+	private Map<Integer, QueryExecutionPlan> _queryPlans = 
+		new HashMap<Integer, QueryExecutionPlan>();
 	
 	private int _nextQueryID = 1;
 
@@ -342,7 +344,7 @@ public class SNEEController implements SNEE {
 			logger.trace("ENTER dispatchQuery() with " + queryId +
 					" " + query);
 		}
-		LAF queryPlan = _queryPlans.get(queryId);
+		QueryExecutionPlan queryPlan = _queryPlans.get(queryId);
 		StreamResult resultSet = createStreamResultSet(query, queryPlan);
 		
 		_dispatcher.startQuery(queryId, resultSet, 
@@ -356,7 +358,7 @@ public class SNEEController implements SNEE {
 	}
 
 	protected StreamResult createStreamResultSet(String query,
-			LAF queryPlan) 
+			QueryExecutionPlan queryPlan) 
 	throws SNEEException {
 		StreamResult resultSet = new StreamResultImpl(query, queryPlan);
 		resultSet.setCommand(query);
@@ -384,11 +386,13 @@ public class SNEEController implements SNEE {
 					queryID + "\n\tquery: " + query);
 		}
 			try {
-				LAF queryPlan = _compiler.compileQuery(queryID, query);
+				QueryExecutionPlan queryPlan = 
+					_compiler.compileQuery(queryID, query);
 				_queryPlans.put(queryID, queryPlan);
 			} catch (Exception e) {
-				String msg = "Problem compiling query.";
-				logger.warn(msg);
+				String msg = "Problem compiling query: "+
+					e.getLocalizedMessage()+"\n ";
+				logger.warn(msg, e);
 				throw new SNEECompilerException(msg, e);
 			}
 		if (logger.isTraceEnabled()) {

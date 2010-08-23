@@ -13,7 +13,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public abstract class EvaluationOperator 
 extends EvaluatorPhysicalOperator {
@@ -25,7 +25,7 @@ extends EvaluatorPhysicalOperator {
 		
 	}
 	
-	public EvaluationOperator(Operator op) 
+	public EvaluationOperator(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
 		super(op);
 	}

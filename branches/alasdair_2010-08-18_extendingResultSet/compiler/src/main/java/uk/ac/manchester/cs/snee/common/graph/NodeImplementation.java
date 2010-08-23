@@ -222,10 +222,10 @@ public class NodeImplementation implements Node {
 		outputs.set(i, newOutput);
 	}
 
-//	public NodeImplementation shallowClone() {
-//		NodeImplementation clonedNode = new NodeImplementation(this.id);
-//		return clonedNode;
-//	}
+	public NodeImplementation shallowClone() {
+		NodeImplementation clonedNode = new NodeImplementation(this.id);
+		return clonedNode;
+	}
 
 	public boolean isLeaf() {
 		return (this.getInDegree() == 0);

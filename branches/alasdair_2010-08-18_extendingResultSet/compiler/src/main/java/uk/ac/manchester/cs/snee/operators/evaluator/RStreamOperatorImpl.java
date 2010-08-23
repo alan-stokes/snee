@@ -50,7 +50,7 @@ import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
 
 public class RStreamOperatorImpl extends EvaluatorPhysicalOperator {
@@ -60,7 +60,7 @@ public class RStreamOperatorImpl extends EvaluatorPhysicalOperator {
 
 	RStreamOperator rstreamOp;
 
-	public RStreamOperatorImpl(Operator op) 
+	public RStreamOperatorImpl(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
 		super(op);
 		if (logger.isDebugEnabled()) {

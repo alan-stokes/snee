@@ -7,13 +7,13 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.operators.evaluator.EvaluatorPhysicalOperator;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class MockPhysicalOperator extends EvaluatorPhysicalOperator {
 
 	private MockOperator mockOp;
 
-	public MockPhysicalOperator(Operator op) {
+	public MockPhysicalOperator(LogicalOperator op) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER: " + op);
 		}

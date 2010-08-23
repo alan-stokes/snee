@@ -38,9 +38,7 @@ package uk.ac.manchester.cs.snee;
 
 import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.sql.ResultSet;
@@ -60,7 +58,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.types.Field;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
@@ -85,7 +83,8 @@ public class StreamResultImplTest extends EasyMockSupport {
 
 	private StreamResult _resultSet;
 	private String testQuery = "SELECT * FROM TestStream;";
-	private LAF mockQEP = createMock(LAF.class);
+	private QueryExecutionPlan mockQEP = 
+		createMock(QueryExecutionPlan.class);
 	private ResultSetMetaData mockMetaData = 
 		createMock(ResultSetMetaData.class);
 
@@ -93,7 +92,7 @@ public class StreamResultImplTest extends EasyMockSupport {
 	public void setUp() throws Exception {
 		_resultSet = new StreamResultImpl(testQuery, mockQEP) {
 			protected ResultSetMetaData createMetaData(
-					LAF queryPlan)
+					QueryExecutionPlan queryPlan)
 			throws SQLException {
 				return mockMetaData;
 			}
@@ -135,7 +134,6 @@ public class StreamResultImplTest extends EasyMockSupport {
 	
 	@After
 	public void tearDown() throws Exception {
-//		verifyAll();
 	}
 	
 //	private void printResultSet(int queryId, Collection<Output> results) {
@@ -302,7 +300,7 @@ public class StreamResultImplTest extends EasyMockSupport {
 			new StreamResultImpl(testQuery, mockQEP) {
 			
 			protected ResultSetMetaData createMetaData(
-					LAF queryPlan)
+					QueryExecutionPlan queryPlan)
 			throws SQLException {
 				return mockMetaData;
 			}

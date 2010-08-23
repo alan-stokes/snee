@@ -10,10 +10,10 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.OperatorDataType;
 
-public class MockOperator implements Operator {
+public class MockOperator implements LogicalOperator {
 		
 		private String mOperatorName = "MOCKOPERATOR";
 
@@ -27,7 +27,7 @@ public class MockOperator implements Operator {
 			return false;
 		}
 
-		public Iterator<Operator> childOperatorIterator() {
+		public Iterator<LogicalOperator> childOperatorIterator() {
 			// TODO Auto-generated method stub
 			return null;
 		}
@@ -47,7 +47,7 @@ public class MockOperator implements Operator {
 			return null;
 		}
 
-		public Operator getInput(int index) {
+		public LogicalOperator getInput(int index) {
 			// TODO Auto-generated method stub
 			return null;
 		}
@@ -67,7 +67,7 @@ public class MockOperator implements Operator {
 			return null;
 		}
 
-		public Operator getOutput(int index) {
+		public LogicalOperator getOutput(int index) {
 			// TODO Auto-generated method stub
 			return null;
 		}
@@ -77,7 +77,7 @@ public class MockOperator implements Operator {
 			return null;
 		}
 
-		public Operator getParent() {
+		public LogicalOperator getParent() {
 			// TODO Auto-generated method stub
 			return null;
 		}
@@ -145,7 +145,7 @@ public class MockOperator implements Operator {
 			
 		}
 
-		public Operator shallowClone() {
+		public LogicalOperator shallowClone() {
 			// TODO Auto-generated method stub
 			return null;
 		}

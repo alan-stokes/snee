@@ -10,7 +10,7 @@ import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class TupleWindowOperatorImpl extends WindowOperatorImpl {
 	
@@ -18,7 +18,7 @@ public class TupleWindowOperatorImpl extends WindowOperatorImpl {
 	private Tuple[] buffer;
 	private int nextIndex = 0;
 
-	public TupleWindowOperatorImpl(Operator op) 
+	public TupleWindowOperatorImpl(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
 		super(op);
 		if (logger.isDebugEnabled()) {

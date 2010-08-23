@@ -56,7 +56,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
  * Window Operator.
  * @author Christian Brenninkmeijer, Ixent Galpin and Steven Lynden 
  */
-public class WindowOperator extends OperatorImplementation {
+public class WindowOperator extends LogicalOperatorImpl {
 
 	private Logger logger = Logger.getLogger(this.getClass().getName());
 
@@ -81,7 +81,7 @@ public class WindowOperator extends OperatorImplementation {
 	 * @throws OptimizationException 
 	 */
 	public WindowOperator (int from, int to, boolean timeScope, int timeSlide, 
-			int rowSlide, Operator child, AttributeType boolType) 
+			int rowSlide, LogicalOperator child, AttributeType boolType) 
 	throws OptimizationException {
 		super(boolType);
 		//TODO: Separate out time and row windows

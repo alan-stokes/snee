@@ -57,6 +57,7 @@ import org.junit.Test;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
+import uk.ac.manchester.cs.snee.compiler.allocator.SourceAllocatorException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
@@ -67,6 +68,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryPlanMetadata;
 import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
@@ -82,7 +84,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	final Metadata mockSchema = createMock(Metadata.class);
 	final QueryCompiler mockQueryCompiler = createMock(QueryCompiler.class);
 	final Dispatcher mockDispatcher = createMock(Dispatcher.class);
-	final LAF mockPlan = createMock(LAF.class);
+	final QueryExecutionPlan mockPlan = createMock(QueryExecutionPlan.class);
 	final StreamResult mockResultset = createMock(StreamResult.class);
 
 	@BeforeClass
@@ -118,7 +120,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 				return mockDispatcher;
 			}
 
-			protected StreamResult createStreamResultSet(String query, LAF mockPlan) {
+			protected StreamResult createStreamResultSet(String query, QueryExecutionPlan mockPlan) {
 				//				System.out.println("Overridden createStreamResultSet()");
 				return mockResultset;
 			}
@@ -184,7 +186,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	TypeMappingException, SchemaMetadataException,
 	ParserValidationException, OptimizationException, ParserException, 
 	SNEEConfigurationException, MetadataException, EvaluatorException,
-	SNEECompilerException  
+	SNEECompilerException, SourceAllocatorException  
 	{		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
@@ -203,7 +205,8 @@ public class SNEEControllerTest extends EasyMockSupport {
 	TypeMappingException, SchemaMetadataException, 
 	ParserValidationException, OptimizationException, ParserException, 
 	EvaluatorException, RecognitionException, TokenStreamException,
-	SNEEConfigurationException, SNEECompilerException, MetadataException {
+	SNEEConfigurationException, SNEECompilerException, MetadataException, 
+	SourceAllocatorException {
 		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
@@ -242,7 +245,8 @@ public class SNEEControllerTest extends EasyMockSupport {
 	TypeMappingException, 
 	ParserValidationException, OptimizationException, ParserException, 
 	EvaluatorException, RecognitionException, TokenStreamException, 
-	SNEEConfigurationException, SNEECompilerException, MetadataException
+	SNEEConfigurationException, SNEECompilerException, MetadataException,
+	SourceAllocatorException
 	{
 		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery)).andReturn(mockPlan);

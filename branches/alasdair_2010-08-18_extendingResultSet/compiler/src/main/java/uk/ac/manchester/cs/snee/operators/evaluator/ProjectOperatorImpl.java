@@ -21,7 +21,7 @@ import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
 
 public class ProjectOperatorImpl extends EvaluationOperator {
@@ -40,7 +40,7 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 	ProjectOperator project;
 	List<Attribute> attributes;
 
-	public ProjectOperatorImpl(Operator op) 
+	public ProjectOperatorImpl(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
 		super(op);
 		if (logger.isDebugEnabled()) {

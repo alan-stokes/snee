@@ -21,7 +21,7 @@ import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class AggregationOperatorImpl
 extends EvaluatorPhysicalOperator {
@@ -33,7 +33,7 @@ extends EvaluatorPhysicalOperator {
 
 	private List<Expression> expressions;
 
-	public AggregationOperatorImpl(Operator op) 
+	public AggregationOperatorImpl(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
 		super(op);
 		if (logger.isDebugEnabled()) {

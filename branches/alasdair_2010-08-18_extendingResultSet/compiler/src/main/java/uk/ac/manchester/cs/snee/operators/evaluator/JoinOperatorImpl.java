@@ -24,7 +24,7 @@ import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
-import uk.ac.manchester.cs.snee.operators.logical.Operator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 
 public class JoinOperatorImpl extends EvaluationOperator {
@@ -42,7 +42,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 
 	private List<Attribute> attrs;
 
-	public JoinOperatorImpl(Operator op) 
+	public JoinOperatorImpl(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
 		super(op);
 		if (logger.isDebugEnabled()) {
@@ -50,7 +50,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		}
 
 		// Create connections to child operators
-		Iterator<Operator> iter = op.childOperatorIterator();
+		Iterator<LogicalOperator> iter = op.childOperatorIterator();
 		leftOperator = getEvaluatorOperator(iter.next());
 		rightOperator = getEvaluatorOperator(iter.next());
 
