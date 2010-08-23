@@ -514,12 +514,27 @@ implements ResultSet {
 
 	@Override
 	public Object getObject(int columnIndex) throws SQLException {
-		throw new SQLException("Operation not supported.");
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER getObject() with " + columnIndex);
+		}
+		Object response = data[cursorPosition][columnIndex];
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN getObject() with " + response);
+		}
+		return response;
 	}
 
 	@Override
 	public Object getObject(String columnLabel) throws SQLException {
-		throw new SQLException("Operation not supported.");
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER getObject() " + columnLabel);
+		}
+		int columnIndex = findColumn(columnLabel);
+		Object response = getObject(columnIndex);
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN getObject() with " + response);
+		}
+		return response;
 	}
 
 	@Override

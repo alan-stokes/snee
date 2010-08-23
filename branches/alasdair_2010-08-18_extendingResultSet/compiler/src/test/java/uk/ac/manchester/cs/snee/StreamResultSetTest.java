@@ -1109,27 +1109,40 @@ public class StreamResultSetTest extends EasyMockSupport {
 		verifyAll();
 	}
 
-	@Test(expected=SQLException.class)
+	@Test
 	public void testGetObjectInt() 
 	throws SQLException, SNEEException {
 		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		recordResultSet(0, null);
+		dataList.add(mockTT);//1
+		dataList.add(mockTT);//2
+		dataList.add(mockTT);//3
+		recordResultSet(3, new Float(3.5));
 		replayAll();
 		StreamResultSet resultSet = 
 			new StreamResultSet(mockMetadata, dataList);
-		resultSet.getObject(1);
+		resultSet.absolute(1);
+		Object answer = resultSet.getObject(1);
+		Float floatAnswer = (Float) answer;
+		assertEquals(true, 3.5 == floatAnswer.floatValue());
 		verifyAll();
 	}
 
-	@Test(expected=SQLException.class)
+	@Test
 	public void testGetObjectString() 
 	throws SQLException, SNEEException {
 		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		recordResultSet(0, null);
+		dataList.add(mockTT);//1
+		dataList.add(mockTT);//2
+		dataList.add(mockTT);//3
+		recordResultSet(3, "data");
+		expect(mockMetadata.getColumnCount()).andReturn(2);
+		expect(mockMetadata.getColumnLabel(1)).andReturn("attr2");
 		replayAll();
 		StreamResultSet resultSet = 
 			new StreamResultSet(mockMetadata, dataList);
-		resultSet.getObject("");
+		resultSet.absolute(1);
+		String answer = (String) resultSet.getObject("attr2");
+		assertEquals("data", answer);
 		verifyAll();
 	}
 
