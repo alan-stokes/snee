@@ -1,13 +1,12 @@
 package uk.ac.manchester.cs.snee;
 
 import static org.easymock.EasyMock.expect;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.StringBufferInputStream;
 import java.io.StringReader;
-import java.io.StringWriter;
-import java.sql.Blob;
-import java.sql.Clob;
+import java.math.BigDecimal;
 import java.sql.NClob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -31,7 +30,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.evaluator.types.Field;
-import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
@@ -372,29 +370,80 @@ public class StreamResultSetTest extends EasyMockSupport {
 	}
 
 	@Test(expected=SQLException.class)
-	public void testGetBigDecimalInt()
+	public void testGetBigDecimalInt_nonDecimal() 
 	throws SQLException, SNEEException {
 		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		recordResultSet(0, null);
+		dataList.add(mockTT);//1
+		dataList.add(mockTT);//2
+		dataList.add(mockTT);//3
+		recordResultSet(3, new BigDecimal(3.1280));
+		expect(mockMetadata.getColumnType(1)).andReturn(Types.BOOLEAN);
 		replayAll();
 		StreamResultSet resultSet = 
 			new StreamResultSet(mockMetadata, dataList);
+		resultSet.absolute(1);
 		resultSet.getBigDecimal(1);
 		verifyAll();
 	}
 
-	@Test(expected=SQLException.class)
-	public void testGetBigDecimalString()
+	@Test
+	public void testGetBigDecimalInt() 
 	throws SQLException, SNEEException {
 		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		recordResultSet(0, null);
+		dataList.add(mockTT);//1
+		dataList.add(mockTT);//2
+		dataList.add(mockTT);//3
+		recordResultSet(3, new BigDecimal(3.1280));
+		expect(mockMetadata.getColumnType(1)).andReturn(Types.DECIMAL);
 		replayAll();
 		StreamResultSet resultSet = 
 			new StreamResultSet(mockMetadata, dataList);
-		resultSet.getBigDecimal("");
+		resultSet.absolute(1);
+		BigDecimal answer = resultSet.getBigDecimal(1);
+		assertEquals(new BigDecimal(3.1280), answer);
 		verifyAll();
 	}
 
+	@Test(expected=SQLException.class)
+	public void testGetBigDecimalString_nonDecimal() 
+	throws SQLException, SNEEException {
+		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		dataList.add(mockTT);//1
+		dataList.add(mockTT);//2
+		dataList.add(mockTT);//3
+		recordResultSet(3, new BigDecimal(3.1280));
+		expect(mockMetadata.getColumnCount()).andReturn(2);
+		expect(mockMetadata.getColumnLabel(1)).andReturn("attr1");
+		expect(mockMetadata.getColumnType(1)).andReturn(Types.BOOLEAN);
+		replayAll();
+		StreamResultSet resultSet = 
+			new StreamResultSet(mockMetadata, dataList);
+		resultSet.absolute(1);
+		resultSet.getBigDecimal("attr1");
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetBigDecimalString_decimal() 
+	throws SQLException, SNEEException {
+		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		dataList.add(mockTT);//1
+		dataList.add(mockTT);//2
+		dataList.add(mockTT);//3
+		recordResultSet(3, new BigDecimal(3.1280));
+		expect(mockMetadata.getColumnCount()).andReturn(2);
+		expect(mockMetadata.getColumnLabel(1)).andReturn("attr2");
+		expect(mockMetadata.getColumnType(1)).andReturn(Types.DECIMAL);
+		replayAll();
+		StreamResultSet resultSet = 
+			new StreamResultSet(mockMetadata, dataList);
+		resultSet.absolute(1);
+		BigDecimal answer = resultSet.getBigDecimal("attr2");
+		assertEquals(new BigDecimal(3.1280), answer);
+		verifyAll();
+	}
+
+	//Not supporting the depricated method
 	@Test(expected=SQLException.class)
 	public void testGetBigDecimalIntInt()
 	throws SQLException, SNEEException {
@@ -407,6 +456,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 		verifyAll();
 	}
 
+	//Not supporting the depricated method
 	@Test(expected=SQLException.class)
 	public void testGetBigDecimalStringInt() 
 	throws SQLException, SNEEException {
@@ -418,7 +468,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 		resultSet.getBigDecimal("", 0);
 		verifyAll();
 	}
-
+	
 	@Test(expected=SQLException.class)
 	public void testGetBinaryStreamInt() 
 	throws SQLException, SNEEException {

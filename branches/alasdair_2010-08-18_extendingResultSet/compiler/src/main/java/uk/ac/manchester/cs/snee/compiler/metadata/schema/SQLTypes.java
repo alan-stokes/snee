@@ -5,6 +5,7 @@ import java.sql.Types;
 public enum SQLTypes {
 
 	BOOLEAN (Types.BOOLEAN, "boolean"),
+	DECIMAL (Types.DECIMAL, "decimal"),
 	FLOAT (Types.FLOAT, "float"),
 	INTEGER (Types.INTEGER, "integer"),
 	TIMESTAMP (Types.TIMESTAMP, "timestamp"),

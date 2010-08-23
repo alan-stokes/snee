@@ -22,6 +22,8 @@ public class Attribute {
 		String typeName = type.getName();
 		if (typeName.equalsIgnoreCase("boolean")) {
 			_sqlType = SQLTypes.BOOLEAN;
+		} else if (typeName.equalsIgnoreCase("decimal")) {
+			_sqlType = SQLTypes.DECIMAL;
 		} else if (typeName.equalsIgnoreCase("float")) {
 			_sqlType = SQLTypes.FLOAT;
 		} else if (typeName.equalsIgnoreCase("integer")) {

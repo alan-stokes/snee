@@ -1,8 +1,10 @@
 package uk.ac.manchester.cs.snee.client;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -14,12 +16,9 @@ import uk.ac.manchester.cs.snee.SNEE;
 import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEController;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.StreamResult;
 import uk.ac.manchester.cs.snee.StreamResultImpl;
+import uk.ac.manchester.cs.snee.StreamResultSet;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
-import uk.ac.manchester.cs.snee.evaluator.types.Output;
 
 public abstract class SNEEClient implements Observer {
 
@@ -44,36 +43,87 @@ public abstract class SNEEClient implements Observer {
 			logger.debug("RETURN SNEEClient()");
 	}
 
-	private static void printResults(Collection<Output> results, 
-			int queryId) {
+	private static void printResults(ResultSet resultSet, 
+			int queryId) 
+	throws SQLException {
 		System.out.println("************ Results for query " + 
 				queryId + " ************");
-		for (Output output : results) {
-			System.out.println(output);
+		ResultSetMetaData metaData = resultSet.getMetaData();
+		int numCols = metaData.getColumnCount();
+		printColumnHeadings(metaData, numCols);
+		while (resultSet.next()) {
+			StringBuffer buffer = new StringBuffer();
+			for (int i = 1; i < numCols; i++) {
+				buffer.append(getData(resultSet, metaData, i));
+				buffer.append("\t");
+			}
+			buffer.append(getData(resultSet, metaData, numCols));
+			System.out.println(buffer.toString());
 		}
 		System.out.println("*********************************");
 	}
 
-	@SuppressWarnings("unchecked")
+	private static void printColumnHeadings(ResultSetMetaData metaData,
+			int numCols) throws SQLException {
+		StringBuffer buffer = new StringBuffer();
+		for (int i = 1; i <= numCols; i++) {
+			buffer.append(metaData.getColumnLabel(i));
+			buffer.append("\t");
+		}
+		System.out.println(buffer.toString());
+	}
+
+	private static Object getData(ResultSet resultSet,
+			ResultSetMetaData metaData, int index)
+			throws SQLException {
+		Object data;
+		switch (metaData.getColumnType(index)) {
+		case Types.BOOLEAN:
+			data = resultSet.getBoolean(index);
+			break;
+		case Types.DECIMAL:
+			data = resultSet.getBigDecimal(index);
+			break;
+		case Types.FLOAT:
+			data = resultSet.getFloat(index);
+			break;
+		case Types.INTEGER:
+			data = resultSet.getInt(index);
+			break;
+		case Types.TIMESTAMP:
+			data = resultSet.getTimestamp(index);
+			break;
+		case Types.VARCHAR:
+			data = resultSet.getString(index);
+			break;
+		default:
+			throw new SQLException();
+		}
+		return data;
+	}
+
 	public void update (Observable observation, Object arg) {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER update() with " + observation + " " + 
 					arg);
-		logger.trace("arg type: " + arg.getClass());
-		if (arg instanceof Collection<?>) {
-			Collection<Output> results = (Collection<Output>) arg;
-			printResults(results, 1);
-		} else if (arg instanceof Output) {
-			Output output = (Output) arg;
-			System.out.println(output);
 		}
-		if (logger.isDebugEnabled())
+//		logger.trace("arg type: " + arg.getClass());
+		if (arg instanceof ResultSet || arg instanceof StreamResultSet) {
+			ResultSet results = (ResultSet) arg;
+			try {
+				printResults(results, 1);
+			} catch (SQLException e) {
+				logger.error("Problem printing result set. ", e);
+			}
+		}
+		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN update()");
+		}
 	}
 	
 	public void run() 
 	throws SNEECompilerException, MetadataException, EvaluatorException,
-	SNEEException {
+	SNEEException, SQLException {
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER");
 		System.out.println("Query: " + this._query);
@@ -101,7 +151,9 @@ public abstract class SNEEClient implements Observer {
 			Thread.currentThread().yield();
 		}
 		
-		List<Output> results1 = displayFinalResult(queryId1);
+		ResultSet results1 = resultSet.getResults();
+		System.out.println("Stopping query " + queryId1 + ".");
+		controller.removeQuery(queryId1);
 
 		try {
 			//XXX: Sleep included to highlight evaluator not ending bug 
@@ -116,18 +168,6 @@ public abstract class SNEEClient implements Observer {
 		//		printResults(results2, queryId2);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN");
-	}
-
-	private List<Output> displayFinalResult(int queryId1) throws SNEEException {
-		StreamResult resultSet1 = controller.getResultSet(queryId1);
-		List<Output> results1 = resultSet1.getResults();
-		//		Collection<Output> results2 = controller.getResults(queryId2);
-		System.out.println("Stopping query " + queryId1 + ".");
-		controller.removeQuery(queryId1);
-		//		System.out.println("Query run for required duration. " +
-		//				"Stopping query " + queryId2 + ".");
-		//		controller.removeQuery(queryId2);
-		return results1;
 	}
 
 }

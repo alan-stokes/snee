@@ -360,21 +360,21 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 					setChanged();
 					notifyObservers(taggedTuple);
 				} catch (ReceiveTimeoutException e) {
-					logger.warn("Receive Timeout Exception. " + e);
+					logger.warn("Receive Timeout Exception.", e);
 					receive = false;
 				} catch (SNEEException e) {
-					logger.warn("Received a SNEEException. " + e);
+					logger.warn("Received a SNEEException.", e);
 					receive = false;
 				} catch (EndOfResultsException e) {
 					executing = false;
 				} catch (SNEEDataSourceException e) {
-					logger.warn("Received a SNEEDataSourceException. " + e);
+					logger.warn("Received a SNEEDataSourceException.", e);
 					receive = false;
 				} catch (TypeMappingException e) {
-					logger.warn("Received a TypeMappingException. " + e);
+					logger.warn("Received a TypeMappingException.", e);
 					receive = false;
 				} catch (SchemaMetadataException e) {
-					logger.warn("Received a SchemaMetadataException. " +e);
+					logger.warn("Received a SchemaMetadataException.", e);
 					receive = false;
 				}
 			if (logger.isDebugEnabled()) {
@@ -410,25 +410,30 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 						fieldName.equalsIgnoreCase("id") ||
 						fieldName.equalsIgnoreCase("time")) {
 					if (logger.isTraceEnabled()) {
-						logger.trace("Ignoring in-network SNEE attribute " + fieldName);
+						logger.trace("Ignoring in-network SNEE " +
+								"attribute " + fieldName);
 					}
 					continue;
 				} 
 				try {
-					if (logger.isTraceEnabled())
-						logger.trace("Received: " + tuple.getField(fieldName));
+					if (logger.isTraceEnabled()) {
+						logger.trace("Received: " + 
+								tuple.getField(fieldName));
+					}
 					Field field = tuple.getField(fieldName);
-					String newFieldName = _streamQueryName + "." + fieldName;
+					String newFieldName = _streamQueryName + "." +
+					fieldName;
 					field.setName(newFieldName.toLowerCase());
 					if (logger.isTraceEnabled()) {
-						logger.trace("Field name: " + _streamQueryName + "." + fieldName);
+						logger.trace("Field name: " + _streamQueryName +
+								"." + fieldName);
 					}
 					// Remove reference to old field name
 					tuple.removeField(fieldName.toLowerCase());
 					// Add reference to new field name
 					tuple.addField(field);
 				} catch (SNEEException e) {
-					logger.warn("Unknown attribute " + fieldName);
+					logger.warn("Unknown attribute " + fieldName, e);
 					throw e;
 				}
 			}
@@ -440,8 +445,9 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 
 	@Override
 	public void update(Observable obj, Object observed) {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER update()");
+		}
 		logger.error("Receiver cannot be the parent of another operator");
 		executing = false;
 		if (logger.isDebugEnabled())

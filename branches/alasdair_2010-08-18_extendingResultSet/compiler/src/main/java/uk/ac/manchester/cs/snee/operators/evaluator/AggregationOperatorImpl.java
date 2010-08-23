@@ -1,7 +1,6 @@
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,17 +15,16 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpres
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
-import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.Field;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
-import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
 import uk.ac.manchester.cs.snee.operators.logical.Operator;
 
-public class AggregationOperatorImpl extends EvaluatorPhysicalOperator {
+public class AggregationOperatorImpl
+extends EvaluatorPhysicalOperator {
 	//TODO: Refactor to form specific implementations for each operator
 	Logger logger = 
 		Logger.getLogger(AggregationOperatorImpl.class.getName());
@@ -141,8 +139,10 @@ public class AggregationOperatorImpl extends EvaluatorPhysicalOperator {
 			} else if (observed instanceof Output) {
 				processOutput(observed, result);
 			} else {
-				logger.warn("Item type received from child is not known or unsupported by " +
-						"aggregation operator. " + observed.getClass().getSimpleName());
+				logger.warn("Item type received from child is not " +
+						"known or unsupported by " +
+						"aggregation operator. " + 
+						observed.getClass().getSimpleName());
 				throw new SNEEException("Unknown type of stream item.");
 			}
 			if (!result.isEmpty()) {
@@ -152,16 +152,19 @@ public class AggregationOperatorImpl extends EvaluatorPhysicalOperator {
 		} catch (Exception e) {
 			logger.error(e);
 		}
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN update()");
+		}
 	}
 
 	private void processOutput(Object observed, List<Output> result)
 	throws SNEEException {
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER processOutput() with " + observed);
+		}
 		/*
-		 * Aggregation operators can only perform over windows or relations
+		 * Aggregation operators can only perform over windows or
+		 * relations
 		 * Currently we will only implement the window version
 		 */
 		//TODO: Implement relation version of aggregation
@@ -177,36 +180,46 @@ public class AggregationOperatorImpl extends EvaluatorPhysicalOperator {
 					logger.trace("Ignore eval time expression.");
 				} else if (exp instanceof AggregationExpression) {
 					// Extract operands from expression
-					AggregationExpression agEx = (AggregationExpression)exp;
+					AggregationExpression agEx = 
+						(AggregationExpression)exp;
 					AggregationType agType = agEx.getAggregationType();
-					DataAttribute da = (DataAttribute)agEx.getExpression();
-					String attributeName = da.getLocalName() + "." + da.getAttributeName();
+					DataAttribute da = 
+						(DataAttribute)agEx.getExpression();
+					String attributeName = da.getLocalName() + "." +
+						da.getAttributeName();
 					AttributeType dataType = da.getType();
 					if (logger.isTraceEnabled()) {
-						logger.trace("Compute " + agType + " on " + attributeName + 
+						logger.trace("Compute " + agType + " on " + 
+								attributeName + 
 								" of type " + dataType.getName());
 					}
 
 					// Calculate aggregate
 					Number agValue = computeAggregate(agType, 
-							attributeName, dataType, curWindow.getTuples());
+							attributeName, dataType,
+							curWindow.getTuples());
 
 					// Create result window
 					Window newWindow = createResultWindow(curWindow,
 							agType, da, agValue);
 					result.add(newWindow);
 					if (logger.isTraceEnabled()) {
-						logger.trace("Computed aggregate tuple: " + newWindow);
+						logger.trace("Computed aggregate tuple: " + 
+								newWindow);
 					}
 				} else {
-					logger.warn("Throwing exception due to incorrect expression type. " + exp);
-					throw new SNEEException("Unexpected or unsupported expression type in " +
+					logger.warn("Throwing exception due to incorrect " +
+							"expression type. " + exp);
+					throw new SNEEException("Unexpected or unsupported " +
+							"expression type in " +
 							"aggregation operator. " + exp.getClass());
 				}
 			}
 		} else {
-			logger.warn("Item type received from child is not known or unsupported by " +
-					"aggregation operator. " + observed.getClass().getSimpleName());
+			logger.warn("Item type received from child is not known " +
+					"or unsupported by " +
+					"aggregation operator. " + 
+					observed.getClass().getSimpleName());
 			throw new SNEEException("Unknown type of stream item.");
 		}
 		if (logger.isTraceEnabled())
@@ -259,9 +272,11 @@ public class AggregationOperatorImpl extends EvaluatorPhysicalOperator {
 				if (dataType.getName().equalsIgnoreCase("integer")) 
 					result = computeIntegerAverage(attributeName, tuples);
 				else {
-					logger.warn("Unsupported data type for computing average. " + 
+					logger.warn("Unsupported data type for computing " +
+							"average. " + 
 							dataType.getName());
-					throw new SNEEException("Unsupported data type for computing average");
+					throw new SNEEException("Unsupported data type " +
+							"for computing average");
 				}
 			}
 		} else if (agType == AggregationType.COUNT) {
@@ -270,7 +285,8 @@ public class AggregationOperatorImpl extends EvaluatorPhysicalOperator {
 		} else {
 			//FIXME: Implement aggregate calculation
 			logger.warn("Unsupported aggregation operator " + agType);
-			throw new SNEEException("Unsupported aggregation operator " + agType);
+			throw new SNEEException("Unsupported aggregation " +
+					"operator " + agType);
 		}
 		if (logger.isTraceEnabled()) {
 			logger.debug("RETURN computeAggregate() with " + result);
@@ -278,10 +294,12 @@ public class AggregationOperatorImpl extends EvaluatorPhysicalOperator {
 		return result;
 	}
 
-	private Number computeIntegerAverage(String attributeName, List<Tuple> tuples) 
+	private Number computeIntegerAverage(String attributeName,
+			List<Tuple> tuples) 
 	throws SNEEException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER computeIntegerAverage() with " + attributeName);
+			logger.trace("ENTER computeIntegerAverage() with " +
+					attributeName);
 		}
 		Integer average; 
 		int count=0,totalValue=0;
@@ -292,7 +310,8 @@ public class AggregationOperatorImpl extends EvaluatorPhysicalOperator {
 		}
 		average = totalValue/count;
 		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN computeIntegerAverage() with " + average);
+			logger.trace("RETURN computeIntegerAverage() with " + 
+					average);
 		}
 		return average;
 	}

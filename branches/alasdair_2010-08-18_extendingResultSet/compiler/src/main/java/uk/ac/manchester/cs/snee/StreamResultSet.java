@@ -217,12 +217,34 @@ implements ResultSet {
 
 	@Override
 	public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-		throw new SQLException("Operation not supported.");
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER getBigDecimal() with " + columnIndex);
+		}
+		int colType = metadata.getColumnType(columnIndex);
+		if (colType != Types.DECIMAL) {
+			String message = "Column type is not a decimal.";
+			logger.warn(message);
+			throw new SQLException(message);
+		}
+		BigDecimal response = 
+			(BigDecimal) data[cursorPosition][columnIndex];
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN getBigDecimal() with " + response);
+		}
+		return response;
 	}
 
 	@Override
 	public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
-		throw new SQLException("Operation not supported.");
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER getBigDecimal() " + columnLabel);
+		}
+		int columnIndex = findColumn(columnLabel);
+		BigDecimal response = getBigDecimal(columnIndex);
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN getBigDecimal() with " + response);
+		}
+		return response;
 	}
 
 	@Override

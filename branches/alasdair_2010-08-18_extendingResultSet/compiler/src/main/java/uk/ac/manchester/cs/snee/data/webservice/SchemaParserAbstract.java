@@ -24,29 +24,45 @@ public abstract class SchemaParserAbstract implements SchemaParser {
 		}
 	}
 
-	protected AttributeType inferType(String sqlType) 
+	protected AttributeType inferType(int sqlType) 
 	throws TypeMappingException, SchemaMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER inferType() for " + sqlType); 
 		AttributeType type;
 		if (logger.isTraceEnabled())
 			logger.trace("SqlType: " + sqlType);
-		if (sqlType.equalsIgnoreCase("INT") || 
-				sqlType.equalsIgnoreCase("INTEGER")) {
-			type = _types.getType("integer");
-		} else if (sqlType.equalsIgnoreCase("CHAR")) {
+		switch (sqlType) {
+		case java.sql.Types.BOOLEAN:
+			type = _types.getType("boolean");
+			break;
+		case java.sql.Types.CHAR:
 			type = _types.getType("string");
-		} else if (sqlType.equalsIgnoreCase("DECIMAL") ||
-				sqlType.equalsIgnoreCase("FLOAT")) {
+			break;
+		case java.sql.Types.DECIMAL:
+			type = _types.getType("decimal");
+			break;
+		case java.sql.Types.FLOAT:
 			type = _types.getType("float");
-		} else if (sqlType.equalsIgnoreCase("TIMESTAMP")) {
+			break;
+		case java.sql.Types.INTEGER:
+			type = _types.getType("integer");			
+			break;
+		case java.sql.Types.TIMESTAMP:
 			type = _types.getType("timestamp");
-		} else if (sqlType.equalsIgnoreCase("DATETIME")) {
-			type = _types.getType("string");
-		} else {
-			String msg = "Unsupported attribute type " + sqlType;
-			logger.warn(msg);
-			throw new SchemaMetadataException(msg);
+			break;
+		default:
+			if (sqlType == 7) {
+				logger.trace("Hack to overcome misreported data " +
+						"type in CCO-WS metadata. " +
+						"Real being mapped to float.");
+				type = _types.getType("float");
+			} else {
+				String msg = "Unsupported attribute type " + sqlType;
+				logger.warn(msg);
+				throw new SchemaMetadataException(msg);
+//				type = _types.getType("string");
+			}
+			break;
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN inferType() with " + type);
