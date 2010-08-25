@@ -89,6 +89,14 @@ Briefly, the mode of operation is as follows:
 
 Note: The links above should be used mainly to understand the concepts involved. We recommend using the Subclipse plugin to carry out branching and merging operations, as it provides an easy-to-use interface.
 
+===Separate Interface from Implementation ===
+
+When dealing with Collections, Lists, Maps, Sets it is best to declare variables as
+
+{{{List<String> name = new ArrayList<String>();}}}
+
+i.e., you use the interface on the left hand side and your choice of implementation on the right hand side.
+
 ===Other===
 
 Always use curly braces after an if statement condition, even if it only one line long, i.e.,
