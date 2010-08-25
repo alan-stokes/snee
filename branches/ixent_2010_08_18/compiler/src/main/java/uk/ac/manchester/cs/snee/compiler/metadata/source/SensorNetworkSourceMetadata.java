@@ -56,8 +56,8 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 	Logger logger = 
 		Logger.getLogger(SensorNetworkSourceMetadata.class.getName());
 
-	//TODO: Ixent doesn't understand what this is for.
-	private int _cardinality = 100;
+//	//TODO: Ixent doesn't understand what this is for.
+//	private int _cardinality = 100;
 
 	private int[] _sourceNodes;
 
@@ -166,32 +166,32 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 			logger.trace("sites text " + sourceSitesText);
 		_sourceNodes = SourceMetadataUtils.convertNodes(
 				sourceSitesText.toString());
-		_cardinality = _sourceNodes.length;
+//		_cardinality = _sourceNodes.length;
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN setSourceSites()");
 	}
 
 
-	/**
-	 * Count the number of tokens.
-	 * @param tokens
-	 * @return
-	 * @throws SourceMetadataException No tokens exist
-	 */
-
-	protected void setCardinality (int cardinality)
-	{
-		_cardinality = cardinality;
-	}
-
-	public int getCardinality() {
-		return _cardinality;
-	}
+//	/**
+//	 * Count the number of tokens.
+//	 * @param tokens
+//	 * @return
+//	 * @throws SourceMetadataException No tokens exist
+//	 */
+//
+//	protected void setCardinality (int cardinality)
+//	{
+//		_cardinality = cardinality;
+//	}
+//
+//	public int getCardinality() {
+//		return _cardinality;
+//	}
 
 	@Override
 	public String toString() {
 		StringBuffer s = new StringBuffer(super.toString());
-		s.append("   Cardinality: " + _cardinality);
+//		s.append("   Cardinality: " + _cardinality);
 		return s.toString();
 	}
 
@@ -202,6 +202,15 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 	 */
 	public int[] getSourceSites() {
 		return _sourceNodes;
+	}
+
+	/**
+	 * Returns the nodes in the sensor network which are capable of
+	 * sensing data for a given extent.
+	 * @return an array of node identifiers
+	 */
+	public int[] getSourceSites(String extentName) {
+		return this._extentToSitesMapping.get(extentName);
 	}
 
 	/**

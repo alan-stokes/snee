@@ -125,9 +125,8 @@ public class PAF extends SNEEAlgebraicForm {
 	 * @param parent
 	 * @param newNode
 	 */
-	public void insertNode(SensornetAggrInitOperator child,
-			SensornetAggrEvalOperator parent,
-			SensornetAggrMergeOperator newNode) {
+	public void insertOperator(SensornetOperator child,
+			SensornetOperator parent, SensornetOperator newNode) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER insertNode()");
 		this.physicalOperatorTree.insertNode(child, parent, newNode);

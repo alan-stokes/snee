@@ -22,7 +22,8 @@ public class SensornetDeliverOperator extends SensornetOperatorImpl {
 			logger.debug("Attribute List: " + op.getAttributes());
 			logger.debug("Expression List: " + op.getExpressions());
 		}
-		delOp = (DeliverOperator) op;		
+		delOp = (DeliverOperator) op;
+		this.setNesCTemplateName("deliver");
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetDeliverOperator()");
 		}		

@@ -34,27 +34,21 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
 import java.util.Iterator;
-import java.util.List;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-//import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
-//import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
-//import uk.ac.manchester.cs.snee.compiler.whenScheduling.qosaware.cvx.AlphaBetaExpression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
-public interface SensornetOperator extends LogicalOperator {
+public interface SensornetOperator extends Node {
 
 	SensornetOperator getSensornetOperator(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException;
 	
      /** @return the fragment to which this operator belongs. */
-//    Fragment getContainingFragment();
+	Fragment getContainingFragment();
         
     /** @return ID of the containing Fragment. */
     String getFragID();
@@ -62,24 +56,11 @@ public interface SensornetOperator extends LogicalOperator {
     /** @return True if this operator is the root of its fragment, */
     boolean isFragmentRoot();
 
-    /** @return The attribute(s) by which data is partitioned. */
-    String getPartitioningAttribute();
-
-	//CB: Used by TreeDisplay and toString for debugging
-	//CB: IXENT feel free to add output here
-	//CB: Should not children use to string for that.
-	/**
-	 * Returns text description of this operator.
-	 * @param showProperties If True returns more information.
-	 * @return A String representation of this operator.
-	 */
-	String getText(boolean showProperties);
-
-	    /**
-	     * Sets the containing fragment of this operator.
-	     * @param f the containing fragment
-	     */
-//	    void setContainingFragment(Fragment f);
+    /**
+     * Sets the containing fragment of this operator.
+     * @param f the containing fragment
+     */
+	void setContainingFragment(Fragment f);
 
 	/**
 	 * Get the source node for the operator by getting the source nodes of
@@ -89,85 +70,53 @@ public interface SensornetOperator extends LogicalOperator {
 	 */
 	int[] getSourceSites();
 
-	    /**
-	     * The size of the output.
-	     * This size considers distribution of the query plan.
-	     * It is the output for a specific SensorNetworkNode
-	     * 
-	     * For exchanges this is the producer cardinality
-	     * @param card CardinalityType The type of cardinality to be considered.
-	     * @param node Physical mote on which this operator has been placed.
-	     * @param daf Distributed query plan this operator is part of.
-	     * @return Sum of the cardinality of the iall nputs 
-	     * for this operator on this node.
-	     */
-//		int getCardinality(CardinalityType card, Site node, DAF daf);
-
-//		/**
-//	     * The size of the output.
-//	     * This size considers distribution of the query plan.
-//	     * It is the output for a specific SensorNetworkNode
-//	     * 
-//	     * For exchanges this is the producer cardinality
-//	     * @param card CardinalityType The type of cardinality to be considered.
-//	     * @param node Physical mote on which this operator has been placed.
-//	     * @param daf Distributed query plan this operator is part of.
-//		 * @param round Defines if rounding reserves should be included or not
-//	     * @return Sum of the cardinality of the iall nputs 
-//	     * for this operator on this node.
-//	     */
-//		AlphaBetaExpression getCardinality(CardinalityType card, Site node, 
-//				DAF daf, boolean round);
-
-	/**
-	 * Used to determine if the operator is Attribute sensitive.
-	 * 
-	 * @return true only if operator is attribute sensitive.
-	 */
-	boolean isAttributeSensitive(); 
-
-	/**
-	 * Detects if operator must be based on particular sites.
-	 * @return True if and only if operator requires specific sites.
-	 */
-	boolean isLocationSensitive();
-
-	/**
-	 * Detects if operator can call itself.
-	 * @return True if and only if operator is recursive.
-	 */
-	boolean isRecursive();
-
-	/**
-	 * Detects if operator allows predicates pushed into it.
-	 * Allows the pushing of select into previous operator.
-	 * @return True if both the operator and the settings allow it.
-	 */
-	boolean acceptsPredicates();
-
-	/**
-	 * Sets predicates on this operator.
-	 * @param newPredicate Predicate to set or replace existing predicate.
-	 * @throws AssertionError 
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
-	 */
-	void setPredicate(Expression newPredicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException;
+    /**
+     * The size of the output.
+     * This size considers distribution of the query plan.
+     * It is the output for a specific SensorNetworkNode
+     * 
+     * For exchanges this is the producer cardinality
+     * @param card CardinalityType The type of cardinality to be considered.
+     * @param node Physical mote on which this operator has been placed.
+     * @param daf Distributed query plan this operator is part of.
+     * @return Sum of the cardinality of the iall nputs 
+     * for this operator on this node.
+     */
+//   int getCardinality(CardinalityType card, Site node, DAF daf);
 
 //	/**
-//	 * Creates a copy of this Operator.
-//	 * Does not create a new instances of any internal values.
-//	 * @return A copy of this operator 
-//	 * 	which shares all internal data structures. 
-//	 */
-//	Operator shallowClone();
+//     * The size of the output.
+//     * This size considers distribution of the query plan.
+//     * It is the output for a specific SensorNetworkNode
+//     * 
+//     * For exchanges this is the producer cardinality
+//     * @param card CardinalityType The type of cardinality to be considered.
+//     * @param node Physical mote on which this operator has been placed.
+//     * @param daf Distributed query plan this operator is part of.
+//	 * @param round Defines if rounding reserves should be included or not
+//     * @return Sum of the cardinality of the iall nputs 
+//     * for this operator on this node.
+//     */
+//	AlphaBetaExpression getCardinality(CardinalityType card, Site node, 
+//			DAF daf, boolean round);
 
-//	/**
-//	 * Gets a String to be used by nesc as the name of this operator.
-//	 * @return Name to be used as template name.
-//	 */
-//	String getNesCTemplateName();
+	/**
+	 * Gets a String to be used by nesc as the name of this operator.
+	 * @return Name to be used as template name.
+	 */
+	public String getNesCTemplateName();
+
+	public SensornetOperator getParent();
+	
+	public LogicalOperator getLogicalOperator();
+
+	public int getCardinality(CardinalityType physicalMax);
+
+	public boolean isAttributeSensitive();
+	
+	public Iterator<SensornetOperator> childOperatorIterator();
+	
+	public String getOperatorName();
 
 //	/**
 //	 * The physical average size of the output.

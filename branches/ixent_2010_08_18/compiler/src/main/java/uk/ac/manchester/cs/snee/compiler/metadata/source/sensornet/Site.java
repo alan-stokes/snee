@@ -38,6 +38,8 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.NodeImplementation;
+import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 
 public class Site extends NodeImplementation {
 
@@ -57,15 +59,15 @@ public class Site extends NodeImplementation {
      */
     long energyStock;
 
-//    /**
-//     * The fragments which have been placed on a node
-//     */
-//    HashSet<Fragment> fragments = new HashSet<Fragment>();
-//
-//    /**
-//     * The exchange components which have been placed on a node
-//     */
-//    HashSet<ExchangePart> exchangeComponents = new HashSet<ExchangePart>();
+    /**
+     * The fragments which have been placed on a node
+     */
+    HashSet<Fragment> fragments = new HashSet<Fragment>();
+
+    /**
+     * The exchange components which have been placed on a node
+     */
+    HashSet<ExchangePart> exchangeComponents = new HashSet<ExchangePart>();
 
     /**
      * Flag which tracks whether the node is a source node (i.e., acquires sensor readings)
@@ -143,33 +145,33 @@ public class Site extends NodeImplementation {
 //	return this.exchangeComponents;
 //    }
 //
-//    public void addFragment(final Fragment frag) {
-//	//TODO: here we should check resource availability, 
-//	//and throw an error if insufficient resources
-//
-//	this.fragments.add(frag);
-//    }
-//
-//    public void addExchangeComponent(final ExchangePart exchComp) {
-//	this.exchangeComponents.add(exchComp);
-//    }
-//
+    
+    public void addFragment(final Fragment frag) {
+	//TODO: here we should check resource availability, 
+	//and throw an error if insufficient resources
+    	this.fragments.add(frag);
+    }
+
+    public void addExchangeComponent(final ExchangePart exchComp) {
+    	this.exchangeComponents.add(exchComp);
+    }
+
 //    public String getFragmentsString() {
-//	final Iterator<Fragment> fragIter = this.fragments.iterator();
-//	final StringBuffer s = new StringBuffer();
-//	boolean first = true;
-//
-//	while (fragIter.hasNext()) {
-//	    final Fragment f = fragIter.next();
-//	    if (!first) {
-//		s.append(",");
-//	    } else {
-//		first = false;
-//	    }
-//	    s.append("F" + f.getID());
-//	}
-//
-//	return s.toString();
+//		final Iterator<Fragment> fragIter = this.fragments.iterator();
+//		final StringBuffer s = new StringBuffer();
+//		boolean first = true;
+//	
+//		while (fragIter.hasNext()) {
+//		    final Fragment f = fragIter.next();
+//		    if (!first) {
+//			s.append(",");
+//		    } else {
+//			first = false;
+//		    }
+//		    s.append("F" + f.getID());
+//		}
+//	
+//		return s.toString();
 //    }
     
 //    public String getExchangeComponentsString() {

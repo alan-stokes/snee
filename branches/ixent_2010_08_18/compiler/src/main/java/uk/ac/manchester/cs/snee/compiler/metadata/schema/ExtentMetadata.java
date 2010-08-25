@@ -54,6 +54,10 @@ public class ExtentMetadata {
 
 	private ExtentType _extentType;
 
+	//Ixent moved this to here from SensorNetworkSourceMetadata, as this seems 
+	//to be a something considered during early steps of query optimization.
+	private int cardinality = 1;
+	
 	public ExtentMetadata(String extentName, 
 			Map<String, AttributeType> attributes,
 			ExtentType extentType) {
@@ -125,7 +129,7 @@ public class ExtentMetadata {
 	}
 
 	/**
-	 * Returns the size of the attribute.
+	 * Returns the size of the tuple.
 	 * @return
 	 */
 	public int getSize() {
@@ -167,6 +171,14 @@ public class ExtentMetadata {
 		}
 		s.append("]");
 		return s.toString();
+	}
+
+	public void setCardinality(int cardinality) {
+		this.cardinality = cardinality;
+	}
+
+	public int getCardinality() {
+		return cardinality;
 	}
 	
 }

@@ -25,7 +25,8 @@ public class SensornetRStreamOperator extends SensornetOperatorImpl {
 			logger.debug("Attribute List: " + op.getAttributes());
 			logger.debug("Expression List: " + op.getExpressions());
 		}
-		rStrOp = (RStreamOperator) op;		
+		rStrOp = (RStreamOperator) op;	
+		this.setNesCTemplateName(null);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetRStreamOperator()");
 		}		

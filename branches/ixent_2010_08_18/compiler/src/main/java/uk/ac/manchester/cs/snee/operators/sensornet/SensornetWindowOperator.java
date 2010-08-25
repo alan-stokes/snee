@@ -26,7 +26,8 @@ public class SensornetWindowOperator extends SensornetOperatorImpl {
 			logger.debug("Attribute List: " + op.getAttributes());
 			logger.debug("Expression List: " + op.getExpressions());
 		}
-		winOp = (WindowOperator) op;		
+		winOp = (WindowOperator) op;
+		this.setNesCTemplateName("window");
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetWindowOperator()");
 		}		

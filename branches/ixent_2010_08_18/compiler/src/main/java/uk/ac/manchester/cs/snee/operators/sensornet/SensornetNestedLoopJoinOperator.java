@@ -23,7 +23,8 @@ public class SensornetNestedLoopJoinOperator extends SensornetOperatorImpl {
 			logger.debug("Attribute List: " + op.getAttributes());
 			logger.debug("Expression List: " + op.getExpressions());
 		}
-		delOp = (IStreamOperator) op;		
+		delOp = (IStreamOperator) op;
+		this.setNesCTemplateName("join");
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetNestedLoopJoinOperator()");
 		}		

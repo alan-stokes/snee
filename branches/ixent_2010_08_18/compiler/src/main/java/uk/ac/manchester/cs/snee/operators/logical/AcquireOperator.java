@@ -63,9 +63,6 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	/** Name as found in the Query. */
 	private String localName;
 
-	/** Physical locations for this operator.*/
-	private int[] sites = {};
-
 	/** List of attributes to be output. */
 	private List<Attribute> outputAttributes;
 
@@ -82,6 +79,8 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * data via an acquire mechanism
 	 */
 	private List<SourceMetadata> _sources;
+	
+	private int cardinality;
 
 	/**
 	 * Constructs a new Acquire operator.
@@ -93,7 +92,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * @throws TypeMappingException 
 	 */
 	public AcquireOperator(String extentName, String localName,  
-			ExtentMetadata extentMetaData, List<SourceMetadata> sources,
+			ExtentMetadata extentMetadata, List<SourceMetadata> sources,
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException {
 		super(boolType);
@@ -102,40 +101,29 @@ public class AcquireOperator extends LogicalOperatorImpl {
 					" " + localName);
 		
 		this.setOperatorName("ACQUIRE");
-		//        this.setNesCTemplateName("acquire");
 		this.setOperatorDataType(OperatorDataType.STREAM);
 
 		this.extentName = extentName;
 		this.localName = localName;
-		addMetaDataInfo(extentMetaData);
-		this.setParamStr(this.extentName + " (" 
-				+ Arrays.toString(sites) + ")");
-
+		addMetaDataInfo(extentMetadata);
 		updateSensedAttributes(); 
 		
 		_sources = sources;
+		StringBuffer sourcesStr = new StringBuffer();
+		boolean first = true;
+		for (SourceMetadata sm : _sources) {
+			if (first)
+				first=false;
+			else
+				sourcesStr.append(",");
+			sourcesStr.append(sm.getSourceName());
+		}		
+		this.setParamStr(this.extentName + " (card=" + this.cardinality +
+				" sources={"+sourcesStr+"})");
 		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN AcquireOperator()");
 	} 
-
-//	/**
-//	 * Constructor that creates a new operator 
-//	 * 		based on a model of an existing operator.
-//	 * 
-//	 * Used by both the clone method and the constructor of the 
-//	 * physical methods.
-//	 * @param model Operator to clone.
-//	 */
-//	protected AcquireOperator(AcquireOperator model, Types types) {
-//		super(model, types);
-//		this.extentName = model.extentName;
-//		this.localName = model.localName;
-//		this.sites = model.sites;
-//		this.outputAttributes = model.outputAttributes;
-//		this.sensedAttributes = model.sensedAttributes;
-//		this.expressions = model.expressions;
-//	}  
 
 	/**
 	 * Return the name of the extent as it appears in the schema.
@@ -192,6 +180,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 //				sites =  sourceMetaData.getSourceNodes();
 			}
 		}
+		this.cardinality = extentMetaData.getCardinality();
 		copyExpressions(outputAttributes);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN addMetaDataInfo()");
@@ -205,14 +194,6 @@ public class AcquireOperator extends LogicalOperatorImpl {
 		return this.getText();
 	}
 
-//	/**
-//	 * @return The Sites this acquire will be done on.
-//	 */
-//	public int[] getSourceSites() {
-//		return sites;
-//	}
-
-	//TODO min is predicates added
 	/**
 	 * Calculated the cardinality based on the requested type. 
 	 * 
@@ -221,7 +202,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * @return The Cardinality calculated as requested.
 	 */
 	public int getCardinality(CardinalityType card) {
-		return sites.length;
+		return this.cardinality;
 	}
 
 	/**
@@ -250,13 +231,6 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	public boolean isRecursive() {
 		return false;
 	}
-
-//	/** {@inheritDoc} */
-//	public AcquireOperator shallowClone() {
-//		//TODO: clone relation
-//		AcquireOperator clonedOp = new AcquireOperator(this);
-//		return clonedOp;
-//	}
 
 	/** 
 	 * List of the attribute returned by this operator.

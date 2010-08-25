@@ -24,7 +24,8 @@ public class SensornetProjectOperator extends SensornetOperatorImpl {
 			logger.debug("Attribute List: " + op.getAttributes());
 			logger.debug("Expression List: " + op.getExpressions());
 		}
-		prjOp = (ProjectOperator) op;		
+		prjOp = (ProjectOperator) op;
+		this.setNesCTemplateName("project");
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetProjectOperator()");
 		}		

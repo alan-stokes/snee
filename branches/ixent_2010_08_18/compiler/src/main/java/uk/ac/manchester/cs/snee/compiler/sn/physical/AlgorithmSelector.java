@@ -73,7 +73,7 @@ public class AlgorithmSelector {
 		    	SensornetSingleStepAggregationOperator agg = 
 		    		(SensornetSingleStepAggregationOperator) op;
 		    	AggregationOperator logAggr = 
-		    		(AggregationOperator) agg.getLogicalOp();
+		    		(AggregationOperator) agg.getLogicalOperator();
 				SensornetAggrInitOperator aggrInit = 
 					new SensornetAggrInitOperator(logAggr);
 				SensornetAggrMergeOperator aggrMerge = 
@@ -81,7 +81,7 @@ public class AlgorithmSelector {
 				SensornetAggrEvalOperator aggrEval = 
 					new SensornetAggrEvalOperator(logAggr);
 				paf.replacePath(op, new SensornetOperator[] { aggrEval, aggrInit });
-				paf.insertNode(aggrInit, aggrEval, aggrMerge);
+				paf.insertOperator(aggrInit, aggrEval, aggrMerge);
 		    }
 		}
     }

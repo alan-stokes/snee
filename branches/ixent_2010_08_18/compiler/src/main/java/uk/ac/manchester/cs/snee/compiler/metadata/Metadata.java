@@ -135,6 +135,8 @@ public class Metadata {
 			processPhysicalSchema(
 					SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE));
 		}
+		//TODO: Estimate cardinalities for each extent here!!
+		doCardinalityEstimations();
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN Metadata()");
 	}
@@ -747,4 +749,42 @@ public class Metadata {
 		return _schema.keySet();
 	}
 
+
+	/**
+	 * Updates metadata for each extent with cardinality estimations.
+	 * For sensor networks, this depends on the number of sites contributing
+	 * data to the extent.  For push-based streams, this depends on the 
+	 * average rate at which tuples are produced.  For relations, this depends
+	 * on the size of the relation.  Note that this is currently only correctly 
+	 * implemented for sensor networks.  Note also that this method would support
+	 * having a extent with different sources as input, a feature that probably wont
+	 * be implemented.
+	 * @throws ExtentDoesNotExistException
+	 */
+	private void doCardinalityEstimations() throws ExtentDoesNotExistException {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER doCardinalityEstimations()");
+		for (String extentName : this.getExtentNames()) {
+			ExtentMetadata em = this.getExtentMetadata(extentName);
+			int cardinality = 0;
+			for (SourceMetadata sm : this.getSources()) {
+				if (sm.getSourceType()==SourceType.SENSOR_NETWORK) {
+					SensorNetworkSourceMetadata snsm = 
+						(SensorNetworkSourceMetadata)sm;
+					int[] sites = snsm.getSourceSites();
+					cardinality += sites.length;
+					em.setCardinality(cardinality);
+				} else {
+					//TODO: Cardinality estimates for non-sensor network sources
+					//should be reviewed, if they matter.
+					cardinality++;
+				}
+			}
+		//This causes test testPullStreamServiceSource to fail. ask alasdair about this.
+		//			em.setCardinality(cardinality);
+		}
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN doCardinalityEstimations()");
+	}
+	
 }

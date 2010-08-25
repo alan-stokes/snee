@@ -25,7 +25,8 @@ public class SensornetSelectOperator extends SensornetOperatorImpl {
 			logger.debug("Attribute List: " + op.getAttributes());
 			logger.debug("Expression List: " + op.getExpressions());
 		}
-		selOp = (SelectOperator) op;		
+		selOp = (SelectOperator) op;
+		this.setNesCTemplateName("select");
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetSelectOperator()");
 		}		

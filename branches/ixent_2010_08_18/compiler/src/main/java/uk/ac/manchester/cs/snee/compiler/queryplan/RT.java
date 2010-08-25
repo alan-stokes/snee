@@ -227,4 +227,8 @@ public class RT extends SNEEAlgebraicForm {
 			logger.debug("RETURN getSiteTree()");
 		return this.siteTree;
 	}
+
+	public Site getSite(int id) {
+		return (Site) this.getSiteTree().getNode(id);
+	}
 }

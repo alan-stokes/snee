@@ -39,14 +39,18 @@ public class DLAFUtils extends LAFUtils {
 	/**
 	 * Generate a DOT file representation of the DLAF for Graphviz.
 	 */
-	protected void exportAsDOTFile(String fname) 
+	protected void exportAsDOTFile(String fname,
+			String label,
+			TreeMap<String, StringBuffer> opLabelBuff,
+			TreeMap<String, StringBuffer> edgeLabelBuff,
+			StringBuffer fragmentsBuff) 
 	throws SchemaMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER exportAsDOTFile()");	
 		String source = this.dlaf.getSource().getSourceName();
 		String sourceType = this.dlaf.getSourceType().name().toLowerCase();
 		String str = "\\nSource = "+source+" ("+sourceType+")";
-		exportAsDOTFile(fname, str, new TreeMap<String, StringBuffer>(), 
+		super.exportAsDOTFile(fname, str, new TreeMap<String, StringBuffer>(), 
 				new TreeMap<String, StringBuffer>(), new StringBuffer());
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN exportAsDOTFile()");

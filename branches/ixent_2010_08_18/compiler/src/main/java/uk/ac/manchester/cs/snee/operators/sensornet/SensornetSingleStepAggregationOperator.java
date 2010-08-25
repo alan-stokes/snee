@@ -24,7 +24,8 @@ public class SensornetSingleStepAggregationOperator extends SensornetOperatorImp
 			logger.debug("Attribute List: " + op.getAttributes());
 			logger.debug("Expression List: " + op.getExpressions());
 		}
-		aggrOp = (AggregationOperator) op;		
+		aggrOp = (AggregationOperator) op;
+		this.setNesCTemplateName("aggregation");
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetSingleStepAggregationOperator()");
 		}		

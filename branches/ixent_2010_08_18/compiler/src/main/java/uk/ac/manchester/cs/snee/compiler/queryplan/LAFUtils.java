@@ -39,17 +39,17 @@ public class LAFUtils extends GraphUtils {
 	/**
 	 * Determines whether collection type (STREAM, WINDOW etc.) displayed.
 	 */
-	private boolean showOperatorCollectionType = false;
+	protected boolean showOperatorCollectionType = false;
 	
 	/**
 	 * Determines whether tuple type (a1:t1,...,an:tn) displayed.
 	 */
-	private boolean showTupleTypes = false;
+	protected boolean showTupleTypes = false;
 	
 	/**
 	 * Determines whether node id is displayed.
 	 */
-	private boolean showOperatorID = false;
+	protected boolean showOperatorID = false;
 
 	/**
 	 * Name of item to be displayed.

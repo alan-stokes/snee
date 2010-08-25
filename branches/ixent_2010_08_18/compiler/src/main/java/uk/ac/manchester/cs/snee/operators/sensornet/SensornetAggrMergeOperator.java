@@ -22,6 +22,7 @@ public class SensornetAggrMergeOperator extends SensornetIncrementalAggregationO
 			logger.debug("Attribute List: " + op.getAttributes());
 			logger.debug("Expression List: " + op.getExpressions());
 		}	
+		this.setNesCTemplateName("aggriter");
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetAggrMergeOperator()");
 		}		
