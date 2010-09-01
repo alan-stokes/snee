@@ -33,6 +33,11 @@ public class QueryParameters {
 		}
 	}
 	
-	
+	/**
+	 * @return the _qos
+	 */
+	public QoSExpectations getQoS() {
+		return _qos;
+	}	
 	
 }

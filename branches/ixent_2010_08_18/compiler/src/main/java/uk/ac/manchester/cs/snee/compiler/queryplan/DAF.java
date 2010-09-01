@@ -34,9 +34,14 @@ public class DAF extends SNEEAlgebraicForm {
 	
 	/**
 	 * The physical-algebraic form of the query plan operator tree from which
-	 * FAF is derived.
+	 * DAF is derived.
 	 */
 	private PAF paf;
+	
+	/**
+	 * The routing tree from which DAF is derived.
+	 */
+	private RT rt;
 	
     /**
      *  The root fragment in the query plan. 
@@ -70,12 +75,13 @@ public class DAF extends SNEEAlgebraicForm {
 	 * @param queryName The name of the query
 	 * @throws SNEEException 
 	 */
-	public DAF(final PAF paf, final String queryName) 
+	public DAF(final PAF paf, final RT rt, final String queryName) 
 	throws SNEEException, SchemaMetadataException {
 		super(queryName);
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER DAF()"); 
 		this.paf=paf;
+		this.rt=rt;
 		//XXX: No copying for now.
 		this.physicalOperatorTree = paf.getOperatorTree();
 		Fragment.resetFragmentCounter(); 
@@ -93,7 +99,7 @@ public class DAF extends SNEEAlgebraicForm {
     }
 
     /**
-     * Gets the PAF that this FAF is associated with.
+     * Gets the PAF that this DAF is associated with.
      * @return
      */
 	public PAF getPAF() {
@@ -103,6 +109,18 @@ public class DAF extends SNEEAlgebraicForm {
 			logger.debug("RETURN getPAF()"); 
 		return this.paf;
 	}
+	
+    /**
+     * Gets the RT that this DAF is associated with.
+     * @return
+     */
+	public RT getRT() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getRT()"); 
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getRT()"); 
+		return this.rt;
+	}	
 
 	 /** {@inheritDoc} */
 	protected String generateID(String queryName) {
@@ -421,6 +439,29 @@ public class DAF extends SNEEAlgebraicForm {
 		    }
 		}
     }
+    
+    /**
+     * Given a parent operator, the site of the parent operator, and an index 
+     * of an operator child, returns the sites which that child is placed. 
+     * @param op The parent operator. If op is an exchange it is assumed to be the producer.
+     * @param site The site of the parent operator. 
+     * 	Note for exchange operators this will be a consumer site
+     * @param index The index of the child 
+     * @return The sites on which the child of this operator is found.
+     */
+    public final Iterator<Site> getInputOperatorInstanceSites(
+	    final SensornetOperator op, final Site site, final int index) {
+
+		ArrayList<Site> results = new ArrayList<Site>();
+		final SensornetOperator childOp = (SensornetOperator) op.getInput(index);
+		if (childOp instanceof SensornetExchangeOperator) {
+		    results = ((SensornetExchangeOperator) childOp).getSourceSites(site);
+		} else {
+		    results.add(site);
+		}
+	
+		return results.iterator();
+    }    
 
 }
 

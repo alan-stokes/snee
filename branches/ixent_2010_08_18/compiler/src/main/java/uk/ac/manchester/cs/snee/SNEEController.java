@@ -49,6 +49,7 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
@@ -60,6 +61,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -78,9 +80,9 @@ public class SNEEController implements SNEE {
 		Logger.getLogger(SNEEController.class.getName());
 	
 	/**
-	 * Metadata stored about extents and data sources
+	 * Metadata stored about extents, data sources and cost parameters.
 	 */
-	private Metadata _schema;
+	private Metadata _metadata;
 	
 	/**
 	 * The compiler object for compiling queries
@@ -175,7 +177,7 @@ public class SNEEController implements SNEE {
 
 		try {			
 			/* Process metadata */
-			_schema = initialiseSchema();
+			_metadata = initialiseMetadata();
 			
 			/* Initialise compiler */
 			_compiler = initialiseQueryCompiler();
@@ -220,6 +222,10 @@ public class SNEEController implements SNEE {
 			String msg = "Problem creating link to external service ";
 			logger.fatal(msg, e);
 			throw new SNEEException(msg, e);			
+		} catch (CostParametersException e) {
+			String msg = "Problem reading cost parameters file";
+			logger.fatal(msg, e);
+			throw new SNEEException(msg, e);
 		}
 		
 		logger.info("SNEE configured");
@@ -227,12 +233,12 @@ public class SNEEController implements SNEE {
 			logger.debug("RETURN initialise()");
 	}
 
-	protected Metadata initialiseSchema() 
+	protected Metadata initialiseMetadata() 
 	throws MetadataException, SchemaMetadataException, 
 	TypeMappingException, UnsupportedAttributeTypeException, 
 	SourceMetadataException, SNEEConfigurationException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException 
+	SNEEDataSourceException, CostParametersException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseSchema()");
@@ -242,11 +248,11 @@ public class SNEEController implements SNEE {
 
 	protected QueryCompiler initialiseQueryCompiler() 
 	throws TypeMappingException {
-		return new QueryCompiler(_schema);
+		return new QueryCompiler(_metadata);
 	}
 
 	protected Dispatcher initialiseDispatcher() {
-		return new Dispatcher(_schema);
+		return new Dispatcher(_metadata);
 	}
 	
 	/* (non-Javadoc)
@@ -255,7 +261,7 @@ public class SNEEController implements SNEE {
 	public Collection<String> getExtents() {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getExtents()");
-		Collection<String> extentNames = _schema.getExtentNames();
+		Collection<String> extentNames = _metadata.getExtentNames();
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getExtents() #extents=" + 
 					extentNames.size());
@@ -269,7 +275,7 @@ public class SNEEController implements SNEE {
 	throws ExtentDoesNotExistException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getExtentDetails() with " + extentName);
-		ExtentMetadata extent = _schema.getExtentMetadata(extentName);
+		ExtentMetadata extent = _metadata.getExtentMetadata(extentName);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getExtentDetails()");
 		return extent;
@@ -380,8 +386,12 @@ public class SNEEController implements SNEE {
 					queryID + "\n\tquery: " + query);
 		}
 			try {
+				QoSExpectations qos = null;
+				if (queryParams!=null) {
+					qos = queryParams.getQoS();
+				}
 				QueryExecutionPlan queryPlan = 
-					_compiler.compileQuery(queryID, query);
+					_compiler.compileQuery(queryID, query, qos);
 				_queryPlans.put(queryID, queryPlan);
 			} catch (Exception e) {
 				String msg = "Problem compiling query: "+
@@ -444,7 +454,7 @@ public class SNEEController implements SNEE {
 			logger.debug("ENTER addServiceSource() with name=" +
 					name + " type=" + interfaceType + " url="+ url);
 		try {
-			_schema.addServiceSource(name, url, 
+			_metadata.addServiceSource(name, url, 
 					SourceType.PULL_STREAM_SERVICE);
 		} catch (SchemaMetadataException e) {
 			logger.warn("Throwing a MetadataException. Cause " + e);

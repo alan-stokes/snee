@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
@@ -53,11 +54,12 @@ public class WhereScheduler {
 	 * @throws SNEEException 
 	 * @throws OptimizationException 
 	 */
-	public DAF doWhereScheduling(PAF paf, RT rt, String queryName) 
+	public DAF doWhereScheduling(PAF paf, RT rt, CostParameters costParams,
+	String queryName) 
 	throws SNEEException, SchemaMetadataException, OptimizationException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER doWhereScheduling() with " + paf.getID());
-		DAF faf = partitionPAF(paf, queryName);
+		DAF faf = partitionPAF(paf, rt, costParams, queryName);
 		placeFragments(queryName, faf, rt);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN doWhereScheduling()");
@@ -65,9 +67,10 @@ public class WhereScheduler {
 	}
 	
 	
-	private DAF partitionPAF(final PAF paf, final String queryName) 
+	private DAF partitionPAF(final PAF paf, final RT rt, CostParameters costParams, 
+	final String queryName) 
 	throws SNEEException, SchemaMetadataException {
-		DAF faf = new DAF(paf, queryName);
+		DAF faf = new DAF(paf, rt, queryName);
 		final Iterator<SensornetOperator> opIter = faf
 			.operatorIterator(TraversalOrder.POST_ORDER);
 		
@@ -93,7 +96,7 @@ public class WhereScheduler {
 					    || (op instanceof SensornetDeliverOperator)
 					    || (c instanceof SensornetAggrEvalOperator)) {
 					final SensornetExchangeOperator exchOp = 
-						new SensornetExchangeOperator();
+						new SensornetExchangeOperator(costParams);
 					faf.insertOperator(c, op, exchOp);
 				    }
 				}

@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
@@ -28,7 +29,8 @@ public class AlgorithmSelector {
 	private Logger logger = 
 		Logger.getLogger(AlgorithmSelector.class.getName());
 	
-	public PAF doPhysicalOptimizaton(DLAF dlaf, String queryName) 
+	public PAF doPhysicalOptimizaton(DLAF dlaf, CostParameters costParams, 
+	String queryName) 
 	throws SNEEException, SchemaMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER getInstance() with " + dlaf.getID());
@@ -37,15 +39,15 @@ public class AlgorithmSelector {
 		SensornetOperator deliverPhyOp = null;
 		/* Query plans must have a deliver operator at their root */
 		if (rootOp instanceof DeliverOperator) {
-			deliverPhyOp = new SensornetDeliverOperator(rootOp);
+			deliverPhyOp = new SensornetDeliverOperator(rootOp, costParams);
 		} else {
 			String msg = "Unsupported operator " + rootOp.getOperatorName() +
 				". Query plans should have a DeliverOperator as their root.";
 			logger.warn(msg);
 			throw new SNEEException(msg);
 		}
-		PAF paf = new PAF(deliverPhyOp, dlaf, queryName);
-		splitAggregationOperators(paf);
+		PAF paf = new PAF(deliverPhyOp, dlaf, costParams, queryName);
+		splitAggregationOperators(paf, costParams);
 		return paf;
 	}
 	
@@ -56,7 +58,7 @@ public class AlgorithmSelector {
      * @throws SchemaMetadataException 
      * @throws SNEEException 
      */
-    private void splitAggregationOperators(final PAF paf) 
+    private void splitAggregationOperators(final PAF paf, CostParameters costParams) 
     throws SNEEException, SchemaMetadataException {
 
 		final Iterator<SensornetOperator> opIter = paf
@@ -75,11 +77,11 @@ public class AlgorithmSelector {
 		    	AggregationOperator logAggr = 
 		    		(AggregationOperator) agg.getLogicalOperator();
 				SensornetAggrInitOperator aggrInit = 
-					new SensornetAggrInitOperator(logAggr);
+					new SensornetAggrInitOperator(logAggr, costParams);
 				SensornetAggrMergeOperator aggrMerge = 
-					new SensornetAggrMergeOperator(logAggr);
+					new SensornetAggrMergeOperator(logAggr, costParams);
 				SensornetAggrEvalOperator aggrEval = 
-					new SensornetAggrEvalOperator(logAggr);
+					new SensornetAggrEvalOperator(logAggr, costParams);
 				paf.replacePath(op, new SensornetOperator[] { aggrEval, aggrInit });
 				paf.insertOperator(aggrInit, aggrEval, aggrMerge);
 		    }

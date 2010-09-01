@@ -169,26 +169,26 @@ public class Utils {
 //		return dividend / divisor + 1;
 //	}
 //
-//	public int divideAndRoundUp(long dividend, int divisor) {
-//		if ((dividend % (long) divisor) == 0)
-//			return (int) (dividend / (long) divisor);
-//		return (int) (dividend / (long) divisor + 1);
-//	}
-//
-//	/**
-//	 * Pad a string to a specified length
-//	 * @param s
-//	 * @param n
-//	 * @return
-//	 */
-//	public String pad(String s, int n) {
-//		StringBuffer result = new StringBuffer();
-//		for (int i = 0; i < n; i++) {
-//			result.append(s);
-//		}
-//		return result.toString();
-//	}
-//
+	public static int divideAndRoundUp(long dividend, int divisor) {
+		if ((dividend % (long) divisor) == 0)
+			return (int) (dividend / (long) divisor);
+		return (int) (dividend / (long) divisor + 1);
+	}
+
+	/**
+	 * Pad a string to a specified length
+	 * @param s
+	 * @param n
+	 * @return
+	 */
+	public static String pad(String s, int n) {
+		StringBuffer result = new StringBuffer();
+		for (int i = 0; i < n; i++) {
+			result.append(s);
+		}
+		return result.toString();
+	}
+
 //	public String indent(int i) {
 //		return pad("\t", i);
 //	}

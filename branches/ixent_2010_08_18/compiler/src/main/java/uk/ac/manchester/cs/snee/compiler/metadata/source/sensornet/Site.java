@@ -55,7 +55,7 @@ public class Site extends NodeImplementation {
     long ram;
 
     /**
-     * The energy stock avaible for the site, in milliJoules 
+     * The energy stock available for the site, in milliJoules 
      */
     long energyStock;
 
@@ -120,31 +120,30 @@ public class Site extends NodeImplementation {
 	return this.ram;
     }
 
-//    /**
-//     * Checks if a fragment has been allocated on a particular node
-//     * @param frag
-//     * @return
-//     */
-//    public boolean hasFragmentAllocated(final Fragment frag) {
-//	return this.getFragments().contains(frag);
-//	
-//    }
-//
-//    /**
-//     * @return	the fragments which have been placed on the node
-//     */
-//    public HashSet<Fragment> getFragments() {
-//    	return this.fragments;
-//
-//    }
-//
-//    /**
-//     * @return	the exchange components which have been plaecd on a node
-//     */
-//    public HashSet<ExchangePart> getExchangeComponents() {
-//	return this.exchangeComponents;
-//    }
-//
+    /**
+     * Checks if a fragment has been allocated on a particular node
+     * @param frag
+     * @return
+     */
+    public boolean hasFragmentAllocated(final Fragment frag) {
+	return this.getFragments().contains(frag);
+	
+    }
+
+    /**
+     * @return	the fragments which have been placed on the node
+     */
+    public HashSet<Fragment> getFragments() {
+    	return this.fragments;
+    }
+
+    /**
+     * @return	the exchange components which have been plaecd on a node
+     */
+    public HashSet<ExchangePart> getExchangeComponents() {
+	return this.exchangeComponents;
+    }
+
     
     public void addFragment(final Fragment frag) {
 	//TODO: here we should check resource availability, 

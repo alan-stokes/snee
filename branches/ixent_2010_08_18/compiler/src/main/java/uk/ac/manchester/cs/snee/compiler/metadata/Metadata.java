@@ -96,6 +96,11 @@ public class Metadata {
 	private List<SourceMetadata> _sources = 
 		new ArrayList<SourceMetadata>();
 
+	/**
+	 * Cost Parameters
+	 */
+	private CostParameters costParams;
+	
 	private Types _types;
 
 	private AttributeType timeType;
@@ -113,30 +118,41 @@ public class Metadata {
 	 * @throws TopologyReaderException 
 	 * @throws MalformedURLException 
 	 * @throws SNEEDataSourceException 
+	 * @throws CostParametersException 
 	 */
 	public Metadata() 
 	throws TypeMappingException, SchemaMetadataException, 
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException {
+	SNEEDataSourceException, CostParametersException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER Metadata()");
+		logger.trace("Processing types.");
 		String typesFile = SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_TYPES_FILE);
 		_types = new Types(typesFile);
 		timeType = _types.getType(Constants.TIME_TYPE);
 		timeType.setSorted(true);
 		idType = _types.getType(Constants.ID_TYPE);
+		logger.trace("Processing logical schema.");
 		if (SNEEProperties.isSet(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE)) {
 			processLogicalSchema(
 					SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE));
 		}
+		logger.trace("Processing physical schema.");
 		if (SNEEProperties.isSet(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE)) {
 			processPhysicalSchema(
 					SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE));
 		}
-		//TODO: Estimate cardinalities for each extent here!!
+		//cardinalities for SN sources can only be estimated after physical schema
+		//known, as they depend on the number of source sites.
+		logger.trace("Estimating extent cardinalities.");
 		doCardinalityEstimations();
+		logger.trace("Getting cost estimation model parameters.");
+		if (SNEEProperties.isSet(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE)) {
+			this.costParams = new CostParameters(SNEEProperties.getFilename(
+					SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE));
+		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN Metadata()");
 	}
@@ -785,6 +801,10 @@ public class Metadata {
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doCardinalityEstimations()");
+	}
+	
+	public CostParameters getCostParameters() {
+		return this.costParams;
 	}
 	
 }

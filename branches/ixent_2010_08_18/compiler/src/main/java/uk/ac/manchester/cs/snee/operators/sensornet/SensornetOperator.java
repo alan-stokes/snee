@@ -37,15 +37,16 @@ import java.util.Iterator;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public interface SensornetOperator extends Node {
-
-	SensornetOperator getSensornetOperator(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException;
 	
      /** @return the fragment to which this operator belongs. */
 	Fragment getContainingFragment();
@@ -81,8 +82,10 @@ public interface SensornetOperator extends Node {
      * @param daf Distributed query plan this operator is part of.
      * @return Sum of the cardinality of the iall nputs 
      * for this operator on this node.
+     * @throws OptimizationException 
      */
-//   int getCardinality(CardinalityType card, Site node, DAF daf);
+    int getCardinality(CardinalityType card, Site node, DAF daf) 
+    throws OptimizationException;
 
 //	/**
 //     * The size of the output.
@@ -153,35 +156,38 @@ public interface SensornetOperator extends Node {
 //	 */
 //	int getOutputQueueCardinality(int numberOfInstances);	
 
-//	/** 
-//	 * The size of the whole queue that must be used for the output.
-//	 * This may be larger than the maximum number of tuples 
-//	 * that the next operator will have to consider.
-//	 * <p>
-//	 * In most operators this will be the PhysicalMaxCardinality.
-//	 * <p> 
-//	 * An example of an operator where the queue size may be larger 
-//	 * than the maximum numeber of tuple are the window operators.
-//	 * The data structure used to hold the tuples will have extra space
-//	 * for tuples waiting to enter ther window 
-//	 * due to the until or slide factors.
-//	 * <p>
-//	 * Head and tail will be used to point the next operator 
-//	 * to the part of the queue
-//	 * relative to this particular window.
-//	 * @param node Site for which the data is required.
-//	 * @param daf Required to access which sites are children to this site. 
-//	 * 
-//	 * @return Usually PhysicalMaxCardinality
-//	 */
-//	int getOutputQueueCardinality(Site node, DAF daf);
+	/** 
+	 * The size of the whole queue that must be used for the output.
+	 * This may be larger than the maximum number of tuples 
+	 * that the next operator will have to consider.
+	 * <p>
+	 * In most operators this will be the PhysicalMaxCardinality.
+	 * <p> 
+	 * An example of an operator where the queue size may be larger 
+	 * than the maximum numeber of tuple are the window operators.
+	 * The data structure used to hold the tuples will have extra space
+	 * for tuples waiting to enter ther window 
+	 * due to the until or slide factors.
+	 * <p>
+	 * Head and tail will be used to point the next operator 
+	 * to the part of the queue
+	 * relative to this particular window.
+	 * @param node Site for which the data is required.
+	 * @param daf Required to access which sites are children to this site. 
+	 * 
+	 * @return Usually PhysicalMaxCardinality
+	 * @throws OptimizationException 
+	 */
+	int getOutputQueueCardinality(Site node, DAF daf) throws OptimizationException;
 
-//	/**
-//	 * The physical size of the tuple including any control information.
-//	 * 
-//	 * @return the logical tuple size unless control information is added.
-//	 */
-//	int getPhysicalTupleSize();
+	/**
+	 * The physical size of the tuple including any control information.
+	 * 
+	 * @return the logical tuple size unless control information is added.
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 */
+	int getPhysicalTupleSize() throws SchemaMetadataException, TypeMappingException;
 
 //	/** 
 //	 * Calculates the physical size of the state of this operator.
@@ -200,19 +206,23 @@ public interface SensornetOperator extends Node {
 //	 */
 //	int getDataMemoryCost(int numberOfInstances);
 
-//	/** 
-//	 * Calculates the physical size of the state of this operator.
-//	 * 
-//	 * Does not included the size of the input 
-//	 * as these are assumed passed by reference.
-//	 *
-//	 * Does not include the size of the code itself.
-//	 * 
-//	 * @param node Physical mote on which this operator has been placed.
-//	 * @param daf Distributed query plan this operator is part of.
-//	 * @return OutputQueueCardinality * PhytsicalTuplesSize
-//	 */
-//	int getDataMemoryCost(Site node, DAF daf);
+	/** 
+	 * Calculates the physical size of the state of this operator.
+	 * 
+	 * Does not included the size of the input 
+	 * as these are assumed passed by reference.
+	 *
+	 * Does not include the size of the code itself.
+	 * 
+	 * @param node Physical mote on which this operator has been placed.
+	 * @param daf Distributed query plan this operator is part of.
+	 * @return OutputQueueCardinality * PhytsicalTuplesSize
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 * @throws OptimizationException 
+	 */
+	int getDataMemoryCost(Site node, DAF daf) throws SchemaMetadataException,
+	TypeMappingException, OptimizationException;
 
 //	/**
 //	 * Displays the results of the cost functions.
@@ -223,20 +233,22 @@ public interface SensornetOperator extends Node {
 //	 */
 //	public int getDataMemoryCost2(Site node, DAF daf);
 
-//	/**
-//	 * Calculates the time cost for a single evaluation of this operator.
-//	 * 
-//	 * Includes the time to call the child and to create the event reply.
-//	 * Does not include the cost of any child operators.
-//	 * 	  
-//	 * Based on the time estimates provided in the OperatorsMetaData file.
-//	 * 
-//	 * @param card Type of Cardinality to be used to calculate cost.
-//	 * @param node Physical mote on which this operator has been placed.
-//	 * @param daf Distributed query plan this operator is part of.
-//	 * @return the calculated time
-//	 */
-//	double getTimeCost(CardinalityType card, Site node, DAF daf);
+	/**
+	 * Calculates the time cost for a single evaluation of this operator.
+	 * 
+	 * Includes the time to call the child and to create the event reply.
+	 * Does not include the cost of any child operators.
+	 * 	  
+	 * Based on the time estimates provided in the OperatorsMetaData file.
+	 * 
+	 * @param card Type of Cardinality to be used to calculate cost.
+	 * @param node Physical mote on which this operator has been placed.
+	 * @param daf Distributed query plan this operator is part of.
+	 * @return the calculated time
+	 * @throws OptimizationException 
+	 */
+	double getTimeCost(CardinalityType card, Site node, DAF daf) 
+	throws OptimizationException;
 
 //	/**
 //	 * Calculates the time cost for a single evaluation of this operator.

@@ -33,10 +33,13 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
@@ -142,20 +145,27 @@ public class ExchangePart {
 	currentSite.addExchangeComponent(this);
     }
 
-//    public static int computeTuplesPerMessage(final int tupleSize) {
-//
-//		final int tuples = (int) Math
-//			.floor(Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE - Settings.NESC_PAYLOAD_OVERHEAD)
-//			/ (tupleSize);
-//		
-//		//logger.finest("size = "+tupleSize+" tuples = "+tuples);
-//		if (tuples <= 0) {
-//		    final OptimizationException e = new OptimizationException(
-//			    "Unable to fit whole tuple in packet.");
-//		    Utils.handleCriticalException(e);
-//		}
-//		return tuples;
-//    }
+    public static int computeTuplesPerMessage(final int tupleSize, 
+    CostParameters costParams) throws OptimizationException {
+    	Logger logger = Logger.getLogger(ExchangePart.class.getName());
+    	
+    	int maxMessagePayloadSize = costParams.getMaxMessagePayloadSize();
+    	int payloadOverhead = costParams.getPayloadOverhead();
+    	logger.trace("maxMessagePayloadSize="+maxMessagePayloadSize);
+    	logger.trace("payloadOverhead="+payloadOverhead);
+    	logger.trace("tupleSize="+tupleSize);
+    	
+		final int numTuplesPerMessage = (int) Math.floor(maxMessagePayloadSize - payloadOverhead)
+			/ (tupleSize);
+		
+		logger.trace("numTuplesPerMessage="+numTuplesPerMessage);
+		if (numTuplesPerMessage <= 0) {
+			String msg = "Unable to fit whole tuple in packet.";
+			logger.warn(msg);
+			throw new OptimizationException(msg);
+		}
+		return numTuplesPerMessage;
+    }
 
     @Override
 	public final String toString() {
@@ -300,21 +310,24 @@ public class ExchangePart {
     	return this.next;
     }
 
-//    /**
-//     * Calculates the physical size of the state of this exchange 
-//     * for a single evaluation.
-//     * Includes the size of the tray.
-//     * 
-//     * Does not include the size of the code itself.
-//     * @param site Physical mote on which this operator has been placed.
-//     * @param daf Distributed query plan this operator is part of.
-//     * @return Memory cost of this exchange.
-//     */
-//    public final long getDataMemoryCost(final Site site, final DAF daf) {
-//    	Operator root = this.sourceFrag.getRootOperator();
-// 		return root.getCardinality(CardinalityType.MAX, this.sourceSite, daf)
-//			* root.getPhysicalTupleSize();
-//    }
+    /**
+     * Calculates the physical size of the state of this exchange 
+     * for a single evaluation.
+     * Includes the size of the tray.
+     * 
+     * Does not include the size of the code itself.
+     * @param site Physical mote on which this operator has been placed.
+     * @param daf Distributed query plan this operator is part of.
+     * @return Memory cost of this exchange.
+     * @throws TypeMappingException 
+     * @throws SchemaMetadataException 
+     * @throws OptimizationException 
+     */
+    public final long getDataMemoryCost(final Site site, final DAF daf) throws OptimizationException, SchemaMetadataException, TypeMappingException {
+    	SensornetOperator root = this.sourceFrag.getRootOperator();
+ 		return root.getCardinality(CardinalityType.MAX, this.sourceSite, daf)
+			* root.getPhysicalTupleSize();
+    }
 
 //    /**
 //     * Calculates the physical size of the state of this exchange 
@@ -338,23 +351,27 @@ public class ExchangePart {
 //    	return new AlphaBetaExpression(this.getDataMemoryCost(site, daf), 0);
 //    }
 
-//    /**
-//     * Calculates the number of packets sent in one one evaluation.
-//     * 
-//     * @param daf Distributed query plan this operator is part of.
-//     * @param bufferingFactor BufferingFactor.
-//     * @return Number of packets sent. 
-//     */
-//    public final int packetsPerTask(final DAF daf, 
-//    		final long bufferingFactor) {
-//    	SensornetOperator root = sourceFrag.getRootOperator();
-//    	final long tuples
-//    		= root.getCardinality(CardinalityType.MAX, sourceSite, daf) 
-//    		* bufferingFactor;
-//		final int tupleSize = root.getPhysicalTupleSize();
-//		final int tuplesPerPacket = computeTuplesPerMessage(tupleSize);
-//		return (int) Math.ceil(tuples / ((float) tuplesPerPacket));
-//    }
+    /**
+     * Calculates the number of packets sent in one one evaluation.
+     * 
+     * @param daf Distributed query plan this operator is part of.
+     * @param bufferingFactor BufferingFactor.
+     * @return Number of packets sent. 
+     * @throws OptimizationException 
+     * @throws TypeMappingException 
+     * @throws SchemaMetadataException 
+     */
+    public final int packetsPerTask(final DAF daf, 
+    final long bufferingFactor, CostParameters costParams) 
+    throws OptimizationException, SchemaMetadataException, TypeMappingException {
+    	SensornetOperator root = sourceFrag.getRootOperator();
+    	final long tuples
+    		= root.getCardinality(CardinalityType.MAX, sourceSite, daf) 
+    		* bufferingFactor;
+		final int tupleSize = root.getPhysicalTupleSize();
+		final int tuplesPerPacket = computeTuplesPerMessage(tupleSize, costParams);
+		return (int) Math.ceil(tuples / ((float) tuplesPerPacket));
+    }
 
 //    /**
 //     * Calculates the number of packets sent in one evaluation.
@@ -395,20 +412,24 @@ public class ExchangePart {
      * Based on the time estimates provided in the OperatorsMetaData file.
      * 
      * @return Time used by one evaluation.
+ * @throws TypeMappingException 
+ * @throws SchemaMetadataException 
+ * @throws OptimizationException 
      */
-//    public final long getTimeCost(final DAF daf, final long bufferingFactor) {
-// 		final int packets = packetsPerTask (daf, bufferingFactor);
-//		//CB: Copy time for producer moved to fragment.
-//		//CB: For relay and consumer I am assuming copy is done between receiving packets 
-//		//copyTime = tuples * OperatorMetaData.getCopyTuple();
-//		if (this.sourceSite.getID().equalsIgnoreCase(this.destSite.getID())) {
-//		    //CB:The work is done by the fragment Task
-//		    return 0;
-//		}
-//		//CB the TX and RX of a relay are plan seperately.
-//		return (long) Math.ceil(CostParameters.getSendPacket() * packets);
-//    }
-//
+    public final long getTimeCost(final DAF daf, final long bufferingFactor, 
+    		CostParameters costParams) throws OptimizationException, SchemaMetadataException, TypeMappingException {
+ 		final int packets = packetsPerTask (daf, bufferingFactor, costParams);
+		//CB: Copy time for producer moved to fragment.
+		//CB: For relay and consumer I am assuming copy is done between receiving packets 
+		//copyTime = tuples * OperatorMetaData.getCopyTuple();
+		if (this.sourceSite.getID().equalsIgnoreCase(this.destSite.getID())) {
+		    //CB:The work is done by the fragment Task
+		    return 0;
+		}
+		//CB the TX and RX of a relay are plan seperately.
+		return (long) Math.ceil(costParams.getSendPacket() * packets);
+    }
+
 //    /**
 //     * Calculate the time to do thus Exchange.
 //     * Ignores overhead such as turning radio on and off. 

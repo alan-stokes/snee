@@ -9,6 +9,7 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Graph;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
@@ -54,7 +55,7 @@ public class PAF extends SNEEAlgebraicForm {
 	 * @throws SNEEException 
 	 */
 	public PAF(SensornetOperator deliverPhyOp, final DLAF dlaf, 
-	final String queryName) throws SNEEException, SchemaMetadataException {
+	CostParameters costParams, final String queryName) throws SNEEException, SchemaMetadataException {
 		super(queryName);
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER PAF()"); 
@@ -62,7 +63,7 @@ public class PAF extends SNEEAlgebraicForm {
 		DeliverOperator logDelOp = 
 			(DeliverOperator) dlaf.getRootOperator();
 		SensornetDeliverOperator phyDelOp =
-			new SensornetDeliverOperator(logDelOp);
+			new SensornetDeliverOperator(logDelOp, costParams);
 		this.physicalOperatorTree = new Tree(phyDelOp);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN PAF()"); 	

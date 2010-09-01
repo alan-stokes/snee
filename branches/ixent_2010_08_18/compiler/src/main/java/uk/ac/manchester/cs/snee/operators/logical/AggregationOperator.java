@@ -79,15 +79,6 @@ public class AggregationOperator extends PredicateOperator {
 		} 
     }
     
-//    /**
-//     * Constuctor based on another operator.
-//     * @param model Operator to copy values from.
-//     */
-//    public AggregationOperator(AggregationOperator model) {
-//    	super(model);
-//    	this.aggregates = model.aggregates;
-//    }
-// 
     /**
      * Extracts and saves the actual aggregates from within the expressions.
      * 
@@ -169,19 +160,6 @@ public class AggregationOperator extends PredicateOperator {
 		return 1;
 	}
 
-//	/** {@inheritDoc} */
-//	public int getCardinality(CardinalityType card, 
-//			Site node, DAF daf) {
-//		return 1;
-//	}
-
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getCardinality(CardinalityType card, 
-//			Site node, DAF daf, boolean round) {
-//		AlphaBetaExpression result = new AlphaBetaExpression();
-//		result.addBetaTerm(1);
-//    	return result;
-//    }
 
 //	/**
 //	 * Converts an Expression to an output Attribute.
@@ -194,12 +172,6 @@ public class AggregationOperator extends PredicateOperator {
 //    	AggregationExpression agg = (AggregationExpression) e; 
 //        return new DataAttribute(agg.getShortName(), e.getType());
 //    }
- 
-//    /** {@inheritDoc} */
-//     public AggregationOperator shallowClone() {
-//    	AggregationOperator clonedOp = new AggregationOperator(this);
-//    	return clonedOp;
-//    }
 
     /**
      * Used to determine if the operator is Attribute sensitive.
@@ -210,38 +182,6 @@ public class AggregationOperator extends PredicateOperator {
         return true;
     }
 
-//	private double getTimeCost(int tuples) {
-//		return getOverheadTimeCost()
-//				+ CostParameters.getCopyTuple() 
-//				+ CostParameters.getDoCalculation() * tuples;
-//	}
-
-//    /** {@inheritDoc} */
-//	public double getTimeCost(CardinalityType card,
-//			Site node, DAF daf) {
-//		int tuples = this.getInputCardinality(card, node, daf, 0);
-//		return getTimeCost(tuples);
-//	}
-	
-//    /** {@inheritDoc} */
-//	public double getTimeCost(CardinalityType card, int numberOfInstances) {
-//		int tuples = this.getInputCardinality(card, 0, numberOfInstances);
-//		return getTimeCost(tuples);
-//	}
-	
-//    /** {@inheritDoc} */
-//	public AlphaBetaExpression getTimeExpression(
-//			CardinalityType card, Site node, 
-//			DAF daf, boolean round) {
-//		AlphaBetaExpression result = new AlphaBetaExpression();
-//		result.addBetaTerm(getOverheadTimeCost() + CostParameters.getCopyTuple());
-//		AlphaBetaExpression tuples 
-//			= this.getInputCardinality(card, node, daf, round, 0);
-//		tuples.multiplyBy(CostParameters.getDoCalculation());
-//		result.add(tuples);
-//		return result;
-//	}
-	
 	/** {@inheritDoc} */
 	public boolean isRemoveable() {
 		return false;

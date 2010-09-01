@@ -38,6 +38,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
@@ -324,65 +328,71 @@ public class Fragment {
 		return opList.iterator();
     }
 
-//    /** 
-//     * Calculates the physical size of the state of the operators in this 
-//     * fragment.  Does not include the size of the exchange components 
-//     * including the consumers and producers.  Does not include the size 
-//     * of the code itself.
-//     * 
-//     * @return Sum of the cost of each of the operators
-//     */
-//    public final long getDataMemoryCost(final Site node, final DAF daf) {
-//	long total = 0;
-//	final Iterator<SensornetOperator> ops = this
-//		.operatorIterator(TraversalOrder.PRE_ORDER);
-//	while (ops.hasNext()) {
-//	    final SensornetOperator op = ops.next();
-//	    logger.finest("op=" + op);
-//	    total += op.getDataMemoryCost(node, daf);
-//	}
-//	logger.finest("done");
-//	return total;
-//    }
+    /** 
+     * Calculates the physical size of the state of the operators in this 
+     * fragment.  Does not include the size of the exchange components 
+     * including the consumers and producers.  Does not include the size 
+     * of the code itself.
+     * 
+     * @return Sum of the cost of each of the operators
+     * @throws OptimizationException 
+     * @throws TypeMappingException 
+     * @throws SchemaMetadataException 
+     */
+    public final long getDataMemoryCost(final Site node, final DAF daf)
+    throws SchemaMetadataException, TypeMappingException, OptimizationException {
+	long total = 0;
+	final Iterator<SensornetOperator> ops = this
+		.operatorIterator(TraversalOrder.PRE_ORDER);
+	while (ops.hasNext()) {
+	    final SensornetOperator op = ops.next();
+	    logger.finest("op=" + op);
+	    total += op.getDataMemoryCost(node, daf);
+	}
+	logger.finest("done");
+	return total;
+    }
 
 //    public final AlphaBetaExpression getMemoryExpression(final Site node,
 //	    final DAF daf) {
 //    	return new AlphaBetaExpression(this.getDataMemoryCost(node, daf), 0);
 //    }
 
-//    /**
-//     * Calculates the time cost for a single evaluation of all the operators 
-//     * in this fragment.  The time cost is based on the maximum cardinality 
-//     * not the average cardinality.  Does not include the time of the exchange 
-//     * components including the consumers and producers
-//     * 
-//     * Based on the time estimates provided in the OperatorsMetaData file.
-//     * Includes the cost of copying the tuples to the tray.
-//     * 
-//     * @param node The site the operator has been placed on
-//     * @param daf The distributed-algebraic form of the corresponding 
-//     * operator tree.
-//     * @return Sum of the cost of each of the operators
-//     */
-//    public final double getTimeCost(final Site node, final DAF daf) {
-//		long total = 0;
-//		final Iterator<SensornetOperator> ops = this
-//			.operatorIterator(TraversalOrder.PRE_ORDER);
-//		while (ops.hasNext()) {
-//		    final SensornetOperator op = ops.next();
-//		    logger.finest("op: " + op.getText());
-//		    final double temp = op.getTimeCost(
-//		    		CardinalityType.PHYSICAL_MAX, node, daf);
-//		    logger.finest("ops TimeCost =" + temp);
-//		    total += temp;
-//		}
-//		if (!this.isDeliverFragment()) {
-//		    final int cardinality = this.getRootOperator()
-//			    .getCardinality(CardinalityType.PHYSICAL_MAX, node, daf);
-//		    total += cardinality * CostParameters.getCopyTuple();
-//		}
-//		return total;
-//    }
+    /**
+     * Calculates the time cost for a single evaluation of all the operators 
+     * in this fragment.  The time cost is based on the maximum cardinality 
+     * not the average cardinality.  Does not include the time of the exchange 
+     * components including the consumers and producers
+     * 
+     * Based on the time estimates provided in the OperatorsMetaData file.
+     * Includes the cost of copying the tuples to the tray.
+     * 
+     * @param node The site the operator has been placed on
+     * @param daf The distributed-algebraic form of the corresponding 
+     * operator tree.
+     * @return Sum of the cost of each of the operators
+     * @throws OptimizationException 
+     */
+    public final double getTimeCost(final Site node, final DAF daf, 
+    CostParameters costParams) throws OptimizationException {
+		long total = 0;
+		final Iterator<SensornetOperator> ops = this
+			.operatorIterator(TraversalOrder.PRE_ORDER);
+		while (ops.hasNext()) {
+		    final SensornetOperator op = ops.next();
+		    logger.finest("op: " + op.toString());
+		    final double temp = op.getTimeCost(
+		    		CardinalityType.PHYSICAL_MAX, node, daf);
+		    logger.finest("ops TimeCost =" + temp);
+		    total += temp;
+		}
+		if (!this.isDeliverFragment()) {
+		    final int cardinality = this.getRootOperator()
+			    .getCardinality(CardinalityType.PHYSICAL_MAX, node, daf);
+		    total += cardinality * costParams.getCopyTuple();
+		}
+		return total;
+    }
 
 //    /**
 //     * Calculates the time cost for a single evaluation of all the operators 

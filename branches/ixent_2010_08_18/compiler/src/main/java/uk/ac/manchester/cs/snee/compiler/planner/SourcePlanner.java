@@ -7,12 +7,16 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
-import uk.ac.manchester.cs.snee.compiler.queryplan.DLAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAFUtils;
@@ -22,6 +26,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.sn.physical.AlgorithmSelector;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
+import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
+import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.sn.where.WhereScheduler;
 
 /**
@@ -36,12 +42,15 @@ public class SourcePlanner {
 	 */
 	Logger logger = Logger.getLogger(this.getClass().getName());
 	
+	Metadata metadata;
+	
 	/**
 	 * SourcePlanner constructor.
 	 */
-	public SourcePlanner () {
+	public SourcePlanner (Metadata metadata) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER SourcePlanner()");
+		this.metadata=metadata;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SourcePlanner()");
 	}
@@ -55,10 +64,12 @@ public class SourcePlanner {
 	 * @throws SchemaMetadataException
 	 * @throws SNEEConfigurationException
 	 * @throws OptimizationException 
+	 * @throws WhenSchedulerException 
 	 */
-	public QueryExecutionPlan doSourcePlanning(int queryID, DLAF dlaf) 
+	public QueryExecutionPlan doSourcePlanning(DLAF dlaf, QoSExpectations qos, 
+	CostParameters costParams, int queryID) 
 	throws SNEEException, SchemaMetadataException, SNEEConfigurationException, 
-	OptimizationException {
+	OptimizationException, WhenSchedulerException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER doSourcePlanning()");
 		//TODO: In the future, this will involve iterating over fragment 
@@ -66,7 +77,7 @@ public class SourcePlanner {
 		logger.info("Only source="+dlaf.getSource().getSourceName());
 		if (dlaf.getSourceType()==SourceType.SENSOR_NETWORK) {
 			SensorNetworkQueryPlan qep = doSensorNetworkSourcePlanning(dlaf,
-					"query"+queryID);
+					qos, costParams, "query"+queryID);
 			if (logger.isDebugEnabled())
 				logger.debug("RETURN doSourcePlanning()");
 			return qep;
@@ -87,21 +98,23 @@ public class SourcePlanner {
 	 * @throws SchemaMetadataException
 	 * @throws SNEEConfigurationException
 	 * @throws OptimizationException 
+	 * @throws WhenSchedulerException 
 	 */
 	private SensorNetworkQueryPlan doSensorNetworkSourcePlanning(DLAF dlaf,
-	String queryName) throws SNEEException, SchemaMetadataException, SNEEConfigurationException,
-	OptimizationException {
+	QoSExpectations qos, CostParameters costParams, String queryName) 
+	throws SNEEException, SchemaMetadataException, 
+	SNEEConfigurationException, OptimizationException, WhenSchedulerException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER doSensorNetworkSourcePlanning()");
 		//TODO: Add physical opt, routing, where- and when-scheduling here!		
 		logger.info("Starting Algorithm Selection for query " + queryName);
-		PAF paf = doSNAlgorithmSelection(dlaf,queryName);
+		PAF paf = doSNAlgorithmSelection(dlaf, costParams, queryName);
 		logger.info("Starting Routing for query " + queryName);		
 		RT rt = doSNRouting(paf, queryName);
 		logger.info("Starting Where-Scheduling for query " + queryName);
-		DAF daf = doSNWhereScheduling(rt, paf, queryName);
+		DAF daf = doSNWhereScheduling(rt, paf, costParams, queryName);
 		logger.info("Starting When-Scheduling for query " + queryName);
-		//Agenda agenda = doWhenScheduling(rt, paf, queryName);
+		Agenda agenda = doSNWhenScheduling(daf, qos, queryName);
 		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, 
 				queryName); //agenda		
 		if (logger.isTraceEnabled())
@@ -119,12 +132,13 @@ public class SourcePlanner {
 	 * @throws SchemaMetadataException
 	 * @throws SNEEConfigurationException
 	 */
-	private PAF doSNAlgorithmSelection(DLAF dlaf, String queryName) 
+	private PAF doSNAlgorithmSelection(DLAF dlaf, CostParameters costParams, 
+	String queryName) 
 	throws SNEEException, SchemaMetadataException, SNEEConfigurationException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER doSNAlgorithmSelection()");
 		AlgorithmSelector algorithmSelector = new AlgorithmSelector();
-		PAF paf = algorithmSelector.doPhysicalOptimizaton(dlaf, queryName);
+		PAF paf = algorithmSelector.doPhysicalOptimizaton(dlaf, costParams, queryName);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new PAFUtils(paf).generateGraphImage();
 		}
@@ -146,19 +160,37 @@ public class SourcePlanner {
 		return rt;
 	}
 
-	private DAF doSNWhereScheduling(RT rt, PAF paf, String queryName) 
+	private DAF doSNWhereScheduling(RT rt, PAF paf, CostParameters costParams, String queryName) 
 	throws SNEEConfigurationException, SNEEException, SchemaMetadataException,
 	OptimizationException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER doSNWhereScheduling()");
 		WhereScheduler whereSched = new WhereScheduler();
-		DAF daf = whereSched.doWhereScheduling(paf, rt, queryName);
+		DAF daf = whereSched.doWhereScheduling(paf, rt, costParams, queryName);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new DAFUtils(daf).generateGraphImage();
 		}		
 		if (logger.isTraceEnabled())
 			logger.debug("RETURN doSNWhereScheduling()");
 		return daf;
+	}
+
+	private Agenda doSNWhenScheduling(DAF daf, QoSExpectations qos, String queryName) 
+	throws SNEEConfigurationException, SNEEException, SchemaMetadataException,
+	OptimizationException, WhenSchedulerException {
+		if (logger.isTraceEnabled())
+			logger.debug("ENTER doSNWhenScheduling()");
+		boolean decreaseBetaForValidAlpha = SNEEProperties.getBoolSetting(
+				SNEEPropertyNames.WHEN_SCHED_DECREASE_BETA_FOR_VALID_ALPHA);
+		WhenScheduler whenSched = new WhenScheduler(decreaseBetaForValidAlpha,
+				metadata);
+		Agenda agenda = whenSched.doWhenScheduling(daf, qos, queryName);
+		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
+			new AgendaUtils(agenda, true).generateImage();
+		}		
+		if (logger.isTraceEnabled())
+			logger.debug("RETURN doSNWhenScheduling()");
+		return agenda;
 	}
 	
 	/**

@@ -343,78 +343,6 @@ public class AcquireOperator extends LogicalOperatorImpl {
 		}
 	}
 
-//	/** {@inheritDoc} */
-//	public int getOutputQueueCardinality(Site node, DAF daf) {
-//		return this.getCardinality(CardinalityType.PHYSICAL_MAX, node, daf);
-//	}
-
-//	/** {@inheritDoc} */
-//	public int getOutputQueueCardinality(int numberOfInstances) {
-//		assert(numberOfInstances == sites.length);
-//		return this.getCardinality(CardinalityType.PHYSICAL_MAX);
-//	}
-
-//	/**
-//	 * The physical maximum size of the output.
-//	 * 
-//	 * Each AcquireOperator on a single site 
-//	 * 		returns exactly 1 tuple per evaluation. 
-//	 *
-//	 * @param card Ignored.
-//	 * @param node Ignored
-//	 * @param daf Ignored
-//	 * @return 1
-//	 */
-//	public int getCardinality(CardinalityType card, 
-//			Site node, DAF daf) {
-//		if (Settings.MEASUREMENTS_MULTI_ACQUIRE >= 0) {
-//			return Settings.MEASUREMENTS_MULTI_ACQUIRE;			
-//		} else {
-//			return 1;
-//		}
-//	}
-
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getCardinality(CardinalityType card, 
-//			Site node, DAF daf, boolean round) {
-//		AlphaBetaExpression result = new AlphaBetaExpression();
-//		if (Settings.MEASUREMENTS_MULTI_ACQUIRE >= 0) {
-//			result.addBetaTerm(Settings.MEASUREMENTS_MULTI_ACQUIRE);
-//		} else {
-//			result.addBetaTerm(1);
-//		}
-//		return result;
-//	}
-
-//	/** {@inheritDoc} */
-//	private double getTimeCost() {
-//		logger.trace("" + CostParameters.getSignalEvent());
-//		logger.trace("" + CostParameters.getAcquireData());
-//		return getOverheadTimeCost()
-//		+ CostParameters.getAcquireData()
-//		+ CostParameters.getCopyTuple() + CostParameters.getSetAValue()
-//		+ CostParameters.getApplyPredicate();
-//	}
-
-//	/** {@inheritDoc} */
-//	public double getTimeCost(CardinalityType card, 
-//			Site node, DAF daf) {
-//		return getTimeCost();
-//	}
-
-//	/** {@inheritDoc} */
-//	public double getTimeCost(CardinalityType card, int numberOfInstances){
-//		assert(numberOfInstances == sites.length);
-//		return getTimeCost();		
-//	}
-
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getTimeExpression(
-//			CardinalityType card, Site node, 
-//			DAF daf, boolean round) {
-//		return new AlphaBetaExpression(getTimeCost(card, node, daf),0);
-//	}
-
 	/**
 	 * Some operators do not change the data in any way those could be removed.
 	 * This operator does change the data so can not be. 
@@ -461,11 +389,6 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	public int getNumSensedAttributes() {
 		return sensedAttributes.size();
 	}
-
-//	/** {@inheritDoc} */    
-//	public int getDataMemoryCost(Site node, DAF daf) {
-//		return super.defaultGetDataMemoryCost(node, daf);
-//	}
 
 	/**
 	 * Get the list of attributes acquired/ sensed by this operator.

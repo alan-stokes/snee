@@ -53,7 +53,7 @@
          <column name="integetColumn">
           	<type class ="integer"/>
          </column>
-         <column name="floatColumn">
+<!--         <column name="floatColumn">
           	<type class ="float"/>
          </column>
          <column name="stringColumn">
@@ -61,7 +61,7 @@
          </column>
          <column name="boolColumn">
           	<type class ="boolean"/>
-         </column>
+         </column> -->
      </stream>
 
 </schema>

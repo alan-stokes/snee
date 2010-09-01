@@ -8,10 +8,15 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RoutingTableEntry;
+import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
@@ -45,9 +50,9 @@ public class SensornetExchangeOperator extends SensornetOperatorImpl {
 	private HashMap<Site, RoutingTableEntry> sourceToDestPaths 
 		= new HashMap<Site, RoutingTableEntry>();
 	
-	public SensornetExchangeOperator() 
+	public SensornetExchangeOperator(CostParameters costParams) 
 	throws SNEEException, SchemaMetadataException {
-		super();
+		super(costParams);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SensornetExchangeOperator() ");
 		}
@@ -170,5 +175,48 @@ public class SensornetExchangeOperator extends SensornetOperatorImpl {
     	
     	return s.toString();
 	}
-    
+	
+	/** {@inheritDoc} 
+	 * @throws OptimizationException */    
+    public final int getOutputQueueCardinality(final Site node, final DAF daf) throws OptimizationException {
+    	return super.defaultGetOutputQueueCardinality(node, daf);
+    }
+
+	/** {@inheritDoc} 
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 * @throws OptimizationException */    
+	public final int getDataMemoryCost(final Site node, final DAF daf) 
+	throws SchemaMetadataException, TypeMappingException, OptimizationException {
+		return super.defaultGetDataMemoryCost(node, daf);
+	}
+	
+	/** {@inheritDoc} 
+	 * Returns the producer cardinality.
+	 * @throws OptimizationException 
+	 */
+	public final int getCardinality(final CardinalityType card, 
+			final Site node, final DAF daf) throws OptimizationException {
+		return getInputCardinality(card, node, daf, 0);
+	}
+
+	@Override
+    /** {@inheritDoc} */
+    public final int[] getSourceSites() {
+    	return super.defaultGetSourceSites();
+    }
+
+
+	@Override
+    /**
+     * Stub method as cost is done on exchange components.
+     * @param card stub
+     * @param node stub.
+     * @param daf stub.
+     * @return error.
+     */
+     public final double getTimeCost(final CardinalityType card, 
+    		 final Site node, final DAF daf) {
+     	throw new AssertionError("Unexpected method call");
+    } 
 }
