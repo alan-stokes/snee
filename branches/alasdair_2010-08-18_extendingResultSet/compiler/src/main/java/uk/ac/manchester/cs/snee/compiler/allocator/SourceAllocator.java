@@ -53,6 +53,7 @@ public class SourceAllocator {
 						" these are not currently supported by source allocator ");
 			}
 		}
+		//FIXME: Allow more than one data source if they are all receive-stream sources.
 		if (sources.size()>1) {
 			throw new SourceAllocatorException("More than one source in "+
 			" LAF; queries with more than one source are "+

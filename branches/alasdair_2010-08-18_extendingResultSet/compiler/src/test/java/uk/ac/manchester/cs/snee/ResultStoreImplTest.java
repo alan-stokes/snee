@@ -65,7 +65,7 @@ import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.types.Duration;
 
-public class StreamResultImplTest extends EasyMockSupport {
+public class ResultStoreImplTest extends EasyMockSupport {
 			
 	final Output mockOutput = createMock(TaggedTuple.class);
 	
@@ -73,7 +73,7 @@ public class StreamResultImplTest extends EasyMockSupport {
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
 		PropertyConfigurator.configure(
-				StreamResultImplTest.class.getClassLoader().
+				ResultStoreImplTest.class.getClassLoader().
 				getResource("etc/log4j.properties"));
 	}
 
@@ -81,7 +81,7 @@ public class StreamResultImplTest extends EasyMockSupport {
 	public static void tearDownAfterClass() throws Exception {
 	}
 
-	private StreamResult _resultSet;
+	private ResultStore _resultSet;
 	private String testQuery = "SELECT * FROM TestStream;";
 	private QueryExecutionPlan mockQEP = 
 		createMock(QueryExecutionPlan.class);
@@ -90,7 +90,7 @@ public class StreamResultImplTest extends EasyMockSupport {
 
 	@Before
 	public void setUp() throws Exception {
-		_resultSet = new StreamResultImpl(testQuery, mockQEP) {
+		_resultSet = new ResultStoreImpl(testQuery, mockQEP) {
 			protected ResultSetMetaData createMetaData(
 					QueryExecutionPlan queryPlan)
 			throws SQLException {
@@ -112,10 +112,9 @@ public class StreamResultImplTest extends EasyMockSupport {
 				return dataList;
 			}
 		}; 
-		_resultSet.setCommand("SELECT * FROM TestStream;");
 	}
 
-	private void recordResultSet(int numResults) 
+	private void recordTupleStreamResultSet(int numResults) 
 	throws SNEEException, SQLException {
 		expect(mockMetaData.getColumnCount()).andReturn(2);
 		Tuple mockTuple = createMock(Tuple.class);
@@ -130,6 +129,14 @@ public class StreamResultImplTest extends EasyMockSupport {
 			andReturn(mockField).times(numResults * 2);
 		expect(mockField.getData()).
 			andReturn("data").times(numResults * 2);
+	}
+
+	private void recordWindowStreamResultSet(int numResults,
+			int[] tuplesPerWindow) 
+	throws SNEEException, SQLException {
+		for (int i = 0; i < numResults; i++) {
+			recordTupleStreamResultSet(tuplesPerWindow[i]);
+		}
 	}
 	
 	@After
@@ -151,6 +158,7 @@ public class StreamResultImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetCommand() {
+		_resultSet.setCommand("SELECT * FROM TestStream;");
 		assertEquals("SELECT * FROM TestStream;",
 				_resultSet.getCommand());
 	}
@@ -162,11 +170,24 @@ public class StreamResultImplTest extends EasyMockSupport {
 	}
 	
 	@Test
-	public void testGetResults() 
+	public void testGetResults_streamTuples() 
 	throws SNEEException, SQLException {
-		recordResultSet(10);
+		recordTupleStreamResultSet(10);
 		replayAll();
-		ResultSet results = _resultSet.getResults();
+		ResultSet results = _resultSet.getResults().get(0);
+		assertNotNull(results);
+		results.last();
+		assertEquals(10, results.getRow());
+		verifyAll();
+	}
+	@Ignore
+	@Test
+	public void testGetResults_streamWindows() 
+	throws SNEEException, SQLException {
+		int[] tuplesPerWindow = {2,3,1,2,5,1,1,2,3,4};
+		recordWindowStreamResultSet(10, tuplesPerWindow);
+		replayAll();
+		ResultSet results = _resultSet.getResults().get(0);
 		assertNotNull(results);
 		results.last();
 		assertEquals(10, results.getRow());
@@ -193,14 +214,20 @@ public class StreamResultImplTest extends EasyMockSupport {
 	}
 	
 	@Test
-	public void testGetResults_count() 
+	public void testGetResults_countTupleStream() 
 	throws SNEEException, SQLException {
-		recordResultSet(2);
+		recordTupleStreamResultSet(2);
 		replayAll();
-		ResultSet results = _resultSet.getResults(2);
+		ResultSet results = _resultSet.getResults(2).get(0);
 		results.last();
 		assertEquals(2, results.getRow());
 		verifyAll();
+	}
+	@Ignore
+	@Test
+	public void testGetResults_countWindowStream() 
+	throws SNEEException, SQLException {
+		fail("Not yet implemented");
 	}
 	
 	@Test(expected=SNEEException.class)
@@ -235,9 +262,9 @@ public class StreamResultImplTest extends EasyMockSupport {
 	}
 	
 	@Test
-	public void testGetResults_validSubDuraction() 
+	public void testGetResults_validSubDuractionStreamTuples() 
 	throws SNEEException, SQLException {
-		recordResultSet(3);
+		recordTupleStreamResultSet(3);
 		/*
 		 * Record result set of 10 seconds 
 		 */
@@ -252,12 +279,18 @@ public class StreamResultImplTest extends EasyMockSupport {
 		//Test
 		replayAll();
 		ResultSet results = 
-			_resultSet.getResults(new Duration(5, TimeUnit.SECONDS));
+			_resultSet.getResults(new Duration(5, TimeUnit.SECONDS)).get(0);
 		results.last();
 		assertEquals(3, results.getRow());
 		verifyAll();
 	}
-
+	@Ignore
+	@Test
+	public void testGetResults_validSubDuractionStreamWindows() 
+	throws SNEEException, SQLException {
+		fail("Not implemented yet.");
+	}
+	
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromIndex_negativeIndex() 
 	throws SNEEException {
@@ -271,33 +304,46 @@ public class StreamResultImplTest extends EasyMockSupport {
 	}
 
 	@Test
-	public void testGetResultsFromIndex_zeroIndex() 
+	public void testGetResultsFromIndex_zeroIndexStreamTuples() 
 	throws SNEEException, SQLException {
 		/* Returns entire result set */
-		recordResultSet(10);
+		recordTupleStreamResultSet(10);
 		replayAll();
-		ResultSet result = _resultSet.getResultsFromIndex(0);
+		ResultSet result = _resultSet.getResultsFromIndex(0).get(0);
 		result.last();
 		assertEquals(10, result.getRow());
 		verifyAll();
 	}
-
+	@Ignore
 	@Test
-	public void testGetResultsFromIndex() 
+	public void testGetResultsFromIndex_zeroIndexStreamWindows() 
 	throws SNEEException, SQLException {
-		recordResultSet(6);
+		fail("Not implemented yet");
+	}
+		
+	@Test
+	public void testGetResultsFromIndex_streamTuples() 
+	throws SNEEException, SQLException {
+		recordTupleStreamResultSet(6);
 		replayAll();
-		ResultSet result = _resultSet.getResultsFromIndex(4);
+		ResultSet result = _resultSet.getResultsFromIndex(4).get(0);
 		result.last();
 		assertEquals(6, result.getRow());
 		verifyAll();
 	}
+	@Ignore
+	@Test
+	public void testGetResultsFromIndex_streamWindows() 
+	throws SNEEException, SQLException {
+		fail("Not implemented yet");
+	}
+		
 	
 	@Test(expected=SNEEException.class)
 	public void testGetResultFromIndexSingleton()
 	throws SNEEException {
-		StreamResultImpl singletonResultSet = 
-			new StreamResultImpl(testQuery, mockQEP) {
+		ResultStoreImpl singletonResultSet = 
+			new ResultStoreImpl(testQuery, mockQEP) {
 			
 			protected ResultSetMetaData createMetaData(
 					QueryExecutionPlan queryPlan)
@@ -347,16 +393,22 @@ public class StreamResultImplTest extends EasyMockSupport {
 	}
 
 	@Test
-	public void testGetResultsFromIndexCount_zeroIndex() 
+	public void testGetResultsFromIndexCount_zeroIndexStreamTuples() 
 	throws SNEEException, SQLException {
-		recordResultSet(7);
+		recordTupleStreamResultSet(7);
 		replayAll();
-		ResultSet result = _resultSet.getResultsFromIndex(0, 7);
+		ResultSet result = _resultSet.getResultsFromIndex(0, 7).get(0);
 		result.last();
 		assertEquals(7, result.getRow());
 		verifyAll();
 	}
-
+	@Ignore
+	@Test
+	public void testGetResultsFromIndexCount_zeroIndexStreamWindows() 
+	throws SNEEException, SQLException {
+		fail("Not implemented yet");
+	}
+	
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromIndexCount_invalidCountIndex() 
 	throws SNEEException {
@@ -364,14 +416,20 @@ public class StreamResultImplTest extends EasyMockSupport {
 	}
 
 	@Test
-	public void testGetResultsFromIndexCount() 
+	public void testGetResultsFromIndexCountStreamTuples() 
 	throws SNEEException, SQLException {
-		recordResultSet(2);
+		recordTupleStreamResultSet(2);
 		replayAll();
-		ResultSet results = _resultSet.getResultsFromIndex(4, 2);
+		ResultSet results = _resultSet.getResultsFromIndex(4, 2).get(0);
 		results.last();
 		assertEquals(2, results.getRow());
 		verifyAll();
+	}
+	@Ignore
+	@Test
+	public void testGetResultsFromIndexCountStreamWindows() 
+	throws SNEEException, SQLException {
+		fail("Not yet implemented");
 	}
 
 	@Test(expected=SNEEException.class)
@@ -410,9 +468,9 @@ public class StreamResultImplTest extends EasyMockSupport {
 	}
 	
 	@Test
-	public void testGetResultsFromTimestamp() 
+	public void testGetResultsFromTimestamp_streamTuples() 
 	throws SNEEException, SQLException {
-		recordResultSet(5);
+		recordTupleStreamResultSet(5);
 		/*
 		 * Record 10 second result set with tuples 1 second apart
 		 * -> only 5 are valid for the answer set
@@ -432,12 +490,17 @@ public class StreamResultImplTest extends EasyMockSupport {
 		//Test
 		replayAll();
 		Timestamp ts = new Timestamp(currentTime - 5000);
-		ResultSet result = _resultSet.getResultsFromTimestamp(ts);
+		ResultSet result = _resultSet.getResultsFromTimestamp(ts).get(0);
 		result.last();
 		assertEquals(5, result.getRow());
 		verifyAll();
 	}
-
+	@Ignore
+	@Test
+	public void testGetResultsFromTimestamp_streamWindows() 
+	throws SNEEException, SQLException {
+		fail("Not yet implemented");
+	}
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromTimestampCount_invalidFutureTimestamp() 
 	throws SNEEException {
@@ -483,9 +546,9 @@ public class StreamResultImplTest extends EasyMockSupport {
 	}
 	
 	@Test
-	public void testGetResultsFromTimestampCount() 
+	public void testGetResultsFromTimestampCount_streamTuples() 
 	throws SNEEException, SQLException {
-		recordResultSet(3);
+		recordTupleStreamResultSet(3);
 		/*
 		 * Record 10 second result set with tuples 1 second apart
 		 * ->  4 are valid for the answer set, but only 3 should be returned
@@ -503,16 +566,22 @@ public class StreamResultImplTest extends EasyMockSupport {
 		//Test
 		replayAll();
 		Timestamp ts = new Timestamp(currentTime - 5000);
-		ResultSet result = _resultSet.getResultsFromTimestamp(ts, 3);
+		ResultSet result = _resultSet.getResultsFromTimestamp(ts, 3).get(0);
 		result.last();
 		assertEquals(3, result.getRow());
 		verifyAll();
 	}
+	@Ignore
+	@Test
+	public void testGetResultsFromTimestampCount_streamWindows() 
+	throws SNEEException, SQLException {
+		fail("Not implemented yet");
+	}
 	
 	@Test
-	public void testGetResultsFromTimestampCount_fullSet() 
+	public void testGetResultsFromTimestampCount_fullSetStreamTuples() 
 	throws SNEEException, SQLException {
-		recordResultSet(10);
+		recordTupleStreamResultSet(10);
 		/*
 		 * Record 10 second result set with tuples 1 second apart
 		 */
@@ -531,12 +600,18 @@ public class StreamResultImplTest extends EasyMockSupport {
 		//Test
 		replayAll();
 		Timestamp ts = new Timestamp(currentTime - 10000);
-		ResultSet result = _resultSet.getResultsFromTimestamp(ts, 10);
+		ResultSet result = _resultSet.getResultsFromTimestamp(ts, 10).get(0);
 		result.last();
 		assertEquals(10, result.getRow());
 		verifyAll();
 	}
-	
+	@Ignore
+	@Test
+	public void testGetResultsFromTimestampCount_fullSetStreamWindows() 
+	throws SNEEException, SQLException {
+		fail("Not implemented yet");
+	}
+
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromTimestampDuration_invalidFutureTimestamp() 
 	throws SNEEException {
@@ -590,9 +665,9 @@ public class StreamResultImplTest extends EasyMockSupport {
 	}
 	
 	@Test
-	public void testGetResultsFromTimestampDuration_validSubDuraction() 
+	public void testGetResultsFromTimestampDuration_validSubDuractionStreamTuples() 
 	throws SNEEException, SQLException {
-		recordResultSet(2);
+		recordTupleStreamResultSet(2);
 		/*
 		 * Record 10 second result set with tuples second apart
 		 */
@@ -615,22 +690,34 @@ public class StreamResultImplTest extends EasyMockSupport {
 		Timestamp ts = new Timestamp(currentTime - 5000);
 		ResultSet results = 
 			_resultSet.getResultsFromTimestamp(ts, 
-					new Duration(2, TimeUnit.SECONDS));
+					new Duration(2, TimeUnit.SECONDS)).get(0);
 		results.last();
 		assertEquals(2, results.getRow());
 		verifyAll();
 	}
+	@Ignore
+	@Test
+	public void testGetResultsFromTimestampDuration_validSubDuractionStreamWindows() 
+	throws SNEEException, SQLException {
+		fail("Not implemented yet");
+	}
 	
 	@Test
-	public void testGetNewestResults_fullCount() 
+	public void testGetNewestResults_fullCountStreamTuples() 
 	throws SNEEException, SQLException {
-		recordResultSet(10);
+		recordTupleStreamResultSet(10);
 		replayAll();
 		/* Request the full set back */
-		ResultSet results = _resultSet.getNewestResults(10);
+		ResultSet results = _resultSet.getNewestResults(10).get(0);
 		results.last();
 		assertEquals(10, results.getRow());
 		verifyAll();
+	}
+	@Ignore
+	@Test
+	public void testGetNewestResults_fullCountStreamWindows() 
+	throws SNEEException, SQLException {
+		fail("Not implemented yet");
 	}
 	
 	@Test(expected=SNEEException.class)
@@ -656,19 +743,25 @@ public class StreamResultImplTest extends EasyMockSupport {
 	}
 	
 	@Test
-	public void testGetNewestResults_count() 
+	public void testGetNewestResults_countStreamTuples() 
 	throws SNEEException, SQLException {
 		/*
 		 * Test resultset contains 10 tuples
 		 * Answer set should only contain the most recent 2
 		 */
 		int count = 2;
-		recordResultSet(count);
+		recordTupleStreamResultSet(count);
 		replayAll();
-		ResultSet results = _resultSet.getNewestResults(count);
+		ResultSet results = _resultSet.getNewestResults(count).get(0);
 		results.last();
 		assertEquals(count, results.getRow());
 		verifyAll();
+	}
+	@Ignore
+	@Test
+	public void testGetNewestResults_countStreamWindows() 
+	throws SNEEException, SQLException {
+		fail("Not yet implemented");
 	}
 	
 	@Test(expected=SNEEException.class)
@@ -698,9 +791,9 @@ public class StreamResultImplTest extends EasyMockSupport {
 	}
 	
 	@Test
-	public void testGetNewestResults_validSubDuraction() 
+	public void testGetNewestResults_validSubDuractionStreamTuples() 
 	throws SNEEException, SQLException {
-		recordResultSet(5);
+		recordTupleStreamResultSet(5);
 		/* 
 		 * Record a tuple set with a tuple being published every second
 		 */
@@ -715,10 +808,16 @@ public class StreamResultImplTest extends EasyMockSupport {
 		//Test
 		replayAll();
 		ResultSet results = 
-			_resultSet.getNewestResults(new Duration(5, TimeUnit.SECONDS));
+			_resultSet.getNewestResults(new Duration(5, TimeUnit.SECONDS)).get(0);
 		results.last();
 		assertEquals(5, results.getRow());
 		verifyAll();
+	}
+	@Ignore
+	@Test
+	public void testGetNewestResults_validSubDuractionStreamWindows() 
+	throws SNEEException, SQLException {
+		fail("Not yet implemented");
 	}
 	
 }

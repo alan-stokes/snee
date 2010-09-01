@@ -39,7 +39,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
 		PropertyConfigurator.configure(
-				StreamResultImplTest.class.getClassLoader().
+				ResultStoreImplTest.class.getClassLoader().
 				getResource("etc/log4j.properties"));
 	}
 
@@ -3431,7 +3431,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 		replayAll();
 		StreamResultSet resultSet = 
 			new StreamResultSet(mockMetadata, dataList);
-		assertEquals(false, resultSet.isWrapperFor(StreamResult.class));
+		assertEquals(false, resultSet.isWrapperFor(ResultStore.class));
 		verifyAll();
 	}
 
@@ -3461,7 +3461,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 		replayAll();
 		StreamResultSet resultSet = 
 			new StreamResultSet(mockMetadata, dataList);
-		resultSet.unwrap(StreamResult.class);
+		resultSet.unwrap(ResultStore.class);
 		verifyAll();
 	}
 

@@ -89,8 +89,8 @@ public class SNEEController implements SNEE {
 	 */
 	private Dispatcher _dispatcher;
 	
-	private Map<Integer, StreamResult> _queryResults = 
-		new HashMap<Integer, StreamResult>();
+	private Map<Integer, ResultStore> _queryResults = 
+		new HashMap<Integer, ResultStore>();
 	
 	/**
 	 * Stores the query plan for the registered query
@@ -345,7 +345,7 @@ public class SNEEController implements SNEE {
 					" " + query);
 		}
 		QueryExecutionPlan queryPlan = _queryPlans.get(queryId);
-		StreamResult resultSet = createStreamResultSet(query, queryPlan);
+		ResultStore resultSet = createStreamResultSet(query, queryPlan);
 		
 		_dispatcher.startQuery(queryId, resultSet, 
 				queryPlan);
@@ -357,10 +357,10 @@ public class SNEEController implements SNEE {
 		return queryId;
 	}
 
-	protected StreamResult createStreamResultSet(String query,
+	protected ResultStore createStreamResultSet(String query,
 			QueryExecutionPlan queryPlan) 
 	throws SNEEException {
-		StreamResult resultSet = new StreamResultImpl(query, queryPlan);
+		ResultStore resultSet = new ResultStoreImpl(query, queryPlan);
 		resultSet.setCommand(query);
 		return resultSet;
 	}
@@ -420,12 +420,12 @@ public class SNEEController implements SNEE {
 	 * @return ResultSet for the query
 	 * @throws SNEEException Specified queryId does not exist
 	 */
-	public StreamResult getResultSet(int queryId) 
+	public ResultStore getResultSet(int queryId) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER getResultStore() with query=" + queryId);
 		}
-		StreamResult resultSet;
+		ResultStore resultSet;
 		if (_queryResults.containsKey(queryId)) {
 			resultSet = _queryResults.get(queryId);
 		} else {

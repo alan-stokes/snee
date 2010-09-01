@@ -4,11 +4,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.List;
 
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.types.Duration;
 
-public interface StreamResult {
+public interface ResultStore {
 
 	public void add(Output data);
 	
@@ -49,17 +50,17 @@ public interface StreamResult {
 	 * for this <code>StreamResultSet</code> object; 
 	 * may be <code>null</code>
 	 * 
-	 * @see StreamResult#getCommand(String)
+	 * @see ResultStore#getCommand(String)
 	 */
 	public void setCommand(String cmd);
 	
 	/**
 	 * Return all of the results available for the specified query.
 	 * 
-	 * @return A <code>ResultSet</code> containing the specified answers
+	 * @return A <code>List</code> of <code>ResultSet</code> objects containing the specified answers
 	 * @throws SNEEException
 	 */
-	public ResultSet getResults()
+	public List<ResultSet> getResults()
 	throws SNEEException;
 
 	/**
@@ -67,30 +68,30 @@ public interface StreamResult {
 	 * 
 	 * @param count The number of result items that should be returned
 	 * 
-	 * @return A <code>ResultSet</code> containing the specified answers
+	 * @return A <code>List</code> of <code>ResultSet</code> objects containing the specified answers
 	 * @throws SNEEException The count parameter extends beyond the number of available result items
 	 */
-	public ResultSet getResults(int count) 
+	public List<ResultSet> getResults(int count) 
 	throws SNEEException;
 
 	/**
 	 * Return the specified duration of results starting with the oldest available.
 	 * @param duration
 	 * 
-	 * @return A <code>ResultSet</code> containing the specified answers
+	 * @return A <code>List</code> of <code>ResultSet</code> objects containing the specified answers
 	 * @throws SNEEException
 	 */
-	public ResultSet getResults(Duration duration) 
+	public List<ResultSet> getResults(Duration duration) 
 	throws SNEEException;
 
 	/**
 	 * Return all of the results starting from the specified index value.
 	 * @param index  
 	 * 
-	 * @return A <code>ResultSet</code> containing the specified answers
+	 * @return A <code>List</code> of <code>ResultSet</code> objects containing the specified answers A <code>ResultSet</code> containing the specified answers
 	 * @throws SNEEException
 	 */
-	public ResultSet getResultsFromIndex(int index)
+	public List<ResultSet> getResultsFromIndex(int index)
 	throws SNEEException;
 	
 	/**
@@ -98,10 +99,10 @@ public interface StreamResult {
 	 * @param index
 	 * @param count
 	 * 
-	 * @return A <code>ResultSet</code> containing the specified answers
+	 * @return A <code>List</code> of <code>ResultSet</code> objects containing the specified answers
 	 * @throws SNEEException
 	 */
-	public ResultSet getResultsFromIndex(int index, int count) 
+	public List<ResultSet> getResultsFromIndex(int index, int count) 
 	throws SNEEException;
 
 	/**
@@ -110,20 +111,20 @@ public interface StreamResult {
 	 * @param index
 	 * @param duration
 	 * 
-	 * @return A <code>ResultSet</code> containing the specified answers
+	 * @return A <code>List</code> of <code>ResultSet</code> objects containing the specified answers
 	 * @throws SNEEException
 	 */
-	public ResultSet getResultsFromIndex(int index, Duration duration) 
+	public List<ResultSet> getResultsFromIndex(int index, Duration duration) 
 	throws SNEEException;
 
 	/**
 	 * Return all of the results starting from the specified timestamp.
 	 * @param timestamp
 	 * 
-	 * @return A <code>ResultSet</code> containing the specified answers
+	 * @return A <code>List</code> of <code>ResultSet</code> objects containing the specified answers
 	 * @throws SNEEException
 	 */
-	public ResultSet getResultsFromTimestamp(Timestamp timestamp) 
+	public List<ResultSet> getResultsFromTimestamp(Timestamp timestamp) 
 	throws SNEEException;
 
 	/**
@@ -132,10 +133,10 @@ public interface StreamResult {
 	 * @param timestamp
 	 * @param count
 	 * 
-	 * @return A <code>ResultSet</code> containing the specified answers
+	 * @return A <code>List</code> of <code>ResultSet</code> objects containing the specified answers
 	 * @throws SNEEException
 	 */
-	public ResultSet getResultsFromTimestamp(Timestamp timestamp, 
+	public List<ResultSet> getResultsFromTimestamp(Timestamp timestamp, 
 			int count) 
 	throws SNEEException;
 
@@ -145,30 +146,30 @@ public interface StreamResult {
 	 * @param timestamp
 	 * @param duration
 	 * 
-	 * @return A <code>ResultSet</code> containing the specified answers
+	 * @return A <code>List</code> of <code>ResultSet</code> objects containing the specified answers
 	 * @throws SNEEException
 	 */
-	public ResultSet getResultsFromTimestamp(Timestamp timestamp, 
+	public List<ResultSet> getResultsFromTimestamp(Timestamp timestamp, 
 			Duration duration) 
 	throws SNEEException;
 
 	/**
 	 * Return the result items.
 	 * 
-	 * @return A <code>ResultSet</code> containing the specified answers
+	 * @return A <code>List</code> of <code>ResultSet</code> objects containing the specified answers
 	 * @throws SNEEException
 	 */
-	public ResultSet getNewestResults()
+	public List<ResultSet> getNewestResults()
 	throws SNEEException;
 	
 	/**
 	 * Return the specified number of result items, counting back from the most recent.
 	 * @param count
 	 * 
-	 * @return A <code>ResultSet</code> containing the specified answers
+	 * @return A <code>List</code> of <code>ResultSet</code> objects containing the specified answers
 	 * @throws SNEEException
 	 */
-	public ResultSet getNewestResults(int count) 
+	public List<ResultSet> getNewestResults(int count) 
 	throws SNEEException;
 	
 	/**
@@ -176,10 +177,10 @@ public interface StreamResult {
 	 * most recent.
 	 * @param duration
 	 * 
-	 * @return A <code>ResultSet</code> containing the specified answers
+	 * @return A <code>List</code> of <code>ResultSet</code> objects containing the specified answers
 	 * @throws SNEEException
 	 */
-	public ResultSet getNewestResults(Duration duration) 
+	public List<ResultSet> getNewestResults(Duration duration) 
 	throws SNEEException;
 
 }

@@ -85,7 +85,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	final QueryCompiler mockQueryCompiler = createMock(QueryCompiler.class);
 	final Dispatcher mockDispatcher = createMock(Dispatcher.class);
 	final QueryExecutionPlan mockPlan = createMock(QueryExecutionPlan.class);
-	final StreamResult mockResultset = createMock(StreamResult.class);
+	final ResultStore mockResultset = createMock(ResultStore.class);
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -120,7 +120,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 				return mockDispatcher;
 			}
 
-			protected StreamResult createStreamResultSet(String query, QueryExecutionPlan mockPlan) {
+			protected ResultStore createStreamResultSet(String query, QueryExecutionPlan mockPlan) {
 				//				System.out.println("Overridden createStreamResultSet()");
 				return mockResultset;
 			}
@@ -255,7 +255,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 		//Test
 		replayAll();		
 		int qID = _snee.addQuery(mQuery, null);
-		StreamResult result = _snee.getResultSet(qID);
+		ResultStore result = _snee.getResultSet(qID);
 		assertNotNull(result);
 		verifyAll();
 	}

@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.StreamResult;
+import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
@@ -85,7 +85,7 @@ public class Dispatcher {
 	 * @throws SchemaMetadataException 
 	 * @throws EvaluatorException 
 	 */
-	public void startQuery(int queryID, StreamResult resultSet, 
+	public void startQuery(int queryID, ResultStore resultSet, 
 			QueryExecutionPlan queryPlan) 
 	throws SNEEException, MetadataException, EvaluatorException {
 		if (logger.isDebugEnabled()) {
@@ -135,7 +135,7 @@ public class Dispatcher {
 	 * @throws EvaluatorException 
 	 */
 	protected QueryEvaluator createQueryEvaluator(int queryId, 
-			LAF queryPlan, StreamResult resultSet) 
+			LAF queryPlan, ResultStore resultSet) 
 	throws SNEEException, SchemaMetadataException, EvaluatorException {
 		QueryEvaluator queryEvaluator = 
 			new QueryEvaluator(queryId, queryPlan, _schema, resultSet);

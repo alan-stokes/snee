@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -16,7 +17,7 @@ import uk.ac.manchester.cs.snee.SNEE;
 import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEController;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.StreamResultImpl;
+import uk.ac.manchester.cs.snee.ResultStoreImpl;
 import uk.ac.manchester.cs.snee.StreamResultSet;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 
@@ -43,22 +44,24 @@ public abstract class SNEEClient implements Observer {
 			logger.debug("RETURN SNEEClient()");
 	}
 
-	private static void printResults(ResultSet resultSet, 
+	private static void printResults(List<ResultSet> results, 
 			int queryId) 
 	throws SQLException {
 		System.out.println("************ Results for query " + 
 				queryId + " ************");
-		ResultSetMetaData metaData = resultSet.getMetaData();
-		int numCols = metaData.getColumnCount();
-		printColumnHeadings(metaData, numCols);
-		while (resultSet.next()) {
-			StringBuffer buffer = new StringBuffer();
-			for (int i = 1; i < numCols; i++) {
-				buffer.append(getData(resultSet, metaData, i));
-				buffer.append("\t");
+		for (ResultSet rs : results) {
+			ResultSetMetaData metaData = rs.getMetaData();
+			int numCols = metaData.getColumnCount();
+			printColumnHeadings(metaData, numCols);
+			while (rs.next()) {
+				StringBuffer buffer = new StringBuffer();
+				for (int i = 1; i < numCols; i++) {
+					buffer.append(getData(rs, metaData, i));
+					buffer.append("\t");
+				}
+				buffer.append(getData(rs, metaData, numCols));
+				System.out.println(buffer.toString());
 			}
-			buffer.append(getData(resultSet, metaData, numCols));
-			System.out.println(buffer.toString());
 		}
 		System.out.println("*********************************");
 	}
@@ -108,8 +111,8 @@ public abstract class SNEEClient implements Observer {
 					arg);
 		}
 //		logger.trace("arg type: " + arg.getClass());
-		if (arg instanceof ResultSet || arg instanceof StreamResultSet) {
-			ResultSet results = (ResultSet) arg;
+		if (arg instanceof List<?>) {
+			List<ResultSet> results = (List<ResultSet>) arg; 
 			try {
 				printResults(results, 1);
 			} catch (SQLException e) {
@@ -138,8 +141,8 @@ public abstract class SNEEClient implements Observer {
 		System.out.println("Running query for " + _duration + 
 			" seconds.");
 
-		StreamResultImpl resultSet = 
-			(StreamResultImpl) controller.getResultSet(queryId1);
+		ResultStoreImpl resultSet = 
+			(ResultStoreImpl) controller.getResultSet(queryId1);
 		resultSet.addObserver(this);
 		
 		try {			
@@ -151,7 +154,7 @@ public abstract class SNEEClient implements Observer {
 			Thread.currentThread().yield();
 		}
 		
-		ResultSet results1 = resultSet.getResults();
+		List<ResultSet> results1 = resultSet.getResults();
 		System.out.println("Stopping query " + queryId1 + ".");
 		controller.removeQuery(queryId1);
 
