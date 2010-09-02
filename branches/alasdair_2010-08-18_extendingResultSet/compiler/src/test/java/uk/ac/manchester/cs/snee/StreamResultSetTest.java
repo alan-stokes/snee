@@ -30,7 +30,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.evaluator.types.Field;
-import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
 public class StreamResultSetTest extends EasyMockSupport {
@@ -49,8 +48,8 @@ public class StreamResultSetTest extends EasyMockSupport {
 
 	private ResultSetMetaData mockMetadata =
 		createMock(ResultSetMetaData.class);
-	private TaggedTuple mockTT =
-		createMock(TaggedTuple.class);
+	private Tuple mockTuple =
+		createMock(Tuple.class);
 
 	@Before
 	public void setUp() throws Exception {
@@ -64,9 +63,6 @@ public class StreamResultSetTest extends EasyMockSupport {
 	throws SNEEException, SQLException {
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		if (numResults > 0) {
-			Tuple mockTuple = createMock(Tuple.class);
-			expect(mockTT.getTuple()).
-				andReturn(mockTuple).times(numResults);
 			expect(mockMetadata.getColumnLabel(1)).
 				andReturn("attr1").times(numResults);
 			expect(mockMetadata.getColumnLabel(2)).
@@ -84,10 +80,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testAbsolute_0() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -101,10 +97,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testAbsolute_1() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -118,10 +114,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testAbsolute_4() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -135,10 +131,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testAbsolute_negative2() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -152,10 +148,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testAbsolute_negative4() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -169,7 +165,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testAfterLast_noData() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -182,10 +178,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testAfterLast_data() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -198,7 +194,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testBeforeFirst_noData() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -211,10 +207,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testBeforeFirst_data() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -227,10 +223,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testBeforeFirst_dataMoveCursor() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -244,10 +240,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testDeleteRow()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -259,10 +255,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testFindColumn_exists() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		expect(mockMetadata.getColumnLabel(1)).andReturn("attr1");
@@ -277,10 +273,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testFindColumn_notExists() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		expect(mockMetadata.getColumnLabel(1)).andReturn("attr1");
@@ -295,10 +291,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testFirst_data() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -311,7 +307,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testFirst_noData() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -324,7 +320,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetArrayInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -336,7 +332,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetArrayString()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -348,7 +344,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetAsciiStreamInt()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -360,7 +356,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetAsciiStreamString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -372,10 +368,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetBigDecimalInt_nonDecimal() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, new BigDecimal(3.1280));
 		expect(mockMetadata.getColumnType(1)).andReturn(Types.BOOLEAN);
 		replayAll();
@@ -389,10 +385,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetBigDecimalInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, new BigDecimal(3.1280));
 		expect(mockMetadata.getColumnType(1)).andReturn(Types.DECIMAL);
 		replayAll();
@@ -407,10 +403,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetBigDecimalString_nonDecimal() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, new BigDecimal(3.1280));
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		expect(mockMetadata.getColumnLabel(1)).andReturn("attr1");
@@ -426,10 +422,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetBigDecimalString_decimal() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, new BigDecimal(3.1280));
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		expect(mockMetadata.getColumnLabel(1)).andReturn("attr2");
@@ -447,7 +443,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetBigDecimalIntInt()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -460,7 +456,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetBigDecimalStringInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -472,7 +468,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetBinaryStreamInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -484,7 +480,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetBinaryStreamString()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -496,7 +492,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetBlobInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -508,7 +504,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetBlobString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -520,7 +516,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetBooleanInt_nonBoolean() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		expect(mockMetadata.getColumnType(1)).andReturn(Types.DATE);
 		replayAll();
@@ -533,10 +529,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetBooleanInt_BooleanTrue() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, true);
 		expect(mockMetadata.getColumnType(1)).andReturn(Types.BOOLEAN);
 		replayAll();
@@ -551,10 +547,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetBooleanInt_BooleanFalse() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, false);
 		expect(mockMetadata.getColumnType(1)).andReturn(Types.BOOLEAN);
 		replayAll();
@@ -569,7 +565,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetBooleanString_nonBoolean() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		expect(mockMetadata.getColumnLabel(1)).andReturn("attr2");
@@ -584,10 +580,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetBooleanString_BooleanTrue() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, true);
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		expect(mockMetadata.getColumnLabel(1)).andReturn("attr1");
@@ -604,10 +600,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetBooleanString_BooleanFalse() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, false);
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		expect(mockMetadata.getColumnLabel(1)).andReturn("attr2");
@@ -624,7 +620,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetByteInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -636,7 +632,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetByteString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -648,7 +644,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetBytesInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -660,7 +656,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetBytesString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -672,7 +668,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetCharacterStreamInt()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -684,7 +680,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetCharacterStreamString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -696,7 +692,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetClobInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -708,7 +704,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetClobString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -720,7 +716,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetConcurrency() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -733,7 +729,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetCursorName()
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -745,7 +741,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetDateInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -757,7 +753,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetDateString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -769,7 +765,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetDateIntCalendar()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -781,7 +777,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetDateStringCalendar()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -793,7 +789,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetDoubleInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -805,7 +801,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetDoubleString()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -817,7 +813,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetFetchDirection() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -830,7 +826,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetFetchSize() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -842,10 +838,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetFloatInt_nonFloat() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, new Float(3.5));
 		expect(mockMetadata.getColumnType(1)).andReturn(Types.BOOLEAN);
 		replayAll();
@@ -859,10 +855,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetFloatInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, new Float(3.5));
 		expect(mockMetadata.getColumnType(1)).andReturn(Types.FLOAT);
 		replayAll();
@@ -877,10 +873,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetFloatString_nonFloat() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, new Float(3.5));
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		expect(mockMetadata.getColumnLabel(1)).andReturn("attr1");
@@ -896,10 +892,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetFloatString_float() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, new Float(3.5));
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		expect(mockMetadata.getColumnLabel(1)).andReturn("attr2");
@@ -916,7 +912,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetHoldability()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -929,10 +925,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetIntInt_nonInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, new Integer(42));
 		expect(mockMetadata.getColumnType(1)).andReturn(Types.BOOLEAN);
 		replayAll();
@@ -946,10 +942,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetIntInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, new Integer(42));
 		expect(mockMetadata.getColumnType(1)).andReturn(Types.INTEGER);
 		replayAll();
@@ -964,10 +960,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetIntString_nonInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, new Integer(42));
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		expect(mockMetadata.getColumnLabel(1)).andReturn("attr1");
@@ -983,10 +979,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetIntString_int() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, new Integer(42));
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		expect(mockMetadata.getColumnLabel(1)).andReturn("attr2");
@@ -1003,7 +999,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetLongInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1015,7 +1011,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetLongString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1027,7 +1023,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetMetaData()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1040,7 +1036,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetNCharacterStreamInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1052,7 +1048,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetNCharacterStreamString()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1064,7 +1060,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetNClobInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1076,7 +1072,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetNClobString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1088,7 +1084,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetNStringInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1100,7 +1096,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetNStringString()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1112,10 +1108,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetObjectInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, new Float(3.5));
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1130,10 +1126,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetObjectString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, "data");
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		expect(mockMetadata.getColumnLabel(1)).andReturn("attr2");
@@ -1149,7 +1145,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetObjectIntMapOfStringClassOfQ() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1161,7 +1157,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetObjectStringMapOfStringClassOfQ() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1173,7 +1169,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetRefInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1185,7 +1181,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetRefString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1197,7 +1193,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetRow() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1209,10 +1205,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetRow_data() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1226,7 +1222,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetRowIdInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1238,7 +1234,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetRowIdString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1250,7 +1246,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetSQLXMLInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1262,7 +1258,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetSQLXMLString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1274,7 +1270,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetShortInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1286,7 +1282,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetShortString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1298,7 +1294,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetStatement() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1311,10 +1307,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetStringInt_nonString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, "data");
 		expect(mockMetadata.getColumnType(1)).andReturn(Types.BOOLEAN);
 		replayAll();
@@ -1328,10 +1324,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetStringInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, "data");
 		expect(mockMetadata.getColumnType(1)).andReturn(Types.VARCHAR);
 		replayAll();
@@ -1346,10 +1342,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetStringString_nonString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, new Integer(42));
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		expect(mockMetadata.getColumnLabel(1)).andReturn("attr1");
@@ -1365,10 +1361,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetStringString_int() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, "data");
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		expect(mockMetadata.getColumnLabel(1)).andReturn("attr2");
@@ -1385,7 +1381,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetTimeInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1397,7 +1393,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetTimeString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1409,7 +1405,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetTimeIntCalendar() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1421,7 +1417,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetTimeStringCalendar() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1433,10 +1429,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetTimestampInt_nonString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		Long t = new Long("1282315575176");
 		Timestamp ts = new Timestamp(t.longValue());
 		recordResultSet(3, ts);
@@ -1452,10 +1448,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetTimestampInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		Long t = new Long("1282315575176");
 		Timestamp ts = new Timestamp(t.longValue());
 		recordResultSet(3, ts);
@@ -1472,10 +1468,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetTimestampString_nonString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		Long t = new Long("1282315575176");
 		Timestamp ts = new Timestamp(t.longValue());
 		recordResultSet(3, ts);
@@ -1493,10 +1489,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetTimestampString_int() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		Long t = new Long("1282315575176");
 		Timestamp ts = new Timestamp(t.longValue());
 		recordResultSet(3, ts);
@@ -1515,7 +1511,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetTimestampIntCalendar() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1527,7 +1523,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetTimestampStringCalendar() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1539,7 +1535,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetType() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1552,7 +1548,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetURLInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1564,7 +1560,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetURLString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1576,7 +1572,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetUnicodeStreamInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1588,7 +1584,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testGetUnicodeStreamString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1600,7 +1596,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testGetWarnings() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1612,7 +1608,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testInsertRow() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1624,7 +1620,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsAfterLast_noData() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1636,10 +1632,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsAfterLast_dataNegative() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1652,10 +1648,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsAfterLast_dataTrue() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1669,7 +1665,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsBeforeFirst_noData() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1681,10 +1677,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsBeforeFirst_dataNegative() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1698,10 +1694,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsBeforeFirst_dataTrue() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1714,7 +1710,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsClosed() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1726,7 +1722,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsFirst_noData() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1738,10 +1734,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsFirst_dataFalse() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1754,10 +1750,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsFirst_dataBeforeFirst() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1769,10 +1765,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsFirst_dataTrue() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1786,7 +1782,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsLast_noData() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1798,10 +1794,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsLast_dataFalse() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1814,10 +1810,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsLast_dataAfterLast() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1830,10 +1826,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsLast_dataTrue() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1846,7 +1842,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testLast_noData() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1858,10 +1854,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testLast_data() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1873,10 +1869,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testMoveToCurrentRow() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1888,10 +1884,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testMoveToInsertRow()  
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1903,7 +1899,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testNext_noData() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1916,10 +1912,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testNext_dataBeforeFirst() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1932,10 +1928,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testNext_dataOnRow() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1949,10 +1945,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testNext_dataOnLast() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1966,7 +1962,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testPrevious_noData() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1979,10 +1975,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testPrevious_dataBeforeFirst() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -1995,10 +1991,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testPrevious_dataAfterLast() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2012,10 +2008,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testPrevious_dataOnRow() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2029,10 +2025,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testPrevious_dataOnFirst() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2046,10 +2042,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLFeatureNotSupportedException.class)
 	public void testRefreshRow() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2061,7 +2057,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testRelativePos_noData() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2074,10 +2070,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testRelativePos_dataBeforeFirst() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2090,10 +2086,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testRelativePos_dataOnRow() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2107,10 +2103,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testRelativePos_dataOnLast() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2124,10 +2120,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testRelativePos_dataOnRowMove2Valid() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2140,10 +2136,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testRelativePos_dataOnRowMove2NotValid() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2157,7 +2153,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testRelativeNeg_noData() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2170,10 +2166,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testRelativeNeg_dataBeforeFirst() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2186,10 +2182,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testRelativeNeg_dataAfterLast() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2203,10 +2199,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testRelativeNeg_dataOnRow() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2220,10 +2216,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testRelativeNeg_dataOnFirst() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2237,10 +2233,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testRelativeNeg_dataOnRowMove2Valid() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2254,10 +2250,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testRelativeNeg_dataOnRowMove2NotValid() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2271,10 +2267,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLFeatureNotSupportedException.class)
 	public void testRowDeleted() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2286,10 +2282,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLFeatureNotSupportedException.class)
 	public void testRowInserted() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2301,10 +2297,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLFeatureNotSupportedException.class)
 	public void testRowUpdated() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2316,10 +2312,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testSetFetchDirection_forward() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2333,10 +2329,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testSetFetchDirection_reverse() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2350,10 +2346,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testSetFetchDirection_unknown() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2367,10 +2363,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testSetFetchSize_negSize() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2382,10 +2378,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testSetFetchSize_posSize() 
 	throws SNEEException, SQLException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2397,7 +2393,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateArrayIntArray()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2409,7 +2405,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateArrayStringArray() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2421,7 +2417,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateAsciiStreamIntInputStream() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2433,7 +2429,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateAsciiStreamStringInputStream()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2445,7 +2441,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateAsciiStreamIntInputStreamInt()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2457,7 +2453,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateAsciiStreamStringInputStreamInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2469,7 +2465,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateAsciiStreamIntInputStreamLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2481,7 +2477,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateAsciiStreamStringInputStreamLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2493,7 +2489,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBigDecimalIntBigDecimal() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2505,7 +2501,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBigDecimalStringBigDecimal() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2517,7 +2513,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBinaryStreamIntInputStream() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2529,7 +2525,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBinaryStreamStringInputStream()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2541,7 +2537,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBinaryStreamIntInputStreamInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2553,7 +2549,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBinaryStreamStringInputStreamInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2565,7 +2561,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBinaryStreamIntInputStreamLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2577,7 +2573,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBinaryStreamStringInputStreamLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2589,7 +2585,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBlobIntBlob()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2601,7 +2597,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBlobStringBlob() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2613,7 +2609,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBlobIntInputStream() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2625,7 +2621,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBlobStringInputStream() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2637,7 +2633,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBlobIntInputStreamLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2649,7 +2645,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBlobStringInputStreamLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2661,7 +2657,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBooleanIntBoolean() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2673,7 +2669,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBooleanStringBoolean() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2685,7 +2681,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateByteIntByte()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2697,7 +2693,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateByteStringByte() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2709,7 +2705,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBytesIntByteArray() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2721,7 +2717,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateBytesStringByteArray() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2733,7 +2729,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateCharacterStreamIntReader() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2745,7 +2741,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateCharacterStreamStringReader() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2757,7 +2753,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateCharacterStreamIntReaderInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2769,7 +2765,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateCharacterStreamStringReaderInt()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2781,7 +2777,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateCharacterStreamIntReaderLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2793,7 +2789,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateCharacterStreamStringReaderLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2805,7 +2801,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateClobIntClob()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2817,7 +2813,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateClobStringClob() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2829,7 +2825,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateClobIntReader()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2841,7 +2837,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateClobStringReader() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2853,7 +2849,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateClobIntReaderLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2865,7 +2861,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateClobStringReaderLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2877,7 +2873,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateDateIntDate()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2889,7 +2885,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateDateStringDate() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2901,7 +2897,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateDoubleIntDouble() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2913,7 +2909,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateDoubleStringDouble() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2925,7 +2921,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateFloatIntFloat()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2937,7 +2933,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateFloatStringFloat() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2949,7 +2945,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateIntIntInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2961,7 +2957,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateIntStringInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2973,7 +2969,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateLongIntLong()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2985,7 +2981,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateLongStringLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -2997,7 +2993,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateNCharacterStreamIntReader() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3009,7 +3005,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateNCharacterStreamStringReader() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3021,7 +3017,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateNCharacterStreamIntReaderLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3033,7 +3029,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateNCharacterStreamStringReaderLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3045,7 +3041,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateNClobIntNClob() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3057,7 +3053,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateNClobStringNClob() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3069,7 +3065,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateNClobIntReader() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3081,7 +3077,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateNClobStringReader() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3093,7 +3089,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateNClobIntReaderLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3105,7 +3101,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateNClobStringReaderLong() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3117,7 +3113,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateNStringIntString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3129,7 +3125,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateNStringStringString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3141,7 +3137,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateNullInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3153,7 +3149,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateNullString()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3165,7 +3161,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateObjectIntObject() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3177,7 +3173,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateObjectStringObject() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3189,7 +3185,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateObjectIntObjectInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3201,7 +3197,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateObjectStringObjectInt() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3213,7 +3209,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateRefIntRef() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3225,7 +3221,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateRefStringRef()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3237,7 +3233,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateRow() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3249,7 +3245,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateRowIdIntRowId() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3261,7 +3257,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateRowIdStringRowId() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3273,7 +3269,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateSQLXMLIntSQLXML() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3285,7 +3281,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateSQLXMLStringSQLXML() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3297,7 +3293,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateShortIntShort() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3309,7 +3305,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateShortStringShort() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3321,7 +3317,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateStringIntString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3333,7 +3329,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateStringStringString() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3345,7 +3341,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateTimeIntTime()
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3357,7 +3353,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateTimeStringTime() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3369,7 +3365,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateTimestampIntTimestamp() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3381,7 +3377,7 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUpdateTimestampStringTimestamp() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
+		List<Tuple> dataList = new ArrayList<Tuple>();
 		recordResultSet(0, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3393,10 +3389,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testWasNull() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3408,10 +3404,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsWrapperFor_resultSet() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3423,10 +3419,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testIsWrapperFor_StreamResult() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3438,10 +3434,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test
 	public void testUnwrap_ResultSet() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 
@@ -3453,10 +3449,10 @@ public class StreamResultSetTest extends EasyMockSupport {
 	@Test(expected=SQLException.class)
 	public void testUnwrap_StreamResult() 
 	throws SQLException, SNEEException {
-		List<TaggedTuple> dataList = new ArrayList<TaggedTuple>();
-		dataList.add(mockTT);//1
-		dataList.add(mockTT);//2
-		dataList.add(mockTT);//3
+		List<Tuple> dataList = new ArrayList<Tuple>();
+		dataList.add(mockTuple);//1
+		dataList.add(mockTuple);//2
+		dataList.add(mockTuple);//3
 		recordResultSet(3, null);
 		replayAll();
 		StreamResultSet resultSet = 

@@ -43,7 +43,7 @@ implements ResultSet {
 	private ResultSetMetaData metadata;
 	
 	protected StreamResultSet(ResultSetMetaData metadata, 
-			List<TaggedTuple> results)
+			List<Tuple> results)
 	throws SQLException, SNEEException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER StreamResultSet() #results=" +
@@ -56,7 +56,7 @@ implements ResultSet {
 		}
 	}
 
-	private void populateData(List<TaggedTuple> results) 
+	private void populateData(List<Tuple> results) 
 	throws SQLException, SNEEException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER populateData()");
@@ -64,9 +64,8 @@ implements ResultSet {
 		int numColumns = metadata.getColumnCount();
 		//XXX: Don't store anything in 0,0
 		data = new Object[results.size() + 1][numColumns + 1];
-		for (TaggedTuple tt : results) {
+		for (Tuple tuple : results) {
 			numRows++;
-			Tuple tuple = tt.getTuple();
 			for (int i = 1; i <= numColumns; i++) {
 				String colName = metadata.getColumnLabel(i);
 				Field field = tuple.getField(colName);

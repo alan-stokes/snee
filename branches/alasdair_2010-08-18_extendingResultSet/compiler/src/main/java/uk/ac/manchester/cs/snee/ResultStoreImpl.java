@@ -19,6 +19,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryPlanMetadata;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
+import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
+import uk.ac.manchester.cs.snee.evaluator.types.Window;
 import uk.ac.manchester.cs.snee.types.Duration;
 
 public class ResultStoreImpl 
@@ -36,7 +38,7 @@ extends Observable implements ResultStore {
 	public ResultStoreImpl(String query, QueryExecutionPlan queryPlan) 
 	throws SNEEException {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER StreamResultSetImpl() for " + query);
+			logger.debug("ENTER ResultStoreImpl() for " + query);
 		try {
 			command = query;
 			metadata = createMetaData(queryPlan);
@@ -47,7 +49,7 @@ extends Observable implements ResultStore {
 			throw new SNEEException(message);
 		}
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN StreamResultSetImpl()");
+			logger.debug("RETURN ResultStoreImpl()");
 	}
 
 	protected ResultSetMetaData createMetaData(
@@ -276,25 +278,41 @@ extends Observable implements ResultStore {
 		}
 		Output output = outputs.get(0);
 		List<ResultSet> resultSets = new ArrayList<ResultSet>();
-		List<TaggedTuple> results = new ArrayList<TaggedTuple>();
-		if (output instanceof TaggedTuple) {
-			try {
+		try {
+			if (output instanceof TaggedTuple) {
+				if (logger.isTraceEnabled()) {
+					logger.trace("Processing stream of tuples");
+				}
+				List<Tuple> results = new ArrayList<Tuple>();
 				for (Output result : outputs) {
 					TaggedTuple tt = (TaggedTuple) result; 
-					results.add(tt);
+					Tuple tuple = tt.getTuple();
+					results.add(tuple);
 				}
+				//XXX: Need to decide if we will use the override method
 				ResultSet resultSet = 
 					new StreamResultSet(metadata, results);
 				resultSets.add(resultSet);
-			} catch (SQLException e) {
-				String message = "Problem creating ResultSet object.";
-				logger.warn(message, e);
+			} else if (output instanceof Window) {
+				if (logger.isTraceEnabled()) {
+					logger.trace("Processing stream of windows");
+				}
+				for (Output result : outputs) {
+					Window win = (Window) result;
+					logger.trace("Window: " + win);
+					//XXX: ResultSet creation overridden for tests!
+					ResultSet rs = createRS(win.getTuples());
+					resultSets.add(rs);
+				}
+			} else {
+				String message = output.getClass() + 
+				" Unsupported output type at this time.";
+				logger.warn(message);
 				throw new SNEEException(message);
 			}
-		} else {
-			String message = output.getClass() + 
-				" Unsupported output type at this time.";
-			logger.warn(message);
+		} catch (SQLException e) {
+			String message = "Problem creating ResultSet object.";
+			logger.warn(message, e);
 			throw new SNEEException(message);
 		}
 		if (logger.isTraceEnabled()) {
@@ -302,6 +320,18 @@ extends Observable implements ResultStore {
 					resultSets.size());
 		}
 		return resultSets;
+	}
+
+	protected ResultSet createRS(List<Tuple> tuples) 
+	throws SQLException, SNEEException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER createRS()");
+		}
+		ResultSet rs = new StreamResultSet(metadata, tuples);
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN createRS()");
+		}
+		return rs;
 	}
 
 	/* (non-Javadoc)
