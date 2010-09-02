@@ -78,6 +78,12 @@ public class SNEEClientUsingCCO extends SNEEClient {
 	 * @throws InterruptedException 
 	 */
 	public static void main(String[] args) {
+		// Configure logging
+		PropertyConfigurator.configure(
+				SNEEClientUsingCCO.class.getClassLoader().
+				getResource("etc/log4j.properties"));
+		String query;
+		Long duration;
 		//This method represents the web server wrapper
 		if (args.length != 2) {
 			System.out.println("Usage: \n" +
@@ -85,17 +91,13 @@ public class SNEEClientUsingCCO extends SNEEClient {
 					"\t\"query duration in seconds\"\n");
 //			System.exit(1);
 			//XXX: Use default settings
-			args[0] = "SELECT * FROM envdata_hernebay_tide;";
-			args[1] = "900";
+			query = "SELECT * FROM envdata_hernebay_tide;";
+			duration = Long.valueOf("900");
+		} else {	
+			query = args[0];
+			duration = Long.valueOf(args[1]);
 		}
-//		} else {	
-			// Configure logging
-			PropertyConfigurator.configure(
-					SNEEClientUsingCCO.class.getClassLoader().
-					getResource("etc/log4j.properties"));
 			
-			String query = args[0];
-			long duration = Long.valueOf(args[1]);
 			try {
 				/* Initialise and run SNEEClient */
 				SNEEClientUsingCCO client = 
