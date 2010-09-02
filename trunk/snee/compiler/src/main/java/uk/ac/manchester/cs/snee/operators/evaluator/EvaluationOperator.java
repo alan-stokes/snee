@@ -15,7 +15,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
-public abstract class EvaluationOperator extends EvaluatorPhysicalOperator {
+public abstract class EvaluationOperator 
+extends EvaluatorPhysicalOperator {
 	//TODO: Make all evaluations make use of evaluator class.
 	
 	Logger logger = Logger.getLogger(this.getClass().getName());
@@ -38,7 +39,8 @@ public abstract class EvaluationOperator extends EvaluatorPhysicalOperator {
 	protected boolean evaluate(MultiExpression expr, Tuple tuple)
 	throws SNEEException{
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER evaluate() with " + expr + ", " + tuple);
+			logger.trace("ENTER evaluate() with " + expr + ", " +
+					tuple);
 		}
 		MultiExpression mExpr;
 		Expression exprTemp;
@@ -53,7 +55,8 @@ public abstract class EvaluationOperator extends EvaluatorPhysicalOperator {
 				exprResult = evaluate(mExpr, tuple);
 			}	
 			else {
-				exprResult = compute(expr.getExpressions(), expr.getMultiType(), tuple);
+				exprResult = compute(expr.getExpressions(), 
+						expr.getMultiType(), tuple);
 			}
 	
 		}
@@ -79,7 +82,8 @@ public abstract class EvaluationOperator extends EvaluatorPhysicalOperator {
 			Object daValue;
 			if (operand instanceof DataAttribute) {
 				DataAttribute da = (DataAttribute) operand;
-				String daName = da.getLocalName() + "." + da.getAttributeName();
+				String daName = da.getLocalName() + "." + 
+					da.getAttributeName();
 				if (logger.isTraceEnabled()) {
 					logger.trace("Getting attribute " + daName);
 				}
@@ -92,7 +96,8 @@ public abstract class EvaluationOperator extends EvaluatorPhysicalOperator {
 				daValue = new Float(fl.toString());
 			} else {
 				logger.warn("Unknown operand type " + operand);
-				throw new SNEEException("Unknown operand type " + operand);
+				throw new SNEEException("Unknown operand type " +
+						operand);
 			}
 			if (logger.isTraceEnabled()) {
 				logger.trace("Stack push: " + daValue);
@@ -102,7 +107,8 @@ public abstract class EvaluationOperator extends EvaluatorPhysicalOperator {
 
 		// Evaluate expression type over operands
 		while (operands.size() >= 2){
-			Object result = evaluate(operands.pop(), operands.pop(), type);
+			Object result = evaluate(operands.pop(), operands.pop(), 
+					type);
 			if (type.isBooleanDataType()){
 				retVal = ((Boolean)result).booleanValue();
 			} 
@@ -123,9 +129,11 @@ public abstract class EvaluationOperator extends EvaluatorPhysicalOperator {
 		double val1 = ((Number) obj1).doubleValue();
 		double val2 = ((Number) obj2).doubleValue();
 
-		if (logger.isTraceEnabled())
-			logger.trace("Obj1 type " + obj1.getClass() + "\tObj2 type " + obj2.getClass());
-
+		if (logger.isTraceEnabled()) {
+			logger.trace("Obj1 type " + obj1.getClass() + 
+					"\tObj2 type " + obj2.getClass());
+		}
+		
 		Object returnValue = null;
 		if (type.compareTo(MultiType.EQUALS)== 0){
 			returnValue =  obj1.equals(obj2);	

@@ -3,6 +3,7 @@ package uk.ac.manchester.cs.snee.compiler.queryplan;
 import java.util.TreeMap;
 
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 
 public class DLAFUtils extends LAFUtils {
 
@@ -16,9 +17,16 @@ public class DLAFUtils extends LAFUtils {
 
 	protected void exportAsDOTFile(String fname) 
 	throws SchemaMetadataException {
-		String source = this.dlaf.getSource().getSourceName();
-		String sourceType = this.dlaf.getSourceType().name().toLowerCase();
-		String str = "\\nSource = "+source+" ("+sourceType+")";
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("\\nSources:");
+		for (SourceMetadata source : dlaf.getSources()) {
+			buffer.append("\\n\\t");
+			buffer.append(source.getSourceName());
+			buffer.append("(");
+			buffer.append(source.getSourceType().name().toLowerCase());
+			buffer.append(")");
+		}
+		String str = buffer.toString();
 		exportAsDOTFile(fname, str, new TreeMap<String, StringBuffer>(), 
 				new TreeMap<String, StringBuffer>(), new StringBuffer());
 	}

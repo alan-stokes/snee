@@ -33,21 +33,16 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.TreeMap;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.graph.Edge;
 import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Graph;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperatorImpl;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
@@ -62,7 +57,7 @@ public class LAF extends Graph {
 	/**
 	 *  Set of leaf operators in the query plan.
 	 */
-	private HashSet<LogicalOperator> leafOperators = 
+	private Set<LogicalOperator> leafOperators = 
 		new HashSet<LogicalOperator>();
 
 	/**
@@ -78,7 +73,7 @@ public class LAF extends Graph {
 	/**
 	 * Implicit constructor used by subclass.
 	 */
-	protected LAF() { }    
+//	protected LAF() { }    
 
 	/** Acquisition interval of the whole query. (Alpha)*/
 	private double acInt;
@@ -94,11 +89,17 @@ public class LAF extends Graph {
 	 */
 	public LAF(LogicalOperator inRootOp, String queryName){//,
 //			long acquisitionInterval) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER LAF() for " + queryName);
+		}
 		this.name = generateName(queryName);
 		this.queryName=queryName;
 		this.rootOp = inRootOp;
 		this.updateNodesAndEdgesColls(this.rootOp);
 //		this.setAcquisitionInterval(acquisitionInterval);
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN LAF()");
+		}
 	}
 
 	/**
@@ -177,7 +178,7 @@ public class LAF extends Graph {
 	 * @param traversalOrder the traversal order desired 
 	 */
 	private void doOperatorIterator(LogicalOperator op,
-			ArrayList<LogicalOperator> opList, 
+			List<LogicalOperator> opList, 
 			TraversalOrder traversalOrder) {
 
 		if (traversalOrder == TraversalOrder.PRE_ORDER) {
@@ -185,7 +186,8 @@ public class LAF extends Graph {
 		}
 
 		for (int n = 0; n < op.getInDegree(); n++) {
-			this.doOperatorIterator(op.getInput(n), opList, traversalOrder);
+			this.doOperatorIterator(op.getInput(n), opList, 
+					traversalOrder);
 		}
 
 		if (traversalOrder == TraversalOrder.POST_ORDER) {
@@ -202,12 +204,10 @@ public class LAF extends Graph {
 	 */
 	public Iterator<LogicalOperator> operatorIterator(
 			TraversalOrder traversalOrder) {
-
-		ArrayList<LogicalOperator> opList = 
+		List<LogicalOperator> opList = 
 			new ArrayList<LogicalOperator>();
 		this.doOperatorIterator(this.getRootOperator(), opList, 
 				traversalOrder);
-
 		return opList.iterator();
 	}
 
@@ -250,4 +250,5 @@ public class LAF extends Graph {
 	public void setName(String newLafName) {
 		this.name = newLafName;
 	}
+	
 }

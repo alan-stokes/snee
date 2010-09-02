@@ -64,7 +64,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.rewriter.LogicalRewriter;
 import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
 import uk.ac.manchester.cs.snee.compiler.translator.Translator;
-import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import antlr.CommonAST;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -89,24 +88,25 @@ public class QueryCompiler {
 	public QueryCompiler(Metadata schema) 
 	throws TypeMappingException {
 		if (logger.isDebugEnabled()) 
-			logger.debug("ENTER");
+			logger.debug("ENTER QueryCompiler()");
 		_schemaMetadata = schema;
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN");
+			logger.debug("RETURN QueryCompiler()");
 	}
 	
 	private CommonAST doParsing(int queryID, String outputDir, 
 			String query) 
 	throws ParserException, RecognitionException, TokenStreamException {
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER parseQuery() with queryID: " + queryID +
+			logger.trace("ENTER doParsing() with queryID: " + queryID +
 					" dir: " + outputDir + " query:\n\t" + query);
 		SNEEqlLexer lexer = new SNEEqlLexer(new StringReader(query)); 
 		SNEEqlParser parser = new SNEEqlParser(lexer);
 		parser.parse();
 		CommonAST parseTree = (CommonAST)parser.getAST();
 		if (logger.isTraceEnabled())
-			logger.trace("Parse tree: " + parseTree.toStringList());
+			logger.trace("RETURN doParsing() with Parse tree: " + 
+					parseTree.toStringList());
 		return parseTree;
 	}
 	
@@ -118,17 +118,19 @@ public class QueryCompiler {
 	RecognitionException, SNEEConfigurationException 
 	{
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER queryID: " + queryID + "\n\tquery: " + 
-					parseTree);
+			logger.trace("ENTER doTranslation() queryID: " + 
+					queryID + "\n\tquery: " + parseTree);
 		Translator translator = new Translator(_schemaMetadata);
 		LAF laf = translator.translate(parseTree, queryID);    
+
 //				qosCollection.get(queryID).getMaxAcquisitionInterval());
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new LAFUtils(laf).generateGraphImage();
 		}
 		if (logger.isTraceEnabled())
-			logger.trace("RETURN: "+laf);
+			logger.trace("RETURN doTranslation() with  " + laf);
 		return laf;
+
 	}
 
 	private LAF doLogicalRewriting(int queryID, LAF laf) 
@@ -141,7 +143,8 @@ public class QueryCompiler {
 			new LAFUtils(lafPrime).generateGraphImage();
 		}
 		if (logger.isTraceEnabled())
-			logger.trace("RETURN: doLogicalRewriting "+lafPrime);
+			logger.trace("RETURN doLogicalRewriting() with " +
+					lafPrime);
 		return lafPrime;		
 	}
 	
@@ -161,11 +164,13 @@ public class QueryCompiler {
 	}
 	
 	private QueryExecutionPlan doSourcePlanning(int queryID, DLAF dlaf) 
-	throws SNEEException, SchemaMetadataException {
+	throws SNEEException, SchemaMetadataException,
+	TypeMappingException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSourcePlanning: " + dlaf);
 		SourcePlanner planner = new SourcePlanner();
-		QueryExecutionPlan qep = planner.doSourcePlanning(queryID, dlaf);
+		QueryExecutionPlan qep = 
+			planner.doSourcePlanning(queryID, dlaf);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doSourcePlanning");
 		return qep;
@@ -278,7 +283,7 @@ public class QueryCompiler {
 	private String createQueryDirectory(int queryID) 
 	throws SNEEException, SNEEConfigurationException {
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER: queryID: " + queryID);
+			logger.trace("ENTER createQueryDirectory() queryID: " + queryID);
 		String queryPlanOutputDir;
 		try {
 			String fileSeparator = System.getProperty("file.separator");
@@ -293,7 +298,7 @@ public class QueryCompiler {
 			throw new SNEEException(msg);
 		}
 		if (logger.isTraceEnabled())
-			logger.trace("RETURN: " + queryPlanOutputDir);
+			logger.trace("RETURN createQueryDirectory() " + queryPlanOutputDir);
 		return queryPlanOutputDir;
 	}
 

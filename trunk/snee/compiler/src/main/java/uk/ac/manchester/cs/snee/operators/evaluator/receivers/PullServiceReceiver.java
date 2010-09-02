@@ -82,7 +82,8 @@ public class PullServiceReceiver implements SourceReceiver {
 			tuple = tuples.get(1);
 		}
 		//FIXME:This is very CCO dependent!!!
-		long sqlTsValue = ((Integer) tuple.getValue("timestamp")).longValue();
+		long sqlTsValue = 
+			((Integer) tuple.getValue("timestamp")).longValue();
 		lastTs =  new Timestamp(sqlTsValue*1000);
 		if (logger.isTraceEnabled()) {
 			logger.trace("timestamp " + lastTs + " " +

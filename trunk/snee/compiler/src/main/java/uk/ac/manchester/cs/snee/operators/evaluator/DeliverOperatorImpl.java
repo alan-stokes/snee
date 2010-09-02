@@ -36,7 +36,6 @@
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Observable;
 
@@ -44,16 +43,16 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
-import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
-public class DeliverOperatorImpl extends EvaluatorPhysicalOperator {
+public class DeliverOperatorImpl 
+extends EvaluatorPhysicalOperator {
 	//XXX: Write test for deliver operator
 	
-	Logger logger = Logger.getLogger(DeliverOperatorImpl.class.getName());
+	Logger logger =
+		Logger.getLogger(DeliverOperatorImpl.class.getName());
 
 	DeliverOperator deliverOp;
 	
@@ -118,17 +117,20 @@ public class DeliverOperatorImpl extends EvaluatorPhysicalOperator {
 			setChanged();
 			notifyObservers(resultList);
 		}
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN update()");
+		}
 	}
 
 	private Output deliverResult(Output observed) {
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER deliverResult() with " + observed);
+		}
 		observed.setIndex(nextIndex);
 		nextIndex++;
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN deliverResult() with " + observed);
+		}
 		return observed;
 	}
 

@@ -74,7 +74,8 @@ public class WrsSchemaParser extends SchemaParserAbstract {
 		try {
 			for (int i = 1; i <= metadata.getColumnCount(); i++) {
 				String colName = metadata.getColumnName(i);
-				AttributeType colType = inferType(metadata.getColumnTypeName(i));
+				AttributeType colType = 
+					inferType(metadata.getColumnType(i));
 				response.put(colName, colType);
 			}
 		} catch (SQLException e) {

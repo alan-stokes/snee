@@ -82,9 +82,11 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 		for (int i = 0; i < columns.getLength(); i++) {
 			Element column = (Element) columns.item(i);
 			String columnName = column.getAttribute("name");
-			NodeList nameTypeElement = column.getElementsByTagName("sqlTypeName");
-			String sqlType = nameTypeElement.item(0).getFirstChild().getNodeValue();
-			AttributeType type = inferType(sqlType);
+			NodeList nameTypeElement = 
+				column.getElementsByTagName("sqlJavaTypeID");
+			String sqlType = 
+				nameTypeElement.item(0).getFirstChild().getNodeValue();
+			AttributeType type = inferType(new Integer(sqlType));
 			attributes.put(columnName, type);
 		}
 		if (logger.isDebugEnabled())

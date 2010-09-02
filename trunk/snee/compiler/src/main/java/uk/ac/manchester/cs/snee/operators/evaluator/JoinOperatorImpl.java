@@ -164,24 +164,28 @@ public class JoinOperatorImpl extends EvaluationOperator {
 			if (obj == leftOperator) {
 				logger.trace("Adding left");
 				if (observed instanceof Window) {
-					processWindow((Window) observed, resultItems, leftBuffer);
+					processWindow((Window) observed, resultItems, 
+							leftBuffer);
 				} else if (observed instanceof List<?>) {
 					List<Output> outputList = (List<Output>) observed;
 					for (Output output : outputList) {
 						if (output instanceof Window) {
-							processWindow((Window) output, resultItems, leftBuffer);
+							processWindow((Window) output, resultItems,
+									leftBuffer);
 						}
 					}
 				}
 			} else if (obj == rightOperator) {
 				logger.trace("Adding right");
 				if (observed instanceof Window) {
-					processWindow((Window) observed, resultItems, rightBuffer);
+					processWindow((Window) observed, resultItems, 
+							rightBuffer);
 				} else if (observed instanceof List<?>) {
 					List<Output> outputList = (List<Output>) observed;
 					for (Output output : outputList) {
 						if (output instanceof Window) {
-							processWindow((Window) output, resultItems, rightBuffer);
+							processWindow((Window) output, resultItems, 
+									rightBuffer);
 						}
 					}
 				}
@@ -193,7 +197,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 				notifyObservers(resultItems);
 			}
 		} catch (SNEEException e) {
-			logger.warn("Error processing join");
+			logger.warn("Error processing join.", e);
 //			throw e;
 		}
 		if (logger.isDebugEnabled())
@@ -222,10 +226,13 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER computeJoin()");
 		//FIXME: Joins last seen left window with last seen right window. Not really the correct semantics
-		Window leftWindow = (Window) leftBuffer.get(leftBuffer.size()-1);
-		Window rightWindow = (Window) rightBuffer.get(rightBuffer.size()-1);
+		Window leftWindow = 
+			(Window) leftBuffer.get(leftBuffer.size()-1);
+		Window rightWindow = 
+			(Window) rightBuffer.get(rightBuffer.size()-1);
 		if (logger.isTraceEnabled())
-			logger.trace("Joining " + leftWindow + " with " + rightWindow);
+			logger.trace("Joining " + leftWindow + " with " + 
+					rightWindow);
 		List<Tuple> joinTuples = new ArrayList<Tuple>();
 		for (Tuple leftTuple : leftWindow.getTuples()) {
 			for (Tuple rightTuple : rightWindow.getTuples()) {
@@ -298,7 +305,8 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		for (int i=0; i < arrExpr.length;i++){
 			if (arrExpr[i] instanceof DataAttribute){
 				DataAttribute da = (DataAttribute) arrExpr[i];
-				String daName = da.getLocalName() + "." + da.getAttributeName();
+				String daName = da.getLocalName() + "." + 
+					da.getAttributeName();
 				Object daValue;
 				if (t1.containsField(daName)) {
 					daValue = t1.getValue(daName);
@@ -309,26 +317,30 @@ public class JoinOperatorImpl extends EvaluationOperator {
 					throw new SNEEException("Unknown attribute name " + daName);
 				}
 				if (logger.isTraceEnabled()) {
-					logger.trace("Stack push: " + daName + ", " + daValue);
+					logger.trace("Stack push: " + daName + ", " + 
+							daValue);
 				}
 				operands.add(daValue);
 			} else if (arrExpr[i] instanceof IntLiteral){
 				IntLiteral il = (IntLiteral) arrExpr[i];
 				if (logger.isTraceEnabled()) {
-					logger.trace("Stack push integer: " + il.getMaxValue());
+					logger.trace("Stack push integer: " + 
+							il.getMaxValue());
 				}
 				operands.add(new Integer(il.toString()));
 			} else if (arrExpr[i] instanceof FloatLiteral){
 				FloatLiteral fl = (FloatLiteral) arrExpr[i];
 				if (logger.isTraceEnabled()) {
-					logger.trace("Stack push float: " + fl.getMaxValue());
+					logger.trace("Stack push float: " + 
+							fl.getMaxValue());
 				}
 				operands.add(new Float(fl.toString()));
 			}
 		}
 		boolean retVal = false;
 		while (operands.size() >= 2){
-			Object result = evaluate(operands.pop(), operands.pop(), type);
+			Object result = evaluate(operands.pop(), operands.pop(), 
+					type);
 			if (type.isBooleanDataType()){
 				retVal = ((Boolean)result).booleanValue();
 			} 
@@ -339,7 +351,8 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		return retVal;
 	}
 
-	private boolean evaluate(Expression expr, Tuple tuple1, Tuple tuple2) 
+	private boolean evaluate(Expression expr, Tuple tuple1, 
+			Tuple tuple2) 
 	throws SNEEException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER evaluate() with " + expr + ", [" + 
@@ -359,7 +372,8 @@ public class JoinOperatorImpl extends EvaluationOperator {
 					returnValue = evaluate(mExpr, tuple1, tuple2);
 				}	
 				else {
-					returnValue = compute(multiExpr.getExpressions(), multiExpr.getMultiType(), tuple1,tuple2);
+					returnValue = compute(multiExpr.getExpressions(), 
+							multiExpr.getMultiType(), tuple1,tuple2);
 				}
 			}
 		} else {

@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
-import uk.ac.manchester.cs.snee.evaluator.StreamResultSet;
 
 
 public interface SNEE {
@@ -62,7 +61,7 @@ public interface SNEE {
 	 * @return ResultSet for the query
 	 * @throws SNEEException Specified queryId does not exist
 	 */
-	public StreamResultSet getResultSet(int queryId) 
+	public ResultStore getResultSet(int queryId) 
 	throws SNEEException;
 	
 	/**

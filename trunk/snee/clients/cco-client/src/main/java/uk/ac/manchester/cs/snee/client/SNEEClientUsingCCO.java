@@ -83,8 +83,12 @@ public class SNEEClientUsingCCO extends SNEEClient {
 			System.out.println("Usage: \n" +
 					"\t\"query statement\"\n" +
 					"\t\"query duration in seconds\"\n");
-			System.exit(1);
-		} else {	
+//			System.exit(1);
+			//XXX: Use default settings
+			args[0] = "SELECT * FROM envdata_hernebay_tide;";
+			args[1] = "900";
+		}
+//		} else {	
 			// Configure logging
 			PropertyConfigurator.configure(
 					SNEEClientUsingCCO.class.getClassLoader().
@@ -103,7 +107,7 @@ public class SNEEClientUsingCCO extends SNEEClient {
 				logger.fatal(e);
 				System.exit(1);
 			}
-		}
+//		}
 		System.out.println("Success!");
 		System.exit(0);
 	}

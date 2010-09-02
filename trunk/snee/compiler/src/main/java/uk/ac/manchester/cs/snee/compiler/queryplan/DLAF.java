@@ -1,5 +1,8 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
@@ -17,13 +20,14 @@ public class DLAF {
     /**
      * Logger for this class.
      */
-    private static  Logger logger = Logger.getLogger(DLAF.class.getName());
+    private static  Logger logger = 
+    	Logger.getLogger(DLAF.class.getName());
 	
     private String name;
     
 	/**
-	 * The logical-algebraic form of the query plan operator tree from which
-	 * DLAF is derived.
+	 * The logical-algebraic form of the query plan operator tree 
+	 * from which DLAF is derived.
 	 */	
 	private LAF laf;
 
@@ -32,14 +36,13 @@ public class DLAF {
 	 * it will be possible to allocate different portions of the LAF to different
 	 * sourceTypes.
 	 */
-	private SourceType sourceType;
+//	private SourceType[] sourceType;
 
 	/**
-	 * The source that this query operator tree is for.  In the future,
-	 * it will be possible to allocate different portions of the LAF to different
-	 * sources.
+	 * The sources that are used in this query operator tree.
 	 */
-	private SourceMetadata source;
+	private List<SourceMetadata> sources = 
+		new ArrayList<SourceMetadata>();
 	
     /**
      * Counter to assign unique id to different candidates.
@@ -94,21 +97,21 @@ public class DLAF {
 	public String getProvenanceString() {
 		return this.laf.getProvenanceString() + "->" + this.name;
 	}
+//
+//	public void setSourceType(SourceType sourceType) {
+//		this.sourceType = sourceType;
+//	}
 
-	public void setSourceType(SourceType sourceType) {
-		this.sourceType = sourceType;
-	}
-
-	public void setSource(SourceMetadata source) {
-		this.source = source;
+	public void setSources(List<SourceMetadata> sources) {
+		this.sources.addAll(sources);
 	}
 	
-	public SourceType getSourceType() {
-		return this.sourceType;
-	}
+//	public SourceType getSourceType() {
+//		return this.sourceType;
+//	}
 	
-	public SourceMetadata getSource() {
-		return this.source;
+	public List<SourceMetadata> getSources() {
+		return sources;
 	}
 
 	public LAF getLAF() {
