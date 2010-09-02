@@ -106,7 +106,6 @@ public class SourcePlanner {
 	SNEEConfigurationException, OptimizationException, WhenSchedulerException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER doSensorNetworkSourcePlanning()");
-		//TODO: Add physical opt, routing, where- and when-scheduling here!		
 		logger.info("Starting Algorithm Selection for query " + queryName);
 		PAF paf = doSNAlgorithmSelection(dlaf, costParams, queryName);
 		logger.info("Starting Routing for query " + queryName);		
@@ -115,8 +114,8 @@ public class SourcePlanner {
 		DAF daf = doSNWhereScheduling(rt, paf, costParams, queryName);
 		logger.info("Starting When-Scheduling for query " + queryName);
 		Agenda agenda = doSNWhenScheduling(daf, qos, queryName);
-		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, 
-				queryName); //agenda		
+		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, rt, daf,
+				agenda, queryName); //agenda		
 		if (logger.isTraceEnabled())
 			logger.debug("RETURN doSensorNetworkSourcePlanning()");
 		return qep;
