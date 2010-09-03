@@ -66,5 +66,15 @@ public class Duration {
 		return TimeUnit.SECONDS.convert(_duration, TimeUnit.MILLISECONDS) +
 			" seconds";
 	}
+	
+	public boolean equals(Object obj) {
+		if (obj instanceof Duration) {
+			Duration dur = (Duration) obj;
+			if (dur.getDuration() == _duration) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 }
