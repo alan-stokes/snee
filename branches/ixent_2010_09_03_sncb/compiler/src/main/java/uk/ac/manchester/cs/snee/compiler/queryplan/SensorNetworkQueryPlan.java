@@ -43,14 +43,14 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 	/**
 	 * @return the daf
 	 */
-	public DAF getDaf() {
+	public DAF getDAF() {
 		return daf;
 	}
 
 	/**
 	 * @return the rt
 	 */
-	public RT getRt() {
+	public RT getRT() {
 		return rt;
 	}
 

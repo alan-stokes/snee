@@ -341,4 +341,6 @@ public interface SensornetOperator extends Node {
 //	AlphaBetaExpression getTimeExpression(CardinalityType card, Site node, 
 //			DAF daf, boolean round);
 
+	SensornetOperator getFirstChild();
+	
 }

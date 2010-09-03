@@ -619,4 +619,8 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 		}
 		return opList.iterator();
 	}	
+	
+	public SensornetOperator getFirstChild() {
+		return (SensornetOperator)this.getInput(0);
+	}
 }
