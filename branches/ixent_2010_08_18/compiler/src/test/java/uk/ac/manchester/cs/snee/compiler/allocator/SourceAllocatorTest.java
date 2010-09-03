@@ -66,7 +66,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	@Test(expected=SourceAllocatorException.class)
 	public void testAllocateSources_noOperators() 
 	throws SourceAllocatorException {
-		expect(mockLaf.getName()).andReturn("noQuery").times(0, 2);
+		expect(mockLaf.getID()).andReturn("noQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("noQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
 			andReturn(mockIterator);
@@ -80,7 +80,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	@Test
 	public void testAllocateSources_sensorQuery() 
 	throws SourceAllocatorException {
-		expect(mockLaf.getName()).andReturn("sensorQuery").times(0, 2);
+		expect(mockLaf.getID()).andReturn("sensorQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("sensorQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
 			andReturn(mockIterator);
@@ -98,7 +98,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	@Test(expected=SourceAllocatorException.class)
 	public void testAllocateSources_twoSensorQuery() 
 	throws SourceAllocatorException {
-		expect(mockLaf.getName()).andReturn("twoSensorQuery").times(0, 2);
+		expect(mockLaf.getID()).andReturn("twoSensorQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("twoSensorQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
 			andReturn(mockIterator);
@@ -121,7 +121,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	@Test
 	public void testAllocateSources_pullStreamSources() 
 	throws SourceAllocatorException {
-		expect(mockLaf.getName()).andReturn("pullStream").times(0, 2);
+		expect(mockLaf.getID()).andReturn("pullStream").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("pullStream-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
 			andReturn(mockIterator);
@@ -139,7 +139,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	@Test
 	public void testAllocateSources_twoPullStream() 
 	throws SourceAllocatorException {
-		expect(mockLaf.getName()).andReturn("twoPullStreamQuery").times(0, 2);
+		expect(mockLaf.getID()).andReturn("twoPullStreamQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("twoPullStreamQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
 			andReturn(mockIterator);
@@ -162,7 +162,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	@Test
 	public void testAllocateSources_UDPSource() 
 	throws SourceAllocatorException {
-		expect(mockLaf.getName()).andReturn("UDPSource").times(0, 2);
+		expect(mockLaf.getID()).andReturn("UDPSource").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("UDPSource-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
 			andReturn(mockIterator);
@@ -180,7 +180,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	@Test
 	public void testAllocateSources_twoUDPSources() 
 	throws SourceAllocatorException {
-		expect(mockLaf.getName()).andReturn("twoUDPSource").times(0, 2);
+		expect(mockLaf.getID()).andReturn("twoUDPSource").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("twoUDPSources-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
 			andReturn(mockIterator);
@@ -203,7 +203,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	@Test(expected=SourceAllocatorException.class)
 	public void testAllocateSources_scanQuery() 
 	throws SourceAllocatorException {
-		expect(mockLaf.getName()).andReturn("scanQuery").times(0, 2);
+		expect(mockLaf.getID()).andReturn("scanQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("scanQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
 			andReturn(mockIterator);
@@ -218,7 +218,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	@Test(expected=SourceAllocatorException.class)
 	public void testAllocateSources_mixedQuery() 
 	throws SourceAllocatorException {
-		expect(mockLaf.getName()).andReturn("mixedQuery").times(0, 2);
+		expect(mockLaf.getID()).andReturn("mixedQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("mixedQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
 			andReturn(mockIterator);

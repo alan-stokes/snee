@@ -21,7 +21,7 @@ public class EvaluatorQueryPlan extends QueryExecutionPlan {
      * @param dlaf
      * @param queryName
      */
-	public EvaluatorQueryPlan(DLAF dlaf, String queryName) {
+	public EvaluatorQueryPlan(DLAF dlaf, String queryName)
 	throws SchemaMetadataException, TypeMappingException {
 		super(dlaf, queryName);
 		if (logger.isDebugEnabled())

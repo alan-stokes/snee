@@ -43,6 +43,8 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Graph;
+import uk.ac.manchester.cs.snee.common.graph.Tree;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class LAF extends SNEEAlgebraicForm {

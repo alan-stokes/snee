@@ -50,7 +50,7 @@ public class SourceAllocator {
 	private List<SourceMetadata> retrieveSources(LAF laf)
 			throws SourceAllocatorException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER retrieveSources() for " + laf.getName());
+			logger.trace("ENTER retrieveSources() for " + laf.getID());
 		}
 		List<SourceMetadata> sources = new ArrayList<SourceMetadata>();
 		Iterator<LogicalOperator> opIter =

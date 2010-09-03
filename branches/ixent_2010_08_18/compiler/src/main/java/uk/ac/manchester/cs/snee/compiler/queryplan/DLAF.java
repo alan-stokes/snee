@@ -31,13 +31,6 @@ public class DLAF extends SNEEAlgebraicForm {
 	private LAF laf;
 
 	/**
-	 * The type of source this query operator tree is for.  In the future,
-	 * it will be possible to allocate different portions of the LAF to different
-	 * sourceTypes.
-	 */
-//	private SourceType[] sourceType;
-
-	/**
 	 * The sources that are used in this query operator tree.
 	 */
 	private List<SourceMetadata> sources = 
@@ -98,42 +91,6 @@ public class DLAF extends SNEEAlgebraicForm {
 		this.sources.addAll(sources);
 	}
 
-	/**
-	 * Set the source for the entire operator tree.
-	 * @param source
-	 */
-	public void setSource(SourceMetadata source) {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER setSource()");		
-		this.source = source;
-		this.sourceType = source.getSourceType();
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN setSource()");
-	}
-	
-	/**
-	 * Get the source type for the entire operator tree.
-	 * @return
-	 */
-	public SourceType getSourceType() {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER getSourceType()");
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN getSourceType()");
-		return this.sourceType;
-	}
-
-	/**
-	 * Get the source for the entire operator tree.
-	 * @return
-	 */
-	public SourceMetadata getSource() {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER getSource()");
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN getSource()");
-		return this.source;
-	}
 	public List<SourceMetadata> getSources() {
 		return sources;
 	}

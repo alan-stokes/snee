@@ -95,7 +95,7 @@ public class SourcePlanner {
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN doSourcePlanning() with " +
-					qep.getName());
+					qep.getID());
 		}
 		return qep;
 	}
@@ -103,7 +103,7 @@ public class SourcePlanner {
 	/**
 	 * Perform the query planning for a sensor network source.
 	 * @param dlaf
-	 * @param queryName
+	 * @param queryID
 	 * @return
 	 * @throws SNEEException
 	 * @throws SchemaMetadataException
@@ -118,16 +118,16 @@ public class SourcePlanner {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSensorNetworkSourcePlanning() for " +
 					queryID);
-		logger.info("Starting Algorithm Selection for query " + queryName);
-		PAF paf = doSNAlgorithmSelection(dlaf, costParams, queryName);
-		logger.info("Starting Routing for query " + queryName);		
-		RT rt = doSNRouting(paf, queryName);
-		logger.info("Starting Where-Scheduling for query " + queryName);
-		DAF daf = doSNWhereScheduling(rt, paf, costParams, queryName);
-		logger.info("Starting When-Scheduling for query " + queryName);
-		Agenda agenda = doSNWhenScheduling(daf, qos, queryName);
+		logger.info("Starting Algorithm Selection for query " + queryID);
+		PAF paf = doSNAlgorithmSelection(dlaf, costParams, queryID);
+		logger.info("Starting Routing for query " + queryID);		
+		RT rt = doSNRouting(paf, queryID);
+		logger.info("Starting Where-Scheduling for query " + queryID);
+		DAF daf = doSNWhereScheduling(rt, paf, costParams, queryID);
+		logger.info("Starting When-Scheduling for query " + queryID);
+		Agenda agenda = doSNWhenScheduling(daf, qos, queryID);
 		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, rt, daf,
-				agenda, queryName); //agenda		
+				agenda, queryID); //agenda		
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doSensorNetworkSourcePlanning()");
 		return qep;
@@ -172,13 +172,14 @@ public class SourcePlanner {
 		return rt;
 	}
 
-	private DAF doSNWhereScheduling(RT rt, PAF paf, CostParameters costParams, String queryID) 
-	throws SNEEConfigurationException, SNEEException, SchemaMetadataException, TypeMappingException,
-	OptimizationException {
+	private DAF doSNWhereScheduling(RT rt, PAF paf, CostParameters costParams, 
+	String queryID) 
+	throws SNEEConfigurationException, SNEEException, SchemaMetadataException, 
+	TypeMappingException, OptimizationException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER doSNWhereScheduling()");
 		WhereScheduler whereSched = new WhereScheduler();
-		DAF daf = whereSched.doWhereScheduling(paf, rt, costParams, queryName);
+		DAF daf = whereSched.doWhereScheduling(paf, rt, costParams, queryID);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new DAFUtils(daf).generateGraphImage();
 		}		
@@ -210,11 +211,13 @@ public class SourcePlanner {
 	 * @param dlaf
 	 * @param queryName
 	 * @return
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
 	 * @throws SNEEException
 	 * @throws SchemaMetadataException
 	 * @throws SNEEConfigurationException
 	 */
-	private EvaluatorQueryPlan doEvaluatorPlanning(DLAF dlaf, int queryID) {
+	private EvaluatorQueryPlan doEvaluatorPlanning(DLAF dlaf, int queryID) throws SchemaMetadataException, TypeMappingException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doEvaluatorPlanning() for " + queryID);		
 		EvaluatorQueryPlan qep = new EvaluatorQueryPlan(dlaf,
