@@ -491,22 +491,22 @@ public class Translator {
 			break;
 		case SNEEqlParserTokenTypes.SOURCE: 
 			String extentName = ast.getText();
-			ExtentMetadata sourceMetaData = 
+			ExtentMetadata extentMetadata = 
 				_schemaMetadata.getExtentMetadata(extentName);
 			List<SourceMetadata> sources = 
 				_schemaMetadata.getSources(extentName);
-			switch (sourceMetaData.getExtentType()) {
+			switch (extentMetadata.getExtentType()) {
 			case SENSED:
 				output = new AcquireOperator(extentName, extentName, 
-					sourceMetaData, sources, _boolType);
+					extentMetadata, sources, _boolType);
 				break;
 			case PUSHED: 
 				output = new ReceiveOperator(extentName, extentName, 
-					sourceMetaData, sources, _boolType);
+					extentMetadata, sources, _boolType);
 				break;
 			default:
-				String msg = "Unprogrammed ExtentType:" + sourceMetaData + 
-					" Type:" + sourceMetaData.getExtentType();
+				String msg = "Unprogrammed ExtentType:" + extentMetadata + 
+					" Type:" + extentMetadata.getExtentType();
 				logger.warn(msg);
 				throw new OptimizationException(msg);  	
 			}

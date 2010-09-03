@@ -669,4 +669,12 @@ public class WindowOperator extends LogicalOperatorImpl {
 		this.acInt = acquisitionInterval;
 	}
 
+	public boolean getTimeScope() {
+		return this.timeScope;
+	}
+	
+	public double getAcquisitionInterval() {
+		return this.acInt;
+	}	
+
 }

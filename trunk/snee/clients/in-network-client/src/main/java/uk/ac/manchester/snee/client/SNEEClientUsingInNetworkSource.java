@@ -7,11 +7,11 @@ import org.apache.log4j.PropertyConfigurator;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.client.SNEEClient;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-//import uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator;
+import uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator;
 
 public class SNEEClientUsingInNetworkSource extends SNEEClient {
 	
-	//private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;
+	private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;
 
 	public SNEEClientUsingInNetworkSource(String query, 
 			double duration) 
@@ -57,12 +57,12 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 				SNEEClientUsingInNetworkSource client = 
 					new SNEEClientUsingInNetworkSource(query, duration);
 				/* Initialise and run data source */
-				//_myDataSource = new ConstantRatePushStreamGenerator();
-				//_myDataSource.startTransmission();
+				_myDataSource = new ConstantRatePushStreamGenerator();
+				_myDataSource.startTransmission();
 				/* Run SNEEClient */
 				client.run();
 				/* Stop the data source */
-				//_myDataSource.stopTransmission();
+				_myDataSource.stopTransmission();
 			} catch (Exception e) {
 				System.out.println("Execution failed. See logs for detail.");
 				logger.fatal(e);

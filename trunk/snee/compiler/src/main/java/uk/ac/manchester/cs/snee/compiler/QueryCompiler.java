@@ -52,6 +52,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistExcep
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceDoesNotExistException;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlLexer;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
@@ -62,6 +63,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.rewriter.LogicalRewriter;
+import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
 import uk.ac.manchester.cs.snee.compiler.translator.Translator;
 import antlr.CommonAST;
@@ -81,21 +83,20 @@ public class QueryCompiler {
 		Logger.getLogger(QueryCompiler.class.getName());
 
 	/**
-	 * The logical schema being used. 
+	 * The metadata being used. 
 	 */
-	private Metadata _schemaMetadata;
+	private Metadata metadata;
 
 	public QueryCompiler(Metadata schema) 
 	throws TypeMappingException {
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER QueryCompiler()");
-		_schemaMetadata = schema;
+		metadata = schema;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN QueryCompiler()");
 	}
 	
-	private CommonAST doParsing(int queryID, String outputDir, 
-			String query) 
+	private CommonAST doParsing(String query, int queryID, String outputDir) 
 	throws ParserException, RecognitionException, TokenStreamException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doParsing() with queryID: " + queryID +
@@ -110,8 +111,8 @@ public class QueryCompiler {
 		return parseTree;
 	}
 	
-	private LAF doTranslation(int queryID, 
-			String queryPlanOutputDir, CommonAST parseTree) 
+	private LAF doTranslation(CommonAST parseTree, int queryID, 
+			String queryPlanOutputDir) 
 	throws TypeMappingException, SourceDoesNotExistException, 
 	SchemaMetadataException, ParserValidationException, 
 	OptimizationException, ParserException, ExtentDoesNotExistException,
@@ -120,7 +121,7 @@ public class QueryCompiler {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doTranslation() queryID: " + 
 					queryID + "\n\tquery: " + parseTree);
-		Translator translator = new Translator(_schemaMetadata);
+		Translator translator = new Translator(metadata);
 		LAF laf = translator.translate(parseTree, queryID);    
 
 //				qosCollection.get(queryID).getMaxAcquisitionInterval());
@@ -133,7 +134,7 @@ public class QueryCompiler {
 
 	}
 
-	private LAF doLogicalRewriting(int queryID, LAF laf) 
+	private LAF doLogicalRewriting(LAF laf, int queryID) 
 	throws SNEEConfigurationException, OptimizationException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doLogicalRewriting: " + laf);
@@ -149,7 +150,7 @@ public class QueryCompiler {
 	}
 	
 		
-	private DLAF doSourceAllocation(int queryID, LAF lafPrime) throws 
+	private DLAF doSourceAllocation(LAF lafPrime, int queryID) throws 
 	SourceAllocatorException, SNEEConfigurationException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSourceAllocation: " + lafPrime);
@@ -163,14 +164,15 @@ public class QueryCompiler {
 		return dlaf;
 	}
 	
-	private QueryExecutionPlan doSourcePlanning(int queryID, DLAF dlaf) 
-	throws SNEEException, SchemaMetadataException,
-	TypeMappingException {
+	private QueryExecutionPlan doSourcePlanning(DLAF dlaf, QoSExpectations qos, 
+	int queryID) 
+	throws SNEEException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException,
+	OptimizationException, WhenSchedulerException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSourcePlanning: " + dlaf);
-		SourcePlanner planner = new SourcePlanner();
-		QueryExecutionPlan qep = 
-			planner.doSourcePlanning(queryID, dlaf);
+		SourcePlanner planner = new SourcePlanner(metadata);
+		QueryExecutionPlan qep = planner.doSourcePlanning(dlaf, qos,
+			metadata.getCostParameters(), queryID);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doSourcePlanning");
 		return qep;
@@ -237,14 +239,16 @@ public class QueryCompiler {
 	 * @throws SNEEConfigurationException 
 	 * @throws SourceAllocatorException 
 	 * @throws SourceAllocatorException 
+	 * @throws WhenSchedulerException 
 	 */
-	public QueryExecutionPlan compileQuery(int queryID, String query) 
+	public QueryExecutionPlan compileQuery(int queryID, String query, 
+			QoSExpectations qos) 
 	throws SNEEException, SourceDoesNotExistException, 
 	TypeMappingException, SchemaMetadataException, 
 	ParserValidationException, OptimizationException, 
 	ParserException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException, 
-	SNEEConfigurationException, SourceAllocatorException 
+	SNEEConfigurationException, SourceAllocatorException, WhenSchedulerException 
 	 {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER: queryID: " + queryID + "\n\tquery: " + query);
@@ -257,26 +261,26 @@ public class QueryCompiler {
 		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting parsing for queryID " + queryID);
-		CommonAST ast = doParsing(queryID, outputDir, query);
+		CommonAST ast = doParsing(query, queryID, outputDir);
 
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Translation for query " + queryID);
-		LAF laf = doTranslation(queryID, outputDir, ast);
+		LAF laf = doTranslation(ast, queryID, outputDir);
 		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Logical Rewriting for query " + queryID);
-		LAF lafPrime = doLogicalRewriting(queryID, laf);
+		LAF lafPrime = doLogicalRewriting(laf, queryID);
 		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Source Allocation for query " + queryID);
-		DLAF dlaf = doSourceAllocation(queryID, lafPrime);
+		DLAF dlaf = doSourceAllocation(lafPrime, queryID);
 		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Source Planner for query " + queryID);
-		QueryExecutionPlan qep = doSourcePlanning(queryID, dlaf);
+		QueryExecutionPlan qep = doSourcePlanning(dlaf, qos, queryID);
 
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN: " + qep.getName());
+			logger.debug("RETURN: " + qep.getID());
 		return qep;
 	}
 

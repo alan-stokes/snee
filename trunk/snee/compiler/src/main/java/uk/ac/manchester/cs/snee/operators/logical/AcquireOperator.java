@@ -63,9 +63,6 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	/** Name as found in the Query. */
 	private String localName;
 
-	/** Physical locations for this operator.*/
-	private int[] sites = {};
-
 	/** List of attributes to be output. */
 	private List<Attribute> outputAttributes;
 
@@ -82,6 +79,8 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * data via an acquire mechanism
 	 */
 	private List<SourceMetadata> _sources;
+	
+	private int cardinality;
 
 	/**
 	 * Constructs a new Acquire operator.
@@ -93,7 +92,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * @throws TypeMappingException 
 	 */
 	public AcquireOperator(String extentName, String localName,  
-			ExtentMetadata extentMetaData, List<SourceMetadata> sources,
+			ExtentMetadata extentMetadata, List<SourceMetadata> sources,
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException {
 		super(boolType);
@@ -102,40 +101,29 @@ public class AcquireOperator extends LogicalOperatorImpl {
 					" " + localName);
 		
 		this.setOperatorName("ACQUIRE");
-		//        this.setNesCTemplateName("acquire");
 		this.setOperatorDataType(OperatorDataType.STREAM);
 
 		this.extentName = extentName;
 		this.localName = localName;
-		addMetaDataInfo(extentMetaData);
-		this.setParamStr(this.extentName + " (" 
-				+ Arrays.toString(sites) + ")");
-
+		addMetaDataInfo(extentMetadata);
 		updateSensedAttributes(); 
 		
 		_sources = sources;
+		StringBuffer sourcesStr = new StringBuffer();
+		boolean first = true;
+		for (SourceMetadata sm : _sources) {
+			if (first)
+				first=false;
+			else
+				sourcesStr.append(",");
+			sourcesStr.append(sm.getSourceName());
+		}		
+		this.setParamStr(this.extentName + " (card=" + this.cardinality +
+				" sources={"+sourcesStr+"})");
 		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN AcquireOperator()");
 	} 
-
-//	/**
-//	 * Constructor that creates a new operator 
-//	 * 		based on a model of an existing operator.
-//	 * 
-//	 * Used by both the clone method and the constructor of the 
-//	 * physical methods.
-//	 * @param model Operator to clone.
-//	 */
-//	protected AcquireOperator(AcquireOperator model, Types types) {
-//		super(model, types);
-//		this.extentName = model.extentName;
-//		this.localName = model.localName;
-//		this.sites = model.sites;
-//		this.outputAttributes = model.outputAttributes;
-//		this.sensedAttributes = model.sensedAttributes;
-//		this.expressions = model.expressions;
-//	}  
 
 	/**
 	 * Return the name of the extent as it appears in the schema.
@@ -192,6 +180,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 //				sites =  sourceMetaData.getSourceNodes();
 			}
 		}
+		this.cardinality = extentMetaData.getCardinality();
 		copyExpressions(outputAttributes);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN addMetaDataInfo()");
@@ -205,14 +194,6 @@ public class AcquireOperator extends LogicalOperatorImpl {
 		return this.getText();
 	}
 
-//	/**
-//	 * @return The Sites this acquire will be done on.
-//	 */
-//	public int[] getSourceSites() {
-//		return sites;
-//	}
-
-	//TODO min is predicates added
 	/**
 	 * Calculated the cardinality based on the requested type. 
 	 * 
@@ -221,7 +202,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * @return The Cardinality calculated as requested.
 	 */
 	public int getCardinality(CardinalityType card) {
-		return sites.length;
+		return this.cardinality;
 	}
 
 	/**
@@ -250,13 +231,6 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	public boolean isRecursive() {
 		return false;
 	}
-
-//	/** {@inheritDoc} */
-//	public AcquireOperator shallowClone() {
-//		//TODO: clone relation
-//		AcquireOperator clonedOp = new AcquireOperator(this);
-//		return clonedOp;
-//	}
 
 	/** 
 	 * List of the attribute returned by this operator.
@@ -369,78 +343,6 @@ public class AcquireOperator extends LogicalOperatorImpl {
 		}
 	}
 
-//	/** {@inheritDoc} */
-//	public int getOutputQueueCardinality(Site node, DAF daf) {
-//		return this.getCardinality(CardinalityType.PHYSICAL_MAX, node, daf);
-//	}
-
-//	/** {@inheritDoc} */
-//	public int getOutputQueueCardinality(int numberOfInstances) {
-//		assert(numberOfInstances == sites.length);
-//		return this.getCardinality(CardinalityType.PHYSICAL_MAX);
-//	}
-
-//	/**
-//	 * The physical maximum size of the output.
-//	 * 
-//	 * Each AcquireOperator on a single site 
-//	 * 		returns exactly 1 tuple per evaluation. 
-//	 *
-//	 * @param card Ignored.
-//	 * @param node Ignored
-//	 * @param daf Ignored
-//	 * @return 1
-//	 */
-//	public int getCardinality(CardinalityType card, 
-//			Site node, DAF daf) {
-//		if (Settings.MEASUREMENTS_MULTI_ACQUIRE >= 0) {
-//			return Settings.MEASUREMENTS_MULTI_ACQUIRE;			
-//		} else {
-//			return 1;
-//		}
-//	}
-
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getCardinality(CardinalityType card, 
-//			Site node, DAF daf, boolean round) {
-//		AlphaBetaExpression result = new AlphaBetaExpression();
-//		if (Settings.MEASUREMENTS_MULTI_ACQUIRE >= 0) {
-//			result.addBetaTerm(Settings.MEASUREMENTS_MULTI_ACQUIRE);
-//		} else {
-//			result.addBetaTerm(1);
-//		}
-//		return result;
-//	}
-
-//	/** {@inheritDoc} */
-//	private double getTimeCost() {
-//		logger.trace("" + CostParameters.getSignalEvent());
-//		logger.trace("" + CostParameters.getAcquireData());
-//		return getOverheadTimeCost()
-//		+ CostParameters.getAcquireData()
-//		+ CostParameters.getCopyTuple() + CostParameters.getSetAValue()
-//		+ CostParameters.getApplyPredicate();
-//	}
-
-//	/** {@inheritDoc} */
-//	public double getTimeCost(CardinalityType card, 
-//			Site node, DAF daf) {
-//		return getTimeCost();
-//	}
-
-//	/** {@inheritDoc} */
-//	public double getTimeCost(CardinalityType card, int numberOfInstances){
-//		assert(numberOfInstances == sites.length);
-//		return getTimeCost();		
-//	}
-
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getTimeExpression(
-//			CardinalityType card, Site node, 
-//			DAF daf, boolean round) {
-//		return new AlphaBetaExpression(getTimeCost(card, node, daf),0);
-//	}
-
 	/**
 	 * Some operators do not change the data in any way those could be removed.
 	 * This operator does change the data so can not be. 
@@ -487,11 +389,6 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	public int getNumSensedAttributes() {
 		return sensedAttributes.size();
 	}
-
-//	/** {@inheritDoc} */    
-//	public int getDataMemoryCost(Site node, DAF daf) {
-//		return super.defaultGetDataMemoryCost(node, daf);
-//	}
 
 	/**
 	 * Get the list of attributes acquired/ sensed by this operator.

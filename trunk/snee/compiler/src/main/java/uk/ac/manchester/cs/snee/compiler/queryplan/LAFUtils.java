@@ -15,10 +15,15 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
 import uk.ac.manchester.cs.snee.common.graph.GraphUtils;
+import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
+/**
+ * Utility class for displaying LAF.
+ */
 public class LAFUtils extends GraphUtils {
 	
 	/**
@@ -26,26 +31,62 @@ public class LAFUtils extends GraphUtils {
 	 */
 	private Logger logger = Logger.getLogger(LAFUtils.class.getName());
 	
+	/**
+	 * LAF to be displayed.
+	 */
 	private LAF laf;
 	
-	private boolean showOperatorCollectionType = false;
+	/**
+	 * Determines whether collection type (STREAM, WINDOW etc.) displayed.
+	 */
+	protected boolean showOperatorCollectionType = false;
 	
-	private boolean showTupleTypes = false;
+	/**
+	 * Determines whether tuple type (a1:t1,...,an:tn) displayed.
+	 */
+	protected boolean showTupleTypes = false;
 	
-	private boolean showOperatorID = false;
+	/**
+	 * Determines whether node id is displayed.
+	 */
+	protected boolean showOperatorID = false;
 
+	/**
+	 * Name of item to be displayed.
+	 */
 	protected String name;
 	
+	/**
+	 * Tree to be displayed.
+	 */
+	protected Tree tree;
+	
+	/**
+	 * Constructor for LAFUtils.
+	 * @param laf
+	 */
 	public LAFUtils(LAF laf) {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER LAFUtils()"); 		
 		this.laf = laf;
-		this.name = laf.getName();
+		this.name = laf.getID();
+		this.tree = laf.getOperatorTree();
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN LAFUtils()");
 	}
 
-
+	/**
+	 * Generate a DOT file representation of the DLAF for Graphviz.
+	 */
 	protected void exportAsDOTFile(String fname) 
 	throws SchemaMetadataException {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER exportAsDOTFile()");
 		exportAsDOTFile(fname, "", new TreeMap<String, StringBuffer>(), 
 				new TreeMap<String, StringBuffer>(), new StringBuffer());
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN exportAsDOTFile()");
+		
 	}
 
 	/**
@@ -62,20 +103,20 @@ public class LAFUtils extends GraphUtils {
 			StringBuffer fragmentsBuff) 
 	throws SchemaMetadataException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER LAF.exportAsDOTFile() with file:" + 
+			logger.debug("ENTER exportAsDOTFile() with file:" + 
 					fname + "\tlabel: " + label);
 		}
 		try {
 			PrintWriter out = new PrintWriter(new BufferedWriter(
 					new FileWriter(fname)));
 
-			out.println("digraph \"" + (String) laf.getName() + "\" {");
+			out.println("digraph \"" + this.name + "\" {");
 			String edgeSymbol = "->";
 
 			//query plan root at the top
 			out.println("size = \"8.5,11\";"); // do not exceed size A4
 			out.println("rankdir=\"BT\";");
-			out.println("label=\"" + laf.getProvenanceString() 
+			out.println("label=\"" + this.name //was laf.getProvenanceString 
 					+ label + "\";");
 
 			//Draw fragments info; will be empty for LAF and PAF
@@ -84,8 +125,8 @@ public class LAFUtils extends GraphUtils {
 			/**
 			 * Draw the nodes, and their properties
 			 */
-			Iterator<LogicalOperator> opIter = 
-				laf.operatorIterator(TraversalOrder.POST_ORDER);
+			Iterator<Node> opIter = 
+				tree.nodeIterator(TraversalOrder.POST_ORDER);
 			while (opIter.hasNext()) {
 				LogicalOperator op = (LogicalOperator) opIter.next();
 				out.print("\"" + op.getID() + "\" [fontsize=9 ");
@@ -118,10 +159,9 @@ public class LAFUtils extends GraphUtils {
 			/**
 			 * Draw the edges, and their properties
 			 */
-			opIter = 
-				laf.operatorIterator(TraversalOrder.POST_ORDER);
+			opIter = tree.nodeIterator(TraversalOrder.POST_ORDER);
 			while (opIter.hasNext()) {
-				LogicalOperator op = opIter.next();
+				LogicalOperator op = (LogicalOperator) opIter.next();
 				Iterator<LogicalOperator> childOpIter = op.childOperatorIterator();
 				while (childOpIter.hasNext()) {
 					LogicalOperator childOp = childOpIter.next();
@@ -147,14 +187,17 @@ public class LAFUtils extends GraphUtils {
 			}
 			out.println("}");
 			out.close();
-		} catch (IOException e) {
-			logger.warn("Failed to write LAF to " + fname + ".");
+		} catch (Exception e) {
+			logger.warn("Failed to write LAF to " + fname + ".", e);
 		}
 		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN LAF.exportAsDOTFile()");
+			logger.debug("RETURN exportAsDOTFile()");
 		}
 	}
 	
+	/**
+	 * Generates graph PNG image of given algebraic form.
+	 */
 	public void generateGraphImage() {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER generateGraphImage()");
@@ -171,7 +214,5 @@ public class LAFUtils extends GraphUtils {
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN generateGraphImage()");
-	}
-
-	
+	}	
 }

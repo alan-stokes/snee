@@ -132,7 +132,8 @@ public abstract class SNEEClient implements Observer {
 		System.out.println("Query: " + this._query);
 
 		//		try {
-		int queryId1 = controller.addQuery(_query, null);
+		String queryParamsFilename = "src/main/resources/etc/query-parameters.xml";
+		int queryId1 = controller.addQuery(_query, queryParamsFilename);
 		//		int queryId2 = controller.addQuery(query);
 
 		long startTime = System.currentTimeMillis();

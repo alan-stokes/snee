@@ -43,22 +43,11 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Graph;
+import uk.ac.manchester.cs.snee.common.graph.Tree;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
-import uk.ac.manchester.cs.snee.operators.logical.LogicalOperatorImpl;
-import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
-public class LAF extends Graph {
-	
-	/**
-	 * The root of the operator tree.
-	 */
-	protected LogicalOperator rootOp;
-
-	/**
-	 *  Set of leaf operators in the query plan.
-	 */
-	private Set<LogicalOperator> leafOperators = 
-		new HashSet<LogicalOperator>();
+public class LAF extends SNEEAlgebraicForm {
 
 	/**
 	 * Logger for this class.
@@ -69,56 +58,25 @@ public class LAF extends Graph {
 	 * Counter used to assign unique id to different candidates.
 	 */
 	protected static int candidateCount = 0;
+	
+	/**
+	 * The logical operator tree.
+	 */	
+	private Tree logicalOperatorTree;
 
 	/**
-	 * Implicit constructor used by subclass.
+	 * Constructor for LAF.
+	 * @param rootOp
+	 * @param queryName
 	 */
-//	protected LAF() { }    
-
-	/** Acquisition interval of the whole query. (Alpha)*/
-	private double acInt;
-
-	private String queryName;
-
-	/**
-	 * Main construction used by logical optimizer.
-	 * @param inRootOp The root operator of the logical query plan
-	 * @param queryName The name of the query
-	 * @param acquisitionInterval Acquisition interval of the whole query.
-	 *  (Alpha)
-	 */
-	public LAF(LogicalOperator inRootOp, String queryName){//,
-//			long acquisitionInterval) {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER LAF() for " + queryName);
-		}
-		this.name = generateName(queryName);
-		this.queryName=queryName;
-		this.rootOp = inRootOp;
-		this.updateNodesAndEdgesColls(this.rootOp);
-//		this.setAcquisitionInterval(acquisitionInterval);
+	public LAF(LogicalOperator rootOp, String queryName) {
+		super(queryName);
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER LAF()");
+		this.logicalOperatorTree = new Tree(rootOp);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN LAF()");
 		}
-	}
-
-	/**
-	 * Constructor used by clone.
-	 * @param laf The LAF to be cloned
-	 * @param inName The name to be assigned to the new data structure.
-	 */
-	public LAF(LAF laf, String inName) {
-		super(laf, inName);
-
-		logger.trace("size of nodes="+nodes.size());
-		rootOp = (LogicalOperatorImpl) nodes.get(laf.rootOp.getID());
-
-		Iterator<LogicalOperator> opIter = laf.leafOperators.iterator();
-		while (opIter.hasNext()) {
-			String opID = opIter.next().getID();
-			this.leafOperators.add((LogicalOperator) nodes.get(opID));
-		}
-
 	}
 
 	/**
@@ -128,39 +86,14 @@ public class LAF extends Graph {
 		candidateCount = 0;
 	}
 
-	/**
-	 * Generates a systematic name for this query plan structure, 
-	 * of the form
-	 * {query-name}-{structure-type}-{counter}.
-	 * @param queryName	The name of the query
-	 * @return the generated name for the query plan structure
-	 */
-	private static String generateName(String queryName) {
+	 /** {@inheritDoc} */
+	public String generateID(String queryName) {
+//		if (logger.isDebugEnabled())
+//			logger.debug("ENTER generateID()");
 		candidateCount++;
+//		if (logger.isDebugEnabled())
+//			logger.debug("RETURN generateID()");
 		return queryName + "-LAF-" + candidateCount;
-	}
-
-	/**
-	 * Updates the nodes and edges collections according to the tree 
-	 * passed to it.
-	 * @param op The current operator being processed
-	 */
-	public void updateNodesAndEdgesColls(LogicalOperator op) {
-		this.nodes.put(op.getID(), op);
-
-		/* Post-order traversal of operator tree */
-		if (!op.isLeaf()) {
-			for (int childIndex = 0; childIndex < op.getInDegree(); 
-			childIndex++) {
-				LogicalOperator c = (LogicalOperator) op.getInput(childIndex);
-
-				this.updateNodesAndEdgesColls(c);
-				EdgeImplementation e = new EdgeImplementation(this
-						.generateEdgeID(c.getID(), op.getID()), c.getID(), op
-						.getID());
-				this.edges.put(this.generateEdgeID(c.getID(), op.getID()), e);
-			}
-		}
 	}
 
 	/**
@@ -168,87 +101,58 @@ public class LAF extends Graph {
 	 * @return the root operator.
 	 */
 	public LogicalOperator getRootOperator() {
-		return this.rootOp;
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getRootOperator()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getRootOperator()");
+		return (LogicalOperator) this.logicalOperatorTree.getRoot();
+	}
+
+	 /** {@inheritDoc} */
+	public String getDescendantsString() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getDescendantsString()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getDescendantsString()");
+		return this.getID();
 	}
 
 	/**
-	 * Helper method to recursively generate the operator iterator.
-	 * @param op the operator being visited
-	 * @param opList the operator list being created
-	 * @param traversalOrder the traversal order desired 
+	 * Removes an operator from the operator tree.
+	 * @param op
+	 * @throws OptimizationException
 	 */
-	private void doOperatorIterator(LogicalOperator op,
-			List<LogicalOperator> opList, 
-			TraversalOrder traversalOrder) {
-
-		if (traversalOrder == TraversalOrder.PRE_ORDER) {
-			opList.add(op);
-		}
-
-		for (int n = 0; n < op.getInDegree(); n++) {
-			this.doOperatorIterator(op.getInput(n), opList, 
-					traversalOrder);
-		}
-
-		if (traversalOrder == TraversalOrder.POST_ORDER) {
-			opList.add(op);
-		}
-	}	
-
-	/**
-	 * Iterator to traverse the operator tree.
-	 * The structure of the operator tree may not be modified during 
-	 * iteration
-	 * @param traversalOrder the order to traverse the operator tree
-	 * @return an iterator for the operator tree
-	 */
-	public Iterator<LogicalOperator> operatorIterator(
-			TraversalOrder traversalOrder) {
-		List<LogicalOperator> opList = 
-			new ArrayList<LogicalOperator>();
-		this.doOperatorIterator(this.getRootOperator(), opList, 
-				traversalOrder);
-		return opList.iterator();
+	public void removeOperator(LogicalOperator op) throws OptimizationException {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER removeOperator()");
+		this.logicalOperatorTree.removeNode(op);
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN removeOperator()");
 	}
 
 	/**
-	 * Sets the acquisition interval for the Plan 
-	 * 		and the operators where required.
-	 * @param acquisitionInterval Acquisition interval of the whole query. 
-	 * (Alpha)
+	 * Creates an iterator to traverse the operator tree.
+	 * @param order
+	 * @return
 	 */
-	public void setAcquisitionInterval(double acquisitionInterval) {
-		this.acInt = acquisitionInterval;
-		Iterator<LogicalOperator> opIter = 
-			operatorIterator(TraversalOrder.PRE_ORDER);
-		while (opIter.hasNext()) {
-			LogicalOperator op = opIter.next();
-			if (op instanceof WindowOperator) {
-				((WindowOperator) op).setAcquisitionInterval(acInt);
-			}
-		}
+	public Iterator<LogicalOperator> operatorIterator(TraversalOrder order) {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER operatorIterator()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN operatorIterator()");		
+		return this.logicalOperatorTree.nodeIterator(order);
 	}
 
 	/**
-	 * Gets the acquisition interval for the Plan 
-	 * 		and the operators where required.
-	 * @return acquisitionInterval Acquisition interval of the whole query. 
-	 * (Alpha)
+	 * Gets the operator tree.
+	 * @return
 	 */
-	public double getAcquisitionInterval() {
-		return this.acInt;
-	}
-
-	public String getProvenanceString() {
-		return this.name;
-	}
-
-	public String getQueryName() {
-		return queryName;
-	}
-
-	public void setName(String newLafName) {
-		this.name = newLafName;
+	public Tree getOperatorTree() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getOperatorTree()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getOperatorTree()");	
+		return this.logicalOperatorTree;
 	}
 	
 }

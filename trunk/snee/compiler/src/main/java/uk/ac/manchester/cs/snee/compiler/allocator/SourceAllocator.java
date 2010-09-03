@@ -33,10 +33,8 @@ public class SourceAllocator {
 	public DLAF allocateSources (LAF laf) 
 	throws SourceAllocatorException
 	{
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER allocateSources() laf=" + 
-					laf.getName());
-		}
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER allocateSources() laf="+laf.getID());
 		DLAF dlaf = new DLAF(laf, laf.getQueryName());
 		List<SourceMetadata> sources = retrieveSources(laf);
 		validateSources(sources);
@@ -52,7 +50,7 @@ public class SourceAllocator {
 	private List<SourceMetadata> retrieveSources(LAF laf)
 			throws SourceAllocatorException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER retrieveSources() for " + laf.getName());
+			logger.trace("ENTER retrieveSources() for " + laf.getID());
 		}
 		List<SourceMetadata> sources = new ArrayList<SourceMetadata>();
 		Iterator<LogicalOperator> opIter =

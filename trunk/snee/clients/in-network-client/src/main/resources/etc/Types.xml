@@ -6,6 +6,7 @@
 	<type name="integer" size="2" math="5" nesCName = "uint16_t"/>
     <type name="string" size="4" math="2"/>
 	<type name="timestamp" size="8" math ="3" nesCName = "unint64_t"/>
+	<type name="timestamp" size="8" math ="3" nesCName = "unint64_t"/>
     <!--	
     <type name="real" size="8" math ="5"/>
     <type name="double" size="16" math ="5"/>

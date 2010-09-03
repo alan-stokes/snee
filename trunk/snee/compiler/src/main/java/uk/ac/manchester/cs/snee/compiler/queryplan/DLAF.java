@@ -5,8 +5,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 /**
  * The logical algebraic form of the query plan operator tree partitioned
@@ -15,28 +17,18 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
  * evaluator.
  *
  */
-public class DLAF {
+public class DLAF extends SNEEAlgebraicForm {
 
     /**
      * Logger for this class.
      */
-    private static  Logger logger = 
-    	Logger.getLogger(DLAF.class.getName());
+    private Logger logger = Logger.getLogger(DLAF.class.getName());
 	
-    private String name;
-    
 	/**
 	 * The logical-algebraic form of the query plan operator tree 
 	 * from which DLAF is derived.
 	 */	
 	private LAF laf;
-
-	/**
-	 * The type of source this query operator tree is for.  In the future,
-	 * it will be possible to allocate different portions of the LAF to different
-	 * sourceTypes.
-	 */
-//	private SourceType[] sourceType;
 
 	/**
 	 * The sources that are used in this query operator tree.
@@ -50,31 +42,19 @@ public class DLAF {
     protected static int candidateCount = 0;
     
 	/**
-	 * Implicit constructor used by subclass.
-	 */
-	protected DLAF() { }
-	
-	/**
 	 * Constructor for DLAF
 	 * @param laf The logical-algebraic form of the query plan operator tree 
 	 * from which DLAF is derived.
 	 * @param queryName The name of the query
 	 */
 	public DLAF(final LAF laf, final String queryName) {
+		super(queryName);
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER DLAF()");
 		this.laf = laf;
-		this.name = generateName(queryName);
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN DLAF()");
 	}
-	
-//    /**
-//     * Constructor used by clone.
-//     * @param dlaf The DLAF to be cloned
-//     * @param inName The name to be assigned to the data structure
-//     */
-//	public DLAF(final DLAF dlaf, final String inName) {
-//		super(dlaf, inName);
-//		
-//		this.laf = dlaf.laf; //This is ok because the laf is immutable now
-//	}
 	
     /**
      * Resets the counter; use prior to compiling the next query.
@@ -83,43 +63,71 @@ public class DLAF {
     	candidateCount = 0;
     }
 	
-	/**
-	 * Generates a systematic name for this query plan structure, of the form
-	 * {query-name}-{structure-type}-{counter}.
-	 * @param queryName	The name of the query
-	 * @return the generated name for the query plan structure
-	 */
-    private static String generateName(final String queryName) {
+	 /** {@inheritDoc} */
+    protected String generateID(final String queryName) {
+//		if (logger.isTraceEnabled())
+//			logger.trace("ENTER generateName()");    	
     	candidateCount++;
+//		if (logger.isTraceEnabled())
+//			logger.trace("ENTER generateName()");       	
     	return queryName + "-DLAF-" + candidateCount;
     }
     
-	public String getProvenanceString() {
-		return this.laf.getProvenanceString() + "->" + this.name;
-	}
 //
 //	public void setSourceType(SourceType sourceType) {
 //		this.sourceType = sourceType;
 //	}
 
+    /** {@inheritDoc} */
+	public String getDescendantsString() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getProvenanceString()");   
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getProvenanceString()");  
+		return this.getID()+"-"+this.laf.getDescendantsString();
+	}
+
 	public void setSources(List<SourceMetadata> sources) {
 		this.sources.addAll(sources);
 	}
-	
-//	public SourceType getSourceType() {
-//		return this.sourceType;
-//	}
-	
+
 	public List<SourceMetadata> getSources() {
 		return sources;
 	}
 
+	/**
+	 * Get the LAF that this DLAF is descended from.
+	 * @return
+	 */
 	public LAF getLAF() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getLAF()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getLAF()");		
 		return this.laf;
 	}
 
-	public String getName() {
-		return this.name;
+	/**
+	 * Delegate method; gets root operator from LAF.
+	 * @return
+	 */
+	public LogicalOperator getRootOperator() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getRootOperator()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getRootOperator()");		
+		return this.getLAF().getRootOperator();
 	}
-	
+
+	/**
+	 * Delegate method; gets operator tree from LAF.
+	 * @return
+	 */
+	public Tree getOperatorTree() {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getOperatorTree()");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getOperatorTree()");		
+		return this.getLAF().getOperatorTree();
+	}	
 }

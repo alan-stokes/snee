@@ -440,6 +440,10 @@ public class Topology extends Graph {
     	RadioLink link = this.getRadioLink(source, dest);
     	return link.getEnergyCost();
     }
+
+	public Iterator<Node> siteIterator() {
+		return this.nodes.values().iterator();
+	}
     
     /**
      * TODO: make this a unit test
