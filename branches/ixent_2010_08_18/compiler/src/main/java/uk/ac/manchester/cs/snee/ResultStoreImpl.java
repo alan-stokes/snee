@@ -1,45 +1,100 @@
-package uk.ac.manchester.cs.snee.evaluator;
+package uk.ac.manchester.cs.snee;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Observable;
 
+import javax.sql.RowSetMetaData;
+import javax.sql.rowset.RowSetMetaDataImpl;
+
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryPlanMetadata;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
+import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
+import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
+import uk.ac.manchester.cs.snee.evaluator.types.Window;
 import uk.ac.manchester.cs.snee.types.Duration;
 
-public class StreamResultSetImpl extends Observable implements StreamResultSet {
+public class ResultStoreImpl 
+extends Observable implements ResultStore {
 	
 	private static Logger logger = 
-		Logger.getLogger(StreamResultSetImpl.class.getName());
+		Logger.getLogger(ResultStoreImpl.class.getName());
 
 	private List<Output> _data;
 
-	private List<String> _attributes;
+	private String command = null;
 
-	public StreamResultSetImpl() {
+	private ResultSetMetaData metadata;
+
+	public ResultStoreImpl(String query, QueryExecutionPlan queryPlan) 
+	throws SNEEException {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER StreamResultSetImpl()");		
-		_attributes = new ArrayList<String>();
-		_data = createDataStore();
+			logger.debug("ENTER ResultStoreImpl() for " + query);
+		try {
+			command = query;
+			metadata = createMetaData(queryPlan);
+			_data = createDataStore();
+		} catch (SQLException e) {
+			String message = "Problems generating metadata.";
+			logger.warn(message, e);
+			throw new SNEEException(message);
+		}
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN StreamResultSetImpl()");
+			logger.debug("RETURN ResultStoreImpl()");
+	}
+
+	protected ResultSetMetaData createMetaData(
+			QueryExecutionPlan queryPlan)
+	throws SQLException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER createMetaData() with " + queryPlan);
+		}
+		QueryPlanMetadata queryMetaData = queryPlan.getMetaData();
+		RowSetMetaData md = new RowSetMetaDataImpl();
+		List<Attribute> attributes = 
+			queryMetaData.getOutputAttributes();
+		md.setColumnCount(attributes.size());
+		int columnIndex = 0;
+		if (logger.isTraceEnabled()) {
+			logger.trace("Number of attributes: " + attributes.size());
+		}
+		for (Attribute attr : attributes) {
+			columnIndex++;
+			if (logger.isTraceEnabled()) {
+				logger.trace("Attribute " + columnIndex + ": " +
+						attr);
+			}
+			md.setAutoIncrement(columnIndex, false);
+			md.setCaseSensitive(columnIndex, false);
+			md.setCatalogName(columnIndex, attr.getExtentName());
+			md.setColumnName(columnIndex, attr.getName());
+			md.setColumnLabel(columnIndex, attr.getAttributeLabel());
+			md.setColumnType(columnIndex, attr.getAttributeType());
+			md.setColumnTypeName(columnIndex, 
+					attr.getAttributeTypeName());
+			md.setCurrency(columnIndex, false);
+			md.setNullable(columnIndex,
+					ResultSetMetaData.columnNoNulls);
+			md.setTableName(columnIndex, attr.getExtentName());
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN createMetaData() #columns=" +
+					md.getColumnCount());
+		}
+		return md;
 	}
 
 	protected List<Output> createDataStore() {
 		return new ArrayList<Output>();
-	}
-
-	public List<String> getAttributes() {
-		return _attributes;
-	}
-
-	public void setAttributes(List<String> attributes) {
-		_attributes = attributes;
 	}
 	
 	public void add(Output data) {
@@ -49,7 +104,13 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 		if (logger.isTraceEnabled())
 			logger.trace("Notifying subscribe clients. " + data);
 		setChanged();
-		notifyObservers(data);
+		try {
+			List<Output> dataList = new ArrayList<Output>();
+			dataList.add(data);
+			notifyObservers(createResultSets(dataList));
+		} catch (SNEEException e) {
+			logger.error("Problem notifying consumers. " + e);
+		}
 	}
 	
 	public void addAll(Collection<Output> data) {
@@ -59,7 +120,11 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 		if (logger.isTraceEnabled())
 			logger.trace("Notifying subscribe clients. " + data.size());
 		setChanged();
-		notifyObservers(data);
+		try {
+			notifyObservers(createResultSets((List<Output>) data));
+		} catch (SNEEException e) {
+			logger.error("Problem notifying consumers. " + e);
+		}
 	}	
 	
 	public int size() {
@@ -72,8 +137,8 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 			logger.trace("ENTER checkCount() with count " + count);
 		}
 		if (count <= 0) { 
-			String msg = "Count (" + count + ") is less than or equal " +
-					"to 0.";
+			String msg = "Count (" + count +
+				") is less than or equal " + "to 0.";
 			logger.warn(msg);
 			throw new SNEEException(msg);
 		}
@@ -110,10 +175,12 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 	private void checkDuration(Duration duration) 
 	throws SNEEException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER checkDuration() with duration " + duration);
+			logger.trace("ENTER checkDuration() with duration " + 
+					duration);
 		}
 		if (duration.getDuration() <= 0) { 
-			String msg = "Duration (" + duration + ") is less than or " +
+			String msg = "Duration (" + duration + 
+				") is less than or " +
 			"equal to 0.";
 			logger.warn(msg);
 			throw new SNEEException(msg);
@@ -128,8 +195,8 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 		
 		if (availableDuration < durationPeriod) {
 			String msg = "Requested duration (" + durationPeriod + 
-			") is greater than available duration (" + 
-			availableDuration + ").";
+				") is greater than available duration (" + 
+				availableDuration + ").";
 			logger.warn(msg);
 			throw new SNEEException(msg);
 		}
@@ -143,15 +210,18 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 			logger.trace("ENTER checkTimestamp() with timestamp " + 
 					timestamp);
 		}
-		if (timestamp.after(new Timestamp(System.currentTimeMillis()))) {
-			String msg = "For retrieving results, the timestamp must be in the past.";
+		if (timestamp.after(new Timestamp(System.currentTimeMillis()))) 
+		{
+			String msg = "For retrieving results, " +
+					"the timestamp must be in the past.";
 			logger.warn(msg);
 			throw new SNEEException(msg);
 		} 
 		
 		Timestamp oldestTS = new Timestamp(_data.get(0).getEvalTime());
 		if (timestamp.before(oldestTS)) {
-			String msg = "The oldest timestamp available is " + oldestTS;
+			String msg = "The oldest timestamp available is " + 
+				oldestTS;
 			logger.warn(msg);
 			throw new SNEEException(msg);
 		}
@@ -169,15 +239,16 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 		if (maxTimestamp == null) {
 			maxTimestamp = new Timestamp(System.currentTimeMillis());
 			if (logger.isTraceEnabled())
-				logger.trace("Using 'now' as max timestamp: " + maxTimestamp);
+				logger.trace("Using 'now' as max timestamp: " +
+						maxTimestamp);
 		}
 		List<Output> response = new ArrayList<Output>();
 		int count = 0;
 		for (Output output : _data) {
 			Timestamp outputTS = new Timestamp(output.getEvalTime());
 			/* 
-			 * Check that item's timestamp is newer than required timestamp
-			 * and less than the maximum timestamp 
+			 * Check that item's timestamp is newer than required 
+			 * timestamp and less than the maximum timestamp 
 			 */
 			if (outputTS.compareTo(timestamp) >= 0 && 
 					outputTS.before(maxTimestamp)) {
@@ -194,16 +265,79 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 			}
 		}
 		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN generateTimestampResultSet(), number " +
-					"of results: " + response.size());
+			logger.trace("RETURN generateTimestampResultSet(), " +
+					"number " + "of results: " + response.size());
 		}
 		return response;
+	}
+
+	private List<ResultSet> createResultSets(List<Output> outputs)
+	throws SNEEException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER createResultSets()");
+		}
+		Output output = outputs.get(0);
+		List<ResultSet> resultSets = new ArrayList<ResultSet>();
+		try {
+			if (output instanceof TaggedTuple) {
+				if (logger.isTraceEnabled()) {
+					logger.trace("Processing stream of tuples");
+				}
+				List<Tuple> results = new ArrayList<Tuple>();
+				for (Output result : outputs) {
+					TaggedTuple tt = (TaggedTuple) result; 
+					Tuple tuple = tt.getTuple();
+					results.add(tuple);
+				}
+				//XXX: Need to decide if we will use the override method
+				ResultSet resultSet = 
+					new StreamResultSet(metadata, results);
+				resultSets.add(resultSet);
+			} else if (output instanceof Window) {
+				if (logger.isTraceEnabled()) {
+					logger.trace("Processing stream of windows");
+				}
+				for (Output result : outputs) {
+					Window win = (Window) result;
+					logger.trace("Window: " + win);
+					//XXX: ResultSet creation overridden for tests!
+					ResultSet rs = createRS(win.getTuples());
+					resultSets.add(rs);
+				}
+			} else {
+				String message = output.getClass() + 
+				" Unsupported output type at this time.";
+				logger.warn(message);
+				throw new SNEEException(message);
+			}
+		} catch (SQLException e) {
+			String message = "Problem creating ResultSet object.";
+			logger.warn(message, e);
+			throw new SNEEException(message);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN createResultSets() #resultSets=" +
+					resultSets.size());
+		}
+		return resultSets;
+	}
+
+	protected ResultSet createRS(List<Tuple> tuples) 
+	throws SQLException, SNEEException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER createRS()");
+		}
+		ResultSet rs = new StreamResultSet(metadata, tuples);
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN createRS()");
+		}
+		return rs;
 	}
 
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.evaluator.StreamResultSet#getNewestResults()
 	 */
-	public List<Output> getNewestResults() 
+	public List<ResultSet> getNewestResults() 
 	throws SNEEException {
 		/* Equivalent to calling getResults(int queryId) */
 		return getResults();
@@ -212,7 +346,7 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.evaluator.StreamResultSet#getNewestResults(int)
 	 */
-	public List<Output> getNewestResults(int count)
+	public List<ResultSet> getNewestResults(int count)
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER getNewestResults() with count " + count);
@@ -223,16 +357,16 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 		int toIndex = _data.size();
 		List<Output> output = 
 			_data.subList(toIndex - count, toIndex);
-		
+		List<ResultSet> resultSets = createResultSets(output);
 		if (logger.isDebugEnabled()) {
-    		logger.debug("RETURN getNewestResults() result size " + 
-    				output.size());
+    		logger.debug("RETURN getNewestResults() #resultSets " + 
+    				resultSets.size());
     	}
-		return output;
+		return resultSets;
 	}
 
 
-	public List<Output> getNewestResults(Duration duration)
+	public List<ResultSet> getNewestResults(Duration duration)
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER getNewestResults() with duration " + 
@@ -279,30 +413,33 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 				}
 			}
 		}		
+		List<ResultSet> resultSets = createResultSets(response);
 		if (logger.isDebugEnabled()) {
-    		logger.debug("RETURN getNewestResults() result size " + 
-    				response.size());
+    		logger.debug("RETURN getNewestResults()  #resultSets " + 
+    				resultSets.size());
     	}
-		return response;
+		return resultSets;
 	}
 	
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.evaluator.StreamResultSet#getResults()
 	 */
-	public List<Output> getResults() throws SNEEException {
+	public List<ResultSet> getResults() throws SNEEException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getResult()");
+			logger.debug("ENTER getResults()");
 		}
+		List<ResultSet> resultSets = createResultSets(_data);
 		if (logger.isDebugEnabled()) {
-    		logger.debug("RETURN getResult() result size " + _data.size());
+    		logger.debug("RETURN getResults()  #resultSets " + 
+    				resultSets.size());
     	}
-		return _data;
+		return resultSets;
 	}
 
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.evaluator.StreamResultSet#getResults(int)
 	 */
-	public List<Output> getResults(int count) 
+	public List<ResultSet> getResults(int count) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER getResults() with count=" + count);
@@ -311,17 +448,18 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 		checkCount(count);
 
 		List<Output> output = _data.subList(0, count);
-		
+		List<ResultSet> resultSets = createResultSets(output);
 		if (logger.isDebugEnabled()) {
-    		logger.debug("RETURN getResults() result size " + output.size());
+    		logger.debug("RETURN getResults() #resultSets " + 
+    				resultSets.size());
     	}
-		return output;
+		return resultSets;
 	}
 
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.evaluator.StreamResultSet#getResults(uk.ac.manchester.cs.snee.types.Duration)
 	 */
-	public List<Output> getResults(Duration duration)
+	public List<ResultSet> getResults(Duration duration)
 			throws SNEEException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER getResult() with duration " + duration);
@@ -360,36 +498,39 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 				break;
 			}
 		}
-		
+		List<ResultSet> resultSets = createResultSets(response);
 		if (logger.isDebugEnabled()) {
-    		logger.debug("RETURN getResult() result size " + response.size());
+    		logger.debug("RETURN getResult() #resultSets " + 
+    				resultSets.size());
     	}
-		return response;
+		return resultSets;
 	}
 
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.evaluator.StreamResultSet#getResultsFromIndex(int)
 	 */
-	public List<Output> getResultsFromIndex(int index)
+	public List<ResultSet> getResultsFromIndex(int index)
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getResultFromIndex() with index " + index);
+			logger.debug("ENTER getResultFromIndex() with index " + 
+					index);
 		}
 		checkIndex(index);
 		int toIndex = _data.size();
 		List<Output> output = 
 			_data.subList(index, toIndex); 
+		List<ResultSet> resultSets = createResultSets(output);
 		if (logger.isDebugEnabled()) {
-    		logger.debug("RETURN getResultFromIndex() result size " + 
-    				output.size());
+    		logger.debug("RETURN getResultFromIndex() #resultSets " + 
+    				resultSets.size());
     	}
-		return output;
+		return resultSets;
 	}
 
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.evaluator.StreamResultSet#getResultsFromIndex(int, int)
 	 */
-	public List<Output> getResultsFromIndex(int index, int count) 
+	public List<ResultSet> getResultsFromIndex(int index, int count) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER getResultFromIndex() with index " + 
@@ -405,17 +546,19 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 		}		
 		List<Output> output = 
 			_data.subList(index, toIndex); 
+		List<ResultSet> resultSets = createResultSets(output);
 		if (logger.isDebugEnabled()) {
-    		logger.debug("RETURN getResultFromIndex() result size " + 
-    				output.size());
+    		logger.debug("RETURN getResultFromIndex() #resultSets " + 
+    				resultSets.size());
     	}
-		return output;
+		return resultSets;
 	}
 
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.evaluator.StreamResultSet#getResultsFromIndex(int, uk.ac.manchester.cs.snee.types.Duration)
 	 */
-	public List<Output> getResultsFromIndex(int index, Duration duration) 
+	public List<ResultSet> getResultsFromIndex(int index, 
+			Duration duration) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER getResultFromIndex() with index " + 
@@ -433,7 +576,7 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.evaluator.StreamResultSet#getResultsFromTimestamp(java.sql.Timestamp)
 	 */
-	public List<Output> getResultsFromTimestamp(Timestamp timestamp) 
+	public List<ResultSet> getResultsFromTimestamp(Timestamp timestamp) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER getResultsFromTimestamp() with " +
@@ -443,18 +586,18 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 		
 		List<Output> response = 
 			generateTimestampResultSet(timestamp, _data.size(), null);
-		
+		List<ResultSet> resultSets = createResultSets(response);
 		if (logger.isDebugEnabled()) {
-    		logger.debug("RETURN getResultsFromTimestamp() result size " +
-    				response.size());
+    		logger.debug("RETURN getResultsFromTimestamp() #resultSets " + 
+    				resultSets.size());
     	}
-		return response;
+		return resultSets;
 	}
 
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.evaluator.StreamResultSet#getResultsFromTimestamp(java.sql.Timestamp, int)
 	 */
-	public List<Output> getResultsFromTimestamp(Timestamp timestamp, 
+	public List<ResultSet> getResultsFromTimestamp(Timestamp timestamp, 
 			int count) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
@@ -467,18 +610,18 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 		/* Generate results */
 		List<Output> response = 
 			generateTimestampResultSet(timestamp, count, null);
-
+		List<ResultSet> resultSets = createResultSets(response);
 		if (logger.isDebugEnabled()) {
-    		logger.debug("RETURN getResultsFromTimestamp() result size " + 
-    				response.size());
+    		logger.debug("RETURN getResultsFromTimestamp() #resultSets " + 
+    				resultSets.size());
     	}
-		return response;
+		return resultSets;
 	}
 
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.evaluator.StreamResultSet#getResultsFromTimestamp(java.sql.Timestamp, uk.ac.manchester.cs.snee.types.Duration)
 	 */
-	public List<Output> getResultsFromTimestamp(Timestamp timestamp, 
+	public List<ResultSet> getResultsFromTimestamp(Timestamp timestamp, 
 			Duration duration) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
@@ -493,11 +636,27 @@ public class StreamResultSetImpl extends Observable implements StreamResultSet {
 			new Timestamp(timestamp.getTime() + duration.getDuration());
 		List<Output> response = 
 			generateTimestampResultSet(timestamp, maxSize, maxTimestamp);
+		List<ResultSet> resultSets = createResultSets(response);
 		if (logger.isDebugEnabled()) {
-    		logger.debug("RETURN getResultsFromTimestamp() result size " + 
-    				response.size());
+    		logger.debug("RETURN getResultsFromTimestamp() #resultSets " + 
+    				resultSets.size());
     	}
-		return response;
+		return resultSets;
+	}
+
+	@Override
+	public ResultSetMetaData getMetadata() {
+		return metadata;
+	}
+
+	@Override
+	public String getCommand() {
+		return command;
+	}
+
+	@Override
+	public void setCommand(String cmd) {
+		command = cmd;
 	}
 
 }

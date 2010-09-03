@@ -33,19 +33,25 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 	 */
 	public static void main(String[] args) {
 		//This method represents the web server wrapper
+		// Configure logging
+		PropertyConfigurator.configure(
+				SNEEClientUsingInNetworkSource.class.
+				getClassLoader().getResource("etc/log4j.properties"));
+		String query;
+		Long duration;
 		if (args.length != 2) {
 			System.out.println("Usage: \n" +
 					"\t\"query statement\"\n" +
 					"\t\"query duration in seconds\"\n");
-			System.exit(1);
+			//XXX: Use default query
+			query = "SELECT * FROM PullStream;";
+			duration = Long.valueOf("20");
+//			System.exit(1);
 		} else {	
-			// Configure logging
-			PropertyConfigurator.configure(
-					SNEEClientUsingInNetworkSource.class.
-					getClassLoader().getResource("etc/log4j.properties"));
+			query = args[0];
+			duration = Long.valueOf(args[1]);
+		}
 			
-			String query = args[0];
-			long duration = Long.valueOf(args[1]);
 			try {
 				/* Initialise SNEEClient */
 				SNEEClientUsingInNetworkSource client = 
@@ -62,7 +68,7 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 				logger.fatal(e);
 				System.exit(1);
 			}
-		}
+//		}
 		System.out.println("Success!");
 		System.exit(0);
 	}

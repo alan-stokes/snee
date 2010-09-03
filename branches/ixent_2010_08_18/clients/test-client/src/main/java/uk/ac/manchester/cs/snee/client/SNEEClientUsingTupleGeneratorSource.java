@@ -31,20 +31,26 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 	 * @throws InterruptedException 
 	 */
 	public static void main(String[] args) {
+		// Configure logging
+		PropertyConfigurator.configure(
+				SNEEClientUsingTupleGeneratorSource.class.
+				getClassLoader().getResource("etc/log4j.properties"));
+		Long duration;
+		String query;
 		//This method represents the web server wrapper
 		if (args.length != 2) {
 			System.out.println("Usage: \n" +
 					"\t\"query statement\"\n" +
 					"\t\"query duration in seconds\"\n");
-			System.exit(1);
+			//XXX: Use default query
+			query = "SELECT * FROM HerneBay_Tide;";
+			duration = Long.valueOf("20");
+//			System.exit(1);
 		} else {	
-			// Configure logging
-			PropertyConfigurator.configure(
-					SNEEClientUsingTupleGeneratorSource.class.
-					getClassLoader().getResource("etc/log4j.properties"));
+			query = args[0];
+			duration = Long.valueOf(args[1]);
+		}
 			
-			String query = args[0];
-			long duration = Long.valueOf(args[1]);
 			try {
 				/* Initialise SNEEClient */
 				SNEEClientUsingTupleGeneratorSource client = 
@@ -61,7 +67,7 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 				logger.fatal("Execution failed", e);
 				System.exit(1);
 			}
-		}
+//		}
 		System.out.println("Success!");
 		System.exit(0);
 	}

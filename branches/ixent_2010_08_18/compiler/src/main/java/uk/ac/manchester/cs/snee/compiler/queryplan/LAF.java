@@ -33,12 +33,16 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.graph.Tree;
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
+import uk.ac.manchester.cs.snee.common.graph.Graph;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class LAF extends SNEEAlgebraicForm {
@@ -68,8 +72,9 @@ public class LAF extends SNEEAlgebraicForm {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER LAF()");
 		this.logicalOperatorTree = new Tree(rootOp);
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN LAF()");
+		}
 	}
 
 	/**
@@ -147,4 +152,5 @@ public class LAF extends SNEEAlgebraicForm {
 			logger.debug("RETURN getOperatorTree()");	
 		return this.logicalOperatorTree;
 	}
+	
 }

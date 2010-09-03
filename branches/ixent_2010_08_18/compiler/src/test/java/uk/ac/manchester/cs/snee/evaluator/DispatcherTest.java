@@ -51,6 +51,7 @@ import org.junit.Test;
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
@@ -81,7 +82,7 @@ public class DispatcherTest extends EasyMockSupport {
 	public void setUp() throws Exception {
 		_dispatcher = new Dispatcher(mockSchema) {
 			protected QueryEvaluator createQueryEvaluator(int queryId, 
-					LAF queryPlan, StreamResultSet resultSet) {
+					LAF queryPlan, ResultStore resultSet) {
 				System.out.println("Overridden createQueryEvaluator()");
 				mockEvaluator._queryId = queryId;
 				return mockEvaluator;

@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
@@ -66,8 +67,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
-import uk.ac.manchester.cs.snee.evaluator.StreamResultSet;
-import uk.ac.manchester.cs.snee.evaluator.StreamResultSetImpl;
 
 /**
  * Controller class for SNEEql query compilation and evaluation
@@ -94,8 +93,8 @@ public class SNEEController implements SNEE {
 	 */
 	private Dispatcher _dispatcher;
 	
-	private Map<Integer, StreamResultSet> _queryResults = 
-		new HashMap<Integer, StreamResultSet>();
+	private Map<Integer, ResultStore> _queryResults = 
+		new HashMap<Integer, ResultStore>();
 	
 	/**
 	 * Stores the query plan for the registered query
@@ -314,7 +313,7 @@ public class SNEEController implements SNEE {
 		compileQuery(queryId, query, queryParams);
 		if (logger.isInfoEnabled())
 			logger.info("Successfully compiled query " + queryId);
-		dispatchQuery(queryId);
+		dispatchQuery(queryId, query);
 		if (logger.isInfoEnabled())
 			logger.info("Successfully started evaluation of query " + queryId);
 
@@ -339,30 +338,38 @@ public class SNEEController implements SNEE {
 		
 	/**
 	 * Dispatch the query for evaluation
+	 * @param query 
 	 * 
 	 * @return the query identifier generated for the query
 	 * @throws SNEEException Problem starting the query evaluation
 	 * @throws SchemaMetadataException 
 	 * @throws EvaluatorException 
 	 */
-	private int dispatchQuery(int queryId) 
+	private int dispatchQuery(int queryId, String query) 
 	throws SNEEException, MetadataException, EvaluatorException 
 	{
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER dispatchQuery() with " + queryId);
+			logger.trace("ENTER dispatchQuery() with " + queryId +
+					" " + query);
 		}
-		StreamResultSet resultSet = createStreamResultSet();
-		QueryExecutionPlan qep = _queryPlans.get(queryId);
-		_dispatcher.startQuery(queryId, resultSet, qep);
+		QueryExecutionPlan queryPlan = _queryPlans.get(queryId);
+		ResultStore resultSet = createStreamResultSet(query, queryPlan);
+		
+		_dispatcher.startQuery(queryId, resultSet, 
+				queryPlan);
 		_queryResults.put(queryId, resultSet);
+		
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN dispatchQuery() with queryId " + queryId);
 		}
 		return queryId;
 	}
 
-	protected StreamResultSet createStreamResultSet() {
-		StreamResultSet resultSet = new StreamResultSetImpl();
+	protected ResultStore createStreamResultSet(String query,
+			QueryExecutionPlan queryPlan) 
+	throws SNEEException {
+		ResultStore resultSet = new ResultStoreImpl(query, queryPlan);
+		resultSet.setCommand(query);
 		return resultSet;
 	}
 
@@ -373,7 +380,8 @@ public class SNEEController implements SNEE {
 		int queryId = _nextQueryID;
 		_nextQueryID++;
 		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN getNextQueryId() with queryId " + queryId);
+			logger.trace("RETURN getNextQueryId() with queryId " + 
+					queryId);
 		}
 		return queryId;
 	}
@@ -424,12 +432,12 @@ public class SNEEController implements SNEE {
 	 * @return ResultSet for the query
 	 * @throws SNEEException Specified queryId does not exist
 	 */
-	public StreamResultSet getResultSet(int queryId) 
+	public ResultStore getResultSet(int queryId) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER getResultStore() with query=" + queryId);
 		}
-		StreamResultSet resultSet;
+		ResultStore resultSet;
 		if (_queryResults.containsKey(queryId)) {
 			resultSet = _queryResults.get(queryId);
 		} else {

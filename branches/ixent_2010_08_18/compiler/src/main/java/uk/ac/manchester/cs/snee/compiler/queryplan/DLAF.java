@@ -1,5 +1,8 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.Tree;
@@ -22,8 +25,8 @@ public class DLAF extends SNEEAlgebraicForm {
     private Logger logger = Logger.getLogger(DLAF.class.getName());
 	
 	/**
-	 * The logical-algebraic form of the query plan operator tree from which
-	 * DLAF is derived.
+	 * The logical-algebraic form of the query plan operator tree 
+	 * from which DLAF is derived.
 	 */	
 	private LAF laf;
 
@@ -32,14 +35,13 @@ public class DLAF extends SNEEAlgebraicForm {
 	 * it will be possible to allocate different portions of the LAF to different
 	 * sourceTypes.
 	 */
-	private SourceType sourceType;
+//	private SourceType[] sourceType;
 
 	/**
-	 * The source that this query operator tree is for.  In the future,
-	 * it will be possible to allocate different portions of the LAF to different
-	 * sources.
+	 * The sources that are used in this query operator tree.
 	 */
-	private SourceMetadata source;
+	private List<SourceMetadata> sources = 
+		new ArrayList<SourceMetadata>();
 	
     /**
      * Counter to assign unique id to different candidates.
@@ -78,6 +80,10 @@ public class DLAF extends SNEEAlgebraicForm {
     	return queryName + "-DLAF-" + candidateCount;
     }
     
+//
+//	public void setSourceType(SourceType sourceType) {
+//		this.sourceType = sourceType;
+//	}
 
     /** {@inheritDoc} */
 	public String getDescendantsString() {
@@ -86,6 +92,10 @@ public class DLAF extends SNEEAlgebraicForm {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getProvenanceString()");  
 		return this.getID()+"-"+this.laf.getDescendantsString();
+	}
+
+	public void setSources(List<SourceMetadata> sources) {
+		this.sources.addAll(sources);
 	}
 
 	/**
@@ -123,6 +133,9 @@ public class DLAF extends SNEEAlgebraicForm {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getSource()");
 		return this.source;
+	}
+	public List<SourceMetadata> getSources() {
+		return sources;
 	}
 
 	/**

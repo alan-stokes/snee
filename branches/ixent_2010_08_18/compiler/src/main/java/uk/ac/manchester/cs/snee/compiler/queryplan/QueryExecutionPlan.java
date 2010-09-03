@@ -2,6 +2,10 @@ package uk.ac.manchester.cs.snee.compiler.queryplan;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+
 /**
  * Abstract Query Plan class.
  */
@@ -18,6 +22,11 @@ public abstract class QueryExecutionPlan {
 	String id;
 	
 	/**
+	 * Stores ResultSet style metadata about the query plan
+	 */
+	private QueryPlanMetadata metadata;
+	
+	/**
 	 * Counter used to assign unique id to different candidates.
 	 */
 	protected static int candidateCount = 0;
@@ -32,13 +41,22 @@ public abstract class QueryExecutionPlan {
 	 * @param dlaf
 	 * @param queryName
 	 */
-	protected QueryExecutionPlan(DLAF dlaf, String queryName) {
+	protected QueryExecutionPlan(DLAF dlaf, String queryName)
+	throws SchemaMetadataException, TypeMappingException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER QueryExecutionPlan()"); 
 		this.id = generateName(queryName);
 		this.dlaf = dlaf;
+
+		LogicalOperator rootOperator = dlaf.getLAF().getRootOperator();
+		metadata = new QueryPlanMetadata(rootOperator.getAttributes());
+
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER QueryExecutionPlan()"); 
+			logger.debug("RETURN QueryExecutionPlan()"); 
+	}
+
+	public QueryPlanMetadata getMetaData() {
+		return metadata;
 	}
 	
 	/**

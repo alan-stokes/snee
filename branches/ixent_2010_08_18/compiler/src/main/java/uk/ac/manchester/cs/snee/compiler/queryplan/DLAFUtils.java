@@ -5,6 +5,7 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 
 /**
  * Utility class for displaying DLAF.
@@ -45,11 +46,16 @@ public class DLAFUtils extends LAFUtils {
 			TreeMap<String, StringBuffer> edgeLabelBuff,
 			StringBuffer fragmentsBuff) 
 	throws SchemaMetadataException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER exportAsDOTFile()");	
-		String source = this.dlaf.getSource().getSourceName();
-		String sourceType = this.dlaf.getSourceType().name().toLowerCase();
-		String str = "\\nSource = "+source+" ("+sourceType+")";
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("\\nSources:");
+		for (SourceMetadata source : dlaf.getSources()) {
+			buffer.append("\\n\\t");
+			buffer.append(source.getSourceName());
+			buffer.append("(");
+			buffer.append(source.getSourceType().name().toLowerCase());
+			buffer.append(")");
+		}
+		String str = buffer.toString();
 		super.exportAsDOTFile(fname, str, new TreeMap<String, StringBuffer>(), 
 				new TreeMap<String, StringBuffer>(), new StringBuffer());
 		if (logger.isTraceEnabled())

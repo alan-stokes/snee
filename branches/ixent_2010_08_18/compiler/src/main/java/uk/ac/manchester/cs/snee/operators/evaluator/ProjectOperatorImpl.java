@@ -1,11 +1,8 @@
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Observable;
-import java.util.Set;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
@@ -19,11 +16,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
-import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.Field;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
-import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
@@ -38,7 +32,8 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 
 	/*
 	 * Testing of this class is not having the desired effect.
-	 * The test does not fail even though the project is not doing its job 	
+	 * The test does not fail even though the project is not doing its
+	 * job 	
 	 */
 	Logger logger = Logger.getLogger(this.getClass().getName());
 
@@ -162,8 +157,9 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 
 	private Output processTuple(Object observed)
 	throws SNEEException, SchemaMetadataException, TypeMappingException {
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER processTuple() with " + observed);
+		}
 		TaggedTuple tuple = (TaggedTuple) observed;
 		if (logger.isTraceEnabled()) {
 			logger.trace("Processing tuple: " + tuple);
@@ -172,15 +168,17 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		// Replace the tuple in the tagged tuple
 		//XXX What is the meaning of a tick? Is it the time the tuple arrived in the system or the last time it was altered?
 		tuple.setTuple(projectedTuple);
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN processTuple() with " + tuple);
+		}
 		return tuple;
 	}
 
 	private Output processWindow(Object observed) 
 	throws SNEEException, SchemaMetadataException, TypeMappingException {
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER processWindow() with " + observed);
+		}
 		Window window = (Window) observed;
 		List<Tuple> tupleList = new ArrayList<Tuple>();
 		// Process each tuple in the window
@@ -197,8 +195,9 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		 */
 		//TODO: Do we need a replace tupleList operation?
 		Window newWindow = new Window(tupleList);
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN processWindow() with " + newWindow);
+		}
 		return newWindow;
 	}	
 
@@ -265,7 +264,8 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 				logger.trace("getting attribute " + attributeName);
 				returnField = t.getField(attributeName);
 			} catch (SNEEException e) {
-				logger.warn("Field " + attributeName + " does not exist.");
+				logger.warn("Field " + attributeName + 
+						" does not exist.", e);
 				throw e;
 			}
 		}					
@@ -292,36 +292,44 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		for (Expression expr : exp.getExpressions()) {
 			Object daValue;
 			if (expr instanceof MultiExpression) {
-				Field field = evaluateMultiExpression((MultiExpression)expr, t);
+				Field field = 
+					evaluateMultiExpression((MultiExpression)expr, t);
 				daValue = field.getData(); 
 				if (logger.isTraceEnabled()) {
 					logger.trace("Stack push result expression: " + expr + 
-							", " + daValue + ", type " + daValue.getClass());
+							", " + daValue + ", type " + 
+							daValue.getClass());
 				}
 			} else if (expr instanceof DataAttribute){
 				DataAttribute da = (DataAttribute) expr;
-				String daName = da.getLocalName() + "." + da.getAttributeName();
+				String daName = da.getLocalName() + "." + 
+					da.getAttributeName();
 				try {
 					daValue = t.getValue(daName);
 				} catch (SNEEException e) {
-					logger.warn("Problem getting value for " + daName);
+					logger.warn("Problem getting value for " + daName, e);
 					throw e;
 				}
 				if (logger.isTraceEnabled()) {
 					logger.trace("Stack push attribute: " + daName + 
-							", " + daValue + ", type " + daValue.getClass());
+							", " + daValue + ", type " + 
+							daValue.getClass());
 				}				
 			} else if (expr instanceof IntLiteral){
 				IntLiteral il = (IntLiteral) expr;
 				daValue = new Integer(il.toString());
 				if (logger.isTraceEnabled()) {
-					logger.trace("Stack push integer: " + il.getMaxValue() + ", type " + daValue.getClass());
+					logger.trace("Stack push integer: " + 
+							il.getMaxValue() + ", type " + 
+							daValue.getClass());
 				}
 			} else if (expr instanceof FloatLiteral){
 				FloatLiteral fl = (FloatLiteral) expr;
 				daValue = new Float(fl.toString());
 				if (logger.isTraceEnabled()) {
-					logger.trace("Stack push float: " + fl.getMaxValue() + ", type " + daValue.getClass());
+					logger.trace("Stack push float: " +
+							fl.getMaxValue() + ", type " + 
+							daValue.getClass());
 				}
 			} else {
 				logger.warn("Unsupported operand " + expr);

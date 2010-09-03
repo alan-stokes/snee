@@ -401,10 +401,13 @@ public class PullSourceWrapper {
 			//Corresponds to INT or INTEGER
 			dataType = _types.getType("integer");
 			break;
-		case 93:
-			//Corresponds to DATETIME
-			dataType = _types.getType("string");
+		case java.sql.Types.TIMESTAMP:
+			dataType = _types.getType("timestamp");
 			break;
+//		case 93:
+//			//Corresponds to DATETIME
+//			dataType = _types.getType("string");
+//			break;
 		default:
 			String msg = "Unsupported data type " + 
 				wrsMetadata.getColumnTypeName(colIndex);
