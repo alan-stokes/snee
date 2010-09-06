@@ -300,14 +300,14 @@ public class SNEEController implements SNEE {
 		if (logger.isInfoEnabled()) 
 			logger.info("Reading query " + queryId + " parameters\n");
 		QueryParameters queryParams = null;
-		if (queryParamsFile != null) {
-			try {
-				queryParams = new QueryParameters(queryId, queryParamsFile);
-			} catch (QoSException e) {
-				logger.warn("Throwing compilation exception. Cause " + e);
-				throw new SNEECompilerException(e.getLocalizedMessage());
-			}
-		}
+//		if (queryParamsFile != null) {
+//			try {
+//				queryParams = new QueryParameters(queryId, queryParamsFile);
+//			} catch (QoSException e) {
+//				logger.warn("Throwing compilation exception. Cause " + e);
+//				throw new SNEECompilerException(e.getLocalizedMessage());
+//			}
+//		}
 		if (logger.isInfoEnabled()) 
 			logger.info("Compiling query " + queryId + "\n");
 		compileQuery(queryId, query, queryParams);
