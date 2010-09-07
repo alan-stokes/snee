@@ -36,35 +36,34 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
+import uk.ac.manchester.cs.snee.operators.logical.PredicateOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
+import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class JoinComponent extends NesCComponent implements TinyOS1Component,
 	TinyOS2Component {
 
-    JoinOperator op;
+    SensornetNestedLoopJoinOperator op;
 
-    QueryPlan plan;
+    SensorNetworkQueryPlan plan;
 
-    QoSSpec qos;
-
-    Fragment frag;
-
-    public JoinComponent(final JoinOperator op, final QueryPlan plan,
-	    final QoSSpec qos, final NesCConfiguration fragConfig,
-	    int tosVersion, boolean tossimFlag) {
-	super(fragConfig, tosVersion, tossimFlag);
+    public JoinComponent(final SensornetNestedLoopJoinOperator op, final SensorNetworkQueryPlan plan,
+	    final NesCConfiguration fragConfig,
+	    int tosVersion, boolean tossimFlag, boolean debugLeds) {
+	super(fragConfig, tosVersion, tossimFlag, debugLeds);
 	this.op = op;
-	this.frag = op.getContainingFragment();
 	this.plan = plan;
-	this.qos = qos;
-	this.id = CodeGenUtils.generateOperatorInstanceName(op, this.frag,
-		this.site, tosVersion);
+	this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
     }
 
     @Override
@@ -74,34 +73,36 @@ public class JoinComponent extends NesCComponent implements TinyOS1Component,
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException {
+	    throws IOException, CodeGenerationException, OptimizationException {
 
 	final HashMap<String, String> replacements = new HashMap<String, String>();
-	replacements.put("__OPERATOR_DESCRIPTION__", this.op.getText(false)
+	replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
 		.replace("\"", ""));
 	replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
 		.generateOutputTupleType(this.op));
 	replacements.put("__OUT_QUEUE_CARD__", new Long(
 		op.getOutputQueueCardinality(
-			(Site) this.plan.getRoutingTree().getNode(
+			(Site) this.plan.getRT().getSite(
 				this.site.getID()), this.plan.getDAF())).toString());
 	replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getInput(0)));
+		.generateOutputTuplePtrType(this.op.getLeftChild()));
 
 	replacements.put("__LEFT_CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getInput(0)));
+		.generateOutputTuplePtrType(this.op.getLeftChild()));
 	replacements.put("__RIGHT_CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getInput(1)));
+		.generateOutputTuplePtrType(this.op.getRightChild()));
     replacements.put("__JOIN_PREDICATES__", CodeGenUtils.getNescText(
-    		op.getPredicate(),"leftInQueue[leftInHead].",
-    		"rightInQueue[tmpRightInHead].", op.getInput(0).getAttributes(), 
-    		op.getInput(1).getAttributes()));
+    		((PredicateOperator)op.getLogicalOperator()).getPredicate(),
+    		"leftInQueue[leftInHead].",
+    		"rightInQueue[tmpRightInHead].", 
+    		op.getLeftChild().getAttributes(), 
+    		op.getRightChild().getAttributes()));
 	
 	final StringBuffer tupleConstructionBuff = generateTupleConstruction();
 	replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff.toString());
 
 	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
-	writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/join.nc", outputFileName,
+	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/join.nc", outputFileName,
 		replacements);
     }
 
@@ -109,36 +110,33 @@ public class JoinComponent extends NesCComponent implements TinyOS1Component,
      * Generates the tuple construction.
      * 
      * @return NesC tuple construction code.
+     * @throws CodeGenerationException 
      */
-    private StringBuffer generateTupleConstruction() {
-    	final StringBuffer tupleConstructionBuff = new StringBuffer();
-    	final ArrayList <Attribute> attributes = op.getAttributes();
-    	final ArrayList <Attribute> leftInput = op.getInput(0).getAttributes();
-    	final ArrayList <Attribute> rightInput = op.getInput(1).getAttributes();
-    	final ArrayList <Expression> expressions = op.getExpressions();
-		try {
-			for (int i = 0; i < attributes.size(); i++) {
-				String attrName 
-					= CodeGenUtils.getNescAttrName(attributes.get(i));
-				String expressionText;
-					expressionText = CodeGenUtils.getNescText(
-						expressions.get(i), "leftInQueue[leftInHead].", 
-						"rightInQueue[tmpRightInHead].", 
-						leftInput, rightInput);
-					
-					//IG: Yuck - Christian I need you to sort this out!
-					//I did this to make the nesc code compile with epochs
-					expressionText = expressionText.replace(".evalTime", ".evalEpoch");
-					expressionText = expressionText.replace("_time", "_epoch");
-					
-					tupleConstructionBuff.append("\t\t\t\t\toutQueue[outTail]."
-	    				+ attrName + "=" + expressionText + ";\n");
-			}		
-			return tupleConstructionBuff;
-		} catch (CodeGenerationException e) {
-			Utils.handleCriticalException(e);
-			return null;
-		}
+    private StringBuffer generateTupleConstruction() throws CodeGenerationException {
+		final StringBuffer tupleConstructionBuff = new StringBuffer();
+		final List <Attribute> attributes = op.getAttributes();
+		final List <Attribute> leftInput = op.getLeftChild().getAttributes();
+		final List <Attribute> rightInput = op.getRightChild().getAttributes();
+		final List <Expression> expressions = op.getExpressions();
+    	
+		for (int i = 0; i < attributes.size(); i++) {
+			String attrName 
+				= CodeGenUtils.getNescAttrName(attributes.get(i));
+			String expressionText;
+				expressionText = CodeGenUtils.getNescText(
+					expressions.get(i), "leftInQueue[leftInHead].", 
+					"rightInQueue[tmpRightInHead].", 
+					leftInput, rightInput);
+				
+				//IG: Yuck - Christian I need you to sort this out!
+				//I did this to make the nesc code compile with epochs
+				expressionText = expressionText.replace(".evalTime", ".evalEpoch");
+				expressionText = expressionText.replace("_time", "_epoch");
+				
+				tupleConstructionBuff.append("\t\t\t\t\toutQueue[outTail]."
+    				+ attrName + "=" + expressionText + ";\n");
+		}		
+		return tupleConstructionBuff;
     } 
 
 }

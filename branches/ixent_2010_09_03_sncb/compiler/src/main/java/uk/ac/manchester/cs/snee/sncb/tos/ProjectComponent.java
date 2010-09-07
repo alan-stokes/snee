@@ -36,31 +36,28 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 import java.io.IOException;
 import java.util.HashMap;
 
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
+import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class ProjectComponent extends NesCComponent implements
 	TinyOS1Component, TinyOS2Component {
 
-    ProjectOperator op;
+    SensornetProjectOperator op;
 
-    QueryPlan plan;
+    SensorNetworkQueryPlan plan;
 
-    QoSSpec qos;
-
-    Fragment frag;
-
-    public ProjectComponent(final ProjectOperator op, final QueryPlan plan,
-	    final QoSSpec qos, final NesCConfiguration fragConfig, 
-	    int tosVersion, boolean tossimFlag) {
-	super(fragConfig, tosVersion, tossimFlag);
-	this.op = op;
-	this.frag = op.getContainingFragment();
-	this.plan = plan;
-	this.qos = qos;
-	this.id = CodeGenUtils.generateOperatorInstanceName(op, this.frag,
-		this.site, tosVersion);
+    public ProjectComponent(final SensornetProjectOperator op, final SensorNetworkQueryPlan plan,
+    final NesCConfiguration fragConfig, 
+    int tosVersion, boolean tossimFlag, boolean debugLeds) {
+		super(fragConfig, tosVersion, tossimFlag, debugLeds);
+		this.op = op;
+		this.plan = plan;
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
     }
 
     @Override
@@ -70,44 +67,29 @@ public class ProjectComponent extends NesCComponent implements
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException {
+	    throws IOException, CodeGenerationException, OptimizationException {
 
 	final HashMap<String, String> replacements = new HashMap<String, String>();
-	replacements.put("__OPERATOR_DESCRIPTION__", this.op.getText(false)
+	replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
 		.replace("\"", ""));
 	replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
 		.generateOutputTupleType(this.op));
 	replacements.put("__OUT_QUEUE_CARD__", new Long(
 		op.getOutputQueueCardinality(
-			(Site) this.plan.getRoutingTree().getNode(
+			(Site) this.plan.getRT().getSite(
 				this.site.getID()), this.plan.getDAF())).toString());
 	replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getInput(0)));
+		.generateOutputTuplePtrType(this.op.getLeftChild()));
 
 	final StringBuffer tupleConstructionBuff 
-		= CodeGenUtils.generateTupleConstruction(op, 
-				Settings.MEASUREMENTS_IGNORE_IN.contains("project"));
+		= CodeGenUtils.generateTupleConstruction(op, false);
 	replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff
 		.toString());
 
 	final String outputFileName 
 		= generateNesCOutputFileName(outputDir, this.getID());
 
-	if (Settings.MEASUREMENTS_REMOVE_OPERATORS.contains("project") ||
-			(Settings.MEASUREMENTS_REMOVE_OPERATORS.contains("everything"))) {
-		writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/stub.nc",
-				outputFileName, replacements);		
-	} else {
-		if (Settings.MEASUREMENTS_THIN_OPERATORS.contains("project1")) {
-			writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/measurements/Thin_project1.nc",
-					outputFileName, replacements);
-		}else if (Settings.MEASUREMENTS_THIN_OPERATORS.contains("project2")) {
-				writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/measurements/Thin_project2.nc",
-						outputFileName, replacements);
-		} else {	
-			writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/project.nc",
+	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/project.nc",
 				outputFileName, replacements);			
-		}
-    }
     }
 }

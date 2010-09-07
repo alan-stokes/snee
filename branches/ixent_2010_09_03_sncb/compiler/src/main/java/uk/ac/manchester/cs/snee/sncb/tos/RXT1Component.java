@@ -40,6 +40,8 @@ import java.util.HashMap;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class RXT1Component extends NesCComponent implements TinyOS1Component {
 
@@ -47,24 +49,21 @@ public class RXT1Component extends NesCComponent implements TinyOS1Component {
 
     Site currentSite;
 
-    QueryPlan plan;
-
-    QoSSpec qos;
+    SensorNetworkQueryPlan plan;
 
     ArrayList<ExchangePart> exchComponents = new ArrayList<ExchangePart>();
 
-    private final String templateFileName = NesCGeneration.NESC_MODULES_DIR
+    private final String templateFileName = TinyOSGenerator.NESC_COMPONENTS_DIR
 	    + "/rx.nc";
 
     public RXT1Component(final Site childSite, final Site currentSite,
-	    final NesCConfiguration config, final QueryPlan plan,
-	    final QoSSpec qos, boolean tossimFlag) {
-	super(config, 1, tossimFlag);
+	    final NesCConfiguration config, final SensorNetworkQueryPlan plan,
+	    boolean tossimFlag, boolean debugLeds) {
+	super(config, 1, tossimFlag, debugLeds);
 	this.childSite = childSite;
 	this.currentSite = currentSite;
 	this.id = this.generateName();
 	this.plan = plan;
-	this.qos = qos;
     }
 
     @Override
@@ -126,13 +125,12 @@ public class RXT1Component extends NesCComponent implements TinyOS1Component {
 		    messageTypePtr);
 	    rxMethodsReplacements.put("__TRAY_PUT_INTERFACE__",
 		    trayPutInterface);
-	    rxMethodsBuff.append(generateNesCMethods(NesCGeneration.NESC_MODULES_DIR
+	    rxMethodsBuff.append(generateNesCMethods(TinyOSGenerator.NESC_COMPONENTS_DIR
 		    + "/rx_methods.nc", rxMethodsReplacements));
 	}
 
 	replacements.put("__RX_METHODS__", rxMethodsBuff.toString());
 
-	final String siteID = this.currentSite.getID();
 	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 
 	super.writeNesCFile(this.templateFileName, outputFileName,

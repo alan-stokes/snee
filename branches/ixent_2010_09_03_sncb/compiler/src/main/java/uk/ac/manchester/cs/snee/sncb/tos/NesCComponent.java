@@ -42,6 +42,9 @@ import java.util.Iterator;
 
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.NodeImplementation;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 
 public abstract class NesCComponent extends NodeImplementation implements Node {
@@ -53,6 +56,8 @@ public abstract class NesCComponent extends NodeImplementation implements Node {
     boolean tossimFlag;
 
     boolean systemComponent = false;
+
+	boolean debugLeds;
     
     protected NesCComponent() {
 	super();
@@ -60,15 +65,26 @@ public abstract class NesCComponent extends NodeImplementation implements Node {
     }
 
     protected NesCComponent(final NesCConfiguration config, int tosVersion,
-    		boolean tossimFlag) {
+    		boolean tossimFlag, boolean debugLeds) {
 		super();
 		this.configuration = config;
 		this.site = config.getSite();
 		this.tosVersion = tosVersion;
 		this.tossimFlag = tossimFlag;
+		this.debugLeds = debugLeds;
     }
 
-    /**
+    public NesCComponent(final NesCConfiguration config, int tosVersion,
+    		boolean tossimFlag) {
+    	super();
+		this.configuration = config;
+		this.site = config.getSite();
+		this.tosVersion = tosVersion;
+		this.tossimFlag = tossimFlag;
+		this.debugLeds = false;
+	}
+
+	/**
      * The configuration which the component is in is
      * null if this the outermost configuration
      * 
@@ -94,8 +110,11 @@ public abstract class NesCComponent extends NodeImplementation implements Node {
     /**
      * Produces a nesC file based on the parameters set for this component
      * @throws CodeGenerationException 
+     * @throws TypeMappingException 
+     * @throws SchemaMetadataException 
+     * @throws OptimizationException 
      */
-    public abstract void writeNesCFile(String outputDir)	throws IOException, CodeGenerationException;
+    public abstract void writeNesCFile(String outputDir)	throws IOException, CodeGenerationException, SchemaMetadataException, TypeMappingException, OptimizationException;
 
     /**
      * Returns a string used to declare this component in a configuration file  
@@ -106,31 +125,6 @@ public abstract class NesCComponent extends NodeImplementation implements Node {
 
     public boolean isInstanceOfGeneric() {
 	return this.instanceOfGeneric;
-    }
-
-    /**
-     * Check the users input of the Led Experiment Script.
-     * Applies any required reformatting. 
-     * @param input user input string
-     * @return string to be replaced.
-     */
-    private static String formatExperimentReplacement(final String input) {
-    	String temp = input.toUpperCase();
-    	if (temp.startsWith("//")) {
-	    	if (!temp.startsWith("//__")) {
-	    		temp = "//__" + temp.substring(2);
-	    	}
-    	} else {	
-	    	if (temp.startsWith("__")) {
-	    		temp = "//__" + temp.substring(2);
-	    	} else {
-	    		temp = "//__" + temp;
-	    	}
-    	}
-    	if (!temp.endsWith("__")) {
-   			temp = temp + "__";
-    	}
-    	return temp;
     }
     
     /**

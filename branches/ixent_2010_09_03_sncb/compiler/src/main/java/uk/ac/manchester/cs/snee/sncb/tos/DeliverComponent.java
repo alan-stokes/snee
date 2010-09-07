@@ -34,37 +34,35 @@
 package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
+import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class DeliverComponent extends NesCComponent implements
 	TinyOS1Component, TinyOS2Component {
 
-    DeliverOperator op;
+	SensornetDeliverOperator op;
 
-    QueryPlan plan;
+    SensorNetworkQueryPlan plan;
+    
+    CostParameters costParams;
 
-    QoSSpec qos;
+    public DeliverComponent(final SensornetDeliverOperator op, final SensorNetworkQueryPlan plan, 
+    final NesCConfiguration fragConfig, int tosVersion, boolean tossimFlag, boolean debugLeds, CostParameters costParams) {
 
-    Fragment frag;
-
-    public DeliverComponent(final DeliverOperator op, final QueryPlan plan,
-	    final QoSSpec qos, final NesCConfiguration fragConfig,
-	    int tosVersion, boolean tossimFlag) {
-
-		super(fragConfig, tosVersion, tossimFlag);
+		super(fragConfig, tosVersion, tossimFlag, debugLeds);
 		this.op = op;
-		this.frag = op.getContainingFragment();
 		this.plan = plan;
-		this.qos = qos;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.frag,
-			this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
+		this.costParams = costParams;
     }
 
     @Override
@@ -74,48 +72,48 @@ public class DeliverComponent extends NesCComponent implements
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException {
+	    throws IOException, CodeGenerationException, OptimizationException {
 
 	final HashMap<String, String> replacements = new HashMap<String, String>();
 
 	if (tosVersion==1) {
 		replacements.put("__ITOA_DECL__", "#include \"itoa.h\"");
 	}
-	replacements.put("__OPERATOR_DESCRIPTION__", this.op.getText(false)
+	replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
 		.replace("\"", ""));
 	replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
 		.generateOutputTupleType(this.op));
 	replacements.put("__OUT_QUEUE_CARD__", new Long(
 		op.getOutputQueueCardinality(
-			(Site) this.plan.getRoutingTree().getNode(
+			(Site) this.plan.getRT().getSite(
 				this.site.getID()), this.plan.getDAF())).toString());
 
 	replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getInput(0)));
+		.generateOutputTuplePtrType(this.op.getLeftChild()));
 	replacements.put("__MESSAGE_TYPE__", CodeGenUtils
-			.generateMessageType(this.op.getInput(0)));
+			.generateMessageType(this.op.getLeftChild()));
 	replacements.put("__MESSAGE_PTR_TYPE__", CodeGenUtils
-			.generateMessagePtrType(this.op.getInput(0)));
+			.generateMessagePtrType(this.op.getLeftChild()));
 
 	//int tuplesPerPacket= Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE/((new Integer(CodeGenUtils.outputTypeSize.get(CodeGenUtils.generateOutputTupleType(sourceFrag)).toString()))+ Settings.NESC_PAYLOAD_OVERHEAD);
 	final int tupleSize = new Integer(CodeGenUtils.outputTypeSize
-		.get(CodeGenUtils.generateOutputTupleType(this.frag)));
+		.get(CodeGenUtils.generateOutputTupleType(this.op.getContainingFragment())));
 	//	int tuplesPerPacket =(int)Math.floor((Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE - (Settings.NESC_PAYLOAD_OVERHEAD+2)) / (tupleSize+2));
 	final int numTuplesPerMessage = ExchangePart
-		.computeTuplesPerMessage(tupleSize);
+		.computeTuplesPerMessage(tupleSize, this.costParams);
 	assert (numTuplesPerMessage > 0);
 
 	replacements.put("__PARENT_ID__", "AM_BROADCAST_ADDR");
 	replacements.put("__TUPLES_PER_PACKET__", new Integer(
 			numTuplesPerMessage).toString());
-	replacements.put("__BUFFERING_FACTOR__", new Long(this.plan
-		.getBufferingFactor()).toString());
+	replacements.put("__BUFFERING_FACTOR__", ""+this.plan
+		.getBufferingFactor());
 
 	final StringBuffer displayTupleBuff3 = new StringBuffer();  //serial port
 	final StringBuffer displayTupleBuff4 = new StringBuffer();  //serial port
 	final StringBuffer displayTupleBuff5 = new StringBuffer();  //serial port str - tinyos 1 only
 
-	final ArrayList<Attribute> attributes = this.op.getAttributes();
+	final List<Attribute> attributes = this.op.getAttributes();
     String comma = "";
 	for (int i = 0; i < attributes.size(); i++) {
 		String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
@@ -139,7 +137,7 @@ public class DeliverComponent extends NesCComponent implements
 		displayTupleBuff5.toString());
 
 	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
-	writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/deliver.nc",
+	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/deliver.nc",
     			outputFileName, replacements);
 
     }

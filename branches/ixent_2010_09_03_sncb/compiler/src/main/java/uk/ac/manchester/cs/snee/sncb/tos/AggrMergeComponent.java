@@ -34,35 +34,33 @@
 package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
+import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class AggrMergeComponent extends NesCComponent implements
 	TinyOS1Component, TinyOS2Component {
 
-    AggrIterateOperator op;
+    SensornetAggrMergeOperator op;
 
-    QueryPlan plan;
+    SensorNetworkQueryPlan plan;
 
-    QoSSpec qos;
-
-    Fragment frag;
-
-    public AggrMergeComponent(final AggrIterateOperator op, final QueryPlan plan,
-	    final QoSSpec qos, final NesCConfiguration fragConfig,
-	    int tosVersion, boolean tossimFlag) {
+    public AggrMergeComponent(final SensornetAggrMergeOperator op, final SensorNetworkQueryPlan plan,
+	    final NesCConfiguration fragConfig,
+	    int tosVersion, boolean tossimFlag, boolean debugLeds) {
 	    	
-    	super(fragConfig, tosVersion, tossimFlag);
+    	super(fragConfig, tosVersion, tossimFlag, debugLeds);
 		this.op = op;
-		this.frag = op.getContainingFragment();
 		this.plan = plan;
-		this.qos = qos;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.frag,
-		this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
     }
 
     @Override
@@ -72,23 +70,23 @@ public class AggrMergeComponent extends NesCComponent implements
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException {
+	    throws IOException, CodeGenerationException, OptimizationException, SchemaMetadataException, TypeMappingException {
 
 	final HashMap<String, String> replacements = new HashMap<String, String>();
-	replacements.put("__OPERATOR_DESCRIPTION__", this.op.getText(false)
+	replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
 		.replace("\"", ""));
 	replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
 		.generateOutputTupleType(this.op));
 	replacements.put("__OUT_QUEUE_CARD__", new Long(
 		op.getOutputQueueCardinality(
-			(Site) this.plan.getRoutingTree().getNode(
+			(Site) this.plan.getRT().getSite(
 				this.site.getID()), this.plan.getDAF())).toString());
 	replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getInput(0)));
+		.generateOutputTuplePtrType(this.op.getLeftChild()));
 	replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-			.generateOutputTuplePtrType(this.op.getInput(0)));
+			.generateOutputTuplePtrType(this.op.getLeftChild()));
 
-	ArrayList <Attribute> attributes = op.getAttributes();
+	List <Attribute> attributes = op.getAttributes();
 	replacements.put("__VARIABLES_TO_BE_AGGREGATED__",
 			CodeGenUtils.getPartialAggrVariables(attributes).toString());
 	replacements.put("__SET_AGGREGATES_TO_ZERO__",
@@ -102,7 +100,7 @@ public class AggrMergeComponent extends NesCComponent implements
 
 	
 	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
-	writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/aggrPart.nc",
+	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/aggrPart.nc",
 		outputFileName, replacements);
     }
 

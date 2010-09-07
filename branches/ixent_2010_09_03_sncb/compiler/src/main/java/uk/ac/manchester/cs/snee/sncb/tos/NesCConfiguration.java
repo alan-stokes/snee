@@ -48,7 +48,11 @@ import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
 import uk.ac.manchester.cs.snee.common.graph.Graph;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 
 public class NesCConfiguration extends Graph {
 	
@@ -62,12 +66,12 @@ public class NesCConfiguration extends Graph {
     
     boolean tossimFlag;
     
-    public NesCConfiguration(final String name, final QueryPlan qp, 
+    public NesCConfiguration(final String name, final SensorNetworkQueryPlan qp, 
     		int tosVersion, boolean tossimFlag) {
     	this(name, qp, null, tosVersion, tossimFlag);
     }
 
-    public NesCConfiguration(final String name, final QueryPlan qp,
+    public NesCConfiguration(final String name, final SensorNetworkQueryPlan qp,
 	    final Site site, int tosVersion, boolean tossimFlag) {
 
     	super(name, true, true);
@@ -467,10 +471,6 @@ public class NesCConfiguration extends Graph {
 	final StringBuffer outgoingBuff = new StringBuffer();
 
 	resultBuff.append("#include \"QueryPlan.h\"\n\n");
-	
-    if (Settings.MEASUREMENTS_ACTIVE_AGENDA_LOOPS >= 0) {
-    	resultBuff.append("includes ActiveLoop;\n\n");
-    }
 	resultBuff.append("module " + moduleName + "\n");
 	resultBuff.append("{\n");
 
@@ -548,10 +548,13 @@ public class NesCConfiguration extends Graph {
     /**
      * Instantiates every component in the configuration.  If any components are themselves
      * configurations, these are recursively instantiated as well.
+     * @throws OptimizationException 
+     * @throws TypeMappingException 
+     * @throws SchemaMetadataException 
      *
      */
     public void instantiateComponents(final String outputDir) throws IOException,
-	    CodeGenerationException {
+	    CodeGenerationException, SchemaMetadataException, TypeMappingException, OptimizationException {
 	
 	Utils.checkDirectory(outputDir, true);
 
@@ -570,12 +573,5 @@ public class NesCConfiguration extends Graph {
 	    comp.writeNesCFile(outputDir);
 	}
     }
-    
-    public JFrame display(String outputDir, String outputFileName, String label) {
-		if (Settings.DISPLAY_CONFIG_GRAPHS) {
-			return super.display(outputDir, outputFileName, label);
-		} else {
-			return null;
-		}
-	}
+
 }

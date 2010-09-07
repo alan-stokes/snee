@@ -34,6 +34,7 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
 import java.util.Iterator;
+import java.util.List;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
@@ -43,6 +44,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
@@ -341,6 +343,13 @@ public interface SensornetOperator extends Node {
 //	AlphaBetaExpression getTimeExpression(CardinalityType card, Site node, 
 //			DAF daf, boolean round);
 
-	SensornetOperator getFirstChild();
+	//delegate
+	SensornetOperator getLeftChild();
+	
+	//delegate
+	public List<Attribute> getAttributes();
+
+	//delegate
+	boolean isRecursive();
 	
 }

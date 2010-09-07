@@ -38,6 +38,8 @@ import java.util.HashMap;
 
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class RXT2Component extends NesCComponent implements TinyOS2Component {
 
@@ -67,22 +69,18 @@ public class RXT2Component extends NesCComponent implements TinyOS2Component {
     /**
      * The query plan for which code is being generated.
      */
-    QueryPlan plan;
+    SensorNetworkQueryPlan plan;
 
-    /**
-     * The user-specified Quality-of-Service specifications.
-     */
-    QoSSpec qos;
 
-    private final String templateFileName = NesCGeneration.NESC_MODULES_DIR
+    private final String templateFileName = TinyOSGenerator.NESC_COMPONENTS_DIR
 	    + "/rx.nc";
 
     public RXT2Component(final Fragment sourceFrag,
     	    final Fragment destFrag, final Site destSite,
     	    final Site txSite, final NesCConfiguration config, 
-    	    final QueryPlan plan, final QoSSpec qos,
-    	    boolean tossimFlag) {
-		super(config, 2, tossimFlag);
+    	    final SensorNetworkQueryPlan plan,
+    	    boolean tossimFlag, boolean debugLeds) {
+		super(config, 2, tossimFlag, debugLeds);
 		this.instanceOfGeneric = true;
 		this.sourceFrag = sourceFrag;
 		this.destSite = destSite;
@@ -90,7 +88,6 @@ public class RXT2Component extends NesCComponent implements TinyOS2Component {
 		this.txSite = txSite;
 		this.id = this.generateName();
 		this.plan = plan;
-		this.qos = qos;
     }
 
     @Override
@@ -116,7 +113,7 @@ public class RXT2Component extends NesCComponent implements TinyOS2Component {
 	replacements.put("__MESSAGE_TYPE__", CodeGenUtils
 			.generateMessageType(this.sourceFrag));
 	
-	if (Settings.NESC_DEBUG_LEDS) {
+	if (this.debugLeds) {
 		replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led1Toggle();");		
 	} else {
 		replacements.put("__NESC_DEBUG_LEDS__", "");

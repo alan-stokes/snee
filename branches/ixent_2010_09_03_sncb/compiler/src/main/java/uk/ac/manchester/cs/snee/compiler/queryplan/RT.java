@@ -231,4 +231,11 @@ public class RT extends SNEEAlgebraicForm {
 	public Site getSite(int id) {
 		return (Site) this.getSiteTree().getNode(id);
 	}
+	
+    public RadioLink getRadioLink(final Site source, final Site dest) {
+    	String id = siteTree.generateEdgeID(
+    			source.getID(), dest.getID());
+    	RadioLink link = (RadioLink) siteTree.getEdge(id);
+    	return link;
+    }
 }

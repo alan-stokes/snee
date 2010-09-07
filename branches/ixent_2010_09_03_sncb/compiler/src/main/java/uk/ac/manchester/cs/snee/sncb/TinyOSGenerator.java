@@ -40,13 +40,15 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Logger;
 
-import net.sf.cglib.core.CodeGenerationException;
-import sun.tools.jstat.Operator;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
@@ -61,10 +63,56 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSelectOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
+import uk.ac.manchester.cs.snee.sncb.tos.AMRecieveComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.AMSendComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.AcquireComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.ActiveMessageIDGenerator;
+import uk.ac.manchester.cs.snee.sncb.tos.AggrEvalComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.AggrInitComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.AggrMergeComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.CC1000ControlComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenUtils;
-
-import com.sun.org.apache.xalan.internal.xsltc.compiler.Template;
+import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
+import uk.ac.manchester.cs.snee.sncb.tos.DeliverComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.DelugeComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.ExchangeProducerComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.FragmentComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.JoinComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.LedComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.LocalTimeComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.MainComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.NesCComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.NesCConfiguration;
+import uk.ac.manchester.cs.snee.sncb.tos.PowerManagementComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.ProjectComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.QueryPlanModuleComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.RXT1Component;
+import uk.ac.manchester.cs.snee.sncb.tos.RXT2Component;
+import uk.ac.manchester.cs.snee.sncb.tos.RadioComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.SelectComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.SensorT1Component;
+import uk.ac.manchester.cs.snee.sncb.tos.SensorT2Component;
+import uk.ac.manchester.cs.snee.sncb.tos.SerialAMReceiveComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.SerialAMSendComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.SerialComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.TXT1Component;
+import uk.ac.manchester.cs.snee.sncb.tos.TXT2Component;
+import uk.ac.manchester.cs.snee.sncb.tos.Template;
+import uk.ac.manchester.cs.snee.sncb.tos.TimerT1Component;
+import uk.ac.manchester.cs.snee.sncb.tos.TimerT2Component;
+import uk.ac.manchester.cs.snee.sncb.tos.TrayComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.WindowComponent;
 
 /**
  *
@@ -78,7 +126,7 @@ import com.sun.org.apache.xalan.internal.xsltc.compiler.Template;
  */
 public class TinyOSGenerator {
 
-    static Logger logger = Logger.getLogger(TinyOSGenerator.class.getName());
+    Logger logger = Logger.getLogger(TinyOSGenerator.class.getName());
 
 	/**
 	 * The directory where nesC interfaces, used as input to the generator,
@@ -98,7 +146,7 @@ public class TinyOSGenerator {
 	 * generator, are located.
 	 * This is derived from NESC_TEMPLATES_DIR
 	 */
-	public static String NESC_MODULES_DIR;
+	public static String NESC_COMPONENTS_DIR;
 
 	/**
 	 * The directory where nesC misc files, used as input to the
@@ -186,42 +234,83 @@ public class TinyOSGenerator {
 
     public static String TYPE_READ;
 
+    
+    
+    private SensorNetworkQueryPlan plan;
+    
     private int tosVersion = 2;
     
     private boolean tossimFlag = true;
     
+    private String targetName;
     
-    public TinyOSGenerator(int tosVersion, boolean tossimFlag) {
+    private boolean combinedImage = false;
+    
+    private String nescOutputDir;
+    
+    private CostParameters costParams;
+    
+	private boolean controlRadioOff;
+
+	private boolean enablePrintf;
+
+	private boolean useStartUpProtocol;
+
+	private boolean enableLeds;
+
+	private boolean usePowerManagement;
+
+	private boolean deliverLast;
+
+	private boolean adjustRadioPower;
+	
+	private boolean includeDeluge;
+
+	private boolean debugLeds;
+	
+	private boolean showLocalTime; //Not working
+    
+    public TinyOSGenerator(int tosVersion, boolean tossimFlag, 
+    String targetName,
+    boolean combinedImage, String nescOutputDir, CostParameters costParams, boolean controlRadioOff,
+    boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
+    boolean usePowerManagement, boolean deliverLast, boolean adjustRadioPower,
+    boolean includeDeluge, boolean debugLeds, boolean showLocalTime)
+    throws IOException, SchemaMetadataException, TypeMappingException {
+    	this.tosVersion = tosVersion;
+    	this.tossimFlag = tossimFlag;
+    	this.targetName = targetName;
+    	this.combinedImage = combinedImage;
+    	this.nescOutputDir = nescOutputDir;
+		this.costParams = costParams;
+
+		this.controlRadioOff =controlRadioOff;
+		this.enablePrintf = enablePrintf;
+		this.useStartUpProtocol = useStartUpProtocol;
+		this.enableLeds = enableLeds;
+		this.usePowerManagement = usePowerManagement;
+		this.deliverLast = deliverLast;
+		this.adjustRadioPower = adjustRadioPower;
+		this.includeDeluge = includeDeluge;
+		this.debugLeds = debugLeds;
+		this.showLocalTime = showLocalTime;
     	
-    }
-    
-    
-    /**
-     * Initialization method.
-     * @param tosVersion
-     * @param tossimFlag
-     * @param plan
-     * @param targetName 
-     * @throws IOException
-     */
-    public static void initialize(int tosVersion, boolean tossimFlag,
-    		SensorNetworkQueryPlan plan, String targetName) throws IOException {
     	initConstants(tosVersion, tossimFlag, targetName);
 
     	if (tosVersion == 1) {
-    		NESC_TEMPLATES_DIR = "src/tinyOS1Templates/";
+    		NESC_TEMPLATES_DIR = "src/main/resources/etc/tos1/";
     	} else {
-    		NESC_TEMPLATES_DIR = "src/tinyOS2Templates/";
+    		NESC_TEMPLATES_DIR = "src/main/resources/etc/tos2/";
     	}
     	NESC_INTERFACES_DIR = NESC_TEMPLATES_DIR + "interfaces/";
-    	NESC_MODULES_DIR = NESC_TEMPLATES_DIR + "modules/";
+    	NESC_COMPONENTS_DIR = NESC_TEMPLATES_DIR + "components/";
     	NESC_MISC_FILES_DIR = NESC_TEMPLATES_DIR + "misc/";
 
-    	Utils.checkDirectory(NESC_MODULES_DIR, false);
-    	Utils.checkDirectory(NESC_INTERFACES_DIR, false);
-    	Utils.checkDirectory(NESC_MISC_FILES_DIR, false);
-
-		computeOperatorTupleSizes(plan);
+//    	NESC_COMPONENTS_DIR = this.getClass().getClassLoader().getResource(NESC_COMPONENTS_DIR).toString();
+//    	
+//    	Utils.checkDirectory(NESC_COMPONENTS_DIR, false);
+//    	Utils.checkDirectory(NESC_INTERFACES_DIR, false);
+//    	Utils.checkDirectory(NESC_MISC_FILES_DIR, false);
     }
 
     /**
@@ -232,7 +321,7 @@ public class TinyOSGenerator {
      * @param tossimFlag	Specifies whether Tossim code is being generated.
      * @param targetName 
      */
-    public static void initConstants(int tosVersion, boolean tossimFlag, String targetName) {
+    private static void initConstants(int tosVersion, boolean tossimFlag, String targetName) {
 		if (tosVersion == 1) {
 		    COMPONENT_RADIO = "GenericComm";
 		    COMPONENT_MAIN = "Main";
@@ -304,16 +393,17 @@ public class TinyOSGenerator {
     /**
      * Precompute the operator tuple sizes and store in hashtable.
      * @param plan The query plan to compute tuples sizes for.
+     * @throws TypeMappingException 
+     * @throws SchemaMetadataException 
      */
-    public static void computeOperatorTupleSizes(final SensorNetworkQueryPlan plan) {
+    private void computeOperatorTupleSizes() throws SchemaMetadataException, TypeMappingException {
 
 		final Iterator<SensornetOperator> opIter = plan.getDAF().
 			operatorIterator(TraversalOrder.PRE_ORDER);
 		while (opIter.hasNext()) {
-		    final Operator op = (Operator) opIter.next();
+		    final SensornetOperator op = (SensornetOperator) opIter.next();
 
-		    final ArrayList<Attribute> attributes
-		    	= ((LogicalOperator) op).getAttributes();
+		    final List<Attribute> attributes = op.getAttributes();
 		    int tupleSize = 0;
 
 		    for (int i = 0; i<attributes.size();i++) {
@@ -344,16 +434,14 @@ public class TinyOSGenerator {
      * @throws IOException
      * @throws CodeGenerationException
      */
-    public static HashMap<Site, NesCConfiguration> generateSiteConfigurations(
-	    final SensorNetworkQueryPlan plan, final QoSSpec qos,
-	    Integer sink, int tosVersion, boolean tossimFlag, boolean combinedFlag, String targetName) throws IOException,
+    private HashMap<Site, NesCConfiguration> generateSiteConfigurations() throws IOException,
 	    CodeGenerationException {
     	
     	HashMap<Site, NesCConfiguration> siteConfigs = new HashMap<Site, NesCConfiguration>();
 		if (tosVersion == 1) {
-		    siteConfigs = t1GenerateSiteConfigs(plan, qos, sink, tosVersion, tossimFlag, combinedFlag, targetName);
+		    siteConfigs = t1GenerateSiteConfigs();
 		} else {
-			siteConfigs = t2GenerateSiteConfigs(plan, qos, sink, tosVersion, tossimFlag, combinedFlag, targetName);
+			siteConfigs = t2GenerateSiteConfigs();
 		}
 
 		return siteConfigs;
@@ -367,28 +455,27 @@ public class TinyOSGenerator {
      * @param tossimFlag
      * @throws CodeGenerationException
      */
-    private static void addLEDs(HashMap<Site, NesCConfiguration> siteConfigs, 
-    		NesCConfiguration tossimConfig, int tosVersion, boolean tossimFlag)
+    private void addLEDs(HashMap<Site, NesCConfiguration> siteConfigs, 
+    		NesCConfiguration tossimConfig)
     		throws CodeGenerationException {
 
     	Iterator<Site> siteIter = siteConfigs.keySet().iterator();
     	while (siteIter.hasNext()) {
     		Site site = siteIter.next();
     		NesCConfiguration config = siteConfigs.get(site);
-    		addLEDsToOuterConfiguration(tosVersion, tossimFlag, config);
+    		addLEDsToOuterConfiguration(config);
     	}
     	
-    	addLEDsToOuterConfiguration(tosVersion, tossimFlag, tossimConfig);
+    	addLEDsToOuterConfiguration(tossimConfig);
     }
 
-	private static void addLEDsToOuterConfiguration(int tosVersion,
-			boolean tossimFlag, NesCConfiguration config)
+	private void addLEDsToOuterConfiguration(NesCConfiguration config)
 			throws CodeGenerationException {
 		LedComponent ledComp = new LedComponent(COMPONENT_LEDS, config, tosVersion, tossimFlag);
 		config.addComponent(ledComp);
 		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_LEDS, INTERFACE_LEDS);
 		
-		if ((Settings.NESC_DELUGE) && (tossimFlag == false)) {
+		if ((this.includeDeluge) && (tossimFlag == false)) {
 			config.addWiring(COMPONENT_DELUGE, COMPONENT_LEDS, INTERFACE_LEDS);
 		}
 		
@@ -427,14 +514,7 @@ public class TinyOSGenerator {
      * @throws IOException
      * @throws CodeGenerationException
      */
-    public static HashMap<Site, NesCConfiguration> t1GenerateSiteConfigs(
-	    final SensorNetworkQueryPlan plan,
-	    final QoSSpec qos,
-	    int sink,
-	    int tosVersion,
-	    boolean tossimFlag,
-	    boolean combinedFlag, 
-	    String targetName)
+    private HashMap<Site, NesCConfiguration> t1GenerateSiteConfigs()
 	    throws IOException, CodeGenerationException {
 
 		final HashMap<Site, NesCConfiguration> siteConfigs = new HashMap<Site, NesCConfiguration>();
@@ -455,22 +535,19 @@ public class TinyOSGenerator {
 				tossimFlag);
 
 			/* Add the components which are always needed */
-			t1AddMainSiteComponents(plan, qos, sink, tosVersion, tossimFlag,
-					combinedFlag, config, targetName);
+			t1AddMainSiteComponents(config);
 
 			/* Add the Power Management components */
-			t1AddPowerManagmentComponents(tosVersion, tossimFlag, config);
+			t1AddPowerManagmentComponents(config);
 
 			/* Add functionality for changing radio transmit power */
-			t1AddRadioPowerAdjustComponents(tossimFlag, config);
+			t1AddRadioPowerAdjustComponents(config);
 
 			/* Add the DAF fragments allocated to this site */
-			acquireCount = t1AddSiteFragments(tosVersion, tossimFlag,
-					acquireCount, currentSite, config);
+			acquireCount = t1AddSiteFragments(acquireCount, currentSite, config);
 
 			/* Wire the fragments with trays, radio receive and transmit*/
-			wireSiteFragments(plan, qos, tosVersion, tossimFlag, currentSite,
-					currentSiteID, config);
+			wireSiteFragments(currentSite,currentSiteID, config);
 
 			siteConfigs.put(currentSite, config);
 		}
@@ -479,27 +556,22 @@ public class TinyOSGenerator {
 
     /**
      * TOS1: Add the components which are always needed a site configuration.
-     * @param plan   The query plan which code is being generated for.
-     * @param qos The user-specified quality-of-service requirements.
-     * @param sink The sink node of the network.
-     * @param tosVersion The TinyOS version which nesC is being generated for.
-     * @param tossimFlag Indicates whether code for Tossim simulator needs to be generated.
      * @param config The nesC configuration which components/wirings are being added to.
      * @throws CodeGenerationException
      */
-	private static void t1AddMainSiteComponents(final SensorNetworkQueryPlan plan,
-			final QoSSpec qos, int sink, int tosVersion, boolean tossimFlag,
-			boolean combinedFlag,
-			final NesCConfiguration config, String targetName) throws CodeGenerationException {
+	private void t1AddMainSiteComponents(final NesCConfiguration config) throws CodeGenerationException {
 
 		MainComponent mainComp = new MainComponent(COMPONENT_MAIN, config,
 			tosVersion, tossimFlag);
 		config.addComponent(mainComp);
 
 		//Main query plan class
+		int sink = new Integer(plan.getRT().getRoot().getID()).intValue();
 		QueryPlanModuleComponent queryPlanModuleComp =
 			new QueryPlanModuleComponent(COMPONENT_QUERY_PLAN, config,
-			plan, qos, sink, tosVersion, (tossimFlag || combinedFlag), targetName);
+			plan, sink, tosVersion, (tossimFlag || combinedImage), targetName,
+			costParams, controlRadioOff, enablePrintf, useStartUpProtocol, enableLeds,
+			usePowerManagement, deliverLast, adjustRadioPower);
 		config.addComponent(queryPlanModuleComp);
 
 		TimerT1Component timerComp = new TimerT1Component( //$
@@ -537,7 +609,7 @@ public class TinyOSGenerator {
 			INTERFACE_TIMER, "AgendaTimer", INTERFACE_TIMER
 				+ "[unique(\"Timer\")]");
 		//Adds a delay to give radio time switch on
-		if (!tossimFlag && Settings.NESC_CONTROL_RADIO_OFF) {
+		if (!tossimFlag && this.controlRadioOff) {
 			config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_TIMER,
 					INTERFACE_TIMER, "RadioOnTimer", INTERFACE_TIMER
 						+ "[unique(\"Timer\")]");
@@ -551,10 +623,9 @@ public class TinyOSGenerator {
 	 * @param config The nesC confiugration which components/wirings are being added to.
 	 * @throws CodeGenerationException
 	 */
-	private static void t1AddPowerManagmentComponents(int tosVersion,
-			boolean tossimFlag, final NesCConfiguration config)
+	private void t1AddPowerManagmentComponents(final NesCConfiguration config)
 			throws CodeGenerationException {
-		if (Settings.NESC_POWER_MANAGEMENT) {
+		if (this.usePowerManagement) {
 			config.addComponent(new PowerManagementComponent(
 				COMPONENT_POWER_MANAGEMENT, config, tosVersion, tossimFlag));
 			config.addWiring(COMPONENT_QUERY_PLAN,
@@ -573,9 +644,9 @@ public class TinyOSGenerator {
 	 * @param config The nesC confiugration which components/wirings are being added to.
 	 * @throws CodeGenerationException
 	 */
-	private static void t1AddRadioPowerAdjustComponents(boolean tossimFlag,
-			final NesCConfiguration config) throws CodeGenerationException {
-		if (!tossimFlag && Settings.NESC_ADJUST_RADIO_POWER) {
+	private void t1AddRadioPowerAdjustComponents(final NesCConfiguration config) 
+	throws CodeGenerationException {
+		if (!tossimFlag && this.adjustRadioPower) {
 			//Wiring to enable radio transmit power to be adjusted
 			final CC1000ControlComponent CC1000ControlComp =
 				new CC1000ControlComponent(COMPONENT_CC1000CONTROL, config, tossimFlag);
@@ -588,16 +659,13 @@ public class TinyOSGenerator {
 
 	/**
 	 * TOS1: Add the DAF fragments allocated to this site.
-	 * @param tosVersion The TinyOS version which nesC is being generated for.
-	 * @param tossimFlag Indicates whether code for Tossim simulator needs to be generated.s
 	 * @param acquireCount The number of acquire operators encountered on this site.
 	 * @param currentSite The site for which code is being generated.
 	 * @param config The nesC configuration which components/wirings are being added to.
 	 * @return
 	 * @throws CodeGenerationException
 	 */
-	private static int t1AddSiteFragments(int tosVersion, boolean tossimFlag,
-			int acquireCount, final Site currentSite,
+	private int t1AddSiteFragments(	int acquireCount, final Site currentSite,
 			final NesCConfiguration config) throws CodeGenerationException {
 		final Iterator<Fragment> fragIter = currentSite.getFragments()
 			.iterator();
@@ -616,7 +684,7 @@ public class TinyOSGenerator {
 				INTERFACE_DO_TASK);
 
 			/* Wire fragment to hardware devices as required */
-			acquireCount = t1WireFragToDevices(tossimFlag, acquireCount,
+			acquireCount = t1WireFragToDevices(acquireCount,
 					currentSite, config, frag, fragComp);
 		}
 		return acquireCount;
@@ -626,7 +694,6 @@ public class TinyOSGenerator {
 	/**
 	 * TOS1: Wire fragment component to required devices, e.g., serial port or
 	 * sensors.
-	 * @param tossimFlag
 	 * @param acquireCount
 	 * @param currentSite
 	 * @param config
@@ -635,16 +702,16 @@ public class TinyOSGenerator {
 	 * @return
 	 * @throws CodeGenerationException
 	 */
-	private static int t1WireFragToDevices(boolean tossimFlag, int acquireCount,
+	private int t1WireFragToDevices(int acquireCount,
 			final Site currentSite, final NesCConfiguration config,
 			final Fragment frag, final FragmentComponent fragComp)
 			throws CodeGenerationException {
-		final Iterator<Operator> opIter = frag
+		final Iterator<SensornetOperator> opIter = frag
 			.operatorIterator(TraversalOrder.POST_ORDER);
 		while (opIter.hasNext()) {
-			final Operator op = opIter.next();
+			final SensornetOperator op = opIter.next();
 			if (op instanceof AcquireOperator) {
-				acquireCount = t1WireFragToSensors(tossimFlag,
+				acquireCount = t1WireFragToSensors(
 					acquireCount, currentSite, config, fragComp, op);
 
 			} else if (op instanceof DeliverOperator) {
@@ -661,7 +728,6 @@ public class TinyOSGenerator {
 
 	/**
 	 * TOS1: Wire fragment component to the sensor component.
-	 * @param tossimFlag
 	 * @param acquireCount
 	 * @param currentSite
 	 * @param config
@@ -670,10 +736,9 @@ public class TinyOSGenerator {
 	 * @return
 	 * @throws CodeGenerationException
 	 */
-	private static int t1WireFragToSensors(boolean tossimFlag,
-			int acquireCount, final Site currentSite,
+	private int t1WireFragToSensors(int acquireCount, final Site currentSite,
 			final NesCConfiguration config, final FragmentComponent fragComp,
-			final Operator op) throws CodeGenerationException {
+			final SensornetOperator op) throws CodeGenerationException {
 
 		final SensorT1Component sensorComp = new SensorT1Component(
 				currentSite, currentSite, COMPONENT_SENSOR, config,
@@ -705,18 +770,12 @@ public class TinyOSGenerator {
 
 	/**
 	 * TOS1: Wire the fragments with trays, radio receive and transmit.
-	 * @param plan The query plan which code is being generated for.
-	 * @param qos The user-specified quality-of-service requirements.
-	 * @param tosVersion The TinyOS version which nesC is being generated for.
-	 * @param tossimFlag Indicates whether code for Tossim simulator needs to be generated.
 	 * @param currentSite The site for which code is being generated.
 	 * @param currentSiteID The id of the site for which code is being generated.
 	 * @param config The nesC configuration which components/wirings are being added to.
 	 * @throws CodeGenerationException
 	 */
-    private static void wireSiteFragments(final SensorNetworkQueryPlan plan,
-			final QoSSpec qos, int tosVersion, boolean tossimFlag,
-			final Site currentSite, final String currentSiteID,
+    private void wireSiteFragments(final Site currentSite, final String currentSiteID,
 			final NesCConfiguration config) throws CodeGenerationException {
 
 		/* Wire fragments up accordingly */
@@ -728,8 +787,7 @@ public class TinyOSGenerator {
 			final Fragment destFrag = exchPart.getDestFrag();
 			final String destSiteID = exchPart.getDestSiteID();
 
-			final String trayName = addTrayComponent(plan, qos, tosVersion,
-					tossimFlag, currentSite, config, sourceFrag, destFrag,
+			final String trayName = addTrayComponent(currentSite, config, sourceFrag, destFrag,
 					destSiteID);
 
 			/* linking two remote fragments */
@@ -738,40 +796,34 @@ public class TinyOSGenerator {
 				/* Remote consumer */
 				if (exchPart.getComponentType()
 						== ExchangePartType.CONSUMER) {
-					addRemoteConsumer(plan, qos, tosVersion, tossimFlag,
-							currentSite, currentSiteID, config, exchPart,
+					addRemoteConsumer(currentSite, currentSiteID, config, exchPart,
 							sourceFrag, destFrag, destSiteID, trayName);
 
 				/* Remote producer */
 				} else if (exchPart.getComponentType()
 						== ExchangePartType.PRODUCER) {
-					addRemoteProducer(plan, qos, tosVersion, tossimFlag,
-							currentSite, currentSiteID, config, exchPart,
+					addRemoteProducer(currentSite, currentSiteID, config, exchPart,
 							sourceFrag, destFrag, destSiteID, trayName);
 
 				/* Relay */
 				} else if (exchPart.getComponentType()
 						== ExchangePartType.RELAY) {
-					addRelay(plan, qos, tosVersion, tossimFlag, currentSite,
+					addRelay(currentSite,
 							currentSiteID, config, exchPart, sourceFrag,
 							destFrag, destSiteID, trayName);
 				}
 
 			} else {
 				/* link two local fragments on the same site */
-				connectLocalFragments(tosVersion, currentSite, config,
-						sourceFrag, destFrag, trayName);
+				connectLocalFragments(currentSite, config, sourceFrag, 
+						destFrag, trayName);
 			}
 		}
 	}
 
 
     /**
-     * TOS1: Add a remote consumer.
-     * @param plan
-     * @param qos
-     * @param tosVersion
-     * @param tossimFlag
+     * Add a remote consumer.
      * @param currentSite
      * @param currentSiteID
      * @param config
@@ -782,9 +834,7 @@ public class TinyOSGenerator {
      * @param trayName
      * @throws CodeGenerationException
      */
-	private static void addRemoteConsumer(final SensorNetworkQueryPlan plan,
-			final QoSSpec qos, int tosVersion, boolean tossimFlag,
-			final Site currentSite, final String currentSiteID,
+	private void addRemoteConsumer(final Site currentSite, final String currentSiteID,
 			final NesCConfiguration config, final ExchangePart exchPart,
 			final Fragment sourceFrag, final Fragment destFrag,
 			final String destSiteID, final String trayName)
@@ -800,11 +850,11 @@ public class TinyOSGenerator {
 			INTERFACE_GET_TUPLES);
 
 		if (tosVersion==1) {
-			t1AddRXComponent(plan, qos, currentSite, currentSiteID,
+			t1AddRXComponent(currentSite, currentSiteID,
 				config, exchPart, sourceFrag, destFrag,
-				destSiteID, trayName, tossimFlag);
+				destSiteID, trayName);
 		} else {
-			t2AddRXComponent(plan, qos, tossimFlag, config, exchPart,
+			t2AddRXComponent(config, exchPart,
 					sourceFrag, destFrag, destSiteID, trayName);
 		}
 	}
@@ -826,9 +876,7 @@ public class TinyOSGenerator {
 	 * @param trayName
 	 * @throws CodeGenerationException
 	 */
-	private static void addRemoteProducer(final SensorNetworkQueryPlan plan,
-			final QoSSpec qos, int tosVersion, boolean tossimFlag,
-			final Site currentSite, final String currentSiteID,
+	private void addRemoteProducer(final Site currentSite, final String currentSiteID,
 			final NesCConfiguration config, final ExchangePart exchPart,
 			final Fragment sourceFrag, final Fragment destFrag,
 			final String destSiteID, final String trayName)
@@ -844,22 +892,18 @@ public class TinyOSGenerator {
 			INTERFACE_PUT_TUPLES);
 
 		if (tosVersion==1) {
-			t1AddTXComponent(plan, qos, currentSiteID, config,
+			t1AddTXComponent(currentSiteID, config,
 					exchPart, sourceFrag, destFrag, destSiteID,
-					trayName, tossimFlag);			
+					trayName);			
 		} else {
-			t2AddTXComponent(plan, qos, tossimFlag, config, exchPart, sourceFrag,
+			t2AddTXComponent(config, exchPart, sourceFrag,
 					destFrag, destSiteID, trayName);
 		}
-
 	}
 
 
 	/**
 	 * TOS1: Add relay.
-	 * @param plan
-	 * @param qos
-	 * @param tossimFlag
 	 * @param currentSite
 	 * @param currentSiteID
 	 * @param config
@@ -870,25 +914,24 @@ public class TinyOSGenerator {
 	 * @param trayName
 	 * @throws CodeGenerationException
 	 */
-	private static void addRelay(final SensorNetworkQueryPlan plan, final QoSSpec qos,
-			int tosVersion, boolean tossimFlag, final Site currentSite,
+	private void addRelay(final Site currentSite,
 			final String currentSiteID, final NesCConfiguration config,
 			final ExchangePart exchPart, final Fragment sourceFrag,
 			final Fragment destFrag, final String destSiteID,
 			final String trayName) throws CodeGenerationException {
 		
 		if (tosVersion==1) {
-			t1AddRXComponent(plan, qos, currentSite, currentSiteID,
+			t1AddRXComponent(currentSite, currentSiteID,
 				config, exchPart, sourceFrag, destFrag,
-				destSiteID, trayName, tossimFlag);
-			t1AddTXComponent(plan, qos, currentSiteID, config,
+				destSiteID, trayName);
+			t1AddTXComponent(currentSiteID, config,
 				exchPart, sourceFrag, destFrag, destSiteID,
-				trayName, tossimFlag);
+				trayName);
 		} else {
-			t2AddRXComponent(plan, qos, tossimFlag, config,
-					exchPart, sourceFrag, destFrag, destSiteID, trayName);
-			t2AddTXComponent(plan, qos, tossimFlag, config,
-					exchPart, sourceFrag, destFrag, destSiteID, trayName);
+			t2AddRXComponent(config, exchPart, sourceFrag, destFrag, 
+					destSiteID, trayName);
+			t2AddTXComponent(config, exchPart, sourceFrag, destFrag, 
+					destSiteID, trayName);
 		}
 	}
 
@@ -903,8 +946,8 @@ public class TinyOSGenerator {
 	 * @param trayName
 	 * @throws CodeGenerationException
 	 */
-	private static void connectLocalFragments(int tosVersion,
-			final Site currentSite, final NesCConfiguration config,
+	private void connectLocalFragments(final Site currentSite, 
+			final NesCConfiguration config,
 			final Fragment sourceFrag, final Fragment destFrag,
 			final String trayName) throws CodeGenerationException {
 		final String destFragCompName = FragmentComponent
@@ -920,13 +963,9 @@ public class TinyOSGenerator {
 
 		final String sourceFragCompName = FragmentComponent
 			.generateName(sourceFrag, currentSite, tosVersion);
-		config.addWiring(
-				sourceFragCompName,
-				trayName,
-				CodeGenUtils
-					.generatePutTuplesInterfaceInstanceName(sourceFrag),
-				CodeGenUtils
-					.generatePutTuplesInterfaceInstanceName(sourceFrag),
+		config.addWiring(sourceFragCompName, trayName,
+				CodeGenUtils.generatePutTuplesInterfaceInstanceName(sourceFrag),
+				CodeGenUtils.generatePutTuplesInterfaceInstanceName(sourceFrag),
 				INTERFACE_PUT_TUPLES);
 	}
 
@@ -934,11 +973,6 @@ public class TinyOSGenerator {
 	/**
 	 * TOS1: Creates a tray to buffer tuples for an exachange part
 	 * (producer, consumer or relay).
-	 * @param plan
-	 * @param qos
-	 * @param tosVersion
-	 * @param tossimFlag
-	 * @param currentSite
 	 * @param config
 	 * @param sourceFrag
 	 * @param destFrag
@@ -946,14 +980,14 @@ public class TinyOSGenerator {
 	 * @return
 	 * @throws CodeGenerationException
 	 */
-	private static String addTrayComponent(final SensorNetworkQueryPlan plan, final QoSSpec qos,
-			int tosVersion, boolean tossimFlag, final Site currentSite,
+	private String addTrayComponent(final Site currentSite,
 			final NesCConfiguration config, final Fragment sourceFrag,
 			final Fragment destFrag, final String destSiteID)
 			throws CodeGenerationException {
-		TrayComponent trayComp = new TrayComponent(sourceFrag,
-			destFrag, destSiteID, currentSite, config, plan, qos,
-			tosVersion, tossimFlag);
+		TrayComponent trayComp = new TrayComponent(sourceFrag, destFrag, 
+				destSiteID, currentSite, config, plan, tosVersion, 
+				tossimFlag, costParams, debugLeds);
+		
 		trayComp = (TrayComponent) config.addComponent(trayComp);
 		// tray may already exist
 		final String trayName = trayComp.getID();
@@ -976,16 +1010,15 @@ public class TinyOSGenerator {
      * @param tossimFlag Indicates whether code for Tossim simulator needs to be generated.
      * @throws CodeGenerationException
      */
-    private static void t1AddTXComponent(final SensorNetworkQueryPlan plan,
-    	    final QoSSpec qos, final String currentSiteID,
+    private void t1AddTXComponent(final String currentSiteID,
     	    final NesCConfiguration config, final ExchangePart exchComp,
     	    final Fragment sourceFrag, final Fragment destFrag,
-    	    final String destSiteID, final String trayName,
-    	    final boolean tossimFlag)
+    	    final String destSiteID, final String trayName)
     	    throws CodeGenerationException {
 
     	TXT1Component txComp = new TXT1Component(exchComp.getCurrentSite(),
-    		exchComp.getNext().getCurrentSite(), config, plan, qos, tossimFlag);
+    		exchComp.getNext().getCurrentSite(), config, plan, tossimFlag, 
+    		costParams, debugLeds);
     	txComp = (TXT1Component) config.addComponent(txComp);
     	txComp.addExchangeComponent(exchComp);
     	final String txCompName = txComp.getID();
@@ -1010,8 +1043,6 @@ public class TinyOSGenerator {
     /**
      * TOS1: Adds a RX-tray component wiring to a configuration.  The RX
      * component is added if not already present.
-     * @param plan The query plan which code is being generated for.
-     * @param qos The user-specified quality-of-service requirements.
      * @param currentSite The site for which code is being generated.
      * @param currentSiteID The site id for which code is being generated.
      * @param config The nesC configuration which components/wirings are being added to.
@@ -1020,31 +1051,24 @@ public class TinyOSGenerator {
      * @param destFrag The destination Fragment of tuples to be transmitted.
      * @param destSiteID The destination site of tuples to be transmitted.
      * @param trayName The name of the tray from which tuples are to be written to.
-     * @param tossimFlag Indicates whether code for Tossim simulator needs to be generated.
      * @throws CodeGenerationException
      */
-    private static void t1AddRXComponent(final SensorNetworkQueryPlan plan,
-    	    final QoSSpec qos, final Site currentSite,
+    private void t1AddRXComponent(final Site currentSite,
     	    final String currentSiteID, final NesCConfiguration config,
     	    final ExchangePart exchComp, final Fragment sourceFrag,
     	    final Fragment destFrag, final String destSiteID,
-    	    final String trayName,
-    	    final boolean tossimFlag) throws CodeGenerationException {
+    	    final String trayName) throws CodeGenerationException {
     	RXT1Component rxComp = new RXT1Component(exchComp.getPrevious()
-    		.getCurrentSite(), currentSite, config, plan, qos, tossimFlag);
+    		.getCurrentSite(), currentSite, config, plan, tossimFlag, debugLeds);
     	rxComp = (RXT1Component) config.addComponent(rxComp); // may already
     	// exist
     	rxComp.addExchangeComponent(exchComp);
     	final String rxCompName = rxComp.getID();
 
     	config
-    		.addWiring(
-    			rxCompName,
-    			trayName,
-    			CodeGenUtils
-    				.generatePutTuplesInterfaceInstanceName(sourceFrag),
-    			CodeGenUtils
-    				.generatePutTuplesInterfaceInstanceName(sourceFrag),
+    		.addWiring(rxCompName, trayName,
+    			CodeGenUtils.generatePutTuplesInterfaceInstanceName(sourceFrag),
+    			CodeGenUtils.generatePutTuplesInterfaceInstanceName(sourceFrag),
     			INTERFACE_PUT_TUPLES);
     	config.addWiring(rxCompName, COMPONENT_RADIO, INTERFACE_RECEIVE,
     		CodeGenUtils.generateUserReceiveInterfaceName(sourceFrag,
@@ -1068,14 +1092,7 @@ public class TinyOSGenerator {
      * @throws IOException
      * @throws CodeGenerationException
      */
-    public static HashMap<Site, NesCConfiguration> t2GenerateSiteConfigs(
-	    final SensorNetworkQueryPlan plan,
-	    final QoSSpec qos,
-	    int sink,
-	    int tosVersion,
-	    boolean tossimFlag,
-	    boolean combinedFlag,
-	    String targetName)
+    private HashMap<Site, NesCConfiguration> t2GenerateSiteConfigs()
 	    throws IOException, CodeGenerationException {
 
 		final HashMap<Site, NesCConfiguration> nodeConfigs = new HashMap<Site, NesCConfiguration>();
@@ -1088,14 +1105,10 @@ public class TinyOSGenerator {
 			/* Instantiate the top-level site configuration */
 			final NesCConfiguration config = new NesCConfiguration(
 				COMPONENT_QUERY_PLANC + currentSiteID, //$
-				plan,
-				currentSite,
-				tosVersion,
-				tossimFlag);
+				plan, currentSite, tosVersion, tossimFlag);
 
 			/* Add the components which are always needed */
-			t2AddMainSiteComponents(plan, qos, sink, tosVersion, tossimFlag,
-					combinedFlag, config, targetName);
+			t2AddMainSiteComponents(config);
 
 			/* Optional components for Led debugging not implemented yet for TOS2 */
 
@@ -1104,11 +1117,10 @@ public class TinyOSGenerator {
 			/* Functionality for changing radio transmit power not implemented yet for TOS2*/
 
 			/* Add the fragments which have been placed onto this site */
-			t2AddSiteFragments(tosVersion, tossimFlag, currentSite, config);
+			t2AddSiteFragments(currentSite, config);
 
 			/* Wire the fragments with trays, radio receive and transmit */
-			wireSiteFragments(plan, qos, tosVersion, tossimFlag, currentSite, 
-					currentSiteID, config);
+			wireSiteFragments(currentSite, currentSiteID, config);
 
 			nodeConfigs.put(currentSite, config);
 
@@ -1127,16 +1139,17 @@ public class TinyOSGenerator {
      * @param config The nesC configuration which components/wirings are being added to.
      * @throws CodeGenerationException
      */
-	private static void t2AddMainSiteComponents(final SensorNetworkQueryPlan plan,
-			final QoSSpec qos, int sink, int tosVersion, boolean tossimFlag,
-			boolean combinedFlag, final NesCConfiguration config, String targetName) throws CodeGenerationException {
+	private void t2AddMainSiteComponents(final NesCConfiguration config) throws CodeGenerationException {
 		MainComponent mainComp = new MainComponent(COMPONENT_MAIN, config,
 			tosVersion, tossimFlag);
 		config.addComponent(mainComp);
 
+		int sink = plan.getGateway();
 		QueryPlanModuleComponent queryPlanModuleComp =
 			new QueryPlanModuleComponent(COMPONENT_QUERY_PLAN, config,
-			plan, qos, sink, tosVersion, (tossimFlag || combinedFlag), targetName);
+			plan, sink, tosVersion, (tossimFlag || combinedImage), targetName,
+			costParams, controlRadioOff, enablePrintf, useStartUpProtocol, enableLeds,
+			usePowerManagement, deliverLast, adjustRadioPower);
 		config.addComponent(queryPlanModuleComp);
 
 		TimerT2Component timerComp = new TimerT2Component(		//$
@@ -1167,11 +1180,11 @@ public class TinyOSGenerator {
 //					INTERFACE_TIMER, TYPE_TMILLI, "RadioOnTimer", INTERFACE_TIMER);
 //		}
 		
-		if (Settings.NESC_DELUGE && tossimFlag == false) {
+		if (this.includeDeluge && tossimFlag == false) {
 			DelugeComponent delugeComp = new DelugeComponent(COMPONENT_DELUGE, config, tossimFlag);
 			config.addComponent(delugeComp);
 		}
-		if (Settings.CODE_GENERATION_USE_STARTUP_PROTOCOL) {
+		if (this.useStartUpProtocol) {
 			
 			SerialComponent serialComp = new SerialComponent(COMPONENT_SERIAL_DEVICE, config, tossimFlag);
 			config.addComponent(serialComp);
@@ -1213,8 +1226,7 @@ public class TinyOSGenerator {
      * @param config The nesC configuration which components/wirings are being added to.
      * @throws CodeGenerationException
      */
-	private static void t2AddSiteFragments(int tosVersion, boolean tossimFlag,
-			final Site currentSite, final NesCConfiguration config)
+	private void t2AddSiteFragments(final Site currentSite, final NesCConfiguration config)
 			throws CodeGenerationException {
 		final Iterator<Fragment> fragIter = currentSite.getFragments()
 			.iterator();
@@ -1233,7 +1245,7 @@ public class TinyOSGenerator {
 				INTERFACE_DO_TASK);
 
 			/* Wire fragment to hardware devices as required */
-			t2WireFragToDevices(tossimFlag, currentSite, config, frag, fragComp);
+			t2WireFragToDevices(currentSite, config, frag, fragComp);
 		}
 	}
 
@@ -1247,23 +1259,20 @@ public class TinyOSGenerator {
 	 * @param fragComp
 	 * @throws CodeGenerationException
 	 */
-	private static void t2WireFragToDevices(boolean tossimFlag,
-			final Site currentSite, final NesCConfiguration config,
-			final Fragment frag, final FragmentComponent fragComp)
-			throws CodeGenerationException {
-		final Iterator<Operator> opIter = frag
+	private void t2WireFragToDevices(final Site currentSite, 
+	final NesCConfiguration config, final Fragment frag, final FragmentComponent fragComp)
+	throws CodeGenerationException {
+		final Iterator<SensornetOperator> opIter = frag
 			.operatorIterator(TraversalOrder.POST_ORDER);
 		while (opIter.hasNext()) {
-			final Operator op = opIter.next();
+			final SensornetOperator op = opIter.next();
 			if (op instanceof AcquireOperator) {
 
 				/* Wire fragment component to the sensor component */
-				t2wireFragToSensors(tossimFlag, currentSite, config,
-						fragComp, op);
+				t2wireFragToSensors(currentSite, config, fragComp, op);
 				
-				if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
-					t2wireFragToLocalTime(tossimFlag, currentSite, config,
-							fragComp, op);
+				if (this.showLocalTime) {
+					t2wireFragToLocalTime(currentSite, config, fragComp, op);
 				}
 				
 			} else if (op instanceof DeliverOperator) {
@@ -1298,10 +1307,9 @@ public class TinyOSGenerator {
 	 * @param op
 	 * @throws CodeGenerationException
 	 */
-	private static void t2wireFragToSensors(boolean tossimFlag,
-			final Site currentSite, final NesCConfiguration config,
-			final FragmentComponent fragComp, final Operator op)
-			throws CodeGenerationException {
+	private void t2wireFragToSensors(final Site currentSite, 
+	final NesCConfiguration config, final FragmentComponent fragComp, final SensornetOperator op)
+	throws CodeGenerationException {
 		final int numSensedAttr
 		= ((AcquireOperator) op).getNumSensedAttributes();
 		for (int i = 0; i < numSensedAttr; i++) {
@@ -1319,10 +1327,9 @@ public class TinyOSGenerator {
 		}
 	}
 
-	private static void t2wireFragToLocalTime(boolean tossimFlag,
-			final Site currentSite, final NesCConfiguration config,
-			final FragmentComponent fragComp, final Operator op)
-			throws CodeGenerationException {
+	private void t2wireFragToLocalTime(final Site currentSite, 
+	final NesCConfiguration config, final FragmentComponent fragComp, final SensornetOperator op)
+	throws CodeGenerationException {
 
 		final LocalTimeComponent localTimeComp = new LocalTimeComponent(
 					COMPONENT_LOCAL_TIME, config, tossimFlag);
@@ -1332,9 +1339,7 @@ public class TinyOSGenerator {
 					INTERFACE_LOCAL_TIME, TYPE_TMILLI, INTERFACE_LOCAL_TIME, INTERFACE_LOCAL_TIME);
 	}
 
-	private static void t2AddTXComponent(final SensorNetworkQueryPlan plan,
-			final QoSSpec qos, boolean tossimFlag,
-			final NesCConfiguration config, final ExchangePart exchPart,
+	private void t2AddTXComponent(final NesCConfiguration config, final ExchangePart exchPart,
 			final Fragment sourceFrag, final Fragment destFrag,
 			final String destSiteID, final String trayName)
 			throws CodeGenerationException {
@@ -1350,7 +1355,7 @@ public class TinyOSGenerator {
 				sourceFrag, destFrag,
 				exchPart.getDestSite(),
 				exchPart.getNext().getCurrentSite(),
-				config, plan, qos, tossimFlag);
+				config, plan, tossimFlag, costParams, debugLeds);
 
 		config.addComponent(txComp);
 		final String txCompName = txComp.getID();
@@ -1362,53 +1367,37 @@ public class TinyOSGenerator {
 			tossimFlag);
 		config.addComponent(radioTxComp);
 
-		config
-			.addWiring(
-				txCompName,
-				trayName,
-				CodeGenUtils
-					.generateGetTuplesInterfaceInstanceName(sourceFrag),
-				INTERFACE_GET_TUPLES,
-				INTERFACE_GET_TUPLES);
+		config.addWiring(txCompName, trayName,
+				CodeGenUtils.generateGetTuplesInterfaceInstanceName(sourceFrag),
+				INTERFACE_GET_TUPLES, INTERFACE_GET_TUPLES);
 		config.addWiring(txCompName, radioTxComp.getID(),
 			INTERFACE_SEND, INTERFACE_SEND, INTERFACE_SEND);
 
 		config.addWiring(txCompName, radioTxComp.getID(),
-			INTERFACE_PACKET, INTERFACE_PACKET,
-			INTERFACE_PACKET);
+			INTERFACE_PACKET, INTERFACE_PACKET, INTERFACE_PACKET);
 
 		config.addWiring(txCompName, radioTxComp.getID(),
-				INTERFACE_AMPACKET, INTERFACE_AMPACKET,
-				INTERFACE_AMPACKET);
+				INTERFACE_AMPACKET, INTERFACE_AMPACKET, INTERFACE_AMPACKET);
 		
 		config.addWiring(COMPONENT_QUERY_PLAN, txCompName,
-			INTERFACE_DO_TASK, CodeGenUtils
-				.generateUserAsDoTaskName("tx",
-					exchPart.getCurrentSite()
-						.getID(), sourceFrag,
-					exchPart.getNext()
-						.getCurrentSite()
-						.getID(), destFrag),
-			INTERFACE_DO_TASK);
+			INTERFACE_DO_TASK, CodeGenUtils.generateUserAsDoTaskName("tx",
+					exchPart.getCurrentSite().getID(), sourceFrag,
+					exchPart.getNext().getCurrentSite().getID(), destFrag),
+					INTERFACE_DO_TASK);
 	}
 
 	
-	private static void t2AddRXComponent(final SensorNetworkQueryPlan plan,
-			final QoSSpec qos, boolean tossimFlag,
-			final NesCConfiguration config, final ExchangePart exchPart,
+	private void t2AddRXComponent(final NesCConfiguration config, 
+			final ExchangePart exchPart,
 			final Fragment sourceFrag, final Fragment destFrag,
 			final String destSiteID, final String trayName)
 			throws CodeGenerationException {
 
 		final RXT2Component rxComp = new RXT2Component(
-			sourceFrag,
-			destFrag,
+			sourceFrag, destFrag,
 			exchPart.getDestSite(),
 			exchPart.getPrevious().getCurrentSite(),
-			config,
-			plan,
-			qos,
-			tossimFlag);
+			config, plan, tossimFlag, debugLeds);
 		config.addComponent(rxComp);
 		final String rxCompName = rxComp.getID();
 
@@ -1466,12 +1455,9 @@ public class TinyOSGenerator {
      * @return
      * @throws IOException
      */
-    public static NesCConfiguration generateCombinedConfiguration(
-	    final SensorNetworkQueryPlan plan,
-	    final HashMap<Site, NesCConfiguration> siteConfigs,
-	    final int tosVersion,
-	    final boolean tossimFlag)
-	    throws IOException {
+    private NesCConfiguration generateCombinedConfiguration(
+    final HashMap<Site, NesCConfiguration> siteConfigs)
+    throws IOException {
 
 		final NesCConfiguration tossimConfiguration = new NesCConfiguration(
 			COMPONENT_QUERY_PLANC, plan, tosVersion, tossimFlag);
@@ -1501,42 +1487,40 @@ public class TinyOSGenerator {
      * @return
      * @throws CodeGenerationException
      */
-    private static NesCComponent instantiateOperatorNesCComponent(
-	    final Operator op, final Site site, final Fragment frag,
-	    final SensorNetworkQueryPlan plan, final QoSSpec qos,
-	    final NesCConfiguration config,
-	    int tosVersion, boolean tossimFlag) throws CodeGenerationException {
+    private NesCComponent instantiateOperatorNesCComponent(
+	    final SensornetOperator op, final Site site,
+	    final NesCConfiguration config) throws CodeGenerationException {
 
-		if (op instanceof AcquireOperator) {
-		    return new AcquireComponent((AcquireOperator) op, plan, qos,
-		    		config, tosVersion, tossimFlag);
-		} else if (op instanceof AggrEvalOperator) {
-		    return new AggrEvalComponent((AggrEvalOperator) op, plan, qos,
-		    		config, tosVersion, tossimFlag);
-		} else if (op instanceof AggrInitializeOperator) {
-		    return new AggrInitComponent((AggrInitializeOperator) op, plan,
-		    		config, tosVersion, tossimFlag);
-		} else if (op instanceof AggrIterateOperator) {
-		    return new AggrMergeComponent((AggrIterateOperator) op, plan, qos,
-		    		config, tosVersion, tossimFlag);
-		} else if (op instanceof DeliverOperator) {
-		    return new DeliverComponent((DeliverOperator) op, plan, qos,
-		    		config, tosVersion, tossimFlag);
-		} else if (op instanceof ExchangeOperator) {
-		    return new ExchangeProducerComponent((ExchangeOperator) op, plan,
-			    qos, config, tosVersion, tossimFlag);
-		} else if (op instanceof JoinOperator) {
-		    return new JoinComponent((JoinOperator) op, plan, qos, config,
-		    		tosVersion, tossimFlag);
-		} else if (op instanceof ProjectOperator) {
-		    return new ProjectComponent((ProjectOperator) op, plan, qos,
-		    		config, tosVersion, tossimFlag);
-		} else if (op instanceof SelectOperator) {
-		    return new SelectComponent((SelectOperator) op, plan, qos, config,
-		    		tosVersion, tossimFlag);
-		} else if (op instanceof WindowOperator) {
-		    return new WindowComponent((WindowOperator) op, plan, qos, config,
-		    		tosVersion, tossimFlag);
+		if (op instanceof SensornetAcquireOperator) {
+		    return new AcquireComponent((SensornetAcquireOperator) op, plan,
+		    		config, tosVersion, tossimFlag, debugLeds);
+		} else if (op instanceof SensornetAggrEvalOperator) {
+		    return new AggrEvalComponent((SensornetAggrEvalOperator) op, plan,
+		    		config, tosVersion, tossimFlag, debugLeds);
+		} else if (op instanceof SensornetAggrInitOperator) {
+		    return new AggrInitComponent((SensornetAggrInitOperator) op, plan,
+		    		config, tosVersion, tossimFlag, debugLeds);
+		} else if (op instanceof SensornetAggrMergeOperator) {
+		    return new AggrMergeComponent((SensornetAggrMergeOperator) op, plan,
+		    		config, tosVersion, tossimFlag, debugLeds);
+		} else if (op instanceof SensornetDeliverOperator) {
+		    return new DeliverComponent((SensornetDeliverOperator) op, plan,
+		    		config, tosVersion, tossimFlag, debugLeds, costParams);
+		} else if (op instanceof SensornetExchangeOperator) {
+		    return new ExchangeProducerComponent((SensornetExchangeOperator) op, plan,
+			    config, tosVersion, tossimFlag, debugLeds);
+		} else if (op instanceof SensornetNestedLoopJoinOperator) {
+		    return new JoinComponent((SensornetNestedLoopJoinOperator) op, plan, config,
+		    		tosVersion, tossimFlag, debugLeds);
+		} else if (op instanceof SensornetProjectOperator) {
+		    return new ProjectComponent((SensornetProjectOperator) op, plan,
+		    		config, tosVersion, tossimFlag, debugLeds);
+		} else if (op instanceof SensornetSelectOperator) {
+		    return new SelectComponent((SensornetSelectOperator) op, plan, config,
+		    		tosVersion, tossimFlag, debugLeds);
+		} else if (op instanceof SensornetWindowOperator) {
+		    return new WindowComponent((SensornetWindowOperator) op, plan, config,
+		    		tosVersion, tossimFlag, debugLeds);
 		} else {
 		    throw new CodeGenerationException(
 			    "No NesC Component found for operator type="
@@ -1547,21 +1531,12 @@ public class TinyOSGenerator {
 
     /**
      * Generate operator configurations for each instance of each fragment.
-     * @param plan
      * @param nodeConfigs
-     * @param qos
-     * @param tosVersion
-     * @param tossimFlag
-     * @return
      * @throws IOException
      * @throws CodeGenerationException
      */
-    public static HashMap<String, NesCConfiguration> generateFragmentConfigurations(
-	    final SensorNetworkQueryPlan plan,
-	    final HashMap<Site, NesCConfiguration> nodeConfigs,
-	    final QoSSpec qos,
-	    final int tosVersion,
-	    final boolean tossimFlag) throws IOException, CodeGenerationException {
+    private HashMap<String, NesCConfiguration> generateFragmentConfigurations(
+	    final HashMap<Site, NesCConfiguration> nodeConfigs) throws IOException, CodeGenerationException {
 
 		// For each fragment on each node, generate finer-grained configuration
 		// (i.e., operator-level)
@@ -1586,8 +1561,7 @@ public class TinyOSGenerator {
 					fragName, plan, site, tosVersion, tossimFlag);
 				fragComp.setInnerConfig(fragConfig);
 
-				generateIntraFragmentConfig(plan, qos, tosVersion, tossimFlag,
-						site, frag, fragConfig);
+				generateIntraFragmentConfig(site, frag, fragConfig);
 				fragConfigs.put(fragName, fragConfig);
 		    }//while (fragIter.hasNext()) {
 
@@ -1609,36 +1583,33 @@ public class TinyOSGenerator {
      * @param fragConfig
      * @throws CodeGenerationException
      */
-	private static void generateIntraFragmentConfig(final SensorNetworkQueryPlan plan,
-			final QoSSpec qos, final int tosVersion, final boolean tossimFlag,
-			final Site site, final Fragment frag,
+	private void generateIntraFragmentConfig(final Site site, final Fragment frag,
 			final NesCConfiguration fragConfig) throws CodeGenerationException {
 
 		/* Wire the operators inside the fragment to each other */
-		addAndWireOperators(plan, qos, tosVersion, tossimFlag, site, frag,
-				fragConfig);
+		addAndWireOperators(site, frag,	fragConfig);
 
 		/* add the producer and link to outside world*/
-		final Operator rootOp = frag.getRootOperator();
+		final SensornetOperator rootOp = frag.getRootOperator();
 		final String fragID = frag.getID();
 		final String rootOpName = CodeGenUtils
-			.generateOperatorInstanceName(rootOp, frag, site, tosVersion);
-		final ExchangeOperator producerOp = (ExchangeOperator) frag
+			.generateOperatorInstanceName(rootOp, site, tosVersion);
+		final SensornetExchangeOperator producerOp = (SensornetExchangeOperator) frag
 			.getParentExchangeOperator();
 		if (producerOp != null) {
-		    addExternalProducerWiring(plan, qos, tosVersion, tossimFlag, site, frag,
+		    addExternalProducerWiring(site, frag,
 					fragConfig, rootOp, fragID, rootOpName, producerOp);
 
 		} else {
 			/* Wire the deliver operator to the outside world */
-		    addExternalDeliverWiring(fragConfig, rootOpName, tosVersion);
+		    addExternalDeliverWiring(fragConfig, rootOpName);
 		}
 
 		/* Wire the acquisition operators to the outside world */
-		addExternalSensorWiring(tosVersion, site, frag, fragConfig);
+		addExternalSensorWiring(site, frag, fragConfig);
 		
-		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME && tosVersion==2) {
-			addExternalLocalTimeWiring(tosVersion, site, frag, fragConfig);
+		if (this.showLocalTime && tosVersion==2) {
+			addExternalLocalTimeWiring(site, frag, fragConfig);
 		}
 	}
 
@@ -1646,43 +1617,36 @@ public class TinyOSGenerator {
 	/**
 	 * Creates the operators in the fragment except the producer and
 	 * wires them to each other.
-	 * @param plan
-	 * @param qos
-	 * @param tosVersion
-	 * @param tossimFlag
 	 * @param site
 	 * @param frag
 	 * @param fragConfig
 	 * @throws CodeGenerationException
 	 */
-	private static void addAndWireOperators(final SensorNetworkQueryPlan plan,
-			final QoSSpec qos, final int tosVersion, final boolean tossimFlag,
-			final Site site, final Fragment frag,
+	private void addAndWireOperators(final Site site, final Fragment frag,
 			final NesCConfiguration fragConfig) throws CodeGenerationException {
 		// for each operator in the fragment
-		Iterator<Operator> opIter = frag
+		Iterator<SensornetOperator> opIter = frag
 			.operatorIterator(TraversalOrder.POST_ORDER);
 		while (opIter.hasNext()) {
-		    final Operator op = opIter.next();
+		    final SensornetOperator op = opIter.next();
 		    final NesCComponent opComp = instantiateOperatorNesCComponent(
-			    op, site, frag, plan, qos, fragConfig, tosVersion, tossimFlag);
+			    op, site, fragConfig);
 		    final String opName = opComp.getID();
 		    fragConfig.addComponent(opComp);
-		    opComp.setDescription(op.getText(false));
+		    opComp.setDescription(op.toString());
 
 		    // link to each child of that operator
-		    final Iterator<Operator> childOpIter = op
+		    final Iterator<SensornetOperator> childOpIter = op
 			    .childOperatorIterator();
 		    int childCount = 0;
 		    while (childOpIter.hasNext()) {
-				final Operator childOp = childOpIter.next();
+				final SensornetOperator childOp = childOpIter.next();
 				final String childOpName = CodeGenUtils
-					.generateOperatorInstanceName(childOp, frag,
-						site, tosVersion);
+					.generateOperatorInstanceName(childOp, site, tosVersion);
 				final String requestDataInterfaceType = CodeGenUtils
 					.generateGetTuplesInterfaceInstanceName(childOp);
 
-				if (childOp instanceof ExchangeOperator) {
+				if (childOp instanceof SensornetExchangeOperator) {
 				    addExternalTrayWiring(fragConfig, op, opName, childCount,
 							childOp, requestDataInterfaceType);
 				} else {
@@ -1707,7 +1671,7 @@ public class TinyOSGenerator {
 	 * @throws CodeGenerationException
 	 */
 	private static void addIntraFragWiring(
-			final NesCConfiguration fragConfig, final Operator op,
+			final NesCConfiguration fragConfig, final SensornetOperator op,
 			final String opName, int childCount, final String childOpName,
 			final String requestDataInterfaceType)
 			throws CodeGenerationException {
@@ -1740,9 +1704,9 @@ public class TinyOSGenerator {
 	 * @param requestDataInterfaceType
 	 * @throws CodeGenerationException
 	 */
-	private static void addExternalTrayWiring(
-			final NesCConfiguration fragConfig, final Operator op,
-			final String opName, int childCount, final Operator childOp,
+	private void addExternalTrayWiring(
+			final NesCConfiguration fragConfig, final SensornetOperator op,
+			final String opName, int childCount, final SensornetOperator childOp,
 			final String requestDataInterfaceType)
 			throws CodeGenerationException {
 		// this is a "leaf" operator of the fragment, so
@@ -1750,7 +1714,7 @@ public class TinyOSGenerator {
 		// String trayGetName =
 		// INTERFACE_TRAY_GET+"Frag"+((LogicalExchangeOperator)childOp).getChildFragment().getFragID();
 		final String trayGetName = CodeGenUtils
-		    .generateGetTuplesInterfaceInstanceName(((ExchangeOperator) childOp)
+		    .generateGetTuplesInterfaceInstanceName(((SensornetExchangeOperator) childOp)
 			    .getSourceFragment());
 
 		if (op.getInDegree() == 1) {
@@ -1787,14 +1751,12 @@ public class TinyOSGenerator {
 	 * @param producerOp
 	 * @throws CodeGenerationException
 	 */
-	private static void addExternalProducerWiring(final SensorNetworkQueryPlan plan,
-			final QoSSpec qos, final int tosVersion, final boolean tossimFlag,
-			final Site site, final Fragment frag,
-			final NesCConfiguration fragConfig, final Operator rootOp,
+	private void addExternalProducerWiring(final Site site, final Fragment frag,
+			final NesCConfiguration fragConfig, final SensornetOperator rootOp,
 			final String fragID, final String rootOpName,
-			final ExchangeOperator producerOp) throws CodeGenerationException {
+			final SensornetExchangeOperator producerOp) throws CodeGenerationException {
 		final ExchangeProducerComponent producerComp = new ExchangeProducerComponent(
-		    producerOp, plan, qos, fragConfig, tosVersion, tossimFlag);
+		    producerOp, plan, fragConfig, tosVersion, tossimFlag, debugLeds);
 		fragConfig.addComponent(producerComp);
 		final String producerOpID = producerComp.getID();
 		fragConfig.addWiring(producerOpID, rootOpName, CodeGenUtils
@@ -1803,7 +1765,7 @@ public class TinyOSGenerator {
 		fragConfig.linkToExternalUser(producerOpID,
 		    INTERFACE_DO_TASK, INTERFACE_DO_TASK,
 		    INTERFACE_DO_TASK);
-		producerComp.setDescription(producerOp.getText());
+		producerComp.setDescription(producerOp.toString());
 
 		final Iterator<ExchangePart> exchCompIter = site
 		    .getExchangeComponents().iterator();
@@ -1813,13 +1775,10 @@ public class TinyOSGenerator {
 			if (exchComp.getSourceFragID().equals(fragID)
 				&& (exchComp.getComponentType() == ExchangePartType.PRODUCER)) {
 
-			    fragConfig.linkToExternalProvider(
-			    	producerOpID,
-					CodeGenUtils
-					.generatePutTuplesInterfaceInstanceName(frag),
+			    fragConfig.linkToExternalProvider(producerOpID,
+					CodeGenUtils.generatePutTuplesInterfaceInstanceName(frag),
 					INTERFACE_PUT_TUPLES,
-					CodeGenUtils
-					.generatePutTuplesInterfaceInstanceName(frag));
+					CodeGenUtils.generatePutTuplesInterfaceInstanceName(frag));
 			}
 		}
 	}
@@ -1832,8 +1791,8 @@ public class TinyOSGenerator {
 	 * @param rootOpName
 	 * @throws CodeGenerationException
 	 */
-	private static void addExternalDeliverWiring(
-			final NesCConfiguration fragConfig, final String rootOpName, final int tosVersion)
+	private void addExternalDeliverWiring(
+			final NesCConfiguration fragConfig, final String rootOpName)
 			throws CodeGenerationException {
 		// deliver operator
 		fragConfig.linkToExternalUser(rootOpName,
@@ -1843,7 +1802,8 @@ public class TinyOSGenerator {
 			"SendDeliver", "SendDeliver");
 		
 		if (tosVersion==2){
-			fragConfig.linkToExternalProvider(rootOpName, INTERFACE_SPLITCONTROL, "SerialAMControl", "SerialAMControl");
+			fragConfig.linkToExternalProvider(rootOpName, INTERFACE_SPLITCONTROL, 
+					"SerialAMControl", "SerialAMControl");
 			fragConfig.linkToExternalProvider(rootOpName, INTERFACE_PACKET,
 					"Packet", "Packet");
 		}
@@ -1859,16 +1819,15 @@ public class TinyOSGenerator {
 	 * @param fragConfig
 	 * @throws CodeGenerationException
 	 */
-	private static void addExternalSensorWiring(final int tosVersion,
-			final Site site, final Fragment frag,
+	private void addExternalSensorWiring(final Site site, final Fragment frag,
 			final NesCConfiguration fragConfig) throws CodeGenerationException {
-		Iterator<Operator> opIter;
+		Iterator<SensornetOperator> opIter;
 		// link any acquisition or scan operators to the outside world
 		opIter = frag.operatorIterator(TraversalOrder.POST_ORDER);
 		while (opIter.hasNext()) {
-		    final Operator op = opIter.next();
+		    final SensornetOperator op = opIter.next();
 		    final String opName = CodeGenUtils
-			    .generateOperatorInstanceName(op, frag, site, tosVersion);
+			    .generateOperatorInstanceName(op, site, tosVersion);
 		    if (op instanceof AcquireOperator) {
 			    final int numSensedAttr
 			    	= ((AcquireOperator) op).getNumSensedAttributes();
@@ -1888,16 +1847,15 @@ public class TinyOSGenerator {
 		}
 	}
 
-	private static void addExternalLocalTimeWiring(final int tosVersion,
-			final Site site, final Fragment frag,
+	private void addExternalLocalTimeWiring(final Site site, final Fragment frag,
 			final NesCConfiguration fragConfig) throws CodeGenerationException {
-		Iterator<Operator> opIter;
+		Iterator<SensornetOperator> opIter;
 		// link any acquisition or scan operators to the outside world
 		opIter = frag.operatorIterator(TraversalOrder.POST_ORDER);
 		while (opIter.hasNext()) {
-		    final Operator op = opIter.next();
+		    final SensornetOperator op = opIter.next();
 		    final String opName = CodeGenUtils
-			    .generateOperatorInstanceName(op, frag, site, tosVersion);
+			    .generateOperatorInstanceName(op, site, tosVersion);
 		    if (op instanceof AcquireOperator) {
 				fragConfig.linkToExternalProvider(opName,
 						INTERFACE_LOCAL_TIME, TYPE_TMILLI,
@@ -1915,18 +1873,19 @@ public class TinyOSGenerator {
      * @param tosVersion The TinyOS version which nesC is being generated for.
      * @throws IOException
      * @throws CodeGenerationException
+     * @throws OptimizationException 
+     * @throws TypeMappingException 
+     * @throws SchemaMetadataException 
      */
-    public static void instantiateCombinedConfiguration(
-    		final SensorNetworkQueryPlan plan,
-    		final NesCConfiguration tossimConfig,
-    		final String nescOutputDir,
-    		int tosVersion,
-    		String targetName)
-    		throws IOException, CodeGenerationException{
+    private void instantiateCombinedConfiguration(
+    		final NesCConfiguration tossimConfig)
+    		throws IOException, CodeGenerationException, 
+    		SchemaMetadataException, TypeMappingException, OptimizationException{
 
 		String outputDir = nescOutputDir + targetName+"/";
 	    tossimConfig.instantiateComponents(outputDir);
-	    tossimConfig.display(outputDir, tossimConfig.getName());
+	    //TODO: NesC configuration display
+	    //tossimConfig.display(outputDir, tossimConfig.getName());
     }
 
 
@@ -1939,11 +1898,13 @@ public class TinyOSGenerator {
      * @param tosVersion The TinyOS version which nesC is being generated for.
      * @throws IOException
      * @throws CodeGenerationException
+     * @throws OptimizationException 
+     * @throws TypeMappingException 
+     * @throws SchemaMetadataException 
      */
-    public static void instantiateSiteConfigurations(final SensorNetworkQueryPlan plan,
-	    final HashMap<Site, NesCConfiguration> siteConfigs,  final String nescOutputDir,
-	    int tosVersion, String targetName)
-    	throws IOException, CodeGenerationException {
+    private void instantiateSiteConfigurations(final HashMap<Site, NesCConfiguration> 
+    siteConfigs) throws IOException, CodeGenerationException, SchemaMetadataException, 
+    	TypeMappingException, OptimizationException {
 
 	    final Iterator<Site> siteIter = plan
 		    .siteIterator(TraversalOrder.POST_ORDER);
@@ -1953,7 +1914,8 @@ public class TinyOSGenerator {
 				.get(currentSite);
 			String outputDir = nescOutputDir + targetName+"/mote" + currentSite.getID() + "/";
 			siteConfig.instantiateComponents(outputDir);
-		    siteConfig.display(outputDir, siteConfig.getName());
+			//TODO: NesC configuration display
+		    //siteConfig.display(outputDir, siteConfig.getName());
 	    }
 	}
 
@@ -1965,11 +1927,12 @@ public class TinyOSGenerator {
      * @param tosVersion The TinyOS version which nesC is being generated for.
      * @param tossimFlag Indicates whether code for Tossim simulator needs to be generated.
      * @throws IOException
+     * @throws OptimizationException 
+     * @throws TypeMappingException 
+     * @throws SchemaMetadataException 
      */
-    public static void generateHeaderFiles(final SensorNetworkQueryPlan plan,
-	    final HashMap<Site, NesCConfiguration> configs,
-	    final String nescOutputDir, int tosVersion, 
-	    boolean combinedFlag, String targetName) throws IOException {
+    private void generateHeaderFiles(final HashMap<Site, NesCConfiguration> configs) 
+    throws IOException, OptimizationException, SchemaMetadataException, TypeMappingException {
 
 		final StringBuffer tupleTypeBuff = new StringBuffer();
 		final StringBuffer messageTypeBuff = new StringBuffer();
@@ -1977,10 +1940,10 @@ public class TinyOSGenerator {
 
 		addAMConstants(activeIDDeclsBuff);
 
-		final Iterator<Operator> opIter = plan
-			.operatorIterator(TraversalOrder.PRE_ORDER);
+		final Iterator<SensornetOperator> opIter = plan.getDAF().
+			operatorIterator(TraversalOrder.PRE_ORDER);
 		while (opIter.hasNext()) {
-		    final Operator op = (Operator) opIter.next();
+		    final SensornetOperator op = (SensornetOperator) opIter.next();
 
 		    /* Define the structures which define each operator or fragment
 		     * output type. */
@@ -2000,13 +1963,11 @@ public class TinyOSGenerator {
 
 
 		/* Generate combined (e.g., for Tossim or Deluge) header file */
-		doGenerateCombinedHeaderFile(nescOutputDir, tosVersion, combinedFlag,
-				activeIDDeclsBuff, tupleTypeBuff, messageTypeBuff, deliverMsgBuff, targetName);
+		doGenerateCombinedHeaderFile(activeIDDeclsBuff, tupleTypeBuff, messageTypeBuff, deliverMsgBuff);
 
 		/* Generate site specific header files */
-		doGenerateIndividualHeaderFiles(configs, nescOutputDir, tosVersion,
-				activeIDDeclsBuff, combinedFlag, tupleTypeBuff, 
-				messageTypeBuff, deliverMsgBuff, targetName);
+		doGenerateIndividualHeaderFiles(configs, activeIDDeclsBuff, tupleTypeBuff, 
+				messageTypeBuff, deliverMsgBuff);
     }
 
 
@@ -2015,7 +1976,7 @@ public class TinyOSGenerator {
      * for the header file.
      * @param activeIDDeclsBuff  Buffer to store the AM ID declarations
      */
-	private static void addAMConstants(final StringBuffer activeIDDeclsBuff) {
+	private void addAMConstants(final StringBuffer activeIDDeclsBuff) {
 		Boolean first = true;
 
 		if (!ActiveMessageIDGenerator.isEmpty()) {
@@ -2046,14 +2007,17 @@ public class TinyOSGenerator {
 	 * file.
 	 * @param tupleTypeBuff Buffer to store all tuple structs in the DAF.
 	 * @param op The operator for which to generate a struct.
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
 	 */
-	private static void addOperatorTupleStructs(
-			final StringBuffer tupleTypeBuff, final Operator op, final int tosVersion) {
+	private void addOperatorTupleStructs(final StringBuffer tupleTypeBuff, 
+	final SensornetOperator op, final int tosVersion) 
+	throws SchemaMetadataException, TypeMappingException {
 
-		if (!(op instanceof ExchangeOperator) && (!op.isRecursive())) {
+		if (!(op instanceof SensornetExchangeOperator) && (!op.getLogicalOperator().isRecursive())) {
 			tupleTypeBuff.append("// Tuple output type for operator "
 				+ op.getID() + "\n");
-			tupleTypeBuff.append("// " + op.getText(false) + "\n");
+			tupleTypeBuff.append("// " + op.toString() + "\n");
 			tupleTypeBuff.append("// size = " +
 					CodeGenUtils.outputTypeSize.get(
 					CodeGenUtils.generateOutputTupleType(op))+ " bytes\n\n");
@@ -2067,7 +2031,7 @@ public class TinyOSGenerator {
 			tupleTypeBuff.append(CodeGenUtils.generateOutputTupleType(op) + " {\n");
 		}
 
-		final ArrayList <Attribute> attributes = op.getAttributes();
+		final List <Attribute> attributes = op.getAttributes();
 		for (int i = 0; i < attributes.size(); i++) {
 		    String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
 
@@ -2078,12 +2042,12 @@ public class TinyOSGenerator {
 			if (tosVersion==2) {
 				nesCType = "nx_"+nesCType;
 			}
-			if (!(op instanceof ExchangeOperator) && (!op.isRecursive())) {
+			if (!(op instanceof SensornetExchangeOperator) && (!op.isRecursive())) {
 				tupleTypeBuff.append("\t" + nesCType + " " + attrName + ";\n");
 			}
 		}
 		
-		if (!(op instanceof ExchangeOperator) && (!op.isRecursive())) {
+		if (!(op instanceof SensornetExchangeOperator) && (!op.isRecursive())) {
 			tupleTypeBuff.append("} "
 					+ CodeGenUtils.generateOutputTupleType(op) + ";\n\n");
 			tupleTypeBuff.append("typedef "
@@ -2099,18 +2063,19 @@ public class TinyOSGenerator {
 	 * header file.
 	 * @param messageTypeBuff Buffer to store all message structs.
 	 * @param op The operator for which to generate a message struct
+	 * @throws OptimizationException 
 	 */
-	private static void addRadioMessageStructs(final StringBuffer messageTypeBuff,
-			final Operator op, final int tosVersion) {
-		if ((op instanceof ExchangeOperator)
-		    && (!op.getInput(0).getContainingFragment().isRecursive())) {
+	private void addRadioMessageStructs(final StringBuffer messageTypeBuff,
+			final SensornetOperator op, final int tosVersion) throws OptimizationException {
+		if ((op instanceof SensornetExchangeOperator)
+		    && (!op.getLeftChild().getContainingFragment().isRecursive())) {
 
-			final String fragID = op.getInput(0).getFragID();
+			final String fragID = op.getLeftChild().getFragID();
 
 			final int tupleSize = CodeGenUtils.outputTypeSize.get(
 				CodeGenUtils.generateOutputTupleType(op)).intValue();
 			final int numTuplesPerMessage = ExchangePart
-				.computeTuplesPerMessage(tupleSize);
+				.computeTuplesPerMessage(tupleSize, this.costParams);
 			assert (numTuplesPerMessage > 0);
 
 			messageTypeBuff.append("// Message output type for Fragment "
@@ -2138,7 +2103,7 @@ public class TinyOSGenerator {
 	 * Generates the deliver message struct, for the header file.
 	 * @return
 	 */
-	private static StringBuffer t1AddDeliverMessageStruct() {
+	private StringBuffer t1AddDeliverMessageStruct() {
 		StringBuffer deliverMsgBuff = new StringBuffer();
 		deliverMsgBuff.append("#define DELIVER_PAYLOAD_SIZE 28\n\n");
 		deliverMsgBuff.append("typedef struct DeliverMessage {\n");
@@ -2151,19 +2116,18 @@ public class TinyOSGenerator {
 	/**
 	 * Generates the deliver message struct, for the header file.
 	 * @return
+	 * @throws OptimizationException 
 	 */
-	private static StringBuffer t2AddDeliverMessageStruct(Operator op) {
-		final String fragID = op.getFragID();
-		
+	private StringBuffer t2AddDeliverMessageStruct(SensornetOperator op) throws OptimizationException {
 		final int tupleSize = CodeGenUtils.outputTypeSize.get(
 				CodeGenUtils.generateOutputTupleType(op)).intValue();
 		final int numTuplesPerMessage = ExchangePart
-		.computeTuplesPerMessage(tupleSize);
+		.computeTuplesPerMessage(tupleSize, costParams);
 		assert (numTuplesPerMessage > 0);
 		
 		StringBuffer deliverMsgBuff = new StringBuffer();
 		deliverMsgBuff.append("typedef nx_struct DeliverMessage {\n");
-		deliverMsgBuff.append("\t" + CodeGenUtils.generateOutputTupleType(op.getInput(0)) + " tuples["
+		deliverMsgBuff.append("\t" + CodeGenUtils.generateOutputTupleType(op.getLeftChild()) + " tuples["
 			+ numTuplesPerMessage + "];\n"); //use child type because deliver doesn't change tuple type
 		deliverMsgBuff.append("} DeliverMessage;\n\n");
 		
@@ -2184,24 +2148,19 @@ public class TinyOSGenerator {
 	 * @param deliverMsgBuff Buffer which stores the deliver message struct.
 	 * @throws IOException
 	 */
-	private static void doGenerateIndividualHeaderFiles(
-			final HashMap<Site, NesCConfiguration> configs,
-			final String nescOutputDir, int tosVersion, 
-			final StringBuffer activeIDDeclsBuff, boolean tossimFlag,
-			final StringBuffer tupleTypeBuff, final StringBuffer messageTypeBuff, 
-			StringBuffer deliverMsgBuff,
-			String targetName)
+	private void doGenerateIndividualHeaderFiles(final HashMap<Site, NesCConfiguration> configs,
+			final StringBuffer activeIDDeclsBuff, final StringBuffer tupleTypeBuff, 
+			final StringBuffer messageTypeBuff, 
+			StringBuffer deliverMsgBuff)
 			throws IOException {
-		if (!tossimFlag) {
+		if (!(tossimFlag || combinedImage)) {
 		    final Iterator<Site> siteIter = configs.keySet().iterator();
 		    while (siteIter.hasNext()) {
 				final String siteID = siteIter.next().getID();
 				final String fname = nescOutputDir + targetName +"/mote"
 					+ siteID + "/QueryPlan.h";
 				doGenerateHeaderFile(activeIDDeclsBuff, tupleTypeBuff, messageTypeBuff,
-						deliverMsgBuff, fname, false, targetName);
-
-				addMeasurementsConstant(nescOutputDir, tosVersion, siteID, targetName);
+						deliverMsgBuff, fname);
 		    }
 		}
 	}
@@ -2211,44 +2170,24 @@ public class TinyOSGenerator {
 	 * Generates a single Tossim header file for all sites.
 	 * @param nescOutputDir The nesC output directory for generated code.
 	 * @param tosVersion The TinyOS version which nesC is being generated for.
-	 * @param combinedFlag Indicates whether code for Tossim simulator needs to be generated.
+	 * @param combinedImage Indicates whether code for Tossim simulator needs to be generated.
 	 * @param activeIDDeclsBuff Buffer which stores ActiveID constant decls 
 	 * @param tupleTypeBuff Buffer which stores all tuple structs in the DAF.
 	 * @param messageTypeBuff Buffer which stores all message structs.
 	 * @param deliverMsgBuff Buffer which stores the deliver message struct.
 	 * @throws IOException
 	 */
-	private static void doGenerateCombinedHeaderFile(final String nescOutputDir,
-			int tosVersion, boolean combinedFlag,
-			final StringBuffer activeIDDeclsBuff, final StringBuffer tupleTypeBuff,
-			final StringBuffer messageTypeBuff, StringBuffer deliverMsgBuff,
-			String targetName)
-			throws IOException {
+	private void doGenerateCombinedHeaderFile(final StringBuffer activeIDDeclsBuff, 
+	final StringBuffer tupleTypeBuff,
+	final StringBuffer messageTypeBuff, StringBuffer deliverMsgBuff) throws IOException {
 
-		if (combinedFlag) {
+		if (this.tossimFlag || this.combinedImage) {
 		    final String fname = nescOutputDir
 			    + targetName +"/QueryPlan.h";
 			doGenerateHeaderFile(activeIDDeclsBuff, tupleTypeBuff, messageTypeBuff,
-					deliverMsgBuff, fname, true, targetName);
+					deliverMsgBuff, fname);
 		}
 	}
-
-	/**
-	 * Adds separate header file use by cost-model measurement scripts.
-	 */
-	private static void addMeasurementsConstant(final String nescOutputDir,
-			int tosVersion, final String siteID, String targetName) throws IOException {
-		if (Settings.MEASUREMENTS_ACTIVE_AGENDA_LOOPS >= 0) {
-		    final String fname2 = nescOutputDir + targetName +"/mote"
-			+ siteID + "/ActiveLoop.h";
-		    final PrintWriter out2 = new PrintWriter(new BufferedWriter(
-			    new FileWriter(fname2)));
-		    out2.println("#define MAX_ACTIVE_LOOP "
-		    	+Settings.MEASUREMENTS_ACTIVE_AGENDA_LOOPS+"\n");
-		    out2.close();
-		}
-	}
-
 
 	/**
 	 * Generates header file at specific location.
@@ -2256,21 +2195,19 @@ public class TinyOSGenerator {
 	 * @param messageTypeBuff Buffer which stores all message structs.
 	 * @param deliverMsgBuff Buffer which stores the deliver message struct.
 	 * @param fname The path of the file to be written.
-	 * @param tossimFlag Indicates whether code for Tossim simulator needs to be generated.
 	 * @throws IOException
 	 */
-	private static void doGenerateHeaderFile(
+	private void doGenerateHeaderFile(
 			final StringBuffer activeIDDeclsBuff, final StringBuffer tupleTypeBuff,
 			final StringBuffer messageTypeBuff, StringBuffer deliverMsgBuff,
-			final String fname, boolean tossimFlag,
-			final String targetName) throws IOException {
+			final String fname) throws IOException {
 		final PrintWriter out = new PrintWriter(new BufferedWriter(
 			new FileWriter(fname)));
 
 		out.println("#ifndef __QUERY_PLAN_H__\n");
 		out.println("#define __QUERY_PLAN_H__\n");
 		
-		if (Settings.NESC_PRINTF_ENABLE) {
+		if (this.enablePrintf) {
 			if (targetName.equals("tmotesky_t2")) {
 				out.println("#include \"printf.h\"\n");
 			} else if (targetName.equals("z1")) {
@@ -2302,31 +2239,26 @@ public class TinyOSGenerator {
 	 * @param configs
 	 * @param nescOutputDir
 	 * @param tosVersion
-	 * @param combinedFlag
+	 * @param combinedImage
 	 * @throws IOException
 	 */
-    public static void generateTypedInterfaces(final SensorNetworkQueryPlan plan,
-	    final HashMap<Site, NesCConfiguration> configs,
-	    final String nescOutputDir, int tosVersion, boolean combinedFlag,
-	    String targetName) throws IOException {
+    private void generateTypedInterfaces(final HashMap<Site, NesCConfiguration> configs) throws IOException {
 
-    	final Iterator<Operator> opIter = plan
+    	final Iterator<SensornetOperator> opIter = plan.getDAF()
 		.operatorIterator(TraversalOrder.PRE_ORDER);
 		while (opIter.hasNext()) {
-		    final Operator op = (Operator) opIter.next();
+		    final SensornetOperator op = (SensornetOperator) opIter.next();
 
-		    if (op instanceof ExchangeOperator) {
+		    if (op instanceof SensornetExchangeOperator) {
 		    	continue;
 		    } else if (op.isFragmentRoot()) {
 
 		    	/* Between fragments a GetTuples and PutTuples interface is needed */
-		    	generateInterFragmentInterfaces(configs, nescOutputDir, tosVersion,
-						combinedFlag, op, targetName);
+		    	generateInterFragmentInterfaces(configs, op);
 		    } else {
 
 		    	/* Within a fragment only a GetTuples interface is needed */
-				generateIntraFragmentInterfaces(configs, nescOutputDir,
-						tosVersion, combinedFlag, op, targetName);
+				generateIntraFragmentInterfaces(configs, op);
 		    }
 		}
     }
@@ -2342,12 +2274,9 @@ public class TinyOSGenerator {
      * @param op
      * @throws IOException
      */
-	private static void generateIntraFragmentInterfaces(
-			final HashMap<Site, NesCConfiguration> configs,
-			final String nescOutputDir, int tosVersion, boolean tossimFlag,
-			final Operator op,
-			String targetName)
-			throws IOException {
+	private void generateIntraFragmentInterfaces(final HashMap<Site, NesCConfiguration> configs,
+	final SensornetOperator op)
+	throws IOException {
 
 	    final HashMap<String, String> replacements = new HashMap<String, String>();
 
@@ -2356,8 +2285,7 @@ public class TinyOSGenerator {
 		replacements.put("__TUPLE_TYPE_PTR__", "TupleOp" + op.getID()
 			+ "Ptr");
 
-		generateTypedInterface(INTERFACE_GET_TUPLES, configs, nescOutputDir,
-				tosVersion, tossimFlag, op, replacements, targetName);
+		generateTypedInterface(INTERFACE_GET_TUPLES, configs, op, replacements);
 	}
 
 
@@ -2371,11 +2299,9 @@ public class TinyOSGenerator {
 	 * @param op
 	 * @throws IOException
 	 */
-	private static void generateInterFragmentInterfaces(
-			final HashMap<Site, NesCConfiguration> configs,
-			final String nescOutputDir, int tosVersion, boolean tossimFlag,
-			final Operator op, String targetName)
-			throws IOException {
+	private void generateInterFragmentInterfaces(final HashMap<Site, 
+	NesCConfiguration> configs, final SensornetOperator op)
+	throws IOException {
 
 	    final HashMap<String, String> replacements = new HashMap<String, String>();
 
@@ -2393,10 +2319,8 @@ public class TinyOSGenerator {
 		replacements
 			.put("__TUPLE_TYPE__", "TupleFrag" + op.getFragID());
 
-		generateTypedInterface(INTERFACE_GET_TUPLES, configs, nescOutputDir,
-				tosVersion, tossimFlag, op, replacements, targetName);
-		generateTypedInterface(INTERFACE_PUT_TUPLES, configs, nescOutputDir,
-				tosVersion, tossimFlag, op, replacements, targetName);
+		generateTypedInterface(INTERFACE_GET_TUPLES, configs, op, replacements);
+		generateTypedInterface(INTERFACE_PUT_TUPLES, configs, op, replacements);
 	}
 
 
@@ -2411,13 +2335,10 @@ public class TinyOSGenerator {
 	 * @param replacements
 	 * @throws IOException
 	 */
-	private static void generateTypedInterface(
-			String interfaceName,
-			final HashMap<Site, NesCConfiguration> configs,
-			final String nescOutputDir, int tosVersion, boolean tossimFlag,
-			final Operator op, final HashMap<String, String> replacements,
-			String targetName)
-			throws IOException {
+	private void generateTypedInterface(String interfaceName,
+	final HashMap<Site, NesCConfiguration> configs,
+	final SensornetOperator op, final HashMap<String, String> replacements)
+	throws IOException {
 
 		//INTERFACE_GET_TUPLES
 		String interfaceInstanceName = CodeGenUtils.
@@ -2429,7 +2350,7 @@ public class TinyOSGenerator {
 		}
 
 
-		if (!tossimFlag) {
+		if (!(tossimFlag || combinedImage)) {
 		    final Iterator<Site> siteIter = configs.keySet().iterator();
 		    while (siteIter.hasNext()) {
 				final Site site = siteIter.next();
@@ -2441,7 +2362,7 @@ public class TinyOSGenerator {
 						interfaceInstanceName, replacements);
 		    }
 		}
-		if (tossimFlag) {
+		if (tossimFlag || combinedImage) {
 		    Template.instantiate(NESC_INTERFACES_DIR +
 		    		"/" + interfaceName + ".nc",
 				    nescOutputDir + targetName +"/" +
@@ -2458,8 +2379,8 @@ public class TinyOSGenerator {
      * @param nodeDir
      * @throws IOException
      */
-    public static void copyInterfaceFile(final String interfaceName,
-    	    final SensorNetworkQueryPlan plan, final String nescOutputDir, final String nodeDir) throws IOException {
+    private void copyInterfaceFile(final String interfaceName, 
+    final String nodeDir) throws IOException {
     	Template.instantiate(NESC_INTERFACES_DIR + "/"
     		+ interfaceName + ".nc", nescOutputDir + nodeDir
     		+ "/" + interfaceName + ".nc");
@@ -2467,46 +2388,35 @@ public class TinyOSGenerator {
 
     /**
      * Generates Miscellaneous files (make files, and other supporting files).
-     * @param plan
-     * @param nescOutputDir
-     * @param qos
      * @param numNodes
-     * @param tosVersion
-     * @param tossimFlag
      * @throws IOException
      */
-    public static void copyMiscFiles(final SensorNetworkQueryPlan plan, final String nescOutputDir,
-    		QoSSpec qos, int numNodes, int tosVersion, boolean tossimFlag, boolean combinedFlag,
-    		String targetName) throws IOException {
+    private void copyMiscFiles(int numNodes) throws IOException {
 
-		if (!tossimFlag && !combinedFlag) {
-				generateIndividualMiscFiles(plan, nescOutputDir, tosVersion, targetName);
-		} else if (combinedFlag && !tossimFlag) {
-			generateCombinedMiscFiles(plan, nescOutputDir, tosVersion, targetName);
+		if (!tossimFlag && !combinedImage) {
+				generateIndividualMiscFiles();
+		} else if (combinedImage && !tossimFlag) {
+			generateCombinedMiscFiles();
 		} else if (tossimFlag) {
-			generateTossimMiscFiles(plan, nescOutputDir, qos, numNodes, tosVersion, targetName);
+			generateTossimMiscFiles(numNodes);
 		}
     }
 
 
     /**
      * Generates Miscellaneous files for Avrora.
-     * @param plan
-     * @param nescOutputDir
-     * @param tosVersion
      * @throws IOException
      */
-	private static void generateIndividualMiscFiles(final SensorNetworkQueryPlan plan,
-			final String nescOutputDir, int tosVersion, String targetName) throws IOException {
+	private void generateIndividualMiscFiles() throws IOException {
 		final Iterator<Site> siteIter = plan
 		    .siteIterator(TraversalOrder.POST_ORDER);
 		while (siteIter.hasNext()) {
 		    final String siteID = siteIter.next().getID();
 			final String nodeDir = targetName+"/mote" + siteID;
-			copyInterfaceFile(INTERFACE_DO_TASK, plan, nescOutputDir, nodeDir);
+			copyInterfaceFile(INTERFACE_DO_TASK, nodeDir);
 
 			generateMakefiles(nescOutputDir + nodeDir,
-				"QueryPlan" + siteID, false, targetName);
+				"QueryPlan" + siteID);
 
 		    if (tosVersion==2) {
 		    	Template.instantiate(
@@ -2515,7 +2425,7 @@ public class TinyOSGenerator {
 						    + "/itoa.h");
 		    }
 		    
-		    if (Settings.NESC_DELUGE) {
+		    if (this.includeDeluge) {
 		    	Template.instantiate(
 					    NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
 					    nescOutputDir + nodeDir +"/volumes-stm25p.xml");		    	
@@ -2523,13 +2433,11 @@ public class TinyOSGenerator {
 		}
 	}
 
-	private static void generateCombinedMiscFiles(final SensorNetworkQueryPlan plan,
-			final String nescOutputDir,
-			int tosVersion, String targetName) throws IOException {
+	private void generateCombinedMiscFiles() throws IOException {
 
-			copyInterfaceFile(INTERFACE_DO_TASK, plan, nescOutputDir, targetName +"/");
+			copyInterfaceFile(INTERFACE_DO_TASK, targetName +"/");
 
-		    generateMakefiles(nescOutputDir+ targetName, "QueryPlan", false, targetName);
+		    generateMakefiles(nescOutputDir+ targetName, "QueryPlan");
 
 		    if (tosVersion==2) {
 		    	Template.instantiate(
@@ -2537,7 +2445,7 @@ public class TinyOSGenerator {
 					    nescOutputDir + targetName +"/itoa.h");
 		    }
 		    
-		    if (Settings.NESC_DELUGE) {
+		    if (this.includeDeluge) {
 		    	Template.instantiate(
 					    NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
 					    nescOutputDir + targetName +"/volumes-stm25p.xml");		    	
@@ -2554,13 +2462,11 @@ public class TinyOSGenerator {
 	 * @param tosVersion
 	 * @throws IOException
 	 */
-	private static void generateTossimMiscFiles(final QueryPlan plan,
-		final String nescOutputDir, QoSSpec qos, int numNodes,
-		int tosVersion, String targetName) throws IOException {
+	private void generateTossimMiscFiles(int numNodes) throws IOException {
 
-		copyInterfaceFile(INTERFACE_DO_TASK, plan, nescOutputDir, targetName +"/");
+		copyInterfaceFile(INTERFACE_DO_TASK, targetName +"/");
 
-	    generateMakefiles(nescOutputDir+ targetName, "QueryPlan", true, targetName);
+	    generateMakefiles(nescOutputDir+ targetName, "QueryPlan");
 
 	    if (tosVersion==2) {
 	    	Template.instantiate(
@@ -2568,7 +2474,9 @@ public class TinyOSGenerator {
 				    nescOutputDir + targetName +"/itoa.h");
 
 		    HashMap<String, String> replacements = new HashMap<String, String>();
-			long duration = qos.getQueryDuration();
+		    //TODO: Get Query Duration from QoS?
+		    //			long duration = qos.getQueryDuration();
+		    long duration = 100000; //hard-coded value for now...
 			replacements.put("__SIMULATION_DURATION__", new Long(duration).toString());
 			replacements.put("__NUM_NODES__", new Integer(numNodes).toString());
 			Template.instantiate(
@@ -2592,19 +2500,18 @@ public class TinyOSGenerator {
 	 * @param mainConfigName The name of main nesC configuration.
 	 * @throws IOException
 	 */
-	private static void generateMakefiles(final String dir,
-			String mainConfigName, boolean tossimFlag, String targetName) throws IOException {
+	private void generateMakefiles(final String dir, String mainConfigName) throws IOException {
 		// Makefile
 		HashMap<String, String> replacements = new HashMap<String, String>();
 		replacements.put("__MAIN_CONFIG_NAME__", mainConfigName);
-		if (Settings.NESC_DELUGE && tossimFlag == false) {
+		if (this.includeDeluge && tossimFlag == false) {
 			replacements.put("__DELUGE__","BOOTLOADER=tosboot");			
 		} else {
 			replacements.put("__DELUGE__","");
 		}
-		if (Settings.NESC_PRINTF_ENABLE && targetName.equals("tmotesky_t2")) {
+		if (this.enablePrintf && targetName.equals("tmotesky_t2")) {
 			replacements.put("__PRINTF__", "CFLAGS += -I$(TOSDIR)/lib/printf");
-		} else if (Settings.NESC_PRINTF_ENABLE && targetName.equals("z1")) {
+		} else if (this.enablePrintf && targetName.equals("z1")) {
 			replacements.put("__PRINTF__", "CFLAGS += -DPRINTFUART_ENABLED");
 		} else {
 			replacements.put("__PRINTF__","");			
@@ -2632,67 +2539,53 @@ public class TinyOSGenerator {
      * @param tosVersion The TinyOS version which nesC is being generated for.
      * @param tossimFlag Indicates whether code for Tossim simulator needs to be generated.
      * @throws OptimizationException
+     * @throws CodeGenerationException 
+     * @throws TypeMappingException 
+     * @throws SchemaMetadataException 
      */
-    public void doNesCGeneration(final SensorNetworkQueryPlan plan,
-	    final QoSSpec qos,
-	    int sink,
-	    final String nescOutputDir,
-	    int tosVersion,
-	    boolean tossimFlag,
-	    boolean combinedFlag,
-	    String targetName)
-	    throws OptimizationException {
+    public void doNesCGeneration(SensorNetworkQueryPlan qep)
+	    throws OptimizationException, CodeGenerationException, SchemaMetadataException, TypeMappingException {
 
-
+    	this.plan = qep;
+		computeOperatorTupleSizes();
+    	
     	try {
-			initialize(tosVersion, tossimFlag, plan, targetName);
-
 			/* Generate inter-fragment configurations */
 			HashMap<Site, NesCConfiguration> siteConfigs = null;
-			siteConfigs = generateSiteConfigurations(
-				    plan, qos, sink, tosVersion, tossimFlag, combinedFlag, targetName);
+			siteConfigs = generateSiteConfigurations();
 			final NesCConfiguration combinedConfig =
-				generateCombinedConfiguration(plan, siteConfigs, tosVersion,
-					tossimFlag);
+				generateCombinedConfiguration(siteConfigs);
 
 		    /* Generate an intra-fragment configuration (i.e., operator
 		     * granularity) for each fragment instance */
-		    generateFragmentConfigurations(plan, siteConfigs, qos, tosVersion,
-		    		tossimFlag);
+		    generateFragmentConfigurations(siteConfigs);
 
 		    /* Add LED support for debugging */
-			if (Settings.NESC_LED_ENABLE) {
-				addLEDs(siteConfigs, combinedConfig, tosVersion, tossimFlag);
+			if (this.enableLeds) {
+				addLEDs(siteConfigs, combinedConfig);
 			}		    
 		    
 		    /* Instantiate code for the top-level configuration(s); the nested
 		     * components and configurations are instantiated recursively */
-		    if (tossimFlag || combinedFlag) {
-			    instantiateCombinedConfiguration(plan, combinedConfig,
-			    		nescOutputDir, tosVersion, targetName);
+		    if (tossimFlag || combinedImage) {
+			    instantiateCombinedConfiguration(combinedConfig);
 		    } else {
-			    instantiateSiteConfigurations(plan, siteConfigs, nescOutputDir,
-			    		tosVersion, targetName);
+			    instantiateSiteConfigurations(siteConfigs);
 		    }
 
 		    /* Generate QueryPlan.h file with constants and data
 		     * structures etc.*/
-		    generateHeaderFiles(plan, siteConfigs, nescOutputDir, tosVersion,
-		    		(combinedFlag || tossimFlag), targetName);
+		    generateHeaderFiles(siteConfigs);
 
 		    /* Generate the interface files */
-		    generateTypedInterfaces(plan, siteConfigs, nescOutputDir,
-		    	tosVersion, (combinedFlag || tossimFlag), targetName);
+		    generateTypedInterfaces(siteConfigs);
 
 		    /* Copy interface files over from templates dir to nesC output
 		     * dirs */
-		    copyMiscFiles(plan, nescOutputDir, qos, siteConfigs.size(),
-		    	tosVersion, tossimFlag, combinedFlag, targetName);
+		    copyMiscFiles(siteConfigs.size());
 
-		} catch (final IOException e) {
-		    Utils.handleCriticalException(e);
-		} catch (final CodeGenerationException e) {
-		    Utils.handleCriticalException(e);
-		}
+		} catch (Exception e) {
+		    throw new CodeGenerationException(e);
+		} 
     }
 }

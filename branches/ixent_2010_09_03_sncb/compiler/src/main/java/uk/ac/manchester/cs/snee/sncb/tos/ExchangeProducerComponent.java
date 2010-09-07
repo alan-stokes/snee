@@ -36,31 +36,27 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 import java.io.IOException;
 import java.util.HashMap;
 
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
+import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class ExchangeProducerComponent extends NesCComponent implements
 	TinyOS1Component, TinyOS2Component {
 
-    ExchangeOperator op;
+    SensornetExchangeOperator op;
 
-    QueryPlan plan;
+    SensorNetworkQueryPlan plan;
 
-    QoSSpec qos;
-
-    Fragment frag;
-
-    public ExchangeProducerComponent(final ExchangeOperator op,
-	    final QueryPlan plan, final QoSSpec qos,
+    public ExchangeProducerComponent(final SensornetExchangeOperator op,
+	    final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    int tosVersion, boolean tossimFlag) {
-		super(fragConfig, tosVersion, tossimFlag);
+	    int tosVersion, boolean tossimFlag, boolean debugLeds) {
+		super(fragConfig, tosVersion, tossimFlag, debugLeds);
 		this.op = op;
-		this.frag = op.getInput(0).getContainingFragment();
 		this.plan = plan;
-		this.qos = qos;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.frag,
-			this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
     }
 
     @Override
@@ -70,26 +66,26 @@ public class ExchangeProducerComponent extends NesCComponent implements
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException {
+	    throws IOException, CodeGenerationException, OptimizationException {
 
 	final HashMap<String, String> replacements = new HashMap<String, String>();
-	replacements.put("__OPERATOR_DESCRIPTION__", this.op.getText(false)
+	replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
 		.replace("\"", ""));
 	replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
 		.generateOutputTupleType(this.op));
 	replacements.put("__OUT_QUEUE_CARD__", new Long(
 		op.getOutputQueueCardinality(
-			(Site) this.plan.getRoutingTree().getNode(
+			(Site) this.plan.getRT().getSite(
 				this.site.getID()), this.plan.getDAF())).toString());
 	replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getInput(0)));
+		.generateOutputTuplePtrType(this.op.getLeftChild()));
 
 	replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getInput(0)));
+		.generateOutputTuplePtrType(this.op.getLeftChild()));
 	replacements.put("__HEADER__", this.configuration
 		.generateModuleHeader(this.getID()));
 
-	if (this.op.getInput(0).getContainingFragment().isLeaf()) {
+	if (this.op.getLeftChild().getContainingFragment().isLeaf()) {
 	    replacements.put("__BUFFERING_FACTOR__", "1");
 	} else {
 	    replacements.put("__BUFFERING_FACTOR__", new Long(this.plan
@@ -98,21 +94,7 @@ public class ExchangeProducerComponent extends NesCComponent implements
 
 	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 
-	if (Settings.MEASUREMENTS_REMOVE_OPERATORS.contains("everything")) {
-		writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/measurements/StubProducer.nc",
-				outputFileName, replacements);		
-	}else if (Settings.MEASUREMENTS_THIN_OPERATORS.contains("producer1")) {
-		writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/measurements/Thin_producer1.nc",
-				outputFileName, replacements);
-	}else if (Settings.MEASUREMENTS_THIN_OPERATORS.contains("producer2")) {
-			writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/measurements/Thin_producer2.nc",
-					outputFileName, replacements);
-	}else if (Settings.MEASUREMENTS_THIN_OPERATORS.contains("stubproducer")) {
-		writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/measurements/stub_producer.nc",
-				outputFileName, replacements);
-	} else {	
-		writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/producer.nc",
+	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/producer.nc",
 			outputFileName, replacements);			
-	}	
     }
 }

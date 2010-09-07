@@ -49,6 +49,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
 import uk.ac.manchester.cs.snee.compiler.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
@@ -67,6 +68,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
+import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 /**
  * Controller class for SNEEql query compilation and evaluation
@@ -344,9 +346,21 @@ public class SNEEController implements SNEE {
 	 * @throws SNEEException Problem starting the query evaluation
 	 * @throws SchemaMetadataException 
 	 * @throws EvaluatorException 
+	 * @throws CodeGenerationException 
+	 * @throws OptimizationException 
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 * @throws IOException 
+	 * @throws SNEEConfigurationException 
+	 * @throws CodeGenerationException 
+	 * @throws OptimizationException 
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 * @throws IOException 
+	 * @throws SNEEConfigurationException 
 	 */
 	private int dispatchQuery(int queryId, String query) 
-	throws SNEEException, MetadataException, EvaluatorException 
+	throws SNEEException, MetadataException, EvaluatorException
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER dispatchQuery() with " + queryId +

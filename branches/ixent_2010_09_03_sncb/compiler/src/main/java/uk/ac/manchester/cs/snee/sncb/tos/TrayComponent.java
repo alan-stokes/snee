@@ -36,14 +36,20 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
+import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class TrayComponent extends NesCComponent {
 
@@ -55,24 +61,22 @@ public class TrayComponent extends NesCComponent {
     
     Site currentSite;
 
-    QueryPlan plan;
+    SensorNetworkQueryPlan plan;
 
-    QoSSpec qos;
+    CostParameters costParams;
     
-    //Site site;
-
     public TrayComponent(final Fragment sourceFrag, final Fragment destFrag,
-	    final String destSiteID, final Site currentSite, 
-	    final NesCConfiguration config, final QueryPlan plan,
-	    final QoSSpec qos, int tosVersion, boolean tossimFlag) {
-	super(config, tosVersion, tossimFlag);
-	this.sourceFrag = sourceFrag;
-	this.destFrag = destFrag;
-	this.destSiteID = destSiteID;
-	this.currentSite = currentSite;
-	this.id = generateName(sourceFrag, destFrag, this.site.getID(), destSiteID, tosVersion);
-	this.plan = plan;
-	this.qos = qos;
+    final String destSiteID, final Site currentSite, 
+    final NesCConfiguration config, final SensorNetworkQueryPlan plan,
+    int tosVersion, boolean tossimFlag, CostParameters costParams, boolean ledsDebug) {
+		super(config, tosVersion, tossimFlag, ledsDebug);
+		this.sourceFrag = sourceFrag;
+		this.destFrag = destFrag;
+		this.destSiteID = destSiteID;
+		this.currentSite = currentSite;
+		this.id = generateName(sourceFrag, destFrag, this.site.getID(), destSiteID, tosVersion);
+		this.plan = plan;
+		this.costParams = costParams;
     }
 
     /**
@@ -122,10 +126,11 @@ public class TrayComponent extends NesCComponent {
      * Retrieves the required subtray size.
      * @param site Site For which the Size is to be calculated.
      * @return Size of subtray needed.
+     * @throws OptimizationException 
      */
-    private int getSubTraySize(final Site site) {
+    private int getSubTraySize(final Site site) throws OptimizationException {
     	DAF daf = this.plan.getDAF();
-    	final Operator source = 
+    	final SensornetOperator source = 
     		daf.getFragment(this.sourceFrag.getID()).getRootOperator();
        	int subTraySize = 0;
        	if (site.hasFragmentAllocated(sourceFrag)) {
@@ -140,12 +145,12 @@ public class TrayComponent extends NesCComponent {
     }
     
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException {
+	    throws IOException, CodeGenerationException, OptimizationException {
 
 	final long bufferingFactor = this.plan.getBufferingFactor();
 	final int subTraySize = getSubTraySize(currentSite);
 
-	final Operator sourceFragRootOp = this.plan.getDAF().getFragment(
+	final SensornetOperator sourceFragRootOp = this.plan.getDAF().getFragment(
 		this.sourceFrag.getID()).getRootOperator();
 	final int tupleSize = CodeGenUtils.outputTypeSize.get(CodeGenUtils
 		.generateOutputTupleType(sourceFragRootOp));
@@ -169,7 +174,7 @@ public class TrayComponent extends NesCComponent {
 	replacements.put("__SUBTRAY_SIZE__", new Integer(subTraySize)
 		.toString());
 	replacements.put("__MAXTUPLESINMSG__", new Integer(ExchangePart
-		.computeTuplesPerMessage(tupleSize)).toString());
+		.computeTuplesPerMessage(tupleSize, costParams)).toString());
 	replacements.put("__MODULE_NAME__ ", this.getID());
 	//	if (Settings.NESC_MAX_DEBUG_STATEMENTS_IN_TRAY)
 	replacements.put("__MAX_DEBUG__ ", "");
@@ -178,22 +183,14 @@ public class TrayComponent extends NesCComponent {
 	//	replacements.put("__MAX_DEBUG__ ", "//");
 	final StringBuffer tupleConstructionBuff = new StringBuffer();
 	final StringBuffer tupleConstructionBuff2 = new StringBuffer();
-	final ArrayList <Attribute> attributes = sourceFragRootOp.getAttributes();
+	final List <Attribute> attributes = sourceFragRootOp.getAttributes();
 	for (int i = 0; i < attributes.size(); i++) {
 	    String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
-	    if (Settings.MEASUREMENTS_IGNORE_IN.contains("tray") && attrName.contains("ignore")) {
-		    tupleConstructionBuff.append("\t\t\t\t//SKIPPING tray[subTrayNum][trayTail]."
-				    + attrName + "=inQueue[inHead]." + attrName + ";\n");
-			    tupleConstructionBuff2
-				    .append("\t\t\t\t\t//SKIPPING tray[subTrayNum][trayTail]." + attrName
-					    + "=message[inHead]." + attrName + ";\n");
-	    } else {
-	    	tupleConstructionBuff.append("\t\t\t\ttray[subTrayNum][trayTail]."
-			    + attrName + "=inQueue[inHead]." + attrName + ";\n");
-		    tupleConstructionBuff2
-			    .append("\t\t\t\t\ttray[subTrayNum][trayTail]." + attrName
-				    + "=message[inHead]." + attrName + ";\n");
-	    }
+    	tupleConstructionBuff.append("\t\t\t\ttray[subTrayNum][trayTail]."
+		    + attrName + "=inQueue[inHead]." + attrName + ";\n");
+	    tupleConstructionBuff2
+		    .append("\t\t\t\t\ttray[subTrayNum][trayTail]." + attrName
+			    + "=message[inHead]." + attrName + ";\n");
 	}
 	replacements.put("__TUPLE_CONSTRUCTION__", tupleConstructionBuff
 		.toString());
@@ -203,24 +200,8 @@ public class TrayComponent extends NesCComponent {
 	final String outputFileName 
 		= generateNesCOutputFileName(outputDir, this.getID());
 
-	if (Settings.MEASUREMENTS_REMOVE_OPERATORS.contains("everything")) {
-		writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/measurements/empty_tray.nc", 
-				outputFileName,	replacements);				
-	} else if (Settings.MEASUREMENTS_REMOVE_OPERATORS.contains("trayall")) {
-		if ((Settings.MEASUREMENTS_THIN_OPERATORS.contains("producer1"))) {
-			writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/measurements/empty_tray2.nc", 
-				outputFileName,	replacements);
-		} else {
-			writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/measurements/empty_tray.nc", 
-					outputFileName,	replacements);			
-		}
-	} else if (Settings.MEASUREMENTS_REMOVE_OPERATORS.contains("tray" + this.sourceFrag.getID())) {
-		writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/measurements/empty_tray.nc", 
-			outputFileName,	replacements);		
-	} else {
-		writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/tray.nc", outputFileName,
-			replacements);
-	}
+	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/tray.nc", outputFileName,
+		replacements);
     }
 
 /*	if (exchComp.getComponentType()==exchComp.EXCHANGE_PRODUCER) {

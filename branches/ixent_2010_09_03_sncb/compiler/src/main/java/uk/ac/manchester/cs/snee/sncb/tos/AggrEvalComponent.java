@@ -34,10 +34,12 @@
 package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
-import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -57,18 +59,14 @@ public class AggrEvalComponent extends NesCComponent implements
 
     SensorNetworkQueryPlan plan;
 
-    Fragment frag;
-
     public AggrEvalComponent(final SensornetAggrEvalOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    int tosVersion, boolean tossimFlag) {
+	    int tosVersion, boolean tossimFlag, boolean debugLeds) {
     	
-	super(fragConfig, tosVersion, tossimFlag);
-	this.op = op;
-	this.frag = op.getContainingFragment();
-	this.plan = plan;
-	this.id = CodeGenUtils.generateOperatorInstanceName(op, this.frag,
-		this.site, tosVersion);
+		super(fragConfig, tosVersion, tossimFlag, debugLeds);
+		this.op = op;
+		this.plan = plan;
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
     }
 
     @Override
@@ -78,7 +76,8 @@ public class AggrEvalComponent extends NesCComponent implements
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException {
+	    throws IOException, CodeGenerationException, SchemaMetadataException, 
+	    TypeMappingException, OptimizationException {
 
 	final HashMap<String, String> replacements = new HashMap<String, String>();
 	replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
@@ -93,22 +92,22 @@ public class AggrEvalComponent extends NesCComponent implements
 	replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
 		.generateOutputTuplePtrType((SensornetOperator)this.op.getInput(0)));
 
-	SensornetOperator input = getIterate();
-	ArrayList <Attribute> attributes = input.getAttributes();
+	SensornetIncrementalAggregationOperator input = getIterate();
+	List <Attribute> attributes = input.getAttributes();
 	replacements.put("__VARIABLES_TO_BE_AGGREGATED__",
 			CodeGenUtils.getPartialAggrVariables(attributes).toString());
 	replacements.put("__SET_AGGREGATES_TO_ZERO__",
 			CodeGenUtils.generateSetAggregatesToZero(attributes, 
-			(SensornetOperator)this.op).toString());
+			(SensornetIncrementalAggregationOperator)this.op).toString());
 	replacements.put("__INCREMENT_AGGREGATES__",
 			CodeGenUtils.generateIncrementAggregates(attributes, 
-					(SensornetOperator)this.op).toString());
+					(SensornetIncrementalAggregationOperator)this.op).toString());
 	final StringBuffer tupleConstructionBuff 
 		= CodeGenUtils.generateTupleConstruction(op, false);
 	replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff.toString());
 
 	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
-	writeNesCFile(TinyOSGenerator.NESC_MODULES_DIR + "/aggrPart.nc",
+	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/aggrPart.nc",
 		outputFileName, replacements);
     }
 
@@ -116,11 +115,12 @@ public class AggrEvalComponent extends NesCComponent implements
      * Retrieves the middle aggregate operator 
      * even if there is an exchange in between. 
      * @return The child operator ignoring any exchanges.
+     * @throws CodeGenerationException 
      */
-    private SensornetIncrementalAggregationOperator getIterate() {
-    	SensornetOperator input =  op.getFirstChild();
+    private SensornetIncrementalAggregationOperator getIterate() throws CodeGenerationException {
+    	SensornetOperator input =  op.getLeftChild();
     	while (input instanceof SensornetExchangeOperator) {
-    		input = input.getFirstChild();
+    		input = input.getLeftChild();
     	}
     	try {
     		if (input instanceof SensornetAggrMergeOperator) {

@@ -34,12 +34,18 @@
 package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
+import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class AggrInitComponent extends NesCComponent implements
 	TinyOS1Component, TinyOS2Component {
@@ -47,28 +53,21 @@ public class AggrInitComponent extends NesCComponent implements
     /**
      * The aggr_init operator in the DAF.
      */
-    private AggrInitializeOperator op;
+    private SensornetAggrInitOperator op;
 
     /**
      * The query plan in question.
      */
-    private QueryPlan plan;
+    private SensorNetworkQueryPlan plan;
 
-    /**
-     * The fragment this components is from.
-     */
-    private Fragment frag;
-
-    public AggrInitComponent(final AggrInitializeOperator op, final QueryPlan plan,
+    public AggrInitComponent(final SensornetAggrInitOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig, 
-	    int tosVersion, boolean tossimFlag) {
+	    int tosVersion, boolean tossimFlag, boolean debugLeds) {
     	
-    	super(fragConfig, tosVersion, tossimFlag);    
+    	super(fragConfig, tosVersion, tossimFlag, debugLeds);    
 		this.op = op;
-		this.frag = op.getContainingFragment();
 		this.plan = plan;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.frag,
-		this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
     }
 
     @Override
@@ -76,24 +75,27 @@ public class AggrInitComponent extends NesCComponent implements
 	return this.getID();
     }
 
-    /** * {@inheritDoc} */
+    /** * {@inheritDoc} 
+     * @throws TypeMappingException 
+     * @throws SchemaMetadataException 
+     * @throws OptimizationException */
     public final void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException {
+	    throws IOException, CodeGenerationException, SchemaMetadataException, TypeMappingException, OptimizationException {
 
 	final HashMap<String, String> replacements = new HashMap<String, String>();
-	replacements.put("__OPERATOR_DESCRIPTION__", this.op.getText(false)
+	replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
 		.replace("\"", ""));
 	replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
 		.generateOutputTupleType(this.op));
 	replacements.put("__OUT_QUEUE_CARD__", new Long(
 		op.getOutputQueueCardinality(
-			(Site) this.plan.getRoutingTree().getNode(
+			(Site) this.plan.getRT().getSite(
 				this.site.getID()), this.plan.getDAF())).toString());
 
 	replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getInput(0)));
+		.generateOutputTuplePtrType(this.op.getLeftChild()));
 
-	ArrayList <Attribute> attributes = op.getAttributes();
+	List <Attribute> attributes = op.getAttributes();
 	replacements.put("__VARIABLES_TO_BE_AGGREGATED__",
 			CodeGenUtils.getPartialAggrVariables(attributes).toString());
 	replacements.put("__SET_AGGREGATES_TO_ZERO__",
@@ -105,7 +107,7 @@ public class AggrInitComponent extends NesCComponent implements
 			CodeGenUtils.generateTupleFromAggregates(this.op).toString());
 	
 	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
-	writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/aggrPart.nc",
+	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/aggrPart.nc",
 		outputFileName, replacements);
     }
 

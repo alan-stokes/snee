@@ -461,7 +461,11 @@ public class DAF extends SNEEAlgebraicForm {
 		}
 	
 		return results.iterator();
-    }    
+    }
+
+	public SensornetOperator getRootOperator() {
+		return (SensornetOperator) this.getOperatorTree().getRoot();
+	}    
 
 }
 

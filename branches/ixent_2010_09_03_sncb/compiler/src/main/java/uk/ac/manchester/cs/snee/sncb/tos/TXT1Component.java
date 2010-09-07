@@ -37,9 +37,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class TXT1Component extends NesCComponent implements TinyOS1Component {
 
@@ -47,24 +51,24 @@ public class TXT1Component extends NesCComponent implements TinyOS1Component {
 
     Site parentSite;
 
-    QueryPlan plan;
-
-    QoSSpec qos;
+    SensorNetworkQueryPlan plan;
 
     ArrayList<ExchangePart> exchComponents = new ArrayList<ExchangePart>();
 
-    private final String templateFileName = NesCGeneration.NESC_MODULES_DIR
+    private final String templateFileName = TinyOSGenerator.NESC_COMPONENTS_DIR
 	    + "/tx.nc";
 
+	private CostParameters costParams;
+
     public TXT1Component(final Site sourceSite, final Site destSite,
-	    final NesCConfiguration config, final QueryPlan plan,
-	    final QoSSpec qos, boolean tossimFlag) {
-	super(config, 1, tossimFlag);
+	    final NesCConfiguration config, final SensorNetworkQueryPlan plan,
+	    boolean tossimFlag, CostParameters costParams, boolean debugLeds) {
+	super(config, 1, tossimFlag, debugLeds);
 	this.currentSite = sourceSite;
 	this.parentSite = destSite;
 	this.id = this.generateName();
 	this.plan = plan;
-	this.qos = qos;
+	this.costParams = costParams;
     }
 
     @Override
@@ -116,7 +120,7 @@ public class TXT1Component extends NesCComponent implements TinyOS1Component {
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException {
+	    throws IOException, CodeGenerationException, OptimizationException {
 
 	final HashMap<String, String> replacements = new HashMap<String, String>();
 
@@ -182,7 +186,7 @@ public class TXT1Component extends NesCComponent implements TinyOS1Component {
 	    final int tupleSize = new Integer(CodeGenUtils.outputTypeSize
 		    .get(CodeGenUtils.generateOutputTupleType(sourceFrag)));
 	    final int numTuplesPerMessage = ExchangePart
-		    .computeTuplesPerMessage(tupleSize);
+		    .computeTuplesPerMessage(tupleSize, costParams);
 	    assert (numTuplesPerMessage > 0);
 	    txMethodsReplacements.put("__TUPLES_PER_PACKET__", new Integer(
 		    numTuplesPerMessage).toString());
@@ -230,7 +234,7 @@ public class TXT1Component extends NesCComponent implements TinyOS1Component {
 	    txMethodsReplacements.put("__TRAY_PREFIX_TUPLE_PTR_TYPE__",
 		    inQueueType);
 
-	    txMethodsBuff.append(generateNesCMethods(NesCGeneration.NESC_MODULES_DIR
+	    txMethodsBuff.append(generateNesCMethods(TinyOSGenerator.NESC_COMPONENTS_DIR
 		    + "/tx_methods.nc", txMethodsReplacements));
 	}
 

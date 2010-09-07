@@ -35,6 +35,9 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 
@@ -78,7 +81,7 @@ public class FragmentComponent extends NesCComponent implements
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException {
+	    throws IOException, CodeGenerationException, SchemaMetadataException, TypeMappingException, OptimizationException {
 
 	//TODO: Take the configuration of inner component and create a wiring code
 	this.innerConfig.instantiateComponents(outputDir);

@@ -89,6 +89,10 @@ public class CostParameters {
 
 	private int payloadOverhead;
 
+	private int synchronizationError = 10;
+	
+	private int tossimSynchronizationPeriodLength = 3000;
+	
 	/** Constant for length of per tuple overhead String. */ 
 	private int deliverOverhead = 10;
 
@@ -236,6 +240,15 @@ public class CostParameters {
 	return minimumTimerInterval;
     }
 
+    
+    public int getSynchronizationError() {
+    	return this.synchronizationError;
+    }
+    
+    public int getTossimSynchronizationPeriodLength() {
+    	return this.tossimSynchronizationPeriodLength;
+    }
+    
     /**
      * In bytes
      * @return

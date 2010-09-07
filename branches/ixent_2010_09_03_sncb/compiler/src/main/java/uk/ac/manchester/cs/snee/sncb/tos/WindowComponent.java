@@ -36,32 +36,29 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 import java.io.IOException;
 import java.util.HashMap;
 
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
+import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class WindowComponent extends NesCComponent implements
 	TinyOS1Component, TinyOS2Component {
 
-    WindowOperator op;
+    SensornetWindowOperator op;
 
-    QueryPlan plan;
+    SensorNetworkQueryPlan plan;
 
-    QoSSpec qos;
-
-    Fragment frag;
-
-    public WindowComponent(final WindowOperator op,
-    		final QueryPlan plan, final QoSSpec qos,
+    public WindowComponent(final SensornetWindowOperator op,
+    		final SensorNetworkQueryPlan plan,
     		final NesCConfiguration fragConfig,
-    		int tosVersion, boolean tossimFlag) {
-    	super(fragConfig, tosVersion, tossimFlag);
+    		int tosVersion, boolean tossimFlag, boolean debugLeds) {
+    	super(fragConfig, tosVersion, tossimFlag, debugLeds);
     	this.op = op;
-    	this.frag = op.getContainingFragment();
     	this.plan = plan;
-    	this.qos = qos;
-    	this.id = CodeGenUtils.generateOperatorInstanceName(op, this.frag,
-    			this.site, tosVersion);
+    	this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
 	}
 
 	@Override
@@ -71,20 +68,20 @@ public class WindowComponent extends NesCComponent implements
 
 	@Override
 	public void writeNesCFile(final String outputDir)
-		throws IOException, CodeGenerationException {
+		throws IOException, CodeGenerationException, OptimizationException {
 
 		final HashMap<String, String> replacements = new HashMap<String, String>();
-		replacements.put("__OPERATOR_DESCRIPTION__", this.op.getText(false)
+		replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
 				.replace("\"", ""));
 		replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
 				.generateOutputTupleType(this.op));
 		String outQueueCard = new Long(
 				op.getOutputQueueCardinality(
-						(Site) this.plan.getRoutingTree().getNode(
+						(Site) this.plan.getRT().getSite(
 						this.site.getID()), this.plan.getDAF())).toString();
 		replacements.put("__OUT_QUEUE_CARD__",outQueueCard); 		
 		replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-				.generateOutputTuplePtrType(this.op.getInput(0)));
+				.generateOutputTuplePtrType(this.op.getLeftChild()));
 		//Window from and to are expressed as positive number is nesc.
 		//This allows for unsigned variables to be used.
 		replacements.put("__WINDOW_FROM__", new Integer(-this.op.getFrom())
@@ -113,11 +110,6 @@ public class WindowComponent extends NesCComponent implements
 					"Time slide in window with row scope not yet implemented");
 			}
 		}
-		if (Settings.NESC_MAX_DEBUG_STATEMENTS_IN_TIMEWINDOW) {
-			replacements.put("__MAX_DEBUG__ ", "");
-		} else {
-			replacements.put("__MAX_DEBUG__ ", "//");
-		}
 	
 		final StringBuffer tupleConstructionBuff 
 			= CodeGenUtils.generateTupleConstruction(op, false);
@@ -125,10 +117,10 @@ public class WindowComponent extends NesCComponent implements
 				.toString());
 		final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 		if (op.isTimeScope()) {
-			writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/timeWindow.nc",
+			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/timeWindow.nc",
 				outputFileName, replacements);
 		} else {
-			writeNesCFile(NesCGeneration.NESC_MODULES_DIR + "/rowWindow.nc",
+			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/rowWindow.nc",
 				outputFileName, replacements);
 		}
 	}

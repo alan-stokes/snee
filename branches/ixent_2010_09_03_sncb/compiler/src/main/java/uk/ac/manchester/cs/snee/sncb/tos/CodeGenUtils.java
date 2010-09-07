@@ -83,14 +83,15 @@ public final class CodeGenUtils {
      * @return
      */
     public static String generateOperatorInstanceName(SensornetOperator op,
-	    final Fragment frag, final Site site, int tosVersion) {
-	if (tosVersion == 1) {
-	    return op.getNesCTemplateName() + "Op" + op.getID() + "Frag"
-		    + frag.getID() + "Site" + site.getID() + "M";
-	} else {
-	    return op.getNesCTemplateName() + "Op" + op.getID() + "Frag"
-		    + frag.getID() + "Site" + site.getID() + "P";
-	}
+	final Site site, int tosVersion) {
+    	Fragment frag = op.getContainingFragment();
+		if (tosVersion == 1) {
+		    return op.getNesCTemplateName() + "Op" + op.getID() + "Frag"
+			    + frag.getID() + "Site" + site.getID() + "M";
+		} else {
+		    return op.getNesCTemplateName() + "Op" + op.getID() + "Frag"
+			    + frag.getID() + "Site" + site.getID() + "P";
+		}
     }
 
     /**
@@ -260,7 +261,7 @@ public final class CodeGenUtils {
     }
 
     public static StringBuffer getPartialAggrVariables(
-    final ArrayList <Attribute> attributes) 
+    final List<Attribute> attributes) 
     throws SchemaMetadataException, TypeMappingException {
        	final StringBuffer aggrVariablesBuff = new StringBuffer();
        	for (int i = 1; i < attributes.size(); i++) {
@@ -368,9 +369,10 @@ public final class CodeGenUtils {
      * @param op Operator for which tuple construction is being done.
      * @param ignore Debg parameter which drops attributes with "ignore" in it.
      * @return NesC tuple construction code.
+     * @throws CodeGenerationException 
      */
     public static StringBuffer generateTupleConstruction(
-    	final SensornetOperator op, boolean ignore) {
+    	final SensornetOperator op, boolean ignore) throws CodeGenerationException {
     	final StringBuffer tupleConstructionBuff = new StringBuffer();
     	final List <Attribute> attributes = 
     		op.getLogicalOperator().getAttributes();
@@ -378,8 +380,8 @@ public final class CodeGenUtils {
     		((SensornetOperator)op.getInput(0)).getLogicalOperator().getAttributes();
     	final List <Expression> expressions = 
     		op.getLogicalOperator().getExpressions();
-		try {
-			for (int i = 0; i < attributes.size(); i++) {
+
+    	for (int i = 0; i < attributes.size(); i++) {
 				String attrName 
 					= CodeGenUtils.getNescAttrName(attributes.get(i));
 				String expressionText;
@@ -394,27 +396,25 @@ public final class CodeGenUtils {
 				}
 			}		
 			return tupleConstructionBuff;
-		} catch (CodeGenerationException e) {
-			Utils.handleCriticalException(e);
-			return null;
-		}
-    } 
+    	}
+
 
     /**
      * Generates the instructions to increment the aggregates partial results.
      * Used by the first of the three stages of aggregation.  
      * @param op The operator representing the first stage of aggregation.
      * @return The Nesc code. 
+     * @throws CodeGenerationException 
      */
     public static StringBuffer generateIncrementAggregates(
-    	final AggrPartOperator op) {
+    	final SensornetIncrementalAggregationOperator op) throws CodeGenerationException {
     	final StringBuffer incrementAggregatesBuff = new StringBuffer();
-    	final ArrayList <Attribute> attributes = op.getAttributes();
-    	final ArrayList <Attribute> input = op.getInput(0).getAttributes();
-    	final ArrayList <AggregationExpression> aggregations 
+    	final List <Attribute> attributes = op.getAttributes();
+    	final List <Attribute> input = op.getLeftChild().getAttributes();
+    	final List <AggregationExpression> aggregations 
     		= op.getAggregates();
-		try {
-			//skip Attribute 0 which is EvalTime
+
+    	//skip Attribute 0 which is EvalTime
 			for (int i = 1; i < attributes.size(); i++) {
 				Attribute attribute = attributes.get(i);
 				String attrName 
@@ -437,10 +437,6 @@ public final class CodeGenUtils {
 				}		
 			}		
 			return incrementAggregatesBuff;
-		} catch (CodeGenerationException e) {
-			Utils.handleCriticalException(e);
-			return null;
-		}
     } 
 
     /**
@@ -451,8 +447,8 @@ public final class CodeGenUtils {
      * @return The Nesc code. Including specific debug statements.
      */
     public static StringBuffer generateIncrementAggregates(
-    		final ArrayList <Attribute> attributes,
-    		final AggrPartOperator op) {
+    		final List<Attribute> attributes,
+    		final SensornetIncrementalAggregationOperator op) {
     	final StringBuffer incrementAggregatesBuff = new StringBuffer();
     	final StringBuffer dbgIn1Buff 
     		= new StringBuffer("\t\t\t\t\tdbg(DBG_USR1,\"");
@@ -460,7 +456,7 @@ public final class CodeGenUtils {
     	final StringBuffer dbgOut1Buff 
     		= new StringBuffer("\t\t\t\t\tdbg(DBG_USR1,\"");
     	final StringBuffer dbgOut2Buff = new StringBuffer("\n,");
-    	final ArrayList <AggregationExpression> aggregations 
+    	final List<AggregationExpression> aggregations 
     		= op.getAggregates();
 		//skip Attribute 0 which is EvalTime
 		for (int i = 1; i < attributes.size(); i++) {
@@ -475,25 +471,25 @@ public final class CodeGenUtils {
 				incrementAggregatesBuff.append("\t\t\t\t\t" 
 						+ attrName + " += inQueue[inHead]." 
 						+ attrName + ";\n");
-		    	if (Settings.NESC_MAX_DEBUG_STATEMENTS_IN_AGGREGATES) {
-		    		dbgIn1Buff.append("inQueue[inHead]." + attrName + "= %d ");
-		    		dbgIn2Buff.append("inQueue[inHead]." + attrName + ",");
-		    		dbgOut1Buff.append(attrName + "= %d ");
-		    		dbgOut2Buff.append(attrName + ",");
-		    	}
+//		    	if (Settings.NESC_MAX_DEBUG_STATEMENTS_IN_AGGREGATES) {
+//		    		dbgIn1Buff.append("inQueue[inHead]." + attrName + "= %d ");
+//		    		dbgIn2Buff.append("inQueue[inHead]." + attrName + ",");
+//		    		dbgOut1Buff.append(attrName + "= %d ");
+//		    		dbgOut2Buff.append(attrName + ",");
+//		    	}
 			} else {
 				//Min and max to do.
 				throw new AssertionError("Code not finished " + type);
 			}		
 		}		
-    	if (Settings.NESC_MAX_DEBUG_STATEMENTS_IN_AGGREGATES) {
-    		incrementAggregatesBuff.append(dbgIn1Buff.toString() 
-				+ "inHead = %d\\n\"" + dbgIn2Buff.toString() + "inHead);\n");
-    		incrementAggregatesBuff.append(dbgOut1Buff);
-    		incrementAggregatesBuff.append("inHead = %d\\n\"");
-    		incrementAggregatesBuff.append(dbgOut2Buff);
-    		incrementAggregatesBuff.append("inHead);\n");
-    	}
+//    	if (Settings.NESC_MAX_DEBUG_STATEMENTS_IN_AGGREGATES) {
+//    		incrementAggregatesBuff.append(dbgIn1Buff.toString() 
+//				+ "inHead = %d\\n\"" + dbgIn2Buff.toString() + "inHead);\n");
+//    		incrementAggregatesBuff.append(dbgOut1Buff);
+//    		incrementAggregatesBuff.append("inHead = %d\\n\"");
+//    		incrementAggregatesBuff.append(dbgOut2Buff);
+//    		incrementAggregatesBuff.append("inHead);\n");
+//    	}
 		return incrementAggregatesBuff;
     } 
 
@@ -505,7 +501,7 @@ public final class CodeGenUtils {
      * @return The NesC code.
      */
     public static StringBuffer generateSetAggregatesToZero(
-    		final ArrayList <Attribute> attributes,
+    		final List<Attribute> attributes,
     		final SensornetIncrementalAggregationOperator op) {
     	final StringBuffer incrementAggregatesBuff = new StringBuffer();
     	final List <AggregationExpression> aggregations 
@@ -538,9 +534,9 @@ public final class CodeGenUtils {
      * @return NesC tuple construction code.
      */
     public static StringBuffer generateTupleFromAggregates(
-    	final AggrPartOperator op) {
+    	final SensornetIncrementalAggregationOperator op) {
     	final StringBuffer incrementAggregatesBuff = new StringBuffer();
-    	final ArrayList <Attribute> attributes = op.getAttributes();
+    	final List <Attribute> attributes = op.getAttributes();
     	//skip 0 element which is evaltime 
 		for (int i = 1; i < attributes.size(); i++) {
 			String attrName 
@@ -569,7 +565,7 @@ public final class CodeGenUtils {
 	public static String getNescText(final Expression expression, 
 			final String leftHead, final String rightHead, 
 			final List<Attribute> input, 
-			final ArrayList<Attribute>rightAttributes) 
+			final List<Attribute>rightAttributes) 
 			throws CodeGenerationException {
 		if (expression instanceof EvalTimeAttribute) {
 			return "currentEvalEpoch";
@@ -642,9 +638,10 @@ public final class CodeGenUtils {
 		if (attr instanceof TimeAttribute) {
 			return attr.getLocalName() + ("_epoch");
 		}
-		if (attr instanceof LocalTimeAttribute) {
-			return Constants.LOCAL_TIME;
-		}
+//TODO: Localtime
+//		if (attr instanceof LocalTimeAttribute) {
+//			return Constants.LOCAL_TIME;
+//		}
 		return attr.getLocalName() + "_" + attr.getAttributeName(); 
 	}
 

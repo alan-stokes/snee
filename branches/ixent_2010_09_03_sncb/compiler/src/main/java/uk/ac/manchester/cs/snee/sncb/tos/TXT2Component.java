@@ -36,9 +36,13 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 import java.io.IOException;
 import java.util.HashMap;
 
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class TXT2Component extends NesCComponent implements TinyOS2Component {
 
@@ -68,25 +72,21 @@ public class TXT2Component extends NesCComponent implements TinyOS2Component {
     /**
      * The query plan for which code is being generated.
      */
-    QueryPlan plan;
-
-    /**
-     * The user-specified Quality-of-Service specifications.
-     */
-    QoSSpec qos;
-
+    SensorNetworkQueryPlan plan;
     
-    private final String templateFileName = NesCGeneration.NESC_MODULES_DIR
+    CostParameters costParams;
+
+    private final String templateFileName = TinyOSGenerator.NESC_COMPONENTS_DIR
 	    + "/tx.nc";
 
     
     public TXT2Component(final Fragment sourceFrag,
 	    final Fragment destFrag, final Site destSite,
 	    final Site rxSite, final NesCConfiguration config, 
-	    final QueryPlan plan,
-	    final QoSSpec qos, boolean tossimFlag) {
+	    final SensorNetworkQueryPlan plan,
+	    boolean tossimFlag, CostParameters costParams, boolean ledsDebug) {
 	
-    	super(config, 2, tossimFlag);
+    	super(config, 2, tossimFlag, ledsDebug);
 		this.instanceOfGeneric = true;
 		this.sourceFrag = sourceFrag;
 		this.destSite = destSite;
@@ -94,7 +94,7 @@ public class TXT2Component extends NesCComponent implements TinyOS2Component {
 		this.rxSite = rxSite;
 		this.id = this.generateName();
 		this.plan = plan;
-		this.qos = qos;
+		this.costParams = costParams;
     }
 
     @Override
@@ -111,7 +111,7 @@ public class TXT2Component extends NesCComponent implements TinyOS2Component {
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException {
+	    throws IOException, CodeGenerationException, OptimizationException {
 	final String currentSiteID = this.site.getID();
 	final String parentSiteID = this.rxSite.getID();
 
@@ -128,7 +128,7 @@ public class TXT2Component extends NesCComponent implements TinyOS2Component {
 	replacements.put("__MESSAGE_PTR_TYPE__", CodeGenUtils
 			.generateMessagePtrType(this.sourceFrag));
 	
-	if (Settings.NESC_DEBUG_LEDS) {
+	if (this.debugLeds) {
 		replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led2Toggle();");		
 	} else {
 		replacements.put("__NESC_DEBUG_LEDS__", "");
@@ -139,7 +139,7 @@ public class TXT2Component extends NesCComponent implements TinyOS2Component {
 		.get(CodeGenUtils.generateOutputTupleType(this.sourceFrag)));
 	//	int tuplesPerPacket =(int)Math.floor((Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE - (Settings.NESC_PAYLOAD_OVERHEAD+2)) / (tupleSize+2));
 	final int numTuplesPerMessage = ExchangePart
-		.computeTuplesPerMessage(tupleSize);
+		.computeTuplesPerMessage(tupleSize, costParams);
 	assert (numTuplesPerMessage > 0);
 
 	replacements.put("__TUPLES_PER_PACKET__", new Integer(

@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
@@ -70,18 +72,13 @@ public class AcquireComponent extends NesCComponent implements
     /** Plan this Operator is in. */
     private SensorNetworkQueryPlan plan;
 
-    /** No really required. */
-    Fragment frag;
-
     public AcquireComponent(final SensornetAcquireOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    int tosVersion, boolean tossimFlag) {
-		super(fragConfig, tosVersion, tossimFlag);
+	    int tosVersion, boolean tossimFlag, boolean debugLeds) {
+		super(fragConfig, tosVersion, tossimFlag, debugLeds);
 		this.op = op;
-		this.frag = op.getContainingFragment();
 		this.plan = plan;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.frag,
-			this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
     }
 
     @Override
@@ -90,7 +87,7 @@ public class AcquireComponent extends NesCComponent implements
     }
 
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException {
+	    throws IOException, CodeGenerationException, SchemaMetadataException, TypeMappingException {
 
 	final HashMap<String, String> replacements = new HashMap<String, String>();
 	
@@ -108,7 +105,7 @@ public class AcquireComponent extends NesCComponent implements
     		op.getLogicalOperator().getPredicate(), "", null,
     		((AcquireOperator)op.getLogicalOperator()).getAcquiredAttributes(), null));
     
-    if (Settings.NESC_DEBUG_LEDS) {
+    if (this.debugLeds) {
 		replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led0Toggle();");		
 	} else {
 		replacements.put("__NESC_DEBUG_LEDS__", "");
@@ -120,7 +117,7 @@ public class AcquireComponent extends NesCComponent implements
 		generateNesCOutputFileName(outputDir, this.getID());
 	
 	this.doGetDataMethods(replacements);
-	writeNesCFile(TinyOSGenerator.NESC_MODULES_DIR + "/acquire.nc",
+	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/acquire.nc",
 				outputFileName, replacements);
     }
 
@@ -273,9 +270,10 @@ public class AcquireComponent extends NesCComponent implements
 	    		return "TOS_NODE_ID";
 	    	}
 	    }
-	    if (expression instanceof LocalTimeAttribute) {
-	    	return "call LocalTime.get()";
-	    }
+//TOOD: Add LocalTime attribute back in at some point
+//	    if (expression instanceof LocalTimeAttribute) {
+//	    	return "call LocalTime.get()";
+//	    }
 		if (expression instanceof DataAttribute) {
 			return "reading" + ((AcquireOperator)op.
 			getLogicalOperator()).getSensedAttributeNumber(expression); 
