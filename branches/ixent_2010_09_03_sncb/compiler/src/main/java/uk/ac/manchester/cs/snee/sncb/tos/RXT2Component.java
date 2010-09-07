@@ -34,6 +34,7 @@
 package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
@@ -104,7 +105,7 @@ public class RXT2Component extends NesCComponent implements TinyOS2Component {
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException {
+	    throws IOException, CodeGenerationException, URISyntaxException {
 
 	final HashMap<String, String> replacements = new HashMap<String, String>();
 

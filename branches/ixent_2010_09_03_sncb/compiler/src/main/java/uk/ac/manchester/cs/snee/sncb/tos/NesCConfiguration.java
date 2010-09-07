@@ -37,6 +37,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -551,10 +552,11 @@ public class NesCConfiguration extends Graph {
      * @throws OptimizationException 
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
+     * @throws URISyntaxException 
      *
      */
     public void instantiateComponents(final String outputDir) throws IOException,
-	    CodeGenerationException, SchemaMetadataException, TypeMappingException, OptimizationException {
+	    CodeGenerationException, SchemaMetadataException, TypeMappingException, OptimizationException, URISyntaxException {
 	
 	Utils.checkDirectory(outputDir, true);
 

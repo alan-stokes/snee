@@ -34,6 +34,7 @@
 package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -145,7 +146,7 @@ public class TrayComponent extends NesCComponent {
     }
     
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, OptimizationException {
+	    throws IOException, CodeGenerationException, OptimizationException, URISyntaxException {
 
 	final long bufferingFactor = this.plan.getBufferingFactor();
 	final int subTraySize = getSubTraySize(currentSite);

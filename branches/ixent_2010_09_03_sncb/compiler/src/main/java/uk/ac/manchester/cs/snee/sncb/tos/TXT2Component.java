@@ -34,6 +34,7 @@
 package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
@@ -111,7 +112,7 @@ public class TXT2Component extends NesCComponent implements TinyOS2Component {
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, OptimizationException {
+	    throws IOException, CodeGenerationException, OptimizationException, URISyntaxException {
 	final String currentSiteID = this.site.getID();
 	final String parentSiteID = this.rxSite.getID();
 

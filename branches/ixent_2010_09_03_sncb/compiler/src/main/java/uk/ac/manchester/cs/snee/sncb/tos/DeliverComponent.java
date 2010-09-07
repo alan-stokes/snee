@@ -34,6 +34,7 @@
 package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -72,7 +73,7 @@ public class DeliverComponent extends NesCComponent implements
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, OptimizationException {
+	    throws IOException, CodeGenerationException, OptimizationException, URISyntaxException {
 
 	final HashMap<String, String> replacements = new HashMap<String, String>();
 

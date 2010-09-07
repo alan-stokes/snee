@@ -85,6 +85,8 @@ public final class CodeGenUtils {
     public static String generateOperatorInstanceName(SensornetOperator op,
 	final Site site, int tosVersion) {
     	Fragment frag = op.getContainingFragment();
+    	if (frag==null)
+    		frag = op.getLeftChild().getContainingFragment();
 		if (tosVersion == 1) {
 		    return op.getNesCTemplateName() + "Op" + op.getID() + "Frag"
 			    + frag.getID() + "Site" + site.getID() + "M";

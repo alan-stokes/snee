@@ -34,6 +34,7 @@
 package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -78,9 +79,10 @@ public class AggrInitComponent extends NesCComponent implements
     /** * {@inheritDoc} 
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
-     * @throws OptimizationException */
+     * @throws OptimizationException 
+     * @throws URISyntaxException */
     public final void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, SchemaMetadataException, TypeMappingException, OptimizationException {
+	    throws IOException, CodeGenerationException, SchemaMetadataException, TypeMappingException, OptimizationException, URISyntaxException {
 
 	final HashMap<String, String> replacements = new HashMap<String, String>();
 	replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()

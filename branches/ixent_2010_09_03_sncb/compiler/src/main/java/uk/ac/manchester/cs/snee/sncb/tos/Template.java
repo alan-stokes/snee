@@ -40,6 +40,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -52,14 +54,18 @@ public class Template {
      * @param destFName
      * @param replacements
      * @throws IOException
+     * @throws URISyntaxException 
      */
     public static void instantiate(final String templateName,
 	    final String destFName, final HashMap<String, String> replacements)
-	    throws IOException {
+	    throws IOException, URISyntaxException {
 
-	final File inFile = new File(templateName);
-	final File outFile = new File(destFName);
-
+    	System.out.println(templateName);
+	URL inFileURL = Template.class.getClassLoader().getResource(templateName);
+	System.out.println(inFileURL.getFile());
+	File inFile = new File(inFileURL.getFile());
+	File outFile = new File(destFName);
+	
 	final BufferedReader in = new BufferedReader(new FileReader(inFile));
 	final PrintWriter out = new PrintWriter(new BufferedWriter(
 		new FileWriter(outFile)));
@@ -92,9 +98,10 @@ public class Template {
      * @param sourceFName
      * @param destFName
      * @throws IOException
+     * @throws URISyntaxException 
      */
     public static void instantiate(final String sourceFName,
-	    final String destFName) throws IOException {
+	    final String destFName) throws IOException, URISyntaxException {
     	instantiate(sourceFName, destFName,
 		new HashMap<String, String>());
     }

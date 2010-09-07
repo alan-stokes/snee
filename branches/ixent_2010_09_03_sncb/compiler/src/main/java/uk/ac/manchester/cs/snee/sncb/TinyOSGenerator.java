@@ -37,6 +37,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -299,16 +300,14 @@ public class TinyOSGenerator {
     	initConstants(tosVersion, tossimFlag, targetName);
 
     	if (tosVersion == 1) {
-    		NESC_TEMPLATES_DIR = "src/main/resources/etc/tos1/";
+    		NESC_TEMPLATES_DIR = "src/main/resources/etc/sncb/tos1/";
     	} else {
-    		NESC_TEMPLATES_DIR = "src/main/resources/etc/tos2/";
+    		NESC_TEMPLATES_DIR = "src/main/resources/etc/sncb/tos2/";
     	}
-    	NESC_INTERFACES_DIR = NESC_TEMPLATES_DIR + "interfaces/";
-    	NESC_COMPONENTS_DIR = NESC_TEMPLATES_DIR + "components/";
-    	NESC_MISC_FILES_DIR = NESC_TEMPLATES_DIR + "misc/";
+    	NESC_COMPONENTS_DIR = NESC_TEMPLATES_DIR + "components";
+    	NESC_INTERFACES_DIR = NESC_TEMPLATES_DIR + "interfaces";
+    	NESC_MISC_FILES_DIR = NESC_TEMPLATES_DIR + "misc";
 
-//    	NESC_COMPONENTS_DIR = this.getClass().getClassLoader().getResource(NESC_COMPONENTS_DIR).toString();
-//    	
 //    	Utils.checkDirectory(NESC_COMPONENTS_DIR, false);
 //    	Utils.checkDirectory(NESC_INTERFACES_DIR, false);
 //    	Utils.checkDirectory(NESC_MISC_FILES_DIR, false);
@@ -1877,11 +1876,12 @@ public class TinyOSGenerator {
      * @throws OptimizationException 
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
+     * @throws URISyntaxException 
      */
     private void instantiateCombinedConfiguration(
     		final NesCConfiguration tossimConfig)
     		throws IOException, CodeGenerationException, 
-    		SchemaMetadataException, TypeMappingException, OptimizationException{
+    		SchemaMetadataException, TypeMappingException, OptimizationException, URISyntaxException{
 
 		String outputDir = nescOutputDir + targetName+"/";
 	    tossimConfig.instantiateComponents(outputDir);
@@ -1902,10 +1902,11 @@ public class TinyOSGenerator {
      * @throws OptimizationException 
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
+     * @throws URISyntaxException 
      */
     private void instantiateSiteConfigurations(final HashMap<Site, NesCConfiguration> 
     siteConfigs) throws IOException, CodeGenerationException, SchemaMetadataException, 
-    	TypeMappingException, OptimizationException {
+    	TypeMappingException, OptimizationException, URISyntaxException {
 
 	    final Iterator<Site> siteIter = plan
 		    .siteIterator(TraversalOrder.POST_ORDER);
@@ -2242,8 +2243,9 @@ public class TinyOSGenerator {
 	 * @param tosVersion
 	 * @param combinedImage
 	 * @throws IOException
+	 * @throws URISyntaxException 
 	 */
-    private void generateTypedInterfaces(final HashMap<Site, NesCConfiguration> configs) throws IOException {
+    private void generateTypedInterfaces(final HashMap<Site, NesCConfiguration> configs) throws IOException, URISyntaxException {
 
     	final Iterator<SensornetOperator> opIter = plan.getDAF()
 		.operatorIterator(TraversalOrder.PRE_ORDER);
@@ -2274,10 +2276,11 @@ public class TinyOSGenerator {
      * @param tossimFlag
      * @param op
      * @throws IOException
+     * @throws URISyntaxException 
      */
 	private void generateIntraFragmentInterfaces(final HashMap<Site, NesCConfiguration> configs,
 	final SensornetOperator op)
-	throws IOException {
+	throws IOException, URISyntaxException {
 
 	    final HashMap<String, String> replacements = new HashMap<String, String>();
 
@@ -2299,10 +2302,11 @@ public class TinyOSGenerator {
 	 * @param tossimFlag
 	 * @param op
 	 * @throws IOException
+	 * @throws URISyntaxException 
 	 */
 	private void generateInterFragmentInterfaces(final HashMap<Site, 
 	NesCConfiguration> configs, final SensornetOperator op)
-	throws IOException {
+	throws IOException, URISyntaxException {
 
 	    final HashMap<String, String> replacements = new HashMap<String, String>();
 
@@ -2335,11 +2339,12 @@ public class TinyOSGenerator {
 	 * @param op
 	 * @param replacements
 	 * @throws IOException
+	 * @throws URISyntaxException 
 	 */
 	private void generateTypedInterface(String interfaceName,
 	final HashMap<Site, NesCConfiguration> configs,
 	final SensornetOperator op, final HashMap<String, String> replacements)
-	throws IOException {
+	throws IOException, URISyntaxException {
 
 		//INTERFACE_GET_TUPLES
 		String interfaceInstanceName = CodeGenUtils.
@@ -2379,9 +2384,10 @@ public class TinyOSGenerator {
      * @param nescOutputDir
      * @param nodeDir
      * @throws IOException
+     * @throws URISyntaxException 
      */
     private void copyInterfaceFile(final String interfaceName, 
-    final String nodeDir) throws IOException {
+    final String nodeDir) throws IOException, URISyntaxException {
     	Template.instantiate(NESC_INTERFACES_DIR + "/"
     		+ interfaceName + ".nc", nescOutputDir + nodeDir
     		+ "/" + interfaceName + ".nc");
@@ -2391,8 +2397,9 @@ public class TinyOSGenerator {
      * Generates Miscellaneous files (make files, and other supporting files).
      * @param numNodes
      * @throws IOException
+     * @throws URISyntaxException 
      */
-    private void copyMiscFiles(int numNodes) throws IOException {
+    private void copyMiscFiles(int numNodes) throws IOException, URISyntaxException {
 
 		if (!tossimFlag && !combinedImage) {
 				generateIndividualMiscFiles();
@@ -2407,8 +2414,9 @@ public class TinyOSGenerator {
     /**
      * Generates Miscellaneous files for Avrora.
      * @throws IOException
+     * @throws URISyntaxException 
      */
-	private void generateIndividualMiscFiles() throws IOException {
+	private void generateIndividualMiscFiles() throws IOException, URISyntaxException {
 		final Iterator<Site> siteIter = plan
 		    .siteIterator(TraversalOrder.POST_ORDER);
 		while (siteIter.hasNext()) {
@@ -2434,7 +2442,7 @@ public class TinyOSGenerator {
 		}
 	}
 
-	private void generateCombinedMiscFiles() throws IOException {
+	private void generateCombinedMiscFiles() throws IOException, URISyntaxException {
 
 			copyInterfaceFile(INTERFACE_DO_TASK, targetName +"/");
 
@@ -2462,8 +2470,9 @@ public class TinyOSGenerator {
 	 * @param numNodes
 	 * @param tosVersion
 	 * @throws IOException
+	 * @throws URISyntaxException 
 	 */
-	private void generateTossimMiscFiles(int numNodes) throws IOException {
+	private void generateTossimMiscFiles(int numNodes) throws IOException, URISyntaxException {
 
 		copyInterfaceFile(INTERFACE_DO_TASK, targetName +"/");
 
@@ -2500,8 +2509,9 @@ public class TinyOSGenerator {
 	 * @param dir The directory where the files are to be created.
 	 * @param mainConfigName The name of main nesC configuration.
 	 * @throws IOException
+	 * @throws URISyntaxException 
 	 */
-	private void generateMakefiles(final String dir, String mainConfigName) throws IOException {
+	private void generateMakefiles(final String dir, String mainConfigName) throws IOException, URISyntaxException {
 		// Makefile
 		HashMap<String, String> replacements = new HashMap<String, String>();
 		replacements.put("__MAIN_CONFIG_NAME__", mainConfigName);

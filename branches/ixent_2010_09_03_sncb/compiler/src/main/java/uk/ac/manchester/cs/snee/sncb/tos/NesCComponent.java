@@ -37,6 +37,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -113,8 +114,9 @@ public abstract class NesCComponent extends NodeImplementation implements Node {
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
      * @throws OptimizationException 
+     * @throws URISyntaxException 
      */
-    public abstract void writeNesCFile(String outputDir)	throws IOException, CodeGenerationException, SchemaMetadataException, TypeMappingException, OptimizationException;
+    public abstract void writeNesCFile(String outputDir)	throws IOException, CodeGenerationException, SchemaMetadataException, TypeMappingException, OptimizationException, URISyntaxException;
 
     /**
      * Returns a string used to declare this component in a configuration file  
@@ -133,10 +135,11 @@ public abstract class NesCComponent extends NodeImplementation implements Node {
      * @param destFName
      * @param replacements
      * @throws IOException
+     * @throws URISyntaxException 
      */
     protected void writeNesCFile(final String templateName,
 	    final String destFName, final HashMap<String, String> replacements)
-	    throws IOException, CodeGenerationException {
+	    throws IOException, CodeGenerationException, URISyntaxException {
     	
     	replacements.put("__MODULE_NAME__", this.getID());
     	replacements.put("__DBG_CHANNEL__", "DBG_"+this.getID().toUpperCase());
@@ -147,7 +150,7 @@ public abstract class NesCComponent extends NodeImplementation implements Node {
     }
 
     public void writeNesCFile(final String sourceFName,
-	    final String destFName) throws IOException, CodeGenerationException {
+	    final String destFName) throws IOException, CodeGenerationException, URISyntaxException {
 	writeNesCFile(sourceFName, destFName, new HashMap<String, String>());
     }
 

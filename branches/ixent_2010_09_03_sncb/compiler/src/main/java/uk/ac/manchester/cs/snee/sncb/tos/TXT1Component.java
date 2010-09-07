@@ -34,6 +34,7 @@
 package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -120,7 +121,7 @@ public class TXT1Component extends NesCComponent implements TinyOS1Component {
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, OptimizationException {
+	    throws IOException, CodeGenerationException, OptimizationException, URISyntaxException {
 
 	final HashMap<String, String> replacements = new HashMap<String, String>();
 
