@@ -310,6 +310,10 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 		 * @throws SchemaMetadataException 
 	     */
 	    public final int getPhysicalTupleSize() throws SchemaMetadataException, TypeMappingException {
+			if (this instanceof SensornetExchangeOperator) {
+				return this.getLeftChild().getPhysicalTupleSize();
+			}
+	    	
 	        final List<Attribute> attributes = this.logicalOp.getAttributes();
 	        int totalSize = 0;
 	        int blockSize = 0;
@@ -633,6 +637,9 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 	
 	//delegate
 	public List<Attribute> getAttributes() {
+		if (this instanceof SensornetExchangeOperator) {
+			return this.getLeftChild().getAttributes();
+		}
 		return this.getLogicalOperator().getAttributes();
 	}
 
