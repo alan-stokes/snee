@@ -61,7 +61,7 @@ public class Template {
 	    throws IOException, URISyntaxException {
 
 		URL inFileURL = Template.class.getClassLoader().getResource(templateName);
-		System.out.println(inFileURL.getFile());
+		//System.out.println(inFileURL.getFile());
 		File inFile = new File(inFileURL.getFile());
 		File outFile = new File(destFName);
 		

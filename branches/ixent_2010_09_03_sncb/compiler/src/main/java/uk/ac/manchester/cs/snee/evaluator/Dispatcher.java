@@ -142,6 +142,8 @@ public class Dispatcher {
 				SNCB sncb = new TinyOS_SNCB(outputDir, costParams);
 				sncb.register(snQueryPlan);
 				sncb.start();
+				System.out.println("Code generation complete");
+				System.exit(0);
 			} catch (Exception e) {
 				logger.warn(e.getLocalizedMessage(), e);
 				throw new EvaluatorException(e);
