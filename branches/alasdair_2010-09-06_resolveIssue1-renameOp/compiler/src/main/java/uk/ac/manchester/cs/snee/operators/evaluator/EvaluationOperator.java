@@ -87,7 +87,7 @@ extends EvaluatorPhysicalOperator {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Getting attribute " + daName);
 				}
-				daValue = tuple.getValue(daName);
+				daValue = tuple.getAttributeValue(daName);
 			} else if (operand instanceof IntLiteral){
 				IntLiteral il = (IntLiteral) operand;
 				daValue = new Integer(il.toString());

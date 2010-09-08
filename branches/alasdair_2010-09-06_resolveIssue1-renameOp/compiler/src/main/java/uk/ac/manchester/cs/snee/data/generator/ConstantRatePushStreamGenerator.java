@@ -55,31 +55,26 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.UDPSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
-/**
- * @author agray
- *
- */
 public class ConstantRatePushStreamGenerator {
 
 	Logger logger = 
-		Logger.getLogger(ConstantRatePushStreamGenerator.class.getName());
+		Logger.getLogger(
+				ConstantRatePushStreamGenerator.class.getName());
 	
 	/**
 	 * The list of streams
@@ -128,7 +123,6 @@ public class ConstantRatePushStreamGenerator {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ConstantRatePushStreamGenerator()");
 		}
-		Types types = new Types(SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_TYPES_FILE));
 		Metadata schema = 
 			new Metadata();
 		_streams = schema.getPushedExtents();
@@ -139,9 +133,10 @@ public class ConstantRatePushStreamGenerator {
 		for (ExtentMetadata stream : _streams) {
 			String streamName = stream.getExtentName().toLowerCase();
 			TupleGenerator tupleGeneator = 
-				new TupleGenerator(stream, types);
+				new TupleGenerator(stream);
 			generators.put(streamName, tupleGeneator);
-			List<SourceMetadata> sources = schema.getSources(streamName);
+			List<SourceMetadata> sources = 
+				schema.getSources(streamName);
 			initialiseSources(stream, streamName, sources);
 		}
 		if (logger.isDebugEnabled()) {
@@ -158,7 +153,8 @@ public class ConstantRatePushStreamGenerator {
 					" #sources=" + sources.size());
 		for (SourceMetadata source : sources) {
 			if (source.getSourceType() == SourceType.UDP_SOURCE) {
-				UDPSourceMetadata udpSource = (UDPSourceMetadata) source;
+				UDPSourceMetadata udpSource = 
+					(UDPSourceMetadata) source;
 				instantiateUDPSource(udpSource, streamName);
 				_tasks.add(createBroadcastTask(stream, udpSource));
 			}
@@ -175,7 +171,8 @@ public class ConstantRatePushStreamGenerator {
 			logger.trace("ENTER instantiateUDPSource() with " + 
 					source.getSourceName());
 		try {
-			MulticastSocket socket = new MulticastSocket(source.getPort(streamName));
+			MulticastSocket socket = 
+				new MulticastSocket(source.getPort(streamName));
 			socket.joinGroup(InetAddress.getByName(source.getHost()));
 			sockets.put(streamName, socket);
 		} catch (IOException e) {
@@ -234,11 +231,12 @@ public class ConstantRatePushStreamGenerator {
 					task.sleepInterval); //subsequent rate
 			// Add timer to the set of timers
 			_timers.add(timer);
-			logger.debug("Started stream: " + task.streamName + " host: " +
-					task.address + ":" + task.port);
+			logger.debug("Started stream: " + task.streamName + 
+					" host: " + task.address + ":" + task.port);
 
 		}
-		logger.debug("RETURN startTransmission() #timers=" + _timers.size());
+		logger.debug("RETURN startTransmission() #timers=" + 
+				_timers.size());
 	}
 
 	/**
@@ -290,26 +288,32 @@ public class ConstantRatePushStreamGenerator {
 		public void run() {
 			curIndex++;
 			try {
-				InetAddress inetAddress = InetAddress.getByName(address);
+				InetAddress inetAddress = 
+					InetAddress.getByName(address);
 				// Generate next tuple for the stream
 				Tuple tuple = tupleGenerator.generateTuple(curIndex);
+				String tupleCSV = convertTupleToCSV(tuple);
 				
 				if (logger.isTraceEnabled())
-					logger.trace("Creating byte stream for tuple " + tuple);
+					logger.trace("Creating byte stream for tuple " +
+							tupleCSV);
 				// Create a byte stream
-				ByteArrayOutputStream b_out = new ByteArrayOutputStream();
-				ObjectOutputStream o_out = new ObjectOutputStream(b_out);
+				ByteArrayOutputStream b_out = 
+					new ByteArrayOutputStream();
+				ObjectOutputStream o_out = 
+					new ObjectOutputStream(b_out);
 
 				// Create a byte array out of the new tuple
-				o_out.writeObject(tuple);
+				o_out.writeObject(tupleCSV);
 				byte[] b = b_out.toByteArray();
 
-				if (logger.isTraceEnabled())
-					logger.trace("Creating packet for " + address + ":" +
-							port);
+				if (logger.isTraceEnabled()) {
+					logger.trace("Creating packet for " + address + 
+							":" + port);
+				}
 				// Create a UDP packet to send the tuple
-				DatagramPacket packet = new DatagramPacket(b, b.length,
-						inetAddress, port);
+				DatagramPacket packet = 
+					new DatagramPacket(b, b.length, inetAddress, port);
 								
 				// Send tuple over the socket
 				if (logger.isTraceEnabled())
@@ -331,6 +335,23 @@ public class ConstantRatePushStreamGenerator {
 				_timers.remove(timer);
 			}
 		}
+
+		private String convertTupleToCSV(Tuple tuple) {
+			StringBuffer buffer = new StringBuffer();
+			for (EvaluatorAttribute attr : tuple.getAttributeValues()) {
+				buffer.append(attr.getData());
+				buffer.append(",");
+			}
+			int lastCommaIndex = buffer.lastIndexOf(",");
+			String retString;
+			if (lastCommaIndex > 0){
+				retString = buffer.substring(0, lastCommaIndex);
+			} else {
+				retString = buffer.toString();
+			}
+			return retString;
+		}
+
 	}
 
 }

@@ -35,34 +35,28 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.evaluator.types;
 
+import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;
 
-import java.net.URL;
-import java.util.Properties;
-
 import org.apache.log4j.PropertyConfigurator;
+import org.easymock.classextension.EasyMockSupport;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
 
-public class FieldTest {
-
-	private static Types types;
+public class EvaluatorAttributeTest extends EasyMockSupport {
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
 		PropertyConfigurator.configure(
-				FieldTest.class.getClassLoader().
+				EvaluatorAttributeTest.class.getClassLoader().
 				getResource("etc/log4j.properties"));
 	}
 
@@ -70,69 +64,45 @@ public class FieldTest {
 	public static void tearDownAfterClass() throws Exception {
 	}
 
+	private Attribute mockAttribute =
+		createMock(Attribute.class);
+	private AttributeType mockType =
+		createMock(AttributeType.class);
+	private Object mockData = 
+		createMock(Object.class);
+
 	@Before
 	public void setUp() throws Exception {
-		// Configure properties
-		Properties props = new Properties();
-		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
-		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
-		SNEEProperties.initialise(props);
-
-		URL fileUrl = FieldTest.class.getClassLoader().getResource(SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_TYPES_FILE));
-		types = new Types(fileUrl.toURI().toString());
-
 	}
 
 	@After
 	public void tearDown() throws Exception {
 	}
 
-	@Test
-	public void testTypeString() 
-	throws TypeMappingException, SchemaMetadataException {
-		Field stringField = new Field("StringField", types.getType("string"), "hello");
-		assertEquals("StringField", stringField.getName());
-		assertEquals("hello", stringField.getData());
-		assertEquals(types.getType("string"), stringField.getDataType());
+	@Test(expected=SchemaMetadataException.class)
+	public void testGetData_unsupportedDataType() 
+	throws SchemaMetadataException {
+		expect(mockAttribute.getExtentName()).andReturn("streamName");
+		expect(mockAttribute.getName()).andReturn("attrName");
+		expect(mockAttribute.getType()).andReturn(mockType);
+		expect(mockType.getName()).andReturn("attrType");
+		replayAll();
+		EvaluatorAttribute field = new EvaluatorAttribute(mockAttribute, mockData);
+		assertEquals(mockData, field.getData());
+		verifyAll();
 	}
 
 	@Test
-	public void testTypeFloat() 
-	throws TypeMappingException, SchemaMetadataException {
-		Field field = new Field("Float Field", types.getType("float"), 17.75);
-		assertEquals("Float Field", field.getName());
-		assertEquals(17.75, field.getData());
-		assertEquals(types.getType("float"), field.getDataType());
-	}
-		
-	@Test
-	public void testTypeInt() 
-	throws TypeMappingException, SchemaMetadataException {
-		Field intField = new Field("IntField", types.getType("integer"), 8);
-		assertEquals(types.getType("integer"), intField.getDataType());
-		assertEquals(8, intField.getData());
-		assertEquals(types.getType("integer"), intField.getDataType());
-	}
-
-	@Ignore
-	@Test(expected=TypeMappingException.class)
-	public void testTypeInt_invalidValue() 
-	throws TypeMappingException, SchemaMetadataException {
-		//XXX: ideally we would want this test to fail in some way
-		Field intField = new Field("IntField", types.getType("integer"), "number");
-	}
-	
-	@Test
-	public void testTypeBoolean() 
-	throws TypeMappingException, SchemaMetadataException {
-		Field field = new Field("BoolField", types.getType("boolean"), true);
-		assertEquals("BoolField", field.getName());
-		assertEquals(true, field.getData());
-		assertEquals(types.getType("boolean"), field.getDataType());
+	public void testGetData() 
+	throws SchemaMetadataException {
+		expect(mockAttribute.getExtentName()).andReturn("streamName");
+		expect(mockAttribute.getName()).andReturn("attrName");
+		expect(mockAttribute.getType()).andReturn(mockType);
+		expect(mockType.getName()).andReturn("integer");
+		replayAll();
+		EvaluatorAttribute field = new EvaluatorAttribute(mockAttribute, mockData);
+		assertEquals(mockData, field.getData());
+		verifyAll();
 	}
 
 }

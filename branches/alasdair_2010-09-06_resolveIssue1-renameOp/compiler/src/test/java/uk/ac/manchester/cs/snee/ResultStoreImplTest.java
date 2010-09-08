@@ -46,7 +46,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -54,13 +53,12 @@ import org.apache.log4j.PropertyConfigurator;
 import org.easymock.classextension.EasyMockSupport;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
-import uk.ac.manchester.cs.snee.evaluator.types.Field;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
@@ -155,28 +153,22 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	private void recordTupleStreamResultSet(int numResults) 
 	throws SNEEException, SQLException {
-		recordMetadata(numResults);
+		expect(mockMetaData.getColumnCount()).andReturn(2);
 		Tuple mockTuple = createMock(Tuple.class);
 		expect(((TaggedTuple) mockOutput).getTuple()).
 			andReturn(mockTuple).times(numResults);
 		recordTuple(numResults, mockTuple);
 	}
-
-	private void recordMetadata(int numResults) 
-	throws SQLException {		
-		expect(mockMetaData.getColumnCount()).andReturn(2);
-		expect(mockMetaData.getColumnLabel(1)).
-			andReturn("attr").times(numResults);
-		expect(mockMetaData.getColumnLabel(2)).
-			andReturn("attr").times(numResults);
-	}
 	
 	private void recordTuple(int numResults, Tuple mockTuple)
 	throws SNEEException {
-		Field mockField = createMock(Field.class);
-		expect(mockTuple.getField("attr")).
-			andReturn(mockField).times(numResults * 2);
-		expect(mockField.getData()).
+		EvaluatorAttribute mockAttr = 
+			createMock(EvaluatorAttribute.class);
+		expect(mockTuple.getAttribute(0)).
+			andReturn(mockAttr).times(numResults);
+		expect(mockTuple.getAttribute(1)).
+			andReturn(mockAttr).times(numResults);
+		expect(mockAttr.getData()).
 			andReturn("data").times(numResults * 2);
 	}
 

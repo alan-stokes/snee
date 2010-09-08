@@ -19,7 +19,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
 import uk.ac.manchester.cs.snee.evaluator.types.CircularList;
-import uk.ac.manchester.cs.snee.evaluator.types.Field;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
@@ -268,24 +268,12 @@ public class JoinOperatorImpl extends EvaluationOperator {
 				}
 				continue;
 			}
-			String qualAttrName = attr.getLocalName() + "." + attrName;
+			EvaluatorAttribute evalAttr = 
+				retrieveEvalutatorAttribute(tuple1, tuple2, attrName);
 			if (logger.isTraceEnabled()) {
-				logger.trace("Attribute: " + qualAttrName);
+				logger.trace("Adding attribute: " + evalAttr);
 			}
-			Field field;
-			if (tuple1.containsField(qualAttrName)) {
-				field = tuple1.getField(qualAttrName);
-			} else if (tuple2.containsField(qualAttrName)) {
-				field = tuple2.getField(qualAttrName);
-			} else {
-				logger.warn("Unknown attribute " + qualAttrName + ".");
-				throw new SNEEException("Unknown attribute " + qualAttrName + ".");
-			}
-			field.setName(qualAttrName);
-			if (logger.isTraceEnabled()) {
-				logger.trace("Adding field: " + field.getName() + " " + field);
-			}
-			tuple.addField(field);
+			tuple.addAttribute(evalAttr);
 		}
 		
 		if (logger.isTraceEnabled()) {
@@ -293,6 +281,32 @@ public class JoinOperatorImpl extends EvaluationOperator {
 					tuple);
 		}
 		return tuple;
+	}
+
+	private EvaluatorAttribute retrieveEvalutatorAttribute(Tuple tuple1,
+			Tuple tuple2, String attrName)
+	throws SNEEException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER retrieveEvaluatorAttribute() with " +
+					tuple1 + ", " + tuple2 + ", " + attrName);
+		}
+		EvaluatorAttribute evalAttr;
+		try { 
+			evalAttr = tuple1.getAttribute(attrName);
+		} catch (SNEEException e) {
+			try {
+				evalAttr = tuple2.getAttribute(attrName);
+			} catch (Exception e1) {
+				String message = "Unknown attribute " + attrName + ".";
+				logger.warn(message);
+				throw new SNEEException(message);
+			}
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN retrieveEvaluatorAttribute() with " +
+					evalAttr);
+		}
+		return evalAttr;
 	}
 
 	private boolean compute (Expression[] arrExpr, MultiType type, 
@@ -305,20 +319,12 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		for (int i=0; i < arrExpr.length;i++){
 			if (arrExpr[i] instanceof DataAttribute){
 				DataAttribute da = (DataAttribute) arrExpr[i];
-				String daName = da.getLocalName() + "." + 
-					da.getAttributeName();
-				Object daValue;
-				if (t1.containsField(daName)) {
-					daValue = t1.getValue(daName);
-				} else if (t2.containsField(daName)) {
-					daValue = t2.getValue(daName);
-				} else {
-					logger.warn("Unknown attribute name " + daName);
-					throw new SNEEException("Unknown attribute name " + daName);
-				}
+				EvaluatorAttribute evalAttr = 
+					retrieveEvalutatorAttribute(t1, t2, 
+							da.getAttributeName());
+				Object daValue = evalAttr.getData();
 				if (logger.isTraceEnabled()) {
-					logger.trace("Stack push: " + daName + ", " + 
-							daValue);
+					logger.trace("Stack push: " + daValue);
 				}
 				operands.add(daValue);
 			} else if (arrExpr[i] instanceof IntLiteral){

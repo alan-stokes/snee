@@ -35,6 +35,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.data.generator;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Random;
 
@@ -42,12 +43,12 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
-import uk.ac.manchester.cs.snee.evaluator.types.Field;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
 public class TupleGenerator {
@@ -55,14 +56,12 @@ public class TupleGenerator {
 	Logger logger = Logger.getLogger(TupleGenerator.class.getName());
 	private String _streamName;
 	private Map<String, AttributeType> _columns;
-	private Types _types;
 	
-	public TupleGenerator(ExtentMetadata stream, Types types) {
+	public TupleGenerator(ExtentMetadata stream) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER TupleGenerator() with stream " + 
 					stream.getExtentName());
 		}
-		_types = types;
 		_streamName = stream.getExtentName();
 		_columns = stream.getAttributes();
 		if (logger.isDebugEnabled()) {
@@ -71,7 +70,9 @@ public class TupleGenerator {
 	}
 	
 	public Tuple generateTuple(int index) 
-	throws SNEEException, TypeMappingException, SchemaMetadataException {
+	throws SNEEException, TypeMappingException,
+	SchemaMetadataException 
+	{
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER generateTuple() with index " + index);
 		}
@@ -79,8 +80,9 @@ public class TupleGenerator {
 		for (String attrName : _columns.keySet()) {
 			AttributeType attrType = _columns.get(attrName);
 			try {
-				Field field = generateField(attrName, attrType);
-				tuple.addField(field);
+				EvaluatorAttribute field = 
+					generateField(attrName, attrType);
+				tuple.addAttribute(field);
 			} catch (SNEEException e) {
 				if (logger.isEnabledFor(Level.WARN)) {
 					logger.warn("Unknown data type \"" + 
@@ -96,37 +98,39 @@ public class TupleGenerator {
 		return tuple;
 	}
 	
-	private Field generateField(String attrName, AttributeType attrType) 
-	throws SNEEException, TypeMappingException, SchemaMetadataException {
+	private EvaluatorAttribute generateField(String attrName, 
+			AttributeType attrType) 
+	throws SNEEException, TypeMappingException, SchemaMetadataException
+	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER generateField() with attrName " + 
 					attrName + " attrType " + attrType);
 		Random random = new Random();
 		Object value = null;
-		if (attrType.getName().equals("integer")) {
-			value = random.nextInt(10);
+		if (attrType.getName().equals("boolean")) {
+			value = random.nextBoolean();
+		} else if (attrType.getName().equals("decimal")) {
+			value = new BigDecimal(random.nextDouble());
 		} else if (attrType.getName().equals("float")) {
 			value = random.nextFloat();
+		} else if (attrType.getName().equals("integer")) {
+			value = random.nextInt(10);
 		} else if (attrType.getName().equals("string")) {
 			value = Long.toString(Math.abs(random.nextLong()), 36);
-		} else if (attrType.getName().equals("boolean")) {
-			value = random.nextBoolean();
 		} else if (attrType.getName().equals("timestamp")) {
 			value = System.currentTimeMillis();
-//		} else if (attrType == AttributeType.DATETIME_TYPE) {
-//			value = new Date();
-//		} else if (attrType == AttributeType.TIME_TYPE) {
-//			Calendar cal = Calendar.getInstance();
-//			value = cal.getTime();
 		} else {
 			String message = "Unknown datatype " + attrType;
 			logger.warn(message);
 			throw new SNEEException(message);
 		}
-		Field field = new Field(attrName, attrType, value);
+		EvaluatorAttribute evalAttr = 
+			new EvaluatorAttribute(
+					new Attribute(_streamName, attrName, attrType), 
+					value);
 		if (logger.isTraceEnabled())
-			logger.trace("RETURN generateField() with " + field);
-		return field;
+			logger.trace("RETURN generateField() with " + evalAttr);
+		return evalAttr;
 	}
 
 	public String getStreamName() {
