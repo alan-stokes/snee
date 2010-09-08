@@ -876,9 +876,9 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    		+ CodeGenUtils.generateUserAsDoTaskName(fragTask
 			    .getFragment(), fragTask.getSiteID())
 		     + ".doTask();\n");
-	    }	
+
 	    firedTimerTaskBuff.append("\t}\n\n");
-	    
+    
 	    if (tosVersion==2) {
 	    	firedTimerTaskBuff.append("\tevent void "
 		    		+ CodeGenUtils.generateUserAsDoTaskName(fragTask
@@ -887,13 +887,13 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    	firedTimerTaskBuff.append("\t{\n");
 	    	firedTimerTaskBuff.append("\t}\n\n");
 	    }
-
-	    /*			firedTimerTaskBuff.append("\tevent void "+CodeGenUtils.generateUserAsDoTaskName(fragTask.getFragment(),
-	     fragTask.getSiteID())+".doTaskDone(error_t err)\n");
-	     firedTimerTaskBuff.append("\t{\n");
-	     firedTimerTaskBuff.append("\t\t//do nothing\n");
-	     firedTimerTaskBuff.append("\t}\n\n");*///TODO: only applicable for T2?
-	
+	    
+    /*			firedTimerTaskBuff.append("\tevent void "+CodeGenUtils.generateUserAsDoTaskName(fragTask.getFragment(),
+     fragTask.getSiteID())+".doTaskDone(error_t err)\n");
+     firedTimerTaskBuff.append("\t{\n");
+     firedTimerTaskBuff.append("\t\t//do nothing\n");
+     firedTimerTaskBuff.append("\t}\n\n");*///TODO: only applicable for T2?
+	}	
     }
 
     private long getNextDelta(final ArrayList<Long> startTimeList, final int i) {

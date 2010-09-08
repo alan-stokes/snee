@@ -38,14 +38,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
@@ -59,12 +57,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
-import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
-import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
-import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
-import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
-import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
@@ -706,11 +698,11 @@ public class TinyOSGenerator {
 			.operatorIterator(TraversalOrder.POST_ORDER);
 		while (opIter.hasNext()) {
 			final SensornetOperator op = opIter.next();
-			if (op instanceof AcquireOperator) {
+			if (op instanceof SensornetAcquireOperator) {
 				acquireCount = t1WireFragToSensors(
 					acquireCount, currentSite, config, fragComp, op);
 
-			} else if (op instanceof DeliverOperator) {
+			} else if (op instanceof SensornetDeliverOperator) {
 				String sendInterface =
 					CodeGenUtils.generateProviderSendInterfaceName(
 					"AM_DELIVERMESSAGE");
@@ -743,7 +735,7 @@ public class TinyOSGenerator {
 		config.addComponent(sensorComp);
 
 		final int numSensedAttr
-			= ((AcquireOperator) op).getNumSensedAttributes();
+			= ((AcquireOperator) op.getLogicalOperator()).getNumSensedAttributes();
 		for (int i = 0; i < numSensedAttr; i++) {
 			acquireCount++;
 
@@ -1262,7 +1254,7 @@ public class TinyOSGenerator {
 			.operatorIterator(TraversalOrder.POST_ORDER);
 		while (opIter.hasNext()) {
 			final SensornetOperator op = opIter.next();
-			if (op instanceof AcquireOperator) {
+			if (op instanceof SensornetAcquireOperator) {
 
 				/* Wire fragment component to the sensor component */
 				t2wireFragToSensors(currentSite, config, fragComp, op);
@@ -1271,7 +1263,7 @@ public class TinyOSGenerator {
 					t2wireFragToLocalTime(currentSite, config, fragComp, op);
 				}
 				
-			} else if (op instanceof DeliverOperator) {
+			} else if (op instanceof SensornetDeliverOperator) {
 				
 				/* Wire fragment component to serial device */
 				SerialComponent serialComp = new SerialComponent(COMPONENT_SERIAL_DEVICE, config, tossimFlag);
@@ -1307,7 +1299,7 @@ public class TinyOSGenerator {
 	final NesCConfiguration config, final FragmentComponent fragComp, final SensornetOperator op)
 	throws CodeGenerationException {
 		final int numSensedAttr
-		= ((AcquireOperator) op).getNumSensedAttributes();
+		= ((AcquireOperator) op.getLogicalOperator()).getNumSensedAttributes();
 		for (int i = 0; i < numSensedAttr; i++) {
 			//TODO: look up sensorID in metadata
 			String sensorId = new Integer(i).toString();
@@ -1824,9 +1816,9 @@ public class TinyOSGenerator {
 		    final SensornetOperator op = opIter.next();
 		    final String opName = CodeGenUtils
 			    .generateOperatorInstanceName(op, site, tosVersion);
-		    if (op instanceof AcquireOperator) {
+		    if (op instanceof SensornetAcquireOperator) {
 			    final int numSensedAttr
-			    	= ((AcquireOperator) op).getNumSensedAttributes();
+			    	= ((AcquireOperator) op.getLogicalOperator()).getNumSensedAttributes();
 			    for (int i = 0; i < numSensedAttr; i++) {
 			    	if (tosVersion == 1) {
 						fragConfig.linkToExternalProvider(opName,
@@ -1852,7 +1844,7 @@ public class TinyOSGenerator {
 		    final SensornetOperator op = opIter.next();
 		    final String opName = CodeGenUtils
 			    .generateOperatorInstanceName(op, site, tosVersion);
-		    if (op instanceof AcquireOperator) {
+		    if (op instanceof SensornetAcquireOperator) {
 				fragConfig.linkToExternalProvider(opName,
 						INTERFACE_LOCAL_TIME, TYPE_TMILLI,
 						INTERFACE_LOCAL_TIME, INTERFACE_LOCAL_TIME);		    	
@@ -1945,11 +1937,11 @@ public class TinyOSGenerator {
 
 		    /* Define the structures which define each operator or fragment
 		     * output type. */
-		    addOperatorTupleStructs(tupleTypeBuff, op, tosVersion);
+		    addOperatorTupleStructs(tupleTypeBuff, op);
 
 		    /*Define the structures which define each message output
 		     * type. */
-		    addRadioMessageStructs(messageTypeBuff, op, tosVersion);
+		    addRadioMessageStructs(messageTypeBuff, op);
 		}
 
 		StringBuffer deliverMsgBuff;
@@ -2009,7 +2001,7 @@ public class TinyOSGenerator {
 	 * @throws SchemaMetadataException 
 	 */
 	private void addOperatorTupleStructs(final StringBuffer tupleTypeBuff, 
-	final SensornetOperator op, final int tosVersion) 
+	final SensornetOperator op) 
 	throws SchemaMetadataException, TypeMappingException {
 
 		if (!(op instanceof SensornetExchangeOperator) && (!op.getLogicalOperator().isRecursive())) {
@@ -2064,7 +2056,7 @@ public class TinyOSGenerator {
 	 * @throws OptimizationException 
 	 */
 	private void addRadioMessageStructs(final StringBuffer messageTypeBuff,
-			final SensornetOperator op, final int tosVersion) throws OptimizationException {
+			final SensornetOperator op) throws OptimizationException {
 		if ((op instanceof SensornetExchangeOperator)
 		    && (!op.getLeftChild().getContainingFragment().isRecursive())) {
 

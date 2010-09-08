@@ -60,37 +60,34 @@ public class Template {
 	    final String destFName, final HashMap<String, String> replacements)
 	    throws IOException, URISyntaxException {
 
-    	System.out.println(templateName);
-    	System.out.println(Template.class.getClassLoader());
-	URL inFileURL = Template.class.getClassLoader().getResource(templateName);
-	System.out.println(inFileURL.getFile());
-	File inFile = new File(inFileURL.getFile());
-	File outFile = new File(destFName);
+		URL inFileURL = Template.class.getClassLoader().getResource(templateName);
+		System.out.println(inFileURL.getFile());
+		File inFile = new File(inFileURL.getFile());
+		File outFile = new File(destFName);
+		
+		final BufferedReader in = new BufferedReader(new FileReader(inFile));
+		final PrintWriter out = new PrintWriter(new BufferedWriter(
+			new FileWriter(outFile)));
 	
-	final BufferedReader in = new BufferedReader(new FileReader(inFile));
-	final PrintWriter out = new PrintWriter(new BufferedWriter(
-		new FileWriter(outFile)));
-
-	String line;
-	while ((line = in.readLine()) != null) {
-	    //match and replace as necessary
-	    final Iterator<String> replaceIter = replacements.keySet()
-		    .iterator();
-	    while (replaceIter.hasNext()) {
-		final String replaceText = replaceIter.next();
-
-		if (line.contains(replaceText)) {
-		    final String replaceWith = replacements.get(replaceText);
-		    line = line.replace(replaceText, replaceWith);
+		String line;
+		while ((line = in.readLine()) != null) {
+		    //match and replace as necessary
+		    final Iterator<String> replaceIter = replacements.keySet()
+			    .iterator();
+		    while (replaceIter.hasNext()) {
+			final String replaceText = replaceIter.next();
+	
+			if (line.contains(replaceText)) {
+			    final String replaceWith = replacements.get(replaceText);
+			    line = line.replace(replaceText, replaceWith);
+			}
+		    }
+	
+		    out.println(line);	
 		}
-	    }
-
-	    out.println(line);
-
-	}
-
-	in.close();
-	out.close();
+	
+		in.close();
+		out.close();
     }
 
     

@@ -22,7 +22,7 @@ public class TinyOS_SNCB implements SNCB {
 		boolean combinedImage= false;
 		boolean controlRadioOff = false;
 		boolean enablePrintf = false;
-		boolean useStartUpProtocol = false;
+		boolean useStartUpProtocol = true;
 		boolean enableLeds = true;
 		boolean usePowerManagement = false;
 		boolean deliverLast = false;
