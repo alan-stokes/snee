@@ -539,8 +539,10 @@ extends Observable implements ResultStore {
 		checkCount(count);
 		checkIndex(index);
 		int toIndex = index + count; 
-		if (toIndex >= _data.size()) {
-			String msg = "Trying to retrieve to many items.";
+		if (toIndex > _data.size()) {
+			String msg = "Trying to retrieve too many items (" + 
+				count + "). Number of available data items " + 
+				_data.size();
 			logger.warn(msg);
 			throw new SNEEException(msg);
 		}		

@@ -563,6 +563,41 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	}
 
 	@Test(expected=SNEEException.class)
+	public void testGetResultsFromIndexJustLargerCountStreamTuples() 
+	throws SNEEException, SQLException {
+		setUpTupleStream();
+		replayAll();
+		_resultStore.getResultsFromIndex(0, 11);
+		verifyAll();
+	}
+
+	@Test
+	public void testGetResultsFromIndexFullCountStreamTuples() 
+	throws SNEEException, SQLException {
+		setUpTupleStream();
+		recordTupleStreamResultSet(10);
+		replayAll();
+		List<ResultSet> resultSets = 
+			_resultStore.getResultsFromIndex(0, 10);
+		assertEquals(1, resultSets.size());
+		ResultSet results = resultSets.get(0);
+		results.last();
+		assertEquals(10, results.getRow());
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetResultsFromIndexFullCountStreamWindows() 
+	throws SNEEException, SQLException {
+		setUpWindowStream();
+		recordWindowStreamResultSet(6);
+		replayAll();
+		List<ResultSet> results = _resultStore.getResultsFromIndex(4, 6);
+		assertEquals(6, results.size());
+		verifyAll();
+	}
+
+	@Test(expected=SNEEException.class)
 	public void testGetResultsFromIndexDuration() 
 	throws SNEEException {
 		setUpTupleStream();
