@@ -29,8 +29,9 @@ public abstract class SNEEClient implements Observer {
 	protected String _query;
 	protected double _duration;
 	protected long _sleepDuration;
+	protected String _queryParams;
 
-	public SNEEClient(String query, double duration) 
+	public SNEEClient(String query, double duration, String queryParams) 
 	throws SNEEException, IOException, SNEEConfigurationException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER SNEEClient() with query " + query + 
@@ -38,11 +39,23 @@ public abstract class SNEEClient implements Observer {
 		
 		_query = query;
 		_duration = duration;
+		_queryParams = queryParams;
 		controller = new SNEEController("etc/snee.properties");
 
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SNEEClient()");
 	}
+	
+	public SNEEClient(String query, double duration) 
+	throws SNEEException, IOException, SNEEConfigurationException {
+		this(query, duration, null);
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER SNEEClient() with query " + query + 
+					" duration " + duration);
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN SNEEClient()");
+	}
+	
 
 	private static void printResults(List<ResultSet> results, 
 			int queryId) 
@@ -132,8 +145,7 @@ public abstract class SNEEClient implements Observer {
 		System.out.println("Query: " + this._query);
 
 		//		try {
-		String queryParamsFilename = "src/main/resources/etc/query-parameters.xml";
-		int queryId1 = controller.addQuery(_query, queryParamsFilename);
+		int queryId1 = controller.addQuery(_query, _queryParams);
 		//		int queryId2 = controller.addQuery(query);
 
 		long startTime = System.currentTimeMillis();
