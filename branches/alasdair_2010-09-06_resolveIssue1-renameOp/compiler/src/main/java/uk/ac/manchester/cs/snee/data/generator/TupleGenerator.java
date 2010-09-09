@@ -106,7 +106,7 @@ public class TupleGenerator {
 		} else if (attrType.getName().equals("integer")) {
 			value = random.nextInt(10);
 		} else if (attrType.getName().equals("string")) {
-			value = Long.toString(Math.abs(random.nextLong()), 36);
+			value = _streamName;
 		} else if (attrType.getName().equals("timestamp")) {
 			value = System.currentTimeMillis();
 		} else {

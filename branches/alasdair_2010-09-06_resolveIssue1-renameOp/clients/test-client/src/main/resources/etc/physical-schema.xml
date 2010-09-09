@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <source xmlns="http://snee.cs.man.ac.uk/namespace/physical-schema"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../../schema/physical-schema.xsd">
@@ -33,6 +33,11 @@
 					<port>6701</port>
 				</push_source>
 			</extent>
+            <extent name="PushStream">
+                <push_source>
+                    <port>6702</port>
+                </push_source>
+            </extent>
 		</extents>
 	</udp_source>
 
