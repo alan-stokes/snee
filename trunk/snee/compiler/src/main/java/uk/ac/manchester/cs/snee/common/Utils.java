@@ -189,9 +189,9 @@ public class Utils {
 		return result.toString();
 	}
 
-//	public String indent(int i) {
-//		return pad("\t", i);
-//	}
+	public static String indent(int i) {
+		return pad("\t", i);
+	}
 
 	/**
 	 * Validate the contents of a file against an XML Schema.

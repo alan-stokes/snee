@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.compiler.queryplan;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
@@ -116,5 +117,10 @@ public abstract class QueryExecutionPlan {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN generateName()"); 
 		return queryName + "-QEP-" + candidateCount;
+	}
+
+	//delegate
+	public String getQueryName() {
+		return this.getLAF().getQueryName();
 	}
 }

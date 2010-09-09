@@ -246,8 +246,8 @@ public class Metadata {
 		Map<String, AttributeType> attributes = 
 			parseAttributes(element.getElementsByTagName("column"));
 		if (extentType == ExtentType.SENSED) {
-			attributes.put("id", idType);
-			attributes.put("time", timeType);
+			attributes.put(Constants.ACQUIRE_ID, idType);
+			attributes.put(Constants.ACQUIRE_TIME, timeType);
 		}
 		ExtentMetadata extent =
 			new ExtentMetadata(extentName, attributes, extentType);

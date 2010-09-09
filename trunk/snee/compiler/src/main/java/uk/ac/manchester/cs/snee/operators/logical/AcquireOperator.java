@@ -42,33 +42,57 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
+import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 public class AcquireOperator extends LogicalOperatorImpl {
 
-	/** Standard Java Logger. */
+	/**
+	 *  Logger for this class.
+	 */
 	private Logger logger = 
 		Logger.getLogger(AcquireOperator.class.getName());
 
-	/** Name as found in the DDL. */
+	/**
+	 *  Name of extent as found in the schema. 
+	 */
 	private String extentName;
 
-	/** Name as found in the Query. */
+	/** Name of extent as found in the Query. */
 	private String localName;
 
-	/** List of attributes to be output. */
+	/**
+	 *  List of attributes to be output. 
+	 */
 	private List<Attribute> outputAttributes;
 
-	/** List of attributes to be sensed. */
+	/**
+	 * List of attributes to be sensed. 
+	 */
 	private ArrayList<DataAttribute> sensedAttributes;
 
+    /** 
+     * List of the attributes that are acquired by this operator. 
+     * Includes sensed attributes as well as time, id 
+     * and any control attributes such as EvalTime.
+     * Includes attributes required for predicates.
+     * All attributes are in the original format 
+     * before any expressions are applied.
+     */
+    private ArrayList<Attribute> acquiredAttributes;
+	
 	/**
 	 * The expressions for building the attributes.
 	 */
@@ -80,8 +104,16 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 */
 	private List<SourceMetadata> _sources;
 	
+	/**
+	 * Number of source sites in the sensor network providing data for this extent.
+	 */
 	private int cardinality;
 
+	/**
+	 * Metadata about the types supported.
+	 */
+	Types _types;
+	
 	/**
 	 * Constructs a new Acquire operator.
 	 * 
@@ -92,7 +124,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * @throws TypeMappingException 
 	 */
 	public AcquireOperator(String extentName, String localName,  
-			ExtentMetadata extentMetadata, List<SourceMetadata> sources,
+			ExtentMetadata extentMetadata, Types types, List<SourceMetadata> sources,
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException {
 		super(boolType);
@@ -102,13 +134,14 @@ public class AcquireOperator extends LogicalOperatorImpl {
 		
 		this.setOperatorName("ACQUIRE");
 		this.setOperatorDataType(OperatorDataType.STREAM);
-
+		this._types=types;
 		this.extentName = extentName;
 		this.localName = localName;
-		addMetaDataInfo(extentMetadata);
+		this._sources = sources;		
+		
+		addMetadataInfo(extentMetadata);
 		updateSensedAttributes(); 
 		
-		_sources = sources;
 		StringBuffer sourcesStr = new StringBuffer();
 		boolean first = true;
 		for (SourceMetadata sm : _sources) {
@@ -155,14 +188,18 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
 	 */
-	private void addMetaDataInfo(ExtentMetadata extentMetaData) 
+	private void addMetadataInfo(ExtentMetadata extentMetaData) 
 	throws SchemaMetadataException, TypeMappingException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER addMetaDataInfo() with " + extentMetaData);
 		outputAttributes = new ArrayList<Attribute>();
-//		outputAttributes.add(new EvalTimeAttribute(_types.getType(Constants.TIME_TYPE))); 
-//		outputAttributes.add(new TimeAttribute(localName, _types.getType(Constants.TIME_TYPE)));
-//		outputAttributes.add(new IDAttribute(localName, _types.getType("integer")));
+		outputAttributes.add(new EvalTimeAttribute(_types.getType(Constants.TIME_TYPE))); 
+		outputAttributes.add(new TimeAttribute(localName, _types.getType(Constants.TIME_TYPE)));
+		outputAttributes.add(new IDAttribute(localName, _types.getType("integer")));
+//TODO: Localtime
+//		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
+//			outputAttributes.add(new LocalTimeAttribute()); //Ixent added this
+//		}		
 		sensedAttributes = new ArrayList<DataAttribute>();
 		Map<String, AttributeType> typeMap = extentMetaData.getAttributes();
 		String[] attributeNames = new String[1];
@@ -182,6 +219,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 		}
 		this.cardinality = extentMetaData.getCardinality();
 		copyExpressions(outputAttributes);
+		acquiredAttributes = (ArrayList<Attribute>) outputAttributes;
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN addMetaDataInfo()");
 	}
@@ -216,10 +254,10 @@ public class AcquireOperator extends LogicalOperatorImpl {
 
 	/** {@inheritDoc} */
 	public boolean acceptsPredicates() {
-		logger.warn("Acquire does not yet accept predicates");
+		//logger.warn("Acquire does not yet accept predicates");
 		//return true;
 //		return Settings.LOGICAL_OPTIMIZATION_COMBINE_ACQUIRE_AND_SELECT;
-		return false;
+		return true;
 	}
 
 	/** {@inheritDoc} */
@@ -316,6 +354,16 @@ public class AcquireOperator extends LogicalOperatorImpl {
 		expressions = projectExpressions;
 		outputAttributes = projectAttributes;
 		updateSensedAttributes();
+//		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
+//			try {
+//				outputAttributes.add(new LocalTimeAttribute());
+//				expressions.add(new LocalTimeAttribute());
+//			} catch (SchemaMetadataException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				System.exit(2);
+//			} //Ixent added this
+//		}		
 		return true;
 	}
 
@@ -367,18 +415,16 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * Converts an attribute into a reading number.
 	 * @param attribute An Expression which must be of subtype Attribute
 	 * @return A constant number for this attribute (starting at 1)
+	 * @throws CodeGenerationException 
 	 */
-	public int getSensedAttributeNumber(Expression attribute) {
+	public int getSensedAttributeNumber(Expression attribute) throws CodeGenerationException {
 		assert (attribute instanceof DataAttribute);
 		for (int i = 0; i < sensedAttributes.size(); i++) {
 			if (attribute.equals(sensedAttributes.get(i))) {
 				return i;
 			}
 		}
-//		Utils.handleCriticalException(new CodeGenerationException(
-//				"Unable to find a number for attribute: " 
-//				+ attribute.toString()));
-		return 1;
+		throw new CodeGenerationException("Unable to find a number for attribute: " + attribute.toString());
 	}
 
 	/** 
@@ -399,48 +445,8 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 */
 	public List<Attribute> getAcquiredAttributes() 
 	throws SchemaMetadataException, TypeMappingException {
-		List<Attribute> acquiredAttributes = 
-			(ArrayList<Attribute>)sensedAttributes.clone();
-//		acquiredAttributes.add(new EvalTimeAttribute(
-//				_types.getType(Constants.TIME_TYPE)));
-//		acquiredAttributes.add(new TimeAttribute(localName, 
-//				_types.getType(Constants.TIME_TYPE)));
-//		acquiredAttributes.add(new IDAttribute(localName,
-//				_types.getType("integer")));
+		assert (acquiredAttributes != null);
 		return acquiredAttributes;
 	}
-
-//	/**
-//	 * Displays the results of the cost functions.
-//	 * @param node Physical mote on which this operator has been placed.
-//	 * @param daf Distributed query plan this operator is part of.
-//	 * @return the calculated time
-//	 */
-//	public double getTimeCost2(Site node, DAF daf) {
-//		return SharedCostFunctions.dAcquire(sensedAttributes.size(), 
-//				getPredicate(), expressions); 
-//	}
-
-//	/**
-//	 * Displays the results of the cost functions.
-//	 * @param node Physical mote on which this operator has been placed.
-//	 * @param daf Distributed query plan this operator is part of.
-//	 * @return OutputQueueCardinality * PhytsicalTuplesSize
-//	 */
-//	public double getEnergyCost2(Site node, DAF daf) {
-//		return SharedCostFunctions.eAcquire(sensedAttributes.size(), 
-//				getPredicate(), expressions); 
-//	}
-
-//	/**
-//	 * Displays the results of the cost functions.
-//	 * @param node Physical mote on which this operator has been placed.
-//	 * @param daf Distributed query plan this operator is part of.
-//	 * @return OutputQueueCardinality * PhytsicalTuplesSize
-//	 */
-//	public int getDataMemoryCost2(Site node, DAF daf) {
-//		return SharedCostFunctions.mAcquire(sensedAttributes.size(), expressions);
-//	}
-
 
 }

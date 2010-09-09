@@ -9,7 +9,7 @@
 	<groupId>uk.ac.manchester.cs.snee</groupId>
 	<artifactId>snee-compiler</artifactId>
 	<name>SNEE Compiler</name>
-	<version>1.1.1-SNAPSHOT</version>
+	<version>1.1.1</version>
 	<description>Compiles a SNEEql query into a query plan</description>
 
 	<properties>

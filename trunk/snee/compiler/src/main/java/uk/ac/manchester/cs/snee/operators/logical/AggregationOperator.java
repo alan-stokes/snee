@@ -130,7 +130,7 @@ public class AggregationOperator extends PredicateOperator {
      * gets the aggregates.
      * @return the Aggregates.
      */
-    protected List<AggregationExpression> getAggregates() {
+    public List<AggregationExpression> getAggregates() {
 		return aggregates;
 	}
     

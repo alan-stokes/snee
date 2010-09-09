@@ -611,39 +611,39 @@ public class Graph implements Cloneable {
 		nodes.remove(replace.getID());
 	}
 
-//	/**
-//	 * Merges another graph with the current one.
-//	 * @param otherGraph the graph to be incorporated with this one.
-//	 */
-//	public void mergeGraphs(Graph otherGraph) {
-//
-//		Iterator<String> i = otherGraph.edges.keySet().iterator();
-//		while (i.hasNext()) {
-//			Edge otherEdge = (Edge) otherGraph.edges.get(i.next());
-//			if (!this.edges.containsKey(otherEdge.getID())) {
-//				Node source, dest;
-//
-//				if (!this.nodes.containsKey(otherEdge.getSourceID())) {
-//					source = this.addNode(otherGraph.nodes.get(
-//							otherEdge.getSourceID()).shallowClone());
-//				} else {
-//					source = this.nodes.get(otherEdge.getSourceID());
-//				}
-//
-//				if (!this.nodes.containsKey(otherEdge.getDestID())) {
-//					dest = this.addNode(otherGraph.nodes.get(
-//							otherEdge.getDestID()).shallowClone());
-//				} else {
-//					dest = this.nodes.get(otherEdge.getDestID());
-//				}
-//
-//				edges.put(otherEdge.getID(), otherEdge.clone());
-//				source.addOutput(dest);
-//				dest.addInput(source);
-//			}
-//		}
-//
-//	}
+	/**
+	 * Merges another graph with the current one.
+	 * @param otherGraph the graph to be incorporated with this one.
+	 */
+	public void mergeGraphs(Graph otherGraph) {
+
+		Iterator<String> i = otherGraph.edges.keySet().iterator();
+		while (i.hasNext()) {
+			Edge otherEdge = (Edge) otherGraph.edges.get(i.next());
+			if (!this.edges.containsKey(otherEdge.getID())) {
+				Node source, dest;
+
+				if (!this.nodes.containsKey(otherEdge.getSourceID())) {
+					source = this.addNode(otherGraph.nodes.get(
+							otherEdge.getSourceID()).shallowClone());
+				} else {
+					source = this.nodes.get(otherEdge.getSourceID());
+				}
+
+				if (!this.nodes.containsKey(otherEdge.getDestID())) {
+					dest = this.addNode(otherGraph.nodes.get(
+							otherEdge.getDestID()).shallowClone());
+				} else {
+					dest = this.nodes.get(otherEdge.getDestID());
+				}
+
+				edges.put(otherEdge.getID(), otherEdge.clone());
+				source.addOutput(dest);
+				dest.addInput(source);
+			}
+		}
+
+	}
 
 	/**
 	 * Exports the graph as a file in the DOT language used by GraphViz.
