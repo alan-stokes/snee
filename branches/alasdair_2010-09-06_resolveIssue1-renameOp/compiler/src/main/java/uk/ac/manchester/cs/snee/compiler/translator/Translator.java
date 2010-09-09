@@ -49,20 +49,20 @@ public class Translator {
 
 	Logger logger = Logger.getLogger(this.getClass().getName());
 
-	private	Metadata _schemaMetadata;
+	private	Metadata _metadata;
 
 	private Types _types;
 
 	private AttributeType _boolType;
 
-	public Translator (Metadata schemaMetadata) 
+	public Translator (Metadata metadata) 
 	throws TypeMappingException, SchemaMetadataException 
 	{
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER Translator(), #extents=" + 
-					schemaMetadata.getExtentNames().size());
-		_schemaMetadata = schemaMetadata;
-		_types = schemaMetadata.getTypes();
+					metadata.getExtentNames().size());
+		_metadata = metadata;
+		_types = metadata.getTypes();
 		_boolType = _boolType;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN Translator()");
@@ -492,13 +492,13 @@ public class Translator {
 		case SNEEqlParserTokenTypes.SOURCE: 
 			String extentName = ast.getText();
 			ExtentMetadata extentMetadata = 
-				_schemaMetadata.getExtentMetadata(extentName);
+				_metadata.getExtentMetadata(extentName);
 			List<SourceMetadata> sources = 
-				_schemaMetadata.getSources(extentName);
+				_metadata.getSources(extentName);
 			switch (extentMetadata.getExtentType()) {
 			case SENSED:
 				output = new AcquireOperator(extentName, extentName, 
-					extentMetadata, sources, _boolType);
+					extentMetadata, _metadata.getTypes(), sources, _boolType);
 				break;
 			case PUSHED: 
 				output = new ReceiveOperator(extentName, extentName, 

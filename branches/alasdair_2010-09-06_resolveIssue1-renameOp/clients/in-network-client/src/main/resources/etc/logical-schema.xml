@@ -47,10 +47,7 @@
      </stream>
 
       <stream name="PullStream" type="pull">
-    	<column name="timestamp">
-        	<type class ="integer"/>
-         </column>
-         <column name="integetColumn">
+         <column name="integerColumn">
           	<type class ="integer"/>
          </column>
 <!--         <column name="floatColumn">

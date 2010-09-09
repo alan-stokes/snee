@@ -160,5 +160,30 @@ public class SensornetWindowOperator extends SensornetOperatorImpl {
 			* this.getCardinality(card, node, daf);
 		return cost;	
     }
+
+    //delegate
+	public int getFrom() {
+		return this.winOp.getFrom();
+	}
+
+    //delegate
+	public int getTo() {
+		return this.winOp.getTo();
+	}
+
+    //delegate
+	public boolean isTimeScope() {
+		return this.winOp.isTimeScope();
+	}
+
+	//delegate
+	public int getTimeSlide() {
+		return this.winOp.getTimeSlide();
+	}
+	
+	//delegate
+	public int getRowSlide() {
+		return this.winOp.getRowSlide();
+	}
 	
 }

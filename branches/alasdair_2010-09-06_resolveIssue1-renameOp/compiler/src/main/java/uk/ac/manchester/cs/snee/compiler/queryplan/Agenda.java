@@ -786,5 +786,9 @@ public class Agenda extends SNEEAlgebraicForm {
 	logger.trace("Sleep task scheduled from "+sleepStart+" to "+sleepEnd);
     this.addSleepTask(sleepStart, sleepEnd, true);
 	this.setNonLeafStart(nonLeafStart);
-    }    
+    }
+
+	public CostParameters getCostParameters() {
+		return this.costParams;
+	}    
 }

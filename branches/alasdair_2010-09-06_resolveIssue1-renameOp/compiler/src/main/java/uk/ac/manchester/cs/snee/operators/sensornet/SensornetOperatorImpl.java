@@ -17,6 +17,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
@@ -309,6 +310,10 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 		 * @throws SchemaMetadataException 
 	     */
 	    public final int getPhysicalTupleSize() throws SchemaMetadataException, TypeMappingException {
+			if (this instanceof SensornetExchangeOperator) {
+				return this.getLeftChild().getPhysicalTupleSize();
+			}
+	    	
 	        final List<Attribute> attributes = this.logicalOp.getAttributes();
 	        int totalSize = 0;
 	        int blockSize = 0;
@@ -619,4 +624,33 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 		}
 		return opList.iterator();
 	}	
+	
+	//delegate
+	public SensornetOperator getLeftChild() {
+		return (SensornetOperator)this.getInput(0);
+	}
+	
+	//delegate
+	public SensornetOperator getRightChild() {
+		return (SensornetOperator)this.getInput(1);
+	}
+	
+	//delegate
+	public List<Attribute> getAttributes() {
+		if (this instanceof SensornetExchangeOperator) {
+			return this.getLeftChild().getAttributes();
+		}
+		return this.getLogicalOperator().getAttributes();
+	}
+
+	//delegate
+	public List<Expression> getExpressions() {
+		return this.getLogicalOperator().getExpressions();	
+	}
+	
+	//delegate
+	public boolean isRecursive() {
+		return this.getLogicalOperator().isRecursive();
+	}
+
 }
