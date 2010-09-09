@@ -64,7 +64,7 @@ import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 public class Dispatcher {
 
-	private static Logger logger = 
+	private Logger logger = 
 		Logger.getLogger(Dispatcher.class.getName());
 	
 	private Metadata _schema;

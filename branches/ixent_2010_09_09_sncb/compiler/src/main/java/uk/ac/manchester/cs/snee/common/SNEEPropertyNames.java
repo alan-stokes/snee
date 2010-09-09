@@ -143,7 +143,16 @@ public final class SNEEPropertyNames {
 	 */	
 	public static String INPUTS_UNITS_FILE =
 		"units_file";
+	
+	/**
+	 * The root TinyOS directory.
+	 */
+	public static String SNCB_TINYOS_ROOT = "sncb.tinyos_root";
 
+	/**
+	 * Flag to determine whether individual images or a single image is sent to WSN nodes.
+	 */
+	public static String SNCB_GENERATE_COMBINED_IMAGE = "sncb.generate_combined_image";
 }
 
 

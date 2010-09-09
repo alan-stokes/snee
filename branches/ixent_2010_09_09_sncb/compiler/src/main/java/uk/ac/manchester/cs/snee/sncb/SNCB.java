@@ -11,8 +11,7 @@ public interface SNCB {
 	public void init();
 	
 	public void register(SensorNetworkQueryPlan qep) 
-	throws OptimizationException, CodeGenerationException, 
-	SchemaMetadataException, TypeMappingException;
+	throws SNCBException;
 	
 	public void deregister();
 	

@@ -34,11 +34,16 @@
 
 package uk.ac.manchester.cs.snee.common;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
@@ -62,12 +67,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.sncb.tos.Template;
 
-/**
- * Provides utility methods
- * 
- * @author Christian Brenninkmeijer
- */
+
 public class Utils {
 
 	static Logger logger = Logger.getLogger(Utils.class.getName());
@@ -322,5 +324,55 @@ public class Utils {
 //			return fileName;
 //		}
 //	}
+	
+	public static <T> T[] concat(T[] first, T[] second) {
+		  T[] result = Arrays.copyOf(first, first.length + second.length);
+		  System.arraycopy(second, 0, result, first.length, second.length);
+		  return result;
+		}
+	
+	/**
+	 * Runs an external program. Waits until it has finished executing.
+	 * @param progName
+	 * @param params
+	 * @param env
+	 * @throws IOException
+	 */
+	public static void runExternalProgram(String progName, String[] params, String[] env) throws IOException {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER runExternalProgram()");
+		final Runtime rt = Runtime.getRuntime();
+		String cmdarray[] = concat(new String[]{progName}, params);
+		Process proc = rt.exec(cmdarray, env, new File(System.getProperty("user.dir")));
+		logger.info("Command array="+Arrays.toString(cmdarray));
+		logger.info("Environment="+Arrays.toString(env));
+		
+	    final InputStream stderr = proc.getErrorStream();
+	    final InputStreamReader isr = new InputStreamReader(stderr);
+	    final BufferedReader br = new BufferedReader(isr);
+	    String line = null;
 
+	    while ((line = br.readLine()) != null) {
+	    	logger.warn(line);
+	    	System.err.println(line);
+	    }
+	    if (logger.isDebugEnabled())
+			logger.debug("RETURN runExternalProgram()");
+	}
+
+	/**
+	 * Given a resource in the class loader search path, returns an absolute path to this resource.
+	 * @param relativeResourcePath
+	 * @return
+	 */
+	public static String getResourcePath(String relativeResourcePath) {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getResourcePath()");
+		URL url = Template.class.getClassLoader().getResource(relativeResourcePath);
+		File file = new File(url.getFile());
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getResourcePath()");		
+		return file.toString();
+	}
+	
 }
