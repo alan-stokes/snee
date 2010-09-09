@@ -49,6 +49,9 @@
      	<column name="timestamp">
      		<type class="timestamp"/>
      	</column>
+         <column name="stream-name">
+          	<type class ="string"/>
+         </column>
          <column name="floatAttr">
           	<type class ="float"/>
          </column>
@@ -57,9 +60,6 @@
          </column>
          <column name="boolAttr">
           	<type class ="boolean"/>
-         </column>
-         <column name="stringAttr">
-          	<type class ="string"/>
          </column>
          <column name="decAttr">
           	<type class ="decimal"/>

@@ -43,7 +43,7 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 					"\t\"query statement\"\n" +
 					"\t\"query duration in seconds\"\n");
 			//XXX: Use default query
-			query = "SELECT * FROM HerneBay_Tide;";
+			query = "SELECT * FROM PushStream;";
 			duration = Long.valueOf("20");
 //			System.exit(1);
 		} else {	
