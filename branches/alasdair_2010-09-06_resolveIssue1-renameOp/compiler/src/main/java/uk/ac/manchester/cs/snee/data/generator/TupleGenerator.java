@@ -36,10 +36,9 @@
 package uk.ac.manchester.cs.snee.data.generator;
 
 import java.math.BigDecimal;
-import java.util.Map;
+import java.util.List;
 import java.util.Random;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
@@ -55,7 +54,7 @@ public class TupleGenerator {
 
 	Logger logger = Logger.getLogger(TupleGenerator.class.getName());
 	private String _streamName;
-	private Map<String, AttributeType> _columns;
+	private List<Attribute> _columns;
 	
 	public TupleGenerator(ExtentMetadata stream) {
 		if (logger.isDebugEnabled()) {
@@ -77,19 +76,10 @@ public class TupleGenerator {
 			logger.debug("ENTER generateTuple() with index " + index);
 		}
 		Tuple tuple = new Tuple();
-		for (String attrName : _columns.keySet()) {
-			AttributeType attrType = _columns.get(attrName);
-			try {
-				EvaluatorAttribute field = 
-					generateField(attrName, attrType);
-				tuple.addAttribute(field);
-			} catch (SNEEException e) {
-				if (logger.isEnabledFor(Level.WARN)) {
-					logger.warn("Unknown data type \"" + 
-							attrType + "\". Ignored.");
-				}
-				throw e;
-			}
+		for (Attribute attr : _columns) {
+			EvaluatorAttribute field = 
+				generateField(attr);
+			tuple.addAttribute(field);
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN generateTuple() with " + _streamName + 
@@ -98,13 +88,13 @@ public class TupleGenerator {
 		return tuple;
 	}
 	
-	private EvaluatorAttribute generateField(String attrName, 
-			AttributeType attrType) 
-	throws SNEEException, TypeMappingException, SchemaMetadataException
+	private EvaluatorAttribute generateField(Attribute attr) 
+	throws SchemaMetadataException, SNEEException 
 	{
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER generateField() with attrName " + 
-					attrName + " attrType " + attrType);
+			logger.trace("ENTER generateField() with attr " + 
+					attr);
+		AttributeType attrType = attr.getType();
 		Random random = new Random();
 		Object value = null;
 		if (attrType.getName().equals("boolean")) {
@@ -125,9 +115,7 @@ public class TupleGenerator {
 			throw new SNEEException(message);
 		}
 		EvaluatorAttribute evalAttr = 
-			new EvaluatorAttribute(
-					new Attribute(_streamName, attrName, attrType), 
-					value);
+			new EvaluatorAttribute(attr, value);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN generateField() with " + evalAttr);
 		return evalAttr;

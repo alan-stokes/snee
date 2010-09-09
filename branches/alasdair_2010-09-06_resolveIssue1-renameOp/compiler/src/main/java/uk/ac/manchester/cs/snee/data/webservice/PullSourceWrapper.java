@@ -205,16 +205,19 @@ public class PullSourceWrapper {
 		} else if (schemaFormatURI.equals("http://java.sun.com/xml/ns/jdbc")) {
 			schemaParser = new WrsSchemaParser(schemaDoc, _types);
 		} else {
-			String msg = "Unknown schema definition format " + schemaFormatURI;
+			String msg = "Unknown schema definition format " + 
+				schemaFormatURI;
 			logger.warn(msg);
 			throw new SchemaMetadataException(msg);
 		}
 		String extentName = schemaParser.getExtentName();
-		Map<String, AttributeType> attributes = schemaParser.getColumns();
+		List<Attribute> attributes = 
+			schemaParser.getColumns(extentName);
 		extentMetadata  = new ExtentMetadata(extentName, attributes, 
 				ExtentType.PUSHED);
 		if (logger.isTraceEnabled())
-			logger.trace("RETURN extractSchema() with " + extentMetadata);
+			logger.trace("RETURN extractSchema() with " + 
+					extentMetadata);
 		return extentMetadata;
 	}
 

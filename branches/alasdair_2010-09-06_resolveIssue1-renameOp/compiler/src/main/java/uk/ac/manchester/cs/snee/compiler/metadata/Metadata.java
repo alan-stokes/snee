@@ -60,6 +60,7 @@ import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
@@ -243,11 +244,12 @@ public class Metadata {
 		}
 		String extentName = element.getAttribute("name").toLowerCase();
 		logger.trace("extentName="+extentName);
-		Map<String, AttributeType> attributes = 
-			parseAttributes(element.getElementsByTagName("column"));
+		List<Attribute> attributes = 
+			parseAttributes(element.getElementsByTagName("column"),
+					extentName);
 		if (extentType == ExtentType.SENSED) {
-			attributes.put("id", idType);
-			attributes.put("time", timeType);
+			attributes.add(0, new Attribute(extentName, "id", idType));
+			attributes.add(1, new Attribute(extentName, "time", timeType));
 		}
 		ExtentMetadata extent =
 			new ExtentMetadata(extentName, attributes, extentType);
@@ -257,13 +259,14 @@ public class Metadata {
 		}
 	}
 
-	private Map<String, AttributeType> parseAttributes(NodeList columns) 
+	private List<Attribute> parseAttributes(NodeList columns, 
+			String extentName) 
 	throws TypeMappingException, SchemaMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER parseAttributes() number of columns " + 
 					columns.getLength());
-		Map<String,AttributeType> attributes = 
-			new HashMap<String, AttributeType>();
+		List<Attribute> attributes =
+			new ArrayList<Attribute>();
 		for (int i = 0; i < columns.getLength(); i++) {
 			Element tabElement = (Element) columns.item(i);
 			String attributeName = 
@@ -279,7 +282,7 @@ public class Metadata {
 			if (logger.isTraceEnabled()) 
 				logger.trace("Type = " + type);
 			type.setLength(((Element) xmlType.item(0)).getAttribute("length"));
-			attributes.put(attributeName, type);
+			attributes.add(new Attribute(extentName, attributeName, type));
 		}
 		if (logger.isTraceEnabled()) 
 			logger.trace("RETURN parseAttributes(), #attr=" + 

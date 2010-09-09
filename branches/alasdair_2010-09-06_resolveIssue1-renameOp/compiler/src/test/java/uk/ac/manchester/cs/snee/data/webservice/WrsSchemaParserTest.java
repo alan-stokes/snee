@@ -3,6 +3,7 @@ package uk.ac.manchester.cs.snee.data.webservice;
 import static org.junit.Assert.*;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -12,6 +13,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
@@ -60,12 +62,21 @@ public class WrsSchemaParserTest {
 	@Test
 	public void testGetColumns() 
 	throws TypeMappingException, SchemaMetadataException {
-		Map<String, AttributeType> columns = parser.getColumns();
+		List<Attribute> columns = 
+			parser.getColumns("envdata_lymington_met");
 		assertEquals(7, columns.size());
-		assertEquals("integer", columns.get("Timestamp").getName());
-		assertEquals("timestamp", columns.get("DateTime").getName());
-		assertEquals("float", columns.get("AirPressure").getName());
-		assertEquals("decimal", columns.get("WindSpeed").getName());
+		Attribute attr = columns.get(0);
+		assertEquals("Timestamp", attr.getName());
+		assertEquals("integer", attr.getType().getName());
+		attr = columns.get(1);
+		assertEquals("DateTime", attr.getName());
+		assertEquals("timestamp", attr.getType().getName());
+		attr = columns.get(2);
+		assertEquals("AirPressure", attr.getName());
+		assertEquals("float", attr.getType().getName());
+		attr = columns.get(3);
+		assertEquals("WindSpeed", attr.getName());
+		assertEquals("decimal", attr.getType().getName());
 	}
 
 }
