@@ -32,6 +32,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReade
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlLexer;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import antlr.CommonAST;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -56,7 +57,7 @@ public class TranslatorTest {
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException {
+	SNEEDataSourceException, CostParametersException, SNCBException {
 		Properties props = new Properties();
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");

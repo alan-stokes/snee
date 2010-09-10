@@ -11,6 +11,7 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
@@ -19,18 +20,19 @@ public class TinyOS_SNCB implements SNCB {
 	private static Logger logger = 
 		Logger.getLogger(TinyOS_SNCB.class.getName());
 	
-	TinyOSGenerator codeGenerator;
+	private SensorNetworkSourceMetadata metadata;
 	
-	String tinyOSEnvVars[];
+	private String tinyOSEnvVars[];
 
 	private boolean combinedImage = false;
 
 	
-	public TinyOS_SNCB() //move params to within QEP
+	public TinyOS_SNCB(SensorNetworkSourceMetadata metadata)
 	throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER TinyOS_SNCB()");
-		try {			
+		try {
+			this.metadata = metadata;
 			String tosRootDir = SNEEProperties.getSetting(
 					SNEEPropertyNames.SNCB_TINYOS_ROOT);
 			System.out.println(tosRootDir);
@@ -103,7 +105,7 @@ public class TinyOS_SNCB implements SNCB {
 		boolean includeDeluge = false;
 		boolean debugLeds = true;
 		boolean showLocalTime = false;
-		codeGenerator = new TinyOSGenerator(tosVersion, tossimFlag, 
+		TinyOSGenerator codeGenerator = new TinyOSGenerator(tosVersion, tossimFlag, 
 			    targetName, combinedImage, queryOutputDir, costParams, controlRadioOff,
 			    enablePrintf, useStartUpProtocol, enableLeds,
 			    usePowerManagement, deliverLast, adjustRadioPower,

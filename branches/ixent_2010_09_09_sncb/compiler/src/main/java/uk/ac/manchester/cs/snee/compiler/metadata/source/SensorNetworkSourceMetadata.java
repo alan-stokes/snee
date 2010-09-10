@@ -46,6 +46,9 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReader;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.SNCB;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
+import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB;
 
 /**
  * Maintains metadata required about a sensor network capable of
@@ -56,25 +59,48 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 	Logger logger = 
 		Logger.getLogger(SensorNetworkSourceMetadata.class.getName());
 
-//	//TODO: Ixent doesn't understand what this is for.
-//	private int _cardinality = 100;
-
+	/**
+	 * Source sites in the sensor network.
+	 */
 	private int[] _sourceNodes;
 
-	//Sink node id of the sensor network
+	/**
+	 * Sink node id of the sensor network
+	 */
 	private int[] _gateways;
 
-	//Sensor Network topology
+	/**
+	 * Sensor Network topology
+	 */
 	private Topology _topology;
 	
-	//Maps extent names to source nodes
+	/**
+	 * Maps extent names to source nodes
+	 */
 	private TreeMap<String,int[]> _extentToSitesMapping = 
 		new TreeMap<String,int[]>(); 
 	
+	/**
+	 * The Sensor Network Connectivity bridge to interface with this sensor network.
+	 */
+	private SNCB sncb;	
+		
+	/**
+	 * Constructor for Sensor Network Metadata.
+	 * @param sourceName
+	 * @param extentNames
+	 * @param xml
+	 * @param topFile
+	 * @param resFile
+	 * @param gateways
+	 * @throws SourceMetadataException
+	 * @throws TopologyReaderException
+	 * @throws SNCBException 
+	 */
 	public SensorNetworkSourceMetadata(String sourceName, 
 			List<String> extentNames, Element xml,
 			String topFile, String resFile, int[] gateways) 
-	throws SourceMetadataException, TopologyReaderException {
+	throws SourceMetadataException, TopologyReaderException, SNCBException {
 		super(sourceName, extentNames, SourceType.SENSOR_NETWORK);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SensorNetworkSourceMetadata()");
@@ -91,31 +117,14 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 		this._gateways = gateways;
 		this._topology = TopologyReader.readNetworkTopology(topFile, resFile);
 		setSourceSites(xml.getElementsByTagName("extent"));
-		verifyGateways();
+		validateGateways();
+		this.sncb = new TinyOS_SNCB(this); //TODO: In future, we could have different kinds of SNCBs here.
 		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SensorNetworkSourceMetadata()");
 	}
-
-//	public boolean equals(Object ob) {
-//		boolean result = false;
-//		if (ob instanceof SensorNetworkSourceMetadata) {
-//			SensorNetworkSourceMetadata source = (SensorNetworkSourceMetadata) ob;
-//			//XXX: Not necessarily a complete check of source metadata equality
-//			/*
-//			 * Equality assumed if source refer to the same source type
-//			 * and the same extent.
-//			 */
-//			if (logger.isTraceEnabled())
-//				logger.trace("Testing " + source + "\nwith " + this);
-//			if (source.getName().equals(_name) &&
-//					source.getSourceType() == _sourceType)
-//					result = true;
-//		}
-//		return result;
-//	}
 	
-	private void verifyGateways() throws SourceMetadataException {
+	private void validateGateways() throws SourceMetadataException {
 
 		for (int i=0; i<_gateways.length; i++) {
 			int g = _gateways[i];
@@ -125,7 +134,6 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 						"the topology file.");
 			}
 		}
-		
 	}
 
 	/**
@@ -166,32 +174,13 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 			logger.trace("sites text " + sourceSitesText);
 		_sourceNodes = SourceMetadataUtils.convertNodes(
 				sourceSitesText.toString());
-//		_cardinality = _sourceNodes.length;
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN setSourceSites()");
 	}
 
-
-//	/**
-//	 * Count the number of tokens.
-//	 * @param tokens
-//	 * @return
-//	 * @throws SourceMetadataException No tokens exist
-//	 */
-//
-//	protected void setCardinality (int cardinality)
-//	{
-//		_cardinality = cardinality;
-//	}
-//
-//	public int getCardinality() {
-//		return _cardinality;
-//	}
-
 	@Override
 	public String toString() {
 		StringBuffer s = new StringBuffer(super.toString());
-//		s.append("   Cardinality: " + _cardinality);
 		return s.toString();
 	}
 
@@ -225,4 +214,7 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 		return this._gateways[0];
 	}
 	
+	public SNCB getSNCB() {
+		return this.sncb;
+	}
 }

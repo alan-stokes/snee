@@ -68,6 +68,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 /**
@@ -227,6 +228,10 @@ public class SNEEController implements SNEE {
 			String msg = "Problem reading cost parameters file";
 			logger.fatal(msg, e);
 			throw new SNEEException(msg, e);
+		} catch (SNCBException e) {
+			String msg = "Problem intialising sensor network";
+			logger.fatal(msg, e);
+			throw new SNEEException(msg, e);
 		}
 		
 		logger.info("SNEE configured");
@@ -239,7 +244,7 @@ public class SNEEController implements SNEE {
 	TypeMappingException, UnsupportedAttributeTypeException, 
 	SourceMetadataException, SNEEConfigurationException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException 
+	SNEEDataSourceException, CostParametersException, SNCBException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseSchema()");

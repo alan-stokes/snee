@@ -60,6 +60,7 @@ import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
@@ -77,6 +78,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.UDPSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.WebServiceSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.data.webservice.PullSourceWrapper;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public class Metadata {
 
@@ -119,13 +121,14 @@ public class Metadata {
 	 * @throws MalformedURLException 
 	 * @throws SNEEDataSourceException 
 	 * @throws CostParametersException 
+	 * @throws SNCBException 
 	 */
 	public Metadata() 
 	throws TypeMappingException, SchemaMetadataException, 
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException {
+	SNEEDataSourceException, CostParametersException, SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER Metadata()");
 		logger.trace("Processing types.");
@@ -291,7 +294,7 @@ public class Metadata {
 	throws MetadataException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
 	SNEEDataSourceException, SchemaMetadataException, 
-	TypeMappingException 
+	TypeMappingException, SNCBException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER processPhysicalSchema() with " +
@@ -313,7 +316,7 @@ public class Metadata {
 
 	private void addSensorNetworkSources(NodeList wsnSources) 
 	throws MetadataException, SourceMetadataException, 
-	TopologyReaderException {
+	TopologyReaderException, SNCBException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER addSensorNetworkSources() #=" + 
 					wsnSources.getLength());
@@ -325,11 +328,11 @@ public class Metadata {
 			logger.trace("WSN sourceName="+sourceName);
 			Node topologyElem = wsnElem.getElementsByTagName("topology").
 			item(0).getFirstChild();
-			String topologyFile = topologyElem.getNodeValue();
+			String topologyFile = Utils.getResourcePath(topologyElem.getNodeValue());
 			logger.trace("topologyFile="+topologyFile);
 			Node resElem = wsnElem.getElementsByTagName(
 			"site-resources").item(0).getFirstChild();
-			String resFile = resElem.getNodeValue();
+			String resFile = Utils.getResourcePath(resElem.getNodeValue());
 			logger.trace("resourcesFile="+resFile);
 			Node gatewaysElem = wsnElem.getElementsByTagName("gateways").
 			item(0).getFirstChild();

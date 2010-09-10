@@ -26,7 +26,7 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 	}
 
 	/**
-	 * The main entry point for the SNEE controller
+	 * The main entry point for the SNEE in-network client.
 	 * @param args
 	 * @throws IOException
 	 * @throws InterruptedException 

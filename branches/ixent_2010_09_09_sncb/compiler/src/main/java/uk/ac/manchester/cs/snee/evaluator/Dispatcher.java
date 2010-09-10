@@ -139,7 +139,7 @@ public class Dispatcher {
 				String outputDir = SNEEProperties.getSetting(
 						SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
 						sep + queryPlan.getQueryName() + sep;
-				SNCB sncb = new TinyOS_SNCB(); //TODO: move this to before query compilation
+				SNCB sncb = snQueryPlan.getSNCB();
 				sncb.register(snQueryPlan, outputDir, costParams);
 				sncb.start();
 				System.out.println("Code generation complete");
