@@ -40,7 +40,7 @@ public class TinyOS_SNCB implements SNCB {
 			this.tinyOSEnvVars = new String[] {
 					"TOSROOT="+tosRootDir,
 					"PATH="+System.getenv("PATH")+":"+tosRootDir+
-						"/bin:/opt/local/bin",
+						"/bin:/opt/local/bin:/Library/Java/Home/bin",
 					"TOSDIR="+tosRootDir+"/tos",
 					"PYTHONPATH=.:"+tosRootDir+"/support/sdk/python",
 					"MAKERULES="+tosRootDir+"/support/make/Makerules"};
@@ -82,10 +82,12 @@ public class TinyOS_SNCB implements SNCB {
 		try {			
 			logger.trace("Generating TinyOS/nesC code for query plan.");
 			generateNesCCode(qep, queryOutputDir, costParams);
-			//TODO: need to set up plumbing for query result collection (using mig?)
 			logger.trace("Compiling TinyOS/nesC code into executable images.");
 			compileNesCCode(queryOutputDir);
-			//TODO: invoke OTA functionality to disseminate query plan
+			logger.trace("Disseminating Query Plan images");
+			////disseminateQueryPlanImages();
+			logger.trace("Setting up result collector");
+			////setUpResultCollector(qep, queryOutputDir);
 		} catch (Exception e) {
 			logger.warn(e);
 			throw new SNCBException(e);
@@ -93,7 +95,7 @@ public class TinyOS_SNCB implements SNCB {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN register()");
 	}
-	
+
 	private void generateNesCCode(SensorNetworkQueryPlan qep, String 
 	queryOutputDir, CostParameters costParams) throws IOException, 
 	SchemaMetadataException, TypeMappingException, OptimizationException,
@@ -134,6 +136,28 @@ public class TinyOS_SNCB implements SNCB {
 			logger.trace("RETURN compileNesCCode()");
 	}
 
+	
+	private void setUpResultCollector(SensorNetworkQueryPlan qep, 
+	String queryOutputDir) throws IOException {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER setUpResultCollector()");
+		//TODO: need to set up plumbing for query result collection (using mig?)
+		String nescOutputDir = System.getProperty("user.dir")+"/"+
+		queryOutputDir+"tmotesky_t2";
+		String nesCHeaderFile = nescOutputDir+"/mote"+qep.getGateway()+"/QueryPlan.h";
+		System.out.println(nesCHeaderFile);
+		String outputJavaFile = System.getProperty("user.dir")+"/"+queryOutputDir+"DeliverMessage.java";
+		String params[] = {"java", "-target=null", "-java-classname=DeliverMessage",
+				nesCHeaderFile, "DeliverMessage", "-o "+outputJavaFile};
+		Utils.runExternalProgram("mig", params, this.tinyOSEnvVars);
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN setUpResultCollector()");	
+	}
+	
+	private void disseminateQueryPlanImages() {
+		//TODO: invoke OTA functionality to disseminate query plan
+	}
+	
 	@Override
 	public void start() {
 		if (logger.isDebugEnabled())

@@ -95,12 +95,15 @@ public class SNEEController implements SNEE {
 	 * The evaluator object for running queries
 	 */
 	private Dispatcher _dispatcher;
-	
+
+	/**
+	 * Stores the results for each registered query
+	 */
 	private Map<Integer, ResultStore> _queryResults = 
 		new HashMap<Integer, ResultStore>();
 	
 	/**
-	 * Stores the query plan for the registered query
+	 * Stores the query plan for each registered query
 	 */
 	private Map<Integer, QueryExecutionPlan> _queryPlans = 
 		new HashMap<Integer, QueryExecutionPlan>();
