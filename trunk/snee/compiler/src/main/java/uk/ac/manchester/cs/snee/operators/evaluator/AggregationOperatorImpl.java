@@ -9,13 +9,14 @@ import java.util.Observable;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
-import uk.ac.manchester.cs.snee.evaluator.types.Field;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
@@ -158,7 +159,7 @@ extends EvaluatorPhysicalOperator {
 	}
 
 	private void processOutput(Object observed, List<Output> result)
-	throws SNEEException {
+	throws SNEEException, SchemaMetadataException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER processOutput() with " + observed);
 		}
@@ -201,7 +202,7 @@ extends EvaluatorPhysicalOperator {
 
 					// Create result window
 					Window newWindow = createResultWindow(curWindow,
-							agType, da, agValue);
+							agType, da, agValue, da.getLocalName());
 					result.add(newWindow);
 					if (logger.isTraceEnabled()) {
 						logger.trace("Computed aggregate tuple: " + 
@@ -227,23 +228,30 @@ extends EvaluatorPhysicalOperator {
 	}
 
 	private Window createResultWindow(Window curWindow, 
-			AggregationType agType, DataAttribute da, Number agValue) {
+			AggregationType agType, DataAttribute da, Number agValue, 
+			String extentName) 
+	throws SchemaMetadataException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER createResultWindow()");
 		}
 		List<Tuple> tuples = new ArrayList<Tuple>();
 		/*
-		 *  Window only gets a value if the result of the aggregate is not null.
-		 *  Aggregate will result in null for example when the average is computed
-		 *  over an empty window. Other empty windows can generate meaningful answers,
-		 *  for example the count.
+		 *  Window only gets a value if the result of the aggregate is 
+		 *  not null. Aggregate will result in null for example when 
+		 *  the average is computed over an empty window. Other empty 
+		 *  windows can generate meaningful answers,for example the 
+		 *  count.
 		 */
 		if (agValue != null) {
 			String agName = agType.name()+"("+ da.getAttributeName()+")";
-			Field field = new Field(agName, da.getType(), agValue);
-			Map<String,Field> fields = new HashMap<String,Field>();
-			fields.put(agName, field);
-			Tuple tuple = new Tuple(fields);
+			Attribute attr = 
+				new Attribute(extentName, agName, da.getType());
+			EvaluatorAttribute evalAttr = 
+				new EvaluatorAttribute(attr, agValue);
+			List<EvaluatorAttribute> attributes = 
+				new ArrayList<EvaluatorAttribute>();
+			attributes.add(evalAttr);
+			Tuple tuple = new Tuple(attributes);
 			tuples.add(tuple);
 		}
 		Window newWindow = new Window(tuples);
@@ -304,7 +312,7 @@ extends EvaluatorPhysicalOperator {
 		Integer average; 
 		int count=0,totalValue=0;
 		for (Tuple tuple : tuples) {
-			Integer value = (Integer) tuple.getValue(attributeName);
+			Integer value = (Integer) tuple.getAttributeValue(attributeName);
 			totalValue += value;
 			count++;
 		}

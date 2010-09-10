@@ -2,8 +2,8 @@ package uk.ac.manchester.cs.snee.data.webservice;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -16,6 +16,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
@@ -72,12 +73,12 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 		return name;
 	}
 	
-	public Map<String, AttributeType> getColumns() 
+	public List<Attribute> getColumns(String extentName) 
 	throws TypeMappingException, SchemaMetadataException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getColumns()");
-		Map<String, AttributeType> attributes = 
-			new HashMap<String, AttributeType>();
+		List<Attribute> attributes = 
+			new ArrayList<Attribute>();
 		NodeList columns = _root.getElementsByTagName("column");	
 		for (int i = 0; i < columns.getLength(); i++) {
 			Element column = (Element) columns.item(i);
@@ -87,7 +88,9 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 			String sqlType = 
 				nameTypeElement.item(0).getFirstChild().getNodeValue();
 			AttributeType type = inferType(new Integer(sqlType));
-			attributes.put(columnName, type);
+			Attribute attr = 
+				new Attribute(extentName, columnName, type);
+			attributes.add(attr);
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getColumns(), number of columns " + attributes.size());

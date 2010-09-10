@@ -20,7 +20,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
-import uk.ac.manchester.cs.snee.evaluator.types.Field;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.operators.evaluator.ProjectOperatorImpl;
 import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
@@ -35,12 +35,16 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 				getResource("etc/log4j.properties"));
 	}
 
-	final Expression mockExpression = createMock(Expression.class);
+	final Expression mockExpression = 
+		createMock(Expression.class);
 	final Tuple mockTuple = createMock(Tuple.class);
-	final ProjectOperator mockProjOp = createMock(ProjectOperator.class);
-	final List<Attribute> mockQPAttributesList = createMock(List.class);
+	final ProjectOperator mockProjOp = 
+		createMock(ProjectOperator.class);
+	final List<Attribute> mockQPAttributesList = 
+		createMock(List.class);
 	final Attribute mockAttr = createMock(Attribute.class);
-	final Field mockField = createMock(Field.class);
+	final EvaluatorAttribute mockField = 
+		createMock(EvaluatorAttribute.class);
 //	final List<Attribute> mockAttrList = createMock(List.class);
 	
 	@Before
@@ -59,11 +63,12 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		/*
 		 * Record behaviour
 		 */
-		expect(mockExpression.getRequiredAttributes()).andReturn(mockQPAttributesList);
+		expect(mockExpression.getRequiredAttributes()).
+			andReturn(mockQPAttributesList);
 		expect(mockQPAttributesList.get(0)).andReturn(mockAttr);
 		expect(mockAttr.getAttributeName()).andReturn("attrName");
-		expect(mockAttr.getLocalName()).andReturn("extent");
-		expect(mockTuple.getField("extent.attrName")).andThrow(new SNEEException("Non existent field"));
+		expect(mockTuple.getAttribute("attrName")).
+			andThrow(new SNEEException("Non existent field"));
 		//Test
 		replayAll();
 		ProjectOperatorImpl op = new ProjectOperatorImpl(mockProjOp);
@@ -75,15 +80,17 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 	public void testEvaluateSingleExpression_validField() 
 	throws SNEEException, SchemaMetadataException {
 		// Record behaviour
-		expect(mockExpression.getRequiredAttributes()).andReturn(mockQPAttributesList);
+		expect(mockExpression.getRequiredAttributes()).
+			andReturn(mockQPAttributesList);
 		expect(mockQPAttributesList.get(0)).andReturn(mockAttr);
 		expect(mockAttr.getAttributeName()).andReturn("attrName");
-		expect(mockAttr.getLocalName()).andReturn("extent");
-		expect(mockTuple.getField("extent.attrName")).andReturn(mockField);
+		expect(mockTuple.getAttribute("attrName")).
+			andReturn(mockField);
 		//Test
 		replayAll();
 		ProjectOperatorImpl op = new ProjectOperatorImpl(mockProjOp);
-		Field field = op.evaluateSingleExpression(mockExpression, mockTuple);
+		EvaluatorAttribute field = 
+			op.evaluateSingleExpression(mockExpression, mockTuple);
 		assertEquals(mockField, field);
 		verifyAll();
 	}

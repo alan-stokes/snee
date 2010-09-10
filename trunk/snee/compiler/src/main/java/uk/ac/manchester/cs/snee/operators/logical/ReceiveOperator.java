@@ -50,12 +50,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 
-/**
- * WARNING: Copied from Acquire.
- * May contain things not correct for receive.
- * 
- * @author Christian Brenninkmeijer, Ixent Galpin  
- */
 public class ReceiveOperator extends LogicalOperatorImpl {
 
 	/** Standard Java Logger. */
@@ -165,16 +159,16 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 //		outputAttributes.add(new IDAttribute(localName, 
 //				_types.getType("integer")));
 		receivedAttributes = new ArrayList<DataAttribute>();
-		Map<String, AttributeType> typeMap = 
+		List<uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute> typeMap = 
 			sourceMetaData.getAttributes();
 		String[] attributeNames = new String[1];
-		attributeNames = typeMap.keySet().toArray(attributeNames);
+		attributeNames = extractAttributeNames(typeMap);
 		DataAttribute attribute;
 		int numAttributes = typeMap.size();
 		for (int i = 0; i < numAttributes; i++) {
 			if (!(attributeNames[i].equals(Constants.ACQUIRE_TIME) 
 					|| attributeNames[i].equals(Constants.ACQUIRE_ID))) {
-				AttributeType type = typeMap.get(attributeNames[i]);
+				AttributeType type = typeMap.get(i).getType();
 				attribute = new DataAttribute(
 						localName, attributeNames[i], type);
 				outputAttributes.add(attribute);
@@ -185,6 +179,18 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 		copyExpressions(outputAttributes);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN addMetaDataInfo()");
+	}
+
+	private String[] extractAttributeNames(
+			List<uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute> attributes) {
+		String[] attrNames = new String[attributes.size()];
+		int index = 0;
+		for (uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute attr : attributes) {
+			String attrName = attr.getName();
+			attrNames[index] = attrName;
+			index++;
+		}
+		return attrNames;
 	}
 
 	//    /**

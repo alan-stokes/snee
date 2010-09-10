@@ -42,7 +42,8 @@ public class ReceiveTimeoutException extends Exception {
 	private Exception exception;
 	private int timeoutPeriod;
 	
-	public ReceiveTimeoutException(SocketTimeoutException ex, int soTimeout) {
+	public ReceiveTimeoutException(SocketTimeoutException ex, 
+			int soTimeout) {
 		super(ex);
 		this.setException(ex);
 		setTimeoutPeriod(soTimeout);

@@ -3,6 +3,7 @@ package uk.ac.manchester.cs.snee.data.webservice;
 import static org.junit.Assert.assertEquals;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -12,6 +13,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
@@ -59,12 +61,18 @@ public class OgsadaiSchemaParserTest {
 	@Test
 	public void testGetColumns() 
 	throws TypeMappingException, SchemaMetadataException {
-		Map<String, AttributeType> columns = parser.getColumns();
+		List<Attribute> columns =
+			parser.getColumns("envdata_folkestone");
 		assertEquals(7, columns.size());
-		assertEquals("integer", 
-				columns.get("timestamp").getName());
-		assertEquals("string", columns.get("error_code").getName());
-		assertEquals("decimal", columns.get("val1").getName());
+		Attribute attr = columns.get(0);
+		assertEquals("timestamp", attr.getName());
+		assertEquals("integer", attr.getType().getName());
+		attr = columns.get(2);
+		assertEquals("error_code", attr.getName());
+		assertEquals("string", attr.getType().getName());
+		attr = columns.get(5);
+		assertEquals("val1", attr.getName());
+		assertEquals("decimal", attr.getType().getName());
 	}
 
 }

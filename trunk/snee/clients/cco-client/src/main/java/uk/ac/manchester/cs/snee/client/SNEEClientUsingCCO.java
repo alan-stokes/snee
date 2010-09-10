@@ -1,9 +1,9 @@
 package uk.ac.manchester.cs.snee.client;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -12,12 +12,9 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 
 public class SNEEClientUsingCCO extends SNEEClient {
@@ -56,17 +53,15 @@ public class SNEEClientUsingCCO extends SNEEClient {
 	private void displayExtentSchema(String extentName) 
 	throws MetadataException 
 	{
-		Iterator<String> it;
 		ExtentMetadata extent = 
 			controller.getExtentDetails(extentName);
-		Map<String, AttributeType> attributes = extent.getAttributes();
-		Set<String> attrNames = attributes.keySet();
-		it = attrNames.iterator();
+		List<Attribute> attributes = extent.getAttributes();
 		System.out.println("Attributes for " + extentName + ":");
-		while (it.hasNext()) {
-			String attrName = it.next();
-			AttributeType attr = attributes.get(attrName);
-			System.out.print("\t" + attrName + ": " + attr.getName() + "\n");
+		for (Attribute attr : attributes) {
+			String attrName = attr.getAttributeLabel();
+			AttributeType attrType = attr.getType();
+			System.out.print("\t" + attrName + ": " + 
+					attrType.getName() + "\n");
 		}
 		System.out.println();
 	}

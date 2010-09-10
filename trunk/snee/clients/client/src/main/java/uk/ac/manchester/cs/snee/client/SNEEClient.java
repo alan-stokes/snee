@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
+import java.util.Date;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -13,12 +13,11 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.MetadataException;
+import uk.ac.manchester.cs.snee.ResultStoreImpl;
 import uk.ac.manchester.cs.snee.SNEE;
 import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEController;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.ResultStoreImpl;
-import uk.ac.manchester.cs.snee.StreamResultSet;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 
 public abstract class SNEEClient implements Observer {
@@ -68,11 +67,10 @@ public abstract class SNEEClient implements Observer {
 			printColumnHeadings(metaData, numCols);
 			while (rs.next()) {
 				StringBuffer buffer = new StringBuffer();
-				for (int i = 1; i < numCols; i++) {
-					buffer.append(getData(rs, metaData, i));
+				for (int i = 1; i <= numCols; i++) {
+					buffer.append(rs.getObject(i));
 					buffer.append("\t");
 				}
-				buffer.append(getData(rs, metaData, numCols));
 				System.out.println(buffer.toString());
 			}
 		}
@@ -84,38 +82,10 @@ public abstract class SNEEClient implements Observer {
 		StringBuffer buffer = new StringBuffer();
 		for (int i = 1; i <= numCols; i++) {
 			buffer.append(metaData.getColumnLabel(i));
+//			buffer.append(":" + metaData.getColumnTypeName(i));
 			buffer.append("\t");
 		}
 		System.out.println(buffer.toString());
-	}
-
-	private static Object getData(ResultSet resultSet,
-			ResultSetMetaData metaData, int index)
-			throws SQLException {
-		Object data;
-		switch (metaData.getColumnType(index)) {
-		case Types.BOOLEAN:
-			data = resultSet.getBoolean(index);
-			break;
-		case Types.DECIMAL:
-			data = resultSet.getBigDecimal(index);
-			break;
-		case Types.FLOAT:
-			data = resultSet.getFloat(index);
-			break;
-		case Types.INTEGER:
-			data = resultSet.getInt(index);
-			break;
-		case Types.TIMESTAMP:
-			data = resultSet.getTimestamp(index);
-			break;
-		case Types.VARCHAR:
-			data = resultSet.getString(index);
-			break;
-		default:
-			throw new SQLException();
-		}
-		return data;
 	}
 
 	public void update (Observable observation, Object arg) {
@@ -152,7 +122,7 @@ public abstract class SNEEClient implements Observer {
 		long endTime = (long) (startTime + (_duration * 1000));
 
 		System.out.println("Running query for " + _duration + 
-			" seconds.");
+			" seconds. Scheduled end time " + new Date(endTime));
 
 		ResultStoreImpl resultSet = 
 			(ResultStoreImpl) controller.getResultSet(queryId1);

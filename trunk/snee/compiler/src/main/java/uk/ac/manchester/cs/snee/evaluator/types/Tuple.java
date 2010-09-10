@@ -35,100 +35,220 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.evaluator.types;
 
-import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.Constants;
 
+//TODO: Link with Attribute class
 /**
- * Tuple is the class that encapsulates a tuple. A tuple consists of a set
- * of fields, where each field has a unique name attribute
+ * Tuple is the class that represents a tuple. A tuple consists of 
+ * a list of fields, where each field has a position and name attribute.
+ * The attributes always appear in the same order, so can be accessed
+ * by their attribute number.
  */
-public class Tuple implements Serializable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -4585575824334946852L;
+public class Tuple {
 
-//	Logger logger = Logger.getLogger(Tuple.class.getName());
+	private static Logger logger = 
+		Logger.getLogger(Tuple.class.getName());
+
+	private List<String> _attrNames = new ArrayList<String>();
+	private List<EvaluatorAttribute> _attrValues = new ArrayList<EvaluatorAttribute>();
 	
-	private Map<String,Field> _fields;
-
 	DateFormat dateFormat = 
 		new SimpleDateFormat(Constants.TIMESTAMP_FORMAT);
-
-	public Tuple (){
-		_fields = new HashMap<String,Field>();
-	}
 	
-	public Tuple(Map<String,Field> fields) {
-		_fields = fields;
-	}
-
-	public Map<String, Field> getFields(){
-		return _fields;
-	}
-
-	public void addField(Field field) throws SNEEException {
-		String fieldName = field.getName().toLowerCase();
-		if (_fields.containsKey(fieldName)) {
-//			logger.warn("Field " + fieldName + " already exists.");
-			throw new SNEEException("Field " + fieldName + " already exists.");
-		} else {
-			_fields.put(fieldName, field);
+	/**
+	 * Create an empty tuple.
+	 */
+	public Tuple() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER Tuple()");
 		}
-	}
-	
-	public void removeField(String fieldName) throws SNEEException {
-		if (_fields.containsKey(fieldName)) {
-			_fields.remove(fieldName);
-		} else {
-			throw new SNEEException("Unknown field name: " + fieldName);
-		}
-	}
-	
-	public Field getField(String fieldName) throws SNEEException{
-		if (_fields.containsKey(fieldName.toLowerCase())) {
-			return _fields.get(fieldName.toLowerCase());
-		} else {
-//			logger.warn("Unknown field name: " + fieldName);
-			throw new SNEEException("Unknown field name: " + fieldName);
-		}
-	}
-	
-	public Object getValue(String fieldName) throws SNEEException {
-		if (_fields.containsKey(fieldName.toLowerCase())) {
-			return _fields.get(fieldName.toLowerCase()).getData();
-		} else {
-//			logger.warn("Unknown field name: " + fieldName);
-			throw new SNEEException("Unknown field name: " + fieldName);
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN Tuple()");
 		}
 	}
 
-	public boolean containsField(String fieldName) {
-		if (_fields.containsKey(fieldName.toLowerCase())) {
-			return true;
-		} else {
-			return false;
+	/**
+	 * Create a tuple with the supplied attribute values.
+	 * 
+	 * @param attrValues values for the attributes of the tuple
+	 */
+	public Tuple(List<EvaluatorAttribute> attrValues) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER Tuple() with #attrs=" + 
+					attrValues.size());
 		}
+		_attrValues = attrValues;
+		for (EvaluatorAttribute attr : attrValues) {
+			_attrNames.add(attr.getName());
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN Tuple()");
+		}
+	}
+
+	/**
+	 * Retrieve the names of the attributes.
+	 * 
+	 * @return List of attribute names
+	 */
+	public List<String> getAttributeNames() {
+		return _attrNames;
+	}
+	
+	/**
+	 * Retrieve the <code>EvaluatorAttribute</code> objects
+	 * representing the attributes of the tuple.
+	 * 
+	 * @return List of <code>EvaluatorAttribute</code> objects
+	 */
+	public List<EvaluatorAttribute> getAttributeValues() {
+		return _attrValues;
+	}
+
+	/**
+	 * Add the supplied <code>EvaluatorAttribute</code> to the
+	 * tuple.
+	 * 
+	 * @param attr attribute to be added
+	 */
+	public void addAttribute(EvaluatorAttribute attr) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER addField() with " + attr);
+		}
+		String fieldName = attr.getName().toLowerCase();
+		_attrNames.add(fieldName);
+		_attrValues.add(attr);
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN addField()");
+		}
+	}
+	
+//	public void removeField(String fieldName) throws SNEEException {
+//		if (_fields.containsKey(fieldName)) {
+//			_fields.remove(fieldName);
+//		} else {
+//			throw new SNEEException("Unknown field name: " + fieldName);
+//		}
+//	}
+	
+	/**
+	 * Retrieve the field at the given index.
+	 * 
+	 * @param index column number to retrieve
+	 * @return field value for the column number
+	 * @throws SNEEException index is out of range
+	 */
+	public EvaluatorAttribute getAttribute(int index) 
+	throws SNEEException {
+		EvaluatorAttribute field;
+		try {
+			field = _attrValues.get(index);
+		} catch (IndexOutOfBoundsException e) {
+			String message = "Index out of range for tuple size. ";
+			logger.warn(message, e);
+			throw new SNEEException(message);
+		}
+		return field;
+	}
+	
+	/**
+	 * Retrieve the field of the first occurrence of the given 
+	 * field name.
+	 * 
+	 * @param fieldName name of the field to retrieve
+	 * @return field with the given field name
+	 * @throws SNEEException field name does not exist
+	 */
+	public EvaluatorAttribute getAttribute(String fieldName) 
+	throws SNEEException {
+		int index = findFieldIndex(fieldName);
+		return getAttribute(index);
+	}
+	
+	/**
+	 * Retrieve the data value of the field index specified.
+	 * 
+	 * @param index column number of the value to retrieve
+	 * @return object representing the field value
+	 * @throws SNEEException index does not exist
+	 */
+	public Object getAttributeValue(int index) 
+	throws SNEEException {
+		Object data;
+		try {
+			data = _attrValues.get(index).getData();
+		} catch (IndexOutOfBoundsException e) {
+			String message = "Index out of range for tuple size. ";
+			logger.warn(message, e);
+			throw new SNEEException(message);
+		}
+		return data;
+	}
+	
+	/**
+	 * Retrieve the value stored in the first occurrence of the field 
+	 * with the given name.
+	 * 
+	 * @param fieldName name of the field to retrieve
+	 * @return value of the given field name
+	 * @throws SNEEException field name does not exist
+	 */
+	public Object getAttributeValue(String fieldName) 
+	throws SNEEException {
+		int index = findFieldIndex(fieldName);
+		return getAttributeValue(index);
+	}
+	
+	/**
+	 * Returns the number of attributes in the tuple.
+	 * 
+	 * @return number of attributes
+	 */
+	public int size() {
+		return _attrValues.size();
+	}
+
+	/**
+	 * Returns the index of the first occurrence of the given 
+	 * field name.
+	 * 
+	 * @param fieldName name of the field to find the index for
+	 * @return index of the first occurrence of the corresponding field
+	 * @throws SNEEException the field name does not exist
+	 */
+	private int findFieldIndex(String fieldName) 
+	throws SNEEException {
+		for (int i = 0; i < _attrNames.size(); i++) {
+			String name = _attrNames.get(i);
+			if (fieldName.equalsIgnoreCase(name)) {
+				return i;
+			}
+		}
+		throw new SNEEException("Unknown field name: " + fieldName);
 	}
 	
 	public String toString() {
-		String retString="";
-		Set<String> keys = _fields.keySet();
-		for (String key : keys) {
-			retString += key + ": " + _fields.get(key).toString() + ", ";
-//		for (Field f : _fields.values()){
-//			retString += f.toString() + ", ";
+		StringBuffer buffer = new StringBuffer();
+		for (int i = 0; i < _attrNames.size(); i++) {
+			buffer.append(_attrNames.get(i));
+			buffer.append(": ");
+			buffer.append(_attrValues.get(i));
+			buffer.append(", ");
 		}
-		int lastCommaIndex = retString.lastIndexOf(",");
+		int lastCommaIndex = buffer.lastIndexOf(",");
+		String retString;
 		if (lastCommaIndex > 0){
-			retString = retString.substring(0, lastCommaIndex);
+			retString = buffer.substring(0, lastCommaIndex);
+		} else {
+			retString = buffer.toString();
 		}
 		return retString;
 	}

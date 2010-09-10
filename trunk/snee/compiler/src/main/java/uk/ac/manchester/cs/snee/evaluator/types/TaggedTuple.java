@@ -41,14 +41,12 @@ import java.text.SimpleDateFormat;
 import uk.ac.manchester.cs.snee.common.Constants;
 
 /**
- * TaggedTuple extends the Tuple class by providing a evaluation time and an
- * index for a tuple
+ * TaggedTuple objects represent tuples on a stream of tuples.
+ * 
+ * TaggedTuple wraps the Tuple class by providing an evaluation time 
+ * and an index for a tuple.
  */
 public class TaggedTuple implements Output {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6403031060390197325L;
 
 	private int _index = -1;
 	private long _evalTime;
@@ -83,10 +81,13 @@ public class TaggedTuple implements Output {
 	}
 	
 	public String toString() {
-		String retString="(["+ _index +","+dateFormat.format(_evalTime)+"],[";
-		retString += _tuple.toString();
-		retString += "])";
-		return retString;
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("([" + _index);
+		buffer.append("," + dateFormat.format(_evalTime));
+		buffer.append("],[");
+		buffer.append(_tuple.toString());
+		buffer.append("])");
+		return buffer.toString();
 	}
 
 }
