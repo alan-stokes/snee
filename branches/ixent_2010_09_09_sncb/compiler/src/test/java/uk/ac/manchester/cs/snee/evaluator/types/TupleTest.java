@@ -35,37 +35,25 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.evaluator.types;
 
+import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Map;
-import java.util.Properties;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.PropertyConfigurator;
+import org.easymock.classextension.EasyMockSupport;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
 
-public class TupleTest {
-
-	private static Types types;
-	DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-	DateFormat tf = new SimpleDateFormat("hh:mm:ss");
-	DateFormat dtf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+public class TupleTest extends EasyMockSupport {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -79,32 +67,11 @@ public class TupleTest {
 	public static void tearDownAfterClass() throws Exception {
 	}
 
-	private Tuple emptyTuple;
-	private Tuple tuple;
-
+	private EvaluatorAttribute mockEvaluatorAttribute =
+		createMock(EvaluatorAttribute.class);
+	
 	@Before
 	public void setUp() throws Exception {
-		//Configure properties
-		Properties props = new Properties();
-		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
-		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
-		SNEEProperties.initialise(props);
-
-		URL fileUrl = FieldTest.class.getClassLoader().getResource(SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_TYPES_FILE));
-		types = new Types(fileUrl.toURI().toString());
-
-		emptyTuple = new Tuple();
-		tuple = new Tuple();
-		tuple.addField(new Field("Int", types.getType("integer"), 6));
-		tuple.addField(new Field("String", types.getType("string"), "test"));
-		tuple.addField(new Field("Float", types.getType("float"), 2.45));
-//		tuple.addField(new Field("Date", DataType.DATE, df.parse("25/11/2009")));
-//		tuple.addField(new Field("Time", DataType.TIME, tf.parse("12:59:03")));
-//		tuple.addField(new Field("DateTime", DataType.DATETIME, dtf.parse("03/09/1964 21:34:09")));
 	}
 
 	@After
@@ -112,81 +79,243 @@ public class TupleTest {
 	}
 
 	@Test
-	public void testGetFields_notSet() {
-		assertEquals(true, emptyTuple.getFields().isEmpty());
-	}
-
-	@Test(expected=SNEEException.class)
-	public void testAddField_alreadyExists() 
-	throws SNEEException, TypeMappingException, SchemaMetadataException {
-		tuple.addField(new Field("Int", types.getType("integer"), 1));
-	}
-
-	@Test(expected=SNEEException.class)
-	public void testAddField_alreadyExistsCaseInsensitive() 
-	throws SNEEException, TypeMappingException, SchemaMetadataException {
-		tuple.addField(new Field("float", types.getType("float"), 17.75));
-	}
-	
-	@Test
-	public void testGetFields() {
-		assertEquals(3, tuple.getFields().size());//6
-		assertEquals(true, (tuple.getFields() instanceof Map<?,?>));
-	}
-
-	@Test(expected=SNEEException.class)
-	public void testGetField_notSet() throws SNEEException {
-		emptyTuple.getField("field");
-	}
-	
-	@Test(expected=SNEEException.class)
-	public void testGetField_notExists() throws SNEEException {
-		tuple.getField("field");
-	}
-	
-	@Test@Ignore
-	public void testGetField_exists() throws SNEEException {
-//		tuple.getField("Time");
-	}
-
-	@Test@Ignore
-	public void testGetField_existsCaseInsensitve() throws SNEEException {
-//		tuple.getField("tiMe");
-	}
-
-	@Test(expected=SNEEException.class)@Ignore
-	public void testGetValue_notSet() throws SNEEException {
-//		emptyTuple.getValue("name");
-	}
-
-	@Test(expected=SNEEException.class)@Ignore
-	public void testGetValue_notExists() throws SNEEException {
-//		tuple.getValue("name");
-	}
-	
-	@Test@Ignore
-	public void testGetValue_exists() throws SNEEException {
-//		tuple.getValue("float");
-	}
-	
-	@Test@Ignore
-	public void testGetValue_existsCase() throws SNEEException {
-//		tuple.getValue("FLOAT");
-	}
-	
-	@Test
-	public void testContainsField_fieldExsits() {
-		assertTrue(tuple.containsField("Int"));
-	}
-	
-	@Test
-	public void testContainsField_fieldExsitsCase() {
-		assertTrue(tuple.containsField("INT"));
+	public void testGetAttributes_notSet() {
+		Tuple tuple = new Tuple();
+		assertEquals(true, tuple.getAttributeValues().isEmpty());
+		assertEquals(0, tuple.size());
 	}
 
 	@Test
-	public void testContainsField_fieldNotExsits() {
-		assertFalse(tuple.containsField("hello"));
+	public void testAddAttribute() 
+	throws SNEEException, TypeMappingException, 
+	SchemaMetadataException {
+		expect(mockEvaluatorAttribute.getName()).andReturn("name");
+		replayAll();
+		Tuple tuple = new Tuple();
+		assertEquals(0, tuple.size());
+		tuple.addAttribute(mockEvaluatorAttribute);
+		assertEquals(1, tuple.size());
+		verifyAll();
 	}
+
+	@Test
+	public void testAddAttribute_alreadyExists() 
+	throws SNEEException, TypeMappingException, 
+	SchemaMetadataException {
+		expect(mockEvaluatorAttribute.getName()).
+			andReturn("name").times(2);
+		replayAll();
+		List<EvaluatorAttribute> attrs =
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		assertEquals(1, tuple.size());
+		tuple.addAttribute(mockEvaluatorAttribute);
+		assertEquals(2, tuple.size());
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetAttributeValues() {
+		expect(mockEvaluatorAttribute.getName()).
+			andReturn("name").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		assertEquals(3, tuple.getAttributeValues().size());
+		verifyAll();
+	}
+
+	@Test(expected=SNEEException.class)
+	public void testGetAttrByIndex_notSet() throws SNEEException {
+		Tuple tuple = new Tuple();
+		tuple.getAttribute(2);
+	}
+
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeByName_notSet() throws SNEEException {
+		Tuple tuple = new Tuple();
+		tuple.getAttribute("field");
+	}
+	
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeByIndex_notExists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getName()).
+			andReturn("name").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttribute(60);
+		verifyAll();
+	}
+	
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeByName_notExists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getName()).
+			andReturn("name").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttribute("field");
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetAttributeByIndex_exists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getName()).
+			andReturn("name").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttribute(2);
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetAttributeByName_exists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getName()).
+			andReturn("name").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttribute("name");
+		verifyAll();
+	}
+
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeValueByIndex_notSet() 
+	throws SNEEException {
+		Tuple tuple = new Tuple();
+		tuple.getAttributeValue(4);
+	}
+
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeValueByName_notSet() 
+	throws SNEEException {
+		Tuple tuple = new Tuple();
+		tuple.getAttributeValue("name");
+	}
+
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeValueByIndex_notExists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getName()).
+			andReturn("name").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeValue(3);
+		verifyAll();
+	}
+
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeValueByName_notExists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getName()).
+			andReturn("name").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeValue("field");
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetAttributeValueByIndex_exists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getData()).andReturn(null);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeValue(0);
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetAttributeValueByName_exists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getData()).andReturn(null);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeValue("name");
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetAttributeValueByName_existsCaseInsensitive() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getData()).andReturn(null);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeValue("nAmE");
+		verifyAll();
+	}
+//	
+//	@Test
+//	public void testContainsField_fieldExsits() {
+//		assertTrue(tuple.containsField("Int"));
+//	}
+//	
+//	@Test
+//	public void testContainsField_fieldExsitsCase() {
+//		assertTrue(tuple.containsField("INT"));
+//	}
+//
+//	@Test
+//	public void testContainsField_fieldNotExsits() {
+//		assertFalse(tuple.containsField("hello"));
+//	}
 
 }

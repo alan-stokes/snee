@@ -18,13 +18,14 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
-import uk.ac.manchester.cs.snee.evaluator.types.Field;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
 import com.sun.rowset.WebRowSetImpl;
@@ -204,16 +205,19 @@ public class PullSourceWrapper {
 		} else if (schemaFormatURI.equals("http://java.sun.com/xml/ns/jdbc")) {
 			schemaParser = new WrsSchemaParser(schemaDoc, _types);
 		} else {
-			String msg = "Unknown schema definition format " + schemaFormatURI;
+			String msg = "Unknown schema definition format " + 
+				schemaFormatURI;
 			logger.warn(msg);
 			throw new SchemaMetadataException(msg);
 		}
 		String extentName = schemaParser.getExtentName();
-		Map<String, AttributeType> attributes = schemaParser.getColumns();
+		List<Attribute> attributes = 
+			schemaParser.getColumns(extentName);
 		extentMetadata  = new ExtentMetadata(extentName, attributes, 
 				ExtentType.PUSHED);
 		if (logger.isTraceEnabled())
-			logger.trace("RETURN extractSchema() with " + extentMetadata);
+			logger.trace("RETURN extractSchema() with " + 
+					extentMetadata);
 		return extentMetadata;
 	}
 
@@ -360,11 +364,15 @@ public class PullSourceWrapper {
 				Tuple tuple = new Tuple();
 				for (int i = 1; i <= numberColumns; i++) {
 					//Populate fields of tuple
-					String name = wrsMetadata.getColumnLabel(i);
+					String attrName = wrsMetadata.getColumnLabel(i);
+					String extentName = wrsMetadata.getTableName(i);
 					AttributeType dataType = inferType(wrsMetadata, i);
 					Object value = wrs.getObject(i);
-					Field field = new Field(name, dataType, value);
-					tuple.addField(field);
+					Attribute attr = 
+						new Attribute(extentName, attrName, dataType);
+					EvaluatorAttribute field = 
+						new EvaluatorAttribute(attr, value);
+					tuple.addAttribute(field);
 				}
 				//Add tuple to tuple set
 				tuples.add(tuple);

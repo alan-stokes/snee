@@ -18,9 +18,10 @@ public class SNEEProperties {
 	
 	private static Properties _props;	
 
-	public static void initialise(Properties props) throws SNEEConfigurationException {
-		if (logger.isInfoEnabled()) {
-			logger.info("ENTER initialise() #props=" + props.size());
+	public static void initialise(Properties props) 
+	throws SNEEConfigurationException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER initialise() #props=" + props.size());
 		}
 		_props = new Properties(props);
 //		_props.list(System.out);
@@ -28,8 +29,8 @@ public class SNEEProperties {
 		if (logger.isDebugEnabled()) {
 			logProperties();
 		}
-		if (logger.isInfoEnabled()) {
-			logger.info("RETURN initialise()");
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN initialise()");
 		}
 	}
 
@@ -37,11 +38,14 @@ public class SNEEProperties {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER logProperties()");
 		}
-		StringBuffer msg = new StringBuffer("Properties (#props=" + _props.stringPropertyNames().size() + "):\n");
+		StringBuffer msg = 
+			new StringBuffer("Properties (#props=" + 
+					_props.stringPropertyNames().size() + "):\n");
 		Enumeration<?> propNames = _props.propertyNames();
 		while (propNames.hasMoreElements()) {
 			String propName = (String) propNames.nextElement();
-			msg.append(propName).append("=").append(_props.getProperty(propName)).append("\n");
+			msg.append(propName).append("=");
+			msg.append(_props.getProperty(propName)).append("\n");
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug(msg.toString());
@@ -52,8 +56,8 @@ public class SNEEProperties {
 	}
 
 	private static void validateProperties() throws SNEEConfigurationException {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER validateProperties()");
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER validateProperties()");
 		validateGraphVizSettings();
 		validateDir(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, true);
 		if (isSet(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE)) {
@@ -67,8 +71,8 @@ public class SNEEProperties {
 		}
 		validateFileLocation(SNEEPropertyNames.INPUTS_TYPES_FILE);
 		validateFileLocation(SNEEPropertyNames.INPUTS_UNITS_FILE);
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN validateProperties()");
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN validateProperties()");
 	}
 
 	/**
@@ -77,11 +81,10 @@ public class SNEEProperties {
 	 */
 	private static void validateGraphVizSettings()
 	throws SNEEConfigurationException {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER validateGraphVizSettings()");
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER validateGraphVizSettings()");
 		String generateGraphs = 
 			_props.getProperty(SNEEPropertyNames.GENERATE_QEP_IMAGES);
-		logger.info(generateGraphs);
 		if (generateGraphs != null &&
 				generateGraphs.equals("true") &&
 				_props.getProperty(SNEEPropertyNames.GRAPHVIZ_EXE) == null) {
@@ -91,8 +94,8 @@ public class SNEEProperties {
 			logger.warn(message);
 			throw new SNEEConfigurationException(message);
 		}
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN validateGraphVizSettings()");
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN validateGraphVizSettings()");
 	}
 	
 	/**
@@ -103,8 +106,8 @@ public class SNEEProperties {
 	 */
 	private static String validateFileLocation(String propName) 
 	throws SNEEConfigurationException {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER validateFileLocation() with " + propName);		
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER validateFileLocation() with " + propName);		
 		String fileName = _props.getProperty(propName);
 		if (fileName == null) {
 			String message = "A file location must " +
@@ -112,7 +115,9 @@ public class SNEEProperties {
 			logger.warn(message);
 			throw new SNEEConfigurationException(message);
 		}
-		logger.debug(propName + " exists as a system property");
+		if (logger.isDebugEnabled()) {
+			logger.debug(propName + " exists as a system property");
+		}
 		
 		//TODO: Pull this functionality out into a separate method in Utils class.
 		//Test absolute file location
@@ -127,7 +132,7 @@ public class SNEEProperties {
 				String message = "Problem reading " +
 						propName + " location. Ensure proper path. " +
 						file;
-				logger.warn(message);
+				logger.warn(message, e);
 				throw new SNEEConfigurationException(message);
 			}
 		}
@@ -139,8 +144,8 @@ public class SNEEProperties {
 			throw new SNEEConfigurationException(message);
 		}
 		String filePath = file.getAbsolutePath();
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN validateFileLocation() with " + filePath);
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN validateFileLocation() with " + filePath);
 		return filePath;
 	}
 
@@ -154,8 +159,8 @@ public class SNEEProperties {
 	 */
 	private static void validateDir(String propName, Boolean create) 
 	throws SNEEConfigurationException {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER validateDir() with " + propName + 
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER validateDir() with " + propName + 
 					" create=" + create);
 		String dirName = _props.getProperty(propName);
 		//Fail if property has not been set
@@ -177,12 +182,15 @@ public class SNEEProperties {
 					String message = "Problem reading " +
 					propName + " location. Ensure proper path. " +
 					dir;
-					logger.warn(message);
+					logger.warn(message, e);
 					throw new SNEEConfigurationException(message);
 				}
 			} else {
 				if (create) {
-					logger.trace("Creating directory " + dir.getAbsolutePath());
+					if (logger.isTraceEnabled()) {
+						logger.trace("Creating directory " + 
+								dir.getAbsolutePath());
+					}
 					if (!dir.mkdir()) {
 						String message = "Problem creating " + dirName;
 						logger.warn(message);
@@ -198,8 +206,8 @@ public class SNEEProperties {
 			logger.warn(message);
 			throw new SNEEConfigurationException(message);
 		}
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN validateDir() " + dir);
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN validateDir() " + dir);
 	}
 
 	/**
@@ -208,13 +216,13 @@ public class SNEEProperties {
 	 * @return true if property has be set, otherwise false
 	 */
 	public static boolean isSet(String propName) {
-		if (logger.isInfoEnabled())
-			logger.info("ENTER isSet() with " + propName);
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER isSet() with " + propName);
 		boolean result = false;
 		if (_props.getProperty(propName) != null)
 			result = true;
-		if (logger.isInfoEnabled())
-			logger.info("RETURN isSet() with " + result);
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN isSet() with " + result);
 		return result;
 	}
 	
@@ -226,16 +234,16 @@ public class SNEEProperties {
 	 */
 	public static String getSetting(String propName) 
 	throws SNEEConfigurationException {
-		if (logger.isInfoEnabled())
-			logger.info("ENTER getSetting() with " + propName);
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getSetting() with " + propName);
 		String property = _props.getProperty(propName);
 		if (property == null) {
 			String message = "Unknown property " + propName;
 			logger.warn(message);
 			throw new SNEEConfigurationException(message);
 		}
-		if (logger.isInfoEnabled())
-			logger.info("RETURN getSetting() " + propName + " found.");
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getSetting() " + propName + " found.");
 		return property;
 	}
 	
@@ -247,21 +255,22 @@ public class SNEEProperties {
 	 */
 	public static boolean getBoolSetting(String propName)
 	throws SNEEConfigurationException {
-		if (logger.isInfoEnabled())
-			logger.info("ENTER getBoolSetting() with " + propName);
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getBoolSetting() with " + propName);
 		String property = getSetting(propName);
-		if (logger.isInfoEnabled())
-			logger.info("RETURN getBoolSetting() " + propName + "="+property);
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getBoolSetting() " + 
+					propName + "="+property);
 		return property.toUpperCase().equals("TRUE");
 	}
 	
 	public static String getFilename(String propertyName) 
 	throws SNEEConfigurationException {
-		if (logger.isInfoEnabled())
-			logger.info("ENTER getFile() with " + propertyName);
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getFile() with " + propertyName);
 		String fileName = validateFileLocation(propertyName);
-		if (logger.isInfoEnabled())
-			logger.info("RETURN getFile() with " + fileName);
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getFile() with " + fileName);
 		return fileName;
 	}
 }

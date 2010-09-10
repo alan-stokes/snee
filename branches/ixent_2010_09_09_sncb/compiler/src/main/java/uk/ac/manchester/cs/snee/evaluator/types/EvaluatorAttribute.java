@@ -35,64 +35,45 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.evaluator.types;
 
-import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-
-import uk.ac.manchester.cs.snee.common.Constants;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 
 /**
- * Represents a field of a tuple.
+ * Represents an attribute of a tuple used by the evaluator.
  * 
- * A field has a name, a data type, a value, 
- * and an index representing its position in the tuple
+ * An EvaluatorAttribute extends the logical 
+ * <code>Attribute</code> with a data value.
  *
+ * @see Attribute
  */
-public class Field implements Serializable {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6878277846186499888L;
-	
-	DateFormat timestampFormat = 
-		new SimpleDateFormat(Constants.TIMESTAMP_FORMAT);
-
-	/**
-	 * Data type of the field
-	 */
-	private AttributeType _dataType;
-	
-	/**
-	 * The name of the field
-	 */
-	private String _name;
+public class EvaluatorAttribute extends Attribute {
 	
 	/**
 	 * The value of the field 
 	 */
 	private Object _data;
+
+	public EvaluatorAttribute(String extentName, String attrName,
+			AttributeType attrType, Object data) 
+	throws SchemaMetadataException {
+		super(extentName, attrName, attrType);
+		_data = data;
+	}
 	
 	/**
-	 * Creates a representation of a field within a tuple
-	 * @param name field name
-	 * @param dataType field data type
-	 * @param value value stored by the field
+	 * Constructor for EvaluatorAttribute implementation which 
+	 * extends the logical Attribute class with a data object.
+	 * 
+	 * @param attribute <code>Attribute</code> that is being extended
+	 * @param data data value being stored
+	 * @throws SchemaMetadataException invalid data type
 	 */
-	public Field(String name, AttributeType dataType, Object value) {
-		_name = name;
-		_dataType = dataType;
-		//XXX: What if someone passes me an object of the wrong type?
-		_data = value;
-	}
-	
-	public String getName() {
-		return _name;
-	}
-	
-	public AttributeType getDataType() {
-		return _dataType;
+	public EvaluatorAttribute(Attribute attribute, Object data) 
+	throws SchemaMetadataException {
+		super(attribute.getExtentName(), attribute.getName(), 
+				attribute.getType());
+		_data = data;
 	}
 	
 	public Object getData() {
@@ -100,19 +81,7 @@ public class Field implements Serializable {
 	}
 	
 	public String toString() {
-//		if (_dataType.equals(AttributeType.TIME)) {
-//			return new SimpleDateFormat("HH:mm:ss.SSS Z").format(_data);
-//		} else if (_dataType.equals(AttributeType.DATE)) {
-//			return new SimpleDateFormat("yyyy-mm-dd").format(_data);
-//		} else if (_dataType.equals(AttributeType.DATETIME)) {
-//			return timestampFormat.format(_data);
-//		} else {
-			return _data.toString();
-//		}
-	}
-
-	public void setName(String newName) {
-		_name = newName;
+		return super.toString() + _data.toString();
 	}
 
 }

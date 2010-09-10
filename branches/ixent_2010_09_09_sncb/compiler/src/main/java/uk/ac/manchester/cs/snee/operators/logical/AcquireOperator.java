@@ -34,9 +34,7 @@
 package uk.ac.manchester.cs.snee.operators.logical;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -201,15 +199,16 @@ public class AcquireOperator extends LogicalOperatorImpl {
 //			outputAttributes.add(new LocalTimeAttribute()); //Ixent added this
 //		}		
 		sensedAttributes = new ArrayList<DataAttribute>();
-		Map<String, AttributeType> typeMap = extentMetaData.getAttributes();
+		List<uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute> attributes = 
+			extentMetaData.getAttributes();
 		String[] attributeNames = new String[1];
-		attributeNames = typeMap.keySet().toArray(attributeNames);
+		attributeNames = extractAttributeNames(attributes);
 		DataAttribute attribute;
-		int numAttributes = typeMap.size();
+		int numAttributes = attributes.size();
 		for (int i = 0; i < numAttributes; i++) {
 			if (!(attributeNames[i].equals(Constants.ACQUIRE_TIME) 
 					|| attributeNames[i].equals(Constants.ACQUIRE_ID))) {
-				AttributeType type = typeMap.get(attributeNames[i]);
+				AttributeType type = attributes.get(i).getType(); 
 				attribute = new DataAttribute(
 						localName, attributeNames[i], type);
 				outputAttributes.add(attribute);
@@ -222,6 +221,18 @@ public class AcquireOperator extends LogicalOperatorImpl {
 		acquiredAttributes = (ArrayList<Attribute>) outputAttributes;
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN addMetaDataInfo()");
+	}
+
+	private String[] extractAttributeNames(
+			List<uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute> attributes) {
+		String[] attrNames = new String[attributes.size()];
+		int index = 0;
+		for (uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute attr : attributes) {
+			String attrName = attr.getName();
+			attrNames[index] = attrName;
+			index++;
+		}
+		return attrNames;
 	}
 
 	/**

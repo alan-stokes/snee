@@ -33,8 +33,10 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.metadata.schema;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -44,11 +46,11 @@ public class ExtentMetadata {
 	private Logger logger = 
 		Logger.getLogger(ExtentMetadata.class.getName());
 
-	/*
-	 * Attribute name (String key) and type. 
+	/**
+	 * List of the attributes in this extent
 	 */
-	private Map<String, AttributeType> _attributes = 
-		new LinkedHashMap<String, AttributeType>();
+	private List<Attribute> _attributes =
+		new ArrayList<Attribute>();
 
 	private String _extentName;
 
@@ -59,11 +61,11 @@ public class ExtentMetadata {
 	private int cardinality = 1;
 	
 	public ExtentMetadata(String extentName, 
-			Map<String, AttributeType> attributes,
+			List<Attribute> attributes,
 			ExtentType extentType) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER ExtentMetadata() with extent " + 
-					extentName + " #attr= " + attributes.size() + 
+					extentName + " #attr=" + attributes.size() + 
 					" type=" + extentType);
 		_extentName = extentName;
 		_attributes = attributes;
@@ -96,12 +98,26 @@ public class ExtentMetadata {
 	 * Returns the metadata about attributes
 	 * @return The unqualified attribute names and their types
 	 */
-	public Map<String, AttributeType> getAttributes() {
+	public List<Attribute> getAttributes() {
 		return _attributes;
 	}
 
+	/**
+	 * Test if this extent has an attribute with the specified
+	 * name.
+	 * @param attribute name of the attribute to test for
+	 * @return true if the extent has an attribute with the given name
+	 */
 	public boolean hasAttribute(String attribute) {
-		return _attributes.containsKey(attribute);
+		boolean attrFound = false;
+		for (Attribute attr : _attributes) {
+			String attrName = attr.getName();
+			if (attrName.equalsIgnoreCase(attribute)) {
+				attrFound = true;
+				break;
+			}
+		}
+		return attrFound;
 	}
 
 	/**
@@ -114,10 +130,14 @@ public class ExtentMetadata {
 	throws SchemaMetadataException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getAttributeType() with " + attribute);
-		AttributeType type;
-		if (_attributes.containsKey(attribute)) {
-			type = _attributes.get(attribute);
-		} else {
+		AttributeType type = null;
+		for (Attribute attr : _attributes) {
+			if (attribute.equalsIgnoreCase(attr.getName())) {
+				type = attr.getType();
+				break;
+			}
+		}
+		if (type == null) {
 			String message = "Extent " + _extentName + 
 				" does not have an attribute " + attribute;
 			logger.warn(message);
@@ -127,18 +147,29 @@ public class ExtentMetadata {
 			logger.debug("RETURN getAttributeType() with " + type);
 		return type;
 	}
+	
+	/**
+	 * Returns the number of attributes in the extent.
+	 * 
+	 * @return number of attributes
+	 */
+	public int getNumberAttribtues() {
+		return _attributes.size();
+	}
 
 	/**
-	 * Returns the size of the tuple.
-	 * @return
+	 * Returns the physical size of the nesC representation of a tuple. 
+	 * That is, the number of bytes used to represent the tuple.
+	 * 
+	 * @return number of bytes used to represent a tuple
 	 */
-	public int getSize() {
-		int count = 0;
-		Iterator<AttributeType> types = _attributes.values().iterator();
-		while (types.hasNext()) {
-			count = count + types.next().getSize();
+	public int getNesCPhysicalSize() {
+		int repSize = 0;
+		for (Attribute attr : _attributes) {
+			AttributeType type = attr.getType();
+			repSize = repSize + type.getSize();
 		}
-		return count;
+		return repSize;
 	}
 
 	public boolean equals(Object ob) {
@@ -161,12 +192,8 @@ public class ExtentMetadata {
 	public String toString() {
 		StringBuffer s = new StringBuffer(_extentName);
 		s.append(" - [");
-		Iterator<String> it = _attributes.keySet().iterator();
-		while (it.hasNext()) {
-			String key = it.next();
-			s.append(key);
-			s.append(":");
-			s.append(_attributes.get(key));
+		for (Attribute attr : _attributes) {
+			s.append(attr);
 			s.append("  ");
 		}
 		s.append("]");

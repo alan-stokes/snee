@@ -29,7 +29,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import uk.ac.manchester.cs.snee.evaluator.types.Field;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
 public class StreamResultSetTest extends EasyMockSupport {
@@ -63,14 +63,11 @@ public class StreamResultSetTest extends EasyMockSupport {
 	throws SNEEException, SQLException {
 		expect(mockMetadata.getColumnCount()).andReturn(2);
 		if (numResults > 0) {
-			expect(mockMetadata.getColumnLabel(1)).
-				andReturn("attr1").times(numResults);
-			expect(mockMetadata.getColumnLabel(2)).
-				andReturn("attr2").times(numResults);
-			Field mockField = createMock(Field.class);
-			expect(mockTuple.getField("attr1")).
+			EvaluatorAttribute mockField = 
+				createMock(EvaluatorAttribute.class);
+			expect(mockTuple.getAttribute(0)).
 				andReturn(mockField).times(numResults);
-			expect(mockTuple.getField("attr2")).
+			expect(mockTuple.getAttribute(1)).
 				andReturn(mockField).times(numResults);
 			expect(mockField.getData()).
 				andReturn(data).times(numResults * 2);

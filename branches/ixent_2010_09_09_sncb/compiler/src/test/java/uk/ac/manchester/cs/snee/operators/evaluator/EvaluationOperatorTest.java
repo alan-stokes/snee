@@ -21,7 +21,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
-import uk.ac.manchester.cs.snee.evaluator.types.Field;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.operators.evaluator.EvaluationOperator;
 import uk.ac.manchester.cs.snee.operators.evaluator.EvaluatorPhysicalOperator;
@@ -44,7 +44,7 @@ public class EvaluationOperatorTest extends EasyMockSupport {
 	final EvaluatorPhysicalOperator mockPhyOp = createMock(EvaluatorPhysicalOperator.class);
 	final List<Attribute> mockQPAttributesList = createMock(List.class);
 	final Attribute mockAttr = createMock(Attribute.class);
-	final Field mockField = createMock(Field.class);
+	final EvaluatorAttribute mockField = createMock(EvaluatorAttribute.class);
 
 	@Before
 	public void setUp() throws Exception {

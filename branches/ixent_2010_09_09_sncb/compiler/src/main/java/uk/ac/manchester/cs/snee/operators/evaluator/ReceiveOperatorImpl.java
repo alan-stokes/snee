@@ -57,7 +57,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.WebServiceSourceMetadat
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.CircularList;
-import uk.ac.manchester.cs.snee.evaluator.types.Field;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
@@ -79,8 +79,8 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	public final static int MAX_BUFFER_SIZE = 20000; 
 
 	/**
-	 * Tuples are stored in main memory. Tuples overwritten once they become
-	 * too old
+	 * Tuples are stored in main memory. 
+	 * Tuples overwritten once they become too old.
 	 */
 	private CircularList _tupleList ;
 
@@ -90,13 +90,14 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	private boolean executing = false;
 
 	/**
-	 * Indicates when a tuple has been received by the background thread
+	 * Indicates when a tuple has been received by the 
+	 * background thread
 	 */
 	private boolean receive = true;
 
 	/**
-	 * Once a tuple is received it is processed and this indicates that it is
-	 * ready for the parent operator
+	 * Once a tuple is received it is processed and this indicates 
+	 * that it is ready for the parent operator
 	 */
 	private boolean newTupleReceived = false;
 
@@ -118,9 +119,10 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 
 	private Timer _receiverTaskTimer;
 
-	private long _longSleepPeriod  = 1000;
+	private long _longSleepPeriod = 1000;
 
 	private long _shortSleepPeriod;
+	
 	/**
 	 * Instantiates the receive operator
 	 * @param op
@@ -232,7 +234,8 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		UDPSourceMetadata udpSource = (UDPSourceMetadata) source;
 		_streamReceiver = new UDPStreamReceiver(
 				udpSource.getHost(), 
-				udpSource.getPort(_streamName), _shortSleepPeriod);
+				udpSource.getPort(_streamName), _shortSleepPeriod, 
+				_streamName, attributes);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN instantiateUdpDataSource()");
 	}
@@ -344,19 +347,18 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 				logger.debug("ENTER run()");
 			}
 			Tuple tuple = null ;
-			// Process a tuple that has been received in the background thread
+			/* 
+			 * Process a tuple that has been received in the 
+			 * background thread
+			 */
 				try {
 					// receive the tuple, blocking operation
 					tuple = _streamReceiver.receive();
-					processTuple(tuple);
 					// create a tagged tuple from the received tuple
 					TaggedTuple taggedTuple = new TaggedTuple(tuple);
 					// Add the tuple to the tuple list
 					_tupleList.add(taggedTuple);
 		
-//					++totalTuplesReceived;
-					// Indicate that there is a new tuple ready to be processed
-//					newTupleReceived = true;
 					setChanged();
 					notifyObservers(taggedTuple);
 				} catch (ReceiveTimeoutException e) {
@@ -382,65 +384,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 						_longSleepPeriod);
 			}
 		}
-	
-		/**
-		 * Rename attributes in tuple so that they contain the query 
-		 * reference for the stream extent.
-		 * @param tuple
-		 * @return
-		 * @throws SNEEException 
-		 * @throws TypeMappingException 
-		 * @throws SchemaMetadataException 
-		 */
-		private void processTuple(Tuple tuple) 
-		throws SNEEException, SchemaMetadataException, 
-		TypeMappingException {
-			if (logger.isTraceEnabled()) {
-				logger.debug("ENTER processTuple() with " + tuple);
-			}
-			if (logger.isTraceEnabled())
-				logger.trace("Fields: " + tuple.getFields().keySet());
-			for (Attribute attr : attributes) {
-				if (logger.isTraceEnabled())
-					logger.trace("Process attribute " + 
-							attr.getAttributeName() + " of type " + 
-							attr.getType());
-				String fieldName = attr.getAttributeName();
-				if (fieldName.equalsIgnoreCase("evalTime") || 
-						fieldName.equalsIgnoreCase("id") ||
-						fieldName.equalsIgnoreCase("time")) {
-					if (logger.isTraceEnabled()) {
-						logger.trace("Ignoring in-network SNEE " +
-								"attribute " + fieldName);
-					}
-					continue;
-				} 
-				try {
-					if (logger.isTraceEnabled()) {
-						logger.trace("Received: " + 
-								tuple.getField(fieldName));
-					}
-					Field field = tuple.getField(fieldName);
-					String newFieldName = _streamQueryName + "." +
-					fieldName;
-					field.setName(newFieldName.toLowerCase());
-					if (logger.isTraceEnabled()) {
-						logger.trace("Field name: " + _streamQueryName +
-								"." + fieldName);
-					}
-					// Remove reference to old field name
-					tuple.removeField(fieldName.toLowerCase());
-					// Add reference to new field name
-					tuple.addField(field);
-				} catch (SNEEException e) {
-					logger.warn("Unknown attribute " + fieldName, e);
-					throw e;
-				}
-			}
-			if (logger.isTraceEnabled()) {
-				logger.debug("RETURN processTuple()");
-			}
-		}
+		
 	}
 
 	@Override

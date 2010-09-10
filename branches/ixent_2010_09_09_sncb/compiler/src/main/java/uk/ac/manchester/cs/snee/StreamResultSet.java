@@ -27,8 +27,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.evaluator.types.Field;
-import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
 public class StreamResultSet 
@@ -67,8 +66,7 @@ implements ResultSet {
 		for (Tuple tuple : results) {
 			numRows++;
 			for (int i = 1; i <= numColumns; i++) {
-				String colName = metadata.getColumnLabel(i);
-				Field field = tuple.getField(colName);
+				EvaluatorAttribute field = tuple.getAttribute(i-1);
 				data[numRows][i] = field.getData();
 			}
 		}
