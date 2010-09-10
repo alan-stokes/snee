@@ -5,19 +5,19 @@
   <parent>
     <artifactId>SNEE</artifactId>
     <groupId>uk.ac.manchester.cs.snee</groupId>
-    <version>1.2.1</version>
+    <version>1.2.2-SNAPSHOT</version>
   </parent>
   <groupId>uk.ac.manchester.cs.snee</groupId>
   <artifactId>clients</artifactId>
   <packaging>pom</packaging>
   <name>SNEE Clients</name>
-  <version>1.2.1</version>
+  <version>1.2.2-SNAPSHOT</version>
   <description>Command line single use clients that interact with SNEE through the API</description>
   <dependencies>
   	<dependency>
   		<groupId>uk.ac.manchester.cs.snee</groupId>
   		<artifactId>snee-compiler</artifactId>
-  		<version>1.2.1</version>
+  		<version>1.2.2-SNAPSHOT</version>
   		<scope>provided</scope>
   	</dependency>
   </dependencies>
