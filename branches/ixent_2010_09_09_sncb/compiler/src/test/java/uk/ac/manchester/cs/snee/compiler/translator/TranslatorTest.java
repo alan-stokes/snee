@@ -74,6 +74,9 @@ public class TranslatorTest {
 		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
+		props.setProperty(SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION, "false");
+		props.setProperty(SNEEPropertyNames.SNCB_TINYOS_ROOT, "~/work/tinyos-2.x");
+		props.setProperty(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE, "false");
 		SNEEProperties.initialise(props);
 		Metadata schemaMetadata = new Metadata();
 		translator = new Translator(schemaMetadata);

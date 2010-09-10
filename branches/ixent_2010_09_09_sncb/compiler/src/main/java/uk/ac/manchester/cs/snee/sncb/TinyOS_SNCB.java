@@ -34,8 +34,8 @@ public class TinyOS_SNCB implements SNCB {
 		try {
 			this.metadata = metadata;
 			String tosRootDir = SNEEProperties.getSetting(
-					SNEEPropertyNames.SNCB_TINYOS_ROOT);
-			System.out.println(tosRootDir);
+					SNEEPropertyNames.SNCB_TINYOS_ROOT).
+					replace("~", System.getenv("HOME"));
 			//TinyOS environment variables
 			this.tinyOSEnvVars = new String[] {
 					"TOSROOT="+tosRootDir,
