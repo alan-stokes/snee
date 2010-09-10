@@ -36,6 +36,7 @@ public class TinyOS_SNCB implements SNCB {
 			String tosRootDir = SNEEProperties.getSetting(
 					SNEEPropertyNames.SNCB_TINYOS_ROOT);
 			System.out.println(tosRootDir);
+			//TinyOS environment variables
 			this.tinyOSEnvVars = new String[] {
 					"TOSROOT="+tosRootDir,
 					"PATH="+System.getenv("PATH")+":"+tosRootDir+
@@ -56,12 +57,18 @@ public class TinyOS_SNCB implements SNCB {
 
 	
 	@Override
-	public void init() {
+	public void init(String topFile, String resFile) throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER init()");
-		//TODO: add sncb flag to bypass metadata collection and use existing topology
-		//TODO: invoke network formation and metadata collection python script
-		//TODO: put XML file somewhere for query compiler to pick it up
+		try {
+			//TODO: incorporate metadata collection python script
+			String pythonScript = Utils.getResourcePath("etc/sncb/python/collectMetadata.py");
+			String params[] = {pythonScript, topFile, resFile};
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
+		} catch (Exception e) {
+			logger.warn(e);
+			throw new SNCBException(e);
+		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN init()");
 	}

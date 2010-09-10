@@ -294,7 +294,7 @@ public class Metadata {
 	throws MetadataException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
 	SNEEDataSourceException, SchemaMetadataException, 
-	TypeMappingException, SNCBException 
+	TypeMappingException, SNCBException, SNEEConfigurationException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER processPhysicalSchema() with " +
@@ -316,7 +316,7 @@ public class Metadata {
 
 	private void addSensorNetworkSources(NodeList wsnSources) 
 	throws MetadataException, SourceMetadataException, 
-	TopologyReaderException, SNCBException {
+	TopologyReaderException, SNCBException, SNEEConfigurationException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER addSensorNetworkSources() #=" + 
 					wsnSources.getLength());

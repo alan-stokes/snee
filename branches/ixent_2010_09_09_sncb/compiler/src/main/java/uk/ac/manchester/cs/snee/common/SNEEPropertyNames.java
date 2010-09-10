@@ -150,9 +150,18 @@ public final class SNEEPropertyNames {
 	public static String SNCB_TINYOS_ROOT = "sncb.tinyos_root";
 
 	/**
-	 * Flag to determine whether individual images or a single image is sent to WSN nodes.
+	 * Specifies whether the metadata collection program should be invoked, 
+	 * or default metadata should be used.
 	 */
-	public static String SNCB_GENERATE_COMBINED_IMAGE = "sncb.generate_combined_image";
+	public static String SNCB_PERFORM_METADATA_COLLECTION = 
+		"sncb.perform_metadata_collection";
+	
+	/**
+	 * Flag to determine whether individual images or a single image is sent
+	 * to WSN nodes.
+	 */
+	public static String SNCB_GENERATE_COMBINED_IMAGE = 
+		"sncb.generate_combined_image";
 }
 
 

@@ -5,7 +5,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 
 public interface SNCB {
 
-	public void init();
+	public void init(String topFile, String resFile) throws SNCBException;
 	
 	public void register(SensorNetworkQueryPlan qep, String queryOutputDir, CostParameters costParams) 
 	throws SNCBException;

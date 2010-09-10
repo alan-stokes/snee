@@ -33,6 +33,8 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.metadata.source;
 
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -43,6 +45,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import uk.ac.manchester.cs.snee.MetadataException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReader;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
@@ -90,17 +95,18 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 	 * @param sourceName
 	 * @param extentNames
 	 * @param xml
-	 * @param topFile
-	 * @param resFile
+	 * @param defaultTopFile
+	 * @param defaultResFile
 	 * @param gateways
 	 * @throws SourceMetadataException
 	 * @throws TopologyReaderException
 	 * @throws SNCBException 
+	 * @throws SNEEConfigurationException 
 	 */
-	public SensorNetworkSourceMetadata(String sourceName, 
-			List<String> extentNames, Element xml,
-			String topFile, String resFile, int[] gateways) 
-	throws SourceMetadataException, TopologyReaderException, SNCBException {
+	public SensorNetworkSourceMetadata(String sourceName, List<String> 
+	extentNames, Element xml, String defaultTopFile, String defaultResFile, int[] gateways) 
+	throws SourceMetadataException, TopologyReaderException, SNCBException, 
+	SNEEConfigurationException {
 		super(sourceName, extentNames, SourceType.SENSOR_NETWORK);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SensorNetworkSourceMetadata()");
@@ -114,12 +120,31 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 					"specified for sensor network "+sourceName + "; this is " +
 					"currently not supported.");
 		}
-		this._gateways = gateways;
-		this._topology = TopologyReader.readNetworkTopology(topFile, resFile);
-		setSourceSites(xml.getElementsByTagName("extent"));
-		validateGateways();
-		this.sncb = new TinyOS_SNCB(this); //TODO: In future, we could have different kinds of SNCBs here.
+		//TODO: In future, we could have different kinds of SNCBs here.
+		this.sncb = new TinyOS_SNCB(this); 
 		
+		if (SNEEProperties.getBoolSetting(
+			SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION)) {
+			logger.info("Invoking network formation and metadata collection");
+			Date now = new Date();
+			String timeStampStr = now.toString().replaceAll(" ", "_").replaceAll(":", "_");
+			String root = System.getProperty("user.dir")+"/output/metadata/";
+			String topFile = root + "topology-"+this.getSourceName()+"-"+timeStampStr+".xml";
+			String resFile = root + "resources-"+this.getSourceName()+"-"+timeStampStr+".xml";
+			System.out.println(topFile + "\n" + resFile);
+			this.sncb.init(topFile, resFile);
+			this._topology = TopologyReader.readNetworkTopology(
+					topFile, resFile);
+		} else {
+			logger.info("Using default topology file: "+defaultTopFile);
+			this._topology = TopologyReader.readNetworkTopology(
+					defaultTopFile, defaultResFile);			
+		}
+
+		this._gateways = gateways;
+		setSourceSites(xml.getElementsByTagName("extent"));
+		validateGateways();	
+			
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SensorNetworkSourceMetadata()");
 	}
