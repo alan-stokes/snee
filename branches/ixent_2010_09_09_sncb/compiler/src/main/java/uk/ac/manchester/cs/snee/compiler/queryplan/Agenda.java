@@ -34,22 +34,15 @@
 
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import javax.swing.JFrame;
-
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
 import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;

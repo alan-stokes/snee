@@ -43,8 +43,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import javax.swing.JFrame;
-
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
 import uk.ac.manchester.cs.snee.common.graph.Graph;
