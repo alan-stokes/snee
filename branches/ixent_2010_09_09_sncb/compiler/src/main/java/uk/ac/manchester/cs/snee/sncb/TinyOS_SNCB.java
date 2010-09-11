@@ -2,6 +2,9 @@ package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.IOException;
 
+import net.tinyos.message.Message;
+import net.tinyos.tools.MsgReader;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
@@ -36,14 +39,23 @@ public class TinyOS_SNCB implements SNCB {
 			String tosRootDir = SNEEProperties.getSetting(
 					SNEEPropertyNames.SNCB_TINYOS_ROOT).
 					replace("~", System.getenv("HOME"));
+			System.err.println(System.getenv("PATH"));
 			//TinyOS environment variables
+			//TODO: Need to figure out which env vars are needed for mig. For now,
+			//eclipse must be invoked from terminal for it to work.
 			this.tinyOSEnvVars = new String[] {
 					"TOSROOT="+tosRootDir,
-					"PATH="+System.getenv("PATH")+":"+tosRootDir+
-						"/bin:/opt/local/bin:/Library/Java/Home/bin",
 					"TOSDIR="+tosRootDir+"/tos",
+					"MAKERULES="+tosRootDir+"/support/make/Makerules",
 					"PYTHONPATH=.:"+tosRootDir+"/support/sdk/python",
-					"MAKERULES="+tosRootDir+"/support/make/Makerules"};
+					"CLASSPATH=.:"+tosRootDir+"/support/sdk/java/tinyos.jar",
+					"PATH="+System.getenv("PATH")+":"+tosRootDir+"/bin:"+
+					tosRootDir+"/support/sdk/c:"+
+					"/opt/local/bin:/opt/local/sbin:/Library/Java/Home/bin"};
+//					"PATH=/opt/local/bin:/opt/local/sbin:/usr/local/mysql/bin:/bin:/Library/Java/Home/bin:/Users/ixent/work/tinyos-2.x/bin:/Users/ixent/work/tinyos-2.x/support/sdk/c:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/git/bin:/usr/X11/bin:/Users/ixent/Documents/workspace/qos-aware/scripts/batch:/Users/ixent/Documents/workspace/qos-aware/scripts/utils:/Users/ixent/Documents/workspace/qos-aware/scripts/qos-exp",
+//					"JAVA_HOME=/Library/Java/Home",
+//					"JAVAHOME=/usr/bin"};
+
 			this.combinedImage = SNEEProperties.getBoolSetting(
 					SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE);
 		} catch (Exception e) {
@@ -87,7 +99,7 @@ public class TinyOS_SNCB implements SNCB {
 			logger.trace("Disseminating Query Plan images");
 			////disseminateQueryPlanImages();
 			logger.trace("Setting up result collector");
-			////setUpResultCollector(qep, queryOutputDir);
+			setUpResultCollector(qep, queryOutputDir);
 		} catch (Exception e) {
 			logger.warn(e);
 			throw new SNCBException(e);
@@ -138,7 +150,7 @@ public class TinyOS_SNCB implements SNCB {
 
 	
 	private void setUpResultCollector(SensorNetworkQueryPlan qep, 
-	String queryOutputDir) throws IOException {
+	String queryOutputDir) throws Exception {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER setUpResultCollector()");
 		//TODO: need to set up plumbing for query result collection (using mig?)
@@ -148,8 +160,18 @@ public class TinyOS_SNCB implements SNCB {
 		System.out.println(nesCHeaderFile);
 		String outputJavaFile = System.getProperty("user.dir")+"/"+queryOutputDir+"DeliverMessage.java";
 		String params[] = {"java", "-target=null", "-java-classname=DeliverMessage",
-				nesCHeaderFile, "DeliverMessage", "-o "+outputJavaFile};
+				nesCHeaderFile, "DeliverMessage", "-o", outputJavaFile};
 		Utils.runExternalProgram("mig", params, this.tinyOSEnvVars);
+		String deliverMessageJavaClassContent = Utils.readFileToString(outputJavaFile);
+		MemoryClassLoader mcl = new MemoryClassLoader("DeliverMessage", deliverMessageJavaClassContent);
+		Class c = mcl.loadClass("DeliverMessage");
+		//Class c = Class.forName("DeliverMessage");
+		Object packet = c.newInstance();
+		Message msg = (Message)packet;
+		SerialPortMessageReceiver mr = new SerialPortMessageReceiver("serial@/dev/tty.usbserial-M4APD1E7:telos");
+		mr.addMsgType(msg);
+		mr.start();
+		System.err.println("hurrah! "+msg.amType());
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN setUpResultCollector()");	
 	}
