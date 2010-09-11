@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 import net.tinyos.message.Message;
 import net.tinyos.tools.MsgReader;
@@ -16,6 +17,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 public class TinyOS_SNCB implements SNCB {
@@ -164,11 +166,12 @@ public class TinyOS_SNCB implements SNCB {
 		Utils.runExternalProgram("mig", params, this.tinyOSEnvVars);
 		String deliverMessageJavaClassContent = Utils.readFileToString(outputJavaFile);
 		MemoryClassLoader mcl = new MemoryClassLoader("DeliverMessage", deliverMessageJavaClassContent);
-		Class c = mcl.loadClass("DeliverMessage");
-		//Class c = Class.forName("DeliverMessage");
-		Object packet = c.newInstance();
-		Message msg = (Message)packet;
-		SerialPortMessageReceiver mr = new SerialPortMessageReceiver("serial@/dev/tty.usbserial-M4APD1E7:telos");
+		Class msgClass = mcl.loadClass("DeliverMessage");
+		Object msgObj = msgClass.newInstance();
+		Message msg = (Message)msgObj;
+		DeliverOperator delOp = (DeliverOperator) qep.getLAF().getRootOperator();
+		SerialPortMessageReceiver mr = new SerialPortMessageReceiver("serial@/dev/tty.usbserial-M4APD1E7:telos",
+				delOp);
 		mr.addMsgType(msg);
 		mr.start();
 		System.err.println("hurrah! "+msg.amType());
