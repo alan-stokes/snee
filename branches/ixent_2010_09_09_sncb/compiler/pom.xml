@@ -51,6 +51,11 @@
 			<type>jar</type>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.tinyos</groupId>
+			<artifactId>tinyos</artifactId>
+			<version>2.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>
