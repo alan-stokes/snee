@@ -34,7 +34,9 @@ implements net.tinyos.message.MessageListener {
 	private MoteIF moteIF;
 	  
 	private DeliverOperator delOp;
-	  
+	
+	private Message _msg;
+	
 	public SerialPortMessageReceiver(String source, DeliverOperator delOp) throws Exception {
 		if (source != null) {
 			moteIF = new MoteIF(BuildSource.makePhoenix(source, PrintStreamMessenger.err));
@@ -45,9 +47,6 @@ implements net.tinyos.message.MessageListener {
 	    this.delOp = delOp;
 	}
 
-	public void start() {
-	}
-	  
 	@Override
 	public void messageReceived(int to, Message message) {
 		long t = System.currentTimeMillis();
@@ -135,7 +134,12 @@ implements net.tinyos.message.MessageListener {
 	  }
 	  
 	protected void addMsgType(Message msg) {
-		moteIF.registerListener(msg, this);
+		this.moteIF.registerListener(msg, this);
+		this._msg = msg;
+	}
+	
+	public void close() {
+		this.moteIF.deregisterListener(_msg, this);
 	}
 
 }

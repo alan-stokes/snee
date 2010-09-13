@@ -92,10 +92,11 @@ public class TinyOS_SNCB implements SNCB {
 	
 
 	@Override
-	public void register(SensorNetworkQueryPlan qep, String queryOutputDir, CostParameters costParams) 
+	public SerialPortMessageReceiver register(SensorNetworkQueryPlan qep, String queryOutputDir, CostParameters costParams) 
 	throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER register()");
+		SerialPortMessageReceiver mr;
 		try {			
 			logger.trace("Generating TinyOS/nesC code for query plan.");
 			generateNesCCode(qep, queryOutputDir, costParams);
@@ -104,13 +105,14 @@ public class TinyOS_SNCB implements SNCB {
 			logger.trace("Disseminating Query Plan images");
 			disseminateQueryPlanImages(qep, queryOutputDir);
 			logger.trace("Setting up result collector");
-			setUpResultCollector(qep, queryOutputDir);
+			mr = setUpResultCollector(qep, queryOutputDir);
 		} catch (Exception e) {
 			logger.warn(e);
 			throw new SNCBException(e);
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN register()");
+		return mr;
 	}
 
 	private void generateNesCCode(SensorNetworkQueryPlan qep, String 
@@ -154,7 +156,7 @@ public class TinyOS_SNCB implements SNCB {
 	}
 
 	
-	private void setUpResultCollector(SensorNetworkQueryPlan qep, 
+	private SerialPortMessageReceiver setUpResultCollector(SensorNetworkQueryPlan qep, 
 	String queryOutputDir) throws Exception {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER setUpResultCollector()");
@@ -176,10 +178,10 @@ public class TinyOS_SNCB implements SNCB {
 		SerialPortMessageReceiver mr = new SerialPortMessageReceiver("serial@/dev/tty.usbserial-M4APD1E7:telos",
 				delOp);
 		mr.addMsgType(msg);
-		mr.start();
 		System.err.println("hurrah! "+msg.amType());
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN setUpResultCollector()");	
+		return mr;
 	}
 	
 	private void disseminateQueryPlanImages(SensorNetworkQueryPlan qep, 

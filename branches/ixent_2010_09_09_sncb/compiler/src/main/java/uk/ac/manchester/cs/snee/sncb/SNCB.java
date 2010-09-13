@@ -7,8 +7,8 @@ public interface SNCB {
 
 	public void init(String topFile, String resFile) throws SNCBException;
 	
-	public void register(SensorNetworkQueryPlan qep, String queryOutputDir, CostParameters costParams) 
-	throws SNCBException;
+	public SerialPortMessageReceiver register(SensorNetworkQueryPlan qep, 
+	String queryOutputDir, CostParameters costParams) throws SNCBException;
 	
 	public void deregister();
 	

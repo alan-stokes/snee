@@ -57,7 +57,7 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class QueryEvaluator implements Observer {//Runnable {
 	
-	private boolean executing = false;
+	protected boolean executing = false;
 	
 	protected boolean isExecuting() {
 		return executing;
@@ -66,9 +66,9 @@ public class QueryEvaluator implements Observer {//Runnable {
 	/**
 	 * The identifier for the query
 	 */
-	private int _queryId;
+	protected int _queryId;
 	
-	private ResultStore _results;
+	protected ResultStore _results;
 
 	/**
 	 * The query plan to be evaluated
