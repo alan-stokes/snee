@@ -7,6 +7,7 @@ import org.apache.log4j.PropertyConfigurator;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.client.SNEEClient;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator;
 
 public class SNEEClientUsingInNetworkSource extends SNEEClient {
@@ -46,9 +47,9 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 					"\t\"query duration in seconds\"\n" +
 					"\t\"query parameters file\"\n");
 			//XXX: Use default query
-			query = "SELECT * FROM PullStream;";
-			duration = Long.valueOf("20");
-			queryParams= "src/main/resources/etc/query-parameters.xml";
+			query = "SELECT * FROM Castilla;";
+			duration = Long.valueOf("30");
+			queryParams= Utils.getResourcePath("etc/query-parameters.xml");
 //			System.exit(1);
 		} else {	
 			query = args[0];
