@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 
+import org.apache.log4j.Logger;
+
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
@@ -26,100 +28,114 @@ import net.tinyos.util.PrintStreamMessenger;
 public class SerialPortMessageReceiver extends Observable 
 implements net.tinyos.message.MessageListener {
 
-	  private MoteIF moteIF;
+	private Logger logger = 
+		Logger.getLogger(TinyOS_SNCB.class.getName());
+	
+	private MoteIF moteIF;
 	  
-	  private DeliverOperator delOp;
+	private DeliverOperator delOp;
 	  
-	  public SerialPortMessageReceiver(String source, DeliverOperator delOp) throws Exception {
-	    if (source != null) {
-	      moteIF = new MoteIF(BuildSource.makePhoenix(source, PrintStreamMessenger.err));
+	public SerialPortMessageReceiver(String source, DeliverOperator delOp) throws Exception {
+		if (source != null) {
+			moteIF = new MoteIF(BuildSource.makePhoenix(source, PrintStreamMessenger.err));
 	    }
 	    else {
-	      moteIF = new MoteIF(BuildSource.makePhoenix(PrintStreamMessenger.err));
+	    	moteIF = new MoteIF(BuildSource.makePhoenix(PrintStreamMessenger.err));
 	    }
 	    this.delOp = delOp;
-	  }
+	}
 
-	  public void start() {
-	  }
+	public void start() {
+	}
 	  
-	  @Override
-	  public void messageReceived(int to, Message message) {
-	    long t = System.currentTimeMillis();
+	@Override
+	public void messageReceived(int to, Message message) {
+		long t = System.currentTimeMillis();
 	    //    Date d = new Date(t);
 	    
 	    System.out.print("" + t + ": ");
 	    System.out.println(message);
-
-	    //This bit of code is based on http://java.sun.com/developer/technicalArticles/ALT/Reflection/
-	    Class msgClass = message.getClass();
+	    
 	    try {
-	    	//TODO: Populate this array with output
 			List<Output> resultList = new ArrayList<Output>();
-	    	//Use to get number of tuples in each message, this is the number of tuples to notify
-	    	//the result collector about...
-			Method meth = msgClass.getMethod("numElements_tuples_evalEpoch", new Class[0]);
-			Integer tuplesPerMessage = (Integer) meth.invoke(message, new Object[0]);
+			int tuplesPerMessage = getTuplesPerMessage(message);
 			for (int i=0; i<tuplesPerMessage; i++) {
+				Tuple newTuple = new Tuple();
 				for (Attribute attr : this.delOp.getAttributes()) {
-					//invoke getElementXXXXXX method for every field in every tuple
-					//iterate over arributes of deliver operator and derive 
-					//the name of the method by using getNescName
-					String nesCAttrName = CodeGenUtils.getNescAttrName(attr);
-					String methodName = "getElement_tuples_"+nesCAttrName;
-				    Class paramTypes[] = new Class[1];
-				    paramTypes[0] = Integer.TYPE;
-				    meth = msgClass.getMethod(methodName, paramTypes);
-					Object argList[] = new Object[1];
-					argList[0] = new Integer(i);
-					Object retObj = meth.invoke(message, argList);
-					Integer data = (Integer)retObj;
-					
-					String extentName = ""; //FIXME: !!!
-					String attrName = attr.getAttributeName();
-					AttributeType attrType = attr.getType();
-					
-					EvaluatorAttribute evalAttr = new EvaluatorAttribute(extentName, attrName, attrType, data);
+					EvaluatorAttribute evalAttr = getAttribute(attr, message, i);
+					newTuple.addAttribute(evalAttr);
 				}
-				Tuple newTuple = new Tuple(); //TODO: XXX
-				//TaggedTuple newTuple; //TODO
-				
+				//TODO: For now, In-Network only returns tagged tuples, no windows.
+				TaggedTuple newTaggedTuple = new TaggedTuple(newTuple);
+				resultList.add(newTaggedTuple);
 			}
-
-
-
 			//TODO: make the ResultStore an observer of this object.
 			if (!resultList.isEmpty()) {
 				setChanged();
 				notifyObservers(resultList);
 			}			
-	    } catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SchemaMetadataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (TypeMappingException e) {
+	    } catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	    
 	  }
 
-	  protected void addMsgType(Message msg) {
-	    moteIF.registerListener(msg, this);
+	private int getTuplesPerMessage(Message message) 
+	throws SecurityException, NoSuchMethodException, IllegalArgumentException, 
+	IllegalAccessException, InvocationTargetException {
+		//This bit of code is based on http://java.sun.com/developer/technicalArticles/ALT/Reflection/
+		Class msgClass = message.getClass();
+		Method meth = msgClass.getMethod("numElements_tuples_evalEpoch", new Class[0]);
+		Integer tuplesPerMessage = (Integer) meth.invoke(message, new Object[0]);		
+		return tuplesPerMessage;
+	}
+	
+	
+	/**
+	 * For each attribute, deliver operator and derive getElementXXXXXX method 
+	 * name and obtain value.
+	 * @param attr
+	 * @param message
+	 * @param index
+	 * @return
+	 * @throws SchemaMetadataException
+	 * @throws TypeMappingException
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 * @throws InvocationTargetException
+	 * @throws SecurityException
+	 * @throws NoSuchMethodException
+	 */
+	private EvaluatorAttribute getAttribute(Attribute attr, Message message, int index) 
+	throws SchemaMetadataException, TypeMappingException, IllegalArgumentException, 
+	IllegalAccessException, InvocationTargetException, SecurityException, NoSuchMethodException {
+		if (logger.isTraceEnabled())
+				logger.trace("ENTER getAttribute()");
+		String nesCAttrName = CodeGenUtils.getNescAttrName(attr);
+		String methodName = "getElement_tuples_"+nesCAttrName;
+		Class paramTypes[] = new Class[1];
+		paramTypes[0] = Integer.TYPE;
+		//This bit of code is based on http://java.sun.com/developer/technicalArticles/ALT/Reflection/
+		Class msgClass = message.getClass();
+		Method meth = msgClass.getMethod(methodName, paramTypes);
+		Object argList[] = new Object[1];
+		argList[0] = new Integer(index);
+		Object retObj = meth.invoke(message, argList);
+		Integer data = (Integer)retObj;
+			
+		String extentName = ""; //FIXME: !!!
+		String attrName = attr.getAttributeName();
+		AttributeType attrType = attr.getType();
+			
+		EvaluatorAttribute evalAttr = new EvaluatorAttribute(extentName, attrName, attrType, data);
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER getAttribute()");
+		return evalAttr;
 	  }
+	  
+	protected void addMsgType(Message msg) {
+		moteIF.registerListener(msg, this);
+	}
 
 }

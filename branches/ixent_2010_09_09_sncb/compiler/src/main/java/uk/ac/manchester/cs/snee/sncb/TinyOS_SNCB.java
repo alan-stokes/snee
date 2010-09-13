@@ -25,7 +25,7 @@ import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 public class TinyOS_SNCB implements SNCB {
 
-	private static Logger logger = 
+	private Logger logger = 
 		Logger.getLogger(TinyOS_SNCB.class.getName());
 	
 	private SensorNetworkSourceMetadata metadata;
