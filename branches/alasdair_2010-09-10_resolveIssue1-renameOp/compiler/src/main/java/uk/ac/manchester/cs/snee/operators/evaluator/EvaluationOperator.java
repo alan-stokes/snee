@@ -82,8 +82,8 @@ extends EvaluatorPhysicalOperator {
 			Object daValue;
 			if (operand instanceof DataAttribute) {
 				DataAttribute da = (DataAttribute) operand;
-				String daName = da.getLocalName() + "." + 
-					da.getAttributeName();
+				String daName = da.getAttributeSchemaName() + "." + 
+					da.getAttributeDisplayName();
 				if (logger.isTraceEnabled()) {
 					logger.trace("Getting attribute " + daName);
 				}

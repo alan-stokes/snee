@@ -10,7 +10,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.sql.rowset.WebRowSet;
 
@@ -18,13 +17,14 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
@@ -368,8 +368,8 @@ public class PullSourceWrapper {
 					String extentName = wrsMetadata.getTableName(i);
 					AttributeType dataType = inferType(wrsMetadata, i);
 					Object value = wrs.getObject(i);
-					Attribute attr = 
-						new Attribute(extentName, attrName, dataType);
+					Attribute attr = new DataAttribute(extentName, 
+							attrName, dataType);
 					EvaluatorAttribute field = 
 						new EvaluatorAttribute(attr, value);
 					tuple.addAttribute(field);

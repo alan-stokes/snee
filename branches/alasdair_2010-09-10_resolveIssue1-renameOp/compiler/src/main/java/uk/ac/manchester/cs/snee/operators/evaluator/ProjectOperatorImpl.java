@@ -193,7 +193,7 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		// Only a single expression, get attribute details
 		List<Attribute> attributes = exp.getRequiredAttributes();
 		Attribute attr = attributes.get(0);
-		String attributeName = attr.getAttributeName();
+		String attributeName = attr.getAttributeDisplayName();
 
 		/*
 		 * In-network SNEE adds the following attributes which 

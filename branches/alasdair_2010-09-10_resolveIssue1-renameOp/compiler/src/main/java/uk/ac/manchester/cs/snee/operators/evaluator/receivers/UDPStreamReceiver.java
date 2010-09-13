@@ -209,7 +209,7 @@ public class UDPStreamReceiver implements SourceReceiver {
 			//FIXME: Need to convert the string representation to the correct type
 			EvaluatorAttribute evalAttr = 
 				new EvaluatorAttribute(streamName, 
-								attribute.getAttributeName(), 
+								attribute.getAttributeDisplayName(), 
 								attribute.getType(), 
 						convertStringToType(st.nextToken(), 
 								attribute.getType().getName()));

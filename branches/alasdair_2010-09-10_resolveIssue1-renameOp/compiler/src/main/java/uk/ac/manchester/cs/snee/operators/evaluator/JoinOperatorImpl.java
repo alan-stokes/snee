@@ -258,7 +258,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		}
 		Tuple tuple = new Tuple();						
 		for (Attribute attr: attrs) {
-			String attrName = attr.getAttributeName();
+			String attrName = attr.getAttributeDisplayName();
 			if (attrName.equalsIgnoreCase("evalTime") || 
 					attrName.equalsIgnoreCase("id") ||
 					attrName.equalsIgnoreCase("time")) {
@@ -321,7 +321,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 				DataAttribute da = (DataAttribute) arrExpr[i];
 				EvaluatorAttribute evalAttr = 
 					retrieveEvalutatorAttribute(t1, t2, 
-							da.getAttributeName());
+							da.getAttributeDisplayName());
 				Object daValue = evalAttr.getData();
 				if (logger.isTraceEnabled()) {
 					logger.trace("Stack push: " + daValue);

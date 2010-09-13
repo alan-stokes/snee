@@ -87,7 +87,7 @@ public class Tuple {
 		}
 		_attrValues = attrValues;
 		for (EvaluatorAttribute attr : attrValues) {
-			_attrNames.add(attr.getName());
+			_attrNames.add(attr.getAttributeSchemaName());
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN Tuple()");
@@ -123,8 +123,9 @@ public class Tuple {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER addField() with " + attr);
 		}
-		String fieldName = attr.getName().toLowerCase();
-		_attrNames.add(fieldName);
+		String attrName = 
+			attr.getAttributeSchemaName().toLowerCase();
+		_attrNames.add(attrName);
 		_attrValues.add(attr);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN addField()");

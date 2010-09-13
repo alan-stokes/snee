@@ -44,7 +44,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 
 /**
  * Parent for Project, Aggregation and Having Operator.
- * @author Christian Brenninkmeijer, Ixent Galpin
  */
 public abstract class PredicateOperator extends LogicalOperatorImpl {
 
@@ -67,19 +66,6 @@ public abstract class PredicateOperator extends LogicalOperatorImpl {
 		setChildren(new LogicalOperator[] {inputOperator});
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 	}
-
-//	/**
-//	 * Constructor that creates a new operator
-//	 * based on a model of an existing operator.
-//	 *
-//	 * @param model Another PredicateOperator 
-//	 *   upon which this new one will be cloned.
-//	 */
-//	protected PredicateOperator(PredicateOperator model) {
-//		super(model);
-//		this.expressions = model.expressions;
-//		this.attributes = model.attributes;
-//	}
 
 	/**
 	 * Makes a copy of the operator using a new opCount.
@@ -187,33 +173,18 @@ public abstract class PredicateOperator extends LogicalOperatorImpl {
 		}
 	}
 
-//	/** {@inheritDoc} */
-//	public int[] getSourceSites() {
-//		return super.defaultGetSourceSites();
-//	}
-
-//	/** {@inheritDoc} */    
-//	public int getOutputQueueCardinality(Site node, DAF daf) {
-//		return super.defaultGetOutputQueueCardinality(node, daf);
-//	}
-
-//	/** {@inheritDoc} */    
-//	public int getOutputQueueCardinality(int numberOfInstances) {
-//		return super.defaultGetOutputQueueCardinality(numberOfInstances);
-//	}
-
 	/** 
 	 * {@inheritDoc}
 	 */   
 	public void pushLocalNameDown(String newLocalName) {
-		for (int i = 0; i < attributes.size(); i++) {
-			attributes.get(i).setLocalName(newLocalName);
-		}
+		//XXX-AG: Commented out method body
+		/*
+		 * This method was being used to relabel an extent in a 
+		 * query. Have commented it out!
+		 */
+//		for (int i = 0; i < attributes.size(); i++) {
+//			attributes.get(i).setLocalName(newLocalName);
+//		}
 	}
-
-//	/** {@inheritDoc} */    
-//	public int getDataMemoryCost(Site node, DAF daf) {
-//		return super.defaultGetDataMemoryCost(node, daf);
-//	}
 
 }

@@ -66,7 +66,7 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		expect(mockExpression.getRequiredAttributes()).
 			andReturn(mockQPAttributesList);
 		expect(mockQPAttributesList.get(0)).andReturn(mockAttr);
-		expect(mockAttr.getAttributeName()).andReturn("attrName");
+		expect(mockAttr.getAttributeDisplayName()).andReturn("attrName");
 		expect(mockTuple.getAttribute("attrName")).
 			andThrow(new SNEEException("Non existent field"));
 		//Test
@@ -83,7 +83,7 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		expect(mockExpression.getRequiredAttributes()).
 			andReturn(mockQPAttributesList);
 		expect(mockQPAttributesList.get(0)).andReturn(mockAttr);
-		expect(mockAttr.getAttributeName()).andReturn("attrName");
+		expect(mockAttr.getAttributeDisplayName()).andReturn("attrName");
 		expect(mockTuple.getAttribute("attrName")).
 			andReturn(mockField);
 		//Test

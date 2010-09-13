@@ -33,28 +33,23 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
-import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
 
 /** Extension of the Attribute for the special case 
  * 		when the Attribute is the EvalTime. 
  */
 public class EvalTimeAttribute extends Attribute {
 
-	private AttributeType _type;
-
 	/** 
 	 * Creates a new EvalTime.
 	 * @throws SchemaMetadataException The type could not be determined
 	 *    from the metaData.
 	 */
-	public EvalTimeAttribute(AttributeType type) 
+	public EvalTimeAttribute(String extentName, String attrName, 
+			AttributeType attrType) 
 	throws SchemaMetadataException {
-		super("", Constants.EVAL_TIME);
-		_type = type;
+		super(extentName, attrName, attrType);
 	}
 
 	/**
@@ -66,27 +61,16 @@ public class EvalTimeAttribute extends Attribute {
 		// not sure this is redundant.
 		return (other instanceof EvalTimeAttribute);
 	}
-	
-	/** {@inheritDoc} */
-	public int hashCode() {
-		return "evalTime".hashCode();
-	}
-	
-	/** {@inheritDoc} */
-	public String toString() {
-		return "EvalTime";
-	}
-	
-	/**
-	 * The raw data type of this expression.
-	 *  
-	 * @return The raw data type of this expression.
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
-	 */
-	public AttributeType getType() {
-		return _type;//types.getType(Constants.TIME_TYPE);
-	}
+//	
+//	/** {@inheritDoc} */
+//	public int hashCode() {
+//		return "evalTime".hashCode();
+//	}
+//	
+//	/** {@inheritDoc} */
+//	public String toString() {
+//		return "EvalTime";
+//	}
 
 	/**
 	 * Finds the minimum value that this expression can return.

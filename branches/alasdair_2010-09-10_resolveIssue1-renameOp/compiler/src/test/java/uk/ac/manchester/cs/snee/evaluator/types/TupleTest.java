@@ -89,7 +89,8 @@ public class TupleTest extends EasyMockSupport {
 	public void testAddAttribute() 
 	throws SNEEException, TypeMappingException, 
 	SchemaMetadataException {
-		expect(mockEvaluatorAttribute.getName()).andReturn("name");
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name");
 		replayAll();
 		Tuple tuple = new Tuple();
 		assertEquals(0, tuple.size());
@@ -102,7 +103,7 @@ public class TupleTest extends EasyMockSupport {
 	public void testAddAttribute_alreadyExists() 
 	throws SNEEException, TypeMappingException, 
 	SchemaMetadataException {
-		expect(mockEvaluatorAttribute.getName()).
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
 			andReturn("name").times(2);
 		replayAll();
 		List<EvaluatorAttribute> attrs =
@@ -117,7 +118,7 @@ public class TupleTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetAttributeValues() {
-		expect(mockEvaluatorAttribute.getName()).
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
 			andReturn("name").times(3);
 		replayAll();
 		List<EvaluatorAttribute> attrs = 
@@ -131,13 +132,15 @@ public class TupleTest extends EasyMockSupport {
 	}
 
 	@Test(expected=SNEEException.class)
-	public void testGetAttrByIndex_notSet() throws SNEEException {
+	public void testGetAttrByIndex_notSet() 
+	throws SNEEException {
 		Tuple tuple = new Tuple();
 		tuple.getAttribute(2);
 	}
 
 	@Test(expected=SNEEException.class)
-	public void testGetAttributeByName_notSet() throws SNEEException {
+	public void testGetAttributeByName_notSet() 
+	throws SNEEException {
 		Tuple tuple = new Tuple();
 		tuple.getAttribute("field");
 	}
@@ -145,7 +148,7 @@ public class TupleTest extends EasyMockSupport {
 	@Test(expected=SNEEException.class)
 	public void testGetAttributeByIndex_notExists() 
 	throws SNEEException {
-		expect(mockEvaluatorAttribute.getName()).
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
 			andReturn("name").times(3);
 		replayAll();
 		List<EvaluatorAttribute> attrs = 
@@ -161,7 +164,7 @@ public class TupleTest extends EasyMockSupport {
 	@Test(expected=SNEEException.class)
 	public void testGetAttributeByName_notExists() 
 	throws SNEEException {
-		expect(mockEvaluatorAttribute.getName()).
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
 			andReturn("name").times(3);
 		replayAll();
 		List<EvaluatorAttribute> attrs = 
@@ -177,7 +180,7 @@ public class TupleTest extends EasyMockSupport {
 	@Test
 	public void testGetAttributeByIndex_exists() 
 	throws SNEEException {
-		expect(mockEvaluatorAttribute.getName()).
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
 			andReturn("name").times(3);
 		replayAll();
 		List<EvaluatorAttribute> attrs = 
@@ -193,7 +196,7 @@ public class TupleTest extends EasyMockSupport {
 	@Test
 	public void testGetAttributeByName_exists() 
 	throws SNEEException {
-		expect(mockEvaluatorAttribute.getName()).
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
 			andReturn("name").times(3);
 		replayAll();
 		List<EvaluatorAttribute> attrs = 
@@ -223,7 +226,7 @@ public class TupleTest extends EasyMockSupport {
 	@Test(expected=SNEEException.class)
 	public void testGetAttributeValueByIndex_notExists() 
 	throws SNEEException {
-		expect(mockEvaluatorAttribute.getName()).
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
 			andReturn("name").times(3);
 		replayAll();
 		List<EvaluatorAttribute> attrs = 
@@ -239,7 +242,7 @@ public class TupleTest extends EasyMockSupport {
 	@Test(expected=SNEEException.class)
 	public void testGetAttributeValueByName_notExists() 
 	throws SNEEException {
-		expect(mockEvaluatorAttribute.getName()).
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
 			andReturn("name").times(3);
 		replayAll();
 		List<EvaluatorAttribute> attrs = 
@@ -255,7 +258,7 @@ public class TupleTest extends EasyMockSupport {
 	@Test
 	public void testGetAttributeValueByIndex_exists() 
 	throws SNEEException {
-		expect(mockEvaluatorAttribute.getName()).
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
 			andReturn("name").times(3);
 		expect(mockEvaluatorAttribute.getData()).andReturn(null);
 		replayAll();
@@ -272,7 +275,7 @@ public class TupleTest extends EasyMockSupport {
 	@Test
 	public void testGetAttributeValueByName_exists() 
 	throws SNEEException {
-		expect(mockEvaluatorAttribute.getName()).
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
 			andReturn("name").times(3);
 		expect(mockEvaluatorAttribute.getData()).andReturn(null);
 		replayAll();
@@ -289,7 +292,7 @@ public class TupleTest extends EasyMockSupport {
 	@Test
 	public void testGetAttributeValueByName_existsCaseInsensitive() 
 	throws SNEEException {
-		expect(mockEvaluatorAttribute.getName()).
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
 			andReturn("name").times(3);
 		expect(mockEvaluatorAttribute.getData()).andReturn(null);
 		replayAll();
@@ -302,20 +305,5 @@ public class TupleTest extends EasyMockSupport {
 		tuple.getAttributeValue("nAmE");
 		verifyAll();
 	}
-//	
-//	@Test
-//	public void testContainsField_fieldExsits() {
-//		assertTrue(tuple.containsField("Int"));
-//	}
-//	
-//	@Test
-//	public void testContainsField_fieldExsitsCase() {
-//		assertTrue(tuple.containsField("INT"));
-//	}
-//
-//	@Test
-//	public void testContainsField_fieldNotExsits() {
-//		assertFalse(tuple.containsField("hello"));
-//	}
 
 }

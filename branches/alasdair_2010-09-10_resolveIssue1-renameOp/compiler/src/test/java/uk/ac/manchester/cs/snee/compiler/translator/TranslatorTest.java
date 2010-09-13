@@ -1,11 +1,13 @@
 package uk.ac.manchester.cs.snee.compiler.translator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -36,6 +38,7 @@ import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlLexer;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
@@ -200,6 +203,27 @@ public class TranslatorTest {
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("(SELECT timestamp FROM TestStream);");
+	}
+	
+	@Test
+	public void testRename() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ParserValidationException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT timestamp AS time " +
+				"FROM TestStream;");
+		LogicalOperator rootOperator = laf.getRootOperator();
+		List<Attribute> attributes = 
+			rootOperator.getAttributes();
+		assertEquals(1, attributes.size());
+		Attribute attribute = attributes.get(0);
+		assertTrue(attribute.getAttributeDisplayName().
+				equalsIgnoreCase("time"));
+		assertTrue(attribute.getAttributeSchemaName().
+				equalsIgnoreCase("timestamp"));
 	}
 	
 	@Test

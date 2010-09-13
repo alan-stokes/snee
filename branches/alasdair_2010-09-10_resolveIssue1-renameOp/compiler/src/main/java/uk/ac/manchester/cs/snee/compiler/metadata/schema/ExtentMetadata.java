@@ -34,12 +34,11 @@
 package uk.ac.manchester.cs.snee.compiler.metadata.schema;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
+
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 
 public class ExtentMetadata {
 	
@@ -56,7 +55,7 @@ public class ExtentMetadata {
 
 	private ExtentType _extentType;
 
-	//Ixent moved this to here from SensorNetworkSourceMetadata, as this seems 
+	//XXX-Ixent moved this to here from SensorNetworkSourceMetadata, as this seems 
 	//to be a something considered during early steps of query optimization.
 	private int cardinality = 1;
 	
@@ -111,7 +110,7 @@ public class ExtentMetadata {
 	public boolean hasAttribute(String attribute) {
 		boolean attrFound = false;
 		for (Attribute attr : _attributes) {
-			String attrName = attr.getName();
+			String attrName = attr.getAttributeSchemaName();
 			if (attrName.equalsIgnoreCase(attribute)) {
 				attrFound = true;
 				break;
@@ -128,11 +127,14 @@ public class ExtentMetadata {
 	 */
 	public AttributeType getAttributeType(String attribute)
 	throws SchemaMetadataException {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER getAttributeType() with " + attribute);
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER getAttributeType() with " + 
+					attribute);
+		}
 		AttributeType type = null;
 		for (Attribute attr : _attributes) {
-			if (attribute.equalsIgnoreCase(attr.getName())) {
+			if (attribute.equalsIgnoreCase(
+					attr.getAttributeSchemaName())) {
 				type = attr.getType();
 				break;
 			}
@@ -143,8 +145,10 @@ public class ExtentMetadata {
 			logger.warn(message);
 			throw new SchemaMetadataException(message);
 		}
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN getAttributeType() with " + type);
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN getAttributeType() with " + 
+					type);
+		}
 		return type;
 	}
 	

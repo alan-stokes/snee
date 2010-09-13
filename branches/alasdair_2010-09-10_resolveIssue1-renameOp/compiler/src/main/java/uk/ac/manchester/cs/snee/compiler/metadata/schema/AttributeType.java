@@ -34,18 +34,10 @@
 package uk.ac.manchester.cs.snee.compiler.metadata.schema;
 
 
-import java.io.Serializable;
-
 import org.apache.log4j.Logger;
-
 import org.w3c.dom.Element;
 
-public class AttributeType implements Serializable {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -4632622572144870143L;
+public class AttributeType { 
 
 	private static Logger logger = 
 		Logger.getLogger(AttributeType.class.getName());

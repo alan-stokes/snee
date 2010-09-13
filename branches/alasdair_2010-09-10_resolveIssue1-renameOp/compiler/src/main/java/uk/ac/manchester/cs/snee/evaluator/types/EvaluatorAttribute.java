@@ -35,9 +35,10 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.evaluator.types;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 
 /**
  * Represents an attribute of a tuple used by the evaluator.
@@ -47,7 +48,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
  *
  * @see Attribute
  */
-public class EvaluatorAttribute extends Attribute {
+public class EvaluatorAttribute extends DataAttribute {
 	
 	/**
 	 * The value of the field 
@@ -65,14 +66,13 @@ public class EvaluatorAttribute extends Attribute {
 	 * Constructor for EvaluatorAttribute implementation which 
 	 * extends the logical Attribute class with a data object.
 	 * 
-	 * @param attribute <code>Attribute</code> that is being extended
+	 * @param attr <code>Attribute</code> that is being extended
 	 * @param data data value being stored
 	 * @throws SchemaMetadataException invalid data type
 	 */
-	public EvaluatorAttribute(Attribute attribute, Object data) 
+	public EvaluatorAttribute(Attribute attr, Object data) 
 	throws SchemaMetadataException {
-		super(attribute.getExtentName(), attribute.getName(), 
-				attribute.getType());
+		super(attr);
 		_data = data;
 	}
 	
