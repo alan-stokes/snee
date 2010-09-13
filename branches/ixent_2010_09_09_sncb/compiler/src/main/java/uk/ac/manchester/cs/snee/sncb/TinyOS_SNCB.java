@@ -125,7 +125,7 @@ public class TinyOS_SNCB implements SNCB {
 		String targetName = "tmotesky_t2";
 		boolean controlRadioOff = false;
 		boolean enablePrintf = false;
-		boolean useStartUpProtocol = true;
+		boolean useStartUpProtocol = false;
 		boolean enableLeds = true;
 		boolean usePowerManagement = false;
 		boolean deliverLast = false;
@@ -175,7 +175,7 @@ public class TinyOS_SNCB implements SNCB {
 		Object msgObj = msgClass.newInstance();
 		Message msg = (Message)msgObj;
 		DeliverOperator delOp = (DeliverOperator) qep.getLAF().getRootOperator();
-		SerialPortMessageReceiver mr = new SerialPortMessageReceiver("serial@/dev/tty.usbserial-M4APD1E7:telos",
+		SerialPortMessageReceiver mr = new SerialPortMessageReceiver("serial@/dev/tty.usbserial-M4A7J5HX:telos",
 				delOp);
 		mr.addMsgType(msg);
 		System.err.println("hurrah! "+msg.amType());

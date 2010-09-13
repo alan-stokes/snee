@@ -559,7 +559,7 @@ public class TinyOSGenerator {
 			new QueryPlanModuleComponent(COMPONENT_QUERY_PLAN, config,
 			plan, sink, tosVersion, (tossimFlag || combinedImage), targetName,
 			costParams, controlRadioOff, enablePrintf, useStartUpProtocol, enableLeds,
-			usePowerManagement, deliverLast, adjustRadioPower);
+			debugLeds, usePowerManagement, deliverLast, adjustRadioPower);
 		config.addComponent(queryPlanModuleComp);
 
 		TimerT1Component timerComp = new TimerT1Component( //$
@@ -1137,7 +1137,7 @@ public class TinyOSGenerator {
 			new QueryPlanModuleComponent(COMPONENT_QUERY_PLAN, config,
 			plan, sink, tosVersion, (tossimFlag || combinedImage), targetName,
 			costParams, controlRadioOff, enablePrintf, useStartUpProtocol, enableLeds,
-			usePowerManagement, deliverLast, adjustRadioPower);
+			debugLeds, usePowerManagement, deliverLast, adjustRadioPower);
 		config.addComponent(queryPlanModuleComp);
 
 		TimerT2Component timerComp = new TimerT2Component(		//$

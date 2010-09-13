@@ -53,7 +53,7 @@ implements net.tinyos.message.MessageListener {
 	    //    Date d = new Date(t);
 	    
 	    System.out.print("" + t + ": ");
-	    System.out.println(message);
+	   // System.out.println(message);
 	    
 	    try {
 			List<Output> resultList = new ArrayList<Output>();
@@ -86,7 +86,9 @@ implements net.tinyos.message.MessageListener {
 		//This bit of code is based on http://java.sun.com/developer/technicalArticles/ALT/Reflection/
 		Class msgClass = message.getClass();
 		Method meth = msgClass.getMethod("numElements_tuples_evalEpoch", new Class[0]);
+		//Method meth = msgClass.getMethod("numElements_tuples_evalEpoch", new Class[]{Integer.TYPE});
 		Integer tuplesPerMessage = (Integer) meth.invoke(message, new Object[0]);		
+		//Integer tuplesPerMessage = (Integer) meth.invoke(message, new Object[]{new Integer(0)});
 		return tuplesPerMessage;
 	}
 	
