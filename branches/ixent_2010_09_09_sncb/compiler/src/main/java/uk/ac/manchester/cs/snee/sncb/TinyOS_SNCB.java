@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Iterator;
 
 import net.tinyos.message.Message;
 import net.tinyos.tools.MsgReader;
@@ -16,7 +17,9 @@ import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
@@ -99,7 +102,7 @@ public class TinyOS_SNCB implements SNCB {
 			logger.trace("Compiling TinyOS/nesC code into executable images.");
 			compileNesCCode(queryOutputDir);
 			logger.trace("Disseminating Query Plan images");
-			////disseminateQueryPlanImages();
+			disseminateQueryPlanImages(qep, queryOutputDir);
 			logger.trace("Setting up result collector");
 			setUpResultCollector(qep, queryOutputDir);
 		} catch (Exception e) {
@@ -157,7 +160,7 @@ public class TinyOS_SNCB implements SNCB {
 			logger.trace("ENTER setUpResultCollector()");
 		//TODO: need to set up plumbing for query result collection (using mig?)
 		String nescOutputDir = System.getProperty("user.dir")+"/"+
-		queryOutputDir+"tmotesky_t2";
+			queryOutputDir+"tmotesky_t2";
 		String nesCHeaderFile = nescOutputDir+"/mote"+qep.getGateway()+"/QueryPlan.h";
 		System.out.println(nesCHeaderFile);
 		String outputJavaFile = System.getProperty("user.dir")+"/"+queryOutputDir+"DeliverMessage.java";
@@ -179,8 +182,23 @@ public class TinyOS_SNCB implements SNCB {
 			logger.trace("RETURN setUpResultCollector()");	
 	}
 	
-	private void disseminateQueryPlanImages() {
-		//TODO: invoke OTA functionality to disseminate query plan
+	private void disseminateQueryPlanImages(SensorNetworkQueryPlan qep, 
+			String queryOutputDir) {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER disseminateQueryPlanImages()");
+		String nescOutputDir = System.getProperty("user.dir")+"/"+
+			queryOutputDir+"tmotesky_t2";
+		Iterator<Site> siteIter = qep.siteIterator(TraversalOrder.POST_ORDER);
+		while (siteIter.hasNext()) {
+			String siteID = siteIter.next().getID();
+			String moteExe = nescOutputDir+"/mote"+siteID+"/build/telosb/main.exe";
+			//TODO: invoke OTA functionality to disseminate query plan
+//			String pythonScript = Utils.getResourcePath("etc/sncb/python/disseminateImage.py");
+//			String params[] = {pythonScript, siteID, moteExe};
+//			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
+		}
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN disseminateQueryPlanImages()");
 	}
 	
 	@Override
