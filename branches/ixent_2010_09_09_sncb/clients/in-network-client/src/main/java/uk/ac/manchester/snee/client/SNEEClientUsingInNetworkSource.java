@@ -61,12 +61,12 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 				SNEEClientUsingInNetworkSource client = 
 					new SNEEClientUsingInNetworkSource(query, duration, queryParams);
 				/* Initialise and run data source */
-				_myDataSource = new ConstantRatePushStreamGenerator();
-				_myDataSource.startTransmission();
+//				_myDataSource = new ConstantRatePushStreamGenerator();
+//				_myDataSource.startTransmission();
 				/* Run SNEEClient */
 				client.run();
 				/* Stop the data source */
-				_myDataSource.stopTransmission();
+//				_myDataSource.stopTransmission();
 			} catch (Exception e) {
 				System.out.println("Execution failed. See logs for detail.");
 				logger.fatal(e);
