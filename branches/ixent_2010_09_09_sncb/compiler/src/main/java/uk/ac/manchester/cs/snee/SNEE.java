@@ -39,13 +39,16 @@ public interface SNEE {
 	throws MetadataException;
 	
 	/**
-	 * Adds a query to the set of registered queries and returns the generated
-	 * query identifier. 
+	 * Adds a query to the set of registered queries and returns the 
+	 * generated query identifier. 
 	 * 
-	 * It takes a query statement as input, generates a query plan for its 
+	 * It takes a query statement as input, and optionally any 
+	 * parameters associated with it, generates a query plan for its 
 	 * evaluation, and adds it to the set of registered query plans.
 	 * 
 	 * @param query Statement of the query
+	 * @param parametersFile location of the query parameters file
+	 *
 	 * @throws SNEEException
 	 * @throws MetadataException 
 	 * @throws EvaluatorException 

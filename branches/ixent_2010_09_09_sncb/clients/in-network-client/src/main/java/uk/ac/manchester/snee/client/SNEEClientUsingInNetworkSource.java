@@ -49,7 +49,7 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 			//XXX: Use default query
 			query = "SELECT * FROM Castilla;";
 			duration = Long.valueOf("30");
-			queryParams= Utils.getResourcePath("etc/query-parameters.xml");
+			queryParams= "etc/query-parameters.xml";
 //			System.exit(1);
 		} else {	
 			query = args[0];

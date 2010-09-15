@@ -313,8 +313,8 @@ public class SNEEController implements SNEE {
 		if (queryParamsFile != null) {
 			try {
 				queryParams = new QueryParameters(queryId, queryParamsFile);
-			} catch (QoSException e) {
-				logger.warn("Throwing compilation exception. Cause " + e);
+			} catch (Exception e) {
+				logger.warn("Error obtaining query parameters: " + e);
 				throw new SNEECompilerException(e.getLocalizedMessage());
 			}
 		}

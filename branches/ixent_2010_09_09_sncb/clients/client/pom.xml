@@ -5,11 +5,11 @@
   <parent>
     <artifactId>clients</artifactId>
     <groupId>uk.ac.manchester.cs.snee</groupId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
   </parent>
   <groupId>uk.ac.manchester.cs.snee.client</groupId>
   <artifactId>client</artifactId>
   <name>Client</name>
-  <version>1.2.1</version>
+  <version>1.2.2</version>
   <description>Common code for command line clients.</description>
 </project>
