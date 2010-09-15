@@ -71,38 +71,45 @@ import uk.ac.manchester.cs.snee.SNEEException;
 public class Utils {
 
 	static Logger logger = Logger.getLogger(Utils.class.getName());
-//
-//	/**
-//	 * Check that a file exists
-//	 * @param name file name
-//	 * @param source
-//	 * @throws IOException if the file does not exist 
-//	 * @throws SNEEException thrown if the file name is null
-//	 */
-//	public static void checkFileExists(String name, String source) 
-//	throws IOException, SNEEException {
-//		if (logger.isDebugEnabled())
-//			logger.debug("ENTER checkFileExists() with " + name + 
-//					" source=" + source);
-//		if (name == null || name.endsWith("null")) {
-//			String message = "Null File " + name + "Error in "
-//					+ source;
-//			System.out.println(message);
-//			logger.warn(message);
-//			throw new SNEEException(message);
-//		}
-//		File f = new File(name);
-//		System.out.println(f.toString());
-//		if (!f.isFile()) {
-//			String message = "File " + name + " used in "
-//					+ source + " does not Exist";
-//			System.out.println(message);
-//			logger.warn(message);
-//			throw new IOException(message);
-//		}
-//		if (logger.isDebugEnabled())
-//			logger.debug("RETURN checkFileExists()");
-//	}
+
+	/**
+	 * Given a relative or absolute filename, ensures file exists.
+	 * @param Property name used to specify a file location
+	 * @return Full file path is returned
+	 * @throws UtilsException 
+	 */
+	public static String validateFileLocation(String filename) 
+	throws UtilsException {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER validateFileLocation() with " + filename);
+		//Test absolute file location
+		File file = new File(filename);
+		if (!file.exists()) {
+			logger.trace("Absolute file location failed, testing relative path");
+			//Absolute file location failed, check relative path
+			URL fileUrl = Utils.class.getClassLoader().getResource(filename);
+			try {
+				file = new File(fileUrl.toURI());
+			} catch (Exception e) {
+				String message = "Problem reading " +
+						filename + " location. Ensure proper path. " +
+						file;
+				logger.warn(message, e);
+				throw new UtilsException(message, e);
+			}
+		}
+		if (!file.exists()) {
+			String message = "File location " +
+					"specified for " + filename + " does not exist. " +
+					"Please provide a valid location.";
+			logger.warn(message);
+			throw new UtilsException(message);
+		}
+		String filePath = file.getAbsolutePath();
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN validateFileLocation() with " + filePath);
+		return filePath;
+	}
 
 	/**
 	 * Checks if a directory exists. If createIfNonExistent is true and 
@@ -111,6 +118,7 @@ public class Utils {
 	 * @param createIfNonExistent set to true if directory should be created
 	 * @throws IOException
 	 */
+	//TODO: make this throw a UtilsException
 	public static void checkDirectory(String name, boolean createIfNonExistent)
 	throws IOException {
 		File f = new File(name);
@@ -201,6 +209,7 @@ public class Utils {
 	 * @throws SAXException
 	 * @throws IOException
 	 */
+	//TODO: make this throw a UtilsException
 	public static void validateXMLFile(String filename, String schemaFile)
 	throws ParserConfigurationException, SAXException, IOException {
 		//First validate the XML file according to XML schema file
@@ -219,6 +228,7 @@ public class Utils {
 		validator.validate(new DOMSource(document));
 	}
 
+	//TODO: make this throw a UtilsException
 	public static String doXPathStrQuery(String xmlFile, String query)
 	throws XPathExpressionException, FileNotFoundException {
 		XPathFactory factory = XPathFactory.newInstance();
@@ -234,6 +244,7 @@ public class Utils {
 			return result;
 	}
 
+	//TODO: make this throw a UtilsException
 	public static String doXPathStrQuery(Node node, String query)
 	throws XPathExpressionException, FileNotFoundException {
 		XPathFactory factory = XPathFactory.newInstance();
@@ -244,6 +255,7 @@ public class Utils {
 		return result;
 	}
 
+	//TODO: make this throw a UtilsException
 	public static  int doXPathIntQuery(String xmlFile, String query)
 	throws XPathExpressionException, FileNotFoundException {
 		XPathFactory factory = XPathFactory.newInstance();
@@ -259,6 +271,7 @@ public class Utils {
 			return Integer.parseInt(result);
 	}
 
+	//TODO: make this throw a UtilsException
 	public int doXPathIntQuery(Node node, String query)
 	throws XPathExpressionException, FileNotFoundException {
 		XPathFactory factory = XPathFactory.newInstance();
@@ -269,6 +282,7 @@ public class Utils {
 		return result;
 	}
 
+	//TODO: make this throw a UtilsException
 	public static NodeList doXPathQuery(String xmlFile, String query)
 	throws XPathExpressionException, FileNotFoundException {
 		XPathFactory factory = XPathFactory.newInstance();

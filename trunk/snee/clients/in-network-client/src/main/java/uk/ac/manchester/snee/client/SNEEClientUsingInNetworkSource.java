@@ -48,7 +48,7 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 			//XXX: Use default query
 			query = "SELECT * FROM PullStream;";
 			duration = Long.valueOf("20");
-			queryParams= "src/main/resources/etc/query-parameters.xml";
+			queryParams= "etc/query-parameters.xml";
 //			System.exit(1);
 		} else {	
 			query = args[0];
