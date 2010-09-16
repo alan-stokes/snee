@@ -65,7 +65,7 @@ public class TinyOS_SNCB implements SNCB {
 					SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE);
 		} catch (Exception e) {
 			logger.warn(e);
-			throw new SNCBException(e);
+			throw new SNCBException(e.getLocalizedMessage(), e);
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN TinyOS_SNCB()");
@@ -84,7 +84,7 @@ public class TinyOS_SNCB implements SNCB {
 			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
 		} catch (Exception e) {
 			logger.warn(e);
-			throw new SNCBException(e);
+			throw new SNCBException(e.getLocalizedMessage(), e);
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN init()");
@@ -108,7 +108,7 @@ public class TinyOS_SNCB implements SNCB {
 			mr = setUpResultCollector(qep, queryOutputDir);
 		} catch (Exception e) {
 			logger.warn(e);
-			throw new SNCBException(e);
+			throw new SNCBException(e.getLocalizedMessage(), e);
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN register()");
@@ -170,6 +170,7 @@ public class TinyOS_SNCB implements SNCB {
 				nesCHeaderFile, "DeliverMessage", "-o", outputJavaFile};
 		Utils.runExternalProgram("mig", params, this.tinyOSEnvVars);
 		String deliverMessageJavaClassContent = Utils.readFileToString(outputJavaFile);
+		logger.trace("deliverMessageJavaClassContent="+deliverMessageJavaClassContent);
 		MemoryClassLoader mcl = new MemoryClassLoader("DeliverMessage", deliverMessageJavaClassContent);
 		Class msgClass = mcl.loadClass("DeliverMessage");
 		Object msgObj = msgClass.newInstance();

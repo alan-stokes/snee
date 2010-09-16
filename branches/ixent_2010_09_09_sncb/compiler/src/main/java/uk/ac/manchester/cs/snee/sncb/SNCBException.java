@@ -10,8 +10,8 @@ public class SNCBException extends Exception {
 	private static final long serialVersionUID = 1L;
 
 
-	public SNCBException(Exception e) {
-		super(e);
+	public SNCBException(String msg, Exception e) {
+		super(msg, e);
 	}
 	
 }

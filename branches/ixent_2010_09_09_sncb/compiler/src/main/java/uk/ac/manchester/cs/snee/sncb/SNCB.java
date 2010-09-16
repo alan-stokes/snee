@@ -15,7 +15,5 @@ public interface SNCB {
 	public void start();
 	
 	public void stop();
-	
-	//registerResultListener
 
 }
