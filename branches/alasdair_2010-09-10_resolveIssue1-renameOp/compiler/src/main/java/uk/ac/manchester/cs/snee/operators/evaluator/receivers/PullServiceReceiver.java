@@ -13,6 +13,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.WebServiceSourceMetadata;
 import uk.ac.manchester.cs.snee.data.webservice.PullSourceWrapper;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
 public class PullServiceReceiver implements SourceReceiver {
@@ -68,7 +69,8 @@ public class PullServiceReceiver implements SourceReceiver {
 		if (lastTs == null) {
 			List<Tuple> tuples = 
 				_pullSource.getNewestData(_resourceName, 1);
-			tuple = tuples.get(0);
+			//XXX: Hack here as CCO returns table name as temp!
+			tuple = correctTableName(tuples.get(0));
 		} else {
 			List<Tuple> tuples = 
 				_pullSource.getData(_resourceName, 2, lastTs);
@@ -85,7 +87,10 @@ public class PullServiceReceiver implements SourceReceiver {
 			}
 			tuple = tuples.get(1);
 		}
-		//FIXME:This is very CCO dependent!!!
+		if (logger.isTraceEnabled()) {
+			logger.trace("Received tuple: \n" + tuple);
+		}
+		//TODO: This is very CCO dependent!!!
 		/* 
 		 * In the CCO schema, the 'timestamp' attribute is declared
 		 * to be of type integer!
@@ -102,6 +107,28 @@ public class PullServiceReceiver implements SourceReceiver {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN receive() with " + tuple);
 		return tuple;
+	}
+
+	private Tuple correctTableName(Tuple tuple) 
+	throws SchemaMetadataException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER correctTableName() with\n" + tuple);
+		}
+		Tuple correctedTuple = new Tuple();
+		for (EvaluatorAttribute attr : tuple.getAttributeValues()) {
+			EvaluatorAttribute correctAttr = 
+				new EvaluatorAttribute(extentName, 
+						attr.getAttributeSchemaName(), 
+						attr.getAttributeDisplayName(), 
+						attr.getType(), 
+						attr.getData());
+			correctedTuple.addAttribute(correctAttr);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN correctTableName() with\n" + 
+					correctedTuple);
+		}
+		return correctedTuple;
 	}
 
 }

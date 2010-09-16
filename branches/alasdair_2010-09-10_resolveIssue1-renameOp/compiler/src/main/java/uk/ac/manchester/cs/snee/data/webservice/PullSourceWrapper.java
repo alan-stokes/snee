@@ -24,7 +24,6 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
@@ -45,6 +44,7 @@ import eu.semsorgrid4env.service.wsdai.InvalidResourceNameFault;
 import eu.semsorgrid4env.service.wsdai.NotAuthorizedFault;
 import eu.semsorgrid4env.service.wsdai.PropertyDocumentType;
 import eu.semsorgrid4env.service.wsdai.ServiceBusyFault;
+
 public class PullSourceWrapper {
 
 	private static Logger logger = 
@@ -257,7 +257,8 @@ public class PullSourceWrapper {
 					" timestamp=" + timestamp);
 		GetStreamItemRequest request = 
 			createGetStreamItemRequest(resourceName, numItems, timestamp);
-			GenericQueryResponse response = _pullClient.getStreamItems(request);
+			GenericQueryResponse response = 
+				_pullClient.getStreamItems(request);
 			List<Tuple> tuples = processGenericQueryResponse(response);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getData() #tuples=" + tuples.size());
@@ -318,9 +319,12 @@ public class PullSourceWrapper {
 		DatasetType dataset = response.getDataset();
 		String formatURI = dataset.getDatasetFormatURI();
 		if (formatURI.trim().equalsIgnoreCase(_datasetFormatURI)) {
-			if (logger.isTraceEnabled())
-				logger.trace("Processing dataset with format " + formatURI);
-			List<Object> datasets = dataset.getDatasetData().getContent();
+			if (logger.isTraceEnabled()) {
+				logger.trace("Processing dataset with format " +
+						formatURI);
+			}
+			List<Object> datasets = 
+				dataset.getDatasetData().getContent();
 			if (logger.isTraceEnabled()) {
 				logger.trace("Number of datasets: " + datasets.size());
 			}
@@ -368,11 +372,13 @@ public class PullSourceWrapper {
 					String extentName = wrsMetadata.getTableName(i);
 					AttributeType dataType = inferType(wrsMetadata, i);
 					Object value = wrs.getObject(i);
-					Attribute attr = new DataAttribute(extentName, 
-							attrName, dataType);
-					EvaluatorAttribute field = 
-						new EvaluatorAttribute(attr, value);
-					tuple.addAttribute(field);
+					EvaluatorAttribute attr = 
+						new EvaluatorAttribute(extentName, attrName, 
+								dataType, value);
+					if (logger.isTraceEnabled()) {
+						logger.trace("Received attribute: " + attr);
+					}
+					tuple.addAttribute(attr);
 				}
 				//Add tuple to tuple set
 				tuples.add(tuple);
@@ -427,7 +433,8 @@ public class PullSourceWrapper {
 		return dataType;
 	}
 
-	public List<Tuple> getNewestData(String resourceName, Integer numItems) 
+	public List<Tuple> getNewestData(String resourceName, 
+			Integer numItems) 
 	throws SNEEDataSourceException, TypeMappingException, 
 	SchemaMetadataException, SNEEException {
 		if (logger.isDebugEnabled())
@@ -441,7 +448,8 @@ public class PullSourceWrapper {
 			request.setCount(numItems.toString());
 		}
 		request.setMaximumTuples(_maxTuples);
-		GenericQueryResponse response = _pullClient.getStreamNewestItem(request);;
+		GenericQueryResponse response = 
+			_pullClient.getStreamNewestItem(request);;
 		List<Tuple> tuples = processGenericQueryResponse(response);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getData() #tuples=" + tuples.size());

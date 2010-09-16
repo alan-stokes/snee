@@ -71,7 +71,7 @@ public abstract class SNEEClient implements Observer {
 				for (int i = 1; i <= numCols; i++) {
 					Object value = rs.getObject(i);
 					if (metaData.getColumnType(i) == 
-						Types.TIMESTAMP) {
+						Types.TIMESTAMP && value instanceof Long) {
 						buffer.append(
 								new Date(((Long) value).longValue()));
 					} else {

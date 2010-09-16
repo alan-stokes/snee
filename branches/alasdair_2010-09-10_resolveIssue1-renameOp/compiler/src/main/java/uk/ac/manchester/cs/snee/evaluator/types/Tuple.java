@@ -43,7 +43,6 @@ import java.util.List;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.Constants;
 
-//TODO: Link with Attribute class
 /**
  * Tuple is the class that represents a tuple. A tuple consists of 
  * a list of fields, where each field has a position and name attribute.
@@ -259,6 +258,8 @@ public class Tuple {
 		for (int i = 0; i < _attrNames.size(); i++) {
 			String eName = _attrExtents.get(i);
 			String aName = _attrNames.get(i);
+//			System.out.println(extentName + " == " + eName);
+//			System.out.println(attrName + " == " + aName);
 			if (extentName.equalsIgnoreCase(eName) &&
 					attrName.equalsIgnoreCase(aName)) {
 				return i;
