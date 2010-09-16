@@ -186,18 +186,18 @@ extends EvaluatorPhysicalOperator {
 					AggregationType agType = agEx.getAggregationType();
 					DataAttribute da = 
 						(DataAttribute)agEx.getExpression();
-					String attributeName = da.getAttributeSchemaName() + "." +
+					String attrDisplayName = 
 						da.getAttributeDisplayName();
 					AttributeType dataType = da.getType();
 					if (logger.isTraceEnabled()) {
 						logger.trace("Compute " + agType + " on " + 
-								attributeName + 
+								attrDisplayName + 
 								" of type " + dataType.getName());
 					}
 
 					// Calculate aggregate
 					Number agValue = computeAggregate(agType, 
-							attributeName, dataType,
+							attrDisplayName, dataType,
 							curWindow.getTuples());
 
 					// Create result window
@@ -263,13 +263,13 @@ extends EvaluatorPhysicalOperator {
 	}
 
 	private Number computeAggregate(AggregationType agType, 
-			String attributeName, AttributeType dataType, 
+			String attrDisplayName, AttributeType dataType, 
 			List<Tuple> tuples) 
 	throws SNEEException {
 		//FIXME: Write test for this method
 		if (logger.isTraceEnabled()) {
 			logger.debug("ENTER computeAggregate() with " + agType + 
-					", " + attributeName + ", " + dataType);
+					", " + attrDisplayName + ", " + dataType);
 		}
 		Number result;
 		if (agType == AggregationType.AVG) {
@@ -279,7 +279,8 @@ extends EvaluatorPhysicalOperator {
 				result = null;
 			} else {
 				if (dataType.getName().equalsIgnoreCase("integer")) 
-					result = computeIntegerAverage(attributeName, tuples);
+					result = computeIntegerAverage(attrDisplayName, 
+							tuples);
 				else {
 					logger.warn("Unsupported data type for computing " +
 							"average. " + 
@@ -313,7 +314,8 @@ extends EvaluatorPhysicalOperator {
 		Integer average; 
 		int count=0,totalValue=0;
 		for (Tuple tuple : tuples) {
-			Integer value = (Integer) tuple.getAttributeValue(attributeName);
+			Integer value = (Integer) 
+				tuple.getAttributeValueByDisplayName(attributeName);
 			totalValue += value;
 			count++;
 		}

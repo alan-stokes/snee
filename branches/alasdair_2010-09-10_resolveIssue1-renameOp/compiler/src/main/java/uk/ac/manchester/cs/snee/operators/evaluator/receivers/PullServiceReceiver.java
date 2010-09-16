@@ -28,12 +28,15 @@ public class PullServiceReceiver implements SourceReceiver {
 
 	private long _sleep;
 
+	private String extentName;
+
 	public PullServiceReceiver(String streamName,
 			WebServiceSourceMetadata webSource, long sleep) 
 	throws ExtentDoesNotExistException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER PullServiceReceiver() with " + 
 					streamName + " sleep duration=" + sleep);
+		extentName = streamName;
 		_resourceName = webSource.getResourceName(streamName);
 		_pullSource = webSource.getPullSource();
 		_sleep = sleep;
@@ -71,7 +74,8 @@ public class PullServiceReceiver implements SourceReceiver {
 				_pullSource.getData(_resourceName, 2, lastTs);
 			while (tuples.size() < 2) {
 				try {
-					logger.trace("No new tuple yet. Sleep for " + _sleep);
+					logger.trace("No new tuple yet. Sleep for " + 
+							_sleep);
 					//Sleep for 10s before trying again
 					Thread.sleep(_sleep);
 				} catch (InterruptedException e1) {
@@ -88,10 +92,11 @@ public class PullServiceReceiver implements SourceReceiver {
 		 * This is why the cast below is to type Integer.
 		 */
 		long sqlTsValue = 
-			((Integer) tuple.getAttributeValue("timestamp")).longValue();
+			((Integer) tuple.getAttributeValue(extentName, 
+					"timestamp")).longValue();
 		lastTs =  new Timestamp(sqlTsValue*1000);
 		if (logger.isTraceEnabled()) {
-			logger.trace("timestamp " + lastTs + " " +
+			logger.trace(extentName + ".timestamp " + lastTs + " " +
 					lastTs.getTime());
 		}
 		if (logger.isDebugEnabled())

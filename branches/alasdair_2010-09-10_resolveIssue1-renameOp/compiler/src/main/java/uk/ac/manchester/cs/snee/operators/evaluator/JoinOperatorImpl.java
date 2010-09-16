@@ -40,7 +40,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 
 	private Expression joinPredicate;
 
-	private List<Attribute> attrs;
+	private List<Attribute> returnAttrs;
 
 	public JoinOperatorImpl(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
@@ -53,13 +53,13 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		Iterator<LogicalOperator> iter = op.childOperatorIterator();
 		leftOperator = getEvaluatorOperator(iter.next());
 		rightOperator = getEvaluatorOperator(iter.next());
-
+//XXX: Join could be speeded up by working out once which attribute numbers are required from each tuple
 		// Instantiate this as a join operator
 		join =  (JoinOperator) op;
 		leftBuffer = new CircularList();
 		rightBuffer = new CircularList();
 		joinPredicate = join.getPredicate();
-		attrs = join.getAttributes();
+		returnAttrs = join.getAttributes();
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN JoinOperatorImpl()");
@@ -80,13 +80,16 @@ public class JoinOperatorImpl extends EvaluationOperator {
 	private void startChildReceiver(EvaluatorPhysicalOperator op) 
 	throws EvaluatorException 
 	{
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER startChildReceiver() " + op.toString());
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER startChildReceiver() " + 
+					op.toString());
+		}
 		op.setSchema(getSchema());
 		op.open();
 		op.addObserver(this);
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN startChildReceiver()");
+		}
 	}
 
 	public void close(){
@@ -156,13 +159,18 @@ public class JoinOperatorImpl extends EvaluationOperator {
 
 	@Override
 	public void update(Observable obj, Object observed) {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER update() with " + observed);
+		}
 		try {
 			List<Output> resultItems = new ArrayList<Output>();
-			logger.trace("Observable: " + obj.toString());
+			if (logger.isTraceEnabled()) {
+				logger.trace("Observable: " + obj.toString());
+			}
 			if (obj == leftOperator) {
-				logger.trace("Adding left");
+				if (logger.isTraceEnabled()) {
+					logger.trace("Adding left");
+				}
 				if (observed instanceof Window) {
 					processWindow((Window) observed, resultItems, 
 							leftBuffer);
@@ -170,13 +178,15 @@ public class JoinOperatorImpl extends EvaluationOperator {
 					List<Output> outputList = (List<Output>) observed;
 					for (Output output : outputList) {
 						if (output instanceof Window) {
-							processWindow((Window) output, resultItems,
-									leftBuffer);
+							processWindow((Window) output, 
+									resultItems, leftBuffer);
 						}
 					}
 				}
 			} else if (obj == rightOperator) {
-				logger.trace("Adding right");
+				if (logger.isTraceEnabled()) {
+					logger.trace("Adding right");
+				}
 				if (observed instanceof Window) {
 					processWindow((Window) observed, resultItems, 
 							rightBuffer);
@@ -184,13 +194,14 @@ public class JoinOperatorImpl extends EvaluationOperator {
 					List<Output> outputList = (List<Output>) observed;
 					for (Output output : outputList) {
 						if (output instanceof Window) {
-							processWindow((Window) output, resultItems, 
-									rightBuffer);
+							processWindow((Window) output, 
+									resultItems, rightBuffer);
 						}
 					}
 				}
 			} else {
-				logger.warn("Notification received from unknown source");
+				logger.warn("Notification received from " +
+						"unknown source");
 			}
 			if (!resultItems.isEmpty()) {
 				setChanged();
@@ -200,39 +211,48 @@ public class JoinOperatorImpl extends EvaluationOperator {
 			logger.warn("Error processing join.", e);
 //			throw e;
 		}
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN update()");		
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN update()");
+		}
 	}
 
-	private void processWindow(Window window, List<Output> resultItems, 
-			CircularList buffer)
+	private void processWindow(Window window, 
+			List<Output> resultItems, CircularList buffer)
 	throws SNEEException {
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER processWindow()");
+		}
 		buffer.add(window);
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("#leftWindows=" + leftBuffer.size() +
 					" #rightWindows=" + rightBuffer.size());
-		//FIXME: Can only compute join once both buffers have received some data!
+		}
+		/* 
+		 * Can only compute a join once both buffers have received 
+		 * some data!
+		 */
 		if (leftBuffer.size() > 0 && rightBuffer.size() > 0) {
 			resultItems.add(computeJoin());
 		}
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN processWindow() #resultItems=" + 
 					resultItems.size());
+		}
 	}
 
 	private Window computeJoin() throws SNEEException {
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER computeJoin()");
+		}
 		//FIXME: Joins last seen left window with last seen right window. Not really the correct semantics
 		Window leftWindow = 
 			(Window) leftBuffer.get(leftBuffer.size()-1);
 		Window rightWindow = 
 			(Window) rightBuffer.get(rightBuffer.size()-1);
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("Joining " + leftWindow + " with " + 
 					rightWindow);
+		}
 		List<Tuple> joinTuples = new ArrayList<Tuple>();
 		for (Tuple leftTuple : leftWindow.getTuples()) {
 			for (Tuple rightTuple : rightWindow.getTuples()) {
@@ -245,31 +265,33 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		}
 		// Create join window
 		Window joinWindow = new Window(joinTuples);
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN computeJoin() with " + joinWindow);
+		}
 		return joinWindow;
 	}
 
 	private Tuple generateJoinTuple(Tuple tuple1, Tuple tuple2) 
 	throws SNEEException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER generateJoinTuple() with [" + tuple1 + 
-					"], [" + tuple2 + "]");
+			logger.trace("ENTER generateJoinTuple() with \n" +
+					"[" + tuple1 + 
+					"]\n [" + tuple2 + "]");
 		}
 		Tuple tuple = new Tuple();						
-		for (Attribute attr: attrs) {
+		for (Attribute attr: returnAttrs) {
 			String attrName = attr.getAttributeDisplayName();
 			if (attrName.equalsIgnoreCase("evalTime") || 
 					attrName.equalsIgnoreCase("id") ||
 					attrName.equalsIgnoreCase("time")) {
 				if (logger.isTraceEnabled()) {
-					logger.trace("Ignoring in-network SNEE attribute " + 
-							attrName);
+					logger.trace("Ignoring in-network SNEE " +
+							"attribute " + attrName);
 				}
 				continue;
 			}
 			EvaluatorAttribute evalAttr = 
-				retrieveEvalutatorAttribute(tuple1, tuple2, attrName);
+				retrieveEvalutatorAttribute(tuple1, tuple2, attr);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Adding attribute: " + evalAttr);
 			}
@@ -283,21 +305,26 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		return tuple;
 	}
 
-	private EvaluatorAttribute retrieveEvalutatorAttribute(Tuple tuple1,
-			Tuple tuple2, String attrName)
+	private EvaluatorAttribute retrieveEvalutatorAttribute(
+			Tuple tuple1,
+			Tuple tuple2, 
+			Attribute attr)
 	throws SNEEException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER retrieveEvaluatorAttribute() with " +
-					tuple1 + ", " + tuple2 + ", " + attrName);
+			logger.trace("ENTER retrieveEvaluatorAttribute() with \n"+
+					tuple1 + ", \n" + tuple2 + ", \n" + attr);
 		}
 		EvaluatorAttribute evalAttr;
+		String extentName = attr.getExtentName();
 		try { 
-			evalAttr = tuple1.getAttribute(attrName);
+			evalAttr = tuple1.getAttribute(extentName, 
+					attr.getAttributeSchemaName());
 		} catch (SNEEException e) {
 			try {
-				evalAttr = tuple2.getAttribute(attrName);
+				evalAttr = tuple2.getAttribute(extentName,
+						attr.getAttributeSchemaName());
 			} catch (Exception e1) {
-				String message = "Unknown attribute " + attrName + ".";
+				String message = "Unknown attribute " + attr + ".";
 				logger.warn(message);
 				throw new SNEEException(message);
 			}
@@ -309,19 +336,19 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		return evalAttr;
 	}
 
-	private boolean compute (Expression[] arrExpr, MultiType type, 
+	private boolean compute(Expression[] arrExpr, MultiType type, 
 			Tuple t1, Tuple t2) 
 	throws SNEEException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER compute()");
+			logger.trace("ENTER compute() with " + arrExpr +
+					" multiType: " + type + "\n" + t1 + "\n" + t2);
 		}
 		Stack<Object> operands = new Stack<Object>();
 		for (int i=0; i < arrExpr.length;i++){
 			if (arrExpr[i] instanceof DataAttribute){
 				DataAttribute da = (DataAttribute) arrExpr[i];
 				EvaluatorAttribute evalAttr = 
-					retrieveEvalutatorAttribute(t1, t2, 
-							da.getAttributeDisplayName());
+					retrieveEvalutatorAttribute(t1, t2, da);
 				Object daValue = evalAttr.getData();
 				if (logger.isTraceEnabled()) {
 					logger.trace("Stack push: " + daValue);
@@ -366,8 +393,9 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		}
 		boolean returnValue = false;
 		if (expr instanceof MultiExpression) {
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("Process MultiExpression: " + expr);
+			}
 			MultiExpression multiExpr = (MultiExpression) expr;
 			MultiExpression mExpr;
 			Expression exprTemp;
@@ -386,8 +414,9 @@ public class JoinOperatorImpl extends EvaluationOperator {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Process Expression: " + expr);
 			}
-			if (expr.toString().equals("TRUE"))
+			if (expr.toString().equals("TRUE")) {
 				returnValue = true;
+			}
 			//Do something with non-multitype expression
 		}
 		if (logger.isTraceEnabled()) {

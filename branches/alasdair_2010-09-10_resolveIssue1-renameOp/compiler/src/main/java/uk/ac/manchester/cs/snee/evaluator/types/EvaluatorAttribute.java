@@ -55,6 +55,15 @@ public class EvaluatorAttribute extends DataAttribute {
 	 */
 	private Object _data;
 
+	/**
+	 * Constructor for EvaluatorAttribute implementation which 
+	 * extends the logical Attribute class with a data object.
+	 * 
+	 * @param extentName name of the extent from which the attribute is derived
+	 * @param attrName attribute name as it appears in the schema
+	 * @param attrType type of the attribute
+	 * @throws SchemaMetadataException invalid data type
+	 */
 	public EvaluatorAttribute(String extentName, String attrName,
 			AttributeType attrType, Object data) 
 	throws SchemaMetadataException {
@@ -62,6 +71,23 @@ public class EvaluatorAttribute extends DataAttribute {
 		_data = data;
 	}
 	
+	/**
+	 * Constructor for EvaluatorAttribute implementation which 
+	 * extends the logical Attribute class with a data object.
+	 * 
+	 * @param extentName name of the extent from which the attribute is derived
+	 * @param attrName attribute name as it appears in the schema
+	 * @param attrLabel display name of the attribute
+	 * @param attrType type of the attribute
+	 * @throws SchemaMetadataException invalid data type
+	 */
+	public EvaluatorAttribute(String extentName, String attrName, 
+			String attrLabel, AttributeType attrType, Object data)
+	throws SchemaMetadataException {
+		super(extentName, attrName, attrLabel, attrType);
+		_data = data;
+	}
+
 	/**
 	 * Constructor for EvaluatorAttribute implementation which 
 	 * extends the logical Attribute class with a data object.
@@ -81,7 +107,7 @@ public class EvaluatorAttribute extends DataAttribute {
 	}
 	
 	public String toString() {
-		return super.toString() + _data.toString();
+		return super.toString() + " " + _data.toString();
 	}
 
 }
