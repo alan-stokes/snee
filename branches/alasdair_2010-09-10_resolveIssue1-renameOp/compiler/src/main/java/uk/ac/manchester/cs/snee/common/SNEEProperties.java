@@ -61,16 +61,16 @@ public class SNEEProperties {
 		validateGraphVizSettings();
 		validateDir(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, true);
 		if (isSet(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE)) {
-			validateFileLocation(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE);			
+			validatePropertyFileLocation(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE);			
 		}
 		if (isSet(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE)) {
-			validateFileLocation(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE);
+			validatePropertyFileLocation(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE);
 		}
 		if (isSet(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE)) {
-			validateFileLocation(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE);			
+			validatePropertyFileLocation(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE);			
 		}
-		validateFileLocation(SNEEPropertyNames.INPUTS_TYPES_FILE);
-		validateFileLocation(SNEEPropertyNames.INPUTS_UNITS_FILE);
+		validatePropertyFileLocation(SNEEPropertyNames.INPUTS_TYPES_FILE);
+		validatePropertyFileLocation(SNEEPropertyNames.INPUTS_UNITS_FILE);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN validateProperties()");
 	}
@@ -102,14 +102,16 @@ public class SNEEProperties {
 	 * Ensure location has been specified and file exists
 	 * @param Property name used to specify a file location
 	 * @return Full file path is returned
-	 * @throws SNEEConfigurationException types file location has not been specified or the file does not exist
+	 * @throws SNEEConfigurationException types file location 
+	 * has not been specified or the file does not exist
 	 */
-	private static String validateFileLocation(String propName) 
+	private static String validatePropertyFileLocation(String propName) 
 	throws SNEEConfigurationException {
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER validateFileLocation() with " + propName);		
-		String fileName = _props.getProperty(propName);
-		if (fileName == null) {
+			logger.trace("ENTER validatePropertyFileLocation() with " 
+					+ propName);		
+		String filename = _props.getProperty(propName);
+		if (filename == null) {
 			String message = "A file location must " +
 					"be specified for " + propName + ".";
 			logger.warn(message);
@@ -118,35 +120,17 @@ public class SNEEProperties {
 		if (logger.isDebugEnabled()) {
 			logger.debug(propName + " exists as a system property");
 		}
-		
-		//TODO: Pull this functionality out into a separate method in Utils class.
-		//Test absolute file location
-		File file = new File(fileName);
-		if (!file.exists()) {
-			logger.trace("Absolute file location failed, testing relative path");
-			//Absolute file location failed, check relative path
-			URL fileUrl = SNEEProperties.class.getClassLoader().getResource(fileName);
-			try {
-				file = new File(fileUrl.toURI());
-			} catch (Exception e) {
-				String message = "Problem reading " +
-						propName + " location. Ensure proper path. " +
-						file;
-				logger.warn(message, e);
-				throw new SNEEConfigurationException(message);
-			}
+		try {
+			String filePath = Utils.validateFileLocation(filename);
+			if (logger.isTraceEnabled())
+				logger.trace("RETURN validatePropertyFileLocation() with " + 
+						filePath);
+			return filePath;			
+		} catch (UtilsException e) {
+			String msg = "Problem with property " + propName + ": ";
+			logger.warn(msg, e);
+			throw new SNEEConfigurationException(msg + e.getMessage(), e);
 		}
-		if (!file.exists()) {
-			String message = "File location " +
-					"specified for " + propName + " does not exist. " +
-					"Please provide a valid location.";
-			logger.warn(message);
-			throw new SNEEConfigurationException(message);
-		}
-		String filePath = file.getAbsolutePath();
-		if (logger.isTraceEnabled())
-			logger.trace("RETURN validateFileLocation() with " + filePath);
-		return filePath;
 	}
 
 	/**
@@ -268,7 +252,7 @@ public class SNEEProperties {
 	throws SNEEConfigurationException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getFile() with " + propertyName);
-		String fileName = validateFileLocation(propertyName);
+		String fileName = validatePropertyFileLocation(propertyName);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getFile() with " + fileName);
 		return fileName;
