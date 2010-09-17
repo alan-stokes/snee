@@ -122,7 +122,8 @@ public abstract class PredicateOperator extends LogicalOperatorImpl {
 	 * @return a string representation of this function.
 	 */
 	public String toString() {
-		return this.getText() + "[ " + super.getInput(0).toString() + " ]";
+		return this.getText() + " [ " + 
+		super.getInput(0).toString() + " ]";
 	}
 
 	/** {@inheritDoc} */

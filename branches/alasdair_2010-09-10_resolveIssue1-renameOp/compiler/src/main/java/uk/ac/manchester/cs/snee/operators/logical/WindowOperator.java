@@ -415,7 +415,8 @@ public class WindowOperator extends LogicalOperatorImpl {
 
 	/** {@inheritDoc} */
 	public String toString() {
-		return this.getText() + "[ " + super.getInput(0).toString() + " ]";
+		return this.getText() + " [ " + 
+		super.getInput(0).toString() + " ]";
 	}
 
 //	/** {@inheritDoc} */

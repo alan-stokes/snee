@@ -33,7 +33,6 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.operators.logical;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -53,7 +52,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 public class DeliverOperator extends LogicalOperatorImpl {
 
 	/** Standard Java Logger. */
-	private Logger logger = Logger.getLogger(DeliverOperator.class.getName());
+	private Logger logger = 
+		Logger.getLogger(DeliverOperator.class.getName());
 
 //	/**
 //	 * Constructs a new Deliver operator.
@@ -187,7 +187,8 @@ public class DeliverOperator extends LogicalOperatorImpl {
 
 	/** {@inheritDoc} */
 	public String toString() {
-		return this.getText() + "[ " + super.getInput(0).toString() + " ]";  
+		return this.getText() + " [ " + 
+		super.getInput(0).toString() + " ]";  
 	}
 
 //	/** {@inheritDoc} */

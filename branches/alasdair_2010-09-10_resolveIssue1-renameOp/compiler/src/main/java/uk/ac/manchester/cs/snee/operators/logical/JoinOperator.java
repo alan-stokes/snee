@@ -43,7 +43,6 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 
@@ -306,8 +305,8 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 
 	/** {@inheritDoc} */
 	public String toString() {
-		return this.getText() + "[ " + getInput(0).toString() 
-		+ "," + getInput(1).toString() + " ]";
+		return this.getText() + " [ " + getInput(0).toString() 
+		+ ", " + getInput(1).toString() + " ]";
 	}
 
 //	/** {@inheritDoc} */
