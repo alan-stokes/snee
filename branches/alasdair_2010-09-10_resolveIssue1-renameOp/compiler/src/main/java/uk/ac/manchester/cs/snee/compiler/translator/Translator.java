@@ -1075,7 +1075,6 @@ public class Translator {
 					attribute.getAttributeSchemaName();
 				if (attrExtentName.equalsIgnoreCase(eName) &&
 						attrSchemaName.equalsIgnoreCase(parts[1])) {
-					//XXX This rename could be dodgy!
 					attribute.setAttributeDisplayName(parts[0] + 
 							"." + attrSchemaName);
 					expression = attribute;
