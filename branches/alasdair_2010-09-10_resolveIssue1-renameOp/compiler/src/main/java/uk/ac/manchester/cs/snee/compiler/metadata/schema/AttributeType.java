@@ -211,6 +211,19 @@ public class AttributeType {
 				+ " can not be tested for compariosn with type " + other.name);
 		return false;
 	}
+//
+//	@Override
+//	public boolean equals(Object ob) {
+//		boolean result = false;
+//		if (ob instanceof AttributeType) {
+//			AttributeType type = (AttributeType) ob;
+//			System.out.println(type.getName() + ", " + name);
+//			if (type.getName().equalsIgnoreCase(name)) {
+//				return true;
+//			}
+//		}
+//		return result;
+//	}
 
 	public String toString() {
 		return this.name + " size: " + this.size + " nesCName: "

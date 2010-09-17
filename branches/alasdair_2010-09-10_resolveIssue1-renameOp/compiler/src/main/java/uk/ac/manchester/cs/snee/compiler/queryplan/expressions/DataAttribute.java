@@ -33,7 +33,6 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
-//import uk.ac.manchester.cs.snee.compiler.codeGeneration.CodeGenTarget;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 
@@ -134,4 +133,19 @@ public class DataAttribute extends Attribute {
 	public Attribute toAttribute() {
 		return this;
 	}
+	
+	@Override
+	public boolean equals(Object ob) {
+		boolean result = false;
+		if (ob instanceof DataAttribute) {
+			Attribute attr = (Attribute) ob;
+			if (attr.getExtentName().equalsIgnoreCase(extentName) &&
+					attr.getAttributeSchemaName().equalsIgnoreCase(attributeSchemaName) && 
+					attr.getAttributeType() == sqlType.getSQLType()) {
+				result = true;
+			}
+		}
+		return result;
+	}
+
 }

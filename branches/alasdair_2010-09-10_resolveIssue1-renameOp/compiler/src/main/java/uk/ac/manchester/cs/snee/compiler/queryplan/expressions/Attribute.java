@@ -45,7 +45,7 @@ public abstract class Attribute implements Expression {
 	/** 
 	 * Holds the attribute name as it appears in the schema.
 	 */
-	private String attributeSchemaName;
+	protected String attributeSchemaName;
 
 	/** 
 	 * Hold the display name of the attribute.
@@ -58,19 +58,19 @@ public abstract class Attribute implements Expression {
 	 * Holds the name of the extent in which this attribute 
 	 * occurs in the schema.
 	 */
-	private String extentName;
+	protected String extentName;
 	
 	/**
 	 * Holds the type of this attribute as declared in the
 	 * schema.
 	 */
-	private AttributeType type;
+	protected AttributeType type;
 	
 	/**
 	 * Holds the corresponding SQL type for the attribute
 	 * type declared in the schema.
 	 */
-	private SQLTypes sqlType;
+	protected SQLTypes sqlType;
 	
 	/** 
 	 * @param extentName name of the extent in which this attribute appears
