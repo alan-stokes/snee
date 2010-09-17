@@ -171,8 +171,20 @@ public class TinyOS_SNCB implements SNCB {
 		Utils.runExternalProgram("mig", params, this.tinyOSEnvVars);
 		String deliverMessageJavaClassContent = Utils.readFileToString(outputJavaFile);
 		logger.trace("deliverMessageJavaClassContent="+deliverMessageJavaClassContent);
-		MemoryClassLoader mcl = new MemoryClassLoader("DeliverMessage", deliverMessageJavaClassContent);
-		Class msgClass = mcl.loadClass("DeliverMessage");
+//		logger.trace("Using null;");
+//		ClassLoader parentClassLoader = null;
+		logger.trace("Using this.getClass().getClassLoader();");
+		ClassLoader parentClassLoader = this.getClass().getClassLoader();
+//		logger.trace("Using Thread.currentThread().getContextClassLoader();");
+//		ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
+//		logger.trace("Using parentClassLoader=ClassLoader.getSystemClassLoader()");
+//		ClassLoader parentClassLoader = ClassLoader.getSystemClassLoader();
+//		String messageJavaClassContent = Utils.readFileToString(
+//				System.getProperty("user.dir")+"/src/mai)");
+		MemoryClassLoader mcl = new MemoryClassLoader("DeliverMessage", 
+				deliverMessageJavaClassContent, parentClassLoader);
+//		Class msgClass = mcl.loadClass("DeliverMessage");
+		Class msgClass = Class.forName("DeliverMessage", true, mcl);
 		Object msgObj = msgClass.newInstance();
 		Message msg = (Message)msgObj;
 		DeliverOperator delOp = (DeliverOperator) qep.getLAF().getRootOperator();

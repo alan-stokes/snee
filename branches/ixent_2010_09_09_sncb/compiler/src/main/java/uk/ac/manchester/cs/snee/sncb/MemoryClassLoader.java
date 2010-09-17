@@ -1,4 +1,5 @@
 package uk.ac.manchester.cs.snee.sncb;
+//Taken from http://weblogs.java.net/blog/2008/12/17/how-compile-fly
 
 /*
  * Copyright 2008 Sun Microsystems, Inc.  All Rights Reserved.
@@ -56,18 +57,21 @@ public final class MemoryClassLoader extends ClassLoader {
             + "}";
 
     public static void main(String[] args) throws Exception {
-        MemoryClassLoader mcl = new MemoryClassLoader(CLASS, CONTENT);
+        MemoryClassLoader mcl = new MemoryClassLoader(CLASS, CONTENT, null);
         System.out.println(mcl.loadClass(CLASS).getMethod(METHOD).invoke(null));
     }
 
     private final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     private final MemoryFileManager manager = new MemoryFileManager(this.compiler);
 
-    public MemoryClassLoader(String classname, String filecontent) {
-        this(Collections.singletonMap(classname, filecontent));
+    public MemoryClassLoader(String classname, String filecontent, 
+    		ClassLoader parentClassLoader) {//Ixent added parentClassLoader param
+        this(Collections.singletonMap(classname, filecontent), 
+        		parentClassLoader);
     }
 
-    public MemoryClassLoader(Map<String, String> map) {
+    public MemoryClassLoader(Map<String, String> map, ClassLoader parentClassLoader) {
+    	super(parentClassLoader);//Ixent added parentClassLoader param
         List<Source> list = new ArrayList<Source>();
         for (Map.Entry<String, String> entry : map.entrySet()) {
             list.add(new Source(entry.getKey(), Kind.SOURCE, entry.getValue()));
