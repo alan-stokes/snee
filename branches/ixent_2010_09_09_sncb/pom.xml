@@ -12,6 +12,7 @@
 		<module>compiler</module>
 		<!--<module>datasource</module>-->
 		<module>clients</module>
+		<module>tinyos-tools</module>
 	</modules>
 
 	<organization>
