@@ -40,8 +40,9 @@ public class SelectOperatorImpl extends EvaluationOperator {
 
 	@Override
 	public void update(Observable obj, Object observed) {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER update() with " + observed);
+		}
 		try {
 			//FIXME: Cope with bag of results being passed up!
 			List<Output> result = new ArrayList<Output>();
@@ -66,20 +67,23 @@ public class SelectOperatorImpl extends EvaluationOperator {
 		} catch (Exception e) {
 			logger.error(e);
 		}
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN update()");
+		}
 	}
 
 	private void processOutput(Object observed, List<Output> result)
 	throws SNEEException {
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER processOutput()  with " + observed);
+		}
 		if (observed instanceof Window) {
 			Window window = (Window) observed;
 			List<Tuple> selectedTuples = new ArrayList<Tuple>();
 			for (Tuple t : window.getTuples()){
 				boolean valid = 
-					evaluate((MultiExpression)_select.getPredicate(), t);
+					evaluate((MultiExpression)_select.getPredicate(),
+							t);
 				if (logger.isTraceEnabled()) {
 					logger.trace("Select " + t + " " + valid);
 				}
@@ -110,8 +114,9 @@ public class SelectOperatorImpl extends EvaluationOperator {
 			logger.warn(msg);
 			throw new SNEEException(msg);
 		}
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN processOutput()");
+		}
 	}
 
 //	@Override

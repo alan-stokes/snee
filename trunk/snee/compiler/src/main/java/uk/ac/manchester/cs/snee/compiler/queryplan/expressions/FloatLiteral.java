@@ -38,18 +38,12 @@ import java.util.ArrayList;
 //XXX-AG: Not sure we should have antlr types here!
 import antlr.collections.AST;
 
-//import uk.ac.manchester.cs.diasmc.
-//	querycompiler.codeGeneration.adt.CodeGenerationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
 
 /** 
- * Wrapper for an Integer constant expression.
- * 
- * @author Christian
- *
+ * Wrapper for a Float constant expression.
  */
 public class FloatLiteral implements Expression {
 
@@ -125,6 +119,15 @@ public class FloatLiteral implements Expression {
 	}
 	
 	/**
+	 * Returns the value this <code>FloatLiteral</code> represents.
+	 * 
+	 * @return float value
+	 */
+	public float getValue() {
+		return value;
+	}
+
+	/**
 	 * Finds the maximum value that this expression can return.
 	 * @return The maximum value for this expressions
 	 */
@@ -169,7 +172,8 @@ public class FloatLiteral implements Expression {
 	 */
 	public Attribute toAttribute() 
 	throws SchemaMetadataException, TypeMappingException {
-		return new DataAttribute("", Float.toString(value), getType()); 
+		throw new SchemaMetadataException("Attempt to convert " +
+			"FloatLiteral to a DataAttribute.");
 	}
 
 }

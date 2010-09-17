@@ -16,11 +16,12 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 
 public class OgsadaiSchemaParser extends SchemaParserAbstract {
 
@@ -89,7 +90,7 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 				nameTypeElement.item(0).getFirstChild().getNodeValue();
 			AttributeType type = inferType(new Integer(sqlType));
 			Attribute attr = 
-				new Attribute(extentName, columnName, type);
+				new DataAttribute(extentName, columnName, type);
 			attributes.add(attr);
 		}
 		if (logger.isDebugEnabled())

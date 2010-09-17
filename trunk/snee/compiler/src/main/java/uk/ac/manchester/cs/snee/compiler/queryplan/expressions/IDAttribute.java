@@ -33,47 +33,42 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
-import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 
 /** 
- * Represent attributes that hold the site id data was acquired at.
- * @author Christian
+ * Represent attributes that hold the site id data 
+ * was acquired at.
  */
 public class IDAttribute extends Attribute {
 
-	private AttributeType _type;
-
-	/** 
-	 * Constructor when only attributeName is asigned.
-	 * @param localName Extent or local name.
+	/**
+	 * Construct a IDAttribute instance
+	 * 
+	 * @param extentName name of the extent the attribute appears in
+	 * @param attrName name of the attribute as it appears in the schema
+	 * @param attrType type of the attribute
+	 * @throws SchemaMetadataException
 	 */
-	public IDAttribute(String localName, AttributeType type) {
-			super(localName, Constants.ACQUIRE_ID);
-			_type = type;
-		}
-
-	/** {@inheritDoc} */
-	public String getName() {
-		return getLocalName() + "_" + Constants.ACQUIRE_ID;
+	public IDAttribute(String extentName, String attrName,
+			AttributeType attrType) 
+	throws SchemaMetadataException {
+		super(extentName, attrName, attrType);
 	}
 
 	/**
-	 * The raw data type of this expression.
-	 *  
-	 * @return The raw data type of this expression.
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
+	 * Construct a IDAttribute instance
+	 * 
+	 * @param extentName name of the extent the attribute appears in
+	 * @param attrName name of the attribute as it appears in the schema
+	 * @param attrLabel display label for the attribute
+	 * @param attrType type of the attribute
+	 * @throws SchemaMetadataException
 	 */
-	public AttributeType getType() {
-		return _type;//types.getType("integer");
-	}
-	
-	/** {@inheritDoc} */
-	public String toString() {
-		return (getLocalName()+ "."+ Constants.ACQUIRE_ID);
+	public IDAttribute(String extentName, String attrName,
+			String attrLabel, AttributeType attrType) 
+	throws SchemaMetadataException {
+		super(extentName, attrName, attrLabel, attrType);
 	}
 
 	/**

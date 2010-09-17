@@ -48,7 +48,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 public class ScanOperator extends LogicalOperatorImpl 
 implements LogicalOperator {
 
-	private Logger logger = Logger.getLogger(ScanOperator.class.getName());
+	private Logger logger = 
+		Logger.getLogger(ScanOperator.class.getName());
 	
 	public ScanOperator(AttributeType boolType) 
 	{

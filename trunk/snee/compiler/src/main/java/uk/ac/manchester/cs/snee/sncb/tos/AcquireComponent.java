@@ -35,16 +35,13 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
@@ -127,9 +124,10 @@ public class AcquireComponent extends NesCComponent implements
      * 
      * @param replacements Values to be replaced in the tamplates
      */
-    private void doGetDataMethods(final HashMap<String, String> replacements) {
-    	final List<DataAttribute> sensedAttribs = ((AcquireOperator)op.
-    			getLogicalOperator()).getSensedAttributes();
+    private void doGetDataMethods(final Map<String, String> replacements) {
+    	final List<Attribute> sensedAttribs = 
+    		((AcquireOperator)op.getLogicalOperator()).
+    		getSensedAttributes();
     	final StringBuffer getDataBuff = new StringBuffer();
     	final StringBuffer declsBuff = new StringBuffer();
     	for (int i = sensedAttribs.size()-1; i >= 0; i--) {
@@ -201,8 +199,8 @@ public class AcquireComponent extends NesCComponent implements
      * 
      * @param replacements Values to be replaced in the tamplates
      */
-    private void doGetEmptyDataMethods(final HashMap<String, String> replacements) {
-    	final List<DataAttribute> sensedAttribs = 
+    private void doGetEmptyDataMethods(final Map<String, String> replacements) {
+    	final List<Attribute> sensedAttribs = 
     		((AcquireOperator)op.getLogicalOperator()).getSensedAttributes();
     	final StringBuffer getDataBuff = new StringBuffer();
     	for (int i = sensedAttribs.size() - 1; i >= 0; i--) {
@@ -220,7 +218,7 @@ public class AcquireComponent extends NesCComponent implements
      * @param replacements Values to be replaced in the tamplates
      * @throws CodeGenerationException Error if Attribute not acquired.
      */
-    private void doTupleConstruction(final HashMap<String, 
+    private void doTupleConstruction(final Map<String, 
     		String> replacements) throws CodeGenerationException {
     	final StringBuffer tupleConstructionBuff = new StringBuffer();
     	final List <Expression> expressions = 

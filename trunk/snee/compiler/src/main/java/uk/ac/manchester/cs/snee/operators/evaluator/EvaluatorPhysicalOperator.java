@@ -186,7 +186,9 @@ implements Observer
 		List<Attribute> attrList = m_op.getAttributes();
 		List<String> attrNames = new ArrayList<String>();
 		for (Attribute attr : attrList) {
-			String attributeName = attr.getLocalName() + "." + attr.getAttributeName();
+			String attributeName = 
+				attr.getAttributeSchemaName() + "." + 
+				attr.getAttributeDisplayName();
 			logger.debug("Adding attribute " + attributeName);
 			attrNames.add(attributeName);
 		}

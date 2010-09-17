@@ -57,7 +57,6 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.WebServiceSourceMetadat
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.CircularList;
-import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
@@ -113,8 +112,6 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 
 	private ReceiveOperator receiveOp;
 
-	private String _streamQueryName;
-
 	ReceiveTimeoutException rte;
 
 	private Timer _receiverTaskTimer;
@@ -143,10 +140,9 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			throw new SchemaMetadataException("", e);
 		}
 		_streamName = receiveOp.getExtentName();
-		_streamQueryName = receiveOp.getQueryName();
 	
 		if (logger.isTraceEnabled()) {
-			logger.trace("Receiver for stream: " + _streamName + " as " + _streamQueryName);
+			logger.trace("Receiver for stream: " + _streamName);
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN ReceiveOperatorImpl()");
@@ -211,9 +207,11 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	private void calculateSleepPeriods(PullSourceMetadata source) 
 	throws SourceMetadataException 
 	{
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER calculateSleepPeriod() with " + source +
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER calculateSleepPeriod() with " + 
+					source +
 					" " + _streamName);
+		}
 		double rate = source.getRate(_streamName);
 		double period = (1 / rate) * 1000;
 		_shortSleepPeriod = (long) (period * 0.1);

@@ -46,9 +46,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 
 public class EvaluatorAttributeTest extends EasyMockSupport {
 	
@@ -82,26 +82,36 @@ public class EvaluatorAttributeTest extends EasyMockSupport {
 	@Test(expected=SchemaMetadataException.class)
 	public void testGetData_unsupportedDataType() 
 	throws SchemaMetadataException {
-		expect(mockAttribute.getExtentName()).andReturn("streamName");
-		expect(mockAttribute.getName()).andReturn("attrName");
+		expect(mockAttribute.getExtentName()).
+			andReturn("streamName");
+		expect(mockAttribute.getAttributeSchemaName()).
+			andReturn("attrName");
+		expect(mockAttribute.getAttributeDisplayName()).
+			andReturn("streamName.attrName");
 		expect(mockAttribute.getType()).andReturn(mockType);
 		expect(mockType.getName()).andReturn("attrType");
 		replayAll();
-		EvaluatorAttribute field = new EvaluatorAttribute(mockAttribute, mockData);
-		assertEquals(mockData, field.getData());
+		EvaluatorAttribute attr = 
+			new EvaluatorAttribute(mockAttribute, mockData);
+		assertEquals(mockData, attr.getData());
 		verifyAll();
 	}
 
 	@Test
 	public void testGetData() 
 	throws SchemaMetadataException {
-		expect(mockAttribute.getExtentName()).andReturn("streamName");
-		expect(mockAttribute.getName()).andReturn("attrName");
+		expect(mockAttribute.getExtentName()).
+			andReturn("streamName");
+		expect(mockAttribute.getAttributeSchemaName()).
+			andReturn("attrName");
+		expect(mockAttribute.getAttributeDisplayName()).
+			andReturn("streamName.attrName");
 		expect(mockAttribute.getType()).andReturn(mockType);
 		expect(mockType.getName()).andReturn("integer");
 		replayAll();
-		EvaluatorAttribute field = new EvaluatorAttribute(mockAttribute, mockData);
-		assertEquals(mockData, field.getData());
+		EvaluatorAttribute attr = 
+				new EvaluatorAttribute(mockAttribute, mockData);
+		assertEquals(mockData, attr.getData());
 		verifyAll();
 	}
 

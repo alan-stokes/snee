@@ -148,7 +148,8 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 	}	
 
 	private Tuple getProjectedTuple(Tuple tuple) 
-	throws SNEEException, SchemaMetadataException, TypeMappingException 
+	throws SNEEException, SchemaMetadataException, 
+	TypeMappingException 
 	{
 		if (logger.isTraceEnabled()) {
 			logger.debug("ENTER getProjectedTuple() with " + tuple);
@@ -158,18 +159,17 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		logger.trace("Number of expressions: " + expressions.size());
 		//Iterate with index so that we can do renames
 		for (Expression exp : expressions) {
-			EvaluatorAttribute field = null;
+			EvaluatorAttribute attr = null;
 			if (exp instanceof MultiExpression) {
-				logger.trace("MultiExpression: " + exp.toString());
-				//FIXME: Reimplement this functionality
-//				field = evaluateMultiExpression((MultiExpression)exp, tuple);
+				attr = evaluateMultiExpression(
+						(MultiExpression)exp, tuple);
 			} else {
-				field = evaluateSingleExpression(exp, tuple);
+				attr = evaluateSingleExpression(exp, tuple);
 			}
 			// Add project field to the result tuple
-			logger.trace("Field: " + field);
-			if (field != null) {
-				projectedTuple.addAttribute(field);
+			logger.trace("Attribute: " + attr);
+			if (attr != null) {
+				projectedTuple.addAttribute(attr);
 			}
 		}
 
@@ -193,7 +193,8 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		// Only a single expression, get attribute details
 		List<Attribute> attributes = exp.getRequiredAttributes();
 		Attribute attr = attributes.get(0);
-		String attributeName = attr.getAttributeName();
+		String extentName = attr.getExtentName();
+		String attributeName = attr.getAttributeSchemaName();
 
 		/*
 		 * In-network SNEE adds the following attributes which 
@@ -206,10 +207,12 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 					attributeName);
 		} else {
 			try {
-				logger.trace("getting attribute " + attributeName);
-				returnField = t.getAttribute(attributeName);
+				logger.trace("getting attribute " + attributeName +
+						" from extent " + extentName);
+				returnField = 
+					t.getAttribute(extentName, attributeName);
 			} catch (SNEEException e) {
-				logger.warn("Field " + attributeName + 
+				logger.warn("Attribute " + attributeName + 
 						" does not exist.", e);
 				throw e;
 			}
@@ -221,89 +224,112 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		return returnField;
 	}
 
-//	protected EvaluatorAttribute evaluateMultiExpression(
-//			MultiExpression exp, Tuple t) 
-//	throws SNEEException, SchemaMetadataException, TypeMappingException 
-//	{
-//		if (logger.isTraceEnabled()) {
-//			logger.trace("ENTER evaluateMultiExpression() with " + 
-//					exp.toString() + " and tuple: " + t);
-//		}
-//		// Instantiate return item
-//		EvaluatorAttribute returnField = null;
-//		String fieldName = "";
-//		// Setup stack for operands in the expression
-//		Stack<Object> operands = new Stack<Object>();
-//		for (Expression expr : exp.getExpressions()) {
-//			Object daValue;
-//			if (expr instanceof MultiExpression) {
-//				EvaluatorAttribute field = 
-//					evaluateMultiExpression((MultiExpression)expr, t);
-//				daValue = field.getData(); 
-//				if (logger.isTraceEnabled()) {
-//					logger.trace("Stack push result expression: " + expr + 
-//							", " + daValue + ", type " + 
-//							daValue.getClass());
-//				}
-//			} else if (expr instanceof DataAttribute){
-//				DataAttribute da = (DataAttribute) expr;
-//				String daName = da.getLocalName() + "." + 
-//					da.getAttributeName();
-//				try {
-//					daValue = t.getAttributeValue(daName);
-//				} catch (SNEEException e) {
-//					logger.warn("Problem getting value for " + daName, e);
-//					throw e;
-//				}
-//				if (logger.isTraceEnabled()) {
-//					logger.trace("Stack push attribute: " + daName + 
-//							", " + daValue + ", type " + 
-//							daValue.getClass());
-//				}				
-//			} else if (expr instanceof IntLiteral){
-//				IntLiteral il = (IntLiteral) expr;
-//				daValue = new Integer(il.toString());
-//				if (logger.isTraceEnabled()) {
-//					logger.trace("Stack push integer: " + 
-//							il.getMaxValue() + ", type " + 
-//							daValue.getClass());
-//				}
-//			} else if (expr instanceof FloatLiteral){
-//				FloatLiteral fl = (FloatLiteral) expr;
-//				daValue = new Float(fl.toString());
-//				if (logger.isTraceEnabled()) {
-//					logger.trace("Stack push float: " +
-//							fl.getMaxValue() + ", type " + 
-//							daValue.getClass());
-//				}
-//			} else {
-//				logger.warn("Unsupported operand " + expr);
-//				throw new SNEEException("Unsupported operand " + expr);
-//			}
-//			//XXX: Need to think more about the field name 
-//			fieldName += daValue.toString();
-//			if (logger.isTraceEnabled())
-//				logger.trace("Pushing " + daValue + 
-//						" of type " + daValue.getClass());
-//			operands.add(daValue);
-//		}
-//		while (operands.size() >= 2){
-//			// Evaluate result
-//			Object result = evaluate(operands.pop(), operands.pop(), 
-//					((MultiExpression)exp).getMultiType());
-//			if (logger.isTraceEnabled())
-//				logger.trace("Creating new field: " + fieldName + 
-//						exp.getType() + result);
-//			uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute 
-//				attr = new Attribute("", fieldName, exp.getType());
-//			returnField = 
-//				new EvaluatorAttribute(attr, result);
-//		}
-//		if (logger.isTraceEnabled()) {
-//			logger.trace("RETURN evaluateMultiExpression() with " + 
-//					returnField);
-//		}
-//		return returnField;
-//	}
+	protected EvaluatorAttribute evaluateMultiExpression(
+			MultiExpression exp, Tuple t) 
+	throws SNEEException, SchemaMetadataException,
+	TypeMappingException 
+	{
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER evaluateMultiExpression() with " + 
+					exp.toString() + " and tuple: " + t);
+		}
+		// Instantiate return item
+		EvaluatorAttribute returnField = null;
+		String extentName = null;
+		String attrName = null;
+		String attrLabel = null;
+		// Setup stack for operands in the expression
+		Stack<Object> operands = new Stack<Object>();
+		for (Expression expr : exp.getExpressions()) {
+			Object daValue;
+			if (expr instanceof MultiExpression) {
+				EvaluatorAttribute attr = 
+					evaluateMultiExpression((MultiExpression)expr, t);
+				if (extentName == null) {
+					extentName = attr.getExtentName();
+				}
+				if (attrName == null) {
+					attrName = attr.getAttributeSchemaName();
+				}
+				if (attrLabel == null) {
+					attrLabel = attr.getAttributeDisplayName();
+				}
+				daValue = attr.getData(); 
+				if (logger.isTraceEnabled()) {
+					logger.trace("Stack push result expression: " + 
+							expr +  ", " + daValue + ", type " + 
+							daValue.getClass());
+				}
+			} else if (expr instanceof DataAttribute){
+				DataAttribute da = (DataAttribute) expr;
+				if (extentName == null) {
+					extentName = da.getExtentName();
+				}
+				if (attrName == null) {
+					attrName = da.getAttributeSchemaName();
+				}
+				if (attrLabel == null) {
+					attrLabel = da.getAttributeDisplayName();
+				}
+				String daLabelName = da.getAttributeDisplayName();
+				try {
+					daValue = 
+						t.getAttributeValueByDisplayName(daLabelName);
+				} catch (SNEEException e) {
+					logger.warn("Problem getting value for " + 
+							daLabelName, e);
+					throw e;
+				}
+				if (logger.isTraceEnabled()) {
+					logger.trace("Stack push attribute: " + 
+							daLabelName + ", " + daValue + 
+							", type " + daValue.getClass());
+				}				
+			} else if (expr instanceof IntLiteral){
+				IntLiteral il = (IntLiteral) expr;
+				daValue = new Integer(il.getValue());
+				if (logger.isTraceEnabled()) {
+					logger.trace("Stack push integer: " + 
+							il.getValue() + ", type " + 
+							daValue.getClass());
+				}
+			} else if (expr instanceof FloatLiteral){
+				FloatLiteral fl = (FloatLiteral) expr;
+				daValue = new Float(fl.toString());
+				if (logger.isTraceEnabled()) {
+					logger.trace("Stack push float: " +
+							fl.getMaxValue() + ", type " + 
+							daValue.getClass());
+				}
+			} else {
+				String msg = "Unsupported operand " + expr;
+				logger.warn(msg);
+				throw new SNEEException(msg);
+			}
+			if (logger.isTraceEnabled())
+				logger.trace("Pushing " + daValue + 
+						" of type " + daValue.getClass());
+			operands.add(daValue);
+		}
+		while (operands.size() >= 2){
+			// Evaluate result
+			Object result = evaluate(operands.pop(), operands.pop(), 
+					((MultiExpression)exp).getMultiType());
+			if (logger.isTraceEnabled())
+				logger.trace("Creating new attribute: " +
+						extentName + "." + attrName + " AS " +
+						attrLabel + " of type " + exp.getType() + 
+						" with value " + result);
+			Attribute attr = new DataAttribute(extentName, attrName,
+					attrLabel, exp.getType());
+			returnField = 
+				new EvaluatorAttribute(attr, result);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN evaluateMultiExpression() with " + 
+					returnField);
+		}
+		return returnField;
+	}
 
 }

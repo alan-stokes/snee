@@ -12,10 +12,10 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 
 public class SNEEClientUsingCCO extends SNEEClient {
 	
@@ -58,7 +58,7 @@ public class SNEEClientUsingCCO extends SNEEClient {
 		List<Attribute> attributes = extent.getAttributes();
 		System.out.println("Attributes for " + extentName + ":");
 		for (Attribute attr : attributes) {
-			String attrName = attr.getAttributeLabel();
+			String attrName = attr.getAttributeDisplayName();
 			AttributeType attrType = attr.getType();
 			System.out.print("\t" + attrName + ": " + 
 					attrType.getName() + "\n");

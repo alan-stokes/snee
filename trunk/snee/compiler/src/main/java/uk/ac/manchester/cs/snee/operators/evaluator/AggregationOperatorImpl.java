@@ -9,10 +9,10 @@ import java.util.Observable;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -186,23 +186,23 @@ extends EvaluatorPhysicalOperator {
 					AggregationType agType = agEx.getAggregationType();
 					DataAttribute da = 
 						(DataAttribute)agEx.getExpression();
-					String attributeName = da.getLocalName() + "." +
-						da.getAttributeName();
+					String attrDisplayName = 
+						da.getAttributeDisplayName();
 					AttributeType dataType = da.getType();
 					if (logger.isTraceEnabled()) {
 						logger.trace("Compute " + agType + " on " + 
-								attributeName + 
+								attrDisplayName + 
 								" of type " + dataType.getName());
 					}
 
 					// Calculate aggregate
 					Number agValue = computeAggregate(agType, 
-							attributeName, dataType,
+							attrDisplayName, dataType,
 							curWindow.getTuples());
 
 					// Create result window
 					Window newWindow = createResultWindow(curWindow,
-							agType, da, agValue, da.getLocalName());
+							agType, da, agValue, da.getAttributeSchemaName());
 					result.add(newWindow);
 					if (logger.isTraceEnabled()) {
 						logger.trace("Computed aggregate tuple: " + 
@@ -243,9 +243,10 @@ extends EvaluatorPhysicalOperator {
 		 *  count.
 		 */
 		if (agValue != null) {
-			String agName = agType.name()+"("+ da.getAttributeName()+")";
+			String agName = 
+				agType.name()+"("+ da.getAttributeDisplayName()+")";
 			Attribute attr = 
-				new Attribute(extentName, agName, da.getType());
+				new DataAttribute(extentName, agName, da.getType());
 			EvaluatorAttribute evalAttr = 
 				new EvaluatorAttribute(attr, agValue);
 			List<EvaluatorAttribute> attributes = 
@@ -262,13 +263,13 @@ extends EvaluatorPhysicalOperator {
 	}
 
 	private Number computeAggregate(AggregationType agType, 
-			String attributeName, AttributeType dataType, 
+			String attrDisplayName, AttributeType dataType, 
 			List<Tuple> tuples) 
 	throws SNEEException {
 		//FIXME: Write test for this method
 		if (logger.isTraceEnabled()) {
 			logger.debug("ENTER computeAggregate() with " + agType + 
-					", " + attributeName + ", " + dataType);
+					", " + attrDisplayName + ", " + dataType);
 		}
 		Number result;
 		if (agType == AggregationType.AVG) {
@@ -278,7 +279,8 @@ extends EvaluatorPhysicalOperator {
 				result = null;
 			} else {
 				if (dataType.getName().equalsIgnoreCase("integer")) 
-					result = computeIntegerAverage(attributeName, tuples);
+					result = computeIntegerAverage(attrDisplayName, 
+							tuples);
 				else {
 					logger.warn("Unsupported data type for computing " +
 							"average. " + 
@@ -312,7 +314,8 @@ extends EvaluatorPhysicalOperator {
 		Integer average; 
 		int count=0,totalValue=0;
 		for (Tuple tuple : tuples) {
-			Integer value = (Integer) tuple.getAttributeValue(attributeName);
+			Integer value = (Integer) 
+				tuple.getAttributeValueByDisplayName(attributeName);
 			totalValue += value;
 			count++;
 		}

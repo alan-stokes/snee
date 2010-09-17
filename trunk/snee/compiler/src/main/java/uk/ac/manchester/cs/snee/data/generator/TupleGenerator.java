@@ -36,17 +36,18 @@
 package uk.ac.manchester.cs.snee.data.generator;
 
 import java.math.BigDecimal;
+import java.sql.Types;
 import java.util.List;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
@@ -82,8 +83,8 @@ public class TupleGenerator {
 			tuple.addAttribute(field);
 		}
 		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN generateTuple() with " + _streamName + 
-					":" + tuple);
+			logger.debug("RETURN generateTuple() with " + 
+					_streamName + ":" + tuple);
 		}
 		return tuple;
 	}
@@ -97,19 +98,27 @@ public class TupleGenerator {
 		AttributeType attrType = attr.getType();
 		Random random = new Random();
 		Object value = null;
-		if (attrType.getName().equals("boolean")) {
+		switch (attr.getAttributeType()) {
+		case Types.BOOLEAN:
 			value = random.nextBoolean();
-		} else if (attrType.getName().equals("decimal")) {
+			break;
+		case Types.DECIMAL:
 			value = new BigDecimal(random.nextDouble());
-		} else if (attrType.getName().equals("float")) {
+			break;
+		case Types.FLOAT:
 			value = random.nextFloat();
-		} else if (attrType.getName().equals("integer")) {
+			break;
+		case Types.INTEGER:
 			value = random.nextInt(10);
-		} else if (attrType.getName().equals("string")) {
+			break;
+		case Types.CHAR:
+		case Types.VARCHAR:
 			value = _streamName;
-		} else if (attrType.getName().equals("timestamp")) {
+			break;
+		case Types.TIMESTAMP:
 			value = System.currentTimeMillis();
-		} else {
+			break;
+		default:
 			String message = "Unknown datatype " + attrType;
 			logger.warn(message);
 			throw new SNEEException(message);

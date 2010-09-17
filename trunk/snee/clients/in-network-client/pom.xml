@@ -3,18 +3,18 @@
   <parent>
     <artifactId>clients</artifactId>
     <groupId>uk.ac.manchester.cs.snee</groupId>
-    <version>1.2.2</version>
+    <version>1.2.3-SNAPSHOT</version>
   </parent>
   <groupId>uk.ac.manchester.cs.snee</groupId>
   <artifactId>in-network-client</artifactId>
-  <version>1.2.2</version>
+  <version>1.2.3-SNAPSHOT</version>
   <name>in-network test client</name>
   <description>Test client for In-Network SNEE.</description>
   <dependencies>
   	<dependency>
   		<groupId>uk.ac.manchester.cs.snee.client</groupId>
   		<artifactId>client</artifactId>
-  		<version>1.2.2</version>
+  		<version>1.2.3-SNAPSHOT</version>
   		<scope>provided</scope>
   	</dependency>
   </dependencies>

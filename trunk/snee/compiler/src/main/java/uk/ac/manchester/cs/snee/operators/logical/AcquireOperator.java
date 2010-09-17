@@ -40,7 +40,6 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
@@ -68,9 +67,6 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 */
 	private String extentName;
 
-	/** Name of extent as found in the Query. */
-	private String localName;
-
 	/**
 	 *  List of attributes to be output. 
 	 */
@@ -79,7 +75,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	/**
 	 * List of attributes to be sensed. 
 	 */
-	private ArrayList<DataAttribute> sensedAttributes;
+	private List<Attribute> sensedAttributes;
 
     /** 
      * List of the attributes that are acquired by this operator. 
@@ -89,7 +85,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
      * All attributes are in the original format 
      * before any expressions are applied.
      */
-    private ArrayList<Attribute> acquiredAttributes;
+    private List<Attribute> acquiredAttributes;
 	
 	/**
 	 * The expressions for building the attributes.
@@ -115,42 +111,45 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	/**
 	 * Constructs a new Acquire operator.
 	 * 
-	 * @param extentName Global name for this source
-	 * @param localName Name for this source within this query or subquery
-	 * @param schemaMetadata The DDL Schema
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
+	 * @param extentMetaData Schema data about the extent
+	 * @param sources Metadata about data sources for the acquire extent
+	 * @param boolType type used for booleans
+	 * @throws SchemaMetadataException
+	 * @throws TypeMappingException
 	 */
-	public AcquireOperator(String extentName, String localName,  
-			ExtentMetadata extentMetadata, Types types, List<SourceMetadata> sources,
+	public AcquireOperator(ExtentMetadata extentMetadata, 
+			Types types, 
+			List<SourceMetadata> sources,
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException {
 		super(boolType);
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER AcquireOperator() with " + extentName + 
-					" " + localName);
-		
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER AcquireOperator() with " + 
+					extentMetadata + " #sources=" + sources.size());
+		}
 		this.setOperatorName("ACQUIRE");
 		this.setOperatorDataType(OperatorDataType.STREAM);
 		this._types=types;
-		this.extentName = extentName;
-		this.localName = localName;
+		this.extentName = extentMetadata.getExtentName();
 		this._sources = sources;		
 		
 		addMetadataInfo(extentMetadata);
 		updateSensedAttributes(); 
 		
-		StringBuffer sourcesStr = new StringBuffer();
+		StringBuffer sourcesStr = new StringBuffer(" sources={");
 		boolean first = true;
 		for (SourceMetadata sm : _sources) {
-			if (first)
+			if (first) {
 				first=false;
-			else
+			} else {
 				sourcesStr.append(",");
+			}
 			sourcesStr.append(sm.getSourceName());
-		}		
-		this.setParamStr(this.extentName + " (card=" + this.cardinality +
-				" sources={"+sourcesStr+"})");
+		}
+		sourcesStr.append("}");
+		this.setParamStr(this.extentName + 
+				" (cardinality=" + this.cardinality +
+				sourcesStr);
 		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN AcquireOperator()");
@@ -164,14 +163,6 @@ public class AcquireOperator extends LogicalOperatorImpl {
 		return extentName;
 	}
 
-	/**
-	 * Return the name of the extent as it is referenced in the query.
-	 * @return
-	 */
-	public String getQueryName() {
-		return localName;
-	}
-	
 	/**
 	 * Return details of the data sources
 	 * @return
@@ -188,51 +179,32 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 */
 	private void addMetadataInfo(ExtentMetadata extentMetaData) 
 	throws SchemaMetadataException, TypeMappingException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER addMetaDataInfo() with " + extentMetaData);
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER addMetaDataInfo() with " +
+					extentMetaData);
+		}
 		outputAttributes = new ArrayList<Attribute>();
-		outputAttributes.add(new EvalTimeAttribute(_types.getType(Constants.TIME_TYPE))); 
-		outputAttributes.add(new TimeAttribute(localName, _types.getType(Constants.TIME_TYPE)));
-		outputAttributes.add(new IDAttribute(localName, _types.getType("integer")));
+		outputAttributes.add(new EvalTimeAttribute(extentName, 
+				Constants.EVAL_TIME,
+				_types.getType(Constants.TIME_TYPE))); 
+		outputAttributes.add(new TimeAttribute(extentName,
+				Constants.ACQUIRE_TIME, 
+				_types.getType(Constants.TIME_TYPE)));
+		outputAttributes.add(new IDAttribute(extentName, 
+				Constants.ACQUIRE_ID,
+				_types.getType("integer")));
 //TODO: Localtime
 //		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
 //			outputAttributes.add(new LocalTimeAttribute()); //Ixent added this
 //		}		
-		sensedAttributes = new ArrayList<DataAttribute>();
-		List<uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute> attributes = 
-			extentMetaData.getAttributes();
-		String[] attributeNames = new String[1];
-		attributeNames = extractAttributeNames(attributes);
-		DataAttribute attribute;
-		int numAttributes = attributes.size();
-		for (int i = 0; i < numAttributes; i++) {
-			if (!(attributeNames[i].equals(Constants.ACQUIRE_TIME) 
-					|| attributeNames[i].equals(Constants.ACQUIRE_ID))) {
-				AttributeType type = attributes.get(i).getType(); 
-				attribute = new DataAttribute(
-						localName, attributeNames[i], type);
-				outputAttributes.add(attribute);
-				sensedAttributes.add(attribute);
-//				sites =  sourceMetaData.getSourceNodes();
-			}
-		}
+		sensedAttributes = extentMetaData.getAttributes();
+		outputAttributes.addAll(sensedAttributes);
+//		sites =  sourceMetaData.getSourceNodes();
 		this.cardinality = extentMetaData.getCardinality();
 		copyExpressions(outputAttributes);
 		acquiredAttributes = (ArrayList<Attribute>) outputAttributes;
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN addMetaDataInfo()");
-	}
-
-	private String[] extractAttributeNames(
-			List<uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute> attributes) {
-		String[] attrNames = new String[attributes.size()];
-		int index = 0;
-		for (uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute attr : attributes) {
-			String attrName = attr.getName();
-			attrNames[index] = attrName;
-			index++;
-		}
-		return attrNames;
 	}
 
 	/**
@@ -310,7 +282,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * Those that are data attributes become the sensed attributes.
 	 */	
 	private void updateSensedAttributes() {
-		sensedAttributes = new ArrayList<DataAttribute>();
+		sensedAttributes = new ArrayList<Attribute>();
 		for (int i = 0; i < expressions.size(); i++) {
 			//DataAttribute sensed =  sensedAttributes.get(i);
 			Expression expression = expressions.get(i);
@@ -396,10 +368,16 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * between this operator and the rename operator.
 	 */   
 	public void pushLocalNameDown(String newLocalName) {
-		localName = newLocalName;
-		for (int i = 0; i<outputAttributes.size(); i++){
-			outputAttributes.get(i).setLocalName(newLocalName);
-		}
+		//XXX-AG: Commented out method body
+		/*
+		 * This method was being used to relabel an extent in a 
+		 * query. Apparently it should never be called, so
+		 * why do we have it? Have commented it out!
+		 */
+//		localName = newLocalName;
+//		for (int i = 0; i<outputAttributes.size(); i++){
+//			outputAttributes.get(i).setLocalName(newLocalName);
+//		}
 	}
 
 	/**
@@ -417,7 +395,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * This may include attributes needed for a predicate.
 	 * @return Attributes that this source will sense.
 	 */
-	public List<DataAttribute> getSensedAttributes() {
+	public List<Attribute> getSensedAttributes() {
 		assert (sensedAttributes != null);
 		return sensedAttributes;
 	}
@@ -428,7 +406,8 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * @return A constant number for this attribute (starting at 1)
 	 * @throws CodeGenerationException 
 	 */
-	public int getSensedAttributeNumber(Expression attribute) throws CodeGenerationException {
+	public int getSensedAttributeNumber(Expression attribute)
+	throws CodeGenerationException {
 		assert (attribute instanceof DataAttribute);
 		for (int i = 0; i < sensedAttributes.size(); i++) {
 			if (attribute.equals(sensedAttributes.get(i))) {

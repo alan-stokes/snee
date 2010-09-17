@@ -35,9 +35,10 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.evaluator.types;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 
 /**
  * Represents an attribute of a tuple used by the evaluator.
@@ -47,13 +48,22 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
  *
  * @see Attribute
  */
-public class EvaluatorAttribute extends Attribute {
+public class EvaluatorAttribute extends DataAttribute {
 	
 	/**
 	 * The value of the field 
 	 */
 	private Object _data;
 
+	/**
+	 * Constructor for EvaluatorAttribute implementation which 
+	 * extends the logical Attribute class with a data object.
+	 * 
+	 * @param extentName name of the extent from which the attribute is derived
+	 * @param attrName attribute name as it appears in the schema
+	 * @param attrType type of the attribute
+	 * @throws SchemaMetadataException invalid data type
+	 */
 	public EvaluatorAttribute(String extentName, String attrName,
 			AttributeType attrType, Object data) 
 	throws SchemaMetadataException {
@@ -65,14 +75,30 @@ public class EvaluatorAttribute extends Attribute {
 	 * Constructor for EvaluatorAttribute implementation which 
 	 * extends the logical Attribute class with a data object.
 	 * 
-	 * @param attribute <code>Attribute</code> that is being extended
+	 * @param extentName name of the extent from which the attribute is derived
+	 * @param attrName attribute name as it appears in the schema
+	 * @param attrLabel display name of the attribute
+	 * @param attrType type of the attribute
+	 * @throws SchemaMetadataException invalid data type
+	 */
+	public EvaluatorAttribute(String extentName, String attrName, 
+			String attrLabel, AttributeType attrType, Object data)
+	throws SchemaMetadataException {
+		super(extentName, attrName, attrLabel, attrType);
+		_data = data;
+	}
+
+	/**
+	 * Constructor for EvaluatorAttribute implementation which 
+	 * extends the logical Attribute class with a data object.
+	 * 
+	 * @param attr <code>Attribute</code> that is being extended
 	 * @param data data value being stored
 	 * @throws SchemaMetadataException invalid data type
 	 */
-	public EvaluatorAttribute(Attribute attribute, Object data) 
+	public EvaluatorAttribute(Attribute attr, Object data) 
 	throws SchemaMetadataException {
-		super(attribute.getExtentName(), attribute.getName(), 
-				attribute.getType());
+		super(attr);
 		_data = data;
 	}
 	
@@ -81,7 +107,7 @@ public class EvaluatorAttribute extends Attribute {
 	}
 	
 	public String toString() {
-		return super.toString() + _data.toString();
+		return super.toString() + " " + _data.toString();
 	}
 
 }

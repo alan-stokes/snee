@@ -48,12 +48,12 @@ public class ReceiveOperatorImplTest {
 		mockOp = createMock(AcquireOperator.class);
 		
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
-		attributes.add(new DataAttribute("attr", types.getType("integer")));
+		attributes.add(new DataAttribute("stream", "attr", 
+				types.getType("integer")));
 		
 		expect(mockOp.getAcquiredAttributes()).andReturn(attributes);
 		
 		mReceiveOp = new ReceiveOperatorImpl(mockOp);
-//		mReceiveOp.open();
 	}
 
 	@After

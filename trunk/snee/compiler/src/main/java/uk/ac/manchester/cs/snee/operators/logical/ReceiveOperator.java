@@ -35,11 +35,9 @@ package uk.ac.manchester.cs.snee.operators.logical;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
@@ -52,21 +50,24 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 
 public class ReceiveOperator extends LogicalOperatorImpl {
 
-	/** Standard Java Logger. */
+	/**
+	 *  Logger for this class.
+	 */
 	private Logger logger = 
 		Logger.getLogger(ReceiveOperator.class.getName());
 
-	/** Name as found in the DDL. */
+	/**
+	 *  Name of extent as found in the schema. 
+	 */
 	private String extentName;
 
-	/** Name as found in the Query. */
-	private String localName;
-
-	/** List of attributes to be output. */
+	/**
+	 *  List of attributes to be output. 
+	 */
 	private List<Attribute> outputAttributes;
 
 	/** List of attributes to be received. */
-	private ArrayList<DataAttribute> receivedAttributes;
+	private List<Attribute> receivedAttributes;
 
 	/**
 	 * The expressions for building the attributes.
@@ -83,33 +84,42 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 	/**
 	 * Constructs a new Receive operator.
 	 * 
-	 * @param extentName Global name for this source
-	 * @param localName Name for this source within this query or subquery
-	 * @param schemaMetadata The DDL Schema
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
+	 * @param extentMetaData Schema data about the extent
+	 * @param sources Metadata about data sources for the receive extent
+	 * @param boolType type used for booleans
+	 * @throws SchemaMetadataException
+	 * @throws TypeMappingException
 	 */
-	public ReceiveOperator(String extentName, String localName,  
-			ExtentMetadata sourceMetaData, List<SourceMetadata> sources, 
+	public ReceiveOperator(ExtentMetadata extentMetaData, 
+			List<SourceMetadata> sources, 
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException {
 		super(boolType);
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER ReceiveOperator() with " + extentName + 
-					" " + localName + " " + sourceMetaData);
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER ReceiveOperator() with " +
+					extentMetaData + " #sources=" + sources.size());
+					}
 		this.setOperatorName("RECEIVE");
 		//        this.setNesCTemplateName("receive");
 		this.setOperatorDataType(OperatorDataType.STREAM);
 
-		this.extentName = extentName;
-		this.localName = localName;
-		addMetaDataInfo(sourceMetaData);
-		this.setParamStr(this.extentName);
-
-		updateReceivedAttributes();
+		this.extentName = extentMetaData.getExtentName();
+		this._sources = sources;
+		addMetadataInfo(extentMetaData);
 		
-		_sources = sources;
-		
+		StringBuffer sourcesStr = new StringBuffer(" sources={");
+		boolean first = true;
+		for (SourceMetadata sm : _sources) {
+			if (first) {
+				first=false;
+			} else {
+				sourcesStr.append(",");
+			}
+			sourcesStr.append(sm.getSourceName());
+		}
+		sourcesStr.append("}");
+		this.setParamStr(this.extentName + sourcesStr);
+			
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN ReceiveOperator()");
 	} 		 
@@ -123,14 +133,6 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 	}
 
 	/**
-	 * Return the name of the extent as it is referenced in the query.
-	 * @return
-	 */
-	public String getQueryName() {
-		return localName;
-	}
-	
-	/**
 	 * Return details of the data sources
 	 * @return
 	 */
@@ -140,75 +142,23 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 	
 	/**
 	 * Sets up the attribute based on the schema.
-	 * @param sourceMetaData DDL declaration for this extent.
+	 * @param extentMetaData DDL declaration for this extent.
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
 	 */
-	private void addMetaDataInfo(ExtentMetadata sourceMetaData) 
-	throws SchemaMetadataException, TypeMappingException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER addMetaDataInfo() with " + sourceMetaData);
-		outputAttributes = new ArrayList<Attribute>();
-//		//This version assumes input does not have a timestamp
-//		//Therefor added by the receive.
-//		outputAttributes.add(new EvalTimeAttribute(
-//				_types.getType(Constants.TIME_TYPE))); 
-//		outputAttributes.add(new TimeAttribute(localName,
-//				_types.getType(Constants.TIME_TYPE)));
-//		//Choice to be made if multiple site receive to be allowed.
-//		outputAttributes.add(new IDAttribute(localName, 
-//				_types.getType("integer")));
-		receivedAttributes = new ArrayList<DataAttribute>();
-		List<uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute> typeMap = 
-			sourceMetaData.getAttributes();
-		String[] attributeNames = new String[1];
-		attributeNames = extractAttributeNames(typeMap);
-		DataAttribute attribute;
-		int numAttributes = typeMap.size();
-		for (int i = 0; i < numAttributes; i++) {
-			if (!(attributeNames[i].equals(Constants.ACQUIRE_TIME) 
-					|| attributeNames[i].equals(Constants.ACQUIRE_ID))) {
-				AttributeType type = typeMap.get(i).getType();
-				attribute = new DataAttribute(
-						localName, attributeNames[i], type);
-				outputAttributes.add(attribute);
-				receivedAttributes.add(attribute);
-//				sites =  sourceMetaData.getSourceNodes();
-			}
+	private void addMetadataInfo(ExtentMetadata extentMetaData) 
+	{
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER addMetaDataInfo() with " +
+					extentMetaData);
 		}
+		//This version assumes input does not have a timestamp
+		receivedAttributes = extentMetaData.getAttributes();
+		outputAttributes = receivedAttributes;
 		copyExpressions(outputAttributes);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN addMetaDataInfo()");
 	}
-
-	private String[] extractAttributeNames(
-			List<uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute> attributes) {
-		String[] attrNames = new String[attributes.size()];
-		int index = 0;
-		for (uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute attr : attributes) {
-			String attrName = attr.getName();
-			attrNames[index] = attrName;
-			index++;
-		}
-		return attrNames;
-	}
-
-	//    /**
-	//     * Constructor that creates a new operator 
-	//     * 		based on a model of an existing operator.
-	//     * 
-	//     * Used by both the clone method and the constructor of the physical methods.
-	//     * @param model Operator to clone.
-	//     */
-	//    protected ReceiveOperator(ReceiveOperator model) {
-	//    	super(model);
-	//    	this.extentName = model.extentName;
-	//    	this.localName = model.localName;
-	//    	this.sites = model.sites;
-	//    	this.outputAttributes = model.outputAttributes;
-	//		this.receivedAttributes = model.receivedAttributes;
-	//		this.expressions = model.expressions;
-	//    }  
 
 	/**
 	 * Returns a string representation of the operator.
@@ -218,24 +168,15 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 		return this.getText();
 	}
 
-	// 	/**
-	// 	 * @return The Sites this acquire will be done on.
-	// 	 */
-	//	public int[] getSourceSites() {
-	//		return sites;
-	//	}
-
 	/**
 	 * Calculated the cardinality based on the requested type. 
 	 * 
-	 * @param card Type of cardinailty to be considered.
+	 * @param card Type of cardinality to be considered.
 	 * 
-	 * @return The Cardinality calulated as requested.
+	 * @return The Cardinality calculated as requested.
 	 */
 	public int getCardinality(CardinalityType card) {
-		//		System.out.println("Temp getCardinality called.");
-		return -100;
-		//return sites.length; 
+		return receivedAttributes.size();
 	}
 
 	/**
@@ -249,9 +190,8 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 
 	/** {@inheritDoc} */
 	public boolean acceptsPredicates() {
-		logger.warn("Receive does not yet accept predicates");
+		logger.warn("Receive does not accept predicates");
 		return false;
-		//return Settings.LOGICAL_OPTIMIZATION_COMBINE_ACQUIRE_AND_SELECT;
 	}
 
 	/** {@inheritDoc} */
@@ -264,17 +204,10 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 		return false;
 	}
 
-	//	/** {@inheritDoc} */
-	//	public ReceiveOperator shallowClone() {
-	//		//TODO: clone relation
-	//		ReceiveOperator clonedOp = new ReceiveOperator(this);
-	//		return clonedOp;
-	//	}
-
 	/** 
 	 * List of the attribute returned by this operator.
 	 * 
-	 * @return ArrayList of the returned attributes.
+	 * @return List of the returned attributes.
 	 */ 
 	public List<Attribute> getAttributes() {
 		return outputAttributes;
@@ -295,43 +228,11 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 		expressions.addAll(attributes);
 	}
 
-	/** 
-	 * Updates the sensed Attributes.
-	 * Extracts the attributes from the expressions.
-	 * Those that are data attributes become the sensed attributes.
-	 */	
-	private void updateReceivedAttributes() {
-		receivedAttributes = new ArrayList<DataAttribute>();
-		for (int i = 0; i < expressions.size(); i++) {
-			//DataAttribute sensed =  sensedAttributes.get(i);
-			Expression expression = expressions.get(i);
-			List<Attribute> attributes = 
-				expression.getRequiredAttributes();
-			for (int j = 0; j < attributes.size(); j++) {
-				Attribute attribute = attributes.get(j);
-				if (attribute instanceof DataAttribute) {
-					if (!receivedAttributes.contains(attribute)) {
-						receivedAttributes.add((DataAttribute) attribute);
-					}
-				}
-			}
-		}
-		List<Attribute> attributes = 
-			getPredicate().getRequiredAttributes();
-		for (int j = 0; j < attributes.size(); j++) {
-			Attribute attribute = attributes.get(j);
-			if (attribute instanceof DataAttribute) {
-				if (!receivedAttributes.contains(attribute)) {
-					receivedAttributes.add((DataAttribute) attribute);
-				}
-			}
-		}
-	}
-
 	/**
 	 * {@inheritDoc}
 	 */
-	public boolean pushProjectionDown(List<Expression> projectExpressions, 
+	public boolean pushProjectionDown(
+			List<Expression> projectExpressions, 
 			List<Attribute> projectAttributes) 
 	throws OptimizationException {
 		return false;
@@ -352,68 +253,17 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 	 * between this operator and the rename operator.
 	 */   
 	public void pushLocalNameDown(String newLocalName) {
-		localName = newLocalName;
-		for (int i = 0; i<outputAttributes.size(); i++){
-			outputAttributes.get(i).setLocalName(newLocalName);
-		}
+		//XXX-AG: Commented out method body
+		/*
+		 * This method was being used to relabel an extent in a 
+		 * query. Apparently it should never be called, so
+		 * why do we have it? Have commented it out!
+		 */
+//		localName = newLocalName;
+//		for (int i = 0; i<outputAttributes.size(); i++){
+//			outputAttributes.get(i).setLocalName(newLocalName);
+//		}
 	}
-
-	//	/** {@inheritDoc} */
-	//    public int getOutputQueueCardinality(Site node, DAF daf) {
-	//    	return this.getCardinality(CardinalityType.PHYSICAL_MAX, node, daf);
-	//    }
-
-	//	/** {@inheritDoc} */
-	//    public int getOutputQueueCardinality(int numberOfInstances) {
-	//    	assert(numberOfInstances == sites.length);
-	//    	return this.getCardinality(CardinalityType.PHYSICAL_MAX);
-	//    }
-
-	//    /**
-	//     * The physical maximum size of the output.
-	//     * 
-	//     * Each AcquireOperator on a single site 
-	//     * 		returns exactly 1 tuple per evaluation. 
-	//     *
-	//     * @param card Ignored.
-	//     * @param node Ignored
-	//     * @param daf Ignored
-	//     * @return 1
-	//     */
-	//    public int getCardinality(CardinalityType card, 
-	//    		Site node, DAF daf) {
-	//		throw new AssertionError("Unexpected call to getCardinality()"); 
-	//    }
-
-	//	/** {@inheritDoc} */
-	//	public AlphaBetaExpression getCardinality(CardinalityType card, 
-	//			Site node, DAF daf, boolean round) {
-	//		throw new AssertionError("Unexpected call to getCardinality()"); 
-	//	}
-
-	//	/** {@inheritDoc} */
-	//    private double getTimeCost() {
-	//		throw new AssertionError("Unexpected call to getTimeCost()"); 
-	//    }
-
-	//	/** {@inheritDoc} */
-	//    public double getTimeCost(CardinalityType card, 
-	//    		Site node, DAF daf) {
-	//		return getTimeCost();
-	//    }
-
-	//    /** {@inheritDoc} */
-	//	public double getTimeCost(CardinalityType card, int numberOfInstances){
-	//		assert(numberOfInstances == sites.length);
-	//		return getTimeCost();		
-	//	}
-
-	//	/** {@inheritDoc} */
-	//	public AlphaBetaExpression getTimeExpression(
-	//			CardinalityType card, Site node, 
-	//			DAF daf, boolean round) {
-	//		return new AlphaBetaExpression(getTimeCost(card, node, daf),0);
-	//	}
 
 	/**
 	 * Some operators do not change the data in any way those could be removed.
@@ -430,7 +280,7 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 	 * This may include attributes needed for a predicate.
 	 * @return Attributes that this source will sense.
 	 */
-	public List<DataAttribute> getReceivedAttributes() {
+	public List<Attribute> getReceivedAttributes() {
 		assert (receivedAttributes != null);
 		return receivedAttributes;
 	}
@@ -447,9 +297,7 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 				return i;
 			}
 		}
-		//    	Utils.handleCriticalException(new CodeGenerationException(
-		//    			"Unable to find a number for attribute: " 
-		//    			+ attribute.toString()));
+		//XXX-AG: Shouldn't this throw an exception?
 		return 1;
 	}
 
@@ -462,59 +310,16 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 		return receivedAttributes.size();
 	}
 
-	//	/** {@inheritDoc} */    
-	//	public int getDataMemoryCost(Site node, DAF daf) {
-	//		throw new AssertionError("Unexpected call to getDataMemoryCost()"); 
-	//	}
-
 	/**
-	 * Get the list of attributes acquired/ sensed by this operator.
+	 * Get the list of attributes received by this operator.
 	 * List is before projection is pushed down.
-	 * @return list of acquired attributes.
+	 * @return list of received attributes.
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
 	 */
 	public List<Attribute> getAllReceivedAttributes() 
 	throws SchemaMetadataException, TypeMappingException {
-		List<Attribute> acquiredAttributes = 
-			(ArrayList<Attribute>)receivedAttributes.clone();
-//		acquiredAttributes.add(new EvalTimeAttribute(
-//				_types.getType(Constants.TIME_TYPE)));
-//		acquiredAttributes.add(new TimeAttribute(localName, 
-//				_types.getType(Constants.TIME_TYPE)));
-//		acquiredAttributes.add(new IDAttribute(localName, 
-//				_types.getType("integer")));
-		return acquiredAttributes;
+		return receivedAttributes;
 	}
-
-	//    /**
-	//     * Displays the results of the cost functions.
-	//     * @param node Physical mote on which this operator has been placed.
-	//     * @param daf Distributed query plan this operator is part of.
-	//	 * @return the calculated time
-	//     */
-	//	public double getTimeCost2(Site node, DAF daf) {
-	//		throw new AssertionError("Unexpected call to getTimeCost2()"); 
-	//	}
-
-	//    /**
-	//     * Displays the results of the cost functions.
-	//     * @param node Physical mote on which this operator has been placed.
-	//     * @param daf Distributed query plan this operator is part of.
-	//     * @return OutputQueueCardinality * PhytsicalTuplesSize
-	//     */
-	//	public double getEnergyCost2(Site node, DAF daf) {
-	//		throw new AssertionError("Unexpected call to getEnergyCost2()"); 
-	//	}
-
-	//	/**
-	//     * Displays the results of the cost functions.
-	//     * @param node Physical mote on which this operator has been placed.
-	//     * @param daf Distributed query plan this operator is part of.
-	//     * @return OutputQueueCardinality * PhytsicalTuplesSize
-	//     */
-	//	public int getDataMemoryCost2(Site node, DAF daf) {
-	//		throw new AssertionError("Unexpected call to getDataMemoryCost2()"); 
-	//	}
 
 }
