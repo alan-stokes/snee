@@ -375,11 +375,6 @@ public class TranslatorTest {
 		// Verify result
 		Iterator<LogicalOperator> it = 
 			laf.operatorIterator(TraversalOrder.PRE_ORDER);
-		while (it.hasNext()) {
-			LogicalOperator op = it.next();
-			System.out.println(op.getOperatorName() + " " +
-					op.getAttributes());
-		}
 		LogicalOperator rootOperator = laf.getRootOperator();
 		List<Attribute> attributes = rootOperator.getAttributes();
 		assertEquals(2, attributes.size());
