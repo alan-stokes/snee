@@ -1,8 +1,10 @@
 package uk.ac.manchester.cs.snee.compiler.translator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -23,7 +25,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
@@ -56,6 +57,8 @@ public class Translator {
 	private Types _types;
 
 	private AttributeType _boolType;
+
+	private Map<String, String> extentNameMappings;
 
 	public Translator (Metadata metadata) 
 	throws TypeMappingException, SchemaMetadataException 
@@ -123,7 +126,7 @@ public class Translator {
 	}
 
 	private LogicalOperator translateWindowAndLocalName(AST ast, 
-			LogicalOperator operator) 
+			LogicalOperator operator, String extentName) 
 	throws ParserValidationException, OptimizationException, 
 	ParserException, RecognitionException { 
 		if (logger.isTraceEnabled()) {
@@ -233,7 +236,7 @@ public class Translator {
 			logger.warn(message);
 			throw new OptimizationException(message);
 		}
-		translateLocalName(ast, operator);
+		translateLocalName(ast, operator, extentName);
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN translateWindowAndLocalName(): " +
 					"operator " + operator);
@@ -504,7 +507,8 @@ public class Translator {
 		return rowUnit;
 	}
 
-	private void translateLocalName(AST ast, LogicalOperator operator) 
+	private void translateLocalName(AST ast, LogicalOperator operator,
+			String extentName) 
 	throws OptimizationException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateLocalName() with op=" + 
@@ -516,11 +520,17 @@ public class Translator {
 			}
 			return;
 		}
+		String extentReference = ast.getText();
 		if (ast.getType() == SNEEqlParserTokenTypes.Identifier) {
-			operator.pushLocalNameDown(ast.getText());
+			if (logger.isTraceEnabled()) {
+				logger.trace("Extent " + extentName + 
+						" referenced as " + extentReference);
+			}
+			extentNameMappings.put(extentReference, extentName);
+			operator.pushLocalNameDown(extentReference);
 		} else {
 			String msg = "Unprogrammed AST Type:" + ast.getType() +
-				" Text:"+ ast.getText();
+				" Text:"+ extentReference;
 			logger.warn(msg);
 			throw new OptimizationException(msg);
 		}
@@ -597,6 +607,7 @@ public class Translator {
 		ast.setText(ast.getText().toLowerCase());
 		AST windowAST;
 		LogicalOperator output;
+		String extentName;
 		switch (ast.getType()) {
 		case SNEEqlParserTokenTypes.RPAREN: 
 			if (logger.isTraceEnabled()) {
@@ -605,12 +616,13 @@ public class Translator {
 			AST subQueryAST = ast.getFirstChild();
 			output = translateQuery(subQueryAST);
 			windowAST = subQueryAST.getNextSibling();
+			extentName = "";
 			break;
 		case SNEEqlParserTokenTypes.SOURCE: 
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate SOURCE: " + ast.getText());
 			}
-			String extentName = ast.getText();
+			extentName = ast.getText();
 			ExtentMetadata extentMetadata = 
 				_metadata.getExtentMetadata(extentName);
 			List<SourceMetadata> sources = 
@@ -650,7 +662,8 @@ public class Translator {
 			logger.warn(msg);
 			throw new OptimizationException(msg);  	
 		}
-		output = translateWindowAndLocalName(windowAST, output);
+		output = translateWindowAndLocalName(windowAST, output, 
+				extentName);
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN translateExtent() " + output);
 		}
@@ -826,6 +839,8 @@ public class Translator {
 					ast.toStringTree() +
 					" #children=" + ast.getNumberOfChildren());
 		}
+		// Create new empty map for extent name mappings
+		extentNameMappings = new HashMap<String, String>();
 		DeliverOperator operator;
 		if (ast==null) {
 			String msg = "No parse tree available.";
@@ -1041,6 +1056,12 @@ public class Translator {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Parts: " + parts[0] + " " + parts[1]);
 			}
+			String eName;
+			if (extentNameMappings.containsKey(parts[0])) {
+				eName = extentNameMappings.get(parts[0]);
+			} else {
+				eName = parts[0];
+			}
 			attributes = input.getAttributes();
 			boolean attrFound = false;
 			for (int i = 0; i< attributes.size(); i++) {
@@ -1048,9 +1069,15 @@ public class Translator {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Attribute: " + attribute);
 				}
+				String attrExtentName =
+					attribute.getExtentName();
 				String attrSchemaName = 
 					attribute.getAttributeSchemaName();
-				if (attrSchemaName.equalsIgnoreCase(parts[1])) {
+				if (attrExtentName.equalsIgnoreCase(eName) &&
+						attrSchemaName.equalsIgnoreCase(parts[1])) {
+					//XXX This rename could be dodgy!
+					attribute.setAttributeDisplayName(parts[0] + 
+							"." + attrSchemaName);
 					expression = attribute;
 					attrFound = true;
 					break;
