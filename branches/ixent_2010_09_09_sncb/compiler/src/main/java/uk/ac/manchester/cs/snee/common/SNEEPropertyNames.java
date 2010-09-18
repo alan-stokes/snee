@@ -46,6 +46,13 @@ public final class SNEEPropertyNames {
     	"compiler.generate_graphs";
 
     /**
+     * Used to indicate whether operator output types should
+     * be displayed in the operator trees.
+     */
+    public static final String SHOW_OPERATOR_TUPLE_TYPE = 
+    	"compiler.debug.show_operator_tuple_type";
+    
+    /**
      * Used to provide the path to the GraphViz executatble
      * Optional, must be set if GENERAL_GENERATE_GRAPHS=true 
      */
