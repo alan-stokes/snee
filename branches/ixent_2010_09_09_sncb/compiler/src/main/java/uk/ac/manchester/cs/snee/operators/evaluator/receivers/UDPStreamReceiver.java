@@ -206,10 +206,10 @@ public class UDPStreamReceiver implements SourceReceiver {
 			new ArrayList<EvaluatorAttribute>();
 		while (st.hasMoreTokens()) {
 			Attribute attribute = attributes.get(col);
-			//FIXME: Need to convert the string representation to the correct type
 			EvaluatorAttribute evalAttr = 
 				new EvaluatorAttribute(streamName, 
-								attribute.getAttributeName(), 
+								attribute.getAttributeSchemaName(),
+								attribute.getAttributeDisplayName(),
 								attribute.getType(), 
 						convertStringToType(st.nextToken(), 
 								attribute.getType().getName()));

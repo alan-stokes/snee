@@ -40,7 +40,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.Utils;
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.NodeImplementation;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
@@ -221,9 +220,9 @@ implements LogicalOperator {
 			s.append(this.getParamStr());
 			s.append(" )");
 		}
-		s.append(" - card: ");
+		s.append(" - cardinality: ");
 		s.append(new Long(this.getCardinality(CardinalityType.MAX)).toString());
-		s.append("\n");
+//		s.append("\n");
 		return s.toString();
 	}
 
@@ -254,12 +253,15 @@ implements LogicalOperator {
 	 */
 	protected void setOperatorDataType(
 			OperatorDataType newOperatorDataType) {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER setOperatorDataType()");
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER setOperatorDataType() with " +
+					newOperatorDataType);
+		}
 		assert (newOperatorDataType != null);
 		this.operatorDataType = newOperatorDataType;
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN setOperatorDataType()");
+		}
 	}
 
 	/** {@inheritDoc} */    

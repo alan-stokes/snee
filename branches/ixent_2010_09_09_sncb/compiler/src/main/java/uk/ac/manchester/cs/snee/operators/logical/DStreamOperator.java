@@ -33,7 +33,6 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.operators.logical;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
@@ -180,7 +179,8 @@ implements LogicalOperator {
 
 	/** {@inheritDoc} */
 	public String toString() {
-		return this.getText() + "[ " + super.getInput(0).toString() + " ]";
+		return this.getText() + " [ " + 
+		super.getInput(0).toString() + " ]";
 	}
 
 //	/** 

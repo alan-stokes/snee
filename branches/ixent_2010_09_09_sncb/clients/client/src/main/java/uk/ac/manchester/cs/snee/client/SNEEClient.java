@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Date;
 import java.util.List;
 import java.util.Observable;
@@ -68,7 +69,14 @@ public abstract class SNEEClient implements Observer {
 			while (rs.next()) {
 				StringBuffer buffer = new StringBuffer();
 				for (int i = 1; i <= numCols; i++) {
-					buffer.append(rs.getObject(i));
+					Object value = rs.getObject(i);
+					if (metaData.getColumnType(i) == 
+						Types.TIMESTAMP && value instanceof Long) {
+						buffer.append(
+								new Date(((Long) value).longValue()));
+					} else {
+						buffer.append(value);
+					}
 					buffer.append("\t");
 				}
 				System.out.println(buffer.toString());

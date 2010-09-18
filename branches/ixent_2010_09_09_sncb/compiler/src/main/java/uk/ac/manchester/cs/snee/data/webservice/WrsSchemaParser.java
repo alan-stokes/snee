@@ -12,11 +12,12 @@ import javax.sql.rowset.WebRowSet;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 
 import com.sun.rowset.WebRowSetImpl;
 
@@ -79,7 +80,7 @@ public class WrsSchemaParser extends SchemaParserAbstract {
 				AttributeType colType = 
 					inferType(metadata.getColumnType(i));
 				Attribute attr = 
-					new Attribute(extentName, colName, colType);
+					new DataAttribute(extentName, colName, colType);
 				response.add(attr);
 			}
 		} catch (SQLException e) {

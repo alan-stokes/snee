@@ -34,18 +34,10 @@
 package uk.ac.manchester.cs.snee.compiler.metadata.schema;
 
 
-import java.io.Serializable;
-
 import org.apache.log4j.Logger;
-
 import org.w3c.dom.Element;
 
-public class AttributeType implements Serializable {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -4632622572144870143L;
+public class AttributeType { 
 
 	private static Logger logger = 
 		Logger.getLogger(AttributeType.class.getName());
@@ -219,6 +211,19 @@ public class AttributeType implements Serializable {
 				+ " can not be tested for compariosn with type " + other.name);
 		return false;
 	}
+//
+//	@Override
+//	public boolean equals(Object ob) {
+//		boolean result = false;
+//		if (ob instanceof AttributeType) {
+//			AttributeType type = (AttributeType) ob;
+//			System.out.println(type.getName() + ", " + name);
+//			if (type.getName().equalsIgnoreCase(name)) {
+//				return true;
+//			}
+//		}
+//		return result;
+//	}
 
 	public String toString() {
 		return this.name + " size: " + this.size + " nesCName: "

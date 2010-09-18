@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 
 public class QueryPlanMetadata {
 
@@ -17,20 +17,16 @@ public class QueryPlanMetadata {
 	private Logger logger = 
 		Logger.getLogger(this.getClass().getName());
 
-	private List<Attribute> attributes = new ArrayList<Attribute>();
+	private List<Attribute> attributes = 
+		new ArrayList<Attribute>();
 
-	public QueryPlanMetadata(
-			List<uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute> attrs) 
+	public QueryPlanMetadata(List<Attribute> attrs) 
 	throws SchemaMetadataException, TypeMappingException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER QueryPlanMetadata() #attrs=" + 
 					attrs.size());
 		}
-		for (uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute attr : attrs) {
-			Attribute attribute = new Attribute(attr.getLocalName(), 
-					attr.getAttributeName(), attr.getType());
-			attributes.add(attribute);
-		}
+		attributes = attrs;
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN QueryPlanMetadata()");
 		}

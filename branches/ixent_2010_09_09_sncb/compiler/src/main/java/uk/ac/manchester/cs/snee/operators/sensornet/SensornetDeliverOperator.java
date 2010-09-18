@@ -1,12 +1,10 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
@@ -106,8 +104,8 @@ public class SensornetDeliverOperator extends SensornetOperatorImpl {
 			return "evalEpoch";
 		}
 		if (attr instanceof TimeAttribute) {
-			return attr.getLocalName() + ("Epoch");
+			return attr.getAttributeDisplayName() + ("Epoch");
 		}
-		return attr.getAttributeName(); 
+		return attr.getAttributeDisplayName(); 
 	}
 }

@@ -35,7 +35,6 @@ extends EvaluatorPhysicalOperator {
 		logger.debug("RETURN EvaluationOperator()");
 	}
 	
-//FIXME: Working here!!!
 	protected boolean evaluate(MultiExpression expr, Tuple tuple)
 	throws SNEEException{
 		if (logger.isTraceEnabled()) {
@@ -69,7 +68,8 @@ extends EvaluatorPhysicalOperator {
 	private boolean compute (Expression[] arrExpr, MultiType type, 
 			Tuple tuple) throws SNEEException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER compute() with " + type + ", " + tuple);
+			logger.trace("ENTER compute() with " + type + ",\n " + 
+					tuple);
 		}
 		// Assume the tuple will not pass the expression
 		boolean retVal = false;
@@ -82,12 +82,12 @@ extends EvaluatorPhysicalOperator {
 			Object daValue;
 			if (operand instanceof DataAttribute) {
 				DataAttribute da = (DataAttribute) operand;
-				String daName = da.getLocalName() + "." + 
-					da.getAttributeName();
+				String daDisplayName = da.getAttributeDisplayName();
 				if (logger.isTraceEnabled()) {
-					logger.trace("Getting attribute " + daName);
+					logger.trace("Getting attribute " + daDisplayName);
 				}
-				daValue = tuple.getAttributeValue(daName);
+				daValue = 
+					tuple.getAttributeValueByDisplayName(daDisplayName);
 			} else if (operand instanceof IntLiteral){
 				IntLiteral il = (IntLiteral) operand;
 				daValue = new Integer(il.toString());

@@ -41,9 +41,6 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 
 /** 
  * Wrapper for an Integer constant expression.
- * 
- * @author Christian
- *
  */
 public class IntLiteral implements Expression {
 
@@ -107,6 +104,15 @@ public class IntLiteral implements Expression {
 	}
 	
 	/**
+	 * Returns the value this <code>IntLiteral</code> represents.
+	 * 
+	 * @return integer value
+	 */
+	public int getValue() {
+		return value;
+	}
+
+	/**
 	 * Finds the maximum value that this expression can return.
 	 * @return The maximum value for this expressions
 	 */
@@ -141,7 +147,7 @@ public class IntLiteral implements Expression {
 	public boolean allowedInProjectOperator(){
 		return true;
 	}
-
+	
 	/**
 	 * Converts this Expression to an Attribute.
 	 * 
@@ -151,7 +157,8 @@ public class IntLiteral implements Expression {
 	 */
 	public Attribute toAttribute() 
 	throws SchemaMetadataException, TypeMappingException {
-		return new DataAttribute("", Integer.toString(value), getType()); 
+		throw new SchemaMetadataException("Attempt to convert " +
+				"IntLiteral to a DataAttribute.");
 	}
 	
 }

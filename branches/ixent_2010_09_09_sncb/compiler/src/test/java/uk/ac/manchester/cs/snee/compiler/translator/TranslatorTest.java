@@ -1,11 +1,13 @@
 package uk.ac.manchester.cs.snee.compiler.translator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -21,12 +23,15 @@ import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
@@ -38,8 +43,9 @@ import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
-import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
 import antlr.CommonAST;
 import antlr.RecognitionException;
@@ -59,6 +65,7 @@ public class TranslatorTest {
 	}
 
 	private Translator translator;
+	private Types types;
 
 	@Before
 	public void setUp() 
@@ -66,7 +73,7 @@ public class TranslatorTest {
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException, SNCBException {
+	SNEEDataSourceException, CostParametersException, UtilsException, SNCBException {
 		Properties props = new Properties();
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
@@ -80,6 +87,9 @@ public class TranslatorTest {
 		SNEEProperties.initialise(props);
 		Metadata schemaMetadata = new Metadata();
 		translator = new Translator(schemaMetadata);
+		String typesFileLoc = 
+			Utils.validateFileLocation("etc/Types.xml");
+		types = new Types(typesFileLoc);
 	}
 
 	@After
@@ -208,6 +218,27 @@ public class TranslatorTest {
 	}
 	
 	@Test
+	public void testRename() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ParserValidationException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT timestamp AS time " +
+				"FROM TestStream;");
+		LogicalOperator rootOperator = laf.getRootOperator();
+		List<Attribute> attributes = 
+			rootOperator.getAttributes();
+		assertEquals(1, attributes.size());
+		Attribute attribute = attributes.get(0);
+		assertTrue(attribute.getAttributeDisplayName().
+				equalsIgnoreCase("time"));
+		assertTrue(attribute.getAttributeSchemaName().
+				equalsIgnoreCase("timestamp"));
+	}
+	
+	@Test
 	public void testSimpleSelect() 
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ParserValidationException, AssertionError, 
@@ -322,6 +353,38 @@ public class TranslatorTest {
 		testQuery("SELECT * " +
 				"FROM TestStream[FROM NOW - 5 SECONDS TO NOW SLIDE 1 SECOND] t, PullStream[FROM NOW - 5 SECONDS TO NOW SLIDE 1 SECOND] p " +
 				"WHERE t.timestamp = p.timestamp;");
+	}
+	
+	@Test
+	public void testJoinQueryRename() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ParserValidationException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		// Record result
+		Attribute testTimestampAttr = 
+			new DataAttribute("teststream", "timestamp", 
+					"t.timestamp", types.getType("integer"));
+		Attribute pullTimestampAttr =
+			new DataAttribute("pullstream", "timestamp", 
+					"p.timestamp", types.getType("integer"));
+		
+		// Run test
+		LAF laf = testQuery("SELECT t.timestamp, p.timestamp " +
+				"FROM TestStream[FROM NOW - 10 SECONDS TO " +
+				"NOW SLIDE 10 SECOND] t, " +
+				"PullStream[FROM NOW - 10 SECONDS TO " +
+				"NOW SLIDE 10 SECOND] p;");
+		
+		// Verify result
+		Iterator<LogicalOperator> it = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		LogicalOperator rootOperator = laf.getRootOperator();
+		List<Attribute> attributes = rootOperator.getAttributes();
+		assertEquals(2, attributes.size());
+		assertEquals(testTimestampAttr, attributes.get(0));
+		assertEquals(pullTimestampAttr, attributes.get(1));
 	}
 	
 	@Test

@@ -59,8 +59,8 @@ implements LogicalOperator {
 
 	@Override
 	public String toString() {
-		return this.getText() + "[ " + getInput(0).toString() 
-			+ "," + getInput(1).toString() + " ]";
+		return this.getText() + " [ " + getInput(0).toString() 
+			+ ", " + getInput(1).toString() + " ]";
 	}
 
 	public int getCardinality(CardinalityType card) {

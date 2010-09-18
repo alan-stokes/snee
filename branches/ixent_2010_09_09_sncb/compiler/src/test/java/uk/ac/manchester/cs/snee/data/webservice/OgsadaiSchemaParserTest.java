@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.junit.After;
@@ -13,11 +12,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.evaluator.QueryEvaluatorTest;
 
 public class OgsadaiSchemaParserTest {
@@ -65,13 +63,19 @@ public class OgsadaiSchemaParserTest {
 			parser.getColumns("envdata_folkestone");
 		assertEquals(7, columns.size());
 		Attribute attr = columns.get(0);
-		assertEquals("timestamp", attr.getName());
+		assertEquals("timestamp", attr.getAttributeSchemaName());
+		assertEquals("envdata_folkestone.timestamp", 
+				attr.getAttributeDisplayName());
 		assertEquals("integer", attr.getType().getName());
 		attr = columns.get(2);
-		assertEquals("error_code", attr.getName());
+		assertEquals("error_code", attr.getAttributeSchemaName());
+		assertEquals("envdata_folkestone.error_code", 
+				attr.getAttributeDisplayName());
 		assertEquals("string", attr.getType().getName());
 		attr = columns.get(5);
-		assertEquals("val1", attr.getName());
+		assertEquals("val1", attr.getAttributeSchemaName());
+		assertEquals("envdata_folkestone.val1", 
+				attr.getAttributeDisplayName());
 		assertEquals("decimal", attr.getType().getName());
 	}
 

@@ -638,13 +638,13 @@ public final class CodeGenUtils {
 			return "evalEpoch";
 		}
 		if (attr instanceof TimeAttribute) {
-			return attr.getLocalName() + ("_epoch");
+			return attr.getAttributeSchemaName() + ("_epoch");
 		}
 //TODO: Localtime
 //		if (attr instanceof LocalTimeAttribute) {
 //			return Constants.LOCAL_TIME;
 //		}
-		return attr.getLocalName() + "_" + attr.getAttributeName(); 
+		return attr.getAttributeSchemaName() + "_" + attr.getAttributeDisplayName(); 
 	}
 
 	/**
@@ -657,9 +657,9 @@ public final class CodeGenUtils {
 			return "evalEpoch";
 		}
 		if (attr instanceof TimeAttribute) {
-			return attr.getLocalName() + ("Epoch");
+			return attr.getAttributeSchemaName() + ("Epoch");
 		}
-		return attr.getAttributeName(); 
+		return attr.getAttributeDisplayName(); 
 	}
 
 

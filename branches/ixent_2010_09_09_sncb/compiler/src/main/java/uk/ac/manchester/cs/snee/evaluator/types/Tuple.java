@@ -40,12 +40,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.Constants;
 
-//TODO: Link with Attribute class
 /**
  * Tuple is the class that represents a tuple. A tuple consists of 
  * a list of fields, where each field has a position and name attribute.
@@ -54,11 +51,11 @@ import uk.ac.manchester.cs.snee.common.Constants;
  */
 public class Tuple {
 
-	private static Logger logger = 
-		Logger.getLogger(Tuple.class.getName());
-
 	private List<String> _attrNames = new ArrayList<String>();
-	private List<EvaluatorAttribute> _attrValues = new ArrayList<EvaluatorAttribute>();
+	private List<String> _attrLabels = new ArrayList<String>();
+	private List<String> _attrExtents = new ArrayList<String>();
+	private List<EvaluatorAttribute> _attrValues = 
+		new ArrayList<EvaluatorAttribute>();
 	
 	DateFormat dateFormat = 
 		new SimpleDateFormat(Constants.TIMESTAMP_FORMAT);
@@ -67,12 +64,6 @@ public class Tuple {
 	 * Create an empty tuple.
 	 */
 	public Tuple() {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER Tuple()");
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN Tuple()");
-		}
 	}
 
 	/**
@@ -81,16 +72,15 @@ public class Tuple {
 	 * @param attrValues values for the attributes of the tuple
 	 */
 	public Tuple(List<EvaluatorAttribute> attrValues) {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER Tuple() with #attrs=" + 
-					attrValues.size());
-		}
 		_attrValues = attrValues;
+		/*
+		 * Names, labels, and extents extracted to speed up
+		 * access mechanisms
+		 */
 		for (EvaluatorAttribute attr : attrValues) {
-			_attrNames.add(attr.getName());
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN Tuple()");
+			_attrNames.add(attr.getAttributeSchemaName());
+			_attrLabels.add(attr.getAttributeDisplayName());
+			_attrExtents.add(attr.getExtentName());
 		}
 	}
 
@@ -101,6 +91,15 @@ public class Tuple {
 	 */
 	public List<String> getAttributeNames() {
 		return _attrNames;
+	}
+
+	/**
+	 * Retrieve the display names of the attributes.
+	 * 
+	 * @return List of attribute display names
+	 */
+	public List<String> getAttributeDisplayNames() {
+		return _attrLabels;
 	}
 	
 	/**
@@ -120,15 +119,12 @@ public class Tuple {
 	 * @param attr attribute to be added
 	 */
 	public void addAttribute(EvaluatorAttribute attr) {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER addField() with " + attr);
-		}
-		String fieldName = attr.getName().toLowerCase();
-		_attrNames.add(fieldName);
+		String attrName = 
+			attr.getAttributeSchemaName().toLowerCase();
+		_attrNames.add(attrName);
+		_attrLabels.add(attr.getAttributeDisplayName());
+		_attrExtents.add(attr.getExtentName());
 		_attrValues.add(attr);
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN addField()");
-		}
 	}
 	
 //	public void removeField(String fieldName) throws SNEEException {
@@ -140,36 +136,52 @@ public class Tuple {
 //	}
 	
 	/**
-	 * Retrieve the field at the given index.
+	 * Retrieve the attribute at the given index.
 	 * 
 	 * @param index column number to retrieve
-	 * @return field value for the column number
+	 * @return data value for the column number
 	 * @throws SNEEException index is out of range
 	 */
 	public EvaluatorAttribute getAttribute(int index) 
 	throws SNEEException {
-		EvaluatorAttribute field;
+		EvaluatorAttribute attr;
 		try {
-			field = _attrValues.get(index);
+			attr = _attrValues.get(index);
 		} catch (IndexOutOfBoundsException e) {
 			String message = "Index out of range for tuple size. ";
-			logger.warn(message, e);
 			throw new SNEEException(message);
 		}
-		return field;
+		return attr;
 	}
 	
 	/**
-	 * Retrieve the field of the first occurrence of the given 
-	 * field name.
+	 * Retrieve the attribute of the first occurrence of the given 
+	 * attribute name from the specified extent.
 	 * 
-	 * @param fieldName name of the field to retrieve
+	 * @param extentName name of the extent the attribute appears in
+	 * @param attrName name of the attribute to retrieve
 	 * @return field with the given field name
 	 * @throws SNEEException field name does not exist
 	 */
-	public EvaluatorAttribute getAttribute(String fieldName) 
+	public EvaluatorAttribute getAttribute(String extentName, 
+			String attrName) 
 	throws SNEEException {
-		int index = findFieldIndex(fieldName);
+		int index = findAttrIndex(extentName, attrName);
+		return getAttribute(index);
+	}
+	
+	/**
+	 * Retrieve the attribute of the first occurrence of the given 
+	 * display name.
+	 * 
+	 * @param attrDisplayName display name of the attribute to retrieve
+	 * @return field with the given field name
+	 * @throws SNEEException field name does not exist
+	 */
+	public EvaluatorAttribute getAttributeByDisplayName(
+			String attrDisplayName) 
+	throws SNEEException {
+		int index = findAttrLabelIndex(attrDisplayName);
 		return getAttribute(index);
 	}
 	
@@ -177,7 +189,7 @@ public class Tuple {
 	 * Retrieve the data value of the field index specified.
 	 * 
 	 * @param index column number of the value to retrieve
-	 * @return object representing the field value
+	 * @return data value of the attribute
 	 * @throws SNEEException index does not exist
 	 */
 	public Object getAttributeValue(int index) 
@@ -187,23 +199,39 @@ public class Tuple {
 			data = _attrValues.get(index).getData();
 		} catch (IndexOutOfBoundsException e) {
 			String message = "Index out of range for tuple size. ";
-			logger.warn(message, e);
 			throw new SNEEException(message);
 		}
 		return data;
 	}
 	
 	/**
-	 * Retrieve the value stored in the first occurrence of the field 
-	 * with the given name.
+	 * Retrieve the data value of the first occurrence of the given 
+	 * attribute name from the specified extent.
 	 * 
-	 * @param fieldName name of the field to retrieve
-	 * @return value of the given field name
+	 * @param extentName name of the extent the attribute appears in
+	 * @param attrName name of the attribute to retrieve
+	 * @return data value of the attribute
 	 * @throws SNEEException field name does not exist
 	 */
-	public Object getAttributeValue(String fieldName) 
+	public Object getAttributeValue(String extentName, 
+			String attrName) 
 	throws SNEEException {
-		int index = findFieldIndex(fieldName);
+		int index = findAttrIndex(extentName, attrName);
+		return getAttributeValue(index);
+	}
+	
+	/**
+	 * Retrieve the data value stored in the first occurrence of the 
+	 * display name.
+	 * 
+	 * @param attrDisplayName display name of the attribute to retrieve
+	 * @return data value of the given attribute display name
+	 * @throws SNEEException attribute display name does not exist
+	 */
+	public Object getAttributeValueByDisplayName(
+			String attrDisplayName) 
+	throws SNEEException {
+		int index = findAttrLabelIndex(attrDisplayName);
 		return getAttributeValue(index);
 	}
 	
@@ -220,19 +248,45 @@ public class Tuple {
 	 * Returns the index of the first occurrence of the given 
 	 * field name.
 	 * 
-	 * @param fieldName name of the field to find the index for
-	 * @return index of the first occurrence of the corresponding field
+	 * @param extentName name of the extent in which the attribute appears
+	 * @param attrName name of the attribute
+	 * @return index of the first occurrence of the corresponding attribute
 	 * @throws SNEEException the field name does not exist
 	 */
-	private int findFieldIndex(String fieldName) 
+	private int findAttrIndex(String extentName, String attrName) 
 	throws SNEEException {
 		for (int i = 0; i < _attrNames.size(); i++) {
-			String name = _attrNames.get(i);
-			if (fieldName.equalsIgnoreCase(name)) {
+			String eName = _attrExtents.get(i);
+			String aName = _attrNames.get(i);
+//			System.out.println(extentName + " == " + eName);
+//			System.out.println(attrName + " == " + aName);
+			if (extentName.equalsIgnoreCase(eName) &&
+					attrName.equalsIgnoreCase(aName)) {
 				return i;
 			}
 		}
-		throw new SNEEException("Unknown field name: " + fieldName);
+		throw new SNEEException("Unknown attribute name: " + 
+				extentName + "." + attrName);
+	}
+
+	/**
+	 * Returns the index of the first occurrence of the given 
+	 * attribute label.
+	 * 
+	 * @param attrLabel display name of the attribute to find the index for
+	 * @return index of the first occurrence of the corresponding attribute display name
+	 * @throws SNEEException the field name does not exist
+	 */
+	private int findAttrLabelIndex(String attrLabel) 
+	throws SNEEException {
+		for (int i = 0; i < _attrLabels.size(); i++) {
+			String name = _attrLabels.get(i);
+			if (attrLabel.equalsIgnoreCase(name)) {
+				return i;
+			}
+		}
+		throw new SNEEException("Unknown attribute display name: " +
+				attrLabel);
 	}
 	
 	public String toString() {
@@ -240,7 +294,7 @@ public class Tuple {
 		for (int i = 0; i < _attrNames.size(); i++) {
 			buffer.append(_attrNames.get(i));
 			buffer.append(": ");
-			buffer.append(_attrValues.get(i));
+			buffer.append(_attrValues.get(i).getData());
 			buffer.append(", ");
 		}
 		int lastCommaIndex = buffer.lastIndexOf(",");

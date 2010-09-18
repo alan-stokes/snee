@@ -14,9 +14,9 @@ import javax.sql.rowset.RowSetMetaDataImpl;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryPlanMetadata;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
@@ -56,7 +56,8 @@ extends Observable implements ResultStore {
 			QueryExecutionPlan queryPlan)
 	throws SQLException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER createMetaData() with " + queryPlan);
+			logger.trace("ENTER createMetaData() with " + 
+					queryPlan);
 		}
 		QueryPlanMetadata queryMetaData = queryPlan.getMetaData();
 		RowSetMetaData md = new RowSetMetaDataImpl();
@@ -65,7 +66,8 @@ extends Observable implements ResultStore {
 		md.setColumnCount(attributes.size());
 		int columnIndex = 0;
 		if (logger.isTraceEnabled()) {
-			logger.trace("Number of attributes: " + attributes.size());
+			logger.trace("Number of attributes: " + 
+					attributes.size());
 		}
 		for (Attribute attr : attributes) {
 			columnIndex++;
@@ -76,9 +78,12 @@ extends Observable implements ResultStore {
 			md.setAutoIncrement(columnIndex, false);
 			md.setCaseSensitive(columnIndex, false);
 			md.setCatalogName(columnIndex, attr.getExtentName());
-			md.setColumnName(columnIndex, attr.getName());
-			md.setColumnLabel(columnIndex, attr.getAttributeLabel());
-			md.setColumnType(columnIndex, attr.getAttributeType());
+			md.setColumnName(columnIndex, 
+					attr.getAttributeSchemaName());
+			md.setColumnLabel(columnIndex, 
+					attr.getAttributeDisplayName());
+			md.setColumnType(columnIndex, 
+					attr.getAttributeType());
 			md.setColumnTypeName(columnIndex, 
 					attr.getAttributeTypeName());
 			md.setCurrency(columnIndex, false);
