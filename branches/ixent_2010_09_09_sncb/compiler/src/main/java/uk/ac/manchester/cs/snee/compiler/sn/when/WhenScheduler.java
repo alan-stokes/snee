@@ -278,7 +278,7 @@ public class WhenScheduler {
 		    
 		} catch (AgendaLengthException e) {
 			
-			if (this.decreaseBetaForValidAlpha) {
+			if (!this.decreaseBetaForValidAlpha) {
 				String msg="Set decrease_bfactor_to_avoid_agenda_overlap=true in the "+
 				 "ini file to avoid need for overlap, as overlapping agendas are not" +
 				 "yet supported.";
