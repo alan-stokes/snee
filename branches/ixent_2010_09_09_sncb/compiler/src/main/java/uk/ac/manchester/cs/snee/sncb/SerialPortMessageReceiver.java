@@ -65,7 +65,8 @@ implements net.tinyos.message.MessageListener {
 					newTuple.addAttribute(evalAttr);
 				}
 				//TODO: Hack to get rid of bad tuples. Need to find a better way!
-				if (newTuple.getAttribute("evalTime").getData().equals(65535))
+				//TODO: Had to change this after merging revs 269-271. Hopefully did right thing.
+				if (newTuple.getAttributeByDisplayName("evalTime").getData().equals(65535))
 					continue;
 				//TODO: For now, In-Network only returns tagged tuples, no windows.
 				TaggedTuple newTaggedTuple = new TaggedTuple(newTuple);
@@ -129,7 +130,8 @@ implements net.tinyos.message.MessageListener {
 		Integer data = (Integer)retObj;
 			
 		String extentName = ""; //FIXME: !!!
-		String attrName = attr.getAttributeName();
+		//TODO: Had to change this after merging revs 269-271. Hopefully did right thing.
+		String attrName = attr.getAttributeDisplayName();
 		AttributeType attrType = attr.getType();
 			
 		EvaluatorAttribute evalAttr = new EvaluatorAttribute(extentName, attrName, attrType, data);

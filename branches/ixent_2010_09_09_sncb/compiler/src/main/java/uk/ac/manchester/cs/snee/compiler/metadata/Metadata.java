@@ -61,7 +61,6 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Attribute;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
