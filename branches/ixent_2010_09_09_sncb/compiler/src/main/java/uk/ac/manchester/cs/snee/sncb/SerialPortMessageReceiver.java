@@ -8,6 +8,7 @@ import java.util.Observable;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
@@ -65,8 +66,8 @@ implements net.tinyos.message.MessageListener {
 					newTuple.addAttribute(evalAttr);
 				}
 				//TODO: Hack to get rid of bad tuples. Need to find a better way!
-				//TODO: Had to change this after merging revs 269-271. Hopefully did right thing.
-				if (newTuple.getAttributeByDisplayName("evalTime").getData().equals(65535))
+				//TODO: Had to change this after merging revs 269-271. This is hard-coded for now.
+				if (newTuple.getAttributeByDisplayName(".castilla.evaltime").getData().equals(65535))
 					continue;
 				//TODO: For now, In-Network only returns tagged tuples, no windows.
 				TaggedTuple newTaggedTuple = new TaggedTuple(newTuple);

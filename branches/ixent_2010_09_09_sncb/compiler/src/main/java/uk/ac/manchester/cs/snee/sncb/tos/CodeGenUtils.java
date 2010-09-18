@@ -644,7 +644,7 @@ public final class CodeGenUtils {
 //		if (attr instanceof LocalTimeAttribute) {
 //			return Constants.LOCAL_TIME;
 //		}
-		return attr.getAttributeSchemaName() + "_" + attr.getAttributeDisplayName(); 
+		return attr.getAttributeDisplayName().replace('.','_'); 
 	}
 
 	/**

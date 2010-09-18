@@ -187,9 +187,9 @@ public class AcquireOperator extends LogicalOperatorImpl {
 		outputAttributes.add(new EvalTimeAttribute(extentName, 
 				Constants.EVAL_TIME,
 				_types.getType(Constants.TIME_TYPE))); 
-		outputAttributes.add(new TimeAttribute(extentName,
-				Constants.ACQUIRE_TIME, 
-				_types.getType(Constants.TIME_TYPE)));
+//		outputAttributes.add(new TimeAttribute(extentName,
+//				Constants.ACQUIRE_TIME, 
+//				_types.getType(Constants.TIME_TYPE)));
 		outputAttributes.add(new IDAttribute(extentName, 
 				Constants.ACQUIRE_ID,
 				_types.getType("integer")));
