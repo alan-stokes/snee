@@ -118,6 +118,12 @@ def compileNesCCode(nescRootDir, target = "tmote", sensorBoard = None):
 			if (exitVal != 0):
 				reportError("RAM overflow with "+dir+" compilation")
 				return exitVal
+
+			commandStr = "make telosb reinstall.1 bsl,/dev/tty.usbserial-M4A7J5HX"
+			report(commandStr)
+			exitVal = os.system(commandStr)
+
+
 		os.chdir(nescRootDir)
 	return exitVal
 	

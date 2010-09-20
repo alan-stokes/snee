@@ -181,12 +181,13 @@ public class TinyOS_SNCB implements SNCB {
 //		ClassLoader parentClassLoader = ClassLoader.getSystemClassLoader();
 //		String messageJavaClassContent = Utils.readFileToString(
 //				System.getProperty("user.dir")+"/src/mai)");
-		MemoryClassLoader mcl = new MemoryClassLoader("DeliverMessage", 
-				deliverMessageJavaClassContent, parentClassLoader);
+		//MemoryClassLoader mcl = new MemoryClassLoader("DeliverMessage", 
+		//		deliverMessageJavaClassContent, parentClassLoader);
 //		Class msgClass = mcl.loadClass("DeliverMessage");
-		Class msgClass = Class.forName("DeliverMessage", true, mcl);
-		Object msgObj = msgClass.newInstance();
-		Message msg = (Message)msgObj;
+		//Class msgClass = Class.forName("DeliverMessage", true, mcl);
+		//Object msgObj = msgClass.newInstance();
+		Message msg = new DeliverMessage();
+		//Message msg = (Message)msgObj;
 		DeliverOperator delOp = (DeliverOperator) qep.getLAF().getRootOperator();
 		SerialPortMessageReceiver mr = new SerialPortMessageReceiver("serial@/dev/tty.usbserial-M4A7J5HX:telos",
 				delOp);

@@ -52,24 +52,29 @@ implements net.tinyos.message.MessageListener {
 	public void messageReceived(int to, Message message) {
 		long t = System.currentTimeMillis();
 	    //    Date d = new Date(t);
-	    
-	    System.out.print("" + t + ": ");
+	   // System.out.print("" + t + ": ");
 	   // System.out.println(message);
 	    
 	    try {
 			List<Output> resultList = new ArrayList<Output>();
 			int tuplesPerMessage = getTuplesPerMessage(message);
 			for (int i=0; i<tuplesPerMessage; i++) {
+				String evalTimeAttrDisplayName = null;
 				Tuple newTuple = new Tuple();
 				for (Attribute attr : this.delOp.getAttributes()) {
 					EvaluatorAttribute evalAttr = getAttribute(attr, message, i);
 					newTuple.addAttribute(evalAttr);
+					//Find the first evaltime attribute
+					if ((evalAttr.getAttributeDisplayName().endsWith("evaltime")) &&
+							(evalTimeAttrDisplayName==null)) {
+						evalTimeAttrDisplayName = evalAttr.getAttributeDisplayName();
+					}
 				}
 				//TODO: Hack to get rid of bad tuples. Need to find a better way!
-				//TODO: Had to change this after merging revs 269-271. This is hard-coded for now.
-				if (newTuple.getAttributeByDisplayName(".castilla.evaltime").getData().equals(65535))
+				if (newTuple.getAttributeByDisplayName(evalTimeAttrDisplayName).getData().equals(65535))
 					continue;
 				//TODO: For now, In-Network only returns tagged tuples, no windows.
+			    logger.trace("Tuple received at time " + t + ": "+message);
 				TaggedTuple newTaggedTuple = new TaggedTuple(newTuple);
 				resultList.add(newTaggedTuple);
 			}
@@ -130,7 +135,7 @@ implements net.tinyos.message.MessageListener {
 		Object retObj = meth.invoke(message, argList);
 		Integer data = (Integer)retObj;
 			
-		String extentName = ""; //FIXME: !!!
+		String extentName = attr.getExtentName();
 		//TODO: Had to change this after merging revs 269-271. Hopefully did right thing.
 		String attrName = attr.getAttributeDisplayName();
 		AttributeType attrType = attr.getType();
