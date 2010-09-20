@@ -74,7 +74,7 @@ implements net.tinyos.message.MessageListener {
 				if (newTuple.getAttributeByDisplayName(evalTimeAttrDisplayName).getData().equals(65535))
 					continue;
 				//TODO: For now, In-Network only returns tagged tuples, no windows.
-			    logger.trace("Tuple received at time " + t + ": "+message);
+			    logger.trace("Tuple received at time " + t + ": "+newTuple.toString());
 				TaggedTuple newTaggedTuple = new TaggedTuple(newTuple);
 				resultList.add(newTaggedTuple);
 			}
