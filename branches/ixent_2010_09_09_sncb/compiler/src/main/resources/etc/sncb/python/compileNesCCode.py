@@ -1,4 +1,4 @@
-import getopt, string, os, logging, sys, re, os.path
+import getopt, string, os, logging, sys, re, os.path, time
  
 optDataPath = None
 
@@ -119,10 +119,15 @@ def compileNesCCode(nescRootDir, target = "tmote", sensorBoard = None):
 				reportError("RAM overflow with "+dir+" compilation")
 				return exitVal
 
+			# sleep for 10 seconds
+			time.sleep(10)
+
 			commandStr = "make telosb reinstall.1 bsl,/dev/tty.usbserial-M4A7J5HX"
 			report(commandStr)
 			exitVal = os.system(commandStr)
 
+			# sleep for 10 seconds
+			time.sleep(10)
 
 		os.chdir(nescRootDir)
 	return exitVal
