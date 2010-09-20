@@ -1,6 +1,6 @@
 #include "CommandServer.h"
 
-module TestC {
+module TestCommandServerC {
     uses {
         interface SplitControl;
         interface StateChanged;

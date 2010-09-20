@@ -1,5 +1,7 @@
-COMPONENT=TestAppC
+COMPONENT=TestCommandServerAppC
 BOOTLOADER=tosboot
+
+CFLAGS += -DSNEE_IMAGE_ID=2
 
 ### For Drip:
 CFLAGS += -I$(TOSDIR)/lib/net -I%T/lib/net/drip

@@ -47,49 +47,47 @@
 
 #include "StorageVolumes.h"
 #include "Deluge.h"
-#include "TestDissemination.h"
+#include "CommandServer.h"
 
-configuration TestDisseminationAppC {
+configuration CommandServerAppC {
   provides {
-    interface SplitControl as CommandServer;
+    interface SplitControl;
     interface StateChanged;
   }
 }
 implementation {
-  components TestDisseminationC;
+  components CommandServerC;
 
   components MainC;
-  TestDisseminationC.Boot -> MainC;
+  CommandServerC.Boot -> MainC;
 
   components ActiveMessageC;
-  TestDisseminationC.RadioControl -> ActiveMessageC;
+  CommandServerC.RadioControl -> ActiveMessageC;
 
   components DisseminationC;
-  TestDisseminationC.DisseminationControl -> DisseminationC;
+  CommandServerC.DisseminationControl -> DisseminationC;
 
   components new DisseminatorC(command_msg_t, 0xFF);
-  TestDisseminationC.DisseminationValue -> DisseminatorC;
-  TestDisseminationC.DisseminationUpdate -> DisseminatorC;
+  CommandServerC.DisseminationValue -> DisseminatorC;
+  CommandServerC.DisseminationUpdate -> DisseminatorC;
 
   components LedsC;
-  TestDisseminationC.Leds -> LedsC;
+  CommandServerC.Leds -> LedsC;
 
   components new TimerMilliC();
-  TestDisseminationC.Timer -> TimerMilliC;
+  CommandServerC.Timer -> TimerMilliC;
 
   components NetProgC;
   components BlockStorageManagerC;
-  TestDisseminationC.NetProg -> NetProgC;
-  TestDisseminationC.StorageMap -> BlockStorageManagerC;
+  CommandServerC.NetProg -> NetProgC;
+  CommandServerC.StorageMap -> BlockStorageManagerC;
 
-#ifdef COMMAND_SERVER_BASESTATION_ENABLED
   components SerialActiveMessageC;
-	TestDisseminationC.SerialControl -> SerialActiveMessageC;
+  CommandServerC.SerialControl -> SerialActiveMessageC;
   components new SerialAMReceiverC(0x1);
-  TestDisseminationC.Receive -> SerialAMReceiverC;	
-#endif
+  CommandServerC.Receive -> SerialAMReceiverC;	
 
-  CommandServer = TestDisseminationC;
-  StateChanged = TestDisseminationC;
+  SplitControl = CommandServerC;
+  StateChanged = CommandServerC;
 }
 

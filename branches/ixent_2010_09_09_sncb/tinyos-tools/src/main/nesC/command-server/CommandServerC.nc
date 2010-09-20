@@ -47,12 +47,11 @@
  * @version $Revision: 1.6 $ $Date: 2007/04/18 04:02:06 $
  */
 
-#include "TestDissemination.h"
 #include "CommandServer.h"
 
-module TestDisseminationC {
+module CommandServerC {
   provides {
-    interface SplitControl as CommandServer;
+    interface SplitControl;
     interface StateChanged;
   }
   uses {
@@ -72,15 +71,13 @@ module TestDisseminationC {
     interface NetProg;
     interface StorageMap[uint8_t volumeId];
 
-#ifdef COMMAND_SERVER_BASESTATION_ENABLED
     interface SplitControl as SerialControl;
     interface Receive;
-#endif
   }
 }
 implementation {
 
-  uint8_t* newImageNum;
+  uint8_t newImageNum;
 
   event void Boot.booted() {
     command_msg_t initialCmd;
@@ -89,77 +86,86 @@ implementation {
     call DisseminationValue.set(&initialCmd); 
   }
 
-  command error_t CommandServer.start() {
-#ifdef COMMAND_SERVER_BASESTATION_ENABLED
-    call SerialControl.start();
-#endif
-    call RadioControl.start();
-    return SUCCESS;
+  command error_t SplitControl.start() {
+    return call SerialControl.start();
   }
 
-  command error_t CommandServer.stop() {
-#ifdef COMMAND_SERVER_BASESTATION_ENABLED
-    call SerialControl.stop();
-#endif
-    call RadioControl.stop();
-    return SUCCESS;
+  command error_t SplitControl.stop() {
+    return call SerialControl.stop();
   }
 
-#ifdef COMMAND_SERVER_BASESTATION_ENABLED
   event void SerialControl.startDone(error_t error) {
-		if ( error != SUCCESS ) {
-      call SerialControl.start();
-    }
-	}
-  event void SerialControl.stopDone(error_t error) { }
-#endif
+    call RadioControl.start();
+  }
+  
+  event void SerialControl.stopDone(error_t error) {
+    call RadioControl.stop();
+  }
 
   event void RadioControl.startDone( error_t result ) {    
-    if ( result == SUCCESS || result == EALREADY ) {
-      call DisseminationControl.start();
-      signal CommandServer.startDone(SUCCESS);      
-    } else {
-      call RadioControl.start();
-    }
+    call DisseminationControl.start();
+    signal SplitControl.startDone(SUCCESS);      
   }
 
   event void RadioControl.stopDone( error_t result ) {
-    signal CommandServer.stopDone(SUCCESS);
+    signal SplitControl.stopDone(SUCCESS);
   }
 
-#ifdef COMMAND_SERVER_BASESTATION_ENABLED
-	event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {        
-        serial_msg_t* serial_msg;
-        command_msg_t cmd;
+  event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {        
+    serial_msg_t* serial_msg;
+    command_msg_t cmd;
 
-		serial_msg = (serial_msg_t*)payload;
-        cmd.cmd = serial_msg->cmd;
-        cmd.imageNum = serial_msg->imageNum;
+	serial_msg = (serial_msg_t*)payload;
+    cmd.cmd = serial_msg->cmd;
+    cmd.imageNum = serial_msg->imageNum;
 
-		call DisseminationUpdate.change(&cmd);
+    call DisseminationUpdate.change(&cmd);
 
-		return msg;
+    return msg;
   }
-#endif
 
   event void DisseminationValue.changed() {
-		const command_msg_t* newCmd = call DisseminationValue.get();
+    const command_msg_t* newCmd = call DisseminationValue.get();
 
-        if (newCmd->cmd == REFLASH_IMAGE) {
+    if (newCmd->cmd == REFLASH_IMAGE) {
 // Don't reboot the basestation!
-#ifndef COMMAND_SERVER_BASESTATION_ENABLED        
-            *newImageNum = newCmd->imageNum;
-    		call Timer.startOneShot(REBOOT_TIME);		
+#ifndef COMMAND_SERVER_BASESTATION      
+      newImageNum = newCmd->imageNum;
+
+// Prevent reflashing of current image. This could probably be improved.
+      if (SNEE_IMAGE_ID == newImageNum) { return; }
+
+      if (newImageNum == 0) {
+        call Leds.led0On();
+      } else if (newImageNum == 1) {
+        call Leds.led1On();
+      } else if (newImageNum == 2) {
+        call Leds.led2Off();
+      } else {
+        call Leds.led0On();
+        call Leds.led1On();
+        call Leds.led2On();
+      }
+      call Timer.startOneShot(REBOOT_TIME);		
 #endif
-        } else {
+    } else {
 // Do signal start/stop to the basestation
-            signal StateChanged.changed(newCmd->cmd);
-        }
+      signal StateChanged.changed(newCmd->cmd);
+    }
   }
 
   event void Timer.fired() {
-#ifndef COMMAND_SERVER_BASESTATION_ENABLED
-		call NetProg.programImageAndReboot(call StorageMap.getPhysicalAddress[*newImageNum](0));
-#endif
+    if (newImageNum == 0) {
+      call Leds.led0Off();
+    } else if (newImageNum == 1) {
+      call Leds.led1Off();
+    } else if (newImageNum == 2) {
+      call Leds.led2Off();
+    } else {
+      call Leds.led0Off();
+      call Leds.led1Off();
+      call Leds.led2Off();
+    }
+    call NetProg.programImageAndReboot(call StorageMap.getPhysicalAddress[newImageNum](0));
   }
 }
