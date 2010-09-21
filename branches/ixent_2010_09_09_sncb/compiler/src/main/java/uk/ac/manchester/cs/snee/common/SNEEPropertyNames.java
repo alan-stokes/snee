@@ -164,6 +164,13 @@ public final class SNEEPropertyNames {
 		"sncb.perform_metadata_collection";
 	
 	/**
+	 * Specifies whether the command server should be included with SNEE 
+	 * query plan
+	 */
+	public static String SNCB_INCLUDE_COMMAND_SERVER =
+		"sncb.include_command_server";
+	
+	/**
 	 * Flag to determine whether individual images or a single image is sent
 	 * to WSN nodes.
 	 */
