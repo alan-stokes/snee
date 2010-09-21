@@ -41,7 +41,7 @@ module MetadataCollectorC @safe(){
 
     // Miscalleny:
     interface Timer<TMilli>;
-    interface Leds;
+//    interface Leds;
 
     interface SplitControl as CommandServer;
     interface StateChanged;
@@ -211,15 +211,15 @@ implementation {
 
   // Use LEDs to report various status issues.
   static void fatal_problem() { 
-    call Leds.led0On(); 
-    call Leds.led1On();
-    call Leds.led2On();
+//    call Leds.led0On(); 
+//    call Leds.led1On();
+//    call Leds.led2On();
     call Timer.stop();
   }
 
-  static void report_problem() { call Leds.led0Toggle(); }
-  static void report_sent() { call Leds.led1Toggle(); }
-  static void report_received() { call Leds.led2Toggle(); }
+  static void report_problem() { /* call Leds.led0Toggle(); */ }
+  static void report_sent() { /* call Leds.led1Toggle(); */ }
+  static void report_received() { /* call Leds.led2Toggle(); */ }
 
   event void CommandServer.startDone(error_t error) { }
   event void CommandServer.stopDone(error_t error) { }

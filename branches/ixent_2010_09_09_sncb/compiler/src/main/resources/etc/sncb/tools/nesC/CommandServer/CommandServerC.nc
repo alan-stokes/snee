@@ -64,7 +64,7 @@ module CommandServerC {
     interface DisseminationValue<command_msg_t>;
     interface DisseminationUpdate<command_msg_t>;
 
-    interface Leds;
+//    interface Leds;
 
     interface Timer<TMilli>;
 
@@ -136,17 +136,17 @@ implementation {
 // Prevent reflashing of current image. This could probably be improved.
       if (SNEE_IMAGE_ID == newImageNum) { return; }
 
-      if (newImageNum == 0) {
-        call Leds.led0On();
-      } else if (newImageNum == 1) {
-        call Leds.led1On();
-      } else if (newImageNum == 2) {
-        call Leds.led2Off();
-      } else {
-        call Leds.led0On();
-        call Leds.led1On();
-        call Leds.led2On();
-      }
+//      if (newImageNum == 0) {
+//        call Leds.led0On();
+//      } else if (newImageNum == 1) {
+//        call Leds.led1On();
+//      } else if (newImageNum == 2) {
+//        call Leds.led2Off();
+//      } else {
+//        call Leds.led0On();
+//        call Leds.led1On();
+//        call Leds.led2On();
+//      }
       call Timer.startOneShot(REBOOT_TIME);		
 #endif
     } else {
@@ -156,17 +156,17 @@ implementation {
   }
 
   event void Timer.fired() {
-    if (newImageNum == 0) {
-      call Leds.led0Off();
-    } else if (newImageNum == 1) {
-      call Leds.led1Off();
-    } else if (newImageNum == 2) {
-      call Leds.led2Off();
-    } else {
-      call Leds.led0Off();
-      call Leds.led1Off();
-      call Leds.led2Off();
-    }
+//    if (newImageNum == 0) {
+//      call Leds.led0Off();
+//    } else if (newImageNum == 1) {
+//      call Leds.led1Off();
+//    } else if (newImageNum == 2) {
+//      call Leds.led2Off();
+//    } else {
+//      call Leds.led0Off();
+//      call Leds.led1Off();
+//      call Leds.led2Off();
+//    }
     call NetProg.programImageAndReboot(call StorageMap.getPhysicalAddress[newImageNum](0));
   }
 }

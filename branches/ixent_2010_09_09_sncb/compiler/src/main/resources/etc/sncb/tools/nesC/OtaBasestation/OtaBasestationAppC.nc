@@ -2,11 +2,12 @@
 
 configuration OtaBasestationAppC {}
 implementation {
-  components OtaBasestationC as App, LedsC, MainC;
+  components OtaBasestationC as App, MainC;
   components SerialActiveMessageC;
+//  components LedsC;
 
   App.Boot -> MainC.Boot;
-  App.Leds -> LedsC;
+//  App.Leds -> LedsC;
   App.SplitControl -> SerialActiveMessageC;
 
 // Flash manager wiring

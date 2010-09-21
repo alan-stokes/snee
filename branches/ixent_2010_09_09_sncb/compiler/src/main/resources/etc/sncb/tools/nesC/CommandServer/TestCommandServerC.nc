@@ -5,7 +5,7 @@ module TestCommandServerC {
         interface SplitControl;
         interface StateChanged;
         interface Boot;
-        interface Leds;
+//        interface Leds;
     }
 }
 implementation {
@@ -20,9 +20,9 @@ implementation {
 
     event void StateChanged.changed(uint8_t state) {
         if (state == START) {
-            call Leds.led0On();
+//            call Leds.led0On();
         } else if (state == STOP) {
-            call Leds.led0Off();
+//            call Leds.led0Off();
         }
     }
 }

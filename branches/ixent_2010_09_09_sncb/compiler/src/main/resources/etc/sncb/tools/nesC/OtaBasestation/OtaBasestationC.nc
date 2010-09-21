@@ -3,7 +3,7 @@
 module OtaBasestationC {
   uses {
     interface SplitControl;
-    interface Leds;
+//    interface Leds;
     interface Boot;
 
     interface AMSend as FlashManagerSender;
@@ -27,9 +27,9 @@ implementation {
 	bool serialStackLocked = FALSE;
 
 	void programFailure() {
-		call Leds.led0On();
-		call Leds.led1On();
-		call Leds.led2On();
+//		call Leds.led0On();
+//		call Leds.led1On();
+//		call Leds.led2On();
 	}
 
   event void Boot.booted() {		
@@ -77,19 +77,19 @@ implementation {
 		return msg;
   }
 
-	event void MultiHopSend.sendDone(message_t * msg, error_t error) {
-		if (&radioPacket == msg && error == SUCCESS ) {
-			// dymo has a route and the packet has been sent.
-			call Leds.led0On();
+  event void MultiHopSend.sendDone(message_t * msg, error_t error) {
+    if (&radioPacket == msg && error == SUCCESS ) {
+// dymo has a route and the packet has been sent.
+//      call Leds.led0On();
     } else if (error == FAIL) {
-			// couldn't find a route
-			call Leds.led1On();
-		} else {
-			// gone wonky here.
-			programFailure();
-		}		
-		radioStackLocked = FALSE;
-	}
+// couldn't find a route
+//      call Leds.led1On();
+    } else {
+      // gone wonky here.
+      programFailure();
+    }		
+    radioStackLocked = FALSE;
+  }
 
 	event message_t* MultiHopReceive.receive(message_t* msg, void* payload, uint8_t len) {
 		if (serialStackLocked) {

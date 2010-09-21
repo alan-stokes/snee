@@ -18,11 +18,12 @@
 
 configuration MetadataCollectorAppC { }
 implementation {
-  components MainC, MetadataCollectorC, LedsC, new TimerMilliC(); 
+  components MainC, MetadataCollectorC, new TimerMilliC(); 
+//  compoents LedsC;
 
   MetadataCollectorC.Boot -> MainC;
   MetadataCollectorC.Timer -> TimerMilliC;
-  MetadataCollectorC.Leds -> LedsC;
+//  MetadataCollectorC.Leds -> LedsC;
 
   //
   // Communication components.  These are documented in TEP 113:
