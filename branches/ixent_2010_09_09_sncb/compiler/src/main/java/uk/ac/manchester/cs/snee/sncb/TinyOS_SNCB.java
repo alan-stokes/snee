@@ -79,7 +79,7 @@ public class TinyOS_SNCB implements SNCB {
 			logger.debug("ENTER init()");
 		try {
 			//TODO: incorporate metadata collection python script
-			String pythonScript = Utils.getResourcePath("etc/sncb/python/collectMetadata.py");
+			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/collectMetadata.py");
 			String params[] = {pythonScript, topFile, resFile};
 			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
 		} catch (Exception e) {
@@ -147,7 +147,7 @@ public class TinyOS_SNCB implements SNCB {
 			logger.trace("ENTER compileNesCCode()");
 		String nescOutputDir = System.getProperty("user.dir")+"/"+
 		queryOutputDir+"tmotesky_t2";
-		String pythonScript = Utils.getResourcePath("etc/sncb/python/compileNesCCode.py");
+		String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/compileNesCCode.py");
 		String nescDirParam = "--nesc-dir="+nescOutputDir;
 		String params[] = {pythonScript, nescDirParam};
 		Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
@@ -209,7 +209,7 @@ public class TinyOS_SNCB implements SNCB {
 			String siteID = siteIter.next().getID();
 			String moteExe = nescOutputDir+"/mote"+siteID+"/build/telosb/main.exe";
 			//TODO: invoke OTA functionality to disseminate query plan
-//			String pythonScript = Utils.getResourcePath("etc/sncb/python/disseminateImage.py");
+//			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/disseminateImage.py");
 //			String params[] = {pythonScript, siteID, moteExe};
 //			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
 		}

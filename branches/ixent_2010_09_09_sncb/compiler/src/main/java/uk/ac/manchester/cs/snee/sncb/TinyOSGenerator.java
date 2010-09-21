@@ -292,9 +292,9 @@ public class TinyOSGenerator {
     	initConstants(tosVersion, tossimFlag, targetName);
 
     	if (tosVersion == 1) {
-    		NESC_TEMPLATES_DIR = "etc/sncb/tos1/"; 
+    		NESC_TEMPLATES_DIR = "etc/sncb/templates/tos1/"; 
     	} else {
-    		NESC_TEMPLATES_DIR = "etc/sncb/tos2/"; 
+    		NESC_TEMPLATES_DIR = "etc/sncb/templates/tos2/"; 
     	}
     	NESC_COMPONENTS_DIR = NESC_TEMPLATES_DIR + "components";
     	NESC_INTERFACES_DIR = NESC_TEMPLATES_DIR + "interfaces";
