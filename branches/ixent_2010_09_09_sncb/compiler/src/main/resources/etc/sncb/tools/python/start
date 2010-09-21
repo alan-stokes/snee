@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+import os, subprocess
+
+tosroot = os.getenv('TOSROOT')
+motecom = os.getenv('MOTECOM')
+serial_port = os.getenv('SERIAL_PORT')
+
+# deploy the command server basestion
+os.chdir(tosroot + '/apps/CommandServer')
+
+# disseminate the start command
+subprocess.call(['./cmd-srvr', motecom, '--start'])

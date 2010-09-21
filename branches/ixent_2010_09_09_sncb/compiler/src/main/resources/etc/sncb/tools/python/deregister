@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+
+import os, subprocess, getopt, sys
+
+tosroot = os.getenv('TOSROOT')
+motecom = os.getenv('MOTECOM')
+serial_port = os.getenv('SERIAL_PORT')
+
+#switch the ota client script folder
+os.chdir(tosroot + '/apps/ota/otaclient')
+
+# generate a list of mote ids
+mote_ids = getopt.getopt(sys.argv[1:], '')[1]
+
+#iterate over the mote ids to register the query fragment
+for mote_id in mote_ids:
+	subprocess.call(['./tos-ota', motecom, mote_id, '--erase', '2'])

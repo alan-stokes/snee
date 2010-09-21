@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+
+import os, subprocess, getopt, sys
+
+tosroot = os.getenv('TOSROOT')
+motecom = os.getenv('MOTECOM')
+serial_port = os.getenv('SERIAL_PORT')
+
+#switch the ota client script folder
+os.chdir(tosroot + '/apps/ota/otaclient')
+
+# generate a list of mote ids
+mote_ids = getopt.getopt(sys.argv[2:], '')[1]
+
+#iterate over the mote ids to register the query fragment
+for mote_id in mote_ids:
+	subprocess.call(['./tos-ota', motecom, mote_id, '--inject', '2', sys.argv[1]])
+
+# disseminate a reprogram command; switch to query fragment
+os.chdir(tosroot + '/apps/CommandServer')
+subprocess.call(['./cmd-srvr', motecom, '--reprogram', '2'])
