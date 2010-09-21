@@ -147,7 +147,7 @@ public class TinyOS_SNCB implements SNCB {
 			logger.trace("ENTER compileNesCCode()");
 		String nescOutputDir = System.getProperty("user.dir")+"/"+
 		queryOutputDir+"tmotesky_t2";
-		String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/compileNesCCode.py");
+		String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/utils/compileNesCCode.py");
 		String nescDirParam = "--nesc-dir="+nescOutputDir;
 		String params[] = {pythonScript, nescDirParam};
 		Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
