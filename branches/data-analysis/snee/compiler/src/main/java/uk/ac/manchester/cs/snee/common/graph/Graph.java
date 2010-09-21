@@ -125,20 +125,20 @@ public class Graph implements Cloneable {
 		this(name, true, false);
 	}
 
-//	/**
-//	 * Constructor used for cloning.
-//	 * @param g The graph to be cloned
-//	 */
-//	public Graph(Graph g, String inName) {
-//		if (logger.isDebugEnabled())
-//			logger.debug("ENTER " + g + " name: " + inName);
-//		this.name = inName;
-//		this.directed = g.directed;
-//		this.allowsMutipleEdges = g.allowsMutipleEdges;    	
-//		g.copyNodesAndEdges(this);
-//		if (logger.isDebugEnabled())
-//			logger.debug("RETURN");
-//	}
+	/**
+	 * Constructor used for cloning.
+	 * @param g The graph to be cloned
+	 */
+	public Graph(Graph g, String inName) {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER " + g + " name: " + inName);
+		this.name = inName;
+		this.directed = g.directed;
+		this.allowsMutipleEdges = g.allowsMutipleEdges;    	
+		g.copyNodesAndEdges(this);
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN");
+	}
 
 	/**
 	 * Returns the name of the graph.
@@ -611,39 +611,39 @@ public class Graph implements Cloneable {
 		nodes.remove(replace.getID());
 	}
 
-//	/**
-//	 * Merges another graph with the current one.
-//	 * @param otherGraph the graph to be incorporated with this one.
-//	 */
-//	public void mergeGraphs(Graph otherGraph) {
-//
-//		Iterator<String> i = otherGraph.edges.keySet().iterator();
-//		while (i.hasNext()) {
-//			Edge otherEdge = (Edge) otherGraph.edges.get(i.next());
-//			if (!this.edges.containsKey(otherEdge.getID())) {
-//				Node source, dest;
-//
-//				if (!this.nodes.containsKey(otherEdge.getSourceID())) {
-//					source = this.addNode(otherGraph.nodes.get(
-//							otherEdge.getSourceID()).shallowClone());
-//				} else {
-//					source = this.nodes.get(otherEdge.getSourceID());
-//				}
-//
-//				if (!this.nodes.containsKey(otherEdge.getDestID())) {
-//					dest = this.addNode(otherGraph.nodes.get(
-//							otherEdge.getDestID()).shallowClone());
-//				} else {
-//					dest = this.nodes.get(otherEdge.getDestID());
-//				}
-//
-//				edges.put(otherEdge.getID(), otherEdge.clone());
-//				source.addOutput(dest);
-//				dest.addInput(source);
-//			}
-//		}
-//
-//	}
+	/**
+	 * Merges another graph with the current one.
+	 * @param otherGraph the graph to be incorporated with this one.
+	 */
+	public void mergeGraphs(Graph otherGraph) {
+
+		Iterator<String> i = otherGraph.edges.keySet().iterator();
+		while (i.hasNext()) {
+			Edge otherEdge = (Edge) otherGraph.edges.get(i.next());
+			if (!this.edges.containsKey(otherEdge.getID())) {
+				Node source, dest;
+
+				if (!this.nodes.containsKey(otherEdge.getSourceID())) {
+					source = this.addNode(otherGraph.nodes.get(
+							otherEdge.getSourceID()).shallowClone());
+				} else {
+					source = this.nodes.get(otherEdge.getSourceID());
+				}
+
+				if (!this.nodes.containsKey(otherEdge.getDestID())) {
+					dest = this.addNode(otherGraph.nodes.get(
+							otherEdge.getDestID()).shallowClone());
+				} else {
+					dest = this.nodes.get(otherEdge.getDestID());
+				}
+
+				edges.put(otherEdge.getID(), otherEdge.clone());
+				source.addOutput(dest);
+				dest.addInput(source);
+			}
+		}
+
+	}
 
 	/**
 	 * Exports the graph as a file in the DOT language used by GraphViz.
@@ -711,7 +711,7 @@ public class Graph implements Cloneable {
 			Runtime rt = Runtime.getRuntime();
 			if (logger.isTraceEnabled()) {
 				logger.trace(
-						SNEEProperties.getSetting("graphviz.exe") +
+						SNEEProperties.getSetting(SNEEPropertyNames.GRAPHVIZ_EXE) +
 						"-Tpng " + 
 						"-o" + outputFullPath + " " + inputFullPath);
 			}
@@ -736,71 +736,44 @@ public class Graph implements Cloneable {
 			logger.debug("RETURN");
 	}
 	
-    public void exportGraph(String outputDir, String outputFileName, 
-    		String label) 
-    throws SchemaMetadataException, SNEEConfigurationException {
-    	//XXX-AG: Is label ever used for anything? Seems to only ever be set to "" in the in-network SNEE!
-    	if (logger.isDebugEnabled()) {
-			logger.debug("ENTER: exportGraph() dir: " + outputDir + 
-					"\tfile: " + outputFileName + "\tlabel: " + label);
-    	}
+	/**
+	 * Clones an existing graph.  The nodes and edges of the graph are also cloned.
+	 */
+	public Graph clone() {
+		Graph clone = new Graph(this.name + "-clone", this.directed,
+				this.allowsMutipleEdges);
 
-    	if (SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS).equals("true"))  {
-    		logger.debug("Generating graphs");
-    		if (!outputFileName.endsWith(".dot")) {
-    			outputFileName = outputFileName + ".dot";
-    		}
-    		String dotFileFullPath = outputDir + 
-    			System.getProperty("file.separator") + outputFileName;
-    		exportAsDOTFile(dotFileFullPath, label);
-			String pngFile = dotFileFullPath.replaceAll("dot", "png");
-			convertDOT2PNG(dotFileFullPath, pngFile);
-//			String PSFile = inputFullPath.replaceAll("dot", "ps");
-//			convertDOT2PS(inputFullPath, PSFile);
+		copyNodesAndEdges(clone);
+
+		return clone;
+	}
+
+	private void copyNodesAndEdges(Graph clone) {
+		// create shallow clones of each node in the graph, and add them to the nodes collection
+		Iterator<String> nodeIDIter = this.nodes.keySet().iterator();
+		while (nodeIDIter.hasNext()) {
+			String nodeID = nodeIDIter.next();
+			Node clonedNode = this.nodes.get(nodeID).shallowClone();
+			clone.addNode(clonedNode);
 		}
-		
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN");
-    }
 
-//	/**
-//	 * Clones an existing graph.  The nodes and edges of the graph are also cloned.
-//	 */
-//	public Graph clone() {
-//		Graph clone = new Graph(this.name + "-clone", this.directed,
-//				this.allowsMutipleEdges);
-//
-//		copyNodesAndEdges(clone);
-//
-//		return clone;
-//	}
+		// now replace the Node inputs and outputs with references to the clones
+		// this effectively results in a deep copy of the nodes collection
+		Iterator<Node> nodeIter = this.nodes.values().iterator();
+		while (nodeIter.hasNext()) {
+			Node n = nodeIter.next();
+			Node currentClonedNode = clone.nodes.get(n.getID());
 
-//	private void copyNodesAndEdges(Graph clone) {
-//		// create shallow clones of each node in the graph, and add them to the nodes collection
-//		Iterator<String> nodeIDIter = this.nodes.keySet().iterator();
-//		while (nodeIDIter.hasNext()) {
-//			String nodeID = nodeIDIter.next();
-//			Node clonedNode = this.nodes.get(nodeID).shallowClone();
-//			clone.addNode(clonedNode);
-//		}
-//
-//		// now replace the Node inputs and outputs with references to the clones
-//		// this effectively results in a deep copy of the nodes collection
-//		Iterator<Node> nodeIter = this.nodes.values().iterator();
-//		while (nodeIter.hasNext()) {
-//			Node n = nodeIter.next();
-//			Node currentClonedNode = clone.nodes.get(n.getID());
-//
-//			for (int i = 0; i < n.getInDegree(); i++) {
-//				String inputNodeID = n.getInput(i).getID();
-//				Node clonedInputNode = clone.nodes.get(inputNodeID);
-//				currentClonedNode.setInput(clonedInputNode, i);
-//				clonedInputNode.addOutput(currentClonedNode);
-//			}
-//		}
-//
-//		clone.edges = (TreeMap<String, Edge>) this.edges.clone();
-//	}
+			for (int i = 0; i < n.getInDegree(); i++) {
+				String inputNodeID = n.getInput(i).getID();
+				Node clonedInputNode = clone.nodes.get(inputNodeID);
+				currentClonedNode.setInput(clonedInputNode, i);
+				clonedInputNode.addOutput(currentClonedNode);
+			}
+		}
+
+		clone.edges = (TreeMap<String, Edge>) this.edges.clone();
+	}
 
 	/**
 	 * Checks whether two graphs have the nodes and edges which are equivalent

@@ -1,21 +1,21 @@
 package uk.ac.manchester.cs.snee.client;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import uk.ac.manchester.cs.snee.MetadataException;
+import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 
 public class SNEEClientUsingCCO extends SNEEClient {
 	
@@ -27,14 +27,16 @@ public class SNEEClientUsingCCO extends SNEEClient {
 	
 
 	public SNEEClientUsingCCO(String query, double duration) 
-	throws SNEEException, IOException, SchemaMetadataException, 
-	TypeMappingException, SNEEDataSourceException, ExtentDoesNotExistException, SNEEConfigurationException {
+	throws SNEEException, IOException, SNEEConfigurationException,
+	MetadataException, SNEEDataSourceException 
+	{
 		super(query, duration);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClientUsingCCO()");
 		//Set sleep to 10 minutes
 		_sleepDuration = 600000;
-		controller.addServiceSource(serviceUrl);
+		controller.addServiceSource("CCO-WS", serviceUrl, 
+				SourceType.PULL_STREAM_SERVICE);
 //		Collection<String> extents = controller.getExtents();
 //		Iterator<String> it = extents.iterator();
 //		System.out.println("Extents:");
@@ -49,18 +51,17 @@ public class SNEEClientUsingCCO extends SNEEClient {
 	}
 
 	private void displayExtentSchema(String extentName) 
-	throws ExtentDoesNotExistException {
-		Iterator<String> it;
+	throws MetadataException 
+	{
 		ExtentMetadata extent = 
 			controller.getExtentDetails(extentName);
-		Map<String, AttributeType> attributes = extent.getAttributes();
-		Set<String> attrNames = attributes.keySet();
-		it = attrNames.iterator();
+		List<Attribute> attributes = extent.getAttributes();
 		System.out.println("Attributes for " + extentName + ":");
-		while (it.hasNext()) {
-			String attrName = it.next();
-			AttributeType attr = attributes.get(attrName);
-			System.out.print("\t" + attrName + ": " + attr.getName() + "\n");
+		for (Attribute attr : attributes) {
+			String attrName = attr.getAttributeDisplayName();
+			AttributeType attrType = attr.getType();
+			System.out.print("\t" + attrName + ": " + 
+					attrType.getName() + "\n");
 		}
 		System.out.println();
 	}
@@ -72,18 +73,26 @@ public class SNEEClientUsingCCO extends SNEEClient {
 	 * @throws InterruptedException 
 	 */
 	public static void main(String[] args) {
+		// Configure logging
+		PropertyConfigurator.configure(
+				SNEEClientUsingCCO.class.getClassLoader().
+				getResource("etc/log4j.properties"));
+		String query;
+		Long duration;
 		//This method represents the web server wrapper
 		if (args.length != 2) {
 			System.out.println("Usage: \n" +
 					"\t\"query statement\"\n" +
 					"\t\"query duration in seconds\"\n");
-			System.exit(1);
+//			System.exit(1);
+			//XXX: Use default settings
+			query = "SELECT * FROM envdata_hernebay_tide;";
+			duration = Long.valueOf("900");
 		} else {	
-			// Configure logging
-			PropertyConfigurator.configure("etc/log4j.properties");
+			query = args[0];
+			duration = Long.valueOf(args[1]);
+		}
 			
-			String query = args[0];
-			long duration = Long.valueOf(args[1]);
 			try {
 				/* Initialise and run SNEEClient */
 				SNEEClientUsingCCO client = 
@@ -95,7 +104,7 @@ public class SNEEClientUsingCCO extends SNEEClient {
 				logger.fatal(e);
 				System.exit(1);
 			}
-		}
+//		}
 		System.out.println("Success!");
 		System.exit(0);
 	}

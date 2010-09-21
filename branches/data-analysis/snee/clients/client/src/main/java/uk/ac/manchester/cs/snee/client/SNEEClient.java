@@ -1,22 +1,25 @@
 package uk.ac.manchester.cs.snee.client;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.Date;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.EvaluatorException;
+import uk.ac.manchester.cs.snee.MetadataException;
+import uk.ac.manchester.cs.snee.ResultStoreImpl;
 import uk.ac.manchester.cs.snee.SNEE;
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEController;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.evaluator.EvaluatorException;
-import uk.ac.manchester.cs.snee.evaluator.StreamResultSet;
-import uk.ac.manchester.cs.snee.evaluator.StreamResultSetImpl;
-import uk.ac.manchester.cs.snee.evaluator.types.Output;
 
 public abstract class SNEEClient implements Observer {
 
@@ -26,8 +29,9 @@ public abstract class SNEEClient implements Observer {
 	protected String _query;
 	protected double _duration;
 	protected long _sleepDuration;
+	protected String _queryParams;
 
-	public SNEEClient(String query, double duration) 
+	public SNEEClient(String query, double duration, String queryParams) 
 	throws SNEEException, IOException, SNEEConfigurationException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER SNEEClient() with query " + query + 
@@ -35,54 +39,101 @@ public abstract class SNEEClient implements Observer {
 		
 		_query = query;
 		_duration = duration;
+		_queryParams = queryParams;
 		controller = new SNEEController("etc/snee.properties");
 
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SNEEClient()");
 	}
+	
+	public SNEEClient(String query, double duration) 
+	throws SNEEException, IOException, SNEEConfigurationException {
+		this(query, duration, null);
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER SNEEClient() with query " + query + 
+					" duration " + duration);
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN SNEEClient()");
+	}
+	
 
-	private static void printResults(Collection<Output> results, int queryId) {
-		System.out.println("\n\n************ Results for query " + queryId + " ************\n\n");
-		for (Output output : results) {
-			System.out.println(output);
+	private static void printResults(List<ResultSet> results, 
+			int queryId) 
+	throws SQLException {
+		System.out.println("************ Results for query " + 
+				queryId + " ************");
+		for (ResultSet rs : results) {
+			ResultSetMetaData metaData = rs.getMetaData();
+			int numCols = metaData.getColumnCount();
+			printColumnHeadings(metaData, numCols);
+			while (rs.next()) {
+				StringBuffer buffer = new StringBuffer();
+				for (int i = 1; i <= numCols; i++) {
+					Object value = rs.getObject(i);
+					if (metaData.getColumnType(i) == 
+						Types.TIMESTAMP && value instanceof Long) {
+						buffer.append(
+								new Date(((Long) value).longValue()));
+					} else {
+						buffer.append(value);
+					}
+					buffer.append("\t");
+				}
+				System.out.println(buffer.toString());
+			}
 		}
-		System.out.println("\n\n*********************************\n\n");
+		System.out.println("*********************************");
 	}
 
-	@SuppressWarnings("unchecked")
-	public void update (Observable observation, Object arg) {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER update() with " + observation + " " + arg);
-		logger.trace("arg type: " + arg.getClass());
-		if (arg instanceof Collection<?>) {
-			Collection<Output> results = (Collection<Output>) arg;
-			printResults(results, 1);
-		} else if (arg instanceof Output) {
-			Output output = (Output) arg;
-			System.out.println(output);
+	private static void printColumnHeadings(ResultSetMetaData metaData,
+			int numCols) throws SQLException {
+		StringBuffer buffer = new StringBuffer();
+		for (int i = 1; i <= numCols; i++) {
+			buffer.append(metaData.getColumnLabel(i));
+//			buffer.append(":" + metaData.getColumnTypeName(i));
+			buffer.append("\t");
 		}
-		if (logger.isDebugEnabled())
+		System.out.println(buffer.toString());
+	}
+
+	public void update (Observable observation, Object arg) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER update() with " + observation + " " + 
+					arg);
+		}
+//		logger.trace("arg type: " + arg.getClass());
+		if (arg instanceof List<?>) {
+			List<ResultSet> results = (List<ResultSet>) arg; 
+			try {
+				printResults(results, 1);
+			} catch (SQLException e) {
+				logger.error("Problem printing result set. ", e);
+			}
+		}
+		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN update()");
+		}
 	}
 	
 	public void run() 
-	throws SNEEException, SchemaMetadataException, EvaluatorException {
+	throws SNEECompilerException, MetadataException, EvaluatorException,
+	SNEEException, SQLException {
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER");
 		System.out.println("Query: " + this._query);
 
 		//		try {
-		int queryId1 = controller.addQuery(_query);
+		int queryId1 = controller.addQuery(_query, _queryParams);
 		//		int queryId2 = controller.addQuery(query);
 
 		long startTime = System.currentTimeMillis();
 		long endTime = (long) (startTime + (_duration * 1000));
 
 		System.out.println("Running query for " + _duration + 
-			" seconds.");
+			" seconds. Scheduled end time " + new Date(endTime));
 
-		StreamResultSetImpl resultSet = 
-			(StreamResultSetImpl) controller.getResultSet(queryId1);
+		ResultStoreImpl resultSet = 
+			(ResultStoreImpl) controller.getResultSet(queryId1);
 		resultSet.addObserver(this);
 		
 		try {			
@@ -94,25 +145,23 @@ public abstract class SNEEClient implements Observer {
 			Thread.currentThread().yield();
 		}
 		
-		List<Output> results1 = displayFinalResult(queryId1);
+		List<ResultSet> results1 = resultSet.getResults();
+		System.out.println("Stopping query " + queryId1 + ".");
+		controller.removeQuery(queryId1);
+
+		try {
+			//XXX: Sleep included to highlight evaluator not ending bug 
+			Thread.currentThread().sleep((long) ((_duration/2) * 1000));
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		controller.close();
 		printResults(results1, queryId1);
 		//		printResults(results2, queryId2);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN");
-	}
-
-	private List<Output> displayFinalResult(int queryId1) throws SNEEException {
-		StreamResultSet resultSet1 = controller.getResultSet(queryId1);
-		List<Output> results1 = resultSet1.getResults();
-		//		Collection<Output> results2 = controller.getResults(queryId2);
-		System.out.println("Stopping query " + queryId1 + ".");
-		controller.removeQuery(queryId1);
-		//		System.out.println("Query run for required duration. " +
-		//				"Stopping query " + queryId2 + ".");
-		//		controller.removeQuery(queryId2);
-		return results1;
 	}
 
 }

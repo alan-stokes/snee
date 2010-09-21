@@ -35,74 +35,43 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.evaluator.types;
 
+import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Map;
-import java.util.Properties;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.log4j.PropertyConfigurator;
+import org.easymock.classextension.EasyMockSupport;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
 
-public class TupleTest {
-
-	private static Types types;
-	DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-	DateFormat tf = new SimpleDateFormat("hh:mm:ss");
-	DateFormat dtf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
+public class TupleTest extends EasyMockSupport {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		// Configure logging
-		PropertyConfigurator.configure(
-				TupleTest.class.getClassLoader().
-				getResource("etc/log4j.properties"));
+//		// Configure logging
+//		PropertyConfigurator.configure(
+//				TupleTest.class.getClassLoader().
+//				getResource("etc/log4j.properties"));
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 	}
 
-	private Tuple emptyTuple;
-	private Tuple tuple;
-
+	private EvaluatorAttribute mockEvaluatorAttribute =
+		createMock(EvaluatorAttribute.class);
+	
 	@Before
 	public void setUp() throws Exception {
-		//Configure properties
-		Properties props = new Properties();
-		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "Types.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "units.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_SCHEMA_FILE, "logical-schema.xml");
-		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
-		SNEEProperties.initialise(props);
-
-		URL fileUrl = FieldTest.class.getClassLoader().getResource(SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_TYPES_FILE));
-		types = new Types(fileUrl.toURI().toString());
-
-		emptyTuple = new Tuple();
-		tuple = new Tuple();
-		tuple.addField(new Field("Int", types.getType("integer"), 6));
-		tuple.addField(new Field("String", types.getType("string"), "test"));
-		tuple.addField(new Field("Float", types.getType("float"), 2.45));
-//		tuple.addField(new Field("Date", DataType.DATE, df.parse("25/11/2009")));
-//		tuple.addField(new Field("Time", DataType.TIME, tf.parse("12:59:03")));
-//		tuple.addField(new Field("DateTime", DataType.DATETIME, dtf.parse("03/09/1964 21:34:09")));
 	}
 
 	@After
@@ -110,81 +79,432 @@ public class TupleTest {
 	}
 
 	@Test
-	public void testGetFields_notSet() {
-		assertEquals(true, emptyTuple.getFields().isEmpty());
-	}
-
-	@Test(expected=SNEEException.class)
-	public void testAddField_alreadyExists() 
-	throws SNEEException, TypeMappingException, SchemaMetadataException {
-		tuple.addField(new Field("Int", types.getType("integer"), 1));
-	}
-
-	@Test(expected=SNEEException.class)
-	public void testAddField_alreadyExistsCaseInsensitive() 
-	throws SNEEException, TypeMappingException, SchemaMetadataException {
-		tuple.addField(new Field("float", types.getType("float"), 17.75));
-	}
-	
-	@Test
-	public void testGetFields() {
-		assertEquals(3, tuple.getFields().size());//6
-		assertEquals(true, (tuple.getFields() instanceof Map<?,?>));
-	}
-
-	@Test(expected=SNEEException.class)
-	public void testGetField_notSet() throws SNEEException {
-		emptyTuple.getField("field");
-	}
-	
-	@Test(expected=SNEEException.class)
-	public void testGetField_notExists() throws SNEEException {
-		tuple.getField("field");
-	}
-	
-	@Test@Ignore
-	public void testGetField_exists() throws SNEEException {
-//		tuple.getField("Time");
-	}
-
-	@Test@Ignore
-	public void testGetField_existsCaseInsensitve() throws SNEEException {
-//		tuple.getField("tiMe");
-	}
-
-	@Test(expected=SNEEException.class)@Ignore
-	public void testGetValue_notSet() throws SNEEException {
-//		emptyTuple.getValue("name");
-	}
-
-	@Test(expected=SNEEException.class)@Ignore
-	public void testGetValue_notExists() throws SNEEException {
-//		tuple.getValue("name");
-	}
-	
-	@Test@Ignore
-	public void testGetValue_exists() throws SNEEException {
-//		tuple.getValue("float");
-	}
-	
-	@Test@Ignore
-	public void testGetValue_existsCase() throws SNEEException {
-//		tuple.getValue("FLOAT");
-	}
-	
-	@Test
-	public void testContainsField_fieldExsits() {
-		assertTrue(tuple.containsField("Int"));
-	}
-	
-	@Test
-	public void testContainsField_fieldExsitsCase() {
-		assertTrue(tuple.containsField("INT"));
+	public void testGetAttributes_notSet() {
+		Tuple tuple = new Tuple();
+		assertEquals(true, tuple.getAttributeValues().isEmpty());
+		assertEquals(0, tuple.size());
 	}
 
 	@Test
-	public void testContainsField_fieldNotExsits() {
-		assertFalse(tuple.containsField("hello"));
+	public void testAddAttribute() 
+	throws SNEEException, TypeMappingException, 
+	SchemaMetadataException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name");
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name");
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent");
+		replayAll();
+		Tuple tuple = new Tuple();
+		assertEquals(0, tuple.size());
+		tuple.addAttribute(mockEvaluatorAttribute);
+		assertEquals(1, tuple.size());
+		verifyAll();
+	}
+
+	@Test
+	public void testAddAttribute_alreadyExists() 
+	throws SNEEException, TypeMappingException, 
+	SchemaMetadataException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(2);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(2);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(2);
+		replayAll();
+		List<EvaluatorAttribute> attrs =
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		assertEquals(1, tuple.size());
+		tuple.addAttribute(mockEvaluatorAttribute);
+		assertEquals(2, tuple.size());
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetAttributeValues() {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		assertEquals(3, tuple.getAttributeValues().size());
+		verifyAll();
+	}
+
+	@Test(expected=SNEEException.class)
+	public void testGetAttrByIndex_notSet() 
+	throws SNEEException {
+		Tuple tuple = new Tuple();
+		tuple.getAttribute(2);
+	}
+
+	@Test(expected=SNEEException.class)
+	public void testGetAttribute_notSet() 
+	throws SNEEException {
+		Tuple tuple = new Tuple();
+		tuple.getAttribute("extent", "field");
+	}
+
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeByDisplayName_notSet() 
+	throws SNEEException {
+		Tuple tuple = new Tuple();
+		tuple.getAttributeByDisplayName("field");
+	}
+	
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeByIndex_notExists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttribute(60);
+		verifyAll();
+	}
+	
+	@Test(expected=SNEEException.class)
+	public void testGetAttribute_notExists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttribute("extnet", "field");
+		verifyAll();
+	}
+	
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeByDisplayName_notExists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeByDisplayName("field");
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetAttributeByIndex_exists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttribute(2);
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetAttribute_exists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttribute("extent", "name");
+		verifyAll();
+	}
+
+	@Test
+	public void testGetAttributeByDisplayName_exists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeByDisplayName("extent.name");
+		verifyAll();
+	}
+	
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeValueByIndex_notSet() 
+	throws SNEEException {
+		Tuple tuple = new Tuple();
+		tuple.getAttributeValue(4);
+	}
+
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeValue_notSet() 
+	throws SNEEException {
+		Tuple tuple = new Tuple();
+		tuple.getAttributeValue("extent", "name");
+	}
+
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeValueByDisplayName_notSet() 
+	throws SNEEException {
+		Tuple tuple = new Tuple();
+		tuple.getAttributeValueByDisplayName("name");
+	}
+
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeValueByIndex_notExists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeValue(3);
+		verifyAll();
+	}
+
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeValue_notExists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeValue("extent", "field");
+		verifyAll();
+	}
+
+	@Test(expected=SNEEException.class)
+	public void testGetAttributeValueByDisplayName_notExists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeValueByDisplayName("field");
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetAttributeValueByIndex_exists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		expect(mockEvaluatorAttribute.getData()).andReturn(null);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeValue(0);
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetAttributeValue_exists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		expect(mockEvaluatorAttribute.getData()).andReturn(null);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeValue("extent", "name");
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetAttributeValueByDisplayName_exists() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		expect(mockEvaluatorAttribute.getData()).andReturn(null);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeValueByDisplayName("extent.name");
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetAttributeValueByName_existsCaseInsensitive() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		expect(mockEvaluatorAttribute.getData()).andReturn(null);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeValue("eXteNt", "nAmE");
+		verifyAll();
+	}
+	
+	@Test
+	public void testGetAttributeValueByDisplayName_existsCaseInsensitive() 
+	throws SNEEException {
+		expect(mockEvaluatorAttribute.getAttributeSchemaName()).
+			andReturn("name").times(3);
+		expect(mockEvaluatorAttribute.getAttributeDisplayName()).
+			andReturn("extent.name").times(3);
+		expect(mockEvaluatorAttribute.getExtentName()).
+			andReturn("extent").times(3);
+		expect(mockEvaluatorAttribute.getData()).andReturn(null);
+		replayAll();
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		attrs.add(mockEvaluatorAttribute);
+		Tuple tuple = new Tuple(attrs);
+		tuple.getAttributeValueByDisplayName("ExTenT.nAmE");
+		verifyAll();
+	}
+
+	@Test
+	public void testTupleDerivedFromTwoExtents() 
+	throws SchemaMetadataException, SNEEException
+	{
+		AttributeType mockType = createMock(AttributeType.class);
+		expect(mockType.getName()).andReturn("integer").times(3);
+		replayAll();
+		EvaluatorAttribute e1a1 = new EvaluatorAttribute("extent1", 
+				"attr1", mockType, 1);
+		EvaluatorAttribute e2a1 = new EvaluatorAttribute("extent2", 
+				"attr1", mockType, 2);
+		EvaluatorAttribute e2a2 = new EvaluatorAttribute("extent2", 
+				"attr2", "e2a2", mockType, 3);
+		List<EvaluatorAttribute> attrs = 
+			new ArrayList<EvaluatorAttribute>();
+		attrs.add(e1a1);
+		attrs.add(e2a1);
+		attrs.add(e2a2);
+		Tuple tuple = new Tuple(attrs);
+		System.out.println(tuple.getAttributeNames());
+		System.out.println(tuple.getAttributeDisplayNames());
+		assertEquals(3, tuple.getAttributeNames().size());
+		assertEquals(1, tuple.getAttributeValue(0));
+		assertEquals(1, tuple.getAttributeValue("extent1", "attr1"));
+		assertEquals(1, 
+				tuple.getAttributeValueByDisplayName("extent1.attr1"));
+		assertEquals(2, tuple.getAttributeValue(1));
+		assertEquals(2, tuple.getAttributeValue("extent2", "attr1"));
+		assertEquals(2, 
+				tuple.getAttributeValueByDisplayName("extent2.attr1"));
+		assertEquals(3, tuple.getAttributeValue(2));
+		assertEquals(3, tuple.getAttributeValue("extent2", "attr2"));
+		assertEquals(3, 
+				tuple.getAttributeValueByDisplayName("e2a2"));
+		verifyAll();
 	}
 
 }

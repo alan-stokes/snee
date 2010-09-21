@@ -6,6 +6,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Properties;
@@ -31,6 +32,9 @@ public class SNEEPropertiesTest {
 	@Before
 	public void setUp() throws Exception {
 		props = new Properties();
+//		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
+//		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
+//		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");		
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
@@ -85,7 +89,7 @@ public class SNEEPropertiesTest {
 	@Test
 	public void testGenerateGraphsFalse() 
 	throws SNEEConfigurationException {
-		props.setProperty(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS, "false");
+		props.setProperty(SNEEPropertyNames.GENERATE_QEP_IMAGES, "false");
 		SNEEProperties.initialise(props);
 		assertEquals("false", SNEEProperties.getSetting("compiler.generate_graphs"));
 	}
@@ -93,10 +97,10 @@ public class SNEEPropertiesTest {
 	@Test
 	public void testGenerateGraphsTrue() 
 	throws SNEEConfigurationException {
-		props.setProperty(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS, "true");
+		props.setProperty(SNEEPropertyNames.GENERATE_QEP_IMAGES, "true");
 		props.setProperty(SNEEPropertyNames.GRAPHVIZ_EXE, "/usr/local/bin/dot");
 		SNEEProperties.initialise(props);
-		assertEquals("true", SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS));
+		assertEquals("true", SNEEProperties.getSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES));
 	}
 	
 	@Test
@@ -114,11 +118,10 @@ public class SNEEPropertiesTest {
 	@Test(expected=SNEEConfigurationException.class)
 	public void testGenerateGraphsTrueNoGraphViz() 
 	throws SNEEConfigurationException {
-		props.setProperty(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS, "true");
+		props.setProperty(SNEEPropertyNames.GENERATE_QEP_IMAGES, "true");
 		SNEEProperties.initialise(props);
 		props.list(System.out);
-		assertEquals("true", 
-				SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_GENERATE_GRAPHS));
+		SNEEProperties.getSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES);
 	}
 	
 	@Test(expected=SNEEConfigurationException.class)
@@ -126,22 +129,24 @@ public class SNEEPropertiesTest {
 	throws SNEEConfigurationException {
 		SNEEProperties.initialise(props);
 		props.list(System.out);
-		assertEquals("true", 
-				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_SCHEMA_FILE));
+		SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE);
 	}
 	
 	@Test
 	public void testGetFile_exists() 
-	throws SNEEConfigurationException {
-		props.setProperty(SNEEPropertyNames.INPUTS_SCHEMA_FILE, 
-				"logical-schema.xml");
+	throws SNEEConfigurationException, MalformedURLException {
+		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, 
+				"etc/logical-schema.xml");
 		SNEEProperties.initialise(props);
 		props.list(System.out);
 		URL fileURL = 
-			SNEEPropertiesTest.class.getClassLoader().getResource("logical-schema.xml");
+			SNEEPropertiesTest.class.getClassLoader().
+			getResource("etc/logical-schema.xml");
 		System.out.println(fileURL);
-		assertEquals(fileURL.getFile(), 
-				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_SCHEMA_FILE));
+		//XXX: Have to test as a URL otherwise there is a file separator issue when this test is run on windows.
+		File file = new File(SNEEProperties.getFilename(
+				SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE));
+		assertEquals(fileURL, file.toURI().toURL());
 	}
 
 }

@@ -210,7 +210,7 @@ public class MultiExpression implements Expression {
 		if (multiType.isBooleanDataType()) {
 			returnType = _booleanType;
 		} else {
-			//simplified verion assumes all types are the same.
+			//simplified version assumes all types are the same.
 			returnType = expressions[0].getType();
 		}
 		return returnType;

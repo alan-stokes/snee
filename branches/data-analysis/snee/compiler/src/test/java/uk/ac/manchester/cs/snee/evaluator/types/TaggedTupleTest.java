@@ -35,7 +35,6 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.evaluator.types;
 
-import static org.easymock.classextension.EasyMock.createMock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -43,13 +42,14 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import org.apache.log4j.PropertyConfigurator;
+import org.easymock.classextension.EasyMockSupport;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class TaggedTupleTest {
+public class TaggedTupleTest extends EasyMockSupport {
 
 	DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
 	DateFormat tf = new SimpleDateFormat("hh:mm:ss");
@@ -68,13 +68,13 @@ public class TaggedTupleTest {
 	}
 
 	private TaggedTuple taggedTuple;
-	private long currentTime;
+	private long testSetupTime;
 	private Tuple mockTuple;
 
 	@Before
 	public void setUp() throws Exception {
 		mockTuple = createMock(Tuple.class); 
-		currentTime = System.currentTimeMillis();
+		testSetupTime = System.currentTimeMillis();
 		taggedTuple = new TaggedTuple(mockTuple);
 	}
 
@@ -84,8 +84,9 @@ public class TaggedTupleTest {
 	
 	@Test
 	public void testGetEvalTime() {
-		assertTrue(taggedTuple.getEvalTime() >= currentTime);
-		assertTrue(taggedTuple.getEvalTime() <= System.currentTimeMillis());
+		assertTrue(taggedTuple.getEvalTime() >= testSetupTime);
+		assertTrue(taggedTuple.getEvalTime() <= 
+			System.currentTimeMillis());
 	}
 	
 	@Test

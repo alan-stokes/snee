@@ -45,23 +45,30 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.MetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
+import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
-import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
-import uk.ac.manchester.cs.snee.evaluator.EvaluatorException;
-import uk.ac.manchester.cs.snee.evaluator.StreamResultSet;
-import uk.ac.manchester.cs.snee.evaluator.StreamResultSetImpl;
+import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 /**
  * Controller class for SNEEql query compilation and evaluation
@@ -74,9 +81,9 @@ public class SNEEController implements SNEE {
 		Logger.getLogger(SNEEController.class.getName());
 	
 	/**
-	 * Metadata stored about extents and data sources
+	 * Metadata stored about extents, data sources and cost parameters.
 	 */
-	private Metadata _schema;
+	private Metadata _metadata;
 	
 	/**
 	 * The compiler object for compiling queries
@@ -88,13 +95,14 @@ public class SNEEController implements SNEE {
 	 */
 	private Dispatcher _dispatcher;
 	
-	private Map<Integer, StreamResultSet> _queryResults = 
-		new HashMap<Integer, StreamResultSet>();
+	private Map<Integer, ResultStore> _queryResults = 
+		new HashMap<Integer, ResultStore>();
 	
 	/**
 	 * Stores the query plan for the registered query
 	 */
-	private Map<Integer, LAF> _queryPlans = new HashMap<Integer, LAF>();
+	private Map<Integer, QueryExecutionPlan> _queryPlans = 
+		new HashMap<Integer, QueryExecutionPlan>();
 	
 	private int _nextQueryID = 1;
 
@@ -170,7 +178,7 @@ public class SNEEController implements SNEE {
 
 		try {			
 			/* Process metadata */
-			_schema = initialiseSchema();
+			_metadata = initialiseMetadata();
 			
 			/* Initialise compiler */
 			_compiler = initialiseQueryCompiler();
@@ -180,28 +188,44 @@ public class SNEEController implements SNEE {
 
 		} catch (TypeMappingException e) {
 			String msg = "Problem instantiating logical schema " + 
-				SNEEProperties.getSetting("INPUTS_SCHEMA_FILE") + ". " + e;
+				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE) + ". " + e;
 			logger.fatal(msg);
 			throw new SNEEException(msg, e);
 		} catch (SchemaMetadataException e) {
 			String msg = "Problem instantiating logical schema " + 
-				SNEEProperties.getSetting("INPUTS_SCHEMA_FILE") + ". " + e;
+				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE) + ". " + e;
 			logger.fatal(msg);
 			throw new SNEEException(msg, e);
 		} catch (SourceMetadataException e) {
 			String msg = "Problem instantiating physical schema " + 
-				SNEEProperties.getSetting("INPUTS_PHYSICAL_SCHEMA_FILE") + ". " + e;
+				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE) + ". " + e;
 			logger.fatal(msg);
 			throw new SNEEException(msg, e);
 		} catch (MetadataException e) {
 			String msg = "Problem instantiating schema " +
-				SNEEProperties.getSetting("INPUTS_SCHEMA_FILE") + ". " + e;
+				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE) + ". " + e;
 			logger.fatal(msg);
 			throw new SNEEException(msg, e);
 		} catch (UnsupportedAttributeTypeException e) {
 			String msg = "Problem instantiating logical schema " + 
-				SNEEProperties.getSetting("INPUTS_SCHEMA_FILE") + ". " + e;
-			logger.fatal(msg);
+				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE) + ". " + e;
+			logger.fatal(msg, e);
+			throw new SNEEException(msg, e);
+		} catch (TopologyReaderException e) {
+			String msg = "Problem reading topology file ";
+			logger.fatal(msg, e);
+			throw new SNEEException(msg, e);			
+		} catch (MalformedURLException e) {
+			String msg = "Problem creating link to external service ";
+			logger.fatal(msg, e);
+			throw new SNEEException(msg, e);			
+		} catch (SNEEDataSourceException e) {
+			String msg = "Problem creating link to external service ";
+			logger.fatal(msg, e);
+			throw new SNEEException(msg, e);			
+		} catch (CostParametersException e) {
+			String msg = "Problem reading cost parameters file";
+			logger.fatal(msg, e);
 			throw new SNEEException(msg, e);
 		}
 		
@@ -210,10 +234,12 @@ public class SNEEController implements SNEE {
 			logger.debug("RETURN initialise()");
 	}
 
-	protected Metadata initialiseSchema() 
+	protected Metadata initialiseMetadata() 
 	throws MetadataException, SchemaMetadataException, 
 	TypeMappingException, UnsupportedAttributeTypeException, 
-	SourceMetadataException, SNEEConfigurationException 
+	SourceMetadataException, SNEEConfigurationException, 
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException, CostParametersException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseSchema()");
@@ -223,11 +249,11 @@ public class SNEEController implements SNEE {
 
 	protected QueryCompiler initialiseQueryCompiler() 
 	throws TypeMappingException {
-		return new QueryCompiler(_schema);
+		return new QueryCompiler(_metadata);
 	}
 
 	protected Dispatcher initialiseDispatcher() {
-		return new Dispatcher(_schema);
+		return new Dispatcher(_metadata);
 	}
 	
 	/* (non-Javadoc)
@@ -236,7 +262,7 @@ public class SNEEController implements SNEE {
 	public Collection<String> getExtents() {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getExtents()");
-		Collection<String> extentNames = _schema.getExtentNames();
+		Collection<String> extentNames = _metadata.getExtentNames();
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getExtents() #extents=" + 
 					extentNames.size());
@@ -250,7 +276,7 @@ public class SNEEController implements SNEE {
 	throws ExtentDoesNotExistException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getExtentDetails() with " + extentName);
-		ExtentMetadata extent = _schema.getExtentMetadata(extentName);
+		ExtentMetadata extent = _metadata.getExtentMetadata(extentName);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getExtentDetails()");
 		return extent;
@@ -259,23 +285,37 @@ public class SNEEController implements SNEE {
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.SNEE#addQuery(java.lang.String)
 	 */
-	public int addQuery(String query) 
-	throws SNEEException, SchemaMetadataException, EvaluatorException 
+	public int addQuery(String query, String queryParamsFile) 
+	throws EvaluatorException, SNEECompilerException, SNEEException,
+	MetadataException 
 	{
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER addQuery() with " + query);
 		}
 		if (query == null || query.trim().equals("")) {
 			logger.warn("Null or empty query passed in");
-			throw new SNEEException("Null or empty query passed in.");
+			throw new SNEECompilerException("Null or empty query passed in.");
 		}
 		int queryId = getNextQueryId();
 		if (logger.isInfoEnabled()) 
-			logger.info("Compiling query " + queryId + "\n\t" + query);
-		compileQuery(queryId, query);
+			logger.info("Assigned ID " + queryId + " to query\n");
+		if (logger.isInfoEnabled()) 
+			logger.info("Reading query " + queryId + " parameters\n");
+		QueryParameters queryParams = null;
+		if (queryParamsFile != null) {
+			try {
+				queryParams = new QueryParameters(queryId, queryParamsFile);
+			} catch (Exception e) {
+				logger.warn("Error obtaining query parameters: " + e);
+				throw new SNEECompilerException(e.getLocalizedMessage());
+			}
+		}
+		if (logger.isInfoEnabled()) 
+			logger.info("Compiling query " + queryId + "\n");
+		compileQuery(queryId, query, queryParams);
 		if (logger.isInfoEnabled())
 			logger.info("Successfully compiled query " + queryId);
-		dispatchQuery(queryId);
+		dispatchQuery(queryId, query);
 		if (logger.isInfoEnabled())
 			logger.info("Successfully started evaluation of query " + queryId);
 
@@ -300,22 +340,37 @@ public class SNEEController implements SNEE {
 		
 	/**
 	 * Dispatch the query for evaluation
+	 * @param query 
 	 * 
 	 * @return the query identifier generated for the query
 	 * @throws SNEEException Problem starting the query evaluation
 	 * @throws SchemaMetadataException 
 	 * @throws EvaluatorException 
+	 * @throws CodeGenerationException 
+	 * @throws OptimizationException 
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 * @throws IOException 
+	 * @throws SNEEConfigurationException 
+	 * @throws CodeGenerationException 
+	 * @throws OptimizationException 
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 * @throws IOException 
+	 * @throws SNEEConfigurationException 
 	 */
-	private int dispatchQuery(int queryId) 
-	throws SNEEException, SchemaMetadataException, EvaluatorException 
+	private int dispatchQuery(int queryId, String query) 
+	throws SNEEException, MetadataException, EvaluatorException
 	{
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER dispatchQuery() with " + queryId);
+			logger.trace("ENTER dispatchQuery() with " + queryId +
+					" " + query);
 		}
-		StreamResultSet resultSet = createStreamResultSet();
+		QueryExecutionPlan queryPlan = _queryPlans.get(queryId);
+		ResultStore resultSet = createStreamResultSet(query, queryPlan);
 		
 		_dispatcher.startQuery(queryId, resultSet, 
-				_queryPlans.get(queryId));
+				queryPlan);
 		_queryResults.put(queryId, resultSet);
 		
 		if (logger.isTraceEnabled()) {
@@ -324,8 +379,11 @@ public class SNEEController implements SNEE {
 		return queryId;
 	}
 
-	protected StreamResultSet createStreamResultSet() {
-		StreamResultSet resultSet = new StreamResultSetImpl();
+	protected ResultStore createStreamResultSet(String query,
+			QueryExecutionPlan queryPlan) 
+	throws SNEEException {
+		ResultStore resultSet = new ResultStoreImpl(query, queryPlan);
+		resultSet.setCommand(query);
 		return resultSet;
 	}
 
@@ -336,24 +394,32 @@ public class SNEEController implements SNEE {
 		int queryId = _nextQueryID;
 		_nextQueryID++;
 		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN getNextQueryId() with queryId " + queryId);
+			logger.trace("RETURN getNextQueryId() with queryId " + 
+					queryId);
 		}
 		return queryId;
 	}
 
-	private void compileQuery(int queryID, String query) 
-	throws SNEEException {
+	private void compileQuery(int queryID, String query, 
+			QueryParameters queryParams) 
+	throws SNEECompilerException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER compilerQuery() with queryID " + 
 					queryID + "\n\tquery: " + query);
 		}
 			try {
-				LAF queryPlan = _compiler.compileQuery(queryID, query);
+				QoSExpectations qos = null;
+				if (queryParams!=null) {
+					qos = queryParams.getQoS();
+				}
+				QueryExecutionPlan queryPlan = 
+					_compiler.compileQuery(queryID, query, qos);
 				_queryPlans.put(queryID, queryPlan);
 			} catch (Exception e) {
-				String msg = "Problem compiling query.";
-				logger.warn(msg);
-				throw new SNEEException(msg, e);
+				String msg = "Problem compiling query: "+
+					e.getLocalizedMessage()+"\n ";
+				logger.warn(msg, e);
+				throw new SNEECompilerException(msg, e);
 			}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN compileQuery()");
@@ -380,12 +446,12 @@ public class SNEEController implements SNEE {
 	 * @return ResultSet for the query
 	 * @throws SNEEException Specified queryId does not exist
 	 */
-	public StreamResultSet getResultSet(int queryId) 
+	public ResultStore getResultSet(int queryId) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER getResultStore() with query=" + queryId);
 		}
-		StreamResultSet resultSet;
+		ResultStore resultSet;
 		if (_queryResults.containsKey(queryId)) {
 			resultSet = _queryResults.get(queryId);
 		} else {
@@ -402,12 +468,26 @@ public class SNEEController implements SNEE {
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.SNEE#addServiceSource(java.lang.String)
 	 */
-	public void addServiceSource(String url) 
-	throws MalformedURLException, SchemaMetadataException, 
-	TypeMappingException, SNEEDataSourceException {
+	public void addServiceSource(String name, String url, 
+			SourceType interfaceType) 
+	throws MalformedURLException, SNEEDataSourceException,
+	MetadataException {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER addServiceSource() with " + url);
-		_schema.addWebServiceSource(url);
+			logger.debug("ENTER addServiceSource() with name=" +
+					name + " type=" + interfaceType + " url="+ url);
+		try {
+			_metadata.addServiceSource(name, url, 
+					SourceType.PULL_STREAM_SERVICE);
+		} catch (SchemaMetadataException e) {
+			logger.warn("Throwing a MetadataException. Cause " + e);
+			throw new MetadataException(e.getLocalizedMessage());
+		} catch (TypeMappingException e) {
+			logger.warn("Throwing a MetadataException. Cause " + e);
+			throw new MetadataException(e.getLocalizedMessage());
+		} catch (SourceMetadataException e) {
+			logger.warn("Throwing a MetadataException. Cause " + e);
+			throw new MetadataException(e.getLocalizedMessage());
+		}
 		logger.info("Web service source added with url \n\t" + url);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN addServiceSource()");

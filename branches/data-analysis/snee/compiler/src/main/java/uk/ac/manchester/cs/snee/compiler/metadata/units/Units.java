@@ -87,25 +87,26 @@ public class Units {
 	private void parseXMLFile() 
 	throws ParserConfigurationException, SAXException, IOException, 
 	XPathExpressionException, SNEEConfigurationException {
-		Utils.validateXMLFile(
-				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_UNITS_FILE),
-				"input/units.xsd");
+
+//		Utils.validateXMLFile(
+//				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_UNITS_FILE),
+//				"../src/main/resources/schema/units.xsd");
 
 		// parse file
 		String timeBaseUnit = Utils.doXPathStrQuery(
-				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_UNITS_FILE),
+				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_UNITS_FILE),
 				"/snee:units/snee:time/snee:base-unit");
 		this.setScalingFactor(timeBaseUnit.toUpperCase(), new Long(1),
 				this.timeScalingFactors);
 
 		String energyBaseUnit = Utils.doXPathStrQuery(
-				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_UNITS_FILE),
+				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_UNITS_FILE),
 				"/snee:units/snee:energy/snee:base-unit");
 		this.setScalingFactor(energyBaseUnit.toUpperCase(), new Long(1),
 				this.energyScalingFactors);
 
 		String memoryBaseUnit = Utils.doXPathStrQuery(
-				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_UNITS_FILE),
+				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_UNITS_FILE),
 				"/snee:units/snee:memory/snee:base-unit");
 		this.setScalingFactor(memoryBaseUnit.toUpperCase(), new Long(1),
 				this.memoryScalingFactors);
@@ -123,7 +124,7 @@ public class Units {
 	throws XPathExpressionException, FileNotFoundException,
 	SNEEConfigurationException {
 		NodeList nodeList = Utils.doXPathQuery(
-				SNEEProperties.getSetting(SNEEPropertyNames.INPUTS_UNITS_FILE), context);
+				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_UNITS_FILE), context);
 		for (int i = 0; i < nodeList.getLength(); i++) {
 			Node node = nodeList.item(i);
 			String unitName = Utils.doXPathStrQuery(node, "snee:name");
@@ -150,7 +151,7 @@ public class Units {
 		private static Units instance = new Units();
 	}
 
-	public Units getInstance() {
+	public static Units getInstance() {
 		return UnitsHolder.instance;
 	}
 

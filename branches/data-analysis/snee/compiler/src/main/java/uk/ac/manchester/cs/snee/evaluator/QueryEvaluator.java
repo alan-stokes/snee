@@ -42,18 +42,21 @@ import java.util.Observer;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.DeliverOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.Operator;
-import uk.ac.manchester.cs.snee.evaluator.operators.DeliverOperatorImpl;
-import uk.ac.manchester.cs.snee.evaluator.operators.EvaluatorPhysicalOperator;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
+import uk.ac.manchester.cs.snee.operators.evaluator.DeliverOperatorImpl;
+import uk.ac.manchester.cs.snee.operators.evaluator.EvaluatorPhysicalOperator;
+import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class QueryEvaluator implements Observer {//Runnable {
+	
 	private boolean executing = false;
 	
 	protected boolean isExecuting() {
@@ -65,7 +68,7 @@ public class QueryEvaluator implements Observer {//Runnable {
 	 */
 	private int _queryId;
 	
-	private StreamResultSet _results;
+	private ResultStore _results;
 
 	/**
 	 * The query plan to be evaluated
@@ -87,7 +90,7 @@ public class QueryEvaluator implements Observer {//Runnable {
 	
 	public QueryEvaluator(int queryId, LAF queryPlan, 
 			Metadata schema, 
-			StreamResultSet resultSet) 
+			ResultStore resultSet) 
 	throws SNEEException, SchemaMetadataException, EvaluatorException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER QueryEvaluator() with queryID: " + queryId + " " + 
@@ -174,13 +177,12 @@ public class QueryEvaluator implements Observer {//Runnable {
 			_rootOper.setSchema(_schema);
 			_rootOper.open();
 			_rootOper.addObserver(this);
-			_results.setAttributes(_rootOper.getAttributes());
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN openQueryPlan()");
 	}
 
-	private EvaluatorPhysicalOperator getInstance(Operator op) 
+	private EvaluatorPhysicalOperator getInstance(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER getInstance() with " + op);

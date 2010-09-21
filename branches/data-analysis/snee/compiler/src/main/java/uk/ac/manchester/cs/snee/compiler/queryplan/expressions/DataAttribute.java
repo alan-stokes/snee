@@ -33,72 +33,43 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
-//import uk.ac.manchester.cs.snee.compiler.codeGeneration.CodeGenTarget;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 
-/**
- * 
- * @author Christian
- *
- */
 public class DataAttribute extends Attribute {
 
-	/** 
-	 * Value for when localName is not assigned.
-	 * For example in the final project
-	 */
-	private String emptyName = "main";
-	
-	/** Type of this Attribute. */
-	private AttributeType type;
-
 	/**
-	 * Parameter constructor.
+	 * Construct a DataAttribute instance
 	 * 
-	 * @param newLocalName Value to be used
-	 * @param newAttributeName Value to be used
-	 * @param newType Value to be used
+	 * @param extentName name of the extent the attribute appears in
+	 * @param attrName name of the attribute as it appears in the schema
+	 * @param attrType type of the attribute
+	 * @throws SchemaMetadataException
 	 */
-	public DataAttribute(String newLocalName, String newAttributeName, 
-			AttributeType newType) {
-		setLocalName(newLocalName);
-		setAttributeName(newAttributeName);
-		type = newType;
-	}
-	
-	/**
-	 * Parameter constructor.
-	 * 
-	 * @param newAttributeName Value to be used
-	 * @param newType Value to be used
-	 */
-	public DataAttribute(String newAttributeName, AttributeType newType) {
-		setLocalName(emptyName);
-		setAttributeName(newAttributeName);
-		type = newType;
+	public DataAttribute(String extentName, String attrName,
+			AttributeType attrType) 
+	throws SchemaMetadataException {
+		super(extentName, attrName, attrType);
 	}
 
 	/**
-	 * Returns a string representation of the object.
+	 * Construct a DataAttribute instance
 	 * 
-	 * @return localName + "." + attributeName
-    */
-	public String toString() {
-		return getLocalName() + "." + getAttributeName();
-	}
-	
-	/** {@inheritDoc} */
-	public String getName() {
-		return getLocalName() + "_" + getAttributeName();
-	}
-	
-	/**
-	 * The raw data type of this expression.
-	 *  
-	 * @return The raw data type of this expression.
+	 * @param extentName name of the extent the attribute appears in
+	 * @param attrName name of the attribute as it appears in the schema
+	 * @param attrLabel display label for the attribute
+	 * @param attrType type of the attribute
+	 * @throws SchemaMetadataException
 	 */
-	public AttributeType getType() {
-		return type;
+	public DataAttribute(String extentName, String attrName,
+			String attrLabel, AttributeType attrType) 
+	throws SchemaMetadataException {
+		super(extentName, attrName, attrLabel, attrType);
+	}
+
+	public DataAttribute(Attribute attr) 
+	throws SchemaMetadataException {
+		super(attr);
 	}
 
 	/**
@@ -107,6 +78,7 @@ public class DataAttribute extends Attribute {
 	 * @throws AssertionError If Expression returns a boolean.
 	 */
 	public double getMinValue() {
+		//XXX-AG: What are these values used for? Seem a bit arbitrary.
 		return 0;
 	}
 	
@@ -116,6 +88,7 @@ public class DataAttribute extends Attribute {
 	 * @throws AssertionError If Expression returns a boolean.
 	 */
 	public double getMaxValue() {
+		//XXX-AG: What are these values used for? Seem a bit arbitrary.
 //		if (Settings.CODE_GENERATION_TARGETS.contains(CodeGenTarget.AVRORA)) {
 //			return 1024;
 //		}
@@ -160,4 +133,19 @@ public class DataAttribute extends Attribute {
 	public Attribute toAttribute() {
 		return this;
 	}
+	
+	@Override
+	public boolean equals(Object ob) {
+		boolean result = false;
+		if (ob instanceof DataAttribute) {
+			Attribute attr = (Attribute) ob;
+			if (attr.getExtentName().equalsIgnoreCase(extentName) &&
+					attr.getAttributeSchemaName().equalsIgnoreCase(attributeSchemaName) && 
+					attr.getAttributeType() == sqlType.getSQLType()) {
+				result = true;
+			}
+		}
+		return result;
+	}
+
 }

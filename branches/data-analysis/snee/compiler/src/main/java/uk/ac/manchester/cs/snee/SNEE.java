@@ -3,28 +3,25 @@ package uk.ac.manchester.cs.snee;
 import java.net.MalformedURLException;
 import java.util.Collection;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
-import uk.ac.manchester.cs.snee.evaluator.EvaluatorException;
-import uk.ac.manchester.cs.snee.evaluator.StreamResultSet;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
+
 
 public interface SNEE {
 
 	/**
-	 * Adds a SSG4Env Pull Stream Interface web service source to the 
-	 * set of available data for querying.
-	 * @param url
+	 * Adds a service source to the set of available data for querying.
+	 * @param name name of the service
+	 * @param url endpoint reference for the interface
+	 * @param interfaceType type of the interface
 	 * @throws MalformedURLException
-	 * @throws SchemaMetadataException
-	 * @throws TypeMappingException
-	 * @throws SNEEDataSourceException
+	 * @throws MetadataException
+	 * @throws SNEEDataSourceException 
 	 */
-	public void addServiceSource(String url) 
-	throws MalformedURLException, SchemaMetadataException, 
-	TypeMappingException, SNEEDataSourceException;
+	public void addServiceSource(String name, String url, 
+			SourceType interfaceType) 
+	throws MalformedURLException, MetadataException,
+	SNEEDataSourceException;
 	
 	/**
 	 * Return a list of the extent names available in the schema
@@ -36,25 +33,30 @@ public interface SNEE {
 	 * Retrieve the metadata about a specified extent.
 	 * @param extentName name of the extent
 	 * @return details about the extent
-	 * @throws ExtentDoesNotExistException name is not an extent in the schema
+	 * @throws MetadataException name is not an extent in the schema
 	 */
 	public ExtentMetadata getExtentDetails(String extentName) 
-	throws ExtentDoesNotExistException;
+	throws MetadataException;
 	
 	/**
-	 * Adds a query to the set of registered queries and returns the generated
-	 * query identifier. 
+	 * Adds a query to the set of registered queries and returns the 
+	 * generated query identifier. 
 	 * 
-	 * It takes a query statement as input, generates a query plan for its 
+	 * It takes a query statement as input, and optionally any 
+	 * parameters associated with it, generates a query plan for its 
 	 * evaluation, and adds it to the set of registered query plans.
 	 * 
 	 * @param query Statement of the query
+	 * @param parametersFile location of the query parameters file
+	 *
 	 * @throws SNEEException
-	 * @throws SchemaMetadataException 
+	 * @throws MetadataException 
 	 * @throws EvaluatorException 
+	 * @throws SNEECompilerException 
 	 */
-	public int addQuery(String query) 
-	throws SNEEException, SchemaMetadataException, EvaluatorException;
+	public int addQuery(String query, String parametersFile) 
+	throws SNEECompilerException, MetadataException, 
+	EvaluatorException, SNEEException;
 
 	/**
 	 * Retrieve the ResultSet for a specified query if it exists.
@@ -62,7 +64,7 @@ public interface SNEE {
 	 * @return ResultSet for the query
 	 * @throws SNEEException Specified queryId does not exist
 	 */
-	public StreamResultSet getResultSet(int queryId) 
+	public ResultStore getResultSet(int queryId) 
 	throws SNEEException;
 	
 	/**

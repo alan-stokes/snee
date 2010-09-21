@@ -33,50 +33,41 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
-import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 
 /** 
  * Represent attributes that hold the time data was acquired.
- * @author Christian
  */
 public class TimeAttribute extends Attribute {
 
-	private AttributeType _type;
-
-	/** 
-	 * Constructor when only attributeName is assigned.
-	 * @param localName Extent or local name.
-	 */
-	public TimeAttribute(String localName, AttributeType type) {
-		super(localName, Constants.ACQUIRE_TIME);
-		_type = type;
-	}
-	
 	/**
-	 * Returns a string representation of the object.
+	 * Construct a TimeAttribute instance
 	 * 
-	 * @return localName + "." + Constants.ACQUIRE_TIME;
-    */
-	public String toString() {
-		return getLocalName() + "." + Constants.ACQUIRE_TIME;
-	}
-	
-	/** {@inheritDoc} */
-	public String getName() {
-		return getLocalName() + "_" + Constants.ACQUIRE_TIME;
-	}
-	/**
-	 * The raw data type of this expression.
-	 *  
-	 * @return The raw data type of this expression.
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
+	 * @param extentName name of the extent the attribute appears in
+	 * @param attrName name of the attribute as it appears in the schema
+	 * @param attrType type of the attribute
+	 * @throws SchemaMetadataException
 	 */
-	public AttributeType getType() {
-		return _type;//.getType(Constants.TIME_TYPE);
+	public TimeAttribute(String extentName, String attrName,
+			AttributeType attrType) 
+	throws SchemaMetadataException {
+		super(extentName, attrName, attrType);
+	}
+
+	/**
+	 * Construct a DataAttribute instance
+	 * 
+	 * @param extentName name of the extent the attribute appears in
+	 * @param attrName name of the attribute as it appears in the schema
+	 * @param attrLabel display label for the attribute
+	 * @param attrType type of the attribute
+	 * @throws SchemaMetadataException
+	 */
+	public TimeAttribute(String extentName, String attrName,
+			String attrLabel, AttributeType attrType) 
+	throws SchemaMetadataException {
+		super(extentName, attrName, attrLabel, attrType);
 	}
 		
 	/**

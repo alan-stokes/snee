@@ -35,16 +35,32 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.evaluator;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.EvaluatorException;
+import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.ResultStore;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.sncb.SNCB;
+import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB;
+import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 public class Dispatcher {
 
@@ -75,32 +91,64 @@ public class Dispatcher {
 	 * @param resultSet The storage to be used for query results
 	 * @param queryID The identifier of the query
 	 * 
-	 * @param queryPlan PAF of the query to be evaluated
+	 * @param queryPlan query plan of the query to be evaluated
 	 * @throws SNEEException Problem opening the query plan
 	 * @throws SchemaMetadataException 
 	 * @throws EvaluatorException 
+	 * @throws SNEEConfigurationException 
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 * @throws IOException 
+	 * @throws CodeGenerationException 
+	 * @throws OptimizationException 
 	 */
-	public void startQuery(int queryID, StreamResultSet resultSet, 
-			LAF queryPlan) 
-	throws SNEEException, SchemaMetadataException, EvaluatorException {
+	public void startQuery(int queryID, ResultStore resultSet, 
+			QueryExecutionPlan queryPlan) 
+	throws SNEEException, MetadataException, EvaluatorException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER queryID " + queryID + " " + queryPlan);
 		}
-		// Create thread to evaluate query
-		/*
-		 * Using a method for constructing the query evaluator so that it can be
-		 * overridden as a mock object for testing.
-		 */
-		QueryEvaluator queryEvaluator = 
-			createQueryEvaluator(queryID, queryPlan, resultSet);
-//		Thread evaluationThread = new Thread(queryEvaluator);
-//		// Start query evaluation
-//		evaluationThread.start();
-//		if (logger.isInfoEnabled()) {
-//			logger.info("Started evaluation of query " + queryID + ".");
-//		}
-//		// Add thread to set of query evaluators
-		_queryEvaluators.put(queryID, queryEvaluator);
+		if (queryPlan instanceof EvaluatorQueryPlan) {
+			// Create thread to evaluate query
+			/*
+			 * Using a method for constructing the query evaluator so that it can be
+			 * overridden as a mock object for testing.
+			 */
+			LAF laf = queryPlan.getLAF(); //TODO: This will be a PAF in future
+			try {
+				QueryEvaluator queryEvaluator = 
+					createQueryEvaluator(queryID, laf, resultSet);
+				//		Thread evaluationThread = new Thread(queryEvaluator);
+				//		// Start query evaluation
+				//		evaluationThread.start();
+				//		if (logger.isInfoEnabled()) {
+				//			logger.info("Started evaluation of query " + queryID + ".");
+				//		}
+				//		// Add thread to set of query evaluators
+				_queryEvaluators.put(queryID, queryEvaluator);
+			} catch (SchemaMetadataException e) {
+			logger.warn("Throwing a MetadataException. Cause " + e);
+				logger.warn("Throwing a MetadataException. Cause " + e);
+				throw new MetadataException(e.getLocalizedMessage());
+			}
+		} else {
+			try {
+				SensorNetworkQueryPlan snQueryPlan = (SensorNetworkQueryPlan)queryPlan;
+				CostParameters costParams = snQueryPlan.getCostParameters();
+				String sep = System.getProperty("file.separator");
+				String outputDir = SNEEProperties.getSetting(
+						SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
+						sep + queryPlan.getQueryName() + sep;
+				SNCB sncb = new TinyOS_SNCB(outputDir, costParams);
+				sncb.register(snQueryPlan);
+				sncb.start();
+				System.out.println("Code generation complete");
+				System.exit(0);
+			} catch (Exception e) {
+				logger.warn(e.getLocalizedMessage(), e);
+				throw new EvaluatorException(e);
+			}
+		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN");
 		}
@@ -118,7 +166,7 @@ public class Dispatcher {
 	 * @throws EvaluatorException 
 	 */
 	protected QueryEvaluator createQueryEvaluator(int queryId, 
-			LAF queryPlan, StreamResultSet resultSet) 
+			LAF queryPlan, ResultStore resultSet) 
 	throws SNEEException, SchemaMetadataException, EvaluatorException {
 		QueryEvaluator queryEvaluator = 
 			new QueryEvaluator(queryId, queryPlan, _schema, resultSet);

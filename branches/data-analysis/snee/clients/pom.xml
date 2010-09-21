@@ -5,19 +5,19 @@
   <parent>
     <artifactId>SNEE</artifactId>
     <groupId>uk.ac.manchester.cs.snee</groupId>
-    <version>0.0.4-SNAPSHOT</version>
+    <version>1.2.3</version>
   </parent>
   <groupId>uk.ac.manchester.cs.snee</groupId>
   <artifactId>clients</artifactId>
   <packaging>pom</packaging>
   <name>SNEE Clients</name>
-  <version>0.0.4-SNAPSHOT</version>
+  <version>1.2.3</version>
   <description>Command line single use clients that interact with SNEE through the API</description>
   <dependencies>
   	<dependency>
   		<groupId>uk.ac.manchester.cs.snee</groupId>
   		<artifactId>snee-compiler</artifactId>
-  		<version>0.0.4-SNAPSHOT</version>
+  		<version>1.2.3</version>
   		<scope>provided</scope>
   	</dependency>
   </dependencies>
@@ -25,5 +25,6 @@
     <module>client</module>
     <module>cco-client</module>
     <module>test-client</module>
+    <module>in-network-client</module>
   </modules>
 </project>

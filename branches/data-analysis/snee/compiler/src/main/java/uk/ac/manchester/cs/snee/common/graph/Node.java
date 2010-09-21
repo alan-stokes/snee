@@ -77,9 +77,9 @@ public interface Node extends Equivalence<Node> {
 
 	public void setOutput(Node n, int index);
 
-//	/**
-//	 * Copies everything except for the inputs and output nodes (as they may not exist yet)
-//	 */
-//	public Node shallowClone();
+	/**
+	 * Copies everything except for the inputs and output nodes (as they may not exist yet)
+	 */
+	public Node shallowClone();
 
 }

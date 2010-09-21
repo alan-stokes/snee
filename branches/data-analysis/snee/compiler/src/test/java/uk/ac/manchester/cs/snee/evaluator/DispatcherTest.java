@@ -48,7 +48,10 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import uk.ac.manchester.cs.snee.EvaluatorException;
+import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
@@ -79,7 +82,7 @@ public class DispatcherTest extends EasyMockSupport {
 	public void setUp() throws Exception {
 		_dispatcher = new Dispatcher(mockSchema) {
 			protected QueryEvaluator createQueryEvaluator(int queryId, 
-					LAF queryPlan, StreamResultSet resultSet) {
+					LAF queryPlan, ResultStore resultSet) {
 				System.out.println("Overridden createQueryEvaluator()");
 				mockEvaluator._queryId = queryId;
 				return mockEvaluator;
@@ -100,7 +103,8 @@ public class DispatcherTest extends EasyMockSupport {
 	
 	@Test@Ignore
 	public void testStopQuery_validID() 
-	throws SNEEException, SchemaMetadataException, EvaluatorException {
+	throws SNEEException, SchemaMetadataException, 
+	EvaluatorException, MetadataException {
 		_dispatcher.startQuery(1, null, null);
 //		System.out.println("Number of running queries: " + _evaluatorController.getRunningQueryIds().size());
 		try {
@@ -123,7 +127,8 @@ public class DispatcherTest extends EasyMockSupport {
 
 	@Test@Ignore
 	public void testClose() 
-	throws SNEEException, SchemaMetadataException, EvaluatorException {
+	throws SNEEException, SchemaMetadataException, EvaluatorException,
+	MetadataException {
 		_dispatcher.startQuery(1, null, null);
 		_dispatcher.startQuery(2, null, null);
 		_dispatcher.startQuery(3, null, null);

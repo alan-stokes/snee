@@ -10,12 +10,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.sql.rowset.WebRowSet;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
@@ -23,8 +23,8 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
-import uk.ac.manchester.cs.snee.data.SNEEDataSourceException;
-import uk.ac.manchester.cs.snee.evaluator.types.Field;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
 import com.sun.rowset.WebRowSetImpl;
@@ -44,13 +44,14 @@ import eu.semsorgrid4env.service.wsdai.InvalidResourceNameFault;
 import eu.semsorgrid4env.service.wsdai.NotAuthorizedFault;
 import eu.semsorgrid4env.service.wsdai.PropertyDocumentType;
 import eu.semsorgrid4env.service.wsdai.ServiceBusyFault;
+
 public class PullSourceWrapper {
 
 	private static Logger logger = 
 		Logger.getLogger(PullSourceWrapper.class.getName());
 
 	private DateFormat dateFormat = 
-		new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
 	private Types _types;
 
@@ -204,16 +205,19 @@ public class PullSourceWrapper {
 		} else if (schemaFormatURI.equals("http://java.sun.com/xml/ns/jdbc")) {
 			schemaParser = new WrsSchemaParser(schemaDoc, _types);
 		} else {
-			String msg = "Unknown schema definition format " + schemaFormatURI;
+			String msg = "Unknown schema definition format " + 
+				schemaFormatURI;
 			logger.warn(msg);
 			throw new SchemaMetadataException(msg);
 		}
 		String extentName = schemaParser.getExtentName();
-		Map<String, AttributeType> attributes = schemaParser.getColumns();
+		List<Attribute> attributes = 
+			schemaParser.getColumns(extentName);
 		extentMetadata  = new ExtentMetadata(extentName, attributes, 
 				ExtentType.PUSHED);
 		if (logger.isTraceEnabled())
-			logger.trace("RETURN extractSchema() with " + extentMetadata);
+			logger.trace("RETURN extractSchema() with " + 
+					extentMetadata);
 		return extentMetadata;
 	}
 
@@ -253,7 +257,8 @@ public class PullSourceWrapper {
 					" timestamp=" + timestamp);
 		GetStreamItemRequest request = 
 			createGetStreamItemRequest(resourceName, numItems, timestamp);
-			GenericQueryResponse response = _pullClient.getStreamItems(request);
+			GenericQueryResponse response = 
+				_pullClient.getStreamItems(request);
 			List<Tuple> tuples = processGenericQueryResponse(response);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getData() #tuples=" + tuples.size());
@@ -314,9 +319,15 @@ public class PullSourceWrapper {
 		DatasetType dataset = response.getDataset();
 		String formatURI = dataset.getDatasetFormatURI();
 		if (formatURI.trim().equalsIgnoreCase(_datasetFormatURI)) {
-			if (logger.isTraceEnabled())
-				logger.trace("Processing dataset with format " + formatURI);
-			List<Object> datasets = dataset.getDatasetData().getContent();
+			if (logger.isTraceEnabled()) {
+				logger.trace("Processing dataset with format " +
+						formatURI);
+			}
+			List<Object> datasets = 
+				dataset.getDatasetData().getContent();
+			if (logger.isTraceEnabled()) {
+				logger.trace("Number of datasets: " + datasets.size());
+			}
 			for (Object data : datasets) {
 				tuples.addAll(processDataset((String) data));
 			}
@@ -336,7 +347,7 @@ public class PullSourceWrapper {
 	throws TypeMappingException, SchemaMetadataException,
 			SNEEDataSourceException, SNEEException {
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER processDataset()");
+			logger.trace("ENTER processDataset() with " + data);
 		List<Tuple> tuples = new ArrayList<Tuple>();
 		try {
 			WebRowSet wrs = new WebRowSetImpl();
@@ -357,11 +368,17 @@ public class PullSourceWrapper {
 				Tuple tuple = new Tuple();
 				for (int i = 1; i <= numberColumns; i++) {
 					//Populate fields of tuple
-					String name = wrsMetadata.getColumnLabel(i);
+					String attrName = wrsMetadata.getColumnLabel(i);
+					String extentName = wrsMetadata.getTableName(i);
 					AttributeType dataType = inferType(wrsMetadata, i);
 					Object value = wrs.getObject(i);
-					Field field = new Field(name, dataType, value);
-					tuple.addField(field);
+					EvaluatorAttribute attr = 
+						new EvaluatorAttribute(extentName, attrName, 
+								dataType, value);
+					if (logger.isTraceEnabled()) {
+						logger.trace("Received attribute: " + attr);
+					}
+					tuple.addAttribute(attr);
 				}
 				//Add tuple to tuple set
 				tuples.add(tuple);
@@ -398,10 +415,13 @@ public class PullSourceWrapper {
 			//Corresponds to INT or INTEGER
 			dataType = _types.getType("integer");
 			break;
-		case 93:
-			//Corresponds to DATETIME
-			dataType = _types.getType("string");
+		case java.sql.Types.TIMESTAMP:
+			dataType = _types.getType("timestamp");
 			break;
+//		case 93:
+//			//Corresponds to DATETIME
+//			dataType = _types.getType("string");
+//			break;
 		default:
 			String msg = "Unsupported data type " + 
 				wrsMetadata.getColumnTypeName(colIndex);
@@ -413,7 +433,8 @@ public class PullSourceWrapper {
 		return dataType;
 	}
 
-	public List<Tuple> getNewestData(String resourceName, Integer numItems) 
+	public List<Tuple> getNewestData(String resourceName, 
+			Integer numItems) 
 	throws SNEEDataSourceException, TypeMappingException, 
 	SchemaMetadataException, SNEEException {
 		if (logger.isDebugEnabled())
@@ -427,7 +448,8 @@ public class PullSourceWrapper {
 			request.setCount(numItems.toString());
 		}
 		request.setMaximumTuples(_maxTuples);
-		GenericQueryResponse response = _pullClient.getStreamNewestItem(request);;
+		GenericQueryResponse response = 
+			_pullClient.getStreamNewestItem(request);;
 		List<Tuple> tuples = processGenericQueryResponse(response);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getData() #tuples=" + tuples.size());

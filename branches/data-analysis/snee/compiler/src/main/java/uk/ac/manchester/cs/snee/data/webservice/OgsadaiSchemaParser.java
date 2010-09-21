@@ -2,8 +2,8 @@ package uk.ac.manchester.cs.snee.data.webservice;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -20,6 +20,8 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 
 public class OgsadaiSchemaParser extends SchemaParserAbstract {
 
@@ -72,20 +74,24 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 		return name;
 	}
 	
-	public Map<String, AttributeType> getColumns() 
+	public List<Attribute> getColumns(String extentName) 
 	throws TypeMappingException, SchemaMetadataException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getColumns()");
-		Map<String, AttributeType> attributes = 
-			new HashMap<String, AttributeType>();
+		List<Attribute> attributes = 
+			new ArrayList<Attribute>();
 		NodeList columns = _root.getElementsByTagName("column");	
 		for (int i = 0; i < columns.getLength(); i++) {
 			Element column = (Element) columns.item(i);
 			String columnName = column.getAttribute("name");
-			NodeList nameTypeElement = column.getElementsByTagName("sqlTypeName");
-			String sqlType = nameTypeElement.item(0).getFirstChild().getNodeValue();
-			AttributeType type = inferType(sqlType);
-			attributes.put(columnName, type);
+			NodeList nameTypeElement = 
+				column.getElementsByTagName("sqlJavaTypeID");
+			String sqlType = 
+				nameTypeElement.item(0).getFirstChild().getNodeValue();
+			AttributeType type = inferType(new Integer(sqlType));
+			Attribute attr = 
+				new DataAttribute(extentName, columnName, type);
+			attributes.add(attr);
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getColumns(), number of columns " + attributes.size());

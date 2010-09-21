@@ -58,7 +58,7 @@ public abstract class SourceMetadata {
 	protected SourceType _sourceType;
 
 	/**
-	 * Instantiates a source metadata object to caputre common source
+	 * Instantiates a source metadata object to capture common source
 	 * metadata
 	 * @param sourceName name used to identify the source
 	 * @param extentNames names of the extents available from this source
@@ -126,7 +126,7 @@ public abstract class SourceMetadata {
 	 * @return true if this source provides streaming data
 	 */
 	public boolean isStream() {
-		if (_sourceType == SourceType.PULL_WEB_SERVICE || 
+		if (_sourceType == SourceType.PULL_STREAM_SERVICE || 
 				_sourceType == SourceType.UDP_SOURCE ||
 				_sourceType == SourceType.SENSOR_NETWORK) {
 			return true;

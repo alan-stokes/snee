@@ -5,18 +5,18 @@
   <parent>
     <artifactId>clients</artifactId>
     <groupId>uk.ac.manchester.cs.snee</groupId>
-    <version>0.0.4-SNAPSHOT</version>
+    <version>1.2.3</version>
   </parent>
   <groupId>uk.ac.manchester.cs.snee.client</groupId>
   <artifactId>test-client</artifactId>
   <name>Test Client</name>
-  <version>0.0.4-SNAPSHOT</version>
+  <version>1.2.3</version>
   <description>Command line single use client that uses a random tuple generator as a data source.</description>
   <dependencies>
   	<dependency>
   		<groupId>uk.ac.manchester.cs.snee.client</groupId>
   		<artifactId>client</artifactId>
-  		<version>0.0.4-SNAPSHOT</version>
+  		<version>1.2.3</version>
   		<scope>provided</scope>
   	</dependency>
   </dependencies>

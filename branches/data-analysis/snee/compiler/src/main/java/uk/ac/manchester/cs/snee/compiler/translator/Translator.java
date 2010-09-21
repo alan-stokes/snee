@@ -1,7 +1,10 @@
 package uk.ac.manchester.cs.snee.compiler.translator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -19,29 +22,29 @@ import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParserTokenTypes;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlTreeWalker;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.AcquireOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.AggregationOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.AggregationType;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.DStreamOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.DeliverOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.IStreamOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.JoinOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.Operator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.OperatorDataType;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.ProjectOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.RStreamOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.ReceiveOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.SelectOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.UnionOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.operators.WindowOperator;
+import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
+import uk.ac.manchester.cs.snee.operators.logical.DStreamOperator;
+import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.logical.IStreamOperator;
+import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+import uk.ac.manchester.cs.snee.operators.logical.OperatorDataType;
+import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
+import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
+import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
+import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
+import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
+import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 import antlr.RecognitionException;
 import antlr.collections.AST;
 
@@ -49,78 +52,103 @@ public class Translator {
 
 	Logger logger = Logger.getLogger(this.getClass().getName());
 
-	private	Metadata _schemaMetadata;
+	private	Metadata _metadata;
 
 	private Types _types;
 
 	private AttributeType _boolType;
 
-	public Translator (Metadata schemaMetadata) 
+	private Map<String, String> extentNameMappings;
+
+	public Translator (Metadata metadata) 
 	throws TypeMappingException, SchemaMetadataException 
 	{
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER Translator(), #extents=" + 
-					schemaMetadata.getExtentNames().size());
-		_schemaMetadata = schemaMetadata;
-		_types = schemaMetadata.getTypes();
-		_boolType = _boolType;
-		if (logger.isDebugEnabled())
+					metadata.getExtentNames().size());
+		}
+		_metadata = metadata;
+		_types = metadata.getTypes();
+		_boolType = _types.getType("boolean");
+		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN Translator()");
+		}
 	}
 
-	private Operator translateFrom(AST ast) 
+	private LogicalOperator translateFrom(AST ast) 
 	throws ParserValidationException, SchemaMetadataException, 
 	SourceDoesNotExistException, OptimizationException, ParserException, 
-	TypeMappingException, ExtentDoesNotExistException, RecognitionException {
-		if (logger.isTraceEnabled()) 
-			logger.trace("ENTER translateFrom(): ast " + ast);
+	TypeMappingException, ExtentDoesNotExistException, 
+	RecognitionException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER translateFrom(): ast " +
+					ast.toStringList());
+		}
 		AST source = ast.getFirstChild();
-		Operator operator = translateExtents(source);
-		if (logger.isTraceEnabled()) 
-			logger.trace("RETURN translateFrom(): operator " + operator);
+		LogicalOperator operator = translateExtents(source);
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN translateFrom(): operator " + 
+					operator);
+		}
 		return operator;
 	}
 
-	private Operator translateExtents(AST ast) 
+	private LogicalOperator translateExtents(AST ast) 
 	throws ParserValidationException, SchemaMetadataException, 
 	OptimizationException, SourceDoesNotExistException, ParserException, 
-	TypeMappingException, ExtentDoesNotExistException, RecognitionException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER translateExtents() ast " + ast);
+	TypeMappingException, ExtentDoesNotExistException, 
+	RecognitionException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER translateExtents() ast " + 
+					ast);
+		}
 		if (ast == null) {
 			String msg = "Extent list cannot be empty.";
 			logger.error(msg);
 			throw new ParserException(msg);
 		}
-		ArrayList<Operator> operators = new ArrayList<Operator>();
+		List<LogicalOperator> operators = 
+			new ArrayList<LogicalOperator>();
 		AST nextAST = ast;
 		while (nextAST != null) {
-			Operator operator = translateExtent(nextAST);
+			LogicalOperator operator = translateExtent(nextAST);
 			operators.add(operator);
 			nextAST = nextAST.getNextSibling();
 		}	
-		Operator operator = combineSources (operators.toArray(
-				new Operator[operators.size()]));
-		if (logger.isTraceEnabled()) 
-			logger.trace("RETURN translateExtents() operator " + operator);
+		LogicalOperator operator = 
+			combineSources (operators.toArray(
+				new LogicalOperator[operators.size()]));
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN translateExtents() operator " + 
+					operator);
+		}
 		return operator;
 	}
 
-	private Operator translateWindowAndLocalName(AST ast, 
-			Operator operator) 
-	throws ParserValidationException, OptimizationException, ParserException,
-	RecognitionException { 
-		if (logger.isTraceEnabled())
+	private LogicalOperator translateWindowAndLocalName(AST ast, 
+			LogicalOperator operator, String extentName) 
+	throws ParserValidationException, OptimizationException, 
+	ParserException, RecognitionException { 
+		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateWindowAndLocalName(): ast " +
 					ast + " operator " + operator);
-		if (ast == null)
+		}
+		if (ast == null) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("RETURN translateWindowAndLocalName() " +
+						"with " + operator);
+			}
 			return operator;
+		}
 		ASTPair pair;
 		AST slideAST;
 		AST slideUnit;
 		int slide;
 		switch (ast.getType()) {
 		case SNEEqlParserTokenTypes.AT:
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate AT window");
+			}
 			AST atAST = ast;
 			pair = findAST(ast, SNEEqlParserTokenTypes.SLIDE);
 			slideAST = pair.getFirst();
@@ -133,6 +161,9 @@ public class Translator {
 					slideUnit, operator);
 			break;
 		case SNEEqlParserTokenTypes.FROM:
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate FROM window");
+			}
 			AST fromAST = ast;
 			pair = findAST(ast, SNEEqlParserTokenTypes.TO);
 			AST toAST = pair.getFirst();
@@ -149,6 +180,9 @@ public class Translator {
 					slideUnit, operator);
 			break;
 		case SNEEqlParserTokenTypes.FROM_OR_RANGE:
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate FROM or RANGE window");
+			}
 			AST scopeAST = ast;
 			pair = findAST(ast, SNEEqlParserTokenTypes.SLIDE);
 			slideAST = pair.getFirst();
@@ -165,9 +199,15 @@ public class Translator {
 						slide, slideUnit, operator);				
 			break;
 		case SNEEqlParserTokenTypes.Identifier:
+			if (logger.isTraceEnabled()) {
+				logger.trace("Identifier, do nothing");
+			}
 			//No Window just a local name.
 			break;
 		case SNEEqlParserTokenTypes.NOW: 
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate NOW window");
+			}
 			pair = findAST(ast, SNEEqlParserTokenTypes.SLIDE);
 			slideAST = pair.getFirst();
 			ast = pair.getNext();
@@ -176,6 +216,9 @@ public class Translator {
 			operator = createWindow(0, 0, true, slide, slideUnit, operator);
 			break;
 		case SNEEqlParserTokenTypes.RANGE:
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate RANGE window");
+			}
 			AST rangeAST = ast;
 			pair = findAST(ast, SNEEqlParserTokenTypes.SLIDE);
 			slideAST = pair.getFirst();
@@ -188,22 +231,28 @@ public class Translator {
 					slide, slideUnit, operator);
 			break;
 		default:
-			throw new OptimizationException("Unprogrammed AST Type:" + 
-					ast.getType() +" Text:"+ ast.getText());
+			String message = "Unprogrammed AST Type:" + 
+					ast.getType() +" Text:"+ ast.getText();
+			logger.warn(message);
+			throw new OptimizationException(message);
 		}
-		translateLocalName(ast, operator);
-		if (logger.isTraceEnabled()) 
+		translateLocalName(ast, operator, extentName);
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN translateWindowAndLocalName(): " +
 					"operator " + operator);
+		}
 		return operator;
 	}
 
 	private ASTPair findAST(AST ast, int type) {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER findAST(): ast " + ast + " type " + type);
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER findAST(): ast " + ast + 
+					" type " + type);
+		}
 		ASTPair astPair;
-		if (ast == null)
+		if (ast == null) {
 			logger.trace("AST is null");
+		}
 		astPair = new ASTPair(null,null);
 		AST toAST = ast.getNextSibling();
 		if (toAST == null) {
@@ -222,84 +271,120 @@ public class Translator {
 	}
 
 	private WindowOperator createWindow (int from, AST fromUnit, int to, 
-			AST toUnit, int slide, AST slideUnit, Operator child) 
+			AST toUnit, int slide, AST slideUnit, LogicalOperator child) 
 	throws ParserValidationException, OptimizationException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER createWindow(): from " + from + " " + fromUnit +
-					" to " + to + " " + toUnit + " slide " + slide + " " +
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER createWindow(): " +
+					"from " + from + " " + fromUnit +
+					" to " + to + " " + toUnit + 
+					" slide " + slide + " " +
 					slideUnit + " child " + child);
+		}
 		boolean timeScope;
-		if (isRowUnit(fromUnit))
+		if (isRowUnit(fromUnit)) {
 			timeScope = false;
-		else
+		} else {
 			timeScope = true;
-		if (toUnit != null){
+		}
+		if (toUnit != null) {
 			if (isRowUnit(toUnit)) {
-				if (timeScope)
-					throw new ParserValidationException("Can not make a " +
+				if (timeScope) {
+					String message = "Can not make a " +
 							"Window to unit of: " + toUnit.getText() +
-							" with a from unit of " + fromUnit.getText());
-			} else if (!timeScope)
-				throw new ParserValidationException("Can not mike a Window " +
-						"to unit of: " + toUnit.getText() + " with a from " +
-						"unit of " + fromUnit.getText());
+							" with a from unit of " + fromUnit.getText();
+					logger.warn(message);
+					throw new ParserValidationException(message);
+				}
+			} else if (!timeScope) {
+				String message = "Can not mike a Window " +
+						"to unit of: " + toUnit.getText() + 
+						" with a from " +
+						"unit of " + fromUnit.getText();
+				logger.warn(message);
+				throw new ParserValidationException(message);
+			}
 		}	
-		WindowOperator window = createWindow (from, to, timeScope, slide, 
-				slideUnit, child); 
-		if (logger.isTraceEnabled())
+		WindowOperator window = 
+			createWindow (from, to, timeScope, slide, slideUnit, child); 
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN createWindow() with " + window);
+		}
 		return window;
 	}
 
 	private WindowOperator createWindow (int from, int to, 
-			boolean timeScope, int slide, AST slideUnit, Operator child) 
+			boolean timeScope, int slide, AST slideUnit,
+			LogicalOperator child) 
 	throws ParserValidationException, OptimizationException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER createWindow(): from " + from + " to " + to + 
-					" isTimeScope " + timeScope +  " slide " + slide + " " +
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER createWindow(): " + "from " + from + 
+					" to " + to + " isTimeScope " + timeScope +  
+					" slide " + slide + " " +
 					slideUnit + " child " + child);
+		}
 		WindowOperator window;
-		if (from > 0)
-			throw new ParserValidationException("Window From value must be " +
-					"less equal to zero. Found: " + from);
-		if (to > 0)
-			throw new ParserValidationException("Window To value must be " +
-					"less equal to zero. Found: " + to);
-		if (slide < 0)
-			throw new ParserValidationException("Window Slide value must " +
-					"be less equal or equal to zero. Found: " + slide);
-		if (slide == 0)
-			window = new WindowOperator(from, to, timeScope, 0, 0, child, _boolType);
-		if (this.isRowUnit(slideUnit))
-			window = new WindowOperator(from, to, timeScope, 0, slide, child, _boolType);
-		window = new WindowOperator(from, to, timeScope, slide, 0, child, _boolType);
-		if (logger.isTraceEnabled())
+		if (from > 0) {
+			String message = "Window From value must be " +
+					"less equal to zero. Found: " + from;
+			logger.warn(message);
+			throw new ParserValidationException(message);
+		}
+		if (to > 0) {
+			String message = "Window To value must be " +
+					"less equal to zero. Found: " + to;
+			logger.warn(message);
+			throw new ParserValidationException(message);
+		}
+		if (slide < 0) {
+			String message = "Window Slide value must " +
+					"be less equal or equal to zero. Found: " + slide;
+			logger.warn(message);
+			throw new ParserValidationException(message);
+		}
+		if (slide == 0) {
+			window = new WindowOperator(from, to, timeScope, 0, 0, 
+					child, _boolType);
+		}
+		if (this.isRowUnit(slideUnit)) {
+			window = new WindowOperator(from, to, timeScope, 0, slide, 
+					child, _boolType);
+		}
+		//XXX-AG: Surely this overrides the earlier windows?
+		window = new WindowOperator(from, to, timeScope, slide, 0, 
+				child, _boolType);
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN createWindow()" + window);
+		}
 		return window;
 	}	
 
 	private AST getUnit (AST ast, AST defaultUnit) 
 	throws OptimizationException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER getUnit() ast: " + ast + "\tunit: " + defaultUnit);
+			logger.trace("ENTER getUnit() ast: " + ast + "\tunit: " + 
+					defaultUnit);
 		}
 		if (ast == null || ast.getFirstChild() == null) {
 			if (logger.isTraceEnabled())
 				logger.trace("RETURN default unit " + defaultUnit);
 			return defaultUnit;
 		}
-		if (logger.isTraceEnabled())
-			logger.trace("First: " + ast.getFirstChild() + "\tnext: " + ast.getNextSibling());
+		if (logger.isTraceEnabled()) {
+			logger.trace("First: " + ast.getFirstChild() + 
+					"\tnext: " + ast.getNextSibling());
+		}
 		AST nextAST = ast.getFirstChild();
 		while (nextAST.getNextSibling() != null) {
 			nextAST = nextAST.getNextSibling();
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("Next ast: " + nextAST);
+			}
 		}
 		switch (nextAST.getType()) {
 		case SNEEqlParserTokenTypes.UNIT_NAME:
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("RETURN getUnit() " + nextAST);
+			}
 			return nextAST;
 		case SNEEqlParserTokenTypes.DIV:
 		case SNEEqlParserTokenTypes.Flt:
@@ -311,13 +396,15 @@ public class Translator {
 		case SNEEqlParserTokenTypes.PLUS:
 		case SNEEqlParserTokenTypes.POW:
 			//No Unit found
-			if (logger.isTraceEnabled())
-				logger.trace("RETURN getUnit() default unit " + defaultUnit);
+			if (logger.isTraceEnabled()) {
+				logger.trace("RETURN getUnit() default unit " + 
+						defaultUnit);
+			}
 			return defaultUnit;
 		default:
 		{
 			String msg = "Unprogrammed AST Type:" + nextAST.getType() +
-			" Text:"+ nextAST.getText();
+				" Text:"+ nextAST.getText();
 			logger.warn(msg);
 			throw new OptimizationException(msg);
 		}
@@ -327,17 +414,20 @@ public class Translator {
 	private int translateWindowPart(AST ast, AST unit) 
 	throws ParserValidationException, ParserException,
 	RecognitionException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER translateWindowPart()" + ast + " " + unit);
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER translateWindowPart()" + 
+					ast + " " + unit);
+		}
 		if (ast == null) {
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("RETURN 0");
+			}
 			return 0;
 		}
 		//FIXME: FROM NOW TO NOW, NOW is removed by the parser
 		if (unit == null) {
 			String msg = "No Unit found with window declaration " +
-			ast.getText();
+				ast.getText();
 			logger.warn(msg);
 			throw new ParserValidationException(msg);		
 		}
@@ -348,100 +438,128 @@ public class Translator {
 		value = convertToTick(value, unit.getText());
 		if ((int)(value) != value) {
 			String msg = "Window declration: "+ ast.toStringList() + 
-			" does not convert to an integer tick";
+				" does not convert to an integer tick";
 			logger.warn(msg);
 			throw new ParserValidationException(msg);
 		}
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN translateWindowPart()" + value);
+		}
 		return (int)value;
 	}	
 
 	public double convertToTick(double value, String unit) {
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER convertToTick()" + value + " " + unit);
+		}
 		double result = value;
-		if (isRowUnit(unit))
+		if (isRowUnit(unit)) {
 			result = value;
+		}
 		int TICKS_PER_SECONDS = 1;
-		if (unit.equalsIgnoreCase("seconds"))
+		if (unit.equalsIgnoreCase("seconds")) {
 			result = value * TICKS_PER_SECONDS;
-		if (unit.equalsIgnoreCase("minutes"))
+		} else if (unit.equalsIgnoreCase("minutes")) {
 			result = value * TICKS_PER_SECONDS * 60;
-		if (unit.equalsIgnoreCase("hours"))
+		} else if (unit.equalsIgnoreCase("hours")) {
 			result = value * TICKS_PER_SECONDS * 3600;
-		if (unit.equalsIgnoreCase("days"))
+		} else if (unit.equalsIgnoreCase("days")) {
 			result = value * TICKS_PER_SECONDS * 3600;
-		if (logger.isDebugEnabled())
+		}
+		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN convertToTick() " + result);
+		}
 		return result;
 	}
 
 	private boolean isRowUnit(AST unit) {
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER isRowUnit() " + unit);
+		}
 		boolean rowUnit = false;
 		if (unit != null) {
 			assert(unit.getType() == SNEEqlParserTokenTypes.UNIT_NAME);
 			rowUnit = isRowUnit(unit.getText());
 		}
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN isRowUnit()" + rowUnit);
+		}
 		return rowUnit;
 	}
 
 	private boolean isRowUnit(String name) {
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER isRowUnit() " + name);
+		}
 		boolean rowUnit = false;
-		if (name.equalsIgnoreCase("row"))
+		if (name.equalsIgnoreCase("row")) {
 			rowUnit = true;
-		else if (name.equalsIgnoreCase("rows"))
+		} else if (name.equalsIgnoreCase("rows")) {
 			rowUnit = true;
-		else if (name.equalsIgnoreCase("tuple"))
+		} else if (name.equalsIgnoreCase("tuple")) {
 			rowUnit = true;
-		else if (name.equalsIgnoreCase("tuples"))
+		} else if (name.equalsIgnoreCase("tuples")) {
 			rowUnit = true;
-		if (logger.isTraceEnabled())
+		}
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN isRowUnit()" + rowUnit);
+		}
 		return rowUnit;
 	}
 
-	private void translateLocalName(AST ast, Operator operator) 
+	private void translateLocalName(AST ast, LogicalOperator operator,
+			String extentName) 
 	throws OptimizationException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER translateLocalName() with op=" + operator);
-		if (ast == null)
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER translateLocalName() with op=" + 
+					operator);
+		}
+		if (ast == null) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("RETURN translateLocalName()");
+			}
 			return;
-		if (ast.getType() == SNEEqlParserTokenTypes.Identifier)
-			operator.pushLocalNameDown(ast.getText());
-		else {
-			String msg = "Unprogrammed AST Type:" + ast.getType() +" Text:"+ ast.getText();
+		}
+		String extentReference = ast.getText();
+		if (ast.getType() == SNEEqlParserTokenTypes.Identifier) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Extent " + extentName + 
+						" referenced as " + extentReference);
+			}
+			extentNameMappings.put(extentReference, extentName);
+			operator.pushLocalNameDown(extentReference);
+		} else {
+			String msg = "Unprogrammed AST Type:" + ast.getType() +
+				" Text:"+ extentReference;
 			logger.warn(msg);
 			throw new OptimizationException(msg);
 		}
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN translateLocalName()");
+		}
 	}
 
-	private Operator combineSources (Operator[] operators)
+	private LogicalOperator combineSources (LogicalOperator[] operators)
 	throws ParserValidationException, SchemaMetadataException, 
 	OptimizationException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER combineSources(): number of operators " +
-					operators.length);
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER combineSources(): " +
+					"number of operators " + operators.length);
 		}
 		if (logger.isDebugEnabled()) { 
-			for (int i = 0; i < operators.length; i++)
+			for (int i = 0; i < operators.length; i++) {
 				logger.debug("OP"+i+": "+operators[i]);
+			}
 		}
 		if (operators.length == 1) {
-			if (logger.isDebugEnabled())
-				logger.debug("RETURN combineSources(): Single Source " + operators[0]);
+			if (logger.isDebugEnabled()) {
+				logger.debug("RETURN combineSources(): " +
+						"Single Source " + operators[0]);
+			}
 			return operators[0];
 		}
-		Operator temp;
-		for (int i = 0; i < operators.length -1; i++)
+		LogicalOperator temp;
+		for (int i = 0; i < operators.length -1; i++) {
 			for (int j = i+1; j < operators.length; j++) {
 				if ((operators[j].getOperatorDataType() == OperatorDataType.STREAM) || 
 						((operators[i].getOperatorDataType() == OperatorDataType.RELATION) 
@@ -451,62 +569,88 @@ public class Translator {
 					operators[j] = temp;
 				}
 			}
+		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("Operator list sorted");
-			for (int i = 0; i < operators.length; i++)
+			for (int i = 0; i < operators.length; i++) {
 				logger.trace("OP"+i+": "+operators[i]);
+			}
 		}
 		temp = operators[operators.length-1];
-		for (int i = 0; i < operators.length-1; i++){
+		for (int i = 0; i < operators.length-1; i++) {
 			if (operators[i].getOperatorDataType() == OperatorDataType.STREAM) {
 				String msg = "Unable to join two streams";
 				logger.warn(msg);
 				throw new ParserValidationException(msg);
 			}
 			temp = new JoinOperator(operators[i], temp, _boolType);
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("join "+i+": "+temp);
+			}
 		}
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN combineSources() with " + temp);
+		}
 		return temp;
 	}
 
-	private Operator translateExtent(AST ast) 
+	private LogicalOperator translateExtent(AST ast) 
 	throws ExtentDoesNotExistException, SchemaMetadataException, 
 	TypeMappingException, SourceDoesNotExistException, 
 	ParserValidationException, OptimizationException, ParserException,
 	RecognitionException  
 	{
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER translateExtent() " + ast);
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER translateExtent() " + 
+					ast.toStringList());
+		}
 		ast.setText(ast.getText().toLowerCase());
 		AST windowAST;
-		Operator output;
+		LogicalOperator output;
+		String extentName;
 		switch (ast.getType()) {
 		case SNEEqlParserTokenTypes.RPAREN: 
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate RPAREN");
+			}
 			AST subQueryAST = ast.getFirstChild();
 			output = translateQuery(subQueryAST);
 			windowAST = subQueryAST.getNextSibling();
+			extentName = "";
 			break;
 		case SNEEqlParserTokenTypes.SOURCE: 
-			String extentName = ast.getText();
-			ExtentMetadata sourceMetaData = 
-				_schemaMetadata.getExtentMetadata(extentName);
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate SOURCE: " + ast.getText());
+			}
+			extentName = ast.getText();
+			ExtentMetadata extentMetadata = 
+				_metadata.getExtentMetadata(extentName);
 			List<SourceMetadata> sources = 
-				_schemaMetadata.getSources(extentName);
-			switch (sourceMetaData.getExtentType()) {
+				_metadata.getSources(extentName);
+			switch (extentMetadata.getExtentType()) {
 			case SENSED:
-				output = new AcquireOperator(extentName, extentName, 
-					sourceMetaData, sources, _boolType);
+				if (logger.isTraceEnabled()) {
+					logger.trace("Translate SENSED stream");
+				}
+				output = new AcquireOperator(extentMetadata, 
+						_metadata.getTypes(), sources, _boolType);
 				break;
 			case PUSHED: 
-				output = new ReceiveOperator(extentName, extentName, 
-					sourceMetaData, sources, _boolType);
+				if (logger.isTraceEnabled()) {
+					logger.trace("Translate PUSHED stream");
+				}
+				output = new ReceiveOperator(extentMetadata, sources, 
+						_boolType);
 				break;
+			case TABLE:
+				if (logger.isTraceEnabled()) {
+					logger.trace("Translate TABLE");
+				}
+				//FIXME: Implement translate to scan operator!
 			default:
-				String msg = "Unprogrammed ExtentType:" + sourceMetaData + 
-					" Type:" + sourceMetaData.getExtentType();
+				String msg = "Unprogrammed ExtentType:" + 
+					extentMetadata + " Type:" + 
+					extentMetadata.getExtentType();
 				logger.warn(msg);
 				throw new OptimizationException(msg);  	
 			}
@@ -514,112 +658,151 @@ public class Translator {
 			break;
 		default:
 			String msg = "Unprogrammed AST Type:" + ast.getType() + 
-			" Text:" + ast.getText();
+				" Text:" + ast.getText();
 			logger.warn(msg);
 			throw new OptimizationException(msg);  	
 		}
-		output = translateWindowAndLocalName(windowAST, output);
-		if (logger.isTraceEnabled())
+		output = translateWindowAndLocalName(windowAST, output, 
+				extentName);
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN translateExtent() " + output);
+		}
 		return output;
 	}
 
-	private Operator translateQuery(AST ast) 
+	private LogicalOperator translateQuery(AST ast) 
 	throws SchemaMetadataException, ParserValidationException, 
 	OptimizationException, SourceDoesNotExistException, 
 	ParserException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER translateQuery() " + ast + 
-					" #children: " + ast.getNumberOfChildren());
-		AST select = ast.getFirstChild();
-		if (logger.isTraceEnabled())
-			logger.trace("First child: " + select);
-		if (select == null) {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER translateQuery() with '" +
+					ast +
+					"' #children: " + ast.getNumberOfChildren() +
+					"\n" + ast.toStringList());
+		}
+		AST node = ast.getFirstChild();
+		if (logger.isTraceEnabled()) {
+			logger.trace("First child: " + node);
+		}
+		if (node == null) {
 			String msg = "No child in AST tree.";
 			logger.error(msg);
 			throw new ParserException(msg);
 		}
-		Operator operator;
-		switch (select.getType()) {
+		LogicalOperator operator;
+		switch (node.getType()) {
 		case SNEEqlParserTokenTypes.LPAREN: {
-			logger.trace("Match LPAREN");
-			logger.trace("Select Number of children: " + select.getNumberOfChildren());
-			logger.trace("First child: " + select.getFirstChild());
-			operator = translateQuery(select);
+			if (logger.isTraceEnabled()) {				
+				logger.trace("Translate LPAREN");
+				logger.trace("Select Number of children: " + 
+						node.getNumberOfChildren());
+			}
+			operator = translateQuery(node);
 			break;
 		}
 		case SNEEqlParserTokenTypes.DSTREAM: {
-			Operator inner = translateQuery(select);
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate DSTREAM query");
+			}
+			LogicalOperator inner = translateQuery(node);
 			operator = new DStreamOperator(inner, _boolType);
 			break;
 		}
 		case SNEEqlParserTokenTypes.ISTREAM: {
-			Operator inner = translateQuery(select); 
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate ISTREAM query");
+			}
+			LogicalOperator inner = translateQuery(node); 
 			operator = new IStreamOperator(inner, _boolType);
 			break;
 		}
 		case SNEEqlParserTokenTypes.RSTREAM: {
-			Operator inner = translateQuery(select); 
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate RSTREAM query");
+			}
+			LogicalOperator inner = translateQuery(node); 
 			operator = new RStreamOperator(inner, _boolType);
 			break;
 		}
 		case SNEEqlParserTokenTypes.SELECT:{
-			AST from = select.getNextSibling();
-			Operator fromOperator = translateFrom(from);
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate SELECT query");
+			}
+			AST from = node.getNextSibling();
+			LogicalOperator fromOperator = translateFrom(from);
 			//TODO apply predicate	  	  
-			Operator preSelect = 
+			LogicalOperator preSelect = 
 				applyWhereOrGroupBy(from.getNextSibling(), fromOperator);
-			operator = translateSelect (select, preSelect);
+			operator = translateSelect (node, preSelect);
 			break;
 		}
 		case SNEEqlParserTokenTypes.UNION:{
-			logger.trace("Union #children=" + select.getNumberOfChildren());
-			AST firstChild = select.getFirstChild();
-//			logger.trace("Left: " + firstChild);
-//			logger.trace("Right: " + firstChild.getNextSibling());
-			Operator left = translateQuery(firstChild);
-			Operator right = translateQuery(firstChild.getNextSibling());
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate UNION query");
+			}
+			AST leftChild = node.getFirstChild();
+			AST rightChild = leftChild.getNextSibling();
+			LogicalOperator left;
+			/* 
+			 * Need to handle nested UNIONs differently from
+			 * the nested sub-query. 
+			 */
+			if (leftChild.getType() == SNEEqlParserTokenTypes.UNION) {
+				left = translateQuery(node);
+			} else {
+				left = translateQuery(leftChild);
+			}
+			LogicalOperator right = translateQuery(rightChild);
 			operator = checkUnionCondition(left, right);
-//			operator = new UnionOperator(left, right);
 			break;
 		}
 		default:
 		{
-			String msg = "Unprogrammed AST Type: " + select.getType() + 
-			" Text: " + select.getText();
+			String msg = "Unprogrammed AST Type: " + node.getType() + 
+				" Text: " + node.getText();
 			logger.warn(msg);
 			throw new OptimizationException(msg);  	
 		}
 		}
-		if (logger.isDebugEnabled())
+		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN translateQuery() " + operator);
+		}
 		return operator;
 	}
 
-	private Operator checkUnionCondition(Operator left, Operator right) 
-	throws ParserException, SchemaMetadataException, TypeMappingException 
+	private LogicalOperator checkUnionCondition(LogicalOperator left, 
+			LogicalOperator right) 
+	throws ParserException, SchemaMetadataException, 
+	TypeMappingException 
 	{
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER checkUnionCondition()" +
 					"\n\tleft: " + left +
 					"\n\tright: " + right);
+		}
 		if (left.getOperatorDataType() != OperatorDataType.STREAM ||
 				right.getOperatorDataType() != OperatorDataType.STREAM) {
 			String msg = "UNION only implemented for stream of tuples";
 			logger.warn(msg);
 			throw new ParserException(msg);
 		}			
-		logger.trace("Sub-queries both output streams of tuples.");
+		if (logger.isTraceEnabled()) {
+			logger.trace("Sub-queries both output streams of tuples.");
+		}
 		List<Attribute> leftAttrs = left.getAttributes();
 		List<Attribute> rightAttrs = right.getAttributes();
 		if (leftAttrs.size() != rightAttrs.size()) {
 			String msg = "Input streams are not union compatible. " +
 					"Each sub query must have the same number of " +
 					"select attributes.";
+			logger.warn(msg);
 			throw new ParserException(msg);
 		}
-		logger.trace("Sub-queries have same number of output attributes");
+		if (logger.isTraceEnabled()) {
+			logger.trace("Sub-queries have same number of output " +
+					"attributes");
+		}
 		for (int i = 0; i < leftAttrs.size(); i++) {
 			Attribute leftAttr = leftAttrs.get(i);
 			AttributeType leftType = leftAttr.getType();
@@ -627,17 +810,22 @@ public class Translator {
 			AttributeType rightType = rightAttr.getType();
 			if (leftType != rightType) {
 				String msg = "Input streams are not union compatible. " +
-						"Attribute " + leftAttr.getAttributeName() + 
+						"Attribute " + leftAttr.getAttributeDisplayName() + 
 						" is not of the same type as " + 
-						rightAttr.getAttributeName();
+						rightAttr.getAttributeDisplayName();
 				logger.warn(msg);
 				throw new ParserException(msg);
 			}
 		}
-		logger.trace("Attributes are all of the same type.");
-		Operator operator = new UnionOperator(left, right, _boolType);
-		if (logger.isTraceEnabled())
-			logger.trace("RETURN checkUnionCondition() with " + operator);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Attributes are all of the same type.");
+		}
+		LogicalOperator operator = 
+			new UnionOperator(left, right, _boolType);
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN checkUnionCondition() with " +
+					operator);
+		}
 		return operator;
 	}
 
@@ -646,123 +834,189 @@ public class Translator {
 	OptimizationException, SourceDoesNotExistException,
 	ParserException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER translate(): " + ast);
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER translate(): " + 
+					ast.toStringTree() +
+					" #children=" + ast.getNumberOfChildren());
+		}
+		// Create new empty map for extent name mappings
+		extentNameMappings = new HashMap<String, String>();
 		DeliverOperator operator;
 		if (ast==null) {
 			String msg = "No parse tree available.";
-			logger.error(msg);
+			logger.warn(msg);
 			throw new ParserException(msg);
 		} else {
-			Operator queryRoot = translateQuery(ast);
+			LogicalOperator queryRoot = translateQuery(ast);
 			operator = new DeliverOperator(queryRoot, _boolType);
 		}
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN translate() op=" + operator);
 		LAF laf = new LAF(operator, "query" + queryID);
+		if (logger.isTraceEnabled()) {
+			StringBuffer buffer = 
+				new StringBuffer("LAF " + laf.getID());
+			Iterator<LogicalOperator> it = 
+				laf.operatorIterator(TraversalOrder.PRE_ORDER);
+			while (it.hasNext()) {
+				buffer.append(it.next().toString());
+				buffer.append("\n");
+			}
+			logger.trace(buffer.toString());
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN translate() laf=" + 
+					laf.getID());
+		}
 		return laf;
 	}
 
-	private Operator applyWhereOrGroupBy(AST ast, Operator input) 
+	private LogicalOperator applyWhereOrGroupBy(AST ast, 
+			LogicalOperator input) 
 	throws ParserValidationException, SchemaMetadataException, 
 	TypeMappingException, OptimizationException 
 	{
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER applyWhereOrGroupBy() " + ast  + " " + input);
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER applyWhereOrGroupBy() " + 
+					ast  + " " + input);
+		}
 		if (ast == null) {
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("RETURN applyWhereOrGroupBy() " + input);
+			}
 			return input;
 		}
 		switch (ast.getType()) {
 		case SNEEqlParserTokenTypes.WHERE:{
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate WHERE");
+			}
 			Expression expression = 
 				translateExpression(ast.getFirstChild(), input);
-			if (logger.isTraceEnabled())
-				logger.trace("Expression (" + expression + ") type: " + expression.getType());
+			if (logger.isTraceEnabled()) {
+				logger.trace("Expression (" + expression + 
+						") type: " + expression.getType());
+			}
 			if (expression.getType() != _boolType) {
 				String msg = "Illegal attempt to use a none boolean " +
-				"expression in a where clause.";
+					"expression in a where clause.";
 				logger.warn(msg);
 				throw new ParserValidationException(msg);
 			}
 			SelectOperator selectOperator = 
 				new SelectOperator(expression,input, _boolType);
-			if (logger.isTraceEnabled())
-				logger.debug("RETURN applyWhereOrGroupBy() " + selectOperator);
+			if (logger.isTraceEnabled()) {
+				logger.debug("RETURN applyWhereOrGroupBy() " + 
+						selectOperator);
+			}
 			return selectOperator;
 		}
 		default:
 		{
 			String msg = "Unprogrammed AST Type:" + ast.getType() +
-			" Text:"+ ast.getText();
+				" Text:"+ ast.getText();
 			logger.warn(msg);
 			throw new OptimizationException(msg);  	
 		}
 		}	
 	}
 
-	private Operator translateSelect (AST ast, Operator input) 
+	private LogicalOperator translateSelect (AST ast, 
+			LogicalOperator input) 
 	throws OptimizationException, ParserValidationException, 
 	SchemaMetadataException, TypeMappingException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER translateSelect(): " + ast + " " + input);
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER translateSelect(): " +
+					"" + ast.toStringList() + " " + input);
+		}
 		AST expressionAST = ast.getFirstChild();
-		ArrayList<Expression> expressions = new ArrayList<Expression>();
-		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+		List<Expression> expressions = new ArrayList<Expression>();
+		List<Attribute> attributes = new ArrayList<Attribute>();
 		boolean allowedInProjectOperator = true;
 		boolean allowedInAggregationOperator = true;
 		do {
 			if (expressionAST.getType() == SNEEqlParserTokenTypes.STAR) {
+				if (logger.isTraceEnabled()) {
+					logger.trace("project to all attribtues");
+				}
 				List<Attribute> incoming = input.getAttributes();
 				expressions.addAll(incoming);
 				attributes.addAll(incoming);
 				allowedInAggregationOperator = false;
 			} else {
-				Expression expression = translateExpression (expressionAST, input);
+				if (logger.isTraceEnabled()) {
+					logger.trace("project to specified attributes");
+				}
+				Expression expression = 
+					translateExpression(expressionAST, input);
 				expressions.add(expression);
 				Attribute attribute = expression.toAttribute();
 				if (expressionAST.getType() == SNEEqlParserTokenTypes.AS) {
-					AST attributeNameAST = expressionAST.getFirstChild().getNextSibling();
-					assert(attributeNameAST.getType() == SNEEqlParserTokenTypes.ATTRIBUTE_NAME);
-					String localName = attribute.getLocalName();
-					String attributeName = attributeNameAST.getText();
-					AttributeType type = attribute.getType();
-					//new DataAttribute(attributeName, type);
-					attribute = new DataAttribute(localName, attributeName, type);
+					attribute = translateAttributeRename(
+							expressionAST.getFirstChild().getNextSibling(),
+							attribute);
 				} 
 				attributes.add(attribute);
-				if (!expression.allowedInProjectOperator())
+				if (!expression.allowedInProjectOperator()) {
 					allowedInProjectOperator = false;
-				if (!expression.allowedInAggregationOperator())
+				}
+				if (!expression.allowedInAggregationOperator()) {
 					allowedInAggregationOperator = false;
+				}
 			}	
 			expressionAST = expressionAST.getNextSibling();
 		} while(expressionAST != null);
 		if (allowedInProjectOperator) {
 			ProjectOperator projectOperator = 
-				new ProjectOperator(expressions, attributes, input, _boolType);
-			if (logger.isTraceEnabled())
-				logger.trace("RETURN translateSelect() " + projectOperator);
+				new ProjectOperator(expressions, attributes, 
+						input, _boolType);
+			if (logger.isTraceEnabled()) {
+				logger.trace("RETURN translateSelect() " + 
+						projectOperator);
+			}
 			return projectOperator;
 		}
-		if (allowedInAggregationOperator)
+		if (allowedInAggregationOperator) {
 			if (input.getOperatorDataType() != OperatorDataType.STREAM) {
 				AggregationOperator aggregationOperator = 
-					new AggregationOperator(expressions, attributes, input, _boolType);
-				if (logger.isTraceEnabled())
-					logger.trace("RETURN translateSelect() " + aggregationOperator);
+					new AggregationOperator(expressions, attributes, 
+							input, _boolType);
+				if (logger.isTraceEnabled()) {
+					logger.trace("RETURN translateSelect() " + 
+							aggregationOperator);
+				}
 				return aggregationOperator;
 			}
+		}
 		String msg = "Group By Having not yet programmed.";
 		logger.warn(msg);
 		throw new OptimizationException(msg);
 	}
 
-	private Expression translateExpression (AST ast, Operator input) 
-	throws ParserValidationException, OptimizationException, NumberFormatException, TypeMappingException, SchemaMetadataException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER translateExpression() " + ast + " " + input);
+	private Attribute translateAttributeRename(AST attributeNameAST,
+			Attribute attribute) 
+	throws SchemaMetadataException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER translateAttributeRename() with " +
+					attributeNameAST + " " + attribute);
+		}
+		assert(attributeNameAST.getType() == 
+			SNEEqlParserTokenTypes.ATTRIBUTE_NAME);
+		attribute.setAttributeDisplayName(attributeNameAST.getText());
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN translateAttributeRename() with " +
+					attribute);
+		}
+		return attribute;
+	}
+
+	private Expression translateExpression (AST ast, 
+			LogicalOperator input) 
+	throws ParserValidationException, OptimizationException, 
+	NumberFormatException, TypeMappingException, 
+	SchemaMetadataException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER translateExpression() " + 
+					ast.toStringList() + " " + input);
+		}
 		List<Attribute> attributes;
 		Expression[] expressions;
 		int count;
@@ -770,60 +1024,87 @@ public class Translator {
 		Expression expression = null;
 		switch (ast.getType()) {
 		case SNEEqlParserTokenTypes.AS:
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("Translate AS " + ast.getFirstChild());
+			}
 			expression = 
-				translateExpression (ast.getFirstChild(), input);
+				translateExpression(ast.getFirstChild(), input);
 			break;
 		case SNEEqlParserTokenTypes.Int:
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("Translate Int " + ast.getText());
+			}
 			expression = 
 				new IntLiteral(Integer.parseInt(ast.getText()), 
 						_types.getType("integer"));
 			break;
 		case SNEEqlParserTokenTypes.Flt:
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("Translate Flt " + ast.getText());
+			}
 			expression = 
 				new FloatLiteral(Float.parseFloat(ast.getText()), 
 						_types.getType("float"));
 			break;
 		case SNEEqlParserTokenTypes.Attribute:
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("Translate Attribute " + ast.getText() +
 						" attributes= " + input.getAttributes());
+			}
 			String[] parts = ast.getText().split("[.]");
 			assert (parts.length==2);
-			logger.trace("Parts: " + parts[0] + " " + parts[1]);
+			if (logger.isTraceEnabled()) {
+				logger.trace("Parts: " + parts[0] + " " + parts[1]);
+			}
+			String eName;
+			if (extentNameMappings.containsKey(parts[0])) {
+				eName = extentNameMappings.get(parts[0]);
+			} else {
+				eName = parts[0];
+			}
 			attributes = input.getAttributes();
 			boolean attrFound = false;
 			for (int i = 0; i< attributes.size(); i++) {
 				Attribute attribute = attributes.get(i);
-				logger.trace("Attribute: " + attribute);
-				if (attribute.getLocalName().equalsIgnoreCase(parts[0]) && 
-						attribute.getAttributeName().equalsIgnoreCase(parts[1])) {
+				if (logger.isTraceEnabled()) {
+					logger.trace("Attribute: " + attribute);
+				}
+				String attrExtentName =
+					attribute.getExtentName();
+				String attrSchemaName = 
+					attribute.getAttributeSchemaName();
+				if (attrExtentName.equalsIgnoreCase(eName) &&
+						attrSchemaName.equalsIgnoreCase(parts[1])) {
+					attribute.setAttributeDisplayName(parts[0] + 
+							"." + attrSchemaName);
 					expression = attribute;
 					attrFound = true;
 					break;
 				}
 			}
 			if (!attrFound) {
-				String msg = "Unable to find Attribute " + ast.getText() + "||";
+				String msg = "Unable to find Attribute " + 
+					ast.getText() + "||";
 				logger.warn(msg);
 				throw new ParserValidationException(msg);
 			}
 			break;
 		case SNEEqlParserTokenTypes.Identifier:
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate Identifier: " + ast.getText());
+			}
 			attributes = input.getAttributes();
 			int found = -1;
 			for (int i = 0; i< attributes.size(); i++) {
-				if (attributes.get(i).getAttributeName().equalsIgnoreCase(ast.getText())) {
-					if (found == -1)
+				String attrSchemaName = 
+					attributes.get(i).getAttributeSchemaName();
+				if (attrSchemaName.equalsIgnoreCase(ast.getText())) {
+					if (found == -1) {
 						found = i;
-					else {
-						String msg = "Ambigious reference to unqualifeied attribute " +
-						ast.getText();
+					} else {
+						String msg = "Ambigious reference to " +
+								"unqualifeied attribute " +
+								ast.getText();
 						logger.warn(msg);
 						throw new ParserValidationException(msg);
 					}
@@ -833,11 +1114,15 @@ public class Translator {
 				expression = attributes.get(found);
 				break;
 			} else {
-				String msg = "Unable to find unqualified attribute "+ast.getText();
+				String msg = "Unable to find unqualified " +
+						"attribute " + ast.getText();
 				logger.warn(msg);
 				throw new ParserValidationException(msg);
 			}
 		case SNEEqlParserTokenTypes.FUNCTION_NAME:
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate FUNCTION_NAME");
+			}
 			expression = this.getFunction(ast, input);
 			break;		   
 		case SNEEqlParserTokenTypes.DIV: 
@@ -848,6 +1133,9 @@ public class Translator {
 		case SNEEqlParserTokenTypes.MUL: 
 		case SNEEqlParserTokenTypes.MOD: 
 		case SNEEqlParserTokenTypes.OR: 
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate boolean operator");
+			}
 			expressions = new Expression[ast.getNumberOfChildren()];
 			count = 0;
 			child = ast.getFirstChild();
@@ -857,61 +1145,114 @@ public class Translator {
 				child = child.getNextSibling();
 			}
 			expression = 
-				new MultiExpression (expressions, getMultiType(ast),
+				new MultiExpression(expressions, getMultiType(ast),
 						_boolType);
 			break;
 		default:
 		{
 			String msg = "Unprogrammed AST Type: " + ast.getType() +
-			" Text: "+ ast.getText();
+				" Text: "+ ast.getText();
 			logger.warn(msg);
 			throw new OptimizationException(msg);  		
 		}
 		}
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN translateExpression() " + expression);
+		}
 		return expression;
 	}
 
-	private Expression getFunction(AST ast, Operator input) 
+	private Expression getFunction(AST ast, LogicalOperator input) 
 	throws ParserValidationException, OptimizationException, 
 	TypeMappingException, SchemaMetadataException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTRY getFunction() " + ast + " " + input);
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER getFunction() " + ast + " " + input);
+		}
 		assert(ast.getNumberOfChildren() == 1);
 		assert(ast.getType() == SNEEqlParserTokenTypes.FUNCTION_NAME);
-		Expression inner = translateExpression(ast.getFirstChild(), input);
+		Expression inner = 
+			translateExpression(ast.getFirstChild(), input);
 		Expression expression;
-		if ((ast.getText().equalsIgnoreCase("avg")) || (ast.getText().equalsIgnoreCase("average")))
-			expression = new AggregationExpression(inner, AggregationType.AVG, _types.getType("integer"));
-		else if (ast.getText().equalsIgnoreCase("count"))
-			expression = new AggregationExpression(inner, AggregationType.COUNT, _types.getType("integer"));
-		else if ((ast.getText().equalsIgnoreCase("minimum")) || (ast.getText().equalsIgnoreCase("min")))
-			expression = new AggregationExpression(inner, AggregationType.MIN, _types.getType("integer"));
-		else if ((ast.getText().equalsIgnoreCase("max")) || (ast.getText().equalsIgnoreCase("maximum")))
-			expression = new AggregationExpression(inner, AggregationType.MAX, _types.getType("integer"));
-		else if ((ast.getText().equalsIgnoreCase("sqr")) || (ast.getText().equalsIgnoreCase("square"))) {
+		if ((ast.getText().equalsIgnoreCase("avg")) || 
+				(ast.getText().equalsIgnoreCase("average"))) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate average");
+			}
 			//FIXME: Not all arithmetic expressions are integers
-			expression = new MultiExpression (new Expression[] {inner,inner}, MultiType.MULTIPLY, _types.getType("integer"));
-		}
-		else if ((ast.getText().equalsIgnoreCase("sqrt")) || (ast.getText().equalsIgnoreCase("squareroot"))) {
+			expression = new AggregationExpression(inner, 
+					AggregationType.AVG, 
+					_types.getType("integer"));
+		} else if (ast.getText().equalsIgnoreCase("count")) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate count");
+			}
+			expression = new AggregationExpression(inner, 
+					AggregationType.COUNT,
+					_types.getType("integer"));
+		} else if ((ast.getText().equalsIgnoreCase("minimum")) || 
+				(ast.getText().equalsIgnoreCase("min"))) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate minimum");
+			}
+			//FIXME: Not all arithmetic expressions are integers
+			expression = new AggregationExpression(inner, 
+					AggregationType.MIN,
+					_types.getType("integer"));
+		} else if ((ast.getText().equalsIgnoreCase("max")) ||
+				(ast.getText().equalsIgnoreCase("maximum"))) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate maximum");
+			}
+			//FIXME: Not all arithmetic expressions are integers
+			expression = new AggregationExpression(inner,
+					AggregationType.MAX, 
+					_types.getType("integer"));
+		} else if ((ast.getText().equalsIgnoreCase("sqr")) ||
+				(ast.getText().equalsIgnoreCase("square"))) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate square");
+			}
+			//FIXME: Not all arithmetic expressions are integers
+			expression = new MultiExpression(
+					new Expression[] {inner,inner}, 
+					MultiType.MULTIPLY, 
+					_types.getType("integer"));
+		} else if ((ast.getText().equalsIgnoreCase("sqrt")) || 
+				(ast.getText().equalsIgnoreCase("squareroot"))) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate square root");
+			}
 			//FIXME: Not all arithmetic expressions are integers			
-			expression = new MultiExpression (new Expression[] {inner}, MultiType.SQUAREROOT, _types.getType("integer"));
+			expression = new MultiExpression(
+					new Expression[] {inner}, 
+					MultiType.SQUAREROOT, 
+					_types.getType("integer"));
+		} else if (ast.getText().equalsIgnoreCase("sum")) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate sum");
+			}
+			//FIXME: Not all arithmetic expressions are integers
+			expression = new AggregationExpression(inner, 
+					AggregationType.SUM, 
+					_types.getType("integer"));
+		} else { 
+			String message = "Unprogrammed Function name " +
+					"AST Text:" + ast.getText();
+			logger.warn(message);
+			throw new OptimizationException(message);
 		}
-		else if (ast.getText().equalsIgnoreCase("sum"))
-			expression = new AggregationExpression(inner, AggregationType.SUM, _types.getType("integer"));
-		else 
-			throw new OptimizationException("Unprogrammed Function name " +
-					"AST Text:" + ast.getText());
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN getFunction() " + expression);
+		}
 		return expression;
 	}
 
 	private MultiType getMultiType(AST ast) 
 	throws OptimizationException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER getMultiType()");
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER getMultiType() with " + 
+					ast.getType() + " " + ast.getText());
+		}
 		MultiType multiType;
 		switch (ast.getType()) {
 		case SNEEqlParserTokenTypes.DIV:
@@ -933,20 +1274,21 @@ public class Translator {
 			multiType = MultiType.OR;		   
 			break;
 		case SNEEqlParserTokenTypes.PRED:
-			if (ast.getText().equals("="))
+			if (ast.getText().equals("=")) {
 				multiType = MultiType.EQUALS;
-			else if (ast.getText().equals("<"))
+			} else if (ast.getText().equals("<")) {
 				multiType = MultiType.LESSTHAN;
-			else if (ast.getText().equals(">"))
+			} else if (ast.getText().equals(">")) {
 				multiType = MultiType.GREATERTHAN;
-			else if (ast.getText().equals(">="))
+			} else if (ast.getText().equals(">=")) {
 				multiType = MultiType.GREATERTHANEQUALS;
-			else if (ast.getText().equals("<="))
+			} else if (ast.getText().equals("<=")) {
 				multiType = MultiType.LESSTHANEQUALS;
-			else if (ast.getText().equals("!="))
+			} else if (ast.getText().equals("!=")) {
 				multiType = MultiType.NOTEQUALS;
-			else {
-				String msg = "Unprogrammed PRED AST Text:" + ast.getText();
+			} else {
+				String msg = "Unprogrammed PRED AST Text:" + 
+					ast.getText();
 				logger.warn(msg);
 				throw new OptimizationException(msg);
 			}
@@ -956,12 +1298,13 @@ public class Translator {
 			break;
 		default:
 			String msg = "Unprogrammed AST Type: " + ast.getType() + 
-			" Text: "+ ast.getText();
+				" Text: "+ ast.getText();
 			logger.warn(msg);
 			throw new OptimizationException(msg);
 		}	  
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN getMultiType() " + multiType);
+		}
 		return multiType;
 	}
 

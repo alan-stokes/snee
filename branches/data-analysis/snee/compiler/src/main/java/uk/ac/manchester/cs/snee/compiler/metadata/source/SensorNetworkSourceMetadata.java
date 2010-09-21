@@ -33,37 +33,66 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.metadata.source;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import uk.ac.manchester.cs.snee.MetadataException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Topology;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReader;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
+
 /**
- * Maintains metadata required about an in-network query processing
- * sensor network 
+ * Maintains metadata required about a sensor network capable of
+ * in-network query processing
  */
 public class SensorNetworkSourceMetadata extends SourceMetadata {
 
 	Logger logger = 
 		Logger.getLogger(SensorNetworkSourceMetadata.class.getName());
 
-	private int _cardinality = 100;
+//	//TODO: Ixent doesn't understand what this is for.
+//	private int _cardinality = 100;
 
 	private int[] _sourceNodes;
 
+	//Sink node id of the sensor network
+	private int[] _gateways;
+
+	//Sensor Network topology
+	private Topology _topology;
+	
+	//Maps extent names to source nodes
+	private TreeMap<String,int[]> _extentToSitesMapping = 
+		new TreeMap<String,int[]>(); 
+	
 	public SensorNetworkSourceMetadata(String sourceName, 
-			List<String> extentNames, Element xml) 
-	throws SourceMetadataException {
+			List<String> extentNames, Element xml,
+			String topFile, String resFile, int[] gateways) 
+	throws SourceMetadataException, TopologyReaderException {
 		super(sourceName, extentNames, SourceType.SENSOR_NETWORK);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SensorNetworkSourceMetadata()");
 		}
-		for(String extent : _extentNames) {
-			setSoureSites(xml.getElementsByTagName("sites"), extent);
+		if (gateways.length==0) {
+			throw new SourceMetadataException("No gateway nodes specified "+
+					"for sensor network "+sourceName);
 		}
+		if (gateways.length>1) {
+			throw new SourceMetadataException("More than one gateway node " +
+					"specified for sensor network "+sourceName + "; this is " +
+					"currently not supported.");
+		}
+		this._gateways = gateways;
+		this._topology = TopologyReader.readNetworkTopology(topFile, resFile);
+		setSourceSites(xml.getElementsByTagName("extent"));
+		verifyGateways();
+		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SensorNetworkSourceMetadata()");
 	}
@@ -86,147 +115,83 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 //		return result;
 //	}
 	
+	private void verifyGateways() throws SourceMetadataException {
+
+		for (int i=0; i<_gateways.length; i++) {
+			int g = _gateways[i];
+			if (_topology.getNode(g)==null) {
+				throw new SourceMetadataException("Gateway node id "+g+
+						" specified in the physical schema not found in "+
+						"the topology file.");
+			}
+		}
+		
+	}
+
 	/**
-	 * Set which sites the sensed extent is available from
+	 * Set which sites the sensed extents are available from
 	 * @param nodesxml configuration information
-	 * @param extentName Name of the extent
 	 * @throws SourceMetadataException
 	 */
-	private void setSoureSites(NodeList nodesxml, String extentName) 
+	private void setSourceSites(NodeList nodesxml) 
 	throws SourceMetadataException {
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER setSourceSites() for " + extentName + 
-					" number of sites " + nodesxml.getLength());
-		if (nodesxml.getLength() == 0) {
-			String message = "No sites information found for " + extentName;
-			logger.warn(message);
-			throw new SourceMetadataException(message);
-		}
-		String nodesText = null;
+			logger.trace("ENTER setSourceSites() for " +
+					"number of extents " + nodesxml.getLength());
+		StringBuffer sourceSitesText = new StringBuffer();
 		for (int i = 0; i < nodesxml.getLength(); i++) {
-			if (nodesText == null) {
-				nodesText = nodesxml.item(i).getTextContent();
+			Node extentElem = nodesxml.item(i);
+			NamedNodeMap attrs = extentElem.getAttributes();
+			String extentName = attrs.getNamedItem("name").getNodeValue();
+			logger.trace("extentName="+extentName);
+			Node sitesElem = extentElem.getChildNodes().item(1);
+			String sitesText = sitesElem.getFirstChild().getNodeValue();
+			logger.trace("sites="+sitesText);
+			if (sourceSitesText.length()==0) {
+				sourceSitesText.append(sitesText);
 			} else {
-				nodesText = nodesText + "," + nodesxml.item(i).getTextContent();
+				sourceSitesText.append("," + sitesText);				
 			}
+			int[] sites = SourceMetadataUtils.convertNodes(sitesText);
+			if (sites.length == 0) {
+				String message = "No sites information found for "+extentName;
+				logger.warn(message);
+				throw new SourceMetadataException(message);
+			}
+			_extentToSitesMapping.put(extentName, sites);
+			logger.trace("Extent "+extentName+": added source sites "+
+					sites.toString());
 		}
 		if (logger.isTraceEnabled())
-			logger.trace("sites text " + nodesText);
-		_sourceNodes = convertNodes(nodesText);
-		_cardinality = _sourceNodes.length;
+			logger.trace("sites text " + sourceSitesText);
+		_sourceNodes = SourceMetadataUtils.convertNodes(
+				sourceSitesText.toString());
+//		_cardinality = _sourceNodes.length;
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN setSourceSites()");
 	}
 
-	//TODO: Change metadata definition to take a xs:list rather than comma separated string
-	private int[] convertNodes(String text) 
-	throws SourceMetadataException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER convertNodes " + text);
-		String temp;
-		StringTokenizer tokens = new StringTokenizer(text, ",");
-		int count = countTokens(tokens);
-		//logger.trace("count = "+count);
-		
-		int[] list = new int[count];
-		count = 0;
-		tokens = new StringTokenizer(text, ",");
-		while (tokens.hasMoreTokens()) {
-			temp = tokens.nextToken();
-			if (temp.indexOf('-') == -1) {
-				list[count] = Integer.parseInt(temp);
-				count++;
-			} else {
-				int start = Integer.parseInt(temp.substring(0, temp
-						.indexOf('-')));
-				int end = Integer.parseInt(temp.substring(temp
-						.indexOf('-') + 1, temp.length()));
-				for (int i = start; i <= end; i++) {
-					list[count] = i;
-					count++;
-				}
-			}
-		}
-		Arrays.sort(list);
-		count = 0;
-		for (int i = 0; i < list.length - 2; i++) {
-			if (list[i] >= list[i + 1]) {
-				list[i] = Integer.MAX_VALUE;
-				count++;
-			}
-		}
-		if (count > 0) {
-			Arrays.sort(list);
-			int[] newList = new int[list.length - count];
-			for (int i = 0; i < newList.length; i++) {
-				newList[i] = list[i];
-			}
-			list = newList;
-		}
-		String t = "";
-		for (int element : list) {
-			t = t + "," + element;
-		}
-		if (logger.isTraceEnabled()) {
-			logger.trace("nodes = " + t);
-			logger.trace("RETURN setSourceSites()");
-		}
-		return list;
-	}
 
-	/**
-	 * Count the number of tokens.
-	 * @param tokens
-	 * @return
-	 * @throws SourceMetadataException No tokens exist
-	 */
-	private int countTokens(StringTokenizer tokens)
-	throws SourceMetadataException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER countTokens() " + tokens);
-		int count = 0;
-		String temp;
-		while (tokens.hasMoreTokens()) {
-			temp = tokens.nextToken();
-			if (temp.indexOf('-') == -1) {
-				count++;
-			} else {
-				int start = Integer.parseInt(temp.substring(0, temp
-						.indexOf('-')));
-				int end = Integer.parseInt(temp.substring(temp
-						.indexOf('-') + 1, temp.length()));
-				//logger.trace(temp+" "+start+"-"+end);
-				if (end < start) {
-					String message = "Start less than end";
-					logger.warn(message);
-					throw new SourceMetadataException(message);
-				}
-				count = count + end - start + 1;
-			}
-		}
-		if (count == 0) {
-			String message = "No nodes defined";
-			logger.warn(message);
-			throw new SourceMetadataException(message);
-		}
-		if (logger.isTraceEnabled())
-			logger.trace("RETURN countTokens() number of tokens " + count);
-		return count;
-	}
-
-	protected void setCardinality (int cardinality)
-	{
-		_cardinality = cardinality;
-	}
-
-	public int getCardinality() {
-		return _cardinality;
-	}
+//	/**
+//	 * Count the number of tokens.
+//	 * @param tokens
+//	 * @return
+//	 * @throws SourceMetadataException No tokens exist
+//	 */
+//
+//	protected void setCardinality (int cardinality)
+//	{
+//		_cardinality = cardinality;
+//	}
+//
+//	public int getCardinality() {
+//		return _cardinality;
+//	}
 
 	@Override
 	public String toString() {
 		StringBuffer s = new StringBuffer(super.toString());
-		s.append("   Cardinality: " + _cardinality);
+//		s.append("   Cardinality: " + _cardinality);
 		return s.toString();
 	}
 
@@ -235,8 +200,29 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 	 * sensing data.
 	 * @return an array of node identifiers
 	 */
-	public int[] getSourceNodes() {
+	public int[] getSourceSites() {
 		return _sourceNodes;
 	}
 
+	/**
+	 * Returns the nodes in the sensor network which are capable of
+	 * sensing data for a given extent.
+	 * @return an array of node identifiers
+	 */
+	public int[] getSourceSites(String extentName) {
+		return this._extentToSitesMapping.get(extentName);
+	}
+
+	/**
+	 * Returns the network topology.
+	 * @return
+	 */
+	public Topology getTopology() {
+		return this._topology;
+	}
+
+	public int getGateway() {
+		return this._gateways[0];
+	}
+	
 }

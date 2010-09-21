@@ -3,7 +3,9 @@ package uk.ac.manchester.cs.snee.data.webservice;
 import java.io.StringReader;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.rowset.WebRowSet;
@@ -14,6 +16,8 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 
 import com.sun.rowset.WebRowSetImpl;
 
@@ -65,17 +69,19 @@ public class WrsSchemaParser extends SchemaParserAbstract {
 	}
 
 	@Override
-	public Map<String, AttributeType> getColumns() 
+	public List<Attribute> getColumns(String extentName) 
 	throws TypeMappingException, SchemaMetadataException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getColumns()");
-		Map<String, AttributeType> response =
-			new HashMap<String, AttributeType>();
+		List<Attribute> response = new ArrayList<Attribute>();
 		try {
 			for (int i = 1; i <= metadata.getColumnCount(); i++) {
 				String colName = metadata.getColumnName(i);
-				AttributeType colType = inferType(metadata.getColumnTypeName(i));
-				response.put(colName, colType);
+				AttributeType colType = 
+					inferType(metadata.getColumnType(i));
+				Attribute attr = 
+					new DataAttribute(extentName, colName, colType);
+				response.add(attr);
 			}
 		} catch (SQLException e) {
 			String msg = "Problem reading column information.";
