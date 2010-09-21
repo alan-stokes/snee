@@ -7,7 +7,70 @@
   </parent>
   <groupId>uk.ac.manchester.cs.snee</groupId>
   <artifactId>tinyos-tools</artifactId>
+  <packaging>jar</packaging>
   <version>1.2.2-SNAPSHOT</version>
   <name>TinyOS Tools</name>
   <description>Tools to interface with sensor network.  Includes metadata collection, over the air programming and command dissemination.</description>
+
+<!--
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.4.3</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/nesC</outputDirectory>
+              <resources>          
+                <resource>
+                  <directory>${basedir}/src/main/nesC</directory>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>              
+            </configuration>            
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+-->
+  
+   <build>
+		<resources>
+			<resource>
+				<targetPath>${project.build.directory}/nesC</targetPath>
+				<directory>${basedir}/src/main/nesC</directory>
+				<includes>
+					<include>**</include>
+				</includes>
+			</resource>
+			<resource>
+				<targetPath>${project.build.directory}/python</targetPath>
+				<directory>${basedir}/src/main/python</directory>
+				<includes>
+					<include>**</include>
+				</includes>
+			</resource>
+		</resources>
+		<plugins>
+			<!--  this doesn't work -->
+			<plugin>
+	        	<groupId>org.apache.maven.plugins</groupId>
+	        	<artifactId>maven-jar-plugin</artifactId>
+	        	<version>2.3.1</version>
+	        	<configuration>
+	          		<includes>
+	            		<include>**/nesC/*</include>
+	          		</includes>
+	        	</configuration>
+      		</plugin>
+      	</plugins>
+    </build>
+ 
 </project>
