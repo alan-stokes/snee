@@ -44,22 +44,12 @@ implements ResultSet {
 	protected StreamResultSet(ResultSetMetaData metadata, 
 			List<Tuple> results)
 	throws SQLException, SNEEException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER StreamResultSet() #results=" +
-					results.size());
-		}
 		this.metadata = metadata;
 		populateData(results);
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN StreamResultSet()");
-		}
 	}
 
 	private void populateData(List<Tuple> results) 
 	throws SQLException, SNEEException {
-		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER populateData()");
-		}
 		int numColumns = metadata.getColumnCount();
 		//XXX: Don't store anything in 0,0
 		data = new Object[results.size() + 1][numColumns + 1];
@@ -69,9 +59,6 @@ implements ResultSet {
 				EvaluatorAttribute field = tuple.getAttribute(i-1);
 				data[numRows][i] = field.getData();
 			}
-		}
-		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN populateData() with\n" + printData());
 		}
 	}
 
@@ -89,9 +76,6 @@ implements ResultSet {
 
 	@Override
 	public boolean absolute(int row) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER absolute() with " + row);
-		}
 		boolean response;
 		if (row >= 1 && row <= numRows) {
 			cursorPosition = row;
@@ -106,10 +90,6 @@ implements ResultSet {
 				cursorPosition = numRows + 1;
 			}
 			response = false;
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN absolute() with " + response +
-					" cursorPostion=" + cursorPosition);
 		}
 		return response;
 	}
@@ -150,9 +130,6 @@ implements ResultSet {
 
 	@Override
 	public int findColumn(String columnLabel) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER findColumn() with " + columnLabel);
-		}
 		int numCols = metadata.getColumnCount();
 		int columnNumber = 0;
 		for (int i = 1; i <= numCols; i++) {
@@ -168,26 +145,17 @@ implements ResultSet {
 			logger.warn(message);
 			throw new SQLException(message);
 		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN findColumn() with " + columnNumber);
-		}
 		return columnNumber;
 	}
 
 	@Override
 	public boolean first() throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER first()");
-		}
 		boolean response;
 		if (numRows > 0) {
 			cursorPosition = 1;
 			response = true;
 		} else {
 			response = false;
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN first() with " + response);
 		}
 		return response;
 	}
@@ -214,9 +182,6 @@ implements ResultSet {
 
 	@Override
 	public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getBigDecimal() with " + columnIndex);
-		}
 		int colType = metadata.getColumnType(columnIndex);
 		if (colType != Types.DECIMAL) {
 			String message = "Column type is not a decimal.";
@@ -225,22 +190,13 @@ implements ResultSet {
 		}
 		BigDecimal response = 
 			(BigDecimal) data[cursorPosition][columnIndex];
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getBigDecimal() with " + response);
-		}
 		return response;
 	}
 
 	@Override
 	public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getBigDecimal() " + columnLabel);
-		}
 		int columnIndex = findColumn(columnLabel);
 		BigDecimal response = getBigDecimal(columnIndex);
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getBigDecimal() with " + response);
-		}
 		return response;
 	}
 
@@ -278,9 +234,6 @@ implements ResultSet {
 
 	@Override
 	public boolean getBoolean(int columnIndex) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getBoolean() with " + columnIndex);
-		}
 		int colType = metadata.getColumnType(columnIndex);
 		if (colType != Types.BOOLEAN) {
 			String message = "Column type is not a boolean.";
@@ -288,22 +241,13 @@ implements ResultSet {
 			throw new SQLException(message);
 		}
 		boolean response = (Boolean) data[cursorPosition][columnIndex];
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getBoolean() with " + response);
-		}
 		return response;
 	}
 
 	@Override
 	public boolean getBoolean(String columnLabel) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getBoolean() " + columnLabel);
-		}
 		int columnIndex = findColumn(columnLabel);
 		boolean response = getBoolean(columnIndex);
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getBoolean() with " + response);
-		}
 		return response;
 	}
 
@@ -399,9 +343,6 @@ implements ResultSet {
 
 	@Override
 	public float getFloat(int columnIndex) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getFloat() with " + columnIndex);
-		}
 		int colType = metadata.getColumnType(columnIndex);
 		if (colType != Types.FLOAT) {
 			String message = "Column type is not a float.";
@@ -409,22 +350,13 @@ implements ResultSet {
 			throw new SQLException(message);
 		}
 		float response = (Float) data[cursorPosition][columnIndex];
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getFloat() with " + response);
-		}
 		return response;
 	}
 
 	@Override
 	public float getFloat(String columnLabel) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getFloat() " + columnLabel);
-		}
 		int columnIndex = findColumn(columnLabel);
 		float response = getFloat(columnIndex);
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getFloat() with " + response);
-		}
 		return response;
 	}
 
@@ -435,9 +367,6 @@ implements ResultSet {
 
 	@Override
 	public int getInt(int columnIndex) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getInt() with " + columnIndex);
-		}
 		int colType = metadata.getColumnType(columnIndex);
 		if (colType != Types.INTEGER) {
 			String message = "Column type is not an integer.";
@@ -445,22 +374,13 @@ implements ResultSet {
 			throw new SQLException(message);
 		}
 		int response = (Integer) data[cursorPosition][columnIndex];
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getInt() with " + response);
-		}
 		return response;
 	}
 
 	@Override
 	public int getInt(String columnLabel) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getInt() " + columnLabel);
-		}
 		int columnIndex = findColumn(columnLabel);
 		int response = getInt(columnIndex);
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getInt() with " + response);
-		}
 		return response;
 	}
 
@@ -511,26 +431,14 @@ implements ResultSet {
 
 	@Override
 	public Object getObject(int columnIndex) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getObject() with " + columnIndex);
-		}
 		Object response = data[cursorPosition][columnIndex];
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getObject() with " + response);
-		}
 		return response;
 	}
 
 	@Override
 	public Object getObject(String columnLabel) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getObject() " + columnLabel);
-		}
 		int columnIndex = findColumn(columnLabel);
 		Object response = getObject(columnIndex);
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getObject() with " + response);
-		}
 		return response;
 	}
 
@@ -598,9 +506,6 @@ implements ResultSet {
 
 	@Override
 	public String getString(int columnIndex) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getString() with " + columnIndex);
-		}
 		int colType = metadata.getColumnType(columnIndex);
 		if (colType != Types.VARCHAR) {
 			String message = "Column type is not a string.";
@@ -608,22 +513,13 @@ implements ResultSet {
 			throw new SQLException(message);
 		}
 		String response = (String) data[cursorPosition][columnIndex];
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getString() with " + response);
-		}
 		return response;
 	}
 
 	@Override
 	public String getString(String columnLabel) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getString() " + columnLabel);
-		}
 		int columnIndex = findColumn(columnLabel);
 		String response = getString(columnIndex);
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getString() with " + response);
-		}
 		return response;
 	}
 
@@ -649,9 +545,6 @@ implements ResultSet {
 
 	@Override
 	public Timestamp getTimestamp(int columnIndex) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getTimestamp() with " + columnIndex);
-		}
 		int colType = metadata.getColumnType(columnIndex);
 		if (colType != Types.TIMESTAMP) {
 			String message = "Column type is not an timestamp.";
@@ -667,22 +560,13 @@ implements ResultSet {
 			long t = (Long) value;
 			response = new Timestamp(t);
 		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getTimestamp() with " + response);
-		}
 		return response;
 	}
 
 	@Override
 	public Timestamp getTimestamp(String columnLabel) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getTimestamp() " + columnLabel);
-		}
 		int columnIndex = findColumn(columnLabel);
 		Timestamp response = getTimestamp(columnIndex);
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getTimestamp() with " + response);
-		}
 		return response;
 	}
 
@@ -735,34 +619,22 @@ implements ResultSet {
 
 	@Override
 	public boolean isAfterLast() throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER isAfterLast()");
-		}
 		boolean response;
 		if (cursorPosition > numRows) {
 			response = true;
 		} else {
 			response = false;
 		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN isAfterLast() with " + response);
-		}
 		return response;
 	}
 
 	@Override
 	public boolean isBeforeFirst() throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER isBeforeFirst()");
-		}
 		boolean response;
 		if (cursorPosition == 0 && numRows > 0) {
 			response = true;
 		} else {
 			response = false;
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN isBeforeFirst() with " + response);
 		}
 		return response;
 	}
@@ -774,52 +646,34 @@ implements ResultSet {
 
 	@Override
 	public boolean isFirst() throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER isFirst()");
-		}
 		boolean response;
 		if (cursorPosition == 1) {
 			response = true;
 		} else {
 			response = false;
 		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN isFirst() with " + response);
-		}
 		return response;
 	}
 
 	@Override
 	public boolean isLast() throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER isLast()");
-		}
 		boolean response;
 		if (cursorPosition == numRows && numRows > 0) {
 			response = true;
 		} else {
 			response = false;
 		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN isLast() with " + response);
-		}
 		return response;
 	}
 
 	@Override
 	public boolean last() throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER last()");
-		}
 		boolean response;
 		if (numRows == 0) {
 			response = false;
 		} else {
 			cursorPosition = numRows;
 			response = true;
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN last() with " + response);
 		}
 		return response;
 	}
@@ -836,25 +690,13 @@ implements ResultSet {
 
 	@Override
 	public boolean next() throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER next()");
-		}
 		boolean response = relative(1);
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN next() with " + response);
-		}
 		return response;
 	}
 
 	@Override
 	public boolean previous() throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER previous()");
-		}
 		boolean response = relative(-1);
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN previous() with " + response);
-		}
 		return response;
 	}
 
@@ -865,9 +707,6 @@ implements ResultSet {
 
 	@Override
 	public boolean relative(int rows) throws SQLException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER relative() with " + rows);
-		}
 		boolean response;
 		if (cursorPosition + rows > numRows) {
 			cursorPosition = numRows + 1;
@@ -878,9 +717,6 @@ implements ResultSet {
 		} else {
 			cursorPosition += rows;
 			response = true;
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN relative() with " + response);
 		}
 		return response;
 	}
