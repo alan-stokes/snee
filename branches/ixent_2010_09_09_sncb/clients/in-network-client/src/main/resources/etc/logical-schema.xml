@@ -10,4 +10,16 @@
          </column>
      </stream>
 
+<!--       <stream name="Forest" type="pull">
+         <column name="light">
+          	<type class ="integer"/>
+         </column>
+     </stream>
+
+      <stream name="Meadow" type="pull">
+         <column name="light">
+          	<type class ="integer"/>
+         </column>
+     </stream> -->
+     
 </schema>
