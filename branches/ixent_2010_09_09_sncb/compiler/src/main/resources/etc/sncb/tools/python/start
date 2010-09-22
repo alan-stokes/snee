@@ -1,13 +1,18 @@
 #!/usr/bin/env python
 
-import os, subprocess
+import os, subprocess, time
 
 tosroot = os.getenv('TOSROOT')
 motecom = os.getenv('MOTECOM')
 serial_port = os.getenv('SERIAL_PORT')
 
 # deploy the command server basestion
-os.chdir(tosroot + '/apps/CommandServer')
+os.chdir(os.getcwd() + '/utils')
+
+# disseminate a reprogram command; switch to query fragment
+subprocess.call(['./cmd-srvr', motecom, '--reprogram', '2'])
+
+time.sleep(30)
 
 # disseminate the start command
 subprocess.call(['./cmd-srvr', motecom, '--start'])

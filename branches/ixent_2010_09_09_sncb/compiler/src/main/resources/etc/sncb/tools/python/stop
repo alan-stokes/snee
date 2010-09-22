@@ -6,7 +6,7 @@ tosroot = os.getenv('TOSROOT')
 motecom = os.getenv('MOTECOM')
 serial_port = os.getenv('SERIAL_PORT')
 
-os.chdir(tosroot + '/apps/CommandServer')
+os.chdir(os.getcwd() + '/utils')
 
 # disseminate the stop command
 subprocess.call(['./cmd-srvr', motecom, '--stop'])
