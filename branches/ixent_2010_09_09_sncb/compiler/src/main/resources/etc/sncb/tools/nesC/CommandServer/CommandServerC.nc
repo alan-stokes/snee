@@ -79,6 +79,8 @@ implementation {
 
   uint8_t newImageNum;
 
+  task void signalStopDone();
+
   event void Boot.booted() {
     command_msg_t initialCmd;
     initialCmd.cmd = 0xFF;
@@ -92,7 +94,12 @@ implementation {
 
   command error_t SplitControl.stop() {
     //return call SerialControl.stop();
+    post signalStopDone();
     return SUCCESS;
+  }
+
+  task void signalStopDone() {
+    signal SplitControl.stopDone(SUCCESS);
   }
 
   event void SerialControl.startDone(error_t error) {
