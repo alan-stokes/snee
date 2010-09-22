@@ -44,6 +44,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
@@ -88,6 +90,7 @@ import uk.ac.manchester.cs.snee.sncb.tos.LocalTimeComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.MainComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.NesCComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.NesCConfiguration;
+import uk.ac.manchester.cs.snee.sncb.tos.NodeControllerComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.PowerManagementComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.ProjectComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.QueryPlanModuleComponent;
@@ -212,6 +215,8 @@ public class TinyOSGenerator {
 
     public static String COMPONENT_DELUGE;
     
+    public static String COMPONENT_NODE_CONTROLLER;
+    
     private static String INTERFACE_AMPACKET;
     
     private static String INTERFACE_BOOT;
@@ -223,6 +228,8 @@ public class TinyOSGenerator {
     public static String INTERFACE_SNOOZE;
 
     public static String INTERFACE_SPLITCONTROL;
+    
+    public static String INTERFACE_STATECHANGED;
     
     public static String TYPE_TMILLI;
 
@@ -263,13 +270,16 @@ public class TinyOSGenerator {
 	private boolean debugLeds;
 	
 	private boolean showLocalTime; //Not working
+	
+	private boolean useNodeController;
     
     public TinyOSGenerator(int tosVersion, boolean tossimFlag, 
     String targetName,
     boolean combinedImage, String nescOutputDir, CostParameters costParams, boolean controlRadioOff,
     boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
     boolean usePowerManagement, boolean deliverLast, boolean adjustRadioPower,
-    boolean includeDeluge, boolean debugLeds, boolean showLocalTime)
+    boolean includeDeluge, boolean debugLeds, boolean showLocalTime,
+    boolean useNodeController)
     throws IOException, SchemaMetadataException, TypeMappingException {
     	this.tosVersion = tosVersion;
     	this.tossimFlag = tossimFlag;
@@ -288,7 +298,8 @@ public class TinyOSGenerator {
 		this.includeDeluge = includeDeluge;
 		this.debugLeds = debugLeds;
 		this.showLocalTime = showLocalTime;
-    	
+		this.useNodeController = useNodeController;
+		
     	initConstants(tosVersion, tossimFlag, targetName);
 
     	if (tosVersion == 1) {
@@ -341,6 +352,7 @@ public class TinyOSGenerator {
 		    COMPONENT_DELUGE = "DelugeC";
 		    COMPONENT_LOCAL_TIME = "LocalTimeMilliC";
 		    COMPONENT_MAIN = "MainC";
+		    COMPONENT_NODE_CONTROLLER = "CommandServerAppC";
 		    COMPONENT_QUERY_PLAN = "QueryPlanC";
 		    COMPONENT_QUERY_PLANC = "QueryPlan";  //AppC
 		    COMPONENT_RADIO = "ActiveMessageC";
@@ -372,6 +384,7 @@ public class TinyOSGenerator {
 		    INTERFACE_SNOOZE = "Snooze";
 		    INTERFACE_LEDS = "Leds";
 		    INTERFACE_SPLITCONTROL = "SplitControl";
+		    INTERFACE_STATECHANGED = "StateChanged";
 		    TYPE_TMILLI = "TMilli";
 		    TYPE_READ = "uint16_t";
 		}
@@ -559,7 +572,8 @@ public class TinyOSGenerator {
 			new QueryPlanModuleComponent(COMPONENT_QUERY_PLAN, config,
 			plan, sink, tosVersion, (tossimFlag || combinedImage), targetName,
 			costParams, controlRadioOff, enablePrintf, useStartUpProtocol, enableLeds,
-			debugLeds, usePowerManagement, deliverLast, adjustRadioPower);
+			debugLeds, usePowerManagement, deliverLast, adjustRadioPower,
+			false);
 		config.addComponent(queryPlanModuleComp);
 
 		TimerT1Component timerComp = new TimerT1Component( //$
@@ -1137,7 +1151,8 @@ public class TinyOSGenerator {
 			new QueryPlanModuleComponent(COMPONENT_QUERY_PLAN, config,
 			plan, sink, tosVersion, (tossimFlag || combinedImage), targetName,
 			costParams, controlRadioOff, enablePrintf, useStartUpProtocol, enableLeds,
-			debugLeds, usePowerManagement, deliverLast, adjustRadioPower);
+			debugLeds, usePowerManagement, deliverLast, adjustRadioPower,
+			useNodeController);
 		config.addComponent(queryPlanModuleComp);
 
 		TimerT2Component timerComp = new TimerT2Component(		//$
@@ -1173,38 +1188,60 @@ public class TinyOSGenerator {
 			config.addComponent(delugeComp);
 		}
 		if (this.useStartUpProtocol) {
-			
-			SerialComponent serialComp = new SerialComponent(COMPONENT_SERIAL_DEVICE, config, tossimFlag);
-			config.addComponent(serialComp);
-			config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_SERIAL_DEVICE, INTERFACE_SPLITCONTROL, "SerialControl", INTERFACE_SPLITCONTROL);
-			
-			String aid = ActiveMessageIDGenerator.getActiveMessageID("AM_SERIAL_STARTUP_MESSAGE");
-			SerialAMReceiveComponent serialRxComp = 
-				new SerialAMReceiveComponent(COMPONENT_SERIALRX+"StartUp", config, aid, tossimFlag);
-			config.addComponent(serialRxComp);
-			config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_SERIALRX+"StartUp", INTERFACE_RECEIVE, "SerialStartUp", "Receive");
-			
-			aid = ActiveMessageIDGenerator.getActiveMessageID("AM_BEACON_MESSAGE");
-			AMSendComponent beaconSender = new AMSendComponent(config, aid, tossimFlag);
-			config.addComponent(beaconSender);
-			config.addWiring(COMPONENT_QUERY_PLAN, beaconSender.getID(),
-					INTERFACE_SEND, "Beacon"+INTERFACE_SEND, INTERFACE_SEND);
-			config.addWiring(COMPONENT_QUERY_PLAN, beaconSender.getID(),
-					INTERFACE_PACKET, "Beacon"+INTERFACE_PACKET,
-					INTERFACE_PACKET);
-			config.addWiring(COMPONENT_QUERY_PLAN, beaconSender.getID(),
-						INTERFACE_AMPACKET, "Beacon"+INTERFACE_AMPACKET,
-						INTERFACE_AMPACKET);
-			
-			AMRecieveComponent beaconReceiver = new AMRecieveComponent(config, aid, tossimFlag);
-			config.addComponent(beaconReceiver);
-			config.addWiring(COMPONENT_QUERY_PLAN, beaconReceiver.getID(),
-					INTERFACE_RECEIVE, "Beacon"+INTERFACE_RECEIVE,
-					INTERFACE_RECEIVE);
-
+			t2AddStartupProtocolComponents(config);
+		}
+		if (this.useNodeController) {
+			t2AddNodeControllerComponents(config);
 		}
 	}
 
+	private void t2AddStartupProtocolComponents(final NesCConfiguration config)
+			throws CodeGenerationException {
+		SerialComponent serialComp = new SerialComponent(COMPONENT_SERIAL_DEVICE, config, tossimFlag);
+		config.addComponent(serialComp);
+		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_SERIAL_DEVICE, INTERFACE_SPLITCONTROL, "SerialControl", INTERFACE_SPLITCONTROL);
+		
+		String aid = ActiveMessageIDGenerator.getActiveMessageID("AM_SERIAL_STARTUP_MESSAGE");
+		SerialAMReceiveComponent serialRxComp = 
+			new SerialAMReceiveComponent(COMPONENT_SERIALRX+"StartUp", config, aid, tossimFlag);
+		config.addComponent(serialRxComp);
+		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_SERIALRX+"StartUp", INTERFACE_RECEIVE, "SerialStartUp", "Receive");
+		
+		aid = ActiveMessageIDGenerator.getActiveMessageID("AM_BEACON_MESSAGE");
+		AMSendComponent beaconSender = new AMSendComponent(config, aid, tossimFlag);
+		config.addComponent(beaconSender);
+		config.addWiring(COMPONENT_QUERY_PLAN, beaconSender.getID(),
+				INTERFACE_SEND, "Beacon"+INTERFACE_SEND, INTERFACE_SEND);
+		config.addWiring(COMPONENT_QUERY_PLAN, beaconSender.getID(),
+				INTERFACE_PACKET, "Beacon"+INTERFACE_PACKET,
+				INTERFACE_PACKET);
+		config.addWiring(COMPONENT_QUERY_PLAN, beaconSender.getID(),
+					INTERFACE_AMPACKET, "Beacon"+INTERFACE_AMPACKET,
+					INTERFACE_AMPACKET);
+		
+		AMRecieveComponent beaconReceiver = new AMRecieveComponent(config, aid, tossimFlag);
+		config.addComponent(beaconReceiver);
+		config.addWiring(COMPONENT_QUERY_PLAN, beaconReceiver.getID(),
+				INTERFACE_RECEIVE, "Beacon"+INTERFACE_RECEIVE,
+				INTERFACE_RECEIVE);
+	}
+
+
+	private void t2AddNodeControllerComponents(NesCConfiguration config)
+	throws CodeGenerationException {
+		NodeControllerComponent nodeControllerComp = 
+			new NodeControllerComponent(COMPONENT_NODE_CONTROLLER, config, 
+					this.tosVersion, this.tossimFlag);
+		config.addComponent(nodeControllerComp);
+		
+		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_NODE_CONTROLLER, 
+				INTERFACE_SPLITCONTROL, "CommandServerControl", 
+				INTERFACE_SPLITCONTROL);
+		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_NODE_CONTROLLER, 
+		
+				INTERFACE_STATECHANGED, "CommandServerUpdate", 
+				INTERFACE_STATECHANGED);
+	}
 
     /**
      * TOS2: Add the fragments which have been placed onto this site.
@@ -2400,9 +2437,10 @@ public class TinyOSGenerator {
 
 
     /**
-     * Generates Miscellaneous files for Avrora.
+     * Generates Miscellaneous files for individual image QEPs.
      * @throws IOException
      * @throws URISyntaxException 
+     * @throws UtilsException 
      */
 	private void generateIndividualMiscFiles() throws IOException, URISyntaxException {
 		final Iterator<Site> siteIter = plan
@@ -2426,6 +2464,24 @@ public class TinyOSGenerator {
 		    	Template.instantiate(
 					    NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
 					    nescOutputDir + nodeDir +"/volumes-stm25p.xml");		    	
+		    }
+		    
+		    if (this.useNodeController) {
+//		    	Template.instantiate(
+//		    			Utils.validateFileLocation(
+//		    				"etc/sncb/tools/nesC/CommandServer/CommandServer.h"),
+//		    			nescOutputDir + nodeDir + "/CommandServer.h");
+//		    	Template.instantiate(
+//		    			Utils.validateFileLocation(
+//		    				"etc/sncb/tools/nesC/CommandServer/CommandServerAppC.nc"),
+//		    			nescOutputDir + nodeDir + "/CommandServerAppC.nc");		    	
+//		    	Template.instantiate(
+//		    			Utils.validateFileLocation(
+//		    				"etc/sncb/tools/nesC/CommandServer/CommandServerC.nc"),
+//		    			nescOutputDir + nodeDir + "/CommandServerC.nc");
+		    	///XXX: Not sure if this is the right thing to do.
+		    	///Can't we just modify the Makefile to include this?
+		    	///CFLAGS += -I$(TOSDIR)/lib/net
 		    }
 		}
 	}
@@ -2503,11 +2559,14 @@ public class TinyOSGenerator {
 		// Makefile
 		HashMap<String, String> replacements = new HashMap<String, String>();
 		replacements.put("__MAIN_CONFIG_NAME__", mainConfigName);
-		if (this.includeDeluge && tossimFlag == false) {
+		
+		if (this.includeDeluge && tossimFlag == false ||
+				this.useNodeController) {
 			replacements.put("__DELUGE__","BOOTLOADER=tosboot");			
 		} else {
 			replacements.put("__DELUGE__","");
 		}
+		
 		if (this.enablePrintf && targetName.equals("tmotesky_t2")) {
 			replacements.put("__PRINTF__", "CFLAGS += -I$(TOSDIR)/lib/printf");
 		} else if (this.enablePrintf && targetName.equals("z1")) {
@@ -2516,14 +2575,26 @@ public class TinyOSGenerator {
 			replacements.put("__PRINTF__","");			
 		}
 		
+		if (this.useNodeController) {
+			String cmdSrvDir = Utils.getResourcePath("etc/sncb/tools/nesC/CommandServer");
+			replacements.put("__COMMAND_SERVER__", "CFLAGS += -I"+cmdSrvDir+"\n"+
+					"CFLAGS += -DSNEE_IMAGE_ID=2\n" +
+					"### For Drip:\n" +
+					"CFLAGS += -I$(TOSDIR)/lib/net -I%T/lib/net/drip");
+		} else {
+			replacements.put("__COMMAND_SERVER__", "");
+		}
 		
 		Template.instantiate(NESC_MISC_FILES_DIR
 			+ "/Makefile", dir
 			+ "/Makefile", replacements);
 
-		Template.instantiate(
-		    NESC_MISC_FILES_DIR + "/Makerules",
-		    dir + "/Makerules");
+		if (this.tosVersion==1) {
+			Template.instantiate(
+				    NESC_MISC_FILES_DIR + "/Makerules",
+				    dir + "/Makerules");			
+		}
+
 	}
 
 

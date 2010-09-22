@@ -1,5 +1,6 @@
 COMPONENT=__MAIN_CONFIG_NAME__
 __DELUGE__
-include ./Makerules
 __PRINTF__
+__COMMAND_SERVER__
 
+include $(MAKERULES)

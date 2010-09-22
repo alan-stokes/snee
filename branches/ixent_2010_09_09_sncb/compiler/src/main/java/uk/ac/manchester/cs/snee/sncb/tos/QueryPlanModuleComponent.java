@@ -83,6 +83,8 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	private boolean deliverLast;
 
 	private boolean adjustRadioPower;
+	
+	private boolean useControllerComponent;
     
     public QueryPlanModuleComponent(final String name,
 	    final NesCConfiguration config, final SensorNetworkQueryPlan plan,
@@ -90,7 +92,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    String targetName, CostParameters costParams, boolean controlRadioOff,
 	    boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
 	    boolean debugLeds, boolean usePowerManagement, boolean deliverLast, 
-	    boolean adjustRadioPower) {
+	    boolean adjustRadioPower, boolean useControllerComponent) {
 		super(config, tosVersion, tossimFlag, debugLeds);
 		this.id = name;
 		this.plan = plan;
@@ -105,7 +107,8 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		this.usePowerManagement = usePowerManagement;
 		this.deliverLast = deliverLast;
 		this.adjustRadioPower = adjustRadioPower;
-	
+		this.useControllerComponent = useControllerComponent;
+		
 		if (tosVersion == 1) {
 		    tosSiteAddress = "TOS_LOCAL_ADDRESS";
 		} else {
@@ -311,7 +314,13 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	if (tosVersion == 1) {
 	    doT1startupMethods(out, firstDelta, tossimFlag, sink);
 	} else {
-		doT2StartupMethods(out, firstDelta, usesRadio, sink.toString(), this.targetName);
+		if (this.useControllerComponent) {
+			doT2StartupMethodsWithCommandServer(out, firstDelta, usesRadio, 
+					sink.toString(), targetName);
+		} else {
+			doT2StartupMethods(out, firstDelta, usesRadio, sink.toString(),
+					this.targetName);
+		}
 	}
 
 	out.println(firedTimerTaskBuff);
@@ -363,7 +372,15 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    out.println("\tevent void AgendaTimer.fired()");
 	}
 	out.println("\t{\n");
-	out.println("\t\tpost processAgendaItemsTask();\n");
+	
+	if (this.useControllerComponent) {
+		out.println("\t\tif (state != STOPPED)");
+		out.println("\t\t{\n");
+		out.println("\t\t\tpost processAgendaItemsTask();\n");
+		out.println("\t\t}\n");
+	} else {
+		out.println("\t\tpost processAgendaItemsTask();\n");		
+	}
 	
 	if (tosVersion == 1) {
 	    out.println("\t\treturn SUCCESS;\n");
@@ -440,6 +457,98 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		out.println("\t\tpost sendBeaconTask();");
 		out.println("\t\treturn msg;");
 		out.println("\t}\n\n");
+	}
+	
+	//TODO: Add task invocation in firedTasksBuffer... (need to add to agenda too)
+	private void doT2StartupMethodsWithCommandServer(final PrintWriter out,
+			final int firstDelta, boolean usesRadio, String sinkID, String targetName) {
+		
+    	out.println("\ttask void processAgendaItemsTask();\n");
+
+    	out.println("\t//commands");
+    	out.println("\tenum {");
+    	out.println("\t\tSTART = 0x0,");
+    	out.println("\t\tSTOP = 0x1};\n");
+
+    	out.println("\t//states");
+    	out.println("\tenum {");
+    	out.println("\t\tINITIALIZING = 0x0,");
+    	out.println("\t\tSTARTING= 0x1,");
+    	out.println("\t\tRUNNING = 0x2,");
+    	out.println("\t\tMANAGEMENT = 0x3,");
+    	out.println("\t\tSTOPPED = 0x4};\n");
+    	
+    	out.println("\tuint8_t state = INITIALIZING;\n");
+    	
+    	out.println("\tevent void Boot.booted()");
+		out.println("\t{");
+		out.println("\t\tnextDelta = " + (firstDelta - 1) + ";");
+		out.println("\t\tagendaRow = 0;");
+		out.println("\t\t//Starts the radio and serial port");
+		out.println("\t\tcall CommandServerControl.start();");
+		out.println("\t}\n");
+	
+    	out.println("\tevent void CommandServerControl.startDone(error_t error)");
+		out.println("\t{");
+		out.println("\t\t//Awaiting start command, or started agenda management section");
+		out.println("\t}\n");
+		
+    	out.println("\tevent void CommandServerUpdate.changed(uint8_t _cmd)");
+		out.println("\t{");
+		out.println("\t\tif (_cmd == START)");
+		out.println("\t\t{");
+		out.println("\t\t\tstate = STARTING;");
+		out.println("\t\t\t//stop command server and start query execution right away");
+		out.println("\t\t\tcall CommandServerControl.stop();");
+		out.println("\t\t}");
+		out.println("\t\tif (_cmd == STOP)");
+		out.println("\t\t{");
+		out.println("\t\t\tstate = STOPPED;");
+		out.println("\t\t}");
+		out.println("\t}\n");		
+		
+    	out.println("\tevent void CommandServerControl.stopDone(error_t error)");
+		out.println("\t{");
+		out.println("\t\tif (state == STARTING)");
+		out.println("\t\t{");
+		out.println("\t\t\t//Start agenda execution;");
+		out.println("\t\t\tpost processAgendaItemsTask();\n");
+		out.println("\t\t}");
+		out.println("\t\tif (state == MANAGEMENT)");
+		out.println("\t\t{");
+		out.println("\t\t\tstate == RUNNING;");
+		out.println("\t\t\t//processAgendaItemsTask will post itself");
+		out.println("\t\t}");
+		out.println("\t\tif (state == INITIALIZING)");
+		out.println("\t\t{");
+		out.println("\t\t\t//do nothing - wait for command to come");
+		out.println("\t\t}");
+		out.println("\t}\n");
+		
+		out.println("\ttask void networkManagementTask()");
+		out.println("\t{");
+		out.println("\t\tstate = MANAGEMENT;");
+		out.println("\t\tcall CommandServerControl.start();");
+		out.println("\t}\n");
+		
+		out.println("\ttask void endNetworkManagementTask()");
+		out.println("\t{");
+		out.println("\t\tif (state != STOPPED)");
+		out.println("\t\t{");
+		out.println("\t\t//keep the command server running");
+		out.println("\t\tcall CommandServerControl.stop();");
+		out.println("\t\t}");
+		out.println("\t}\n");
+		
+		out.println("\tevent void CommControl.startDone(error_t error)");
+		out.println("\t{");
+		out.println("\t\t//Do nothing");
+		out.println("\t}\n");
+		
+		out.println("\tevent void CommControl.stopDone(error_t error)");
+		out.println("\t{");
+		out.println("\t\t//Do nothing");
+		out.println("\t}\n");
 	}
 	
 	private void doT2StartupMethods(final PrintWriter out,

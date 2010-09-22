@@ -9,6 +9,7 @@ import net.tinyos.tools.MsgReader;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
@@ -133,11 +134,20 @@ public class TinyOS_SNCB implements SNCB {
 		boolean includeDeluge = false;
 		boolean debugLeds = true;
 		boolean showLocalTime = false;
+		boolean useNodeController = false;
+		
+		try {
+			useNodeController = SNEEProperties.getBoolSetting(
+					SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
+		} catch (SNEEConfigurationException e) {
+			// Using the default setting...
+			e.printStackTrace();
+		}
 		TinyOSGenerator codeGenerator = new TinyOSGenerator(tosVersion, tossimFlag, 
 			    targetName, combinedImage, queryOutputDir, costParams, controlRadioOff,
 			    enablePrintf, useStartUpProtocol, enableLeds,
 			    usePowerManagement, deliverLast, adjustRadioPower,
-			    includeDeluge, debugLeds, showLocalTime);
+			    includeDeluge, debugLeds, showLocalTime, useNodeController);
 		//TODO: in the code generator, need to connect controller components to query plan components
 		codeGenerator.doNesCGeneration(qep);		
 	}
