@@ -14,9 +14,9 @@ for arg in sys.argv:
 #    print arg
 
 if sys.argv[2] == str(1):
-    subprocess.call(['cp', sys.argv[1], 'build/telosb'])
+    subprocess.call(['cp', sys.argv[1], '/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/clients/in-network-client/output/query1/tmotesky_t2/mote1/build/telosb/'])
     subprocess.call(['tos-set-symbols', '--objcopy', 'msp430-objcopy', '--objdump', 'msp430-objdump', '--target', 'ihex', '/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/clients/in-network-client/output/query1/tmotesky_t2/mote1/build/telosb/main.ihex', '/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/clients/in-network-client/output/query1/tmotesky_t2/mote1/build/telosb/main.ihex.out-1 ', 'TOS_NODE_ID=1', 'ActiveMessageAddressC__addr=1'])
-    subprocess.call(['tos-bsl', '--telosb', '-c', serial_port, '-r', '-e', '-I', '-p', '/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/clients/in-network-client/output/query1/tmotesky_t2/mote1/build/telosb/build/telosb/main.ihex.out-1'])
+    subprocess.call(['tos-bsl', '--telosb', '-c', serial_port, '-r', '-e', '-I', '-p', '/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/clients/in-network-client/output/query1/tmotesky_t2/mote1/build/telosb/main.ihex.out-1'])
 else:
     sys.stderr.write('tos-ota' + ' ' + motecom + ' ' + sys.argv[2] + ' ' + '--inject' + ' ' + '2' + ' ' + sys.argv[1])
     subprocess.call(['tos-ota', motecom, sys.argv[2], '--inject', '2', sys.argv[1]])
