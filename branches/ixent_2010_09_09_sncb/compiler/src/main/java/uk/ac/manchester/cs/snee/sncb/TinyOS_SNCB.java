@@ -209,20 +209,30 @@ public class TinyOS_SNCB implements SNCB {
 	}
 	
 	private void disseminateQueryPlanImages(SensorNetworkQueryPlan qep, 
-			String queryOutputDir) {
+			String queryOutputDir) throws IOException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER disseminateQueryPlanImages()");
 		String nescOutputDir = System.getProperty("user.dir")+"/"+
 			queryOutputDir+"tmotesky_t2";
+		String gatewayID = ""+qep.getGateway();
 		Iterator<Site> siteIter = qep.siteIterator(TraversalOrder.POST_ORDER);
 		while (siteIter.hasNext()) {
 			String siteID = siteIter.next().getID();
-			String moteExe = nescOutputDir+"/mote"+siteID+"/build/telosb/main.exe";
-			//TODO: invoke OTA functionality to disseminate query plan
-//			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/disseminateImage.py");
-//			String params[] = {pythonScript, siteID, moteExe};
-//			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
+			//skip the gateway
+			if (siteID.equals(gatewayID)) 
+				continue;
+			String imageFile = nescOutputDir+"/mote"+siteID+"/build/telosb/tos_image.xml";
+			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register.py");
+			String params[] = {pythonScript, imageFile, siteID};
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
 		}
+		//do the basestation last
+		String imageFile = nescOutputDir+"/mote"+gatewayID+"/build/telosb/main.ihex";
+		//TODO: invoke OTA functionality to disseminate query plan
+		String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register.py");
+		String params[] = {pythonScript, imageFile, gatewayID};
+		Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
+		
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN disseminateQueryPlanImages()");
 	}
