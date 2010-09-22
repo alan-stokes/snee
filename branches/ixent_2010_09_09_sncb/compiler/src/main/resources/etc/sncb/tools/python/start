@@ -7,12 +7,12 @@ motecom = os.getenv('MOTECOM')
 serial_port = os.getenv('SERIAL_PORT')
 
 # deploy the command server basestion
-os.chdir(os.getcwd() + '/utils')
+#os.chdir(os.getcwd() + '/utils')
 
 # disseminate a reprogram command; switch to query fragment
-subprocess.call(['./cmd-srvr', motecom, '--reprogram', '2'])
+subprocess.call(['cmd-srvr', motecom, '--reprogram', '2'])
 
 time.sleep(30)
 
 # disseminate the start command
-subprocess.call(['./cmd-srvr', motecom, '--start'])
+subprocess.call(['cmd-srvr', motecom, '--start'])
