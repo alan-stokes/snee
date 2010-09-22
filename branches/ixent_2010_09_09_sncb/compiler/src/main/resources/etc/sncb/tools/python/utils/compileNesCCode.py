@@ -120,14 +120,14 @@ def compileNesCCode(nescRootDir, target = "tmote", sensorBoard = None):
 				return exitVal
 
 			# sleep for 10 seconds
-			time.sleep(10)
+#			time.sleep(10)
 
-			commandStr = "make telosb reinstall.1 bsl,/dev/tty.usbserial-M4A7J5HX"
-			report(commandStr)
-			exitVal = os.system(commandStr)
+#			commandStr = "make telosb reinstall.1 bsl,/dev/tty.usbserial-M4A7J5HX"
+#			report(commandStr)
+#			exitVal = os.system(commandStr)
 
 			# sleep for 10 seconds
-			time.sleep(10)
+#			time.sleep(10)
 
 		os.chdir(nescRootDir)
 	return exitVal
