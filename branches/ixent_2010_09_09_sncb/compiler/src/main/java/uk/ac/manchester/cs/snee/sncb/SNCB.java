@@ -12,7 +12,7 @@ public interface SNCB {
 	
 	public void deregister();
 	
-	public void start();
+	public void start() throws SNCBException;
 	
 	public void stop();
 

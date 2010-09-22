@@ -222,14 +222,13 @@ public class TinyOS_SNCB implements SNCB {
 			if (siteID.equals(gatewayID)) 
 				continue;
 			String imageFile = nescOutputDir+"/mote"+siteID+"/build/telosb/tos_image.xml";
-			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register.py");
+			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register");
 			String params[] = {pythonScript, imageFile, siteID};
 			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
 		}
 		//do the basestation last
 		String imageFile = nescOutputDir+"/mote"+gatewayID+"/build/telosb/main.ihex";
-		//TODO: invoke OTA functionality to disseminate query plan
-		String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register.py");
+		String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register");
 		String params[] = {pythonScript, imageFile, gatewayID};
 		Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
 		
@@ -238,11 +237,17 @@ public class TinyOS_SNCB implements SNCB {
 	}
 	
 	@Override
-	public void start() {
+	public void start() throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER start()");
-		//TODO: invoke python script sending start command to initiate query execution
-		//TODO: evaluator needs to receive ect results and send them to collector
+		try {
+			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register");
+			String params[] = {pythonScript};
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
+		} catch (IOException e) {
+			logger.warn(e.getLocalizedMessage());
+			throw new SNCBException(e.getLocalizedMessage(), e);
+		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN start()");
 	}
