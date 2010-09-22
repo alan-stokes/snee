@@ -5,7 +5,7 @@
 	<artifactId>SNEE</artifactId>
 	<packaging>pom</packaging>
 	<name>SNEE</name>
-	<version>1.2.3</version>
+	<version>1.2.4-SNAPSHOT</version>
 	<description>Continuous query processing engine for streaming and stored data.</description>
 
 	<modules>
