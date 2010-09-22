@@ -548,7 +548,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		out.println("\t\t}");
 		out.println("\t\tif (state == MANAGEMENT)");
 		out.println("\t\t{");
-		out.println("\t\t\tstate == RUNNING;");
+		out.println("\t\t\tstate = RUNNING;");
 		out.println("\t\t\t//processAgendaItemsTask will post itself");
 		out.println("\t\t}");
 		out.println("\t\tif (state == INITIALIZING)");

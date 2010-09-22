@@ -2423,8 +2423,9 @@ public class TinyOSGenerator {
      * @param numNodes
      * @throws IOException
      * @throws URISyntaxException 
+     * @throws UtilsException 
      */
-    private void copyMiscFiles(int numNodes) throws IOException, URISyntaxException {
+    private void copyMiscFiles(int numNodes) throws IOException, URISyntaxException, UtilsException {
 
 		if (!tossimFlag && !combinedImage) {
 				generateIndividualMiscFiles();
@@ -2441,8 +2442,9 @@ public class TinyOSGenerator {
      * @throws IOException
      * @throws URISyntaxException 
      * @throws UtilsException 
+     * @throws UtilsException 
      */
-	private void generateIndividualMiscFiles() throws IOException, URISyntaxException {
+	private void generateIndividualMiscFiles() throws IOException, URISyntaxException, UtilsException {
 		final Iterator<Site> siteIter = plan
 		    .siteIterator(TraversalOrder.POST_ORDER);
 		while (siteIter.hasNext()) {
@@ -2460,29 +2462,15 @@ public class TinyOSGenerator {
 						    + "/itoa.h");
 		    }
 		    
-		    if (this.includeDeluge) {
+		    if (this.includeDeluge || this.useNodeController) {
 		    	Template.instantiate(
 					    NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
-					    nescOutputDir + nodeDir +"/volumes-stm25p.xml");		    	
-		    }
-		    
-		    if (this.useNodeController) {
-//		    	Template.instantiate(
-//		    			Utils.validateFileLocation(
-//		    				"etc/sncb/tools/nesC/CommandServer/CommandServer.h"),
-//		    			nescOutputDir + nodeDir + "/CommandServer.h");
-//		    	Template.instantiate(
-//		    			Utils.validateFileLocation(
-//		    				"etc/sncb/tools/nesC/CommandServer/CommandServerAppC.nc"),
-//		    			nescOutputDir + nodeDir + "/CommandServerAppC.nc");		    	
-//		    	Template.instantiate(
-//		    			Utils.validateFileLocation(
-//		    				"etc/sncb/tools/nesC/CommandServer/CommandServerC.nc"),
-//		    			nescOutputDir + nodeDir + "/CommandServerC.nc");
-		    	///XXX: Not sure if this is the right thing to do.
-		    	///Can't we just modify the Makefile to include this?
-		    	///CFLAGS += -I$(TOSDIR)/lib/net
-		    }
+					    nescOutputDir + nodeDir +"/volumes-stm25p.xml");	
+		    	
+		    	Template.instantiate(
+					    NESC_MISC_FILES_DIR + "/volumes-at45db.xml",
+					    nescOutputDir + nodeDir +"/volumes-at45db.xml");
+		    }		    
 		}
 	}
 
