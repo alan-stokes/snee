@@ -19,4 +19,4 @@ if sys.argv[2] == str(1):
     subprocess.call(['tos-bsl', '--telosb', '-c', serial_port, '-r', '-e', '-I', '-p', '/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/clients/in-network-client/output/query1/tmotesky_t2/mote1/build/telosb/main.ihex.out-1'])
 else:
     sys.stderr.write('tos-ota' + ' ' + str(motecom) + ' ' + str(sys.argv[2]) + ' ' + '--inject' + ' ' + '2' + ' ' + str(sys.argv[1]))
-    subprocess.call(['tos-ota', str(motecom), str(sys.argv[2]), '--inject', '2', str(sys.argv[1]]))
+    subprocess.call(['tos-ota', str(motecom), str(sys.argv[2]), '--inject', '2', str(sys.argv[1])])
