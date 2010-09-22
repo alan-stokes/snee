@@ -1,0 +1,132 @@
+#!/usr/bin/env python
+
+from __future__ import with_statement
+import sys
+
+class Resource:
+	def __init__(self, id, energy, ram, flash_memory):
+		self.id = id
+		self.energy = energy
+		self.ram = ram
+		self.flash_memory = flash_memory
+	
+class Link:
+	def __init__(self, source, dest, bidirectional, energy, time, radio_loss):
+		self.source = source
+		self.dest = dest
+		self.bidirectional = bidirectional
+		self.energy = energy
+		self.time = time
+		self.radio_loss = radio_loss
+		
+links = []
+resources = []
+
+def parse_file_names():
+	global topologyFile, resourceFile, topologyFileXML, resourceFileXML
+	topologyFile = sys.argv[1]
+	topologyFileXML = topologyFile.replace('txt', 'xml')
+	resourceFile = sys.argv[2]
+	resourceFileXML = resourceFile.replace('txt', 'xml')
+
+def normaliseLinkEnergy(energy):
+	return str(int(energy) * 255 / 65536)
+	
+def parse_topology_file():
+	with open(topologyFile, 'r') as f:
+		for line in f:
+			l = line.split('\"')
+			link = Link(l[1], l[3], l[5], normaliseLinkEnergy(l[7]), l[9], l[11])
+			links.append(link)
+			
+def parse_resource_file():
+	with open(resourceFile, 'r') as f:
+		for line in f:
+			l = line.split('\"')
+			resource = Resource(l[1], l[3], l[5], l[7])
+			resources.append(resource)	
+			
+def filter_topology():
+	seen = {}
+	for link in reversed(links):
+		if link.source not in seen:
+			seen[link.source] = link.dest
+		else:
+			links.remove(link)
+			
+def filter_resources():
+	seen = {}
+	for resource in reversed(resources):
+		if resource.id not in seen:
+			seen[resource.id] = resource.id
+		else:
+			resources.remove(resource)			
+
+def emit_topology_file_as_xml():
+	with open(topologyFileXML, 'w') as f:
+		f.write('<?xml version=\"1.0\"?>\n')
+		f.write('<network-topology xmlns=\"http://snee.cs.manchester.ac.uk\"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://snee.cs.manchester.ac.uk network-topology.xsd\">\n')
+		f.write('\n')
+		f.write('<units>\n')
+		f.write('\t<energy>MILLIJOULES</energy>\n')
+		f.write('\t<memory>BYTES</memory>\n')
+		f.write('\t<time>MILLISECONDS</time>\n')
+		f.write('</units>\n')
+		f.write('\n')
+		f.write('<radio-links>\n')
+		for link in links:
+			f.write('\t<radio-link source=\"' + link.source + '\" dest=\"' + link.dest + '\" bidirectional=\"' + link.bidirectional + '\" energy=\"' + link.energy + '\" time=\"' + link.time + '\" radio-loss=\"' + link.radio_loss + '\"/>\n')
+		f.write('</radio-links>\n')
+		f.write('\n')
+		f.write('</network-topology>\n')
+		
+def emit_resource_file_as_xml():
+	with open(resourceFileXML, 'w') as f:
+		f.write('<?xml version=\'1.0\'?>\n')
+		f.write('\n')
+		f.write('<network-topology xmlns=\"http://snee.cs.manchester.ac.uk\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://snee.cs.manchester.ac.uk network-topology.xsd\">\n')
+		f.write('\n')
+		f.write('<units>\n')
+		f.write('\t<energy>JOULES</energy>\n')
+		f.write('\t<memory>KILOBYTES</memory>\n')	
+		f.write('</units>\n')
+		f.write('\n');
+		f.write('<sites>\n')
+		f.write('\t<default>\n')
+		f.write('\t\t<energy-stock>9999</energy-stock>\n')
+		f.write('\t\t<ram>10</ram>\n')
+		f.write('\t\t<flash-memory>48</flash-memory>\n')
+		f.write('\t</default>\n')
+		f.write('\n');
+#		f.write('\t<site id=\"0\">\n')
+#		f.write('\t\t<energy-stock>9999</energy-stock>  <!-- assume a tethered gateway node -->\n')
+#		f.write('\t\t<ram>10</ram>\n')
+#		f.write('\t\t<flash-memory>48</flash-memory>\n')
+#		f.write('\t</site>\n')
+#		f.write('\n');	
+		for resource in resources:
+			f.write('\t<site id=\"' + resource.id + '\">\n')
+			f.write('\t\t<energy-stock>' + resource.energy + '</energy-stock>\n')
+			f.write('\t\t<ram>' + resource.ram + '</ram>\n')
+			f.write('\t\t<flash-memory>' + resource.flash_memory + '</flash-memory>\n')
+			f.write('\t</site>\n')
+			f.write('\n');
+		f.write('</sites>\n')		
+		f.write('\n');
+		f.write('</site-resources>\n')		
+
+def print_usage():
+	print('collect-metadata <topology.txt> <resources.txt>')
+
+if len(sys.argv) == 3:
+	parse_file_names()
+
+	parse_topology_file()
+	filter_topology()
+	emit_topology_file_as_xml()
+
+	parse_resource_file()
+	filter_resources()
+	emit_resource_file_as_xml()
+else:
+	print_usage()
