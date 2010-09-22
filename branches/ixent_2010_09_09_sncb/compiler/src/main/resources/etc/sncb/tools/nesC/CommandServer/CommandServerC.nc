@@ -64,7 +64,7 @@ module CommandServerC {
     interface DisseminationValue<command_msg_t>;
     interface DisseminationUpdate<command_msg_t>;
 
-//    interface Leds;
+    interface Leds;
 
     interface Timer<TMilli>;
 
@@ -151,6 +151,12 @@ implementation {
 #endif
     } else {
 // Do signal start/stop to the basestation
+      if (newCmd->cmd == STARTED) {
+        call Leds.led0On();
+      }
+      if (newCmd->cmd == STOPPED) { 
+        call Leds.led1On();
+      }
       signal StateChanged.changed(newCmd->cmd);
     }
   }
