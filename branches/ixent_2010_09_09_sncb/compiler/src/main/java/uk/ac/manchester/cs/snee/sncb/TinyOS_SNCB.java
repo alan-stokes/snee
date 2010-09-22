@@ -57,7 +57,9 @@ public class TinyOS_SNCB implements SNCB {
 					"CLASSPATH=.:"+tosRootDir+"/support/sdk/java/tinyos.jar",
 					"PATH="+System.getenv("PATH")+":"+tosRootDir+"/bin:"+
 					tosRootDir+"/support/sdk/c:"+
-					"/opt/local/bin:/opt/local/sbin:/Library/Java/Home/bin"};
+					"/opt/local/bin:/opt/local/sbin:/Library/Java/Home/bin"+
+					":/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/compiler/src/main/resources/etc/sncb/tools/python/utils:"+
+					"/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/compiler/src/main/resources/etc/sncb/tools/python"};
 //					"PATH=/opt/local/bin:/opt/local/sbin:/usr/local/mysql/bin:/bin:/Library/Java/Home/bin:/Users/ixent/work/tinyos-2.x/bin:/Users/ixent/work/tinyos-2.x/support/sdk/c:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/git/bin:/usr/X11/bin:/Users/ixent/Documents/workspace/qos-aware/scripts/batch:/Users/ixent/Documents/workspace/qos-aware/scripts/utils:/Users/ixent/Documents/workspace/qos-aware/scripts/qos-exp",
 //					"JAVA_HOME=/Library/Java/Home",
 //					"JAVAHOME=/usr/bin"};
