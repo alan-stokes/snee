@@ -45,8 +45,10 @@ import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.EndManagementTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.FragmentTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.ManagementTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
@@ -222,6 +224,12 @@ public class QueryPlanModuleComponent extends NesCComponent {
 				    && (agendaRowContainsSleepTask == false)) {
 				doInvokeSleepTask(agendaCheckingBuff, task);
 				agendaRowContainsSleepTask = true;
+			    } else if (task instanceof ManagementTask) {
+			    	doInvokeManagementTask(agendaCheckingBuff, indentation);
+			    	first = false;
+			    } else if (task instanceof EndManagementTask) {
+			    	doInvokeEndManagementTask(agendaCheckingBuff, indentation);
+			    	first = false;
 			    }
 	
 			    if ((tossimFlag == true) && !(task instanceof SleepTask)) {
@@ -255,7 +263,31 @@ public class QueryPlanModuleComponent extends NesCComponent {
 			firedTimerTaskBuff, agendaCheckingBuff, radioOnTaskBuff, usesRadio);
     }
 
-    /**
+    private void doInvokeManagementTask(StringBuffer agendaCheckingBuff,
+			int ind) {
+        agendaCheckingBuff.append(Utils.indent(ind)
+    		    + "\t\t\t\tcall AgendaTimer.startOneShot(nextDelta);\n");
+
+    	agendaCheckingBuff.append(Utils.indent(ind) + "\t\t\t\tdbg(\"DBG_USR2\",\""
+    		+ "ManagementTask"
+    		+ " timer fired at row %d\\n\",agendaRow);\n");
+    	agendaCheckingBuff.append(Utils.indent(ind) + 
+    			"\t\t\t\tpost networkManagementTask();\n");	
+    }
+
+    private void doInvokeEndManagementTask(StringBuffer agendaCheckingBuff,
+			int ind) {
+        agendaCheckingBuff.append(Utils.indent(ind)
+    		    + "\t\t\t\tcall AgendaTimer.startOneShot(nextDelta);\n");
+
+    	agendaCheckingBuff.append(Utils.indent(ind) + "\t\t\t\tdbg(\"DBG_USR2\",\""
+    		+ "EndManagementTask"
+    		+ " timer fired at row %d\\n\",agendaRow);\n");
+    	agendaCheckingBuff.append(Utils.indent(ind) + 
+    			"\t\t\t\tpost endNetworkManagementTask();\n");	
+    }
+    
+	/**
      * Checks whether the radio is used by the configuration.
      * @return
      */
