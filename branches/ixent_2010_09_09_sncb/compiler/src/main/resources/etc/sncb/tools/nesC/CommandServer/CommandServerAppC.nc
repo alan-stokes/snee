@@ -71,8 +71,8 @@ implementation {
   CommandServerC.DisseminationValue -> DisseminatorC;
   CommandServerC.DisseminationUpdate -> DisseminatorC;
 
-//  components LedsC;
-//  CommandServerC.Leds -> LedsC;
+  components LedsC;
+  CommandServerC.Leds -> LedsC;
 
   components new TimerMilliC();
   CommandServerC.Timer -> TimerMilliC;

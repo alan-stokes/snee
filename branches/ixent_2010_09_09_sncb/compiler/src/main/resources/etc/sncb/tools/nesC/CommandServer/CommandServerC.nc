@@ -151,10 +151,10 @@ implementation {
 #endif
     } else {
 // Do signal start/stop to the basestation
-      if (newCmd->cmd == STARTED) {
+      if (newCmd->cmd == START) {
         call Leds.led0On();
       }
-      if (newCmd->cmd == STOPPED) { 
+      if (newCmd->cmd == STOP) { 
         call Leds.led1On();
       }
       signal StateChanged.changed(newCmd->cmd);
