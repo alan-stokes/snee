@@ -50,6 +50,8 @@ public class TinyOS_SNCB implements SNCB {
 			//TODO: Need to figure out which env vars are needed for mig. For now,
 			//eclipse must be invoked from terminal for it to work.
 			this.tinyOSEnvVars = new String[] {
+					"MOTECOM=serial@/dev/tty.usbserial-XBTDYCY7:115200",
+					"SERIAL_PORT=/dev/tty.usbserial-XBTDYCY7",
 					"TOSROOT="+tosRootDir,
 					"TOSDIR="+tosRootDir+"/tos",
 					"MAKERULES="+tosRootDir+"/support/make/Makerules",
@@ -201,7 +203,7 @@ public class TinyOS_SNCB implements SNCB {
 		Message msg = new DeliverMessage();
 		//Message msg = (Message)msgObj;
 		DeliverOperator delOp = (DeliverOperator) qep.getLAF().getRootOperator();
-		SerialPortMessageReceiver mr = new SerialPortMessageReceiver("serial@/dev/tty.usbserial-M4A7J5HX:telos",
+		SerialPortMessageReceiver mr = new SerialPortMessageReceiver("serial@/dev/tty.usbserial-XBTDYCY7:telos",
 				delOp);
 		mr.addMsgType(msg);
 		System.err.println("hurrah! "+msg.amType());
@@ -229,7 +231,7 @@ public class TinyOS_SNCB implements SNCB {
 			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
 		}
 		//do the basestation last
-		String imageFile = nescOutputDir+"/mote"+gatewayID+"/build/telosb/main.ihex";
+		String imageFile = nescOutputDir+"/mote"+gatewayID+"/build/telosb/main.exe";
 		String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register");
 		String params[] = {pythonScript, imageFile, gatewayID};
 		Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
@@ -243,7 +245,7 @@ public class TinyOS_SNCB implements SNCB {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER start()");
 		try {
-			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register");
+			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/start");
 			String params[] = {pythonScript};
 			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
 		} catch (IOException e) {
