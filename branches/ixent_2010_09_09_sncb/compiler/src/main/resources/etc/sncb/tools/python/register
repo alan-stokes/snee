@@ -14,5 +14,5 @@ if sys.argv[2] == str(1):
     subprocess.call(['tos-set-symbols', '--objcopy', 'msp430-objcopy', '--objdump', 'msp430-objdump', '--target', 'ihex', 'build/telosb/main.ihex', 'build/telosb/main.ihex.out-1 ', 'TOS_NODE_ID=1', 'ActiveMessageAddressC__addr=1'])
     subprocess.call(['tos-bsl', '--telosb', '-c', serial_port, '-r', '-e', '-I', '-p', 'build/telosb/main.ihex.out-1'])
 else:
-    sys.stderr.write('tos-ota' + ' ' + motecom + ' ' + sys.argv[2] + ' ' + '--inject', '2' + ' ' + sys.argv[1])
+    sys.stderr.write('tos-ota' + ' ' + motecom + ' ' + sys.argv[2] + ' ' + '--inject' + ' ' + '2' + ' ' + sys.argv[1])
     subprocess.call(['tos-ota', motecom, sys.argv[2], '--inject', '2', sys.argv[1]])
