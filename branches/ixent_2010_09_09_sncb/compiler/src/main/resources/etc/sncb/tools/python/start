@@ -1,18 +1,24 @@
 #!/usr/bin/env python
 
-import os, subprocess, time
+# First thing, append the utils directory to the search path.
+import sys, os, subprocess, time
+utils_dir = os.path.dirname(__file__) + '/utils'
+sys.path.append(utils_dir)
 
-tosroot = os.getenv('TOSROOT')
-motecom = os.getenv('MOTECOM')
-serial_port = os.getenv('SERIAL_PORT')
+# Now we can import the basestation module
+import basestation
 
-# deploy the command server basestion
-#os.chdir(os.getcwd() + '/utils')
+# Change to the utils directory
+os.chdir(utils_dir)
+
+# Discover the environment variables
+basestation = basestation.find_basestation()
+source = 'serial@' + basestation + ':115200'
 
 # disseminate a reprogram command; switch to query fragment
-subprocess.call(['cmd-srvr', motecom, '--reprogram', '2'])
+subprocess.call(['./cmd-srvr', source, '--reprogram', '2'])
 
 time.sleep(30)
 
 # disseminate the start command
-subprocess.call(['cmd-srvr', motecom, '--start'])
+subprocess.call(['./cmd-srvr', source, '--start'])

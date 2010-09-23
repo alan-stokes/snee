@@ -1,18 +1,25 @@
 #!/usr/bin/env python
 
-import os, time, subprocess
+# First thing, append the utils directory to the search path.
+import sys, os, subprocess, time
+utils_dir = os.path.dirname(__file__) + '/utils'
+sys.path.append(utils_dir)
 
-tosroot = os.getenv('TOSROOT')
-motecom = os.getenv('MOTECOM')
-serial_port = os.getenv('SERIAL_PORT')
+# Now we can import the basestation module
+import basestation
 
-os.chdir(os.getcwd() + '/utils')
+# Change to the utils directory
+os.chdir(utils_dir)
+
+# Discover the environment variables
+basestation = basestation.find_basestation()
+source = 'serial@' + basestation + ':115200'
 
 # disseminate the stop command
-subprocess.call(['./cmd-srvr', motecom, '--stop'])
+subprocess.call(['./cmd-srvr', source, '--stop'])
 
 # sleep for 10 seconds
 time.sleep(10)
 
 # disseminate a reprogram command; switch to ota
-subprocess.call(['./cmd-srvr', motecom, '--reprogram', '1'])
+subprocess.call(['./cmd-srvr', source, '--reprogram', '1'])
