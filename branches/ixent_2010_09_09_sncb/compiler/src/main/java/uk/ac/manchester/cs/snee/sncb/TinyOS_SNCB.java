@@ -35,6 +35,7 @@ public class TinyOS_SNCB implements SNCB {
 
 	private boolean combinedImage = false;
 
+	private String serialPort = "/dev/tty.usbserial-XBS518RP";
 	
 	public TinyOS_SNCB(SensorNetworkSourceMetadata metadata)
 	throws SNCBException {
@@ -50,8 +51,8 @@ public class TinyOS_SNCB implements SNCB {
 			//TODO: Need to figure out which env vars are needed for mig. For now,
 			//eclipse must be invoked from terminal for it to work.
 			this.tinyOSEnvVars = new String[] {
-					"MOTECOM=serial@/dev/tty.usbserial-XBTDYCY7:115200",
-					"SERIAL_PORT=/dev/tty.usbserial-XBTDYCY7",
+					"MOTECOM=serial@"+serialPort,
+					"SERIAL_PORT="+serialPort,
 					"TOSROOT="+tosRootDir,
 					"TOSDIR="+tosRootDir+"/tos",
 					"MAKERULES="+tosRootDir+"/support/make/Makerules",
@@ -203,7 +204,7 @@ public class TinyOS_SNCB implements SNCB {
 		//Message msg = new DeliverMessage(); // needed for web service, for now.
 		Message msg = (Message)msgObj;
 		DeliverOperator delOp = (DeliverOperator) qep.getLAF().getRootOperator();
-		SerialPortMessageReceiver mr = new SerialPortMessageReceiver("serial@/dev/tty.usbserial-XBTDYCY7:telos",
+		SerialPortMessageReceiver mr = new SerialPortMessageReceiver("serial@"+this.serialPort+":telos",
 				delOp);
 		mr.addMsgType(msg);
 		System.err.println("hurrah! "+msg.amType());
@@ -227,13 +228,13 @@ public class TinyOS_SNCB implements SNCB {
 				continue;
 			String imageFile = nescOutputDir+"/mote"+siteID+"/build/telosb/tos_image.xml";
 			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register");
-			String params[] = {pythonScript, imageFile, siteID};
+			String params[] = {pythonScript, imageFile, siteID, gatewayID};
 			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
 		}
 		//do the basestation last
 		String imageFile = nescOutputDir+"/mote"+gatewayID+"/build/telosb/main.exe";
 		String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register");
-		String params[] = {pythonScript, imageFile, gatewayID};
+		String params[] = {pythonScript, imageFile, gatewayID, gatewayID};
 		Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
 		
 		if (logger.isTraceEnabled())
