@@ -9,3 +9,9 @@ def find_basestation():
     end = out.find(' ', start, len(out))
 
     return out[start:end]
+
+def main():
+    print find_basestation()
+
+if __name__ == "__main__":
+	main()
