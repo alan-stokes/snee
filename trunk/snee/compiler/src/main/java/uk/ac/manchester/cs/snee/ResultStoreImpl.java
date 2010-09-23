@@ -35,11 +35,14 @@ extends Observable implements ResultStore {
 
 	private ResultSetMetaData metadata;
 
+	private String queryId;
+
 	public ResultStoreImpl(String query, QueryExecutionPlan queryPlan) 
 	throws SNEEException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER ResultStoreImpl() for " + query);
 		try {
+			queryId = queryPlan.getID();
 			command = query;
 			metadata = createMetaData(queryPlan);
 			_data = createDataStore();
@@ -104,8 +107,8 @@ extends Observable implements ResultStore {
 	
 	public void add(Output data) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("Number of existing data items: " + 
-					_data.size());
+			logger.debug("Query " + queryId + " Number of " +
+					"existing data items: " + _data.size());
 		}
 		synchronized (this) {			
 			_data.add(data);
@@ -124,8 +127,8 @@ extends Observable implements ResultStore {
 	
 	public void addAll(Collection<Output> data) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("Number of existing data items: " + 
-					_data.size());
+			logger.debug("Query " + queryId + " Number of " +
+					"existing data items: " + _data.size());
 		}
 		synchronized (this) {
 			_data.addAll(data);
