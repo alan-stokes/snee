@@ -103,6 +103,10 @@ extends Observable implements ResultStore {
 	}
 	
 	public void add(Output data) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("Number of existing data items: " + 
+					_data.size());
+		}
 		synchronized (this) {			
 			_data.add(data);
 		}
@@ -119,6 +123,10 @@ extends Observable implements ResultStore {
 	}
 	
 	public void addAll(Collection<Output> data) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("Number of existing data items: " + 
+					_data.size());
+		}
 		synchronized (this) {
 			_data.addAll(data);
 		}
