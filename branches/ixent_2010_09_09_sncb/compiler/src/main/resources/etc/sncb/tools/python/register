@@ -1,22 +1,33 @@
 #!/usr/bin/env python
 
-import os, subprocess, getopt, sys
+# First thing, append the utils directory to the search path.
+import sys, os, subprocess
+utils_dir = os.path.dirname(__file__) + '/utils'
+sys.path.append(utils_dir)
 
-tosroot = os.getenv('TOSROOT')
-motecom = os.getenv('MOTECOM')
-serial_port = os.getenv('SERIAL_PORT')
+# Now we can import the basestation module
+import basestation
 
-# switch the ota client script folder
-#os.chdir(os.getcwd() + '/utils')
+# Change to the utils directory
+os.chdir(utils_dir)
 
-#for arg in sys.argv:
-#    sys.stderr.write(arg)
-#    print arg
+# Discover the environment variables
+basestation = basestation.find_basestation()
+source = 'serial@' + basestation + ':115200'
 
-if str(sys.argv[2]) == str(1):
-    subprocess.call(['cp', str(sys.argv[1]), '/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/clients/in-network-client/output/query1/tmotesky_t2/mote1/build/telosb/'])
-    subprocess.call(['tos-set-symbols', '--objcopy', 'msp430-objcopy', '--objdump', 'msp430-objdump', '--target', 'ihex', '/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/clients/in-network-client/output/query1/tmotesky_t2/mote1/build/telosb/main.ihex', '/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/clients/in-network-client/output/query1/tmotesky_t2/mote1/build/telosb/main.ihex.out-1 ', 'TOS_NODE_ID=1', 'ActiveMessageAddressC__addr=1'])
-    subprocess.call(['tos-bsl', '--telosb', '-c', serial_port, '-r', '-e', '-I', '-p', '/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/clients/in-network-client/output/query1/tmotesky_t2/mote1/build/telosb/main.ihex.out-1'])
+# Check if we are trying to flash the basestation
+if sys.argv[2] == sys.argv[3]:
+# If we are we need to overwrite the running image on the basestation with the
+# new image. NOTE! You should always flash the basestation last because you
+# will be unable to flash remote motes after the re-image occurs.
+
+# Set the symbols in the file
+    ihex_file = sys.argv[1].replace('exe', 'ihex')
+    print ['tos-set-symbols', '--objcopy', 'msp430-objcopy', '--objdump', 'msp430-objdump', '--target', 'ihex', ihex_file, ihex_file + '-' + sys.argv[3], 'TOS_NODE_ID=' + sys.argv[3], 'ActiveMessageAddressC__addr=' + sys.argv[3]]
+    subprocess.call(['tos-set-symbols', '--objcopy', 'msp430-objcopy', '--objdump', 'msp430-objdump', '--target', 'ihex', ihex_file, ihex_file + '-' + sys.argv[3], 'TOS_NODE_ID=' + sys.argv[3], 'ActiveMessageAddressC__addr=' + sys.argv[3]])
+# Flash the mote
+    print ['tos-bsl', '--telosb', '-c', basestation, '-r', '-e', '-I', '-p', ihex_file + '-' + sys.argv[3]]
+    subprocess.call(['tos-bsl', '--telosb', '-c', basestation, '-r', '-e', '-I', '-p', ihex_file + '-' + sys.argv[3]])
 else:
-    sys.stderr.write('tos-ota' + ' ' + str(motecom) + ' ' + str(sys.argv[2]) + ' ' + '--inject' + ' ' + '2' + ' ' + str(sys.argv[1]))
-    subprocess.call(['tos-ota', str(motecom), str(sys.argv[2]), '--inject', '2', str(sys.argv[1])])
+# If not call tos-ota
+    subprocess.call(['./tos-ota', source, sys.argv[2], '--inject', '2', sys.argv[1]])
