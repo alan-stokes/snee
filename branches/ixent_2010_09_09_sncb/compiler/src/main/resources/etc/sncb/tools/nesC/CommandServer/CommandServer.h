@@ -19,4 +19,6 @@ typedef nx_struct command_msg_t {
 
 #define REBOOT_TIME 10 * 1024
 
+#define SNEE_OTA_MANAGER 0x1
+
 #endif

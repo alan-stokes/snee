@@ -71,7 +71,6 @@ module CommandServerC {
     interface NetProg;
     interface StorageMap[uint8_t volumeId];
 
-    interface SplitControl as SerialControl;
     interface Receive;
   }
 }
@@ -89,25 +88,16 @@ implementation {
   }
 
   command error_t SplitControl.start() {
-    return call SerialControl.start();
+    return call RadioControl.start();
   }
 
   command error_t SplitControl.stop() {
-    //return call SerialControl.stop();
     post signalStopDone();
     return SUCCESS;
   }
 
   task void signalStopDone() {
     signal SplitControl.stopDone(SUCCESS);
-  }
-
-  event void SerialControl.startDone(error_t error) {
-    call RadioControl.start();
-  }
-  
-  event void SerialControl.stopDone(error_t error) {
-    call RadioControl.stop();
   }
 
   event void RadioControl.startDone( error_t result ) {    
@@ -139,47 +129,51 @@ implementation {
 // Don't reboot the basestation!
 #ifndef COMMAND_SERVER_BASESTATION      
       newImageNum = newCmd->imageNum;
-
 // Prevent reflashing of current image. This could probably be improved.
       if (SNEE_IMAGE_ID == newImageNum) { return; }
-
-//      if (newImageNum == 0) {
-//        call Leds.led0On();
-//      } else if (newImageNum == 1) {
-//        call Leds.led1On();
-//      } else if (newImageNum == 2) {
-//        call Leds.led2Off();
-//      } else {
-//        call Leds.led0On();
-//        call Leds.led1On();
-//        call Leds.led2On();
-//      }
+/*
+      if (newImageNum == 0) {
+        call Leds.led0On();
+      } else if (newImageNum == 1) {
+        call Leds.led1On();
+      } else if (newImageNum == 2) {
+        call Leds.led2Off();
+      } else {
+        call Leds.led0On();
+        call Leds.led1On();
+        call Leds.led2On();
+      }
+*/
       call Timer.startOneShot(REBOOT_TIME);		
 #endif
     } else {
 // Do signal start/stop to the basestation
+/*
       if (newCmd->cmd == START) {
         call Leds.led0On();
       }
       if (newCmd->cmd == STOP) { 
         call Leds.led1On();
       }
+*/
       signal StateChanged.changed(newCmd->cmd);
     }
   }
 
   event void Timer.fired() {
-//    if (newImageNum == 0) {
-//      call Leds.led0Off();
-//    } else if (newImageNum == 1) {
-//      call Leds.led1Off();
-//    } else if (newImageNum == 2) {
-//      call Leds.led2Off();
-//    } else {
-//      call Leds.led0Off();
-//      call Leds.led1Off();
-//      call Leds.led2Off();
-//    }
+/*
+    if (newImageNum == 0) {
+      call Leds.led0Off();
+    } else if (newImageNum == 1) {
+      call Leds.led1Off();
+    } else if (newImageNum == 2) {
+      call Leds.led2Off();
+    } else {
+      call Leds.led0Off();
+      call Leds.led1Off();
+      call Leds.led2Off();
+    }
+*/
     call NetProg.programImageAndReboot(call StorageMap.getPhysicalAddress[newImageNum](0));
   }
 }

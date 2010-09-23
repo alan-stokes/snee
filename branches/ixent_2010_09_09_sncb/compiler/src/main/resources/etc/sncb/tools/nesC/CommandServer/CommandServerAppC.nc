@@ -82,10 +82,8 @@ implementation {
   CommandServerC.NetProg -> NetProgC;
   CommandServerC.StorageMap -> BlockStorageManagerC;
 
-  components SerialActiveMessageC;
-  CommandServerC.SerialControl -> SerialActiveMessageC;
-  components new SerialAMReceiverC(0x1);
-  CommandServerC.Receive -> SerialAMReceiverC;	
+  components new SerialAMReceiverC(SNEE_OTA_MANAGER);
+  CommandServerC.Receive -> SerialAMReceiverC;
 
   SplitControl = CommandServerC;
   StateChanged = CommandServerC;
