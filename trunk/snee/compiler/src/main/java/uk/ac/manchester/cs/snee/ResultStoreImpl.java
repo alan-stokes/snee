@@ -42,7 +42,7 @@ extends Observable implements ResultStore {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER ResultStoreImpl() for " + query);
 		try {
-			queryId = queryPlan.getID();
+			queryId = setQueryId(queryPlan);
 			command = query;
 			metadata = createMetaData(queryPlan);
 			_data = createDataStore();
@@ -53,6 +53,10 @@ extends Observable implements ResultStore {
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN ResultStoreImpl()");
+	}
+
+	protected String setQueryId(QueryExecutionPlan queryPlan) {
+		return queryPlan.getID();
 	}
 
 	protected ResultSetMetaData createMetaData(
