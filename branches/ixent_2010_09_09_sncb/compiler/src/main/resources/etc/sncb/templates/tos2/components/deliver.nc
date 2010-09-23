@@ -19,7 +19,7 @@ __HEADER__
 	error_t result;
 	int8_t tuplePacketPos;
 	uint8_t pending=FALSE;
-	bool serialDeviceOn = FALSE;
+	bool serialDevicePending = FALSE;
 
 	command error_t DoTask.open()
 	{
@@ -27,47 +27,39 @@ __HEADER__
 		return SUCCESS;
 	}
 
-	void task serialDeviceOnTask();
-
 	command error_t DoTask.doTask()
   	{
 		dbg("__DBG_CHANNEL__","__MODULE_NAME__ __OPERATOR_DESCRIPTION__ doTask() entered as evalEpoch %d, now call child\n",evalEpoch);
 
-		if (firstTime) {
-		   evalEpoch = 0;
-		   firstTime = FALSE;
-		}
-
 		bFactorCount = 0;
 		tuplePacketPos = 0;
 
-		post serialDeviceOnTask();
-	   	return SUCCESS;
-  	}
-
-	void task serialDeviceOnTask()
-	{
-		if (serialDeviceOn == FALSE)
+		if (firstTime) 
 		{
+			evalEpoch = 0;
+		   	firstTime = FALSE;
+			serialDevicePending = TRUE;
 			call SerialAMControl.start();
 		}
 		else
 		{
 			call Child.requestData(evalEpoch);
 		}
-	}
+
+	   	return SUCCESS;
+  	}
 
 	event void SerialAMControl.startDone(error_t error)
 	{
-		if (error==SUCCESS)
+		//only do something if this component invoked SerialAMControl.startDone
+		if (serialDevicePending == TRUE)
 		{
-			serialDeviceOn = TRUE;
-			dbg("__DBG_CHANNEL__", "Serial port switched on successfully.\n");
+			if (error!=SUCCESS)
+			{
+				dbg("__DBG_CHANNEL__", "Serial device was already on",error);
+			}
+			serialDevicePending = FALSE;
 			call Child.requestData(evalEpoch);
-		}
-		else
-		{
-			dbg("__DBG_CHANNEL__", "Error code %d when switching on serial device",error);
 		}
 	}
 
@@ -221,16 +213,10 @@ __HEADER__
 
 	}
 
-	void task serialDeviceOffTask()
-	{
-		call SerialAMControl.stop();
-	}
-
 	event void SerialAMControl.stopDone(error_t error)
 	{
 		if (error==SUCCESS)
 		{
-			serialDeviceOn = FALSE;
 			dbg("__DBG_CHANNEL__", "Serial port switched off successfully.\n");
 		}
 		else
