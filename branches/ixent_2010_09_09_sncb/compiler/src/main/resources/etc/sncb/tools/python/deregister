@@ -8,8 +8,8 @@ sys.path.append(utils_dir)
 # Now we can import the basestation module
 import basestation
 
-# Change to the utils directory
-os.chdir(utils_dir)
+# Now add the snee utilities to PATH
+os.environ['PATH'] = utils_dir + ':' + os.environ['PATH']
 
 # Discover the environment variables
 basestation = basestation.find_basestation()
@@ -20,4 +20,4 @@ mote_ids = getopt.getopt(sys.argv[1:], '')[1]
 
 #iterate over the mote ids to register the query fragment
 for mote_id in mote_ids:
-    subprocess.call(['./tos-ota', source, mote_id, '--erase', '2'])
+    subprocess.call(['tos-ota', source, mote_id, '--erase', '2'])

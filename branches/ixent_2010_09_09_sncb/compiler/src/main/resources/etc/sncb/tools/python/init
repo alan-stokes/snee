@@ -8,6 +8,9 @@ sys.path.append(utils_dir)
 # Now we can import the basestation module
 import basestation
 
+# Now add the snee utilities to PATH
+os.environ['PATH'] = utils_dir + ':' + os.environ['PATH']
+
 # Discover the environment variables
 basestation = basestation.find_basestation()
 source = 'serial@' + basestation + ':115200'
@@ -17,22 +20,20 @@ os.chdir(os.path.dirname(__file__) + '../nesC/MetadataCollector')
 subprocess.call(['make', 'telosb', 'install,' + sys.argv[2], 'bsl,' + basestation])
 
 # start sending metadata
-os.chdir(utils_dir)
-subprocess.call(['./cmd-srvr', source, '--start'])
+subprocess.call(['cmd-srvr', source, '--start'])
 
 # collect metadata
-subprocess.call(['./metadata-collector', source, sys.argv[1], sys.argv[2]])
+subprocess.call(['metadata-collector', source, sys.argv[1], sys.argv[2]])
 
 # stop sending metadata
-subprocess.call(['./cmd-srvr', source, '--stop'])
+subprocess.call(['cmd-srvr', source, '--stop'])
 
 # parse text file and convert to xml
-subprocess.call(['./snee-txt-to-xml', sys.argv[1], sys.argv[2]])
+subprocess.call(['snee-txt-to-xml', sys.argv[1], sys.argv[2]])
 
 # deploy the OTA basestion
 os.chdir(os.path.dirname(__file__) + '../nesC/OtaBasestation')
 subprocess.call(['make', 'telosb', 'install,' + sys.argv[2], 'bsl,' + basestation])
 
 # boot into ota
-os.chdir(utils_dir)
-subprocess.call(['./cmd-srvr', source, '--reprogram', '1'])
+subprocess.call(['cmd-srvr', source, '--reprogram', '1'])

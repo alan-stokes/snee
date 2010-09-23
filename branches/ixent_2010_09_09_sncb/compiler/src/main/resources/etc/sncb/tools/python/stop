@@ -8,18 +8,18 @@ sys.path.append(utils_dir)
 # Now we can import the basestation module
 import basestation
 
-# Change to the utils directory
-os.chdir(utils_dir)
+# Now add the snee utilities to PATH
+os.environ['PATH'] = utils_dir + ':' + os.environ['PATH']
 
 # Discover the environment variables
 basestation = basestation.find_basestation()
 source = 'serial@' + basestation + ':115200'
 
 # disseminate the stop command
-subprocess.call(['./cmd-srvr', source, '--stop'])
+subprocess.call(['cmd-srvr', source, '--stop'])
 
 # sleep for 10 seconds
 time.sleep(10)
 
 # disseminate a reprogram command; switch to ota
-subprocess.call(['./cmd-srvr', source, '--reprogram', '1'])
+subprocess.call(['cmd-srvr', source, '--reprogram', '1'])

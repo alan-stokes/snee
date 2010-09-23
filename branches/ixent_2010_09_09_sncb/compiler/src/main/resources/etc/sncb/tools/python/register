@@ -8,8 +8,8 @@ sys.path.append(utils_dir)
 # Now we can import the basestation module
 import basestation
 
-# Change to the utils directory
-os.chdir(utils_dir)
+# Now add the snee utilities to PATH
+os.environ['PATH'] = utils_dir + ':' + os.environ['PATH']
 
 # Discover the environment variables
 basestation = basestation.find_basestation()
@@ -28,4 +28,4 @@ if sys.argv[2] == sys.argv[3]:
     subprocess.call(['tos-bsl', '--telosb', '-c', basestation, '-r', '-e', '-I', '-p', ihex_file + '-' + sys.argv[3]])
 else:
 # If not call tos-ota
-    subprocess.call(['./tos-ota', source, sys.argv[2], '--inject', '2', sys.argv[1]])
+    subprocess.call(['tos-ota', source, sys.argv[2], '--inject', '2', sys.argv[1]])
