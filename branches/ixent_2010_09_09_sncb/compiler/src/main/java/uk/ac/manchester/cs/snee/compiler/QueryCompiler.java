@@ -290,6 +290,8 @@ public class QueryCompiler {
 			logger.trace("ENTER createQueryDirectory() queryID: " + queryID);
 		String queryPlanOutputDir;
 		try {
+			Utils.deleteDirectoryContents(SNEEProperties.getSetting(
+					SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR));
 			String fileSeparator = System.getProperty("file.separator");
 			String outputRootDir = 
 				SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +

@@ -144,37 +144,37 @@ public class Utils {
 			}
 		}
 	}
-//
-//	/**
-//	 * Delete all the folders and subdirectories of the given directory
-//	 * @param path
-//	 * @return
-//	 */
-//	public static boolean deleteDirectoryContents(File path) {
-//		if (path.exists()) {
-//			File[] files = path.listFiles();
-//			for (int i = 0; i < files.length; i++) {
-//				if (files[i].isDirectory()) {
-//					deleteDirectoryContents(files[i]);
-//					files[i].delete();
-//				} else {
-//					files[i].delete();
-//				}
-//			}
-//			return true;
-//		}
-//		return false;
-//	}
-//
-//	/**
-//	 * Delete the contents of a directory
-//	 * @param pathName directory name 
-//	 * @return
-//	 */
-//	public static boolean deleteDirectoryContents(String pathName) {
-//		File path = new File(pathName);
-//		return deleteDirectoryContents(path);
-//	}
+
+	/**
+	 * Delete all the folders and subdirectories of the given directory
+	 * @param path
+	 * @return
+	 */
+	public static boolean deleteDirectoryContents(File path) {
+		if (path.exists()) {
+			File[] files = path.listFiles();
+			for (int i = 0; i < files.length; i++) {
+				if (files[i].isDirectory()) {
+					deleteDirectoryContents(files[i]);
+					files[i].delete();
+				} else {
+					files[i].delete();
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Delete the contents of a directory
+	 * @param pathName directory name 
+	 * @return
+	 */
+	public static boolean deleteDirectoryContents(String pathName) {
+		File path = new File(pathName);
+		return deleteDirectoryContents(path);
+	}
 //
 //	public int divideAndRoundUp(int dividend, int divisor) {
 //		if ((dividend % divisor) == 0)
