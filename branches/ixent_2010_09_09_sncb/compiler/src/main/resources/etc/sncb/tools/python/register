@@ -22,7 +22,7 @@ if sys.argv[2] == sys.argv[3]:
 # will be unable to flash remote motes after the re-image occurs.
 
 # Set the symbols in the file
-    ihex_file = sys.argv[1].replace('exe', 'ihex')
+    ihex_file = sys.argv[1].replace('tos_image.xml', 'main.hex')
     subprocess.call(['tos-set-symbols', '--objcopy', 'msp430-objcopy', '--objdump', 'msp430-objdump', '--target', 'ihex', ihex_file, ihex_file + '-' + sys.argv[3], 'TOS_NODE_ID=' + sys.argv[3], 'ActiveMessageAddressC__addr=' + sys.argv[3]])
 # Flash the mote
     subprocess.call(['tos-bsl', '--telosb', '-c', basestation, '-r', '-e', '-I', '-p', ihex_file + '-' + sys.argv[3]])
