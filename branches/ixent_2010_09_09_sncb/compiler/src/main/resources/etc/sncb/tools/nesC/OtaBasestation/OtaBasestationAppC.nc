@@ -26,6 +26,8 @@ implementation {
   components CommandServerAppC;
   App.CommandServer -> CommandServerAppC.SplitControl;
   App.StateChanged -> CommandServerAppC.StateChanged;
+
+  components SerialStarterC;
 }
 
 

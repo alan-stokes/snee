@@ -80,10 +80,8 @@ implementation {
   event void MultiHopSend.sendDone(message_t * msg, error_t error) {
     if (&radioPacket == msg && error == SUCCESS ) {
 // dymo has a route and the packet has been sent.
-//      call Leds.led0On();
     } else if (error == FAIL) {
 // couldn't find a route
-//      call Leds.led1On();
     } else {
       // gone wonky here.
       programFailure();
