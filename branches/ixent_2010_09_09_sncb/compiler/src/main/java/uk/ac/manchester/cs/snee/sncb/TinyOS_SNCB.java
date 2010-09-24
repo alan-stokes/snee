@@ -239,7 +239,7 @@ public class TinyOS_SNCB implements SNCB {
 		//do the basestation last
 		logger.trace("Imaging basestastion");
 		System.out.println("Imaging basestation");
-		String imageFile = nescOutputDir+"/mote"+gatewayID+"/build/telosb/main.exe";
+		String imageFile = nescOutputDir+"/mote"+gatewayID+"/build/telosb/tos_image.xml";
 		String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register");
 		String params[] = {pythonScript, imageFile, gatewayID, gatewayID};
 		Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
