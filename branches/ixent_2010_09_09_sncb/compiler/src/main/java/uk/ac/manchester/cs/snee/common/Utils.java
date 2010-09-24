@@ -361,7 +361,10 @@ public class Utils {
 		final Runtime rt = Runtime.getRuntime();
 		String cmdarray[] = concat(new String[]{progName}, params);
 		Process proc = rt.exec(cmdarray, env, new File(System.getProperty("user.dir")));
-		logger.info("Command array="+Arrays.toString(cmdarray));
+		
+		String cmdString = Arrays.toString(cmdarray).replaceAll(",", " ").replaceAll("\\[|\\]", "");
+		System.out.println("     "+ cmdString);
+		logger.info("*** "+cmdString);
 		logger.info("Environment="+Arrays.toString(env));
 		
 	    final InputStream stderr = proc.getErrorStream();

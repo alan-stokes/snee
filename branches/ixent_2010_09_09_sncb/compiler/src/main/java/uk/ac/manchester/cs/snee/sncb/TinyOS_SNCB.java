@@ -35,7 +35,7 @@ public class TinyOS_SNCB implements SNCB {
 
 	private boolean combinedImage = false;
 
-	private String serialPort = "/dev/tty.usbserial-XBS518RP";
+	private String serialPort = "/dev/tty.usbserial-XBTE03FA";
 	
 	public TinyOS_SNCB(SensorNetworkSourceMetadata metadata)
 	throws SNCBException {
@@ -105,12 +105,19 @@ public class TinyOS_SNCB implements SNCB {
 		SerialPortMessageReceiver mr;
 		try {			
 			logger.trace("Generating TinyOS/nesC code for query plan.");
+			System.out.println("Generating TinyOS/nesC code for query plan.");
 			generateNesCCode(qep, queryOutputDir, costParams);
+			
 			logger.trace("Compiling TinyOS/nesC code into executable images.");
+			System.out.println("Compiling TinyOS/nesC code into executable images.");
 			compileNesCCode(queryOutputDir);
+			
 			logger.trace("Disseminating Query Plan images");
+			System.out.println("Disseminating Query Plan images");
 			disseminateQueryPlanImages(qep, queryOutputDir);
+			
 			logger.trace("Setting up result collector");
+			System.out.println("Setting up result collector");
 			mr = setUpResultCollector(qep, queryOutputDir);
 		} catch (Exception e) {
 			logger.warn(e);
@@ -207,7 +214,7 @@ public class TinyOS_SNCB implements SNCB {
 		SerialPortMessageReceiver mr = new SerialPortMessageReceiver("serial@"+this.serialPort+":telos",
 				delOp);
 		mr.addMsgType(msg);
-		System.err.println("hurrah! "+msg.amType());
+		System.err.println("Serial Port ready to receive messages using ActiveMessageID "+msg.amType());
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN setUpResultCollector()");	
 		return mr;
@@ -226,12 +233,16 @@ public class TinyOS_SNCB implements SNCB {
 			//skip the gateway
 			if (siteID.equals(gatewayID)) 
 				continue;
+			logger.trace("Imaging mote "+siteID);
+			System.out.println("Imaging mote "+siteID);
 			String imageFile = nescOutputDir+"/mote"+siteID+"/build/telosb/tos_image.xml";
 			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register");
 			String params[] = {pythonScript, imageFile, siteID, gatewayID};
 			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
 		}
 		//do the basestation last
+		logger.trace("Imaging basestastion");
+		System.out.println("Imaging basestation");
 		String imageFile = nescOutputDir+"/mote"+gatewayID+"/build/telosb/main.exe";
 		String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register");
 		String params[] = {pythonScript, imageFile, gatewayID, gatewayID};
@@ -246,6 +257,9 @@ public class TinyOS_SNCB implements SNCB {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER start()");
 		try {
+			logger.trace("Invoking start command");
+			System.out.println("Invoking start command");
+			
 			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/start");
 			String params[] = {pythonScript};
 			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
