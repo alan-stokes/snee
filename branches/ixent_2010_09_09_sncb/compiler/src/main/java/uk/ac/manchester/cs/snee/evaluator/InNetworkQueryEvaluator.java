@@ -79,11 +79,6 @@ public class InNetworkQueryEvaluator extends QueryEvaluator {//Runnable {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER stopExecuting() on query " + _queryId);
 		}
-		// Protected to prevent null pointer exception
-		if (_serialPortMessageReceiver != null && executing) {
-			// Stop the query evaluation
-			_serialPortMessageReceiver.close();
-		}
 		SNCB sncb = _qep.getSNCB();
 		try {
 			Thread.sleep(10000);
@@ -92,6 +87,11 @@ public class InNetworkQueryEvaluator extends QueryEvaluator {//Runnable {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		// Protected to prevent null pointer exception
+		if (_serialPortMessageReceiver != null && executing) {
+			// Stop the query evaluation
+			_serialPortMessageReceiver.close();
 		}
 		executing = false;	
 		if (logger.isDebugEnabled()) {
