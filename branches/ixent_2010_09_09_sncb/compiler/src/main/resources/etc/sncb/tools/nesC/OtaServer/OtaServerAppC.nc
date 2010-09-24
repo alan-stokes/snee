@@ -66,5 +66,7 @@ implementation
   components CommandServerAppC;
   OtaServerC.CommandServer -> CommandServerAppC.SplitControl;
   FlashVolumeManagerP.StateChanged -> CommandServerAppC.StateChanged;
+
+  components SerialStarterC;
 }
 
