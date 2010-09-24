@@ -85,6 +85,9 @@ public class TinyOS_SNCB implements SNCB {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER init()");
 		try {
+			logger.trace("Forming network and collecting metadata");
+			System.out.println("Forming network and collecting metadata");
+			
 			//TODO: incorporate metadata collection python script
 			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/collectMetadata.py");
 			String params[] = {pythonScript, topFile, resFile};
@@ -277,6 +280,9 @@ public class TinyOS_SNCB implements SNCB {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER stop()");
 		try {
+			logger.trace("Invoking stop command");
+			System.out.println("Invoking stop command");
+			
 			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/stop");
 			String gatewayID = ""+qep.getGateway();
 			String params[] = {pythonScript, gatewayID};
@@ -294,6 +300,9 @@ public class TinyOS_SNCB implements SNCB {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER deregister()");
 		try {
+			logger.trace("Invoking deregister command");
+			System.out.println("Invoking deregister command");
+			
 			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/deregister");
 			Iterator<Site> siteIter = qep.siteIterator(TraversalOrder.POST_ORDER);
 			StringBuffer siteString = new StringBuffer();
