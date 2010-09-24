@@ -24,6 +24,9 @@ time.sleep(10)
 # disseminate a reprogram command; switch to ota
 subprocess.call(['cmd-srvr', source, '--reprogram', '1'])
 
+# sleep for 10 seconds
+time.sleep(10)
+
 # reprogram the gateway mote to ota basestation
 os.chdir(os.path.dirname(__file__) + '/../nesC/OtaBasestation')
 subprocess.call(['make', 'telosb', 'install,' + sys.argv[1], 'bsl,' + basestation])
