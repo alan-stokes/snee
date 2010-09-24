@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import net.tinyos.message.Message;
@@ -289,11 +290,24 @@ public class TinyOS_SNCB implements SNCB {
 	}
 
 	@Override
-	public void deregister() {
+	public void deregister(SensorNetworkQueryPlan qep) throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER deregister()");
-		//TODO: invoke python script for OTA to remove current query image 
+		try {
+			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/deregister");
+			Iterator<Site> siteIter = qep.siteIterator(TraversalOrder.POST_ORDER);
+			StringBuffer siteString = new StringBuffer();
+			while (siteIter.hasNext()) {
+				Site site = siteIter.next();
+				siteString.append(site.getID()+" ");
+			}
+			String params[] = {pythonScript, siteString.toString()};
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
+		} catch (Exception e) {
+			logger.warn(e.getLocalizedMessage());
+			throw new SNCBException(e.getLocalizedMessage(), e);			
+		}
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN deregister()");
+		logger.debug("RETURN deregister()");
 	}
 }

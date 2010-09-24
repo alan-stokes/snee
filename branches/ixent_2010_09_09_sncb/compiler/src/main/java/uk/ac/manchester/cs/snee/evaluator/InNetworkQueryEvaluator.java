@@ -41,6 +41,9 @@ import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.sncb.SNCB;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.SerialPortMessageReceiver;
 
 public class InNetworkQueryEvaluator extends QueryEvaluator {//Runnable {
@@ -50,12 +53,14 @@ public class InNetworkQueryEvaluator extends QueryEvaluator {//Runnable {
 
 	private SerialPortMessageReceiver _serialPortMessageReceiver;
 	
+	private SensorNetworkQueryPlan _qep;
+	
 	protected InNetworkQueryEvaluator() {
 		// Constructor for mock object test purposes
 	}
 	
-	public InNetworkQueryEvaluator(int queryId, SerialPortMessageReceiver spmr,
-			ResultStore resultSet) 
+	public InNetworkQueryEvaluator(int queryId, SensorNetworkQueryPlan qep, 
+	SerialPortMessageReceiver spmr, ResultStore resultSet) 
 	throws SNEEException, SchemaMetadataException, EvaluatorException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER InNetworkQueryEvaluator() with queryID: " + queryId);
@@ -63,6 +68,7 @@ public class InNetworkQueryEvaluator extends QueryEvaluator {//Runnable {
 		this._queryId = queryId;
 		_serialPortMessageReceiver = spmr;
 		_serialPortMessageReceiver.addObserver(this);
+		_qep = qep;
 		this._results = resultSet;
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN InNetworkQueryEvaluator()");
@@ -77,6 +83,15 @@ public class InNetworkQueryEvaluator extends QueryEvaluator {//Runnable {
 		if (_serialPortMessageReceiver != null && executing) {
 			// Stop the query evaluation
 			_serialPortMessageReceiver.close();
+		}
+		SNCB sncb = _qep.getSNCB();
+		try {
+			Thread.sleep(10000);
+			sncb.stop(_qep);
+			sncb.deregister(_qep);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		executing = false;	
 		if (logger.isDebugEnabled()) {

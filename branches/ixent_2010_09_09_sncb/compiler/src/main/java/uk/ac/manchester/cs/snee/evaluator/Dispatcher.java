@@ -144,11 +144,10 @@ public class Dispatcher {
 				SerialPortMessageReceiver mr = 
 					sncb.register(snQueryPlan, outputDir, costParams);
 				InNetworkQueryEvaluator queryEvaluator = 
-					new InNetworkQueryEvaluator(queryID, mr, resultSet);
+					new InNetworkQueryEvaluator(queryID, snQueryPlan, 
+					mr, resultSet);
 				_queryEvaluators.put(queryID, queryEvaluator);
 				sncb.start();
-				System.out.println("Code generation complete");
-				//System.exit(0);
 			} catch (Exception e) {
 				logger.warn(e.getLocalizedMessage(), e);
 				throw new EvaluatorException(e);
