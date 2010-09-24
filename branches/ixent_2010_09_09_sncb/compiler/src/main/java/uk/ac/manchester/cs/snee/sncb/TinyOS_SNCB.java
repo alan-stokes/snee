@@ -98,7 +98,7 @@ public class TinyOS_SNCB implements SNCB {
 	
 
 	@Override
-	public void register(SensorNetworkQueryPlan qep, String queryOutputDir, CostParameters costParams) 
+	public SerialPortMessageReceiver register(SensorNetworkQueryPlan qep, String queryOutputDir, CostParameters costParams) 
 	throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER register()");
@@ -115,13 +115,17 @@ public class TinyOS_SNCB implements SNCB {
 			logger.trace("Disseminating Query Plan images");
 			System.out.println("Disseminating Query Plan images");
 			disseminateQueryPlanImages(qep, queryOutputDir);
-
+			
+			logger.trace("Setting up result collector");
+			System.out.println("Setting up result collector");
+			mr = setUpResultCollector(qep, queryOutputDir);
 		} catch (Exception e) {
 			logger.warn(e);
 			throw new SNCBException(e.getLocalizedMessage(), e);
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN register()");
+		return mr;
 	}
 
 	private void generateNesCCode(SensorNetworkQueryPlan qep, String 
@@ -249,10 +253,9 @@ public class TinyOS_SNCB implements SNCB {
 	}
 	
 	@Override
-	public SerialPortMessageReceiver start(SensorNetworkQueryPlan qep, String queryOutputDir) throws SNCBException {
+	public void start() throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER start()");
-		SerialPortMessageReceiver mr;
 		try {
 			logger.trace("Invoking start command");
 			System.out.println("Invoking start command");
@@ -260,17 +263,12 @@ public class TinyOS_SNCB implements SNCB {
 			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/start");
 			String params[] = {pythonScript};
 			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
-			
-			logger.trace("Setting up result collector");
-			System.out.println("Setting up result collector");
-			mr = setUpResultCollector(qep, queryOutputDir);
-		} catch (Exception e) {
+		} catch (IOException e) {
 			logger.warn(e.getLocalizedMessage());
 			throw new SNCBException(e.getLocalizedMessage(), e);
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN start()");
-		return mr;
 	}
 
 	@Override

@@ -141,13 +141,12 @@ public class Dispatcher {
 						SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
 						sep + queryPlan.getQueryName() + sep;
 				SNCB sncb = snQueryPlan.getSNCB();
-				
-				sncb.register(snQueryPlan, outputDir, costParams);
-				SerialPortMessageReceiver mr = sncb.start(snQueryPlan, outputDir);
+				SerialPortMessageReceiver mr = 
+					sncb.register(snQueryPlan, outputDir, costParams);
 				InNetworkQueryEvaluator queryEvaluator = 
 					new InNetworkQueryEvaluator(queryID, mr, resultSet);
 				_queryEvaluators.put(queryID, queryEvaluator);
-				
+				sncb.start();
 				System.out.println("Code generation complete");
 				//System.exit(0);
 			} catch (Exception e) {
