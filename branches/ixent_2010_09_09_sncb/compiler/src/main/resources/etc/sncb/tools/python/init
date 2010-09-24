@@ -16,7 +16,7 @@ basestation = basestation.find_basestation()
 source = 'serial@' + basestation + ':115200'
 
 # deploy the metadata collector basestion
-os.chdir(os.path.dirname(__file__) + '../nesC/MetadataCollector')
+os.chdir(os.path.dirname(__file__) + '/../nesC/MetadataCollector')
 subprocess.call(['make', 'telosb', 'install,' + sys.argv[2], 'bsl,' + basestation])
 
 # start sending metadata
@@ -32,7 +32,7 @@ subprocess.call(['cmd-srvr', source, '--stop'])
 subprocess.call(['snee-txt-to-xml', sys.argv[1], sys.argv[2]])
 
 # deploy the OTA basestion
-os.chdir(os.path.dirname(__file__) + '../nesC/OtaBasestation')
+os.chdir(os.path.dirname(__file__) + '/../nesC/OtaBasestation')
 subprocess.call(['make', 'telosb', 'install,' + sys.argv[2], 'bsl,' + basestation])
 
 # boot into ota
