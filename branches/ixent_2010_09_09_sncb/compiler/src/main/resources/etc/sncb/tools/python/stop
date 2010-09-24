@@ -26,4 +26,4 @@ subprocess.call(['cmd-srvr', source, '--reprogram', '1'])
 
 # reprogram the gateway mote to ota basestation
 os.chdir(os.path.dirname(__file__) + '../nesC/OtaBasestation')
-subprocess.call(['make', 'telosb', 'install,1', 'bsl,' + basestation])
+subprocess.call(['make', 'telosb', 'install,' + sys.argv[1], 'bsl,' + basestation])
