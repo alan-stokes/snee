@@ -14,6 +14,6 @@ public interface SNCB {
 	
 	public void start() throws SNCBException;
 	
-	public void stop();
+	public void stop(SensorNetworkQueryPlan qep) throws SNCBException;
 
 }

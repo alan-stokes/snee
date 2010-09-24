@@ -272,10 +272,18 @@ public class TinyOS_SNCB implements SNCB {
 	}
 
 	@Override
-	public void stop() {
+	public void stop(SensorNetworkQueryPlan qep) throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER stop()");
-		//TODO: invoke python script sending stop command to terminate query execution
+		try {
+			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/stop");
+			String gatewayID = ""+qep.getGateway();
+			String params[] = {pythonScript, gatewayID};
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
+		} catch (Exception e) {
+			logger.warn(e.getLocalizedMessage());
+			throw new SNCBException(e.getLocalizedMessage(), e);			
+		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN stop()");
 	}
