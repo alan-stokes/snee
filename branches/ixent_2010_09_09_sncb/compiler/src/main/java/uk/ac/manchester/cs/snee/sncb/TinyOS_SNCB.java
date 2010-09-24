@@ -88,8 +88,7 @@ public class TinyOS_SNCB implements SNCB {
 			logger.trace("Forming network and collecting metadata");
 			System.out.println("Forming network and collecting metadata");
 			
-			//TODO: incorporate metadata collection python script
-			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/collectMetadata.py");
+			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/init");
 			String params[] = {pythonScript, topFile, resFile};
 			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
 		} catch (Exception e) {
