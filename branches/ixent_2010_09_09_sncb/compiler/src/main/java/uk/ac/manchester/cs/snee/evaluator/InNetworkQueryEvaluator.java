@@ -79,15 +79,14 @@ public class InNetworkQueryEvaluator extends QueryEvaluator {//Runnable {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER stopExecuting() on query " + _queryId);
 		}
-		// Protected to prevent null pointer exception
-		if (executing) {
+//XXX: executing never seems to be set to true, not even in super class, so commented out
+//		if (executing) {
 			// Stop the query evaluation
 			System.out.println("Closing serial port listener");
 			_serialPortMessageReceiver.close();
-		}
+//		}
 		SNCB sncb = _qep.getSNCB();
 		try {
-			Thread.sleep(10000);
 			sncb.stop(_qep);
 			sncb.deregister(_qep);
 		} catch (Exception e) {

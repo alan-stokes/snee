@@ -154,7 +154,6 @@ implements net.tinyos.message.MessageListener {
 	public void close() {
 		this.moteIF.deregisterListener(_msg, this);
 		this.moteIF.getSource().shutdown();
-		this.moteIF.getSource().stop();
 		super.deleteObservers();
 	}
 
