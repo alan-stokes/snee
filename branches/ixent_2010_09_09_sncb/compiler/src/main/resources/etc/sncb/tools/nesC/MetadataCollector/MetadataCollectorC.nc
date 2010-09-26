@@ -25,7 +25,6 @@ module MetadataCollectorC @safe(){
     // Interfaces for initialization:
     interface Boot;
     interface SplitControl as RadioControl;
-    interface SplitControl as SerialControl;
     interface StdControl as RoutingControl;
     
     // Interfaces for communication, multihop and serial:
@@ -41,7 +40,7 @@ module MetadataCollectorC @safe(){
 
     // Miscalleny:
     interface Timer<TMilli>;
-//    interface Leds;
+    interface Leds;
 
     interface SplitControl as CommandServer;
     interface StateChanged;
@@ -64,7 +63,7 @@ implementation {
   /* Current local state - interval, version and accumulated readings */
   oscilloscope_t local;
 
-  bool radioOn, serialOn = FALSE;
+  bool radioOn = FALSE;
 
   // 
   // On bootup, initialize radio and serial communications, and our
@@ -85,17 +84,12 @@ implementation {
       fatal_problem();
   }
 
-  event void SerialControl.startDone(error_t error) {
-    serialOn = TRUE;
-  }
+  event void RadioControl.stopDone(error_t error) { }
 
   static void startTimer() {
     if (call Timer.isRunning()) call Timer.stop();
     call Timer.startPeriodic(DEFAULT_INTERVAL);
   }
-
-  event void RadioControl.stopDone(error_t error) { }
-  event void SerialControl.stopDone(error_t error) { }
 
   //
   // Only the root will receive messages from this interface; its job
@@ -211,15 +205,15 @@ implementation {
 
   // Use LEDs to report various status issues.
   static void fatal_problem() { 
-//    call Leds.led0On(); 
-//    call Leds.led1On();
-//    call Leds.led2On();
+    call Leds.led0On(); 
+    call Leds.led1On();
+    call Leds.led2On();
     call Timer.stop();
   }
 
-  static void report_problem() { /* call Leds.led0Toggle(); */ }
-  static void report_sent() { /* call Leds.led1Toggle(); */ }
-  static void report_received() { /* call Leds.led2Toggle(); */ }
+  static void report_problem() { call Leds.led0Toggle(); }
+  static void report_sent() { call Leds.led1Toggle(); }
+  static void report_received() { call Leds.led2Toggle(); }
 
   event void CommandServer.startDone(error_t error) { }
   event void CommandServer.stopDone(error_t error) { }

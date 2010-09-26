@@ -19,11 +19,11 @@
 configuration MetadataCollectorAppC { }
 implementation {
   components MainC, MetadataCollectorC, new TimerMilliC(); 
-//  compoents LedsC;
+  components LedsC;
 
   MetadataCollectorC.Boot -> MainC;
   MetadataCollectorC.Timer -> TimerMilliC;
-//  MetadataCollectorC.Leds -> LedsC;
+  MetadataCollectorC.Leds -> LedsC;
 
   //
   // Communication components.  These are documented in TEP 113:
@@ -36,7 +36,6 @@ implementation {
     new SerialAMSenderC(AM_OSCILLOSCOPE);   // Sends to the serial port
 
   MetadataCollectorC.RadioControl -> ActiveMessageC;
-  MetadataCollectorC.SerialControl -> SerialActiveMessageC;
   MetadataCollectorC.RoutingControl -> Collector;
 
   MetadataCollectorC.Send -> CollectionSenderC;
@@ -54,4 +53,6 @@ implementation {
   components CommandServerAppC;
   MetadataCollectorC.CommandServer -> CommandServerAppC.SplitControl;
   MetadataCollectorC.StateChanged -> CommandServerAppC.StateChanged;
+
+  components SerialStarterC;
 }

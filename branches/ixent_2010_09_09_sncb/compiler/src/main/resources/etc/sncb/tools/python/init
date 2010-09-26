@@ -2,7 +2,7 @@
 
 # First thing, append the utils directory to the search path.
 import sys, os, subprocess
-utils_dir = os.path.dirname(__file__) + '/utils'
+utils_dir = os.path.abspath(os.path.dirname(__file__)) + '/utils'
 sys.path.append(utils_dir)
 
 # Now we can import the basestation module
@@ -16,8 +16,8 @@ basestation = basestation.find_basestation()
 source = 'serial@' + basestation + ':115200'
 
 # deploy the metadata collector basestion
-os.chdir(os.path.dirname(__file__) + '/../nesC/MetadataCollector')
-subprocess.call(['make', 'telosb', 'install,' + sys.argv[2], 'bsl,' + basestation])
+os.chdir(os.path.abspath(os.path.dirname(__file__)) + '/../nesC/MetadataCollector')
+subprocess.call(['make', 'telosb', 'install,' + sys.argv[3], 'bsl,' + basestation])
 
 # start sending metadata
 subprocess.call(['cmd-srvr', source, '--start'])
@@ -32,8 +32,11 @@ subprocess.call(['cmd-srvr', source, '--stop'])
 subprocess.call(['snee-txt-to-xml', sys.argv[1], sys.argv[2]])
 
 # deploy the OTA basestion
-os.chdir(os.path.dirname(__file__) + '/../nesC/OtaBasestation')
-subprocess.call(['make', 'telosb', 'install,' + sys.argv[2], 'bsl,' + basestation])
+os.chdir(os.path.abspath(os.path.dirname(__file__)) + '/../OtaBasestation')
+subprocess.call(['make', 'telosb', 'install,' + sys.argv[3], 'bsl,' + basestation])
 
 # boot into ota
 subprocess.call(['cmd-srvr', source, '--reprogram', '1'])
+
+# wait for motes to boot into ota before continuing
+time.sleep(20)
