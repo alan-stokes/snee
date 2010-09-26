@@ -24,13 +24,14 @@ resources = []
 
 def parse_file_names():
 	global topologyFile, resourceFile, topologyFileXML, resourceFileXML
-	topologyFile = sys.argv[1]
-	topologyFileXML = topologyFile.replace('txt', 'xml')
-	resourceFile = sys.argv[2]
-	resourceFileXML = resourceFile.replace('txt', 'xml')
+	topologyFile = sys.argv[1].replace('xml', 'txt')
+	topologyFileXML = sys.argv[1]
+	resourceFile = sys.argv[2].replace('xml', 'txt')
+	resourceFileXML = sys.argv[2]
 
 def normaliseLinkEnergy(energy):
-	return str(int(energy) * 255 / 65536)
+#	return str(int(energy) * 255 / 65536)
+    return energy
 	
 def parse_topology_file():
 	with open(topologyFile, 'r') as f:
