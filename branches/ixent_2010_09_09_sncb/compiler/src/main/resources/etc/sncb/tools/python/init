@@ -17,19 +17,19 @@ source = 'serial@' + basestation + ':115200'
 
 # deploy the metadata collector basestion
 os.chdir(os.path.abspath(os.path.dirname(__file__)) + '/../nesC/MetadataCollector')
-subprocess.call(['make', 'telosb', 'install,' + sys.argv[3], 'bsl,' + basestation])
+subprocess.call(['make', 'telosb', 'install,' + sys.argv[2], 'bsl,' + basestation])
 
 # start sending metadata
 subprocess.call(['cmd-srvr', source, '--start'])
 
 # collect metadata
-subprocess.call(['metadata-collector', source, sys.argv[1], sys.argv[2]])
+subprocess.call(['metadata-collector', source, sys.argv[1], 'res.xml'])
 
 # stop sending metadata
 subprocess.call(['cmd-srvr', source, '--stop'])
 
 # parse text file and convert to xml
-subprocess.call(['snee-txt-to-xml', sys.argv[1], sys.argv[2]])
+subprocess.call(['snee-txt-to-xml', sys.argv[1], 'res.xml'])
 
 time.sleep(10)
 
@@ -41,4 +41,4 @@ time.sleep(10)
 
 # deploy the OTA basestion
 os.chdir(os.path.abspath(os.path.dirname(__file__)) + '/../OtaBasestation')
-subprocess.call(['make', 'telosb', 'install,' + sys.argv[3], 'bsl,' + basestation])
+subprocess.call(['make', 'telosb', 'install,' + sys.argv[2], 'bsl,' + basestation])
