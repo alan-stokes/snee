@@ -49,7 +49,7 @@ public class TinyOS_SNCB implements SNCB {
 			String tosRootDir = SNEEProperties.getSetting(
 					SNEEPropertyNames.SNCB_TINYOS_ROOT).
 					replace("~", System.getenv("HOME"));
-			System.err.println(System.getenv("PATH"));
+
 			//TinyOS environment variables
 			//TODO: Need to figure out which env vars are needed for mig. For now,
 			//eclipse must be invoked from terminal for it to work.
@@ -245,7 +245,6 @@ public class TinyOS_SNCB implements SNCB {
 		SerialPortMessageReceiver mr = new SerialPortMessageReceiver("serial@"+this.serialPort+":telos",
 				delOp);
 		mr.addMsgType(msg);
-		System.err.println("Serial Port ready to receive messages using ActiveMessageID "+msg.amType());
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN setUpResultCollector()");	
 		return mr;
