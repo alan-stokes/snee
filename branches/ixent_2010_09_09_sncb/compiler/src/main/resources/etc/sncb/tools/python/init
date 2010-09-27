@@ -31,12 +31,14 @@ subprocess.call(['cmd-srvr', source, '--stop'])
 # parse text file and convert to xml
 subprocess.call(['snee-txt-to-xml', sys.argv[1], sys.argv[2]])
 
-# deploy the OTA basestion
-os.chdir(os.path.abspath(os.path.dirname(__file__)) + '/../OtaBasestation')
-subprocess.call(['make', 'telosb', 'install,' + sys.argv[3], 'bsl,' + basestation])
+time.sleep(10)
 
 # boot into ota
 subprocess.call(['cmd-srvr', source, '--reprogram', '1'])
 
 # wait for motes to boot into ota before continuing
-time.sleep(20)
+time.sleep(10)
+
+# deploy the OTA basestion
+os.chdir(os.path.abspath(os.path.dirname(__file__)) + '/../OtaBasestation')
+subprocess.call(['make', 'telosb', 'install,' + sys.argv[3], 'bsl,' + basestation])

@@ -131,7 +131,7 @@ implementation {
       newImageNum = newCmd->imageNum;
 // Prevent reflashing of current image. This could probably be improved.
       if (SNEE_IMAGE_ID == newImageNum) { return; }
-/*
+
       if (newImageNum == 0) {
         call Leds.led0On();
       } else if (newImageNum == 1) {
@@ -143,7 +143,7 @@ implementation {
         call Leds.led1On();
         call Leds.led2On();
       }
-*/
+
       call Timer.startOneShot(REBOOT_TIME);		
 #endif
     } else {
@@ -161,7 +161,7 @@ implementation {
   }
 
   event void Timer.fired() {
-/*
+
     if (newImageNum == 0) {
       call Leds.led0Off();
     } else if (newImageNum == 1) {
@@ -173,7 +173,7 @@ implementation {
       call Leds.led1Off();
       call Leds.led2Off();
     }
-*/
+
     call NetProg.programImageAndReboot(call StorageMap.getPhysicalAddress[newImageNum](0));
   }
 }
