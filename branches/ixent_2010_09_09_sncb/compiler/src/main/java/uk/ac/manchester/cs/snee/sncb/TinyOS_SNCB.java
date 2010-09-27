@@ -38,6 +38,8 @@ public class TinyOS_SNCB implements SNCB {
 
 	private String serialPort = "/dev/tty.usbserial-XBTE03FA";
 	
+	private boolean demoMode = true;
+	
 	public TinyOS_SNCB(SensorNetworkSourceMetadata metadata)
 	throws SNCBException {
 		if (logger.isDebugEnabled())
@@ -106,22 +108,48 @@ public class TinyOS_SNCB implements SNCB {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER register()");
 		SerialPortMessageReceiver mr;
-		try {			
+		try {
+			if (demoMode) {
+				System.out.println("Query compilation complete.\n");
+				System.in.read();
+			}
+				
 			logger.trace("Generating TinyOS/nesC code for query plan.");
 			System.out.println("Generating TinyOS/nesC code for query plan.");
 			generateNesCCode(qep, queryOutputDir, costParams);
-			
+
+			if (demoMode) {
+				System.out.println("nesC code generation complete.\n");
+				System.in.read();
+			}
+				
 			logger.trace("Compiling TinyOS/nesC code into executable images.");
 			System.out.println("Compiling TinyOS/nesC code into executable images.");
 			compileNesCCode(queryOutputDir);
 			
+			if (demoMode) {
+				System.out.println("nesC code compilation complete.\n");
+				System.in.read();
+			}
+				
 			logger.trace("Disseminating Query Plan images");
 			System.out.println("Disseminating Query Plan images");
 			disseminateQueryPlanImages(qep, queryOutputDir);
 			
+			if (demoMode) {
+				System.out.println("Query plan image dissemination complete.\n");
+				System.in.read();
+			}
+				
 			logger.trace("Setting up result collector");
 			System.out.println("Setting up result collector");
 			mr = setUpResultCollector(qep, queryOutputDir);
+			
+			if (demoMode) {
+				System.out.println("Serial port listener for query results ready.");
+				System.in.read();
+			}
+				
 		} catch (Exception e) {
 			logger.warn(e);
 			throw new SNCBException(e.getLocalizedMessage(), e);
