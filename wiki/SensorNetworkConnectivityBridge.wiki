@@ -27,14 +27,19 @@ Slot 2 is reserved for the SNEE query plan that will be disseminated.
 
 
 == Installing the Metadata Collector Image on the Nodes' External Flash Memory (slot 0) ==
-
   * For each non-basestation node:
   * Change to nesC/MetadataCollector directory
   * Compile executable
   * Send the executable to the node at slot 0
   {{{tos-ota <source> <destination> -i 0 <tos_image.xml> }}}
 
-= Query Lifecycle =
+= SNEE Lifecycle (automated) =
+  Network initialisation, metadata data collection, query plan dissemination etc. can be invoked automatically by the the SNEE sensor network connectivity bridge. Just run the in-network client  in the SNEE project, without any parameters.
+
+  Note that the initialisation file that is used is currently hard-coded.
+
+= SNEE Lifecycle (standalone scripts) =
+  You may wish to invoke the python standalone scripts to run the process manually.  Below is a summary of each command, in the order invoked by the SNEE SNCB.
 
   * init
     * This needs the metadata collector installed on the nodes' program memory.
