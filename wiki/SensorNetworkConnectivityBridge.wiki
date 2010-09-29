@@ -11,6 +11,10 @@ This page describes the commands used by the Sensor Network Connectivity Bridge.
 
 = Setting up the Nodes =
 
+The first thing that you need to do is install the Over-the-Air Programmer and Metadata Collector into slots 1 and 0 respectively of the External data flash, so that they can be booted into as required.
+
+Slot 2 is reserved for the SNEE query plan that will be disseminated.
+
 == Install the OTA tool into the Nodes' External Flash Memory (Slot 1) ==
 
   * First, manually with a USB cable, add OTAServer to the non-basestation nodes, and OTABasestation to the basestation.
