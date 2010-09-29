@@ -1,0 +1,21 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>clients</artifactId>
+    <groupId>uk.ac.manchester.cs.snee</groupId>
+    <version>1.2.3</version>
+  </parent>
+  <groupId>uk.ac.manchester.cs.snee</groupId>
+  <artifactId>in-network-client</artifactId>
+  <version>1.2.3</version>
+  <name>In-network test client</name>
+  <description>Test client for In-Network SNEE.</description>
+  <dependencies>
+  	<dependency>
+  		<groupId>uk.ac.manchester.cs.snee.client</groupId>
+  		<artifactId>client</artifactId>
+  		<version>1.2.3</version>
+  		<scope>provided</scope>
+  	</dependency>
+  </dependencies>
+</project>
