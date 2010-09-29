@@ -1,0 +1,14 @@
+#summary This page describes the commands used by the Sensor Network Connectivity Bridge.
+
+= Introduction =
+
+This page describes the commands used by the Sensor Network Connectivity Bridge.
+
+= Details =
+
+  * init
+  * register
+  * start
+  * stop
+  * deregister
+
