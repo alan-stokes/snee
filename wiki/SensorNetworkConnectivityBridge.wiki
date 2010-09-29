@@ -7,12 +7,17 @@ This page describes the commands used by the Sensor Network Connectivity Bridge.
 = Details =
 
   * init
+    * Forms the network and collects metadata.
     * init < topology_file > < basestation_id >
   * register
+    * Installs an image to a specific node.
     * register < image absoulute path >  < dest node id >  < basestation_id >
   * start
+    * Initiates query execution.
     * takes no parameters
   * stop
+    * Stops query execution.
     * stop < basestation id >
   * deregister
+    * Uninstalls a query image on a specific node.
     * deregister < id1 > < id2 > ... < idn > < basestation_id >
