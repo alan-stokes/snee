@@ -4,6 +4,16 @@
 
 This page describes the commands used by the Sensor Network Connectivity Bridge.
 
+= Installing the Metadata Collector Image on the Nodes =
+
+  * Do the non-basestation nodes first:
+  * Change to nesC/MetadataCollector directory
+  * make telosb install,< node_id >
+
+  * For the basestation:
+  * Change to nesC/MetadataCollectorBasestation directory
+  * make telosb install,< basestation_id >
+
 = Details =
 
   * init
