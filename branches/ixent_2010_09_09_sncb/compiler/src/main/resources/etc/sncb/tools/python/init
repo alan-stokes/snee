@@ -16,7 +16,7 @@ basestation = basestation.find_basestation()
 source = 'serial@' + basestation + ':115200'
 
 # deploy the metadata collector basestion
-os.chdir(os.path.abspath(os.path.dirname(__file__)) + '/../nesC/MetadataCollector')
+os.chdir(os.path.abspath(os.path.dirname(__file__)) + '/../nesC/MetadataCollectorBasestation')
 subprocess.call(['make', 'telosb', 'install,' + sys.argv[2], 'bsl,' + basestation])
 
 # start sending metadata
