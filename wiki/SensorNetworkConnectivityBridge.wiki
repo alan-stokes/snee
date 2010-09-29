@@ -9,10 +9,12 @@ This page describes the commands used by the Sensor Network Connectivity Bridge.
   * First, manually with a cable, add OTAServer to the non-basestation nodes, and OTABasestation to the basestation.
   {{{ make telosb install,<node_id> }}}
 
-  * Then install the OTA image into each node
-  {{{ tos-ota <source> <destination> <-p|-i|-r|-e> image_number }}}
+  * Then install the OTA image into each node except the basestation
+  {{{ tos-ota <source> <destination> -i 1 }}}
   * {{{<source>}}} is the serial port, e.g., serial@/dev/tty.usbserial-USB0:115200
-  * {{{<destination>}}}
+  * {{{<destination>}}} is the id of the node.
+
+
 = Installing the Metadata Collector Image on the Nodes' Program Memory =
 
   * Do the non-basestation nodes first:
