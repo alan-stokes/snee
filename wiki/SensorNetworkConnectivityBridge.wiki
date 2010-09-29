@@ -17,7 +17,7 @@ This page describes the commands used by the Sensor Network Connectivity Bridge.
   {{{ make telosb install,<node_id> }}}
 
   * Then install the OTA image into each node except the basestation at slot 1
-  {{{ tos-ota <source> <destination> -i 1 }}}
+  {{{ tos-ota <source> <destination> -i 1 <tos_image.xml>  }}}
   * {{{<source>}}} is the serial port, e.g., serial@/dev/tty.usbserial-USB0:115200
   * {{{<destination>}}} is the id of the node.
 
@@ -28,24 +28,24 @@ This page describes the commands used by the Sensor Network Connectivity Bridge.
   * Change to nesC/MetadataCollector directory
   * Compile executable
   * Send the executable to the node at slot 0
-  {{{tos-ota <source> <destination> -i 0 <tos_image.xml> } }}}
+  {{{tos-ota <source> <destination> -i 0 <tos_image.xml> }}}
 
 = Query Lifecycle =
 
   * init
     * This needs the metadata collector installed on the nodes' program memory.
     * Forms the network and collects metadata.
-    * init < topology_file > < basestation_id >
+    {{{ init <topology_file> <basestation_id> }}}
   * register
     * (This assumes that the OTA image is in external flash slot 1)
     * Installs an image to a specific node.
-    * register < image absoulute path >  < dest node id >  < basestation_id >
+    {{{ register <image absoulute path>  <dest node id>  <basestation_id> }}}
   * start
     * Initiates query execution.
-    * takes no parameters
+    {{{ start }}}
   * stop
     * Stops query execution.
-    * stop < basestation id >
+    {{{ stop <basestation id> }}}
   * deregister
     * Uninstalls a query image on a specific node.
-    * deregister < id1 > < id2 > ... < idn > < basestation_id >
+    {{{ deregister <id1> <id2> ... <idn> <basestation_id> }}}
