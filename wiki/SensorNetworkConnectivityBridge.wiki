@@ -4,7 +4,7 @@
 
 This page describes the commands used by the Sensor Network Connectivity Bridge.
 
-= Installing the Metadata Collector Image on the Nodes =
+= Installing the Metadata Collector Image on the Nodes' Program Memory =
 
   * Do the non-basestation nodes first:
   * Change to nesC/MetadataCollector directory
@@ -17,6 +17,7 @@ This page describes the commands used by the Sensor Network Connectivity Bridge.
 = Details =
 
   * init
+    * This needs the metadata collector installed on the nodes' program memory.
     * Forms the network and collects metadata.
     * init < topology_file > < basestation_id >
   * register
