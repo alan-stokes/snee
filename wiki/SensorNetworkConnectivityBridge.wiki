@@ -7,12 +7,12 @@ This page describes the commands used by the Sensor Network Connectivity Bridge.
 = Details =
 
   * init
-    * init <topology_file> <basestation_id>
+    * init < topology_file > < basestation_id >
   * register
-    * register <image absoulute path>  <dest node id>  <basestation_id>
+    * register < image absoulute path >  < dest node id >  < basestation_id >
   * start
     * takes no parameters
   * stop
-    * stop <basestation id>
+    * stop < basestation id >
   * deregister
-    * deregister <id1> <id2> ... <idn> <basestation_id>
+    * deregister < id1 > < id2 > ... < idn > < basestation_id >
