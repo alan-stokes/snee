@@ -30,7 +30,7 @@ def parse_file_names():
 	resourceFileXML = sys.argv[2]
 
 def normaliseLinkEnergy(energy):
-#	return str(int(energy) * 255 / 65536)
+	# return str(int(energy) * 255 / 65536)
     return energy
 	
 def parse_topology_file():
@@ -51,23 +51,26 @@ def filter_topology():
 	seen = {}
 	for link in reversed(links):
 		if link.source not in seen:
-			seen[link.source] = link.dest
+			seen[link.source] = []
+		if seen[link.source].count(link.dest) == 0:
+			seen[link.source].append(link.dest)
 		else:
 			links.remove(link)
 			
 def filter_resources():
 	seen = {}
-	for resource in reversed(resources):
+	for link in reversed(resources):
 		if resource.id not in seen:
-			seen[resource.id] = resource.id
+			seen[resource.id] = []
+		if seen[resource.id].count(resource.id) == 0:
+			seen[resource.id].append(resource.id)
 		else:
-			resources.remove(resource)			
+			resources.remove(resource)	
 
 def emit_topology_file_as_xml():
 	with open(topologyFileXML, 'w') as f:
 		f.write('<?xml version=\"1.0\"?>\n')
 		f.write('<network-topology xmlns=\"http://snee.cs.manchester.ac.uk\"  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://snee.cs.manchester.ac.uk network-topology.xsd\">\n')
-		f.write('\n')
 		f.write('\n')
 		f.write('<radio-links>\n')
 		for link in links:
@@ -94,12 +97,6 @@ def emit_resource_file_as_xml():
 		f.write('\t\t<flash-memory>48</flash-memory>\n')
 		f.write('\t</default>\n')
 		f.write('\n');
-#		f.write('\t<site id=\"0\">\n')
-#		f.write('\t\t<energy-stock>9999</energy-stock>  <!-- assume a tethered gateway node -->\n')
-#		f.write('\t\t<ram>10</ram>\n')
-#		f.write('\t\t<flash-memory>48</flash-memory>\n')
-#		f.write('\t</site>\n')
-#		f.write('\n');	
 		for resource in resources:
 			f.write('\t<site id=\"' + resource.id + '\">\n')
 			f.write('\t\t<energy-stock>' + resource.energy + '</energy-stock>\n')
