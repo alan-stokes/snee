@@ -256,12 +256,28 @@ public class PullSourceWrapper {
 					" #items=" + numItems +
 					" timestamp=" + timestamp);
 		GetStreamItemRequest request = 
-			createGetStreamItemRequest(resourceName, numItems, timestamp);
+			createGetStreamItemRequest(resourceName, numItems, 
+					timestamp);
 			GenericQueryResponse response = 
 				_pullClient.getStreamItems(request);
-			List<Tuple> tuples = processGenericQueryResponse(response);
-		if (logger.isDebugEnabled())
+			List<Tuple> tuples;
+			//XXX This is a bit of a hack!!! Be warned.
+			/*
+			 * If the client fails to connect to the service,
+			 * it will return a null response. This happens 
+			 * when the CCO is doing back up tasks over night.
+			 * However, other services may behave differently.
+			 * For now, just quitely ignoring the problem and 
+			 * returning a zero tuple list.
+			 */
+			if (response == null) {
+				tuples = new ArrayList<Tuple>();
+			} else {
+				tuples = processGenericQueryResponse(response);
+			}
+		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN getData() #tuples=" + tuples.size());
+		}
 		return tuples;
 	}
 
