@@ -16,8 +16,10 @@
  * Install Eclipse Plugins
   * Subclipse (for SVN support)
     * http://subclipse.tigris.org/
+    * The Eclipse update site is http://subclipse.tigris.org/update_1.6.x
   * m2eclipse (for Maven support, including the extras)
     * http://m2eclipse.sonatype.org/installing-m2eclipse.html
+    * The Eclipse update sites are http://m2eclipse.sonatype.org/sites/m2e and http://m2eclipse.sonatype.org/sites/m2e-extras.
 
 = Obtain and Build the Source Code =
 
