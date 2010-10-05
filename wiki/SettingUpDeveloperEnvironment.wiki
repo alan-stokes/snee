@@ -24,7 +24,7 @@
 = Obtain and Build the Source Code =
 
  * Configure Maven
-  * Edit the settings.xml (in ~/.m2 on my machine) and add two servers with the id ssg4e.internal and ssg4e.snapshot
+  * Edit the settings.xml (possibly in ~/.m2 or /etc/maven2) and add two servers with the id ssg4e.internal and ssg4e.snapshot
 {{{
 <server>
 	<id>serverid</id>
