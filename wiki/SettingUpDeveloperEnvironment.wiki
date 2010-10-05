@@ -5,7 +5,7 @@
  * Install a Java development kit <br> (We recommend using the most recent version of Java 1.6. The code is known not to work with versions of Java prior to 1.6.0_4 due to the dependency on CXF and JAXB.)
 
  * Install a Subversion Client
-  * http://subversion.tigris.org/
+  * http://subversion.tigris.org/ <br> (Version 1.6.x is required)
 
  * Install Maven
   * http://maven.apache.org/ <br> (Version 2.2.1 or higher is required)
