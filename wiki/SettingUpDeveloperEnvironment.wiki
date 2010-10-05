@@ -11,7 +11,7 @@
   * http://maven.apache.org/ <br> (Version 2.2.1 or higher is required)
 
  * Install Eclipse
-  * http://www.eclipse.org/downloads <br> (The use of the maven plug-in works best on eclipse 3.5+, i.e. Galileo or Helios)
+  * http://www.eclipse.org/downloads <br> (Galileo or preferably Helios is required)
 
  * Install Eclipse Plugins
   * Subclipse (for SVN support)
