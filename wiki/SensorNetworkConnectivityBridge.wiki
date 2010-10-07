@@ -8,7 +8,7 @@ This page describes the commands used by the Sensor Network Connectivity Bridge.
 
   * TinyOS 2.1.1
   * SNEE set up according to [SettingUpDeveloperEnvironment these instructions]
-  * Add SNEE/compiler/src/main/resources/etc/sncb/tools/python and SNEE/compiler/src/main/resources/etc/sncb/tools/python/utils directories (relative to your SNEE workspace root) to your PATH.
+  * Add {{{.../SNEE/compiler/src/main/resources/etc/sncb/tools/python}}} and {{{.../SNEE/compiler/src/main/resources/etc/sncb/tools/python/utils}}} directories (relative to your SNEE workspace root) to your PATH.
 
 = Setting up the Nodes =
 
