@@ -8,7 +8,8 @@ This page describes the commands used by the Sensor Network Connectivity Bridge.
 
   * TinyOS 2.1.1
   * SNEE set up according to [SettingUpDeveloperEnvironment these instructions]
-  * Add {{{.../SNEE/compiler/src/main/resources/etc/sncb/tools/python}}} and {{{.../SNEE/compiler/src/main/resources/etc/sncb/tools/python/utils}}} directories (relative to your SNEE workspace root) to your PATH.
+  * Set $SNEEROOT to point to the root directory of the SNEE workspace you are using.
+  * Add {{{$SNEEROOT/SNEE/compiler/src/main/resources/etc/sncb/tools/python}}} and {{{$SNEEROOT/SNEE/compiler/src/main/resources/etc/sncb/tools/python/utils}}} directories to your PATH.
 
 = Setting up the Nodes =
 
@@ -16,7 +17,7 @@ The first thing that you need to do is install the Over-the-Air Programmer and M
 
 Slot 2 is reserved for the SNEE query plan that will be disseminated.
 
-The code for these programs is located at {{{SNEE/compiler/src/main/resources/etc/sncb/tools/nesC}}}, relative to the root directory of the SNEE workspace.
+The code for these programs is located at {{{$SNEEROOT/SNEE/compiler/src/main/resources/etc/sncb/tools/nesC}}}.
 
 == Install the OTA tool into the Nodes' External Flash Memory (Slot 1) ==
 
@@ -29,7 +30,7 @@ The code for these programs is located at {{{SNEE/compiler/src/main/resources/et
   {{{ tos-ota <source> <destination> -i 1 <tos_image.xml>  }}}
     * {{{<source>}}} is the serial port that the basestation is attached to, e.g., serial@/dev/tty.usbserial-USB0:115200
     * {{{<destination>}}} is the id of the node.
-    * {{{<tos_image.xml>}}} is located (relative to SNEE workspace root) at {{{SNEE/compiler/src/main/resources/etc/sncb/tools/nesC/OtaServer/build/telosb/tos_image.xml}}}.
+    * {{{<tos_image.xml>}}} is located at {{{$SNEEROOT/SNEE/compiler/src/main/resources/etc/sncb/tools/nesC/OtaServer/build/telosb/tos_image.xml}}}.
 
 
 == Installing the Metadata Collector Image on the Nodes' External Flash Memory (slot 0) ==
