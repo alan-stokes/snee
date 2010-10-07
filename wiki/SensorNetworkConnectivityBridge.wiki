@@ -19,8 +19,10 @@ The code for these programs is located at {{{SNEE/compiler/src/main/resources/et
 
 == Install the OTA tool into the Nodes' External Flash Memory (Slot 1) ==
 
-  * First, manually with a USB cable, add OTAServer to the non-basestation nodes, and OTABasestation to the basestation.
+  * First, manually with a USB cable, add OTAServer to the non-basestation mote:
   {{{ make telosb install,<node_id> }}}
+
+  * Then, manually with a USB cable, and OTABasestation to the basestation mote.
 
   * Then install the OTA image into each node except the basestation at slot 1
   {{{ tos-ota <source> <destination> -i 1 <tos_image.xml>  }}}
