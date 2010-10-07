@@ -27,9 +27,9 @@ The code for these programs is located at {{{SNEE/compiler/src/main/resources/et
 
   * Then, with the basestation plugged in, install the OTA image into each node except the basestation at slot 1
   {{{ tos-ota <source> <destination> -i 1 <tos_image.xml>  }}}
-  * {{{<source>}}} is the serial port that the basestation is attached to, e.g., serial@/dev/tty.usbserial-USB0:115200
-  * {{{<destination>}}} is the id of the node.
-  * {{{<tos_image.xml>}}} is {{{SNEE/compiler/src/main/resources/etc/sncb/tools/nesC/OtaServer/build/telosb/tos_image.xml}}}.
+    * {{{<source>}}} is the serial port that the basestation is attached to, e.g., serial@/dev/tty.usbserial-USB0:115200
+    * {{{<destination>}}} is the id of the node.
+    * {{{<tos_image.xml>}}} is located (relative to SNEE workspace root) at {{{SNEE/compiler/src/main/resources/etc/sncb/tools/nesC/OtaServer/build/telosb/tos_image.xml}}}.
 
 
 == Installing the Metadata Collector Image on the Nodes' External Flash Memory (slot 0) ==
