@@ -214,4 +214,27 @@ public class SNEEPropertiesTest {
 		assertEquals(fileURL, file.toURI().toURL());
 	}
 
+	@Test(expected=SNEEConfigurationException.class)
+	public void testGetIntSetting_notExist() 
+	throws SNEEConfigurationException {
+		SNEEProperties.initialise(props);
+		SNEEProperties.getIntSetting("intSetting");
+	}
+
+	@Test
+	public void testGetIntSetting_exist() 
+	throws SNEEConfigurationException {
+		props.setProperty("intSetting", "20");
+		SNEEProperties.initialise(props);
+		assertEquals(20, SNEEProperties.getIntSetting("intSetting"));
+	}
+
+	@Test(expected=SNEEConfigurationException.class)
+	public void testGetIntSetting_numberConversionIssue() 
+	throws SNEEConfigurationException {
+		props.setProperty("intSetting", "twenty");
+		SNEEProperties.initialise(props);
+		SNEEProperties.getIntSetting("intSetting");
+	}
+	
 }
