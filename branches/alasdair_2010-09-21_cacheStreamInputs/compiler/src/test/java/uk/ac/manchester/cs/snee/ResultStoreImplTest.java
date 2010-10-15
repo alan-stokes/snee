@@ -114,6 +114,10 @@ public class ResultStoreImplTest extends EasyMockSupport {
 				dataList.add(mockOutput);//10
 				return dataList;
 			}
+			
+			protected String setQueryId(QueryExecutionPlan queryPlan) {
+				return "1";
+			}
 		}; 
 	}
 
@@ -146,6 +150,10 @@ public class ResultStoreImplTest extends EasyMockSupport {
 			throws SQLException, SNEEException {
 //				System.out.println("Returning mock result set");
 				return mockResultSet;
+			}
+			
+			protected String setQueryId(QueryExecutionPlan queryPlan) {
+				return "1";
 			}
 			
 		}; 

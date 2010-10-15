@@ -18,6 +18,7 @@ import eu.semsorgrid4env.service.stream.pull.PullStreamInterface;
 import eu.semsorgrid4env.service.stream.pull.PullStreamPropertyDocumentType;
 import eu.semsorgrid4env.service.stream.pull.PullStreamService;
 import eu.semsorgrid4env.service.wsdai.DataResourceUnavailableFault;
+import eu.semsorgrid4env.service.wsdai.DatasetType;
 import eu.semsorgrid4env.service.wsdai.GenericQueryResponse;
 import eu.semsorgrid4env.service.wsdai.GetDataResourcePropertyDocumentRequest;
 import eu.semsorgrid4env.service.wsdai.GetResourceListRequest;
@@ -38,6 +39,8 @@ public class PullStreamServiceClient {
 		"PullStreamService");
 	private PullStreamInterface _pullSource;
 
+	private String _serviceUrl;
+
 	protected PullStreamServiceClient() {
 
 	}
@@ -47,11 +50,12 @@ public class PullStreamServiceClient {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER PullStreamServiceClient() with URL " +
 					url);
+		_serviceUrl = url;
 		/*
 		 * Using a method to construct the service so that it can
 		 * be overridden as a mock object for testing
 		 */
-		_pullSource = createService(url);
+		_pullSource = createService(_serviceUrl);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN PullStreamServiceClient()");
 	}
@@ -147,7 +151,7 @@ public class PullStreamServiceClient {
 					"\n\tCount: " + request.getCount() +
 					"\n\tMax Size: " + request.getMaximumTuples());
 		}
-		GenericQueryResponse response;
+		GenericQueryResponse response = null;
 		try {
 			response = _pullSource.getStreamItem(request);
 		} catch (MaximumTuplesExceededFault e) {
@@ -184,10 +188,30 @@ public class PullStreamServiceClient {
 			String msg = "Service " + SERVICE_NAME + " is busy.";
 			logger.warn(msg, e);
 			throw new SNEEDataSourceException(msg, e);
+		} catch (com.sun.xml.internal.ws.client.ClientTransportException e) {
+			/*
+			 * Catching runtime exception when remote service is not
+			 * available. For now, just log and carry on.
+			 */
+			logger.warn("Unable to connect to service " +
+					_serviceUrl + " with resource "+ 
+					request.getDataResourceAbstractName() +
+					". Carry on.");
+		} finally {
+			if (response == null) {
+				logger.warn("Unexpected problem connecting to " +
+						_serviceUrl + " when issuing GetStreamItems " +
+						"call with parameters:" +
+						"\n\tResource name: " + request.getDataResourceAbstractName() +
+						"\n\tDataset Format: " + request.getDatasetFormatURI() +
+						"\n\tPosition: " + request.getPosition() +
+						"\n\tCount: " + request.getCount() +
+						"\n\tMax Size: " + request.getMaximumTuples());
+			}
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN getStreamItemsFromService() with " +
-					"response: " + response.toString());
+					"response: " + response);
 		return response;
 	}
 
@@ -201,7 +225,7 @@ public class PullStreamServiceClient {
 					"\n\tCount: " + request.getCount() +
 					"\n\tMax Size: " + request.getMaximumTuples());
 		}
-		GenericQueryResponse response;
+		GenericQueryResponse response = null;
 		try {
 			response = _pullSource.getStreamNewestItem(request);
 		} catch (MaximumTuplesExceededFault e) {
@@ -234,6 +258,25 @@ public class PullStreamServiceClient {
 			String msg = "Invalid dataset format requested.";
 			logger.warn(msg, e);
 			throw new SNEEDataSourceException(msg, e);
+		} catch (com.sun.xml.internal.ws.client.ClientTransportException e) {
+			/*
+			 * Catching runtime exception when remote service is not
+			 * available. For now, just log and carry on.
+			 */
+			logger.warn("Unable to connect to service " +
+					_serviceUrl + " with resource "+ 
+					request.getDataResourceAbstractName() +
+					". Carry on.");
+		} finally {
+			if (response == null) {
+				logger.warn("Unexpected problem connecting to " +
+						_serviceUrl + " when issuing GetStreamItems " +
+						"call with parameters:" +
+						"\n\tResource name: " + request.getDataResourceAbstractName() +
+						"\n\tDataset Format: " + request.getDatasetFormatURI() +
+						"\n\tCount: " + request.getCount() +
+						"\n\tMax Size: " + request.getMaximumTuples());
+			}
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getStreamNewestItem() with response " +

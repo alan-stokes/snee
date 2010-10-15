@@ -342,7 +342,8 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	
 		public void run(){
 			if (logger.isDebugEnabled()) {
-				logger.debug("ENTER run()");
+				logger.debug("ENTER run() #existing tuples=" +
+						_tupleList.size() + " of " + MAX_BUFFER_SIZE);
 			}
 			Tuple tuple = null ;
 			/* 

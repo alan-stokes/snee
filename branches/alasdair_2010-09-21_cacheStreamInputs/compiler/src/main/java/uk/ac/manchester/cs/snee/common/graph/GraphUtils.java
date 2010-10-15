@@ -40,6 +40,7 @@ import java.io.InputStreamReader;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 
@@ -93,15 +94,18 @@ public class GraphUtils {
 			logger.trace("RETURN convertDOT2PNG()");
     }
     
-    public static void generateGraphImage(String dotFilePath) {
+    public static void generateGraphImage(String dotFilePath) 
+    throws SNEEConfigurationException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER generateGraphImage()");
-		
-	    if (!dotFilePath.endsWith(".dot")) {
-	    	dotFilePath = dotFilePath + ".dot";
-	    }
-	    String pngFilePath = dotFilePath.replaceAll("dot", "png");
-		convertDOT2PNG(dotFilePath, pngFilePath);
+		if (SNEEProperties.getBoolSetting(
+				SNEEPropertyNames.CONVERT_QEP_IMAGES)) {
+			if (!dotFilePath.endsWith(".dot")) {
+				dotFilePath = dotFilePath + ".dot";
+			}
+			String pngFilePath = dotFilePath.replaceAll("dot", "png");
+			convertDOT2PNG(dotFilePath, pngFilePath);
+		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN generateGraphImage()");
     }

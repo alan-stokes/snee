@@ -15,7 +15,8 @@ public abstract class QueryExecutionPlan {
 	/**
 	 * Logger for this class.
 	 */
-	private Logger logger = Logger.getLogger(QueryExecutionPlan.class.getName());
+	private Logger logger = 
+		Logger.getLogger(QueryExecutionPlan.class.getName());
 	
 	/**
 	 * Identifier of this query plan.

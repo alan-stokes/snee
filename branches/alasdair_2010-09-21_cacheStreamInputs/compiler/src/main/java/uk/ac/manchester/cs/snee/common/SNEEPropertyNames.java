@@ -46,6 +46,13 @@ public final class SNEEPropertyNames {
     	"compiler.generate_graphs";
 
     /**
+     * Used to indicate if graphs will be converted to png
+     * Optional, requires valid graphviz location
+     */
+    public static final String CONVERT_QEP_IMAGES = 
+    	"compiler.convert_graphs";
+
+    /**
      * Used to provide the path to the GraphViz executatble
      * Optional, must be set if GENERAL_GENERATE_GRAPHS=true 
      */

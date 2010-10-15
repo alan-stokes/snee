@@ -85,8 +85,12 @@ public class SNEEProperties {
 			logger.trace("ENTER validateGraphVizSettings()");
 		String generateGraphs = 
 			_props.getProperty(SNEEPropertyNames.GENERATE_QEP_IMAGES);
+		String convertGraphs =
+			_props.getProperty(SNEEPropertyNames.CONVERT_QEP_IMAGES);
 		if (generateGraphs != null &&
 				generateGraphs.equals("true") &&
+				convertGraphs != null &&
+				convertGraphs.equals("true") &&
 				_props.getProperty(SNEEPropertyNames.GRAPHVIZ_EXE) == null) {
 			String message = "Need to provide the " +
 				"graphviz.exe location for the graphviz executable " +
