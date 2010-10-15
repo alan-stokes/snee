@@ -45,6 +45,9 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
@@ -74,8 +77,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 
 	private SourceReceiver _streamReceiver;
 
-	//NOTE: This used to be in the helper class, may need to move it back if needed by more than this operator
-	public final static int MAX_BUFFER_SIZE = 20000; 
+	public int MAX_BUFFER_SIZE;  
 
 	/**
 	 * Tuples are stored in main memory. 
@@ -124,6 +126,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	 * Instantiates the receive operator
 	 * @param op
 	 * @throws SchemaMetadataException 
+	 * @throws SNEEConfigurationException 
 	 */
 	public ReceiveOperatorImpl(LogicalOperator op) 
 	throws SchemaMetadataException {
@@ -131,6 +134,18 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			logger.debug("ENTER ReceiveOperatorImpl() with " + op);
 		}
 	
+		//XXX-AG: Temporarily added this as will be removing buffer completely!
+		try {
+			MAX_BUFFER_SIZE = SNEEProperties.getIntSetting(
+				SNEEPropertyNames.RESULTS_HISTORY_SIZE_TUPLES); 
+		} catch (SNEEConfigurationException e) {
+			MAX_BUFFER_SIZE = 1;
+		}
+		
+		if (logger.isTraceEnabled()) {
+			logger.trace("Buffer size: " + MAX_BUFFER_SIZE);
+		}
+		
 		// Instantiate this as a receive operator
 		receiveOp = (ReceiveOperator) op;
 		try {
