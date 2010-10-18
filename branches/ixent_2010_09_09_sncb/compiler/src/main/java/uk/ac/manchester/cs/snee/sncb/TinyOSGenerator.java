@@ -2456,16 +2456,22 @@ public class TinyOSGenerator {
      * @throws UtilsException 
      * @throws UtilsException 
      */
-	private void generateIndividualMiscFiles() throws IOException, URISyntaxException, UtilsException {
+	private void generateIndividualMiscFiles() 
+	throws IOException, URISyntaxException, UtilsException {
 		final Iterator<Site> siteIter = plan
 		    .siteIterator(TraversalOrder.POST_ORDER);
 		while (siteIter.hasNext()) {
-		    final String siteID = siteIter.next().getID();
+			Site site = siteIter.next();
+			boolean isSink = false;
+			if (this.plan.getRT().getRoot().equals(site)) {
+				isSink = true;
+			}
+		    final String siteID = site.getID();
 			final String nodeDir = targetName+"/mote" + siteID;
 			copyInterfaceFile(INTERFACE_DO_TASK, nodeDir);
 
 			generateMakefiles(nescOutputDir + nodeDir,
-				"QueryPlan" + siteID);
+				"QueryPlan" + siteID, isSink);
 
 		    if (tosVersion==2) {
 		    	Template.instantiate(
@@ -2490,7 +2496,8 @@ public class TinyOSGenerator {
 
 			copyInterfaceFile(INTERFACE_DO_TASK, targetName +"/");
 
-		    generateMakefiles(nescOutputDir+ targetName, "QueryPlan");
+		    generateMakefiles(nescOutputDir+ targetName, "QueryPlan", false); 
+		    	//! ok to hardcode to false?
 
 		    if (tosVersion==2) {
 		    	Template.instantiate(
@@ -2520,7 +2527,7 @@ public class TinyOSGenerator {
 
 		copyInterfaceFile(INTERFACE_DO_TASK, targetName +"/");
 
-	    generateMakefiles(nescOutputDir+ targetName, "QueryPlan");
+	    generateMakefiles(nescOutputDir+ targetName, "QueryPlan", false);
 
 	    if (tosVersion==2) {
 	    	Template.instantiate(
@@ -2555,7 +2562,7 @@ public class TinyOSGenerator {
 	 * @throws IOException
 	 * @throws URISyntaxException 
 	 */
-	private void generateMakefiles(final String dir, String mainConfigName) throws IOException, URISyntaxException {
+	private void generateMakefiles(final String dir, String mainConfigName, boolean isSink) throws IOException, URISyntaxException {
 		// Makefile
 		HashMap<String, String> replacements = new HashMap<String, String>();
 		replacements.put("__MAIN_CONFIG_NAME__", mainConfigName);
@@ -2583,6 +2590,11 @@ public class TinyOSGenerator {
 					"CFLAGS += -I$(TOSDIR)/lib/net -I%T/lib/net/drip");
 		} else {
 			replacements.put("__COMMAND_SERVER__", "");
+		}
+		if (this.useNodeController && isSink) {
+			replacements.put("__OTA_BASESTATION__", "CFLAGS += -DOTA_BASESTATION_ENABLED");
+		} else {
+			replacements.put("__OTA_BASESTATION__", "");
 		}
 		
 		Template.instantiate(NESC_MISC_FILES_DIR
