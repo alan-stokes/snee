@@ -59,7 +59,7 @@ def filter_topology():
 			
 def filter_resources():
 	seen = {}
-	for link in reversed(resources):
+	for resource in reversed(resources):
 		if resource.id not in seen:
 			seen[resource.id] = []
 		if seen[resource.id].count(resource.id) == 0:

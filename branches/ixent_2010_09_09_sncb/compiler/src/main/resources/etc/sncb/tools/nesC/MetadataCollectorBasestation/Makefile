@@ -2,6 +2,7 @@ COMPONENT=../MetadataCollector/MetadataCollectorAppC
 BOOTLOADER=tosboot
 
 CFLAGS += -DCOMMAND_SERVER_BASESTATION
+CFLAGS += -DTOSH_DATA_LENGTH=52
 CFLAGS += -DSNEE_IMAGE_ID=0
 CFLAGS += -I../MetadataCollector/
 CFLAGS += -I../CommandServer/

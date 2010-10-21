@@ -44,6 +44,8 @@ module MetadataCollectorC @safe(){
 
     interface SplitControl as CommandServer;
     interface StateChanged;
+
+    interface Read<uint16_t>;
   }
 }
 
@@ -172,26 +174,7 @@ implementation {
      - read next sample
   */
   event void Timer.fired() {    
-    uint8_t i = 0;
-
-      if (!sendbusy) {
-	oscilloscope_t *o = (oscilloscope_t *)call Send.getPayload(&sendbuf, sizeof(oscilloscope_t));
-	if (o == NULL) {
-	  fatal_problem();
-	  return;
-	}
-       
-    for (i=0; i<NREADINGS; i++) {      
-      local.readings[i].id = call CtpInfo.getNeighborAddr(i);
-      local.readings[i].quality = call CtpInfo.getNeighborLinkQuality(i);
-    } 
-
-	memcpy(o, &local, sizeof(local));
-	if (call Send.send(&sendbuf, sizeof(local)) == SUCCESS)
-	  sendbusy = TRUE;
-        else
-          report_problem();
-      }      
+    call Read.read();
   }
 
   event void Send.sendDone(message_t* msg, error_t error) {
@@ -238,5 +221,30 @@ implementation {
       call Timer.stop();
       call RoutingControl.stop();      
     }
+  }
+
+  event void Read.readDone(error_t result, uint16_t data) {
+    uint8_t i = 0;
+
+      if (!sendbusy) {
+	oscilloscope_t *o = (oscilloscope_t *)call Send.getPayload(&sendbuf, sizeof(oscilloscope_t));
+	if (o == NULL) {
+	  fatal_problem();
+	  return;
+	}
+
+    local.voltage = data;
+       
+    for (i=0; i<NREADINGS; i++) {      
+      local.readings[i].id = call CtpInfo.getNeighborAddr(i);
+      local.readings[i].quality = call CtpInfo.getNeighborLinkQuality(i);      
+    } 
+
+	memcpy(o, &local, sizeof(local));
+	if (call Send.send(&sendbuf, sizeof(local)) == SUCCESS)
+	  sendbusy = TRUE;
+        else
+          report_problem();
+      }
   }
 }

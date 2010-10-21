@@ -19,7 +19,7 @@
 enum {
   /* Number of readings per message. If you increase this, you may have to
      increase the message_t size. */
-  NREADINGS = 4,
+  NREADINGS = 10,
   /* Default sampling period. */
   DEFAULT_INTERVAL = 1024,
   AM_OSCILLOSCOPE = 0x93
@@ -27,11 +27,12 @@ enum {
 
 typedef nx_struct neighbour {
   nx_uint16_t id;
-  nx_uint16_t quality;
+  nx_uint16_t quality;  
 } neighbour_t;
 
 typedef nx_struct oscilloscope {
   nx_uint16_t id; /* Mote id of sending mote. */
+  nx_uint16_t voltage;
   neighbour_t readings[NREADINGS];
 } oscilloscope_t;
 

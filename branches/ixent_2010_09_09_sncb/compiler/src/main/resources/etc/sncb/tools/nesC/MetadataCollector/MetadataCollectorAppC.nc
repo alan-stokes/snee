@@ -55,4 +55,7 @@ implementation {
   MetadataCollectorC.StateChanged -> CommandServerAppC.StateChanged;
 
   components SerialStarterC;
+  
+  components new VoltageC() as Sensor;
+  MetadataCollectorC.Read -> Sensor;
 }
