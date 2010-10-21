@@ -14,6 +14,10 @@ import javax.sql.rowset.RowSetMetaDataImpl;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.CircularArray;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryPlanMetadata;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -29,7 +33,7 @@ extends Observable implements ResultStore {
 	private static Logger logger = 
 		Logger.getLogger(ResultStoreImpl.class.getName());
 
-	private List<Output> _data;
+	private CircularArray<Output> _data;
 
 	private String command = null;
 
@@ -38,7 +42,7 @@ extends Observable implements ResultStore {
 	private String queryId;
 
 	public ResultStoreImpl(String query, QueryExecutionPlan queryPlan) 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER ResultStoreImpl() for " + query);
 		try {
@@ -105,8 +109,14 @@ extends Observable implements ResultStore {
 		return md;
 	}
 
-	protected List<Output> createDataStore() {
-		return new ArrayList<Output>();
+	protected CircularArray<Output> createDataStore() 
+	throws SNEEConfigurationException {
+		int maxBufferSize = SNEEProperties.getIntSetting(
+				SNEEPropertyNames.RESULTS_HISTORY_SIZE_TUPLES);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Buffer size: " + maxBufferSize);
+		}
+		return new CircularArray<Output>(maxBufferSize);
 	}
 	
 	public void add(Output data) {
@@ -207,9 +217,9 @@ extends Observable implements ResultStore {
 		}
 
 		long durationPeriod = duration.getDuration();		
-		Output firstResult = _data.get(0);
+		Output firstResult = _data.getOldest();
 		long oldestTS = firstResult.getEvalTime();
-		Output newestResult = _data.get(_data.size()-1);
+		Output newestResult = _data.getNewest();
 		long newestTS = newestResult.getEvalTime();
 		long availableDuration = newestTS - oldestTS;
 		
@@ -238,7 +248,7 @@ extends Observable implements ResultStore {
 			throw new SNEEException(msg);
 		} 
 		
-		Timestamp oldestTS = new Timestamp(_data.get(0).getEvalTime());
+		Timestamp oldestTS = new Timestamp(_data.getOldest().getEvalTime());
 		if (timestamp.before(oldestTS)) {
 			String msg = "The oldest timestamp available is " + 
 				oldestTS;
@@ -291,6 +301,24 @@ extends Observable implements ResultStore {
 		return response;
 	}
 
+	private List<ResultSet> createResultSets(
+			CircularArray<Output> outputs) 
+	throws SNEEException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER createResultSets(CircularArray)");
+		}
+		List<Output> dataList = new ArrayList<Output>();
+		for (Output output : outputs) {
+			dataList.add(output);
+		}
+		List<ResultSet> resultList = createResultSets(dataList);
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN createResultSets() #resultSets=" +
+					resultList.size());
+		}
+		return resultList;
+	}
+	
 	private List<ResultSet> createResultSets(List<Output> outputs)
 	throws SNEEException {
 		if (logger.isTraceEnabled()) {
@@ -409,7 +437,7 @@ extends Observable implements ResultStore {
 		
 		long durationPeriod = duration.getDuration();
 		long newestTS = System.currentTimeMillis();
-		long availableDuration = newestTS - _data.get(0).getEvalTime();
+		long availableDuration = newestTS - _data.getOldest().getEvalTime();
 		if (availableDuration < durationPeriod) {
 			String msg = "Requested duration (" + durationPeriod + 
 				") is greater than available duration (" + 

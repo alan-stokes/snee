@@ -3,6 +3,7 @@ package uk.ac.manchester.cs.snee;
 import java.net.MalformedURLException;
 import java.util.Collection;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 
@@ -53,10 +54,11 @@ public interface SNEE {
 	 * @throws MetadataException 
 	 * @throws EvaluatorException 
 	 * @throws SNEECompilerException 
+	 * @throws SNEEConfigurationException 
 	 */
 	public int addQuery(String query, String parametersFile) 
 	throws SNEECompilerException, MetadataException, 
-	EvaluatorException, SNEEException;
+	EvaluatorException, SNEEException, SNEEConfigurationException;
 
 	/**
 	 * Retrieve the ResultSet for a specified query if it exists.

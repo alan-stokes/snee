@@ -117,7 +117,7 @@ public abstract class SNEEClient implements Observer {
 	
 	public void run() 
 	throws SNEECompilerException, MetadataException, EvaluatorException,
-	SNEEException, SQLException {
+	SNEEException, SQLException, SNEEConfigurationException {
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER");
 		System.out.println("Query: " + this._query);

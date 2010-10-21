@@ -62,10 +62,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
-import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
-import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
-import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
@@ -287,7 +284,7 @@ public class SNEEController implements SNEE {
 	 */
 	public int addQuery(String query, String queryParamsFile) 
 	throws EvaluatorException, SNEECompilerException, SNEEException,
-	MetadataException 
+	MetadataException, SNEEConfigurationException 
 	{
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER addQuery() with " + query);
@@ -360,7 +357,8 @@ public class SNEEController implements SNEE {
 	 * @throws SNEEConfigurationException 
 	 */
 	private int dispatchQuery(int queryId, String query) 
-	throws SNEEException, MetadataException, EvaluatorException
+	throws SNEEException, MetadataException, EvaluatorException,
+	SNEEConfigurationException
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER dispatchQuery() with " + queryId +
@@ -381,7 +379,7 @@ public class SNEEController implements SNEE {
 
 	protected ResultStore createStreamResultSet(String query,
 			QueryExecutionPlan queryPlan) 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		ResultStore resultSet = new ResultStoreImpl(query, queryPlan);
 		resultSet.setCommand(query);
 		return resultSet;
