@@ -226,12 +226,34 @@ public class SNEEProperties {
 			logger.debug("ENTER getSetting() with " + propName);
 		String property = _props.getProperty(propName);
 		if (property == null) {
-			String message = "Unknown property " + propName;
+			String message = "Unknown property \'" + propName + "\'";
 			logger.warn(message);
 			throw new SNEEConfigurationException(message);
 		}
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN getSetting() " + propName + " found.");
+			logger.debug("RETURN getSetting() " + propName + 
+					" = " + property);
+		return property;
+	}
+	
+	public static int getIntSetting(String propName) 
+	throws SNEEConfigurationException 
+	{
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER getIntSetting() with " + propName);
+		}
+		int property;
+		try {
+			property = new Integer(getSetting(propName));
+		} catch (NumberFormatException e) {
+			String message = "Problem converting property " +
+					"value to an integer.";
+			logger.warn(message, e);
+			throw new SNEEConfigurationException(message, e);
+		}
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getIntSetting() " + propName + 
+					" = " + property);
 		return property;
 	}
 	

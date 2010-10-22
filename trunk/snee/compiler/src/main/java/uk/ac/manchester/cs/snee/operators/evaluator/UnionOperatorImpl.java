@@ -35,8 +35,6 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
@@ -45,10 +43,9 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
-import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
 
@@ -66,7 +63,8 @@ public class UnionOperatorImpl extends EvaluatorPhysicalOperator {
 	private EvaluatorPhysicalOperator rightOperator;
 
 	public UnionOperatorImpl(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER UnionOperatorImpl() " + op);
 		}

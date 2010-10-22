@@ -42,6 +42,7 @@ import java.util.Observable;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
@@ -59,7 +60,8 @@ extends EvaluatorPhysicalOperator {
 	int nextIndex = 0;
 
 	public DeliverOperatorImpl(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
 		super(op);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER DeliverOperatorImpl() " + op);
