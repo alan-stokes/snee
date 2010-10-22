@@ -5,8 +5,15 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
+import uk.ac.manchester.cs.snee.ResultStoreImpl;
+
 public class CircularArray<E> implements Iterable<E> {
 
+	private Logger logger = 
+		Logger.getLogger(this.getClass().getName());
+	
 	private E[] array;
 	private int firstIndex;
 	private int lastIndex;
@@ -21,12 +28,19 @@ public class CircularArray<E> implements Iterable<E> {
 	 *            the initial capacity of this {@code ArrayList}.
 	 */
 	public CircularArray(int capacity) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER CircularArray() with capacity=" +
+					capacity);
+		}
 		if (capacity <= 0) {
 			throw new IllegalArgumentException();
 		}
 		firstIndex = lastIndex = 0;
 		this.capacity = capacity;
 		array = newElementArray(capacity);
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN CircularArray()");
+		}
 	}
 	
 	/**
@@ -64,9 +78,18 @@ public class CircularArray<E> implements Iterable<E> {
 	 * @return always true
 	 */
 	public boolean add(E object) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER add() with " + object);
+		}
 		// Insert then increment
 		array[lastIndex] = object;
 		numberElements++;
+		if (logger.isTraceEnabled()) {
+			logger.trace("Inserted object at index " + lastIndex +
+					"\n\tTotal number of inserted objects " + 
+					numberElements + "\n\tPosition of head " + 
+					firstIndex);
+		}
 		lastIndex = incrementPointer(lastIndex);
 		/* 
 		 * Check to see if we are over writing first element
@@ -74,6 +97,13 @@ public class CircularArray<E> implements Iterable<E> {
 		 */
 		if (lastIndex == firstIndex) {
 			firstIndex = incrementPointer(firstIndex);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("Next insert index " + lastIndex +
+					"\n\tPosition of head " + firstIndex);
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN add() with true");
 		}
 		return true;
 	}
@@ -86,8 +116,16 @@ public class CircularArray<E> implements Iterable<E> {
 	 *         otherwise.
 	 */
 	public boolean addAll(Collection<? extends E> collection) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER addAll() collection size=" + 
+					collection.size());
+		}
 		for (E ob : collection) {
 			this.add(ob);
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN addAll() number of elements " +
+					numberElements);
 		}
 		return true;
 	}
@@ -100,15 +138,30 @@ public class CircularArray<E> implements Iterable<E> {
 	 * @return the element at the specified position in the list if it has not been overwritten.
 	 */
 	public E get(int index) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER get() with " + index);
+		}
 		int lowerBound = Math.max(0, numberElements - capacity);
 		if (lowerBound <= index && index < numberElements) {
 			int location = index % array.length; 
-			return array[location];
+			if (logger.isTraceEnabled()) {
+				logger.trace("Retrieve location " + location +
+						"\n\tTotal number of inserted objects " +
+						"\n\tlast index " + lastIndex +
+						"\n\tPosition of head " + firstIndex);
+			}
+			E obj = array[location];
+			if (logger.isDebugEnabled()) {
+				logger.debug("RETURN get() with " + obj);
+			}
+			return obj;
 		}
 		int upperBound = numberElements - 1;
-		throw new IndexOutOfBoundsException(
+		String message = index + " out of range. " +
 				"Valid range that can currently be retrieve: " +
-					lowerBound + " to " + upperBound);
+				lowerBound + " to " + upperBound;
+		logger.warn(message);
+		throw new IndexOutOfBoundsException(message);
 	}
 
 	private int incrementPointer(int pointer) {
@@ -169,25 +222,43 @@ public class CircularArray<E> implements Iterable<E> {
 	 *             if (start > end)
 	 */
 	public List<E> subList(int start, int end) {
-		if (firstIndex <= start && end <= numberElements) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER subList() [" + start + 
+					", " + end + ")");
+		}
+		int lowerBound = Math.max(0, numberElements - capacity);
+		if (lowerBound <= start && end <= numberElements) {
 			List<E> elementList = new ArrayList<E>(end - start);
 			for (int i = start; i < end; i++) {
 				elementList.add(get(i));
 			}
+			if (logger.isDebugEnabled()) {
+				logger.debug("RETURN subList() with " + elementList);
+			}
 			return elementList;
 		}
-		throw new IndexOutOfBoundsException();
+		int upperBound = numberElements;
+		String message = "Valid range that can currently be retrieve: " +
+				lowerBound + " to " + upperBound;
+		logger.warn(message);
+		throw new IndexOutOfBoundsException(message);
 	}
 	
 	public Iterator<E> iterator() {
-		return circularIterator(firstIndex);
+		int lowerBound = Math.max(0, numberElements - capacity);
+		return circularIterator(lowerBound);
 	}
 	
 	public Iterator<E> circularIterator(int index) {
-		if (firstIndex <= index && index <= numberElements) {
+		int lowerBound = Math.max(0, numberElements - capacity);
+		if (lowerBound <= index && index <= numberElements) {
 			return new CircularIterator(index);
 		}
-		throw new IndexOutOfBoundsException();
+		int upperBound = numberElements;
+		String message = "Valid range that can currently be retrieve: " +
+				lowerBound + " to " + upperBound;
+		logger.warn(message);
+		throw new IndexOutOfBoundsException(message);
 	}
 	
 	/**

@@ -235,6 +235,40 @@ public class CircularArrayTest {
 	}
 
 	@Test
+	public void testCircularIterator_iteratorNoWrap() {
+		CircularArray<Integer> circularArray = 
+			new CircularArray<Integer>(5);
+		for (int i = 0; i < 5; i++) {
+			circularArray.add(new Integer(i));
+		}
+		Iterator<Integer> it = circularArray.iterator();
+		int expected = 0;
+		while (it.hasNext()) {
+			assertEquals(expected, it.next().intValue());
+			expected++;
+		}
+		assertEquals(5, expected);
+
+	}
+
+	@Test
+	public void testCircularIterator_iteratorWrap() {
+		CircularArray<Integer> circularArray = 
+			new CircularArray<Integer>(5);
+		for (int i = 0; i < 13; i++) {
+			circularArray.add(new Integer(i));
+		}
+		Iterator<Integer> it = circularArray.iterator();
+		int expected = 8;
+		while (it.hasNext()) {
+			assertEquals(expected, it.next().intValue());
+			expected++;
+		}
+		assertEquals(13, expected);
+
+	}
+
+	@Test
 	public void testCircularIterator_headWrap() {
 		CircularArray<Integer> circularArray = 
 			new CircularArray<Integer>(5);
