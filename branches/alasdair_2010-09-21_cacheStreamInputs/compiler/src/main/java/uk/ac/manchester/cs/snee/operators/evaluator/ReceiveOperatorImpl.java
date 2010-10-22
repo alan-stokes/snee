@@ -46,8 +46,6 @@ import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
@@ -59,7 +57,6 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.UDPSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.WebServiceSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
-import uk.ac.manchester.cs.snee.evaluator.types.CircularList;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
@@ -76,14 +73,6 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		Logger.getLogger(ReceiveOperatorImpl.class.getName());
 
 	private SourceReceiver _streamReceiver;
-
-	public int MAX_BUFFER_SIZE;  
-
-	/**
-	 * Tuples are stored in main memory. 
-	 * Tuples overwritten once they become too old.
-	 */
-	private CircularList _tupleList ;
 
 	// streamName is the variable that stores the local extent name.
 	private String _streamName;
@@ -133,18 +122,6 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ReceiveOperatorImpl() with " + op);
 		}
-	
-		//XXX-AG: Temporarily added this as will be removing buffer completely!
-		try {
-			MAX_BUFFER_SIZE = SNEEProperties.getIntSetting(
-				SNEEPropertyNames.RESULTS_HISTORY_SIZE_TUPLES); 
-		} catch (SNEEConfigurationException e) {
-			MAX_BUFFER_SIZE = 1;
-		}
-		
-		if (logger.isTraceEnabled()) {
-			logger.trace("Buffer size: " + MAX_BUFFER_SIZE);
-		}
 		
 		// Instantiate this as a receive operator
 		receiveOp = (ReceiveOperator) op;
@@ -171,7 +148,6 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		}
 		try {
 			initializeStreamReceiver();
-			_tupleList = new CircularList(MAX_BUFFER_SIZE);
 
 			// Start the receive operator to run immediately
 			executing = true;
@@ -357,8 +333,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	
 		public void run(){
 			if (logger.isDebugEnabled()) {
-				logger.debug("ENTER run() #existing tuples=" +
-						_tupleList.size() + " of " + MAX_BUFFER_SIZE);
+				logger.debug("ENTER run()");
 			}
 			Tuple tuple = null ;
 			/* 
@@ -370,8 +345,6 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 					tuple = _streamReceiver.receive();
 					// create a tagged tuple from the received tuple
 					TaggedTuple taggedTuple = new TaggedTuple(tuple);
-					// Add the tuple to the tuple list
-					_tupleList.add(taggedTuple);
 		
 					setChanged();
 					notifyObservers(taggedTuple);

@@ -7,6 +7,7 @@ import java.util.Observable;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
@@ -24,7 +25,8 @@ public class SelectOperatorImpl extends EvaluationOperator {
 	private SelectOperator _select;
 
 	public SelectOperatorImpl(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
 		super(op);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SelectOperatorImpl " + op);

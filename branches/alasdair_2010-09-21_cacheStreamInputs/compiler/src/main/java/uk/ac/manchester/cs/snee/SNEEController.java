@@ -438,13 +438,7 @@ public class SNEEController implements SNEE {
 		}
 	}
 
-	/**
-	 * Retrieve the ResultSet for a specified query if it exists.
-	 * @param queryId Identifier of the query for which the result set should be returned
-	 * @return ResultSet for the query
-	 * @throws SNEEException Specified queryId does not exist
-	 */
-	public ResultStore getResultSet(int queryId) 
+	public ResultStore getResultStore(int queryId) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER getResultStore() with query=" + queryId);
@@ -453,7 +447,7 @@ public class SNEEController implements SNEE {
 		if (_queryResults.containsKey(queryId)) {
 			resultSet = _queryResults.get(queryId);
 		} else {
-			String msg = "No ResultSet for query " + queryId;
+			String msg = "No ResultStore for query " + queryId;
 			logger.warn(msg);
 			throw new SNEEException(msg);
 		}

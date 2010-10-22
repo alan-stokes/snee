@@ -61,12 +61,13 @@ public interface SNEE {
 	EvaluatorException, SNEEException, SNEEConfigurationException;
 
 	/**
-	 * Retrieve the ResultSet for a specified query if it exists.
-	 * @param queryId Identifier of the query for which the result set should be returned
-	 * @return ResultSet for the query
+	 * Retrieve the ResultStore for a specified query if it exists.
+	 * 
+	 * @param queryId Identifier of the query for which the result store should be returned
+	 * @return ResultStore for the query
 	 * @throws SNEEException Specified queryId does not exist
 	 */
-	public ResultStore getResultSet(int queryId) 
+	public ResultStore getResultStore(int queryId) 
 	throws SNEEException;
 	
 	/**

@@ -223,7 +223,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	@Test(expected=SNEEException.class)
 	public void testGetResults_invalidQueryId_noQueries() 
 	throws SNEEException {
-		_snee.getResultSet(49);
+		_snee.getResultStore(49);
 	}
 
 	@Test(expected=SNEEException.class)
@@ -234,7 +234,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	EvaluatorException, QoSException, SNEECompilerException,
 	MetadataException, SNEEConfigurationException  {
 		int qID = _snee.addQuery(mQuery, null);
-		_snee.getResultSet(qID*20);
+		_snee.getResultStore(qID*20);
 	}
 
 	@Test
@@ -253,7 +253,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 		//Test
 		replayAll();		
 		int qID = _snee.addQuery(mQuery, null);
-		ResultStore result = _snee.getResultSet(qID);
+		ResultStore result = _snee.getResultStore(qID);
 		assertNotNull(result);
 		verifyAll();
 	}

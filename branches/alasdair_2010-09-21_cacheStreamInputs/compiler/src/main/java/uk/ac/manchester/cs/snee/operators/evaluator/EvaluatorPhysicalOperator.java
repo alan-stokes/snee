@@ -45,6 +45,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -79,7 +80,8 @@ implements Observer
 	}
 	
 	public EvaluatorPhysicalOperator(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER EvaluatorOperator() " + op);
 		}
@@ -146,8 +148,10 @@ implements Observer
 		_schema = schema;
 	}
 	
-	public EvaluatorPhysicalOperator getEvaluatorOperator(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
+	public EvaluatorPhysicalOperator getEvaluatorOperator(
+			LogicalOperator op) 
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
 		EvaluatorPhysicalOperator phyOp = null;
 		if (op instanceof ReceiveOperator) {
 			phyOp = new ReceiveOperatorImpl(op);

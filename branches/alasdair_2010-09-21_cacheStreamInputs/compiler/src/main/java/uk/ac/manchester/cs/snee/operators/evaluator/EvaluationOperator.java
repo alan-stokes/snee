@@ -5,6 +5,7 @@ import java.util.Stack;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -26,7 +27,8 @@ extends EvaluatorPhysicalOperator {
 	}
 	
 	public EvaluationOperator(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
 		super(op);
 	}
 	

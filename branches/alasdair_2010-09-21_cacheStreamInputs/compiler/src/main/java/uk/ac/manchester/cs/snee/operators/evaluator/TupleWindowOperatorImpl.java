@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Observable;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
@@ -19,7 +20,8 @@ public class TupleWindowOperatorImpl extends WindowOperatorImpl {
 	private int nextIndex = 0;
 
 	public TupleWindowOperatorImpl(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
 		super(op);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER TupleWindowOperatorImpl() with " + op);

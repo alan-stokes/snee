@@ -132,9 +132,9 @@ public abstract class SNEEClient implements Observer {
 		System.out.println("Running query for " + _duration + 
 			" seconds. Scheduled end time " + new Date(endTime));
 
-		ResultStoreImpl resultSet = 
-			(ResultStoreImpl) controller.getResultSet(queryId1);
-		resultSet.addObserver(this);
+		ResultStoreImpl resultStore = 
+			(ResultStoreImpl) controller.getResultStore(queryId1);
+		resultStore.addObserver(this);
 		
 		try {			
 			Thread.currentThread().sleep((long)_duration * 1000);
@@ -145,7 +145,7 @@ public abstract class SNEEClient implements Observer {
 			Thread.currentThread().yield();
 		}
 		
-		List<ResultSet> results1 = resultSet.getResults();
+		List<ResultSet> results1 = resultStore.getResults();
 		System.out.println("Stopping query " + queryId1 + ".");
 		controller.removeQuery(queryId1);
 

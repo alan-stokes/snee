@@ -1,14 +1,13 @@
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Observable;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
@@ -35,7 +34,8 @@ extends EvaluatorPhysicalOperator {
 	private List<Expression> expressions;
 
 	public AggregationOperatorImpl(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
 		super(op);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER AggregationOperatorImpl() " + op);
