@@ -18,7 +18,6 @@ import eu.semsorgrid4env.service.stream.pull.PullStreamInterface;
 import eu.semsorgrid4env.service.stream.pull.PullStreamPropertyDocumentType;
 import eu.semsorgrid4env.service.stream.pull.PullStreamService;
 import eu.semsorgrid4env.service.wsdai.DataResourceUnavailableFault;
-import eu.semsorgrid4env.service.wsdai.DatasetType;
 import eu.semsorgrid4env.service.wsdai.GenericQueryResponse;
 import eu.semsorgrid4env.service.wsdai.GetDataResourcePropertyDocumentRequest;
 import eu.semsorgrid4env.service.wsdai.GetResourceListRequest;
@@ -188,7 +187,7 @@ public class PullStreamServiceClient {
 			String msg = "Service " + SERVICE_NAME + " is busy.";
 			logger.warn(msg, e);
 			throw new SNEEDataSourceException(msg, e);
-		} catch (com.sun.xml.internal.ws.client.ClientTransportException e) {
+		} catch (javax.xml.ws.WebServiceException e) {
 			/*
 			 * Catching runtime exception when remote service is not
 			 * available. For now, just log and carry on.
@@ -258,7 +257,7 @@ public class PullStreamServiceClient {
 			String msg = "Invalid dataset format requested.";
 			logger.warn(msg, e);
 			throw new SNEEDataSourceException(msg, e);
-		} catch (com.sun.xml.internal.ws.client.ClientTransportException e) {
+		} catch (javax.xml.ws.WebServiceException e) {
 			/*
 			 * Catching runtime exception when remote service is not
 			 * available. For now, just log and carry on.
