@@ -19,13 +19,12 @@ import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
-import uk.ac.manchester.cs.snee.operators.evaluator.ReceiveOperatorImpl;
-import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
+import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
 
 public class ReceiveOperatorImplTest {
 
 	private static Types types;
-	private AcquireOperator mockOp;
+	private ReceiveOperator mockOp;
 	private ReceiveOperatorImpl mReceiveOp;
 	
 	@BeforeClass
@@ -45,15 +44,15 @@ public class ReceiveOperatorImplTest {
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
 		SNEEProperties.initialise(props);
 		
-		mockOp = createMock(AcquireOperator.class);
+		mockOp = createMock(ReceiveOperator.class);
 		
 		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
 		attributes.add(new DataAttribute("stream", "attr", 
 				types.getType("integer")));
 		
-		expect(mockOp.getAcquiredAttributes()).andReturn(attributes);
+		expect(mockOp.getReceivedAttributes()).andReturn(attributes);
 		
-		mReceiveOp = new ReceiveOperatorImpl(mockOp);
+		mReceiveOp = new ReceiveOperatorImpl(mockOp, 20);
 	}
 
 	@After
