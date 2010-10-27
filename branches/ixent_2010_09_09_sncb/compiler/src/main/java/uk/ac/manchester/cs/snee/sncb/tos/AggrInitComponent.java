@@ -42,7 +42,6 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
@@ -82,35 +81,39 @@ public class AggrInitComponent extends NesCComponent implements
      * @throws OptimizationException 
      * @throws URISyntaxException */
     public final void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, SchemaMetadataException, TypeMappingException, OptimizationException, URISyntaxException {
+	    throws CodeGenerationException {
 
-	final HashMap<String, String> replacements = new HashMap<String, String>();
-	replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
-		.replace("\"", ""));
-	replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
-		.generateOutputTupleType(this.op));
-	replacements.put("__OUT_QUEUE_CARD__", new Long(
-		op.getOutputQueueCardinality(
-			(Site) this.plan.getRT().getSite(
-				this.site.getID()), this.plan.getDAF())).toString());
-
-	replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getLeftChild()));
-
-	List <Attribute> attributes = op.getAttributes();
-	replacements.put("__VARIABLES_TO_BE_AGGREGATED__",
-			CodeGenUtils.getPartialAggrVariables(attributes).toString());
-	replacements.put("__SET_AGGREGATES_TO_ZERO__",
-			CodeGenUtils.generateSetAggregatesToZero(attributes, 
-			this.op).toString());
-	replacements.put("__INCREMENT_AGGREGATES__",
-			CodeGenUtils.generateIncrementAggregates(this.op).toString());
-	replacements.put("__CONSTRUCT_TUPLE__",
-			CodeGenUtils.generateTupleFromAggregates(this.op).toString());
-	
-	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
-	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/aggrPart.nc",
-		outputFileName, replacements);
+    	try {
+			final HashMap<String, String> replacements = new HashMap<String, String>();
+			replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
+				.replace("\"", ""));
+			replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
+				.generateOutputTupleType(this.op));
+			replacements.put("__OUT_QUEUE_CARD__", new Long(
+				op.getOutputQueueCardinality(
+					(Site) this.plan.getRT().getSite(
+						this.site.getID()), this.plan.getDAF())).toString());
+		
+			replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
+				.generateOutputTuplePtrType(this.op.getLeftChild()));
+		
+			List <Attribute> attributes = op.getAttributes();
+			replacements.put("__VARIABLES_TO_BE_AGGREGATED__",
+					CodeGenUtils.getPartialAggrVariables(attributes).toString());
+			replacements.put("__SET_AGGREGATES_TO_ZERO__",
+					CodeGenUtils.generateSetAggregatesToZero(attributes, 
+					this.op).toString());
+			replacements.put("__INCREMENT_AGGREGATES__",
+					CodeGenUtils.generateIncrementAggregates(this.op).toString());
+			replacements.put("__CONSTRUCT_TUPLE__",
+					CodeGenUtils.generateTupleFromAggregates(this.op).toString());
+			
+			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
+			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/aggrPart.nc",
+				outputFileName, replacements);
+    	} catch (Exception e) {
+    		throw new CodeGenerationException(e);
+    	}
     }
 
 }

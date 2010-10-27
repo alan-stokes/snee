@@ -132,135 +132,140 @@ public class QueryPlanModuleComponent extends NesCComponent {
     private static boolean radioOn = false; 
     
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException {
+	    throws CodeGenerationException {
 
-		final PrintWriter out = new PrintWriter(new BufferedWriter(
-			new FileWriter(outputDir + this.getID() + ".nc")));
-	
-		//QueryPlan Module preamble
-		final ArrayList<Long> startTimeList = agenda.getStartTimes();
-		final StringBuffer firedTimerTaskBuff = new StringBuffer();
-		final StringBuffer agendaCheckingBuff = new StringBuffer();
-		final StringBuffer radioOnTaskBuff = new StringBuffer();
-	
-		if (tossimFlag && (this.tossimConfig != null)) {
-		    doQueryPlanModulePreamble(this.tossimConfig,
-			    tossimFlag, out, startTimeList);
-		} else if (!tossimFlag) {
-		    doQueryPlanModulePreamble(this.configuration,
-			    tossimFlag, out, startTimeList);
-		} else {
-		    throw new CodeGenerationException(
-			    "No tossim configuration specified for query plan module");
-		}
-	
-		radioOn = false;
-		//for each task start time in the agenda
-		for (int i = 0; i < startTimeList.size(); i++) {
-	
-		    //Get values for lastTime, startTime  and nextDelta
-		    boolean lastTask = false;
-		    if (i == startTimeList.size() - 1) {
-			lastTask = true;
-		    }
-		    final long startTime = startTimeList.get(i).intValue();
-		    final long nextDelta = getNextDelta(startTimeList, i);
-	
-		    agendaCheckingBuff.append("\t\t\tif (agendaRow == " + i + ") // agendaTime = " + startTime + "\n");
-		    agendaCheckingBuff.append("\t\t\t{\n");
-	
-		    //for each task starting at this time
-		    boolean first = true;
-		    final boolean txFirst = true;
-		    boolean agendaRowContainsSleepTask = false;
-		    final Iterator<Task> taskIter = agenda.taskIterator(startTime);
-		    while (taskIter.hasNext()) {
-			final Task task = taskIter.next();
-			if ((this.configuration.getSiteID() == task.getSiteID())
-				|| (tossimFlag == true)) {
-	
-			    //TOSSIM only and not applicable to SleepTasks, as they are scheduled on all nodes simultaneously
-			    int indentation = 0;
-			    if ((tossimFlag == true) && !(task instanceof SleepTask)) {
-				if (first) {
-				    agendaCheckingBuff.append("\t\t\t\tif ("
-					    + tosSiteAddress + "==" + task.getSiteID()
-					    + ")\n");
-				} else {
-				    agendaCheckingBuff.append("\t\t\t\telse if ("
-					    + tosSiteAddress + "==" + task.getSiteID()
-					    + ")\n");
-				}
-				agendaCheckingBuff.append("\t\t\t\t{\n");
-				indentation = 1;
+    	try {
+    	
+			final PrintWriter out = new PrintWriter(new BufferedWriter(
+				new FileWriter(outputDir + this.getID() + ".nc")));
+		
+			//QueryPlan Module preamble
+			final ArrayList<Long> startTimeList = agenda.getStartTimes();
+			final StringBuffer firedTimerTaskBuff = new StringBuffer();
+			final StringBuffer agendaCheckingBuff = new StringBuffer();
+			final StringBuffer radioOnTaskBuff = new StringBuffer();
+		
+			if (tossimFlag && (this.tossimConfig != null)) {
+			    doQueryPlanModulePreamble(this.tossimConfig,
+				    tossimFlag, out, startTimeList);
+			} else if (!tossimFlag) {
+			    doQueryPlanModulePreamble(this.configuration,
+				    tossimFlag, out, startTimeList);
+			} else {
+			    throw new CodeGenerationException(
+				    "No tossim configuration specified for query plan module");
+			}
+		
+			radioOn = false;
+			//for each task start time in the agenda
+			for (int i = 0; i < startTimeList.size(); i++) {
+		
+			    //Get values for lastTime, startTime  and nextDelta
+			    boolean lastTask = false;
+			    if (i == startTimeList.size() - 1) {
+				lastTask = true;
 			    }
-	
-			    //task is a fragment task
-			    if (task instanceof FragmentTask) {
-				doInvokeFragmentTask(firedTimerTaskBuff,
-					agendaCheckingBuff, lastTask, first, task,
-					indentation, radioOnTaskBuff);
-				first = false;
-	
-				//task is a communication task
-			    } else if (task instanceof CommunicationTask) {
-				final CommunicationTask commTask = (CommunicationTask) task;
-				final int mode = commTask.getMode();
-				if ((mode == CommunicationTask.RECEIVE)) {
-				    this.doInvokeCommunicationTask(firedTimerTaskBuff,
-					    agendaCheckingBuff, lastTask, first, task,
-					    indentation, tossimFlag, radioOnTaskBuff);
-				    first = false;
-				} else if ((mode == CommunicationTask.TRANSMIT)) {
-				    this.doInvokeCommunicationTask(firedTimerTaskBuff,
-					    agendaCheckingBuff, lastTask, txFirst,
-					    task, indentation, tossimFlag, radioOnTaskBuff);
-				    first = false;
-				}
-	
-				// task is a sleep task
-				// only needs to be invoked once because all nodes sleep at the same time
-			    } else if ((task instanceof SleepTask)
-				    && (agendaRowContainsSleepTask == false)) {
-				doInvokeSleepTask(agendaCheckingBuff, task);
-				agendaRowContainsSleepTask = true;
-			    } else if (task instanceof ManagementTask) {
-			    	doInvokeManagementTask(agendaCheckingBuff, indentation);
-			    	first = false;
-			    } else if (task instanceof EndManagementTask) {
-			    	doInvokeEndManagementTask(agendaCheckingBuff, indentation);
-			    	first = false;
+			    final long startTime = startTimeList.get(i).intValue();
+			    final long nextDelta = getNextDelta(startTimeList, i);
+		
+			    agendaCheckingBuff.append("\t\t\tif (agendaRow == " + i + ") // agendaTime = " + startTime + "\n");
+			    agendaCheckingBuff.append("\t\t\t{\n");
+		
+			    //for each task starting at this time
+			    boolean first = true;
+			    final boolean txFirst = true;
+			    boolean agendaRowContainsSleepTask = false;
+			    final Iterator<Task> taskIter = agenda.taskIterator(startTime);
+			    while (taskIter.hasNext()) {
+				final Task task = taskIter.next();
+				if ((this.configuration.getSiteID() == task.getSiteID())
+					|| (tossimFlag == true)) {
+		
+				    //TOSSIM only and not applicable to SleepTasks, as they are scheduled on all nodes simultaneously
+				    int indentation = 0;
+				    if ((tossimFlag == true) && !(task instanceof SleepTask)) {
+					if (first) {
+					    agendaCheckingBuff.append("\t\t\t\tif ("
+						    + tosSiteAddress + "==" + task.getSiteID()
+						    + ")\n");
+					} else {
+					    agendaCheckingBuff.append("\t\t\t\telse if ("
+						    + tosSiteAddress + "==" + task.getSiteID()
+						    + ")\n");
+					}
+					agendaCheckingBuff.append("\t\t\t\t{\n");
+					indentation = 1;
+				    }
+		
+				    //task is a fragment task
+				    if (task instanceof FragmentTask) {
+					doInvokeFragmentTask(firedTimerTaskBuff,
+						agendaCheckingBuff, lastTask, first, task,
+						indentation, radioOnTaskBuff);
+					first = false;
+		
+					//task is a communication task
+				    } else if (task instanceof CommunicationTask) {
+					final CommunicationTask commTask = (CommunicationTask) task;
+					final int mode = commTask.getMode();
+					if ((mode == CommunicationTask.RECEIVE)) {
+					    this.doInvokeCommunicationTask(firedTimerTaskBuff,
+						    agendaCheckingBuff, lastTask, first, task,
+						    indentation, tossimFlag, radioOnTaskBuff);
+					    first = false;
+					} else if ((mode == CommunicationTask.TRANSMIT)) {
+					    this.doInvokeCommunicationTask(firedTimerTaskBuff,
+						    agendaCheckingBuff, lastTask, txFirst,
+						    task, indentation, tossimFlag, radioOnTaskBuff);
+					    first = false;
+					}
+		
+					// task is a sleep task
+					// only needs to be invoked once because all nodes sleep at the same time
+				    } else if ((task instanceof SleepTask)
+					    && (agendaRowContainsSleepTask == false)) {
+					doInvokeSleepTask(agendaCheckingBuff, task);
+					agendaRowContainsSleepTask = true;
+				    } else if (task instanceof ManagementTask) {
+				    	doInvokeManagementTask(agendaCheckingBuff, indentation);
+				    	first = false;
+				    } else if (task instanceof EndManagementTask) {
+				    	doInvokeEndManagementTask(agendaCheckingBuff, indentation);
+				    	first = false;
+				    }
+		
+				    if ((tossimFlag == true) && !(task instanceof SleepTask)) {
+					agendaCheckingBuff.append("\t\t\t\t}\n");
+				    }
+				}//if ((this.configuration.getSiteID()
+			    }//while (taskIter.hasNext())
+		
+			    //invoke an idle task
+			    if ((!agendaRowContainsSleepTask) &&
+			    	(tossimFlag || first)){
+				invokeIdleTask(tossimFlag, agendaCheckingBuff, first);
 			    }
-	
-			    if ((tossimFlag == true) && !(task instanceof SleepTask)) {
-				agendaCheckingBuff.append("\t\t\t\t}\n");
+			    
+			    if (i < startTimeList.size()-1) {
+				    agendaCheckingBuff.append("\t\t\t\tagendaRow = agendaRow + 1;\n");
+			    } else {
+			    	agendaCheckingBuff.append("\t\t\t\tagendaRow = 0;\n");
 			    }
-			}//if ((this.configuration.getSiteID()
-		    }//while (taskIter.hasNext())
-	
-		    //invoke an idle task
-		    if ((!agendaRowContainsSleepTask) &&
-		    	(tossimFlag || first)){
-			invokeIdleTask(tossimFlag, agendaCheckingBuff, first);
-		    }
-		    
-		    if (i < startTimeList.size()-1) {
-			    agendaCheckingBuff.append("\t\t\t\tagendaRow = agendaRow + 1;\n");
-		    } else {
-		    	agendaCheckingBuff.append("\t\t\t\tagendaRow = 0;\n");
-		    }
-	
-		    agendaCheckingBuff.append("\t\t\t\tnextDelta = " + nextDelta
-			    + ";\n");
-		    agendaCheckingBuff.append("\t\t\t\treturn;\n");
-		    agendaCheckingBuff.append("\t\t\t}\n");
-		}//for (int i = 0;
-	
-		//Now dump all the string buffers onto a file
-	
-		boolean usesRadio = configUsesRadio();
-		doQueryPlanModuleBody(this.sink, out, startTimeList,
-			firedTimerTaskBuff, agendaCheckingBuff, radioOnTaskBuff, usesRadio);
+		
+			    agendaCheckingBuff.append("\t\t\t\tnextDelta = " + nextDelta
+				    + ";\n");
+			    agendaCheckingBuff.append("\t\t\t\treturn;\n");
+			    agendaCheckingBuff.append("\t\t\t}\n");
+			}//for (int i = 0;
+		
+			//Now dump all the string buffers onto a file
+		
+			boolean usesRadio = configUsesRadio();
+			doQueryPlanModuleBody(this.sink, out, startTimeList,
+				firedTimerTaskBuff, agendaCheckingBuff, radioOnTaskBuff, usesRadio);
+    	} catch (Exception e) {
+    		throw new CodeGenerationException(e);
+    	}
     }
 
     private void doInvokeManagementTask(StringBuffer agendaCheckingBuff,

@@ -100,42 +100,45 @@ public class RXT1Component extends NesCComponent implements TinyOS1Component {
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, URISyntaxException {
+	    throws CodeGenerationException {
 
-	final HashMap<String, String> replacements = new HashMap<String, String>();
-
-	final StringBuffer rxMethodsBuff = new StringBuffer();
-	for (int i = 0; i < this.exchComponents.size(); i++) {
-	    final ExchangePart exchComp = this.exchComponents.get(i);
-	    final Fragment sourceFrag = exchComp.getSourceFrag();
-	    final Fragment destFrag = exchComp.getDestFrag();
-	    final Site destSite = exchComp.getDestSite(); //nb: final destination, not next hop
-
-	    final String receiveInterface = CodeGenUtils
-		    .generateUserReceiveInterfaceName(sourceFrag, destFrag,
-			    destSite.getID());
-	    final String messageTypePtr = CodeGenUtils
-		    .generateMessagePtrType(sourceFrag);
-	    final String trayPutInterface = CodeGenUtils
-		    .generatePutTuplesInterfaceInstanceName(sourceFrag);
-
-	    final HashMap<String, String> rxMethodsReplacements = new HashMap<String, String>();
-	    rxMethodsReplacements
-		    .put("__RECEIVE_INTERFACE__", receiveInterface);
-	    rxMethodsReplacements.put("__TUPLE_MESSAGE_PTR_TYPE__",
-		    messageTypePtr);
-	    rxMethodsReplacements.put("__TRAY_PUT_INTERFACE__",
-		    trayPutInterface);
-	    rxMethodsBuff.append(generateNesCMethods(TinyOSGenerator.NESC_COMPONENTS_DIR
-		    + "/rx_methods.nc", rxMethodsReplacements));
-	}
-
-	replacements.put("__RX_METHODS__", rxMethodsBuff.toString());
-
-	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
-
-	super.writeNesCFile(this.templateFileName, outputFileName,
-			replacements);
+    	try {
+			final HashMap<String, String> replacements = new HashMap<String, String>();
+		
+			final StringBuffer rxMethodsBuff = new StringBuffer();
+			for (int i = 0; i < this.exchComponents.size(); i++) {
+			    final ExchangePart exchComp = this.exchComponents.get(i);
+			    final Fragment sourceFrag = exchComp.getSourceFrag();
+			    final Fragment destFrag = exchComp.getDestFrag();
+			    final Site destSite = exchComp.getDestSite(); //nb: final destination, not next hop
+		
+			    final String receiveInterface = CodeGenUtils
+				    .generateUserReceiveInterfaceName(sourceFrag, destFrag,
+					    destSite.getID());
+			    final String messageTypePtr = CodeGenUtils
+				    .generateMessagePtrType(sourceFrag);
+			    final String trayPutInterface = CodeGenUtils
+				    .generatePutTuplesInterfaceInstanceName(sourceFrag);
+		
+			    final HashMap<String, String> rxMethodsReplacements = new HashMap<String, String>();
+			    rxMethodsReplacements
+				    .put("__RECEIVE_INTERFACE__", receiveInterface);
+			    rxMethodsReplacements.put("__TUPLE_MESSAGE_PTR_TYPE__",
+				    messageTypePtr);
+			    rxMethodsReplacements.put("__TRAY_PUT_INTERFACE__",
+				    trayPutInterface);
+			    rxMethodsBuff.append(generateNesCMethods(TinyOSGenerator.NESC_COMPONENTS_DIR
+				    + "/rx_methods.nc", rxMethodsReplacements));
+			}
+		
+			replacements.put("__RX_METHODS__", rxMethodsBuff.toString());
+		
+			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
+		
+			super.writeNesCFile(this.templateFileName, outputFileName,
+					replacements);
+    	} catch (Exception e) {
+    		throw new CodeGenerationException(e);
+    	}
     }
-
 }

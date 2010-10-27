@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -68,29 +67,33 @@ public class ProjectComponent extends NesCComponent implements
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, OptimizationException, URISyntaxException {
+	    throws CodeGenerationException {
 
-	final HashMap<String, String> replacements = new HashMap<String, String>();
-	replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
-		.replace("\"", ""));
-	replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
-		.generateOutputTupleType(this.op));
-	replacements.put("__OUT_QUEUE_CARD__", new Long(
-		op.getOutputQueueCardinality(
-			(Site) this.plan.getRT().getSite(
-				this.site.getID()), this.plan.getDAF())).toString());
-	replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getLeftChild()));
-
-	final StringBuffer tupleConstructionBuff 
-		= CodeGenUtils.generateTupleConstruction(op, false);
-	replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff
-		.toString());
-
-	final String outputFileName 
-		= generateNesCOutputFileName(outputDir, this.getID());
-
-	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/project.nc",
-				outputFileName, replacements);			
+    	try {
+			final HashMap<String, String> replacements = new HashMap<String, String>();
+			replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
+				.replace("\"", ""));
+			replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
+				.generateOutputTupleType(this.op));
+			replacements.put("__OUT_QUEUE_CARD__", new Long(
+				op.getOutputQueueCardinality(
+					(Site) this.plan.getRT().getSite(
+						this.site.getID()), this.plan.getDAF())).toString());
+			replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
+				.generateOutputTuplePtrType(this.op.getLeftChild()));
+		
+			final StringBuffer tupleConstructionBuff 
+				= CodeGenUtils.generateTupleConstruction(op, false);
+			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff
+				.toString());
+		
+			final String outputFileName 
+				= generateNesCOutputFileName(outputDir, this.getID());
+		
+			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/project.nc",
+						outputFileName, replacements);			
+    	} catch (Exception e) {
+    		throw new CodeGenerationException(e);
+    	}
     }
 }

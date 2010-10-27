@@ -52,7 +52,7 @@ public class RadioComponent extends NesCComponent implements TinyOS2Component {
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException {
+	    throws CodeGenerationException {
 	//Do nothing!!
     }
 

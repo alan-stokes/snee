@@ -52,7 +52,7 @@ public class CC1000ControlComponent extends NesCComponent implements TinyOS2Comp
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException {
+	    throws CodeGenerationException {
 	//Do nothing!!
     }
 

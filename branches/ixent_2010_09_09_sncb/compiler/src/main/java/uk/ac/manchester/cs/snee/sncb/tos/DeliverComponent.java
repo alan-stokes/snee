@@ -73,74 +73,77 @@ public class DeliverComponent extends NesCComponent implements
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, OptimizationException, URISyntaxException {
+	    throws CodeGenerationException {
 
-	final HashMap<String, String> replacements = new HashMap<String, String>();
-
-	if (tosVersion==1) {
-		replacements.put("__ITOA_DECL__", "#include \"itoa.h\"");
-	}
-	replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
-		.replace("\"", ""));
-	replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
-		.generateOutputTupleType(this.op));
-	replacements.put("__OUT_QUEUE_CARD__", new Long(
-		op.getOutputQueueCardinality(
-			(Site) this.plan.getRT().getSite(
-				this.site.getID()), this.plan.getDAF())).toString());
-
-	replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getLeftChild()));
-	replacements.put("__MESSAGE_TYPE__", CodeGenUtils
-			.generateMessageType(this.op.getLeftChild()));
-	replacements.put("__MESSAGE_PTR_TYPE__", CodeGenUtils
-			.generateMessagePtrType(this.op.getLeftChild()));
-
-	//int tuplesPerPacket= Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE/((new Integer(CodeGenUtils.outputTypeSize.get(CodeGenUtils.generateOutputTupleType(sourceFrag)).toString()))+ Settings.NESC_PAYLOAD_OVERHEAD);
-	final int tupleSize = new Integer(CodeGenUtils.outputTypeSize
-		.get(CodeGenUtils.generateOutputTupleType(this.op.getContainingFragment())));
-	//	int tuplesPerPacket =(int)Math.floor((Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE - (Settings.NESC_PAYLOAD_OVERHEAD+2)) / (tupleSize+2));
-	final int numTuplesPerMessage = ExchangePart
-		.computeTuplesPerMessage(tupleSize, this.costParams);
-	assert (numTuplesPerMessage > 0);
-
-	replacements.put("__PARENT_ID__", "AM_BROADCAST_ADDR");
-	replacements.put("__TUPLES_PER_PACKET__", new Integer(
-			numTuplesPerMessage).toString());
-	replacements.put("__BUFFERING_FACTOR__", ""+this.plan
-		.getBufferingFactor());
-
-	final StringBuffer displayTupleBuff3 = new StringBuffer();  //serial port
-	final StringBuffer displayTupleBuff4 = new StringBuffer();  //serial port
-	final StringBuffer displayTupleBuff5 = new StringBuffer();  //serial port str - tinyos 1 only
-
-	final List<Attribute> attributes = this.op.getAttributes();
-    String comma = "";
-	for (int i = 0; i < attributes.size(); i++) {
-		String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
-		String deliverName = CodeGenUtils.getDeliverName(attributes.get(i));
-
-	    displayTupleBuff3.append(comma+deliverName+"=%d");
-	    displayTupleBuff4.append(comma+"inQueue[inHead]."+attrName);
-
-	    displayTupleBuff5.append("\t\t\t\tstrcat(deliverStr, \""
-			    		+ comma + deliverName + "=\");\n");
-		displayTupleBuff5.append("\t\t\t\titoa(inQueue[inHead]."
-			    		+ attrName + ", tmpStr, 10);\n");
-	    displayTupleBuff5.append("\t\t\t\tstrcat(deliverStr,tmpStr);\n");
-
-    	comma = ",";
-	}
-
-	replacements.put("__CONSTRUCT_DELIVER_TUPLE__",
-			"\"DELIVER: ("+displayTupleBuff3.toString()+")\\n\","+displayTupleBuff4.toString());
-	replacements.put("__CONSTRUCT_DELIVER_TUPLE_STR__",
-		displayTupleBuff5.toString());
-
-	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
-	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/deliver.nc",
-    			outputFileName, replacements);
-
+    	try {
+			final HashMap<String, String> replacements = new HashMap<String, String>();
+		
+			if (tosVersion==1) {
+				replacements.put("__ITOA_DECL__", "#include \"itoa.h\"");
+			}
+			replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
+				.replace("\"", ""));
+			replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
+				.generateOutputTupleType(this.op));
+			replacements.put("__OUT_QUEUE_CARD__", new Long(
+				op.getOutputQueueCardinality(
+					(Site) this.plan.getRT().getSite(
+						this.site.getID()), this.plan.getDAF())).toString());
+		
+			replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
+				.generateOutputTuplePtrType(this.op.getLeftChild()));
+			replacements.put("__MESSAGE_TYPE__", CodeGenUtils
+					.generateMessageType(this.op.getLeftChild()));
+			replacements.put("__MESSAGE_PTR_TYPE__", CodeGenUtils
+					.generateMessagePtrType(this.op.getLeftChild()));
+		
+			//int tuplesPerPacket= Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE/((new Integer(CodeGenUtils.outputTypeSize.get(CodeGenUtils.generateOutputTupleType(sourceFrag)).toString()))+ Settings.NESC_PAYLOAD_OVERHEAD);
+			final int tupleSize = new Integer(CodeGenUtils.outputTypeSize
+				.get(CodeGenUtils.generateOutputTupleType(this.op.getContainingFragment())));
+			//	int tuplesPerPacket =(int)Math.floor((Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE - (Settings.NESC_PAYLOAD_OVERHEAD+2)) / (tupleSize+2));
+			final int numTuplesPerMessage = ExchangePart
+				.computeTuplesPerMessage(tupleSize, this.costParams);
+			assert (numTuplesPerMessage > 0);
+		
+			replacements.put("__PARENT_ID__", "AM_BROADCAST_ADDR");
+			replacements.put("__TUPLES_PER_PACKET__", new Integer(
+					numTuplesPerMessage).toString());
+			replacements.put("__BUFFERING_FACTOR__", ""+this.plan
+				.getBufferingFactor());
+		
+			final StringBuffer displayTupleBuff3 = new StringBuffer();  //serial port
+			final StringBuffer displayTupleBuff4 = new StringBuffer();  //serial port
+			final StringBuffer displayTupleBuff5 = new StringBuffer();  //serial port str - tinyos 1 only
+		
+			final List<Attribute> attributes = this.op.getAttributes();
+		    String comma = "";
+			for (int i = 0; i < attributes.size(); i++) {
+				String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
+				String deliverName = CodeGenUtils.getDeliverName(attributes.get(i));
+		
+			    displayTupleBuff3.append(comma+deliverName+"=%d");
+			    displayTupleBuff4.append(comma+"inQueue[inHead]."+attrName);
+		
+			    displayTupleBuff5.append("\t\t\t\tstrcat(deliverStr, \""
+					    		+ comma + deliverName + "=\");\n");
+				displayTupleBuff5.append("\t\t\t\titoa(inQueue[inHead]."
+					    		+ attrName + ", tmpStr, 10);\n");
+			    displayTupleBuff5.append("\t\t\t\tstrcat(deliverStr,tmpStr);\n");
+		
+		    	comma = ",";
+			}
+		
+			replacements.put("__CONSTRUCT_DELIVER_TUPLE__",
+					"\"DELIVER: ("+displayTupleBuff3.toString()+")\\n\","+displayTupleBuff4.toString());
+			replacements.put("__CONSTRUCT_DELIVER_TUPLE_STR__",
+				displayTupleBuff5.toString());
+		
+			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
+			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/deliver.nc",
+		    			outputFileName, replacements);
+    	} catch (Exception e) {
+    		throw new CodeGenerationException(e);
+    	}
     }
 
 }

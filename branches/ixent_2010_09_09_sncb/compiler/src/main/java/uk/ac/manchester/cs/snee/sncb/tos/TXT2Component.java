@@ -112,51 +112,55 @@ public class TXT2Component extends NesCComponent implements TinyOS2Component {
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, OptimizationException, URISyntaxException {
-	final String currentSiteID = this.site.getID();
-	final String parentSiteID = this.rxSite.getID();
-
-	final HashMap<String, String> replacements = new HashMap<String, String>();
-
-	replacements.put("__CURRENT_SITE_ID__", currentSiteID);
-	replacements.put("__PARENT_ID__", parentSiteID);
-	replacements.put("__BUFFERING_FACTOR__", new Long(this.plan
-			.getBufferingFactor()).toString());
-	replacements.put("__CHILD_TUPLE_PTR_TYPE__", 
-			CodeGenUtils.generateOutputTuplePtrType(this.sourceFrag));
-	replacements.put("__MESSAGE_TYPE__", CodeGenUtils
-		.generateMessageType(this.sourceFrag));
-	replacements.put("__MESSAGE_PTR_TYPE__", CodeGenUtils
-			.generateMessagePtrType(this.sourceFrag));
+	    throws CodeGenerationException {
+    	
+    	try {
+		final String currentSiteID = this.site.getID();
+		final String parentSiteID = this.rxSite.getID();
 	
-	if (this.debugLeds) {
-		replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led2Toggle();");		
-	} else {
-		replacements.put("__NESC_DEBUG_LEDS__", "");
-	}
+		final HashMap<String, String> replacements = new HashMap<String, String>();
 	
-	//int tuplesPerPacket= Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE/((new Integer(CodeGenUtils.outputTypeSize.get(CodeGenUtils.generateOutputTupleType(sourceFrag)).toString()))+ Settings.NESC_PAYLOAD_OVERHEAD);
-	final int tupleSize = new Integer(CodeGenUtils.outputTypeSize
-		.get(CodeGenUtils.generateOutputTupleType(this.sourceFrag)));
-	//	int tuplesPerPacket =(int)Math.floor((Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE - (Settings.NESC_PAYLOAD_OVERHEAD+2)) / (tupleSize+2));
-	final int numTuplesPerMessage = ExchangePart
-		.computeTuplesPerMessage(tupleSize, costParams);
-	assert (numTuplesPerMessage > 0);
-
-	replacements.put("__TUPLES_PER_PACKET__", new Integer(
-		numTuplesPerMessage).toString());
-
-	replacements.put("__TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.sourceFrag));
-	replacements.put("__HEADER__", this.configuration
-		.generateModuleHeader(this.getID()));
-	replacements.put("__MODULE_NAME__", this.getID());
-
-	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
-
-	super
-		.writeNesCFile(this.templateFileName, outputFileName,
-			replacements);
-
+		replacements.put("__CURRENT_SITE_ID__", currentSiteID);
+		replacements.put("__PARENT_ID__", parentSiteID);
+		replacements.put("__BUFFERING_FACTOR__", new Long(this.plan
+				.getBufferingFactor()).toString());
+		replacements.put("__CHILD_TUPLE_PTR_TYPE__", 
+				CodeGenUtils.generateOutputTuplePtrType(this.sourceFrag));
+		replacements.put("__MESSAGE_TYPE__", CodeGenUtils
+			.generateMessageType(this.sourceFrag));
+		replacements.put("__MESSAGE_PTR_TYPE__", CodeGenUtils
+				.generateMessagePtrType(this.sourceFrag));
+		
+		if (this.debugLeds) {
+			replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led2Toggle();");		
+		} else {
+			replacements.put("__NESC_DEBUG_LEDS__", "");
+		}
+		
+		//int tuplesPerPacket= Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE/((new Integer(CodeGenUtils.outputTypeSize.get(CodeGenUtils.generateOutputTupleType(sourceFrag)).toString()))+ Settings.NESC_PAYLOAD_OVERHEAD);
+		final int tupleSize = new Integer(CodeGenUtils.outputTypeSize
+			.get(CodeGenUtils.generateOutputTupleType(this.sourceFrag)));
+		//	int tuplesPerPacket =(int)Math.floor((Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE - (Settings.NESC_PAYLOAD_OVERHEAD+2)) / (tupleSize+2));
+		final int numTuplesPerMessage = ExchangePart
+			.computeTuplesPerMessage(tupleSize, costParams);
+		assert (numTuplesPerMessage > 0);
+	
+		replacements.put("__TUPLES_PER_PACKET__", new Integer(
+			numTuplesPerMessage).toString());
+	
+		replacements.put("__TUPLE_PTR_TYPE__", CodeGenUtils
+			.generateOutputTuplePtrType(this.sourceFrag));
+		replacements.put("__HEADER__", this.configuration
+			.generateModuleHeader(this.getID()));
+		replacements.put("__MODULE_NAME__", this.getID());
+	
+		final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
+	
+		super
+			.writeNesCFile(this.templateFileName, outputFileName,
+				replacements);
+    	} catch (Exception e) {
+    		throw new CodeGenerationException(e);
+    	}
     }
 }

@@ -43,7 +43,6 @@ import java.util.Iterator;
 
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.NodeImplementation;
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
@@ -116,7 +115,7 @@ public abstract class NesCComponent extends NodeImplementation implements Node {
      * @throws OptimizationException 
      * @throws URISyntaxException 
      */
-    public abstract void writeNesCFile(String outputDir)	throws IOException, CodeGenerationException, SchemaMetadataException, TypeMappingException, OptimizationException, URISyntaxException;
+    public abstract void writeNesCFile(String outputDir) throws CodeGenerationException;
 
     /**
      * Returns a string used to declare this component in a configuration file  

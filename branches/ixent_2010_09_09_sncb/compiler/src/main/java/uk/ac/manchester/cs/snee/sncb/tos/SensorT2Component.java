@@ -71,7 +71,7 @@ public class SensorT2Component extends GenericNesCComponent implements
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException {
+	    throws CodeGenerationException {
 	//Do nothing!!
     }
 

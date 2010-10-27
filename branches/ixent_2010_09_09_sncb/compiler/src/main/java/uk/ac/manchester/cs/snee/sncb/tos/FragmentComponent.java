@@ -82,11 +82,14 @@ public class FragmentComponent extends NesCComponent implements
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, SchemaMetadataException, TypeMappingException, OptimizationException, URISyntaxException {
+	    throws CodeGenerationException {
 
-	//TODO: Take the configuration of inner component and create a wiring code
-	this.innerConfig.instantiateComponents(outputDir);
-
+    	try {
+			//TODO: Take the configuration of inner component and create a wiring code
+			this.innerConfig.instantiateComponents(outputDir);
+    	} catch (Exception e) {
+    		throw new CodeGenerationException(e);
+    	}
     }
 
 }

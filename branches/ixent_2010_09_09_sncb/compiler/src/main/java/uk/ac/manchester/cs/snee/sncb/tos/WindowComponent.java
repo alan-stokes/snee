@@ -39,9 +39,7 @@ import java.util.HashMap;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
@@ -69,60 +67,64 @@ public class WindowComponent extends NesCComponent implements
 
 	@Override
 	public void writeNesCFile(final String outputDir)
-		throws IOException, CodeGenerationException, OptimizationException, URISyntaxException {
+		throws CodeGenerationException {
 
-		final HashMap<String, String> replacements = new HashMap<String, String>();
-		replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
-				.replace("\"", ""));
-		replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
-				.generateOutputTupleType(this.op));
-		String outQueueCard = new Long(
-				op.getOutputQueueCardinality(
-						(Site) this.plan.getRT().getSite(
-						this.site.getID()), this.plan.getDAF())).toString();
-		replacements.put("__OUT_QUEUE_CARD__",outQueueCard); 		
-		replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-				.generateOutputTuplePtrType(this.op.getLeftChild()));
-		//Window from and to are expressed as positive number is nesc.
-		//This allows for unsigned variables to be used.
-		replacements.put("__WINDOW_FROM__", new Integer(-this.op.getFrom())
-			.toString()); 
-		replacements.put("__WINDOW_TO__", new Integer(-this.op.getTo())
-			.toString()); 
-		replacements.put("__EVALUATION_INTERVAL__", new Integer((int) this.plan
-				.getAgenda().getAcquisitionInterval_ms()).toString());
-		
-		if (op.isTimeScope()) {
-			int timeslide = this.op.getTimeSlide();
-			if (timeslide == 0) {
-				timeslide = 1;
-			}
-			replacements.put("__SLIDE__", new Integer((int) timeslide)
+		try {
+			final HashMap<String, String> replacements = new HashMap<String, String>();
+			replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
+					.replace("\"", ""));
+			replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
+					.generateOutputTupleType(this.op));
+			String outQueueCard = new Long(
+					op.getOutputQueueCardinality(
+							(Site) this.plan.getRT().getSite(
+							this.site.getID()), this.plan.getDAF())).toString();
+			replacements.put("__OUT_QUEUE_CARD__",outQueueCard); 		
+			replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
+					.generateOutputTuplePtrType(this.op.getLeftChild()));
+			//Window from and to are expressed as positive number is nesc.
+			//This allows for unsigned variables to be used.
+			replacements.put("__WINDOW_FROM__", new Integer(-this.op.getFrom())
 				.toString()); 
-			if (op.getRowSlide() > 0) {
-				throw new CodeGenerationException(
-					"Row slide in window with time scope not yet implemented");
+			replacements.put("__WINDOW_TO__", new Integer(-this.op.getTo())
+				.toString()); 
+			replacements.put("__EVALUATION_INTERVAL__", new Integer((int) this.plan
+					.getAgenda().getAcquisitionInterval_ms()).toString());
+			
+			if (op.isTimeScope()) {
+				int timeslide = this.op.getTimeSlide();
+				if (timeslide == 0) {
+					timeslide = 1;
+				}
+				replacements.put("__SLIDE__", new Integer((int) timeslide)
+					.toString()); 
+				if (op.getRowSlide() > 0) {
+					throw new CodeGenerationException(
+						"Row slide in window with time scope not yet implemented");
+				}
+			} else {
+				replacements.put("__SLIDE__", 
+						new Integer((int) this.op.getRowSlide()).toString()); 
+				if (op.getTimeSlide() > 0) {
+					throw new CodeGenerationException(
+						"Time slide in window with row scope not yet implemented");
+				}
 			}
-		} else {
-			replacements.put("__SLIDE__", 
-					new Integer((int) this.op.getRowSlide()).toString()); 
-			if (op.getTimeSlide() > 0) {
-				throw new CodeGenerationException(
-					"Time slide in window with row scope not yet implemented");
+		
+			final StringBuffer tupleConstructionBuff 
+				= CodeGenUtils.generateTupleConstruction(op, false);
+			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff
+					.toString());
+			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
+			if (op.isTimeScope()) {
+				writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/timeWindow.nc",
+					outputFileName, replacements);
+			} else {
+				writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/rowWindow.nc",
+					outputFileName, replacements);
 			}
-		}
-	
-		final StringBuffer tupleConstructionBuff 
-			= CodeGenUtils.generateTupleConstruction(op, false);
-		replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff
-				.toString());
-		final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
-		if (op.isTimeScope()) {
-			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/timeWindow.nc",
-				outputFileName, replacements);
-		} else {
-			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/rowWindow.nc",
-				outputFileName, replacements);
+		} catch (Exception e) {
+			throw new CodeGenerationException(e);
 		}
 	}
 }

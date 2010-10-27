@@ -85,38 +85,42 @@ public class AcquireComponent extends NesCComponent implements
     }
 
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, SchemaMetadataException, TypeMappingException, URISyntaxException {
+	    throws CodeGenerationException {
 
-	final HashMap<String, String> replacements = new HashMap<String, String>();
-	
-	replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
-    		.replace("\"", ""));
-	replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
-		.generateOutputTupleType(this.op));
-	replacements.put("__OUT_QUEUE_CARD__", new Long(
-		 this.op.getOutputQueueCardinality(
-			this.plan.getRT().getSite(
-				this.site.getID()), this.plan.getDAF())).toString());
-    replacements.put("__FULL_ACQUIRE_PREDICATES__", 
-    		getNescText(op.getLogicalOperator().getPredicate()));
-    replacements.put("__ACQUIRE_PREDICATES__", CodeGenUtils.getNescText(
-    		op.getLogicalOperator().getPredicate(), "", null,
-    		((AcquireOperator)op.getLogicalOperator()).getAcquiredAttributes(), null));
-    
-    if (this.debugLeds) {
-		replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led0Toggle();");		
-	} else {
-		replacements.put("__NESC_DEBUG_LEDS__", "");
-	}
-    
-	this.doTupleConstruction(replacements);
-
-	final String outputFileName =
-		generateNesCOutputFileName(outputDir, this.getID());
-	
-	this.doGetDataMethods(replacements);
-	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/acquire.nc",
-				outputFileName, replacements);
+    	try {
+			final HashMap<String, String> replacements = new HashMap<String, String>();
+			
+			replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
+		    		.replace("\"", ""));
+			replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
+				.generateOutputTupleType(this.op));
+			replacements.put("__OUT_QUEUE_CARD__", new Long(
+				 this.op.getOutputQueueCardinality(
+					this.plan.getRT().getSite(
+						this.site.getID()), this.plan.getDAF())).toString());
+		    replacements.put("__FULL_ACQUIRE_PREDICATES__", 
+		    		getNescText(op.getLogicalOperator().getPredicate()));
+		    replacements.put("__ACQUIRE_PREDICATES__", CodeGenUtils.getNescText(
+		    		op.getLogicalOperator().getPredicate(), "", null,
+		    		((AcquireOperator)op.getLogicalOperator()).getAcquiredAttributes(), null));
+		    
+		    if (this.debugLeds) {
+				replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led0Toggle();");		
+			} else {
+				replacements.put("__NESC_DEBUG_LEDS__", "");
+			}
+		    
+			this.doTupleConstruction(replacements);
+		
+			final String outputFileName =
+				generateNesCOutputFileName(outputDir, this.getID());
+			
+			this.doGetDataMethods(replacements);
+			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/acquire.nc",
+						outputFileName, replacements);
+    	} catch (Exception e) {
+    		throw new CodeGenerationException(e);
+    	}
     }
 
     /**

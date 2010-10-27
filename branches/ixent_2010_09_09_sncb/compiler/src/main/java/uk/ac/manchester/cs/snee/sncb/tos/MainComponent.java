@@ -52,7 +52,7 @@ public class MainComponent extends NesCComponent implements TinyOS1Component,
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException {
+	    throws CodeGenerationException {
 	//Do nothing!!
     }
 

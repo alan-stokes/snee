@@ -61,7 +61,7 @@ public class SensorT1Component extends NesCComponent implements
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException {
+	    throws CodeGenerationException {
 	//Do nothing!!
     }
 

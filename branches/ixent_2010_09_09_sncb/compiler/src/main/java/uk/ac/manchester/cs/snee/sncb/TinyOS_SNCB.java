@@ -1,12 +1,9 @@
 package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import net.tinyos.message.Message;
-import net.tinyos.tools.MsgReader;
 
 import org.apache.log4j.Logger;
 
@@ -30,7 +27,6 @@ public class TinyOS_SNCB implements SNCB {
 	private Logger logger = 
 		Logger.getLogger(TinyOS_SNCB.class.getName());
 	
-	private SensorNetworkSourceMetadata metadata;
 	
 	private String tinyOSEnvVars[];
 
@@ -45,7 +41,6 @@ public class TinyOS_SNCB implements SNCB {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER TinyOS_SNCB()");
 		try {
-			this.metadata = metadata;
 			String tosRootDir = SNEEProperties.getSetting(
 					SNEEPropertyNames.SNCB_TINYOS_ROOT).
 					replace("~", System.getenv("HOME"));

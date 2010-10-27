@@ -58,7 +58,7 @@ public class OutsideWorldComponent extends NesCComponent {
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException {
+	    throws CodeGenerationException {
 	//DO NOTHING!!
     }
 

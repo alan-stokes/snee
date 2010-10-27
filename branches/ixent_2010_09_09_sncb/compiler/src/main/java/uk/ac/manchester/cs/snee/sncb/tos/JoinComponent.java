@@ -35,18 +35,13 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import uk.ac.manchester.cs.snee.common.Utils;
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
-import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.PredicateOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
@@ -74,37 +69,41 @@ public class JoinComponent extends NesCComponent implements TinyOS1Component,
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, OptimizationException, URISyntaxException {
+	    throws CodeGenerationException {
 
-	final HashMap<String, String> replacements = new HashMap<String, String>();
-	replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
-		.replace("\"", ""));
-	replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
-		.generateOutputTupleType(this.op));
-	replacements.put("__OUT_QUEUE_CARD__", new Long(
-		op.getOutputQueueCardinality(
-			(Site) this.plan.getRT().getSite(
-				this.site.getID()), this.plan.getDAF())).toString());
-	replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getLeftChild()));
-
-	replacements.put("__LEFT_CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getLeftChild()));
-	replacements.put("__RIGHT_CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType(this.op.getRightChild()));
-    replacements.put("__JOIN_PREDICATES__", CodeGenUtils.getNescText(
-    		((PredicateOperator)op.getLogicalOperator()).getPredicate(),
-    		"leftInQueue[leftInHead].",
-    		"rightInQueue[tmpRightInHead].", 
-    		op.getLeftChild().getAttributes(), 
-    		op.getRightChild().getAttributes()));
-	
-	final StringBuffer tupleConstructionBuff = generateTupleConstruction();
-	replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff.toString());
-
-	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
-	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/join.nc", outputFileName,
-		replacements);
+    	try {
+			final HashMap<String, String> replacements = new HashMap<String, String>();
+			replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
+				.replace("\"", ""));
+			replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
+				.generateOutputTupleType(this.op));
+			replacements.put("__OUT_QUEUE_CARD__", new Long(
+				op.getOutputQueueCardinality(
+					(Site) this.plan.getRT().getSite(
+						this.site.getID()), this.plan.getDAF())).toString());
+			replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
+				.generateOutputTuplePtrType(this.op.getLeftChild()));
+		
+			replacements.put("__LEFT_CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
+				.generateOutputTuplePtrType(this.op.getLeftChild()));
+			replacements.put("__RIGHT_CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
+				.generateOutputTuplePtrType(this.op.getRightChild()));
+		    replacements.put("__JOIN_PREDICATES__", CodeGenUtils.getNescText(
+		    		((PredicateOperator)op.getLogicalOperator()).getPredicate(),
+		    		"leftInQueue[leftInHead].",
+		    		"rightInQueue[tmpRightInHead].", 
+		    		op.getLeftChild().getAttributes(), 
+		    		op.getRightChild().getAttributes()));
+			
+			final StringBuffer tupleConstructionBuff = generateTupleConstruction();
+			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff.toString());
+		
+			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
+			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/join.nc", outputFileName,
+				replacements);
+    	} catch (Exception e) {
+    		throw new CodeGenerationException(e);
+    	}
     }
 
     /**

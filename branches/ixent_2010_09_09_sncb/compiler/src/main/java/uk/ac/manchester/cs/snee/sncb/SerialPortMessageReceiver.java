@@ -6,9 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 
+import net.tinyos.message.Message;
+import net.tinyos.message.MoteIF;
+import net.tinyos.packet.BuildSource;
+import net.tinyos.util.PrintStreamMessenger;
+
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
@@ -19,11 +23,6 @@ import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenUtils;
-
-import net.tinyos.message.Message;
-import net.tinyos.message.MoteIF;
-import net.tinyos.packet.BuildSource;
-import net.tinyos.util.PrintStreamMessenger;
 
 //Based on TinyOS MsgReader.java class
 public class SerialPortMessageReceiver extends Observable 

@@ -146,74 +146,79 @@ public class TrayComponent extends NesCComponent {
     }
     
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, OptimizationException, URISyntaxException {
+	    throws CodeGenerationException {
 
-	final long bufferingFactor = this.plan.getBufferingFactor();
-	final int subTraySize = getSubTraySize(currentSite);
-
-	final SensornetOperator sourceFragRootOp = this.plan.getDAF().getFragment(
-		this.sourceFrag.getID()).getRootOperator();
-	final int tupleSize = CodeGenUtils.outputTypeSize.get(CodeGenUtils
-		.generateOutputTupleType(sourceFragRootOp));
-
-	final HashMap<String, String> replacements = new HashMap<String, String>();
-
-	if (!this.sourceFrag.isRecursive()) {
-	    replacements.put("__TUPLE_TYPE__", "TupleFrag"
-		    + this.sourceFrag.getID());
-	    replacements.put("__TUPLE_PTR_TYPE__", "TupleFrag"
-		    + this.sourceFrag.getID() + "Ptr");
-	} else {
-	    replacements.put("__TUPLE_TYPE__", "TupleFrag"
-		    + this.sourceFrag.getChildFragments().get(0).getID());
-	    replacements.put("__TUPLE_PTR_TYPE__", "TupleFrag"
-		    + this.sourceFrag.getChildFragments().get(0).getID()
-		    + "Ptr");
+    	try {
+		final long bufferingFactor = this.plan.getBufferingFactor();
+		final int subTraySize = getSubTraySize(currentSite);
+	
+		final SensornetOperator sourceFragRootOp = this.plan.getDAF().getFragment(
+			this.sourceFrag.getID()).getRootOperator();
+		final int tupleSize = CodeGenUtils.outputTypeSize.get(CodeGenUtils
+			.generateOutputTupleType(sourceFragRootOp));
+	
+		final HashMap<String, String> replacements = new HashMap<String, String>();
+	
+		if (!this.sourceFrag.isRecursive()) {
+		    replacements.put("__TUPLE_TYPE__", "TupleFrag"
+			    + this.sourceFrag.getID());
+		    replacements.put("__TUPLE_PTR_TYPE__", "TupleFrag"
+			    + this.sourceFrag.getID() + "Ptr");
+		} else {
+		    replacements.put("__TUPLE_TYPE__", "TupleFrag"
+			    + this.sourceFrag.getChildFragments().get(0).getID());
+		    replacements.put("__TUPLE_PTR_TYPE__", "TupleFrag"
+			    + this.sourceFrag.getChildFragments().get(0).getID()
+			    + "Ptr");
+		}
+		replacements.put("__NUM_SUBTRAYS__", new Long(bufferingFactor)
+			.toString());
+		replacements.put("__SUBTRAY_SIZE__", new Integer(subTraySize)
+			.toString());
+		replacements.put("__MAXTUPLESINMSG__", new Integer(ExchangePart
+			.computeTuplesPerMessage(tupleSize, costParams)).toString());
+		replacements.put("__MODULE_NAME__ ", this.getID());
+		//	if (Settings.NESC_MAX_DEBUG_STATEMENTS_IN_TRAY)
+		replacements.put("__MAX_DEBUG__ ", "");
+		replacements.put("__MAX_DEBUG1__ ", "//");
+		//	else
+		//	replacements.put("__MAX_DEBUG__ ", "//");
+		final StringBuffer tupleConstructionBuff = new StringBuffer();
+		final StringBuffer tupleConstructionBuff2 = new StringBuffer();
+		final List <Attribute> attributes = sourceFragRootOp.getAttributes();
+		for (int i = 0; i < attributes.size(); i++) {
+		    String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
+	    	tupleConstructionBuff.append("\t\t\t\ttray[subTrayNum][trayTail]."
+			    + attrName + "=inQueue[inHead]." + attrName + ";\n");
+		    tupleConstructionBuff2
+			    .append("\t\t\t\t\ttray[subTrayNum][trayTail]." + attrName
+				    + "=message[inHead]." + attrName + ";\n");
+		}
+		replacements.put("__TUPLE_CONSTRUCTION__", tupleConstructionBuff
+			.toString());
+		replacements.put("__TUPLE_CONSTRUCTION2__", tupleConstructionBuff2
+			.toString());
+	
+		final String outputFileName 
+			= generateNesCOutputFileName(outputDir, this.getID());
+	
+		writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/tray.nc", outputFileName,
+			replacements);
+		
+        } catch (Exception e) {
+        	throw new CodeGenerationException(e);
+        }
 	}
-	replacements.put("__NUM_SUBTRAYS__", new Long(bufferingFactor)
-		.toString());
-	replacements.put("__SUBTRAY_SIZE__", new Integer(subTraySize)
-		.toString());
-	replacements.put("__MAXTUPLESINMSG__", new Integer(ExchangePart
-		.computeTuplesPerMessage(tupleSize, costParams)).toString());
-	replacements.put("__MODULE_NAME__ ", this.getID());
-	//	if (Settings.NESC_MAX_DEBUG_STATEMENTS_IN_TRAY)
-	replacements.put("__MAX_DEBUG__ ", "");
-	replacements.put("__MAX_DEBUG1__ ", "//");
-	//	else
-	//	replacements.put("__MAX_DEBUG__ ", "//");
-	final StringBuffer tupleConstructionBuff = new StringBuffer();
-	final StringBuffer tupleConstructionBuff2 = new StringBuffer();
-	final List <Attribute> attributes = sourceFragRootOp.getAttributes();
-	for (int i = 0; i < attributes.size(); i++) {
-	    String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
-    	tupleConstructionBuff.append("\t\t\t\ttray[subTrayNum][trayTail]."
-		    + attrName + "=inQueue[inHead]." + attrName + ";\n");
-	    tupleConstructionBuff2
-		    .append("\t\t\t\t\ttray[subTrayNum][trayTail]." + attrName
-			    + "=message[inHead]." + attrName + ";\n");
-	}
-	replacements.put("__TUPLE_CONSTRUCTION__", tupleConstructionBuff
-		.toString());
-	replacements.put("__TUPLE_CONSTRUCTION2__", tupleConstructionBuff2
-		.toString());
-
-	final String outputFileName 
-		= generateNesCOutputFileName(outputDir, this.getID());
-
-	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/tray.nc", outputFileName,
-		replacements);
-    }
-
-/*	if (exchComp.getComponentType()==exchComp.EXCHANGE_PRODUCER) {
-		System.out.println("Use cuurent Site = "+currentSite.getID());			
-	}
-	if (exchComp.getComponentType()== exchComp.EXCHANGE_RELAY) {
-		System.out.println("Relay on Site = "+currentSite.getID());			
-	}
-	if (exchComp.getComponentType()== exchComp.EXCHANGE_RELAY) {
-		System.out.println("Site = "+currentSite.getID());
-		System.out.println("inputs = "+currentSite.getInDegree());
-	}
-*/
+	
+	/*	if (exchComp.getComponentType()==exchComp.EXCHANGE_PRODUCER) {
+			System.out.println("Use cuurent Site = "+currentSite.getID());			
+		}
+		if (exchComp.getComponentType()== exchComp.EXCHANGE_RELAY) {
+			System.out.println("Relay on Site = "+currentSite.getID());			
+		}
+		if (exchComp.getComponentType()== exchComp.EXCHANGE_RELAY) {
+			System.out.println("Site = "+currentSite.getID());
+			System.out.println("inputs = "+currentSite.getInDegree());
+		}
+	*/
 }

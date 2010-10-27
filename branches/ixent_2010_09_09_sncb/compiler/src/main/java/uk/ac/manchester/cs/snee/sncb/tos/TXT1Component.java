@@ -121,132 +121,135 @@ public class TXT1Component extends NesCComponent implements TinyOS1Component {
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, OptimizationException, URISyntaxException {
+	    throws CodeGenerationException {
 
-	final HashMap<String, String> replacements = new HashMap<String, String>();
-
-	replacements.put("__MODULE_NAME__", this.getID());
-	replacements.put("__HEADER__", this.configuration
-		.generateModuleHeader(this.getID()));
-
-	final String siteID = this.currentSite.getID();
-	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
-
-	final StringBuffer txMethodsBuff = new StringBuffer();
-	final StringBuffer declsBuffer = new StringBuffer();
-
-	boolean first = true;
-	for (int i = 0; i < this.exchComponents.size(); i++) {
-	    final ExchangePart exchComp = this.exchComponents.get(i);
-	    final Fragment sourceFrag = exchComp.getSourceFrag();
-	    final Fragment destFrag = exchComp.getDestFrag();
-	    final Site destSite = exchComp.getDestSite(); //nb: final destination, not next hop
-
-	    final String inQueueType = CodeGenUtils
-		    .generateOutputTuplePtrType(sourceFrag);
-	    final String inQueueName = this.generateInQueueName(sourceFrag,
-		    destFrag, destSite);
-	    final String packetType = CodeGenUtils
-		    .generateMessageType(sourceFrag);
-	    final String packetTypePtr = CodeGenUtils
-		    .generateMessagePtrType(sourceFrag);
-	    final String packetName = this.generatePacketName(sourceFrag,
-		    destFrag, destSite);
-	    final String trayCall = CodeGenUtils
-		    .generateGetTuplesInterfaceInstanceName(sourceFrag,
-			    destFrag, destSite.getID(), this.currentSite
-				    .getID());
-
-	    declsBuffer.append("\t" + inQueueType + " " + inQueueName + ";\n");
-	    declsBuffer.append("\t" + packetTypePtr + " " + packetName + ";\n");
-
-	    if (first) {
-		replacements.put("__FIRST_TRAY_CALL__", trayCall);
-		replacements.put("__FIRST_MESSAGE_PTR_TYPE_INSTANCE__",
-			packetName);
-		replacements.put("__FIRST_MESSAGE_PTR_TYPE__", packetTypePtr);
-		replacements.put("__BUFFERING_FACTOR__", new Long(this.plan
-			.getBufferingFactor()).toString());
-		replacements.put("__EVALUATION_INTERVAL__", new Long(this.plan
+    	try {
+		final HashMap<String, String> replacements = new HashMap<String, String>();
+	
+		replacements.put("__MODULE_NAME__", this.getID());
+		replacements.put("__HEADER__", this.configuration
+			.generateModuleHeader(this.getID()));
+	
+		final String siteID = this.currentSite.getID();
+		final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
+	
+		final StringBuffer txMethodsBuff = new StringBuffer();
+		final StringBuffer declsBuffer = new StringBuffer();
+	
+		boolean first = true;
+		for (int i = 0; i < this.exchComponents.size(); i++) {
+		    final ExchangePart exchComp = this.exchComponents.get(i);
+		    final Fragment sourceFrag = exchComp.getSourceFrag();
+		    final Fragment destFrag = exchComp.getDestFrag();
+		    final Site destSite = exchComp.getDestSite(); //nb: final destination, not next hop
+	
+		    final String inQueueType = CodeGenUtils
+			    .generateOutputTuplePtrType(sourceFrag);
+		    final String inQueueName = this.generateInQueueName(sourceFrag,
+			    destFrag, destSite);
+		    final String packetType = CodeGenUtils
+			    .generateMessageType(sourceFrag);
+		    final String packetTypePtr = CodeGenUtils
+			    .generateMessagePtrType(sourceFrag);
+		    final String packetName = this.generatePacketName(sourceFrag,
+			    destFrag, destSite);
+		    final String trayCall = CodeGenUtils
+			    .generateGetTuplesInterfaceInstanceName(sourceFrag,
+				    destFrag, destSite.getID(), this.currentSite
+					    .getID());
+	
+		    declsBuffer.append("\t" + inQueueType + " " + inQueueName + ";\n");
+		    declsBuffer.append("\t" + packetTypePtr + " " + packetName + ";\n");
+	
+		    if (first) {
+			replacements.put("__FIRST_TRAY_CALL__", trayCall);
+			replacements.put("__FIRST_MESSAGE_PTR_TYPE_INSTANCE__",
+				packetName);
+			replacements.put("__FIRST_MESSAGE_PTR_TYPE__", packetTypePtr);
+			replacements.put("__BUFFERING_FACTOR__", new Long(this.plan
+				.getBufferingFactor()).toString());
+			replacements.put("__EVALUATION_INTERVAL__", new Long(this.plan
+				.getAcquisitionInterval_ms()).toString());
+			replacements.put("__FROM_SITE__", this.currentSite.getID());
+			replacements.put("__TO_SITE__", this.parentSite.getID());
+			first = false;
+		    }
+	
+		    final HashMap<String, String> txMethodsReplacements = new HashMap<String, String>();
+		    txMethodsReplacements.put("__TRAY_PREFIX__", this.generatePrefix(
+			    sourceFrag, destFrag, destSite));
+		    txMethodsReplacements.put("__TRAY_CALL__", trayCall);
+		    txMethodsReplacements.put("__SEND_INTERFACE__", CodeGenUtils
+			    .generateUserSendInterfaceName(sourceFrag, destFrag,
+				    destSite.getID()));
+		    txMethodsReplacements.put("__PARENT_ID__", this.parentSite.getID());
+		    txMethodsReplacements.put("__TUPLE_MESSAGE_TYPE__", packetType);
+	
+		    final int tupleSize = new Integer(CodeGenUtils.outputTypeSize
+			    .get(CodeGenUtils.generateOutputTupleType(sourceFrag)));
+		    final int numTuplesPerMessage = ExchangePart
+			    .computeTuplesPerMessage(tupleSize, costParams);
+		    assert (numTuplesPerMessage > 0);
+		    txMethodsReplacements.put("__TUPLES_PER_PACKET__", new Integer(
+			    numTuplesPerMessage).toString());
+	
+		    if (i + 1 < this.exchComponents.size()) {
+			final Fragment nextSourceFrag = this.exchComponents.get(i + 1)
+				.getSourceFrag();
+			final Fragment nextDestFrag = this.exchComponents.get(i + 1)
+				.getDestFrag();
+			final Site nextDestSite = this.exchComponents.get(i + 1)
+				.getDestSite();
+	
+			final String nextPacketType = CodeGenUtils
+				.generateMessageType(nextSourceFrag);
+			final String nextPacketName = this.generatePacketName(
+				nextSourceFrag, nextDestFrag, nextDestSite);
+			final String nextTrayCall = CodeGenUtils
+				.generateGetTuplesInterfaceInstanceName(nextSourceFrag,
+					nextDestFrag, nextDestSite.getID(),
+					this.currentSite.getID());
+	
+			final StringBuffer nextTrayCallBuff = new StringBuffer();
+			nextTrayCallBuff
+				.append("\t\t\t\t//Nothing more to send from this tray\n");
+			nextTrayCallBuff
+				.append("\t\t\t\t//Request data from the next tray\n");
+			nextTrayCallBuff
+				.append("\t\t\t\tdbg(DBG_USR3,\"Calling next tray: "
+					+ nextTrayCall + "\\n\");\n");
+			nextTrayCallBuff.append("\t\t\t\tbFactorCount = 0;\n");
+			nextTrayCallBuff.append("\t\t\t\ttuplePacketPos = 0;\n");
+	
+			nextTrayCallBuff.append("\t\t\t\t" + nextPacketName + "= ("
+				+ nextPacketType + "*)data.data;\n");
+			nextTrayCallBuff.append("\t\t\t\tevalEpoch=currentEvalEpoch;\n");
+			nextTrayCallBuff.append("\t\t\t\tcall " + nextTrayCall
+				+ ".requestData(evalEpoch);\n");
+			txMethodsReplacements.put("__NEXT_TRAY_CALL__",
+				nextTrayCallBuff.toString());
+		    } else {
+			txMethodsReplacements
+				.put("__NEXT_TRAY_CALL__",
+					"\t\t\t\t//No more trays to request data from; stop here\n");
+		    }
+		    txMethodsReplacements.put("__TRAY_PREFIX_TUPLE_PTR_TYPE__",
+			    inQueueType);
+	
+		    txMethodsBuff.append(generateNesCMethods(TinyOSGenerator.NESC_COMPONENTS_DIR
+			    + "/tx_methods.nc", txMethodsReplacements));
+		}
+	
+		replacements.put("__DECLS__", declsBuffer.toString());
+		replacements.put("__EVALUATION_INTERVAL__", new Integer((int) this.plan
 			.getAcquisitionInterval_ms()).toString());
-		replacements.put("__FROM_SITE__", this.currentSite.getID());
-		replacements.put("__TO_SITE__", this.parentSite.getID());
-		first = false;
+		replacements.put("__TX_METHODS__", txMethodsBuff.toString());
+	
+		super
+			.writeNesCFile(this.templateFileName, outputFileName,
+				replacements);
+	    } catch (Exception e) {
+	    	throw new CodeGenerationException(e);
 	    }
-
-	    final HashMap<String, String> txMethodsReplacements = new HashMap<String, String>();
-	    txMethodsReplacements.put("__TRAY_PREFIX__", this.generatePrefix(
-		    sourceFrag, destFrag, destSite));
-	    txMethodsReplacements.put("__TRAY_CALL__", trayCall);
-	    txMethodsReplacements.put("__SEND_INTERFACE__", CodeGenUtils
-		    .generateUserSendInterfaceName(sourceFrag, destFrag,
-			    destSite.getID()));
-	    txMethodsReplacements.put("__PARENT_ID__", this.parentSite.getID());
-	    txMethodsReplacements.put("__TUPLE_MESSAGE_TYPE__", packetType);
-
-	    final int tupleSize = new Integer(CodeGenUtils.outputTypeSize
-		    .get(CodeGenUtils.generateOutputTupleType(sourceFrag)));
-	    final int numTuplesPerMessage = ExchangePart
-		    .computeTuplesPerMessage(tupleSize, costParams);
-	    assert (numTuplesPerMessage > 0);
-	    txMethodsReplacements.put("__TUPLES_PER_PACKET__", new Integer(
-		    numTuplesPerMessage).toString());
-
-	    if (i + 1 < this.exchComponents.size()) {
-		final Fragment nextSourceFrag = this.exchComponents.get(i + 1)
-			.getSourceFrag();
-		final Fragment nextDestFrag = this.exchComponents.get(i + 1)
-			.getDestFrag();
-		final Site nextDestSite = this.exchComponents.get(i + 1)
-			.getDestSite();
-
-		final String nextPacketType = CodeGenUtils
-			.generateMessageType(nextSourceFrag);
-		final String nextPacketName = this.generatePacketName(
-			nextSourceFrag, nextDestFrag, nextDestSite);
-		final String nextTrayCall = CodeGenUtils
-			.generateGetTuplesInterfaceInstanceName(nextSourceFrag,
-				nextDestFrag, nextDestSite.getID(),
-				this.currentSite.getID());
-
-		final StringBuffer nextTrayCallBuff = new StringBuffer();
-		nextTrayCallBuff
-			.append("\t\t\t\t//Nothing more to send from this tray\n");
-		nextTrayCallBuff
-			.append("\t\t\t\t//Request data from the next tray\n");
-		nextTrayCallBuff
-			.append("\t\t\t\tdbg(DBG_USR3,\"Calling next tray: "
-				+ nextTrayCall + "\\n\");\n");
-		nextTrayCallBuff.append("\t\t\t\tbFactorCount = 0;\n");
-		nextTrayCallBuff.append("\t\t\t\ttuplePacketPos = 0;\n");
-
-		nextTrayCallBuff.append("\t\t\t\t" + nextPacketName + "= ("
-			+ nextPacketType + "*)data.data;\n");
-		nextTrayCallBuff.append("\t\t\t\tevalEpoch=currentEvalEpoch;\n");
-		nextTrayCallBuff.append("\t\t\t\tcall " + nextTrayCall
-			+ ".requestData(evalEpoch);\n");
-		txMethodsReplacements.put("__NEXT_TRAY_CALL__",
-			nextTrayCallBuff.toString());
-	    } else {
-		txMethodsReplacements
-			.put("__NEXT_TRAY_CALL__",
-				"\t\t\t\t//No more trays to request data from; stop here\n");
-	    }
-	    txMethodsReplacements.put("__TRAY_PREFIX_TUPLE_PTR_TYPE__",
-		    inQueueType);
-
-	    txMethodsBuff.append(generateNesCMethods(TinyOSGenerator.NESC_COMPONENTS_DIR
-		    + "/tx_methods.nc", txMethodsReplacements));
-	}
-
-	replacements.put("__DECLS__", declsBuffer.toString());
-	replacements.put("__EVALUATION_INTERVAL__", new Integer((int) this.plan
-		.getAcquisitionInterval_ms()).toString());
-	replacements.put("__TX_METHODS__", txMethodsBuff.toString());
-
-	super
-		.writeNesCFile(this.templateFileName, outputFileName,
-			replacements);
     }
-
 }

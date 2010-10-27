@@ -38,11 +38,9 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
@@ -77,39 +75,42 @@ public class AggrEvalComponent extends NesCComponent implements
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, SchemaMetadataException, 
-	    TypeMappingException, OptimizationException, URISyntaxException {
+	    throws CodeGenerationException {
 
-	final HashMap<String, String> replacements = new HashMap<String, String>();
-	replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
-		.replace("\"", ""));
-	replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
-		.generateOutputTupleType(this.op));
-	replacements.put("__OUT_QUEUE_CARD__", new Long(
-		this.op.getOutputQueueCardinality(
-			(Site) this.plan.getRT().getSite(
-				this.site.getID()), this.plan.getDAF())).toString());
+    	try {
+			final HashMap<String, String> replacements = new HashMap<String, String>();
+			replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
+				.replace("\"", ""));
+			replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
+				.generateOutputTupleType(this.op));
+			replacements.put("__OUT_QUEUE_CARD__", new Long(
+				this.op.getOutputQueueCardinality(
+					(Site) this.plan.getRT().getSite(
+						this.site.getID()), this.plan.getDAF())).toString());
 
-	replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
-		.generateOutputTuplePtrType((SensornetOperator)this.op.getInput(0)));
-
-	SensornetIncrementalAggregationOperator input = getIterate();
-	List <Attribute> attributes = input.getAttributes();
-	replacements.put("__VARIABLES_TO_BE_AGGREGATED__",
-			CodeGenUtils.getPartialAggrVariables(attributes).toString());
-	replacements.put("__SET_AGGREGATES_TO_ZERO__",
-			CodeGenUtils.generateSetAggregatesToZero(attributes, 
-			(SensornetIncrementalAggregationOperator)this.op).toString());
-	replacements.put("__INCREMENT_AGGREGATES__",
-			CodeGenUtils.generateIncrementAggregates(attributes, 
+			replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
+				.generateOutputTuplePtrType((SensornetOperator)this.op.getInput(0)));
+		
+			SensornetIncrementalAggregationOperator input = getIterate();
+			List <Attribute> attributes = input.getAttributes();
+			replacements.put("__VARIABLES_TO_BE_AGGREGATED__",
+					CodeGenUtils.getPartialAggrVariables(attributes).toString());
+			replacements.put("__SET_AGGREGATES_TO_ZERO__",
+					CodeGenUtils.generateSetAggregatesToZero(attributes, 
 					(SensornetIncrementalAggregationOperator)this.op).toString());
-	final StringBuffer tupleConstructionBuff 
-		= CodeGenUtils.generateTupleConstruction(op, false);
-	replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff.toString());
-
-	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
-	writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/aggrPart.nc",
-		outputFileName, replacements);
+			replacements.put("__INCREMENT_AGGREGATES__",
+					CodeGenUtils.generateIncrementAggregates(attributes, 
+							(SensornetIncrementalAggregationOperator)this.op).toString());
+			final StringBuffer tupleConstructionBuff 
+				= CodeGenUtils.generateTupleConstruction(op, false);
+			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff.toString());
+		
+			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
+			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/aggrPart.nc",
+				outputFileName, replacements);
+    	} catch (Exception e) {
+    		throw new CodeGenerationException(e);
+    	}
     }
 
     /** 

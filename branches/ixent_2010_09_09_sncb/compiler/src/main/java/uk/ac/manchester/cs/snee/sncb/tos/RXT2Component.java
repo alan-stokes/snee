@@ -105,26 +105,30 @@ public class RXT2Component extends NesCComponent implements TinyOS2Component {
 
     @Override
     public void writeNesCFile(final String outputDir)
-	    throws IOException, CodeGenerationException, URISyntaxException {
+	    throws CodeGenerationException {
 
-	final HashMap<String, String> replacements = new HashMap<String, String>();
-
-	replacements.put("__MESSAGE_PTR_TYPE__", CodeGenUtils
-		.generateMessagePtrType(this.sourceFrag));
-	replacements.put("__MESSAGE_TYPE__", CodeGenUtils
-			.generateMessageType(this.sourceFrag));
+    	try {
+		final HashMap<String, String> replacements = new HashMap<String, String>();
 	
-	if (this.debugLeds) {
-		replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led1Toggle();");		
-	} else {
-		replacements.put("__NESC_DEBUG_LEDS__", "");
-	}
+		replacements.put("__MESSAGE_PTR_TYPE__", CodeGenUtils
+			.generateMessagePtrType(this.sourceFrag));
+		replacements.put("__MESSAGE_TYPE__", CodeGenUtils
+				.generateMessageType(this.sourceFrag));
+		
+		if (this.debugLeds) {
+			replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led1Toggle();");		
+		} else {
+			replacements.put("__NESC_DEBUG_LEDS__", "");
+		}
+		
+		final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 	
-	final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
-
-	super
-		.writeNesCFile(this.templateFileName, outputFileName,
-			replacements);
+		super
+			.writeNesCFile(this.templateFileName, outputFileName,
+				replacements);
+    	} catch (Exception e) {
+    		throw new CodeGenerationException(e);
+    	}
     }
 
 	public Site getTxSite() {
