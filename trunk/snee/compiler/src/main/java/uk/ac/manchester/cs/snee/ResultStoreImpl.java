@@ -397,7 +397,8 @@ extends Observable implements ResultStore {
 	public List<ResultSet> getNewestResults(int count)
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getNewestResults() with count " + count);
+			logger.debug("ENTER getNewestResults() for query " +
+					queryId + " with count " + count);
 		}
 		
 		checkCount(count);
@@ -417,7 +418,8 @@ extends Observable implements ResultStore {
 	public List<ResultSet> getNewestResults(Duration duration)
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getNewestResults() with duration " + 
+			logger.debug("ENTER getNewestResults() for query " +
+					queryId + " with duration " + 
 					duration);
 		}
 		if (duration==null) {
@@ -474,7 +476,8 @@ extends Observable implements ResultStore {
 	 */
 	public List<ResultSet> getResults() throws SNEEException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getResults()");
+			logger.debug("ENTER getResults() for query " +
+					queryId);
 		}
 		List<ResultSet> resultSets = createResultSets(_data);
 		if (logger.isDebugEnabled()) {
@@ -490,7 +493,8 @@ extends Observable implements ResultStore {
 	public List<ResultSet> getResults(int count) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getResults() with count=" + count);
+			logger.debug("ENTER getResults() for query " +
+					queryId + " with count=" + count);
 		}
 
 		checkCount(count);
@@ -510,7 +514,8 @@ extends Observable implements ResultStore {
 	public List<ResultSet> getResults(Duration duration)
 			throws SNEEException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getResult() with duration " + duration);
+			logger.debug("ENTER getResult() for query " +
+					queryId + " with duration " + duration);
 		}
 		
 		if (duration==null) {
@@ -560,7 +565,8 @@ extends Observable implements ResultStore {
 	public List<ResultSet> getResultsFromIndex(int index)
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getResultFromIndex() with index " + 
+			logger.debug("ENTER getResultFromIndex() for query " +
+					queryId + " with index " + 
 					index);
 		}
 		checkIndex(index);
@@ -581,7 +587,8 @@ extends Observable implements ResultStore {
 	public List<ResultSet> getResultsFromIndex(int index, int count) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getResultFromIndex() with index " + 
+			logger.debug("ENTER getResultFromIndex() for query " +
+					queryId + " with index " + 
 					index + ", count " + count);
 		}
 		checkCount(count);
@@ -611,7 +618,8 @@ extends Observable implements ResultStore {
 			Duration duration) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getResultFromIndex() with index " + 
+			logger.debug("ENTER getResultFromIndex() for query " +
+					queryId + " with index " + 
 					index + ", duration " + duration);
 		}
 		throw new SNEEException("Method not implemented yet!");
@@ -629,7 +637,8 @@ extends Observable implements ResultStore {
 	public List<ResultSet> getResultsFromTimestamp(Timestamp timestamp) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getResultsFromTimestamp() with " +
+			logger.debug("ENTER getResultsFromTimestamp() for query " +
+					queryId + " with " +
 					"timestamp " + timestamp);
 		}		
 		checkTimestamp(timestamp);
@@ -651,7 +660,8 @@ extends Observable implements ResultStore {
 			int count) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getResultsFromTimestamp() with " +
+			logger.debug("ENTER getResultsFromTimestamp() for query " +
+					queryId + " with " +
 					"timestamp " + timestamp +
 					", count " + count);
 		}
@@ -675,7 +685,8 @@ extends Observable implements ResultStore {
 			Duration duration) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER getResultsFromTimestamp() with " +
+			logger.debug("ENTER getResultsFromTimestamp() for query " +
+					queryId + " with " +
 					"timestamp " + timestamp +
 					", duration " + duration);
 		}

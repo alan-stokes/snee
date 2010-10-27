@@ -24,10 +24,10 @@ public class SelectOperatorImpl extends EvaluationOperator {
 
 	private SelectOperator _select;
 
-	public SelectOperatorImpl(LogicalOperator op) 
+	public SelectOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
 	SNEEConfigurationException {
-		super(op);
+		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SelectOperatorImpl " + op);
 		}
@@ -43,7 +43,8 @@ public class SelectOperatorImpl extends EvaluationOperator {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + m_qid + " " +
+					" with " + observed);
 		}
 		try {
 			//FIXME: Cope with bag of results being passed up!

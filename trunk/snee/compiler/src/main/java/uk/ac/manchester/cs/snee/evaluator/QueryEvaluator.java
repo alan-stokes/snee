@@ -193,7 +193,7 @@ public class QueryEvaluator implements Observer {
 		EvaluatorPhysicalOperator phyOp = null;
 		/* Query plans must have a deliver operator at their root */
 		if (op instanceof DeliverOperator) {
-			phyOp = new DeliverOperatorImpl(op);
+			phyOp = new DeliverOperatorImpl(op, _queryId);
 		} else {
 			String msg = "Unsupported operator " + op.getOperatorName() +
 				". Query plans should have a DeliverOperator as their root.";
@@ -208,7 +208,8 @@ public class QueryEvaluator implements Observer {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + _queryId + " " +
+					" with " + observed);
 		if (observed instanceof Output) {
 			_results.add((Output) observed);
 		} else if (observed instanceof List<?>) {

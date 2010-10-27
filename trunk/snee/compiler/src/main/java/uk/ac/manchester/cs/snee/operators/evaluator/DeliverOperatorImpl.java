@@ -59,10 +59,10 @@ extends EvaluatorPhysicalOperator {
 	
 	int nextIndex = 0;
 
-	public DeliverOperatorImpl(LogicalOperator op) 
+	public DeliverOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
 	SNEEConfigurationException {
-		super(op);
+		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER DeliverOperatorImpl() " + op);
 			logger.debug("Attribute List: " + op.getAttributes());
@@ -105,7 +105,8 @@ extends EvaluatorPhysicalOperator {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + m_qid + " " +
+					" with " + observed);
 		List<Output> resultList = new ArrayList<Output>();
 		if (observed instanceof List<?>) {
 			List<Output> outputList = (List<Output>) observed;

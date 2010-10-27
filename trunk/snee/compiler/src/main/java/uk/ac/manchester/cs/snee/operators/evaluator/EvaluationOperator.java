@@ -26,10 +26,10 @@ extends EvaluatorPhysicalOperator {
 		
 	}
 	
-	public EvaluationOperator(LogicalOperator op) 
+	public EvaluationOperator(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
 	SNEEConfigurationException {
-		super(op);
+		super(op, qid);
 	}
 	
 	protected EvaluationOperator(EvaluatorPhysicalOperator op) {

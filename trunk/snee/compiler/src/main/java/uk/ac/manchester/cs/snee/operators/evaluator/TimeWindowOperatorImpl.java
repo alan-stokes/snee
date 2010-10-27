@@ -38,10 +38,10 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 
 	private long nextWindowEvalTime;
 	
-	public TimeWindowOperatorImpl(LogicalOperator op) 
+	public TimeWindowOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
 	SNEEConfigurationException{
-		super(op);
+		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER TimeWindowOperatorImpl() " + op);
 		}
@@ -180,7 +180,8 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + m_qid + " " +
+					" with " + observed);
 		List<Output> resultItems = new ArrayList<Output>();
 		if (observed instanceof TaggedTuple){
 			processTuple(observed, resultItems);

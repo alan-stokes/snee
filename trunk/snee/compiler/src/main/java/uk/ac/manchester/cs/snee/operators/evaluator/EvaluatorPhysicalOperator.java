@@ -72,6 +72,8 @@ implements Observer
 	protected EvaluatorPhysicalOperator child;
 
 	private LogicalOperator m_op;
+
+	protected int m_qid;
 	
 	public static int RECEIVE_TIMEOUT = 50000;
 	
@@ -79,13 +81,14 @@ implements Observer
 		
 	}
 	
-	public EvaluatorPhysicalOperator(LogicalOperator op) 
+	public EvaluatorPhysicalOperator(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
 	SNEEConfigurationException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER EvaluatorOperator() " + op);
 		}
 		m_op = op;
+		m_qid = qid;
 		// Instantiate the child operator
 		Iterator<LogicalOperator> iter = op.childOperatorIterator();
 		child = getEvaluatorOperator(iter.next());		
@@ -154,28 +157,28 @@ implements Observer
 	SNEEConfigurationException {
 		EvaluatorPhysicalOperator phyOp = null;
 		if (op instanceof ReceiveOperator) {
-			phyOp = new ReceiveOperatorImpl(op);
+			phyOp = new ReceiveOperatorImpl(op, m_qid);
 		} else if (op instanceof DeliverOperator) {
-			phyOp = new DeliverOperatorImpl(op);
+			phyOp = new DeliverOperatorImpl(op, m_qid);
 		} else if (op instanceof ProjectOperator) {
-			phyOp = new ProjectOperatorImpl(op);
+			phyOp = new ProjectOperatorImpl(op, m_qid);
 		} else if (op instanceof SelectOperator) {
-			phyOp = new SelectOperatorImpl(op);
+			phyOp = new SelectOperatorImpl(op, m_qid);
 		} else if (op instanceof WindowOperator) {
 			if (((WindowOperator) op).isTimeScope()) {
-				phyOp = new TimeWindowOperatorImpl(op);
+				phyOp = new TimeWindowOperatorImpl(op, m_qid);
 			} else {
-				phyOp = new TupleWindowOperatorImpl(op);
+				phyOp = new TupleWindowOperatorImpl(op, m_qid);
 			}
 			
 		} else if (op instanceof RStreamOperator) {
-			phyOp = new RStreamOperatorImpl(op);
+			phyOp = new RStreamOperatorImpl(op, m_qid);
 		} else if (op instanceof AggregationOperator) {
-			phyOp = new AggregationOperatorImpl(op);
+			phyOp = new AggregationOperatorImpl(op, m_qid);
 		} else if (op instanceof JoinOperator) {
-			phyOp = new JoinOperatorImpl(op);
+			phyOp = new JoinOperatorImpl(op, m_qid);
 		} else if (op instanceof UnionOperator) {
-			phyOp = new UnionOperatorImpl(op);
+			phyOp = new UnionOperatorImpl(op, m_qid);
 		} else {
 			String msg = "Unsupported operator " + op.getOperatorName();
 			logger.warn(msg);

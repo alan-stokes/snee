@@ -24,10 +24,10 @@ public abstract class WindowOperatorImpl extends EvaluatorPhysicalOperator {
 	// Defines the size of slide. Instantiated in constructor
 	protected int slide;
 	
-	public WindowOperatorImpl(LogicalOperator op) 
+	public WindowOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
 	SNEEConfigurationException {
-		super(op);
+		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER WindowOperatorImpl() with " + op);
 		}
