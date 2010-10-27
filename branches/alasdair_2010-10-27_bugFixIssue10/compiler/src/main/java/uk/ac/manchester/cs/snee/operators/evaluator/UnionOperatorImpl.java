@@ -69,6 +69,7 @@ public class UnionOperatorImpl extends EvaluatorPhysicalOperator {
 			logger.debug("ENTER UnionOperatorImpl() " + op);
 		}
 
+		m_qid = qid;
 		// Create connections to child operators
 		Iterator<LogicalOperator> iter = op.childOperatorIterator();
 		leftOperator = getEvaluatorOperator(iter.next());
