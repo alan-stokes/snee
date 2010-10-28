@@ -62,9 +62,9 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.DLAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.rewriter.LogicalRewriter;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
-import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
 import uk.ac.manchester.cs.snee.compiler.translator.Translator;
 import antlr.CommonAST;
 import antlr.RecognitionException;
@@ -114,9 +114,9 @@ public class QueryCompiler {
 	private LAF doTranslation(CommonAST parseTree, int queryID, 
 			String queryPlanOutputDir) 
 	throws TypeMappingException, SourceDoesNotExistException, 
-	SchemaMetadataException, ParserValidationException, 
+	SchemaMetadataException, 
 	OptimizationException, ParserException, ExtentDoesNotExistException,
-	RecognitionException, SNEEConfigurationException 
+	RecognitionException, SNEEConfigurationException, ExpressionException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doTranslation() queryID: " + 
@@ -240,15 +240,16 @@ public class QueryCompiler {
 	 * @throws SourceAllocatorException 
 	 * @throws SourceAllocatorException 
 	 * @throws WhenSchedulerException 
+	 * @throws ExpressionException 
 	 */
 	public QueryExecutionPlan compileQuery(int queryID, String query, 
 			QoSExpectations qos) 
 	throws SNEEException, SourceDoesNotExistException, 
-	TypeMappingException, SchemaMetadataException, 
-	ParserValidationException, OptimizationException, 
+	TypeMappingException, SchemaMetadataException, OptimizationException, 
 	ParserException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException, 
-	SNEEConfigurationException, SourceAllocatorException, WhenSchedulerException 
+	SNEEConfigurationException, SourceAllocatorException, WhenSchedulerException,
+	ExpressionException 
 	 {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER: queryID: " + queryID + "\n\tquery: " + query);

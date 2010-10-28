@@ -17,5 +17,12 @@
   		<version>1.4.0-SNAPSHOT</version>
   		<scope>provided</scope>
   	</dependency>
+  	<dependency>
+  		<groupId>uk.ac.manchester.cs.snee</groupId>
+  		<artifactId>snee-core</artifactId>
+  		<version>1.4.0-SNAPSHOT</version>
+  		<type>jar</type>
+  		<scope>provided</scope>
+  	</dependency>
   </dependencies>
 </project>

@@ -40,7 +40,6 @@ import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
 
 /**
  * Expression combining two or more boolean expression.
@@ -434,7 +433,7 @@ public class MultiExpression implements Expression {
 	 * @return true If and only if each child expression can be used.  
 	 * @throws ParserValidationException 
 	 */
-	public boolean allowedInAggregationOperator() throws ParserValidationException{
+	public boolean allowedInAggregationOperator() throws ExpressionException{
 		for (int i = 0; i < expressions.length; i++){
 			if (!expressions[i].allowedInAggregationOperator())
 				return false;

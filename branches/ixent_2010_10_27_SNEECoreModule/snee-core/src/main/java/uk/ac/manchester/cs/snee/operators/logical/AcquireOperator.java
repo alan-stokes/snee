@@ -52,7 +52,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
-import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 public class AcquireOperator extends LogicalOperatorImpl {
 
@@ -407,14 +406,14 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * @throws CodeGenerationException 
 	 */
 	public int getSensedAttributeNumber(Expression attribute)
-	throws CodeGenerationException {
+	throws OptimizationException {
 		assert (attribute instanceof DataAttribute);
 		for (int i = 0; i < sensedAttributes.size(); i++) {
 			if (attribute.equals(sensedAttributes.get(i))) {
 				return i;
 			}
 		}
-		throw new CodeGenerationException("Unable to find a number for attribute: " + attribute.toString());
+		throw new OptimizationException("Unable to find a number for attribute: " + attribute.toString());
 	}
 
 	/** 

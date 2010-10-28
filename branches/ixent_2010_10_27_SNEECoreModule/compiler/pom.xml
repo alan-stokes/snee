@@ -14,13 +14,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
-				<groupId>uk.ac.manchester.cs.snee</groupId>
-				<artifactId>snee-core</artifactId>
-				<version>1.4.0-SNAPSHOT</version>
-				<type>jar</type>
-				<scope>compile</scope>
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<properties>
@@ -61,6 +54,12 @@
 			<version>1.2</version>
 			<type>jar</type>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-core</artifactId>
+			<version>1.4.0-SNAPSHOT</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
