@@ -3,6 +3,7 @@ package uk.ac.manchester.cs.snee.data.webservice;
 import static org.junit.Assert.assertEquals;
 
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -54,7 +55,9 @@ public class WrsSchemaParserTest {
 	@Test
 	public void testGetExtentName() 
 	throws SchemaMetadataException {
-		assertEquals("envdata_lymington_met", parser.getExtentName());
+		Collection<String> extentNames = parser.getExtentNames();
+		assertEquals(1, extentNames.size());
+		assertEquals("envdata_lymington_met", extentNames.iterator().next());
 	}
 
 	@Test

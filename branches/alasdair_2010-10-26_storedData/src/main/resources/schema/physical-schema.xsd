@@ -103,6 +103,7 @@
 		<xs:restriction base="xs:token">
 			<xs:enumeration value="pull-stream"/>
 			<xs:enumeration value="push-stream"/>
+			<xs:enumeration value="wsdair"/>
 		</xs:restriction>
 	</xs:simpleType>
 

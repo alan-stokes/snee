@@ -14,9 +14,9 @@
 
 	<properties>
 		<sds.version>0.1.1</sds.version>
+		<wsdair.version>0.0.1-SNAPSHOT</wsdair.version>
 		<cxf.version>2.2.8</cxf.version>
 		<wsdl.location>${project.build.directory}/wsdl</wsdl.location>
-		<!--<wsdl.location>${basedir}/src/main/wsdl</wsdl.location>-->
 	</properties>
 	
 	<dependencies>
@@ -29,6 +29,11 @@
 			<groupId>eu.semsorgrid4env.service.sds</groupId>
 			<artifactId>sds-wsdl</artifactId>
 			<version>${sds.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.semsorgrid4env.service.wsdair</groupId>
+			<artifactId>wsdair-wsdl</artifactId>
+			<version>${wsdair.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.easymock</groupId>
@@ -71,6 +76,12 @@
 									<groupId>eu.semsorgrid4env.service.sds</groupId>
 									<artifactId>sds-wsdl</artifactId>
 									<version>${sds.version}</version>
+									<type>jar</type>
+								</artifactItem>
+								<artifactItem>
+									<groupId>eu.semsorgrid4env.service.wsdair</groupId>
+									<artifactId>wsdair-wsdl</artifactId>
+									<version>${wsdair.version}</version>
 									<type>jar</type>
 								</artifactItem>
 							</artifactItems>
@@ -120,6 +131,15 @@
 								</wsdlOption>
 								<wsdlOption>
 									<wsdl>${wsdl.location}/subscription_manager_service.wsdl</wsdl>
+								</wsdlOption>
+								<wsdlOption>
+									<wsdl>${wsdl.location}/wsdair/sqlaccess_service_service.wsdl</wsdl>
+								</wsdlOption>
+								<wsdlOption>
+									<wsdl>${wsdl.location}/wsdair/sqlresponse_service_service.wsdl</wsdl>
+								</wsdlOption>
+								<wsdlOption>
+									<wsdl>${wsdl.location}/wsdair/sqlrowset_service_service.wsdl</wsdl>
 								</wsdlOption>
 							</wsdlOptions>
 						</configuration>

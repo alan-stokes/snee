@@ -515,38 +515,38 @@ public class Metadata {
 					extentNames.size());
 		return extentNames;
 	}
-
-	private Element findElement(String extentName, NodeList extents) 
-	throws SourceMetadataException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER findElement() with " + extentName +
-					" extents size " + extents.getLength());
-		Element element = null;
-		boolean found = false;
-		for (int i = 0; i < extents.getLength(); i++) {
-			Element extent = (Element) extents.item(i);
-			String attrValue = extent.getAttribute("name");
-			if (attrValue.equalsIgnoreCase(extentName)) {
-				if (logger.isTraceEnabled()) {
-					logger.trace("Found " + extent + " element for " +
-							attrValue);
-				}
-				found = true;
-				element = extent;
-				break;
-			}		
-		}
-		if (!found) {
-			String message = "No physical schema information found " +
-			"for " + extentName;
-			logger.warn(message);
-			throw new SourceMetadataException(message);
-		}
-		if (logger.isTraceEnabled() && found)
-			logger.trace("RETURN findElement() with " + 
-					element.toString());
-		return element;
-	}
+//
+//	private Element findElement(String extentName, NodeList extents) 
+//	throws SourceMetadataException {
+//		if (logger.isTraceEnabled())
+//			logger.trace("ENTER findElement() with " + extentName +
+//					" extents size " + extents.getLength());
+//		Element element = null;
+//		boolean found = false;
+//		for (int i = 0; i < extents.getLength(); i++) {
+//			Element extent = (Element) extents.item(i);
+//			String attrValue = extent.getAttribute("name");
+//			if (attrValue.equalsIgnoreCase(extentName)) {
+//				if (logger.isTraceEnabled()) {
+//					logger.trace("Found " + extent + " element for " +
+//							attrValue);
+//				}
+//				found = true;
+//				element = extent;
+//				break;
+//			}		
+//		}
+//		if (!found) {
+//			String message = "No physical schema information found " +
+//			"for " + extentName;
+//			logger.warn(message);
+//			throw new SourceMetadataException(message);
+//		}
+//		if (logger.isTraceEnabled() && found)
+//			logger.trace("RETURN findElement() with " + 
+//					element.toString());
+//		return element;
+//	}
 
 	private Document parseFile(String schemaFile) 
 	throws MetadataException {
@@ -624,22 +624,24 @@ public class Metadata {
 		}
 		List<String> resources = pullSource.getResourceNames();
 		List<String> extentNames = new ArrayList<String>();
-		//FIXME: Why do I have 44 resources but only 43 extents?
 		//FIXME: Read stream rate from property document!
 		Map<String, String> resourcesByExtent = 
 			new HashMap<String, String>();
 		for (String resource : resources) {
 			if (logger.isTraceEnabled())
 				logger.trace("Retrieving schema for " + resource);
-			ExtentMetadata extent = 
+			List<ExtentMetadata> extents = 
 				pullSource.getSchema(resource);
-			String extentName = extent.getExtentName();
-			_schema.put(extentName, extent);
-			extentNames.add(extentName);
-			resourcesByExtent.put(extentName, resource);
-			if (logger.isTraceEnabled())
-				logger.trace("Added extent " + extentName + 
-						" of extent type " + extent.getExtentType());
+			for (ExtentMetadata extent : extents) {
+				String extentName = extent.getExtentName();
+				_schema.put(extentName, extent);
+				extentNames.add(extentName);
+				resourcesByExtent.put(extentName, resource);
+				if (logger.isTraceEnabled()) {
+					logger.trace("Added extent " + extentName + 
+							" of extent type " + extent.getExtentType());
+				}
+			}
 		}
 		WebServiceSourceMetadata source = 
 			new WebServiceSourceMetadata(sourceName, extentNames, url, 

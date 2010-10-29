@@ -4,7 +4,9 @@ import java.io.StringReader;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -51,10 +53,10 @@ public class WrsSchemaParser extends SchemaParserAbstract {
 	}
 
 	@Override
-	public String getExtentName() 
+	public Collection<String> getExtentNames() 
 	throws SchemaMetadataException {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER getExtentName()");
+			logger.debug("ENTER getExtentNames()");
 		String extentName;
 		try {
 			extentName = metadata.getTableName(1).toLowerCase();
@@ -63,9 +65,12 @@ public class WrsSchemaParser extends SchemaParserAbstract {
 			logger.warn(msg, e);
 			throw new SchemaMetadataException(msg, e);
 		}
+		Collection<String> extentNames = new HashSet<String>();
+		extentNames.add(extentName);
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN getExtentName() with " + extentName);
-		return extentName;
+			logger.debug("RETURN getExtentNames() #extents=" + 
+					extentNames.size());
+		return extentNames;
 	}
 
 	@Override

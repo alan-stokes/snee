@@ -3,7 +3,11 @@ package uk.ac.manchester.cs.snee.data.webservice;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -28,10 +32,11 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 	private Logger logger = 
 		Logger.getLogger(OgsadaiSchemaParser.class.getName());
 
-	private Element _root;
+	private Map<String, List<Attribute>> extents = 
+		new HashMap<String, List<Attribute>>();
 
 	public OgsadaiSchemaParser(String schema, Types types) 
-	throws SchemaMetadataException {
+	throws SchemaMetadataException, TypeMappingException {
 		super(types);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER OgsadaiSchemaParser() with " +
@@ -45,7 +50,7 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document document = 
 				builder.parse(new InputSource(schemaReader));
-			_root = (Element) document.getFirstChild();
+			parse((Element) document.getFirstChild());
 		} catch (ParserConfigurationException e) {
 			String msg = "Unable to configure document parser.";
 			logger.warn(msg);
@@ -63,24 +68,31 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 			logger.debug("RETURN OgsadaiSchemaParser()");
 	}
 	
-	public String getExtentName() {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER getExtentName()");
-		NodeList extents = _root.getElementsByTagName("table");
-		Element element = (Element) extents.item(0);
-		String name = element.getAttribute("name").toLowerCase();
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN getExtentName() with " + name);
-		return name;
+	private void parse(Element root) 
+	throws TypeMappingException, SchemaMetadataException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER parse() with " + root);
+		}
+		NodeList extentNodes = root.getElementsByTagName("table");
+		for (int i = 0; i < extentNodes.getLength(); i++) {
+			Element element = (Element) extentNodes.item(i);
+			String name = element.getAttribute("name").toLowerCase();
+			List<Attribute> attributes = parseColumns(element, name);
+			extents.put(name, attributes);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN parse()");
+		}
 	}
 	
-	public List<Attribute> getColumns(String extentName) 
+	private List<Attribute> parseColumns(Element root, String extentName) 
 	throws TypeMappingException, SchemaMetadataException {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER getColumns()");
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER parseColumns() with " + root);
+		}
 		List<Attribute> attributes = 
 			new ArrayList<Attribute>();
-		NodeList columns = _root.getElementsByTagName("column");	
+		NodeList columns = root.getElementsByTagName("column");	
 		for (int i = 0; i < columns.getLength(); i++) {
 			Element column = (Element) columns.item(i);
 			String columnName = column.getAttribute("name");
@@ -93,8 +105,30 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 				new DataAttribute(extentName, columnName, type);
 			attributes.add(attr);
 		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN parseColumns() #attr=" +
+					attributes.size());
+		}
+		return attributes;
+	}
+
+	public Collection<String> getExtentNames() {
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN getColumns(), number of columns " + attributes.size());
+			logger.debug("ENTER getExtentNames()");
+		Set<String> extentNames = extents.keySet();
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getExtentNames() #names=" +
+					extentNames.size());
+		return extentNames;
+	}
+	
+	public List<Attribute> getColumns(String extentName) {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getColumns()");
+		List<Attribute> attributes = extents.get(extentName);
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getColumns(), number of columns " + 
+					attributes.size());
 		return attributes;
 	}
 

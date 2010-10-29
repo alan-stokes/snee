@@ -36,6 +36,7 @@ public abstract class SchemaParserAbstract implements SchemaParser {
 			type = _types.getType("boolean");
 			break;
 		case java.sql.Types.CHAR:
+		case java.sql.Types.VARCHAR:
 			type = _types.getType("string");
 			break;
 		case java.sql.Types.DECIMAL:
@@ -45,9 +46,12 @@ public abstract class SchemaParserAbstract implements SchemaParser {
 			type = _types.getType("float");
 			break;
 		case java.sql.Types.INTEGER:
+		case java.sql.Types.BIGINT:
 			type = _types.getType("integer");			
 			break;
 		case java.sql.Types.TIMESTAMP:
+		case java.sql.Types.DATE:
+			//FIXME: Do we really want date to be a timestamp?
 			type = _types.getType("timestamp");
 			break;
 		default:

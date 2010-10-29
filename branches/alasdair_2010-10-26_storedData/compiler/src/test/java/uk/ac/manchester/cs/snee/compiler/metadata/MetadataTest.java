@@ -13,6 +13,7 @@ import org.easymock.classextension.EasyMockSupport;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.MetadataException;
@@ -30,6 +31,7 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.data.webservice.PullSourceWrapper;
+import uk.ac.manchester.cs.snee.data.webservice.WSDAIRSourceWrapper;
 
 public class MetadataTest extends EasyMockSupport {
 
@@ -89,7 +91,7 @@ public class MetadataTest extends EasyMockSupport {
 	}
 
 	@Test
-	public void testTableStreamMetaData() 
+	public void testTableMetaData() 
 	throws TypeMappingException, SchemaMetadataException, 
 	MetadataException, UnsupportedAttributeTypeException, 
 	SNEEConfigurationException, SourceMetadataException,
@@ -181,10 +183,12 @@ public class MetadataTest extends EasyMockSupport {
 		mockResourceList.add("resource2");
 		expect(mockWrapper.getResourceNames()).
 			andReturn(mockResourceList);
-		expect(mockWrapper.getSchema("resource1")).andReturn(mockExtent);
+		List<ExtentMetadata> extents = new ArrayList<ExtentMetadata>();
+		extents.add(mockExtent);
+		expect(mockWrapper.getSchema("resource1")).andReturn(extents);
 		expect(mockExtent.getExtentName()).andReturn("extent1");
 		expect(mockExtent.getExtentType()).andReturn(ExtentType.PUSHED);
-		expect(mockWrapper.getSchema("resource2")).andReturn(mockExtent);
+		expect(mockWrapper.getSchema("resource2")).andReturn(extents);
 		expect(mockExtent.getExtentName()).andReturn("extent2");
 		expect(mockExtent.getExtentType()).andReturn(ExtentType.PUSHED);
 		replayAll();
@@ -203,7 +207,47 @@ public class MetadataTest extends EasyMockSupport {
 		assertEquals(1, schema.getSources().size());
 		assertEquals(2, schema.getExtentNames().size());
 	}
-	
+
+	@Test@Ignore
+	public void testStoredDataServiceSource() 
+	throws TypeMappingException, SchemaMetadataException, 
+	SNEEConfigurationException, MetadataException, 
+	UnsupportedAttributeTypeException, SourceMetadataException, 
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException, CostParametersException {
+		final WSDAIRSourceWrapper mockWrapper = 
+			createMock(WSDAIRSourceWrapper.class);
+		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
+		List<String> mockResourceList = new ArrayList<String>();
+		mockResourceList.add("resource1");
+		mockResourceList.add("resource2");
+		expect(mockWrapper.getResourceNames()).
+			andReturn(mockResourceList);
+		List<ExtentMetadata> extents = new ArrayList<ExtentMetadata>();
+		extents.add(mockExtent);
+		expect(mockWrapper.getSchema("resource1")).andReturn(extents);
+		expect(mockExtent.getExtentName()).andReturn("extent1");
+		expect(mockExtent.getExtentType()).andReturn(ExtentType.TABLE);
+		expect(mockWrapper.getSchema("resource2")).andReturn(extents);
+		expect(mockExtent.getExtentName()).andReturn("extent2");
+		expect(mockExtent.getExtentType()).andReturn(ExtentType.TABLE);
+		replayAll();
+
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, 
+				"etc/physical-schema_wsdair-source.xml");
+		SNEEProperties.initialise(props);
+
+		Metadata schema = new Metadata() {
+			protected WSDAIRSourceWrapper createWSDAIRSource(String url)
+			throws MalformedURLException {
+				return mockWrapper;
+			}
+		};
+		//Expect 1 source which provides 2 extents
+		assertEquals(1, schema.getSources().size());
+		assertEquals(2, schema.getExtentNames().size());
+	}
+
 	@Test(expected=SourceMetadataException.class)
 	public void testPushStreamServiceSource() 
 	throws TypeMappingException, SchemaMetadataException, 
@@ -295,7 +339,9 @@ public class MetadataTest extends EasyMockSupport {
 		//Record mocks
 		expect(mockSourceWrapper.getResourceNames()).
 			andReturn(mockResourceList);
-		expect(mockSourceWrapper.getSchema(resourceName)).andReturn(mockExtent);
+		List<ExtentMetadata> extents = new ArrayList<ExtentMetadata>();
+		extents.add(mockExtent);
+		expect(mockSourceWrapper.getSchema(resourceName)).andReturn(extents);
 		expect(mockExtent.getExtentName()).andReturn(streamName);
 		expect(mockExtent.getExtentType()).andReturn(ExtentType.PUSHED);
 		//Test

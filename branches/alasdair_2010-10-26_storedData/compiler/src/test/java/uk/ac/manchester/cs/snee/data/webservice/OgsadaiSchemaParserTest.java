@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.data.webservice;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -32,19 +33,24 @@ public class OgsadaiSchemaParserTest {
 	public static void tearDownAfterClass() throws Exception {
 	}
 
-	private OgsadaiSchemaParser parser;
-
 	@Before
 	public void setUp() throws Exception {
+	}
+
+	private OgsadaiSchemaParser createParser(String filename)
+	throws TypeMappingException, IOException,
+			SchemaMetadataException {
 		InputStream is = 
 			OgsadaiSchemaParser.class.getClassLoader().
-					getResourceAsStream("etc/ogsa-dai-schema-description.xml");
+					getResourceAsStream("etc/" + filename);
 		Types types = new Types(OgsadaiSchemaParser.class.getClassLoader().
 				getResource("etc/Types.xml").toString());
 		byte[] bytes = new byte[is.available()];
 		is.read(bytes);
 		String schema = new String(bytes);
-		parser = new OgsadaiSchemaParser(schema, types);
+		OgsadaiSchemaParser parser = 
+			new OgsadaiSchemaParser(schema, types);
+		return parser;
 	}
 
 	@After
@@ -52,13 +58,26 @@ public class OgsadaiSchemaParserTest {
 	}
 
 	@Test
-	public void testGetExtentName() {
-		assertEquals("envdata_folkestone", parser.getExtentName());
+	public void testGetExtentNames_1schema() 
+	throws TypeMappingException, IOException, SchemaMetadataException {
+		OgsadaiSchemaParser parser = 
+			createParser("ogsa-dai-1schema-description.xml");
+		assertEquals(1, parser.getExtentNames().size());
 	}
 
 	@Test
-	public void testGetColumns() 
-	throws TypeMappingException, SchemaMetadataException {
+	public void testGetExtentNames_2schema() 
+	throws TypeMappingException, IOException, SchemaMetadataException {
+		OgsadaiSchemaParser parser = 
+			createParser("ogsa-dai-2schema-description.xml");
+		assertEquals(2, parser.getExtentNames().size());
+	}
+
+	@Test
+	public void testGetColumns_Folkestone() 
+	throws TypeMappingException, SchemaMetadataException, IOException {
+		OgsadaiSchemaParser parser = 
+			createParser("ogsa-dai-1schema-description.xml");
 		List<Attribute> columns =
 			parser.getColumns("envdata_folkestone");
 		assertEquals(7, columns.size());
@@ -79,4 +98,14 @@ public class OgsadaiSchemaParserTest {
 		assertEquals("decimal", attr.getType().getName());
 	}
 
+	@Test
+	public void testGetColumns_Locations() 
+	throws TypeMappingException, SchemaMetadataException, IOException {
+		OgsadaiSchemaParser parser = 
+			createParser("ogsa-dai-2schema-description.xml");
+		List<Attribute> columns =
+			parser.getColumns("locations");
+		assertEquals(16, columns.size());
+	}
+	
 }
