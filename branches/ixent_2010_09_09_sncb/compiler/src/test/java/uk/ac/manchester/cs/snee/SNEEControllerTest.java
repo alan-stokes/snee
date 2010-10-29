@@ -64,8 +64,8 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
-import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -129,7 +129,8 @@ public class SNEEControllerTest extends EasyMockSupport {
 	@Test(expected=SNEECompilerException.class)
 	public void testAddQuery_NullParams()
 	throws SchemaMetadataException, EvaluatorException, 
-	SNEECompilerException, SNEEException, MetadataException 
+	SNEECompilerException, SNEEException, MetadataException,
+	SNEEConfigurationException 
 	{
 		_snee.addQuery(null, null);	
 	}
@@ -137,7 +138,8 @@ public class SNEEControllerTest extends EasyMockSupport {
 	@Test(expected=SNEECompilerException.class)
 	public void testAddQuery_EmptyQuery() 
 	throws SchemaMetadataException, EvaluatorException, 
-	SNEECompilerException, SNEEException, MetadataException 
+	SNEECompilerException, SNEEException, MetadataException,
+	SNEEConfigurationException 
 	{
 		_snee.addQuery("", null);	
 	}
@@ -145,7 +147,8 @@ public class SNEEControllerTest extends EasyMockSupport {
 	@Test(expected=SNEECompilerException.class)
 	public void testAddQuery_WhitespaceQuery() 
 	throws SchemaMetadataException, EvaluatorException, 
-	SNEECompilerException, SNEEException, MetadataException 
+	SNEECompilerException, SNEEException, MetadataException,
+	SNEEConfigurationException 
 	{
 		_snee.addQuery("   ", null);	
 	}
@@ -155,7 +158,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	throws SchemaMetadataException, EvaluatorException, 
 	SNEECompilerException, SNEEException, MetadataException,
 	RecognitionException, TokenStreamException, TypeMappingException, 
-	ParserValidationException, OptimizationException, ParserException,
+	ExpressionException, OptimizationException, ParserException,
 	SNEEConfigurationException 
 	{
 		assertEquals(1, _snee.addQuery(mQuery, 
@@ -179,7 +182,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	public void testRemoveQuery_queryAdded() 
 	throws RecognitionException, TokenStreamException, SNEEException, 
 	TypeMappingException, SchemaMetadataException,
-	ParserValidationException, OptimizationException, ParserException, 
+	ExpressionException, OptimizationException, ParserException, 
 	SNEEConfigurationException, MetadataException, EvaluatorException,
 	SNEECompilerException, SourceAllocatorException, WhenSchedulerException  
 	{		//Record expected calls to the mock objects
@@ -198,7 +201,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	public void testClose() 
 	throws SNEEException, 
 	TypeMappingException, SchemaMetadataException, 
-	ParserValidationException, OptimizationException, ParserException, 
+	ExpressionException, OptimizationException, ParserException, 
 	EvaluatorException, RecognitionException, TokenStreamException,
 	SNEEConfigurationException, SNEECompilerException, MetadataException, 
 	SourceAllocatorException, WhenSchedulerException {
@@ -220,25 +223,25 @@ public class SNEEControllerTest extends EasyMockSupport {
 	@Test(expected=SNEEException.class)
 	public void testGetResults_invalidQueryId_noQueries() 
 	throws SNEEException {
-		_snee.getResultSet(49);
+		_snee.getResultStore(49);
 	}
 
 	@Test(expected=SNEEException.class)
 	public void testGetResults_invalidQueryId() 
 	throws SNEEException, 
 	TypeMappingException, SchemaMetadataException, 
-	ParserValidationException, OptimizationException, ParserException,
+	ExpressionException, OptimizationException, ParserException,
 	EvaluatorException, QoSException, SNEECompilerException,
-	MetadataException  {
+	MetadataException, SNEEConfigurationException  {
 		int qID = _snee.addQuery(mQuery, null);
-		_snee.getResultSet(qID*20);
+		_snee.getResultStore(qID*20);
 	}
 
 	@Test
 	public void testGetResults_validQueryId() 
 	throws SNEEException, SchemaMetadataException, 
 	TypeMappingException, 
-	ParserValidationException, OptimizationException, ParserException, 
+	ExpressionException, OptimizationException, ParserException, 
 	EvaluatorException, RecognitionException, TokenStreamException, 
 	SNEEConfigurationException, SNEECompilerException, MetadataException,
 	SourceAllocatorException, WhenSchedulerException
@@ -250,7 +253,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 		//Test
 		replayAll();		
 		int qID = _snee.addQuery(mQuery, null);
-		ResultStore result = _snee.getResultSet(qID);
+		ResultStore result = _snee.getResultStore(qID);
 		assertNotNull(result);
 		verifyAll();
 	}

@@ -105,7 +105,8 @@ public class Dispatcher {
 	 */
 	public void startQuery(int queryID, ResultStore resultSet, 
 			QueryExecutionPlan queryPlan) 
-	throws SNEEException, MetadataException, EvaluatorException {
+	throws SNEEException, MetadataException, EvaluatorException,
+	SNEEConfigurationException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER queryID " + queryID + " " + queryPlan);
 		}
@@ -168,10 +169,12 @@ public class Dispatcher {
 	 * @throws SNEEException Invalid query plan
 	 * @throws SchemaMetadataException Problem with the schema
 	 * @throws EvaluatorException 
+	 * @throws SNEEConfigurationException 
 	 */
 	protected QueryEvaluator createQueryEvaluator(int queryId, 
 			LAF queryPlan, ResultStore resultSet) 
-	throws SNEEException, SchemaMetadataException, EvaluatorException {
+	throws SNEEException, SchemaMetadataException,
+	EvaluatorException, SNEEConfigurationException {
 		QueryEvaluator queryEvaluator = 
 			new QueryEvaluator(queryId, queryPlan, _schema, resultSet);
 		return queryEvaluator;

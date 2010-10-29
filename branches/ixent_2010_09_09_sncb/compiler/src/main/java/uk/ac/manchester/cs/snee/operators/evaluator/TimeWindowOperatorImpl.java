@@ -8,8 +8,11 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.CircularArray;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.evaluator.types.CircularList;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
@@ -27,7 +30,7 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 	 */
 	private String slideWindowUnits;
 
-	private CircularList buffer;
+	private CircularArray<TaggedTuple> buffer;
 
 	private int tuplesSinceLastWindow = 0;
 
@@ -35,9 +38,10 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 
 	private long nextWindowEvalTime;
 	
-	public TimeWindowOperatorImpl(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException{
-		super(op);
+	public TimeWindowOperatorImpl(LogicalOperator op, int qid) 
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException{
+		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER TimeWindowOperatorImpl() " + op);
 		}
@@ -48,7 +52,12 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 		windowEnd = windowEnd * 1000;
 
 		// Instantiate the buffer for storing tuples
-		buffer = new CircularList(MAX_BUFFER_SIZE);
+		int maxBufferSize = SNEEProperties.getIntSetting(
+				SNEEPropertyNames.RESULTS_HISTORY_SIZE_TUPLES);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Buffer size: " + maxBufferSize);
+		}
+		buffer = new CircularArray<TaggedTuple>(maxBufferSize);
 		
 		if (logger.isTraceEnabled()) 
 			logger.trace("\n\tStart (ms): " + windowStart + 
@@ -171,7 +180,8 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + m_qid + " " +
+					" with " + observed);
 		List<Output> resultItems = new ArrayList<Output>();
 		if (observed instanceof TaggedTuple){
 			processTuple(observed, resultItems);

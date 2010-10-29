@@ -26,6 +26,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
@@ -76,7 +77,7 @@ public class Translator {
 	}
 
 	private LogicalOperator translateFrom(AST ast) 
-	throws ParserValidationException, SchemaMetadataException, 
+	throws ExpressionException, SchemaMetadataException, 
 	SourceDoesNotExistException, OptimizationException, ParserException, 
 	TypeMappingException, ExtentDoesNotExistException, 
 	RecognitionException {
@@ -94,7 +95,7 @@ public class Translator {
 	}
 
 	private LogicalOperator translateExtents(AST ast) 
-	throws ParserValidationException, SchemaMetadataException, 
+	throws ExpressionException, SchemaMetadataException, 
 	OptimizationException, SourceDoesNotExistException, ParserException, 
 	TypeMappingException, ExtentDoesNotExistException, 
 	RecognitionException {
@@ -127,7 +128,7 @@ public class Translator {
 
 	private LogicalOperator translateWindowAndLocalName(AST ast, 
 			LogicalOperator operator, String extentName) 
-	throws ParserValidationException, OptimizationException, 
+	throws ExpressionException, OptimizationException, 
 	ParserException, RecognitionException { 
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateWindowAndLocalName(): ast " +
@@ -272,7 +273,7 @@ public class Translator {
 
 	private WindowOperator createWindow (int from, AST fromUnit, int to, 
 			AST toUnit, int slide, AST slideUnit, LogicalOperator child) 
-	throws ParserValidationException, OptimizationException {
+	throws ExpressionException, OptimizationException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER createWindow(): " +
 					"from " + from + " " + fromUnit +
@@ -293,7 +294,7 @@ public class Translator {
 							"Window to unit of: " + toUnit.getText() +
 							" with a from unit of " + fromUnit.getText();
 					logger.warn(message);
-					throw new ParserValidationException(message);
+					throw new ExpressionException(message);
 				}
 			} else if (!timeScope) {
 				String message = "Can not mike a Window " +
@@ -301,7 +302,7 @@ public class Translator {
 						" with a from " +
 						"unit of " + fromUnit.getText();
 				logger.warn(message);
-				throw new ParserValidationException(message);
+				throw new ExpressionException(message);
 			}
 		}	
 		WindowOperator window = 
@@ -315,7 +316,7 @@ public class Translator {
 	private WindowOperator createWindow (int from, int to, 
 			boolean timeScope, int slide, AST slideUnit,
 			LogicalOperator child) 
-	throws ParserValidationException, OptimizationException {
+	throws ExpressionException, OptimizationException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER createWindow(): " + "from " + from + 
 					" to " + to + " isTimeScope " + timeScope +  
@@ -327,19 +328,19 @@ public class Translator {
 			String message = "Window From value must be " +
 					"less equal to zero. Found: " + from;
 			logger.warn(message);
-			throw new ParserValidationException(message);
+			throw new ExpressionException(message);
 		}
 		if (to > 0) {
 			String message = "Window To value must be " +
 					"less equal to zero. Found: " + to;
 			logger.warn(message);
-			throw new ParserValidationException(message);
+			throw new ExpressionException(message);
 		}
 		if (slide < 0) {
 			String message = "Window Slide value must " +
 					"be less equal or equal to zero. Found: " + slide;
 			logger.warn(message);
-			throw new ParserValidationException(message);
+			throw new ExpressionException(message);
 		}
 		if (slide == 0) {
 			window = new WindowOperator(from, to, timeScope, 0, 0, 
@@ -412,7 +413,7 @@ public class Translator {
 	}
 
 	private int translateWindowPart(AST ast, AST unit) 
-	throws ParserValidationException, ParserException,
+	throws ExpressionException, ParserException,
 	RecognitionException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateWindowPart()" + 
@@ -429,7 +430,7 @@ public class Translator {
 			String msg = "No Unit found with window declaration " +
 				ast.getText();
 			logger.warn(msg);
-			throw new ParserValidationException(msg);		
+			throw new ExpressionException(msg);		
 		}
 		AST expression = ast.getFirstChild();
 		SNEEqlTreeWalker walker = new SNEEqlTreeWalker();
@@ -440,7 +441,7 @@ public class Translator {
 			String msg = "Window declration: "+ ast.toStringList() + 
 				" does not convert to an integer tick";
 			logger.warn(msg);
-			throw new ParserValidationException(msg);
+			throw new ExpressionException(msg);
 		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN translateWindowPart()" + value);
@@ -540,7 +541,7 @@ public class Translator {
 	}
 
 	private LogicalOperator combineSources (LogicalOperator[] operators)
-	throws ParserValidationException, SchemaMetadataException, 
+	throws ExpressionException, SchemaMetadataException, 
 	OptimizationException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER combineSources(): " +
@@ -581,7 +582,7 @@ public class Translator {
 			if (operators[i].getOperatorDataType() == OperatorDataType.STREAM) {
 				String msg = "Unable to join two streams";
 				logger.warn(msg);
-				throw new ParserValidationException(msg);
+				throw new ExpressionException(msg);
 			}
 			temp = new JoinOperator(operators[i], temp, _boolType);
 			if (logger.isTraceEnabled()) {
@@ -597,7 +598,7 @@ public class Translator {
 	private LogicalOperator translateExtent(AST ast) 
 	throws ExtentDoesNotExistException, SchemaMetadataException, 
 	TypeMappingException, SourceDoesNotExistException, 
-	ParserValidationException, OptimizationException, ParserException,
+	ExpressionException, OptimizationException, ParserException,
 	RecognitionException  
 	{
 		if (logger.isTraceEnabled()) {
@@ -671,7 +672,7 @@ public class Translator {
 	}
 
 	private LogicalOperator translateQuery(AST ast) 
-	throws SchemaMetadataException, ParserValidationException, 
+	throws SchemaMetadataException, ExpressionException, 
 	OptimizationException, SourceDoesNotExistException, 
 	ParserException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException {
@@ -830,7 +831,7 @@ public class Translator {
 	}
 
 	public LAF translate(AST ast, int queryID) 
-	throws SchemaMetadataException, ParserValidationException, 
+	throws SchemaMetadataException, ExpressionException, 
 	OptimizationException, SourceDoesNotExistException,
 	ParserException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException {
@@ -871,7 +872,7 @@ public class Translator {
 
 	private LogicalOperator applyWhereOrGroupBy(AST ast, 
 			LogicalOperator input) 
-	throws ParserValidationException, SchemaMetadataException, 
+	throws ExpressionException, SchemaMetadataException, 
 	TypeMappingException, OptimizationException 
 	{
 		if (logger.isTraceEnabled()) {
@@ -899,7 +900,7 @@ public class Translator {
 				String msg = "Illegal attempt to use a none boolean " +
 					"expression in a where clause.";
 				logger.warn(msg);
-				throw new ParserValidationException(msg);
+				throw new ExpressionException(msg);
 			}
 			SelectOperator selectOperator = 
 				new SelectOperator(expression,input, _boolType);
@@ -921,7 +922,7 @@ public class Translator {
 
 	private LogicalOperator translateSelect (AST ast, 
 			LogicalOperator input) 
-	throws OptimizationException, ParserValidationException, 
+	throws OptimizationException, ExpressionException, 
 	SchemaMetadataException, TypeMappingException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateSelect(): " +
@@ -1010,7 +1011,7 @@ public class Translator {
 
 	private Expression translateExpression (AST ast, 
 			LogicalOperator input) 
-	throws ParserValidationException, OptimizationException, 
+	throws ExpressionException, OptimizationException, 
 	NumberFormatException, TypeMappingException, 
 	SchemaMetadataException {
 		if (logger.isTraceEnabled()) {
@@ -1086,7 +1087,7 @@ public class Translator {
 				String msg = "Unable to find Attribute " + 
 					ast.getText() + "||";
 				logger.warn(msg);
-				throw new ParserValidationException(msg);
+				throw new ExpressionException(msg);
 			}
 			break;
 		case SNEEqlParserTokenTypes.Identifier:
@@ -1106,7 +1107,7 @@ public class Translator {
 								"unqualifeied attribute " +
 								ast.getText();
 						logger.warn(msg);
-						throw new ParserValidationException(msg);
+						throw new ExpressionException(msg);
 					}
 				}
 			}
@@ -1117,7 +1118,7 @@ public class Translator {
 				String msg = "Unable to find unqualified " +
 						"attribute " + ast.getText();
 				logger.warn(msg);
-				throw new ParserValidationException(msg);
+				throw new ExpressionException(msg);
 			}
 		case SNEEqlParserTokenTypes.FUNCTION_NAME:
 			if (logger.isTraceEnabled()) {
@@ -1163,7 +1164,7 @@ public class Translator {
 	}
 
 	private Expression getFunction(AST ast, LogicalOperator input) 
-	throws ParserValidationException, OptimizationException, 
+	throws ExpressionException, OptimizationException, 
 	TypeMappingException, SchemaMetadataException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER getFunction() " + ast + " " + input);

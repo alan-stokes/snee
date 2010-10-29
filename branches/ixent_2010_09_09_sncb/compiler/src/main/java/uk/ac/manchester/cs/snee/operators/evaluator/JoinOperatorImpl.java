@@ -10,6 +10,10 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.CircularArray;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
@@ -18,7 +22,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
-import uk.ac.manchester.cs.snee.evaluator.types.CircularList;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
@@ -36,15 +39,16 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		
 	MultiExpression leftExpr;
 	MultiExpression rightExpr;
-	CircularList leftBuffer,rightBuffer;
+	CircularArray<Window> leftBuffer,rightBuffer;
 
 	private Expression joinPredicate;
 
 	private List<Attribute> returnAttrs;
 
-	public JoinOperatorImpl(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
-		super(op);
+	public JoinOperatorImpl(LogicalOperator op, int qid) 
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
+		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER JoinOperatorImpl() " + op);
 		}
@@ -56,8 +60,13 @@ public class JoinOperatorImpl extends EvaluationOperator {
 //XXX: Join could be speeded up by working out once which attribute numbers are required from each tuple
 		// Instantiate this as a join operator
 		join =  (JoinOperator) op;
-		leftBuffer = new CircularList();
-		rightBuffer = new CircularList();
+		int maxBufferSize = SNEEProperties.getIntSetting(
+				SNEEPropertyNames.RESULTS_HISTORY_SIZE_TUPLES);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Buffer size: " + maxBufferSize);
+		}
+		leftBuffer = new CircularArray<Window>(maxBufferSize);
+		rightBuffer = new CircularArray<Window>(maxBufferSize);
 		joinPredicate = join.getPredicate();
 		returnAttrs = join.getAttributes();
 
@@ -160,7 +169,8 @@ public class JoinOperatorImpl extends EvaluationOperator {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + m_qid + " " +
+					" with " + observed);
 		}
 		try {
 			List<Output> resultItems = new ArrayList<Output>();
@@ -217,7 +227,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 	}
 
 	private void processWindow(Window window, 
-			List<Output> resultItems, CircularList buffer)
+			List<Output> resultItems, CircularArray<Window> buffer)
 	throws SNEEException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER processWindow()");

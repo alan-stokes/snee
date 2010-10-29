@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -278,8 +279,12 @@ public class AcquireComponent extends NesCComponent implements
 //	    	return "call LocalTime.get()";
 //	    }
 		if (expression instanceof DataAttribute) {
-			return "reading" + ((AcquireOperator)op.
-			getLogicalOperator()).getSensedAttributeNumber(expression); 
+			try {
+				return "reading" + ((AcquireOperator)op.
+				getLogicalOperator()).getSensedAttributeNumber(expression);
+			} catch (OptimizationException e) {
+				throw new CodeGenerationException(e);
+			} 
 		}	
 		if (expression instanceof MultiExpression) {
 			MultiExpression multi = (MultiExpression) expression;

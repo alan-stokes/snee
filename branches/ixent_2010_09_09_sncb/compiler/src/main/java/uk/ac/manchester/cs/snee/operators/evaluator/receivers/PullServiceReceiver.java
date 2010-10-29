@@ -85,7 +85,7 @@ public class PullServiceReceiver implements SourceReceiver {
 				}
 				tuples = _pullSource.getData(_resourceName, 2, lastTs);
 			}
-			tuple = tuples.get(1);
+			tuple = correctTableName(tuples.get(1));
 		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("Received tuple: \n" + tuple);
@@ -109,6 +109,14 @@ public class PullServiceReceiver implements SourceReceiver {
 		return tuple;
 	}
 
+	/**
+	 * Hack to overcome shortcomings in metadata inserted to 
+	 * WebRowSet object by the CCO-WS.
+	 * 
+	 * @param tuple
+	 * @return
+	 * @throws SchemaMetadataException
+	 */
 	private Tuple correctTableName(Tuple tuple) 
 	throws SchemaMetadataException {
 		if (logger.isTraceEnabled()) {

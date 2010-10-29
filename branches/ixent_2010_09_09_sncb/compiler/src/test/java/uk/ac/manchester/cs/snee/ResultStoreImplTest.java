@@ -45,7 +45,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -57,6 +56,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import uk.ac.manchester.cs.snee.common.CircularArray;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
@@ -91,7 +92,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	private Output mockOutput;
 
 	public void setUpTupleStream() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		mockOutput = createMock(TaggedTuple.class);
 		_resultStore = new ResultStoreImpl(testQuery, mockQEP) {
 			protected ResultSetMetaData createMetaData(
@@ -100,8 +101,9 @@ public class ResultStoreImplTest extends EasyMockSupport {
 				return mockMetaData;
 			}
 			
-			protected List<Output> createDataStore() {
-				List<Output> dataList = new ArrayList<Output>();
+			protected CircularArray<Output> createDataStore() {
+				CircularArray<Output> dataList = 
+					new CircularArray<Output>(10);
 				dataList.add(mockOutput);//1
 				dataList.add(mockOutput);//2
 				dataList.add(mockOutput);//3
@@ -114,11 +116,15 @@ public class ResultStoreImplTest extends EasyMockSupport {
 				dataList.add(mockOutput);//10
 				return dataList;
 			}
+			
+			protected String setQueryId(QueryExecutionPlan queryPlan) {
+				return "1";
+			}
 		}; 
 	}
 
 	public void setUpWindowStream() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		mockOutput = createMock(Window.class);
 		_resultStore = new ResultStoreImpl(testQuery, mockQEP) {
 			protected ResultSetMetaData createMetaData(
@@ -127,8 +133,9 @@ public class ResultStoreImplTest extends EasyMockSupport {
 				return mockMetaData;
 			}
 			
-			protected List<Output> createDataStore() {
-				List<Output> dataList = new ArrayList<Output>();
+			protected CircularArray<Output> createDataStore() {
+				CircularArray<Output> dataList = 
+					new CircularArray<Output>(10);
 				dataList.add(mockOutput);//1
 				dataList.add(mockOutput);//2
 				dataList.add(mockOutput);//3
@@ -146,6 +153,10 @@ public class ResultStoreImplTest extends EasyMockSupport {
 			throws SQLException, SNEEException {
 //				System.out.println("Returning mock result set");
 				return mockResultSet;
+			}
+			
+			protected String setQueryId(QueryExecutionPlan queryPlan) {
+				return "1";
 			}
 			
 		}; 
@@ -192,13 +203,15 @@ public class ResultStoreImplTest extends EasyMockSupport {
 //	}
 
 	@Test
-	public void testSize() throws SNEEException {
+	public void testSize() 
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		assertEquals(10, _resultStore.size());
 	}
 	
 	@Test
-	public void testGetCommand() throws SNEEException {
+	public void testGetCommand() 
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		_resultStore.setCommand("SELECT * FROM TestStream;");
 		assertEquals("SELECT * FROM TestStream;",
@@ -206,7 +219,8 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	}
 	
 	@Test
-	public void testGetMetaData() throws SNEEException {
+	public void testGetMetaData() 
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		ResultSetMetaData metadata = _resultStore.getMetadata();
 		assertNotNull(metadata);
@@ -214,7 +228,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResults_streamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		recordTupleStreamResultSet(10);
 		replayAll();
@@ -228,7 +242,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResults_streamWindows() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		recordWindowStreamResultSet(10);
 		replayAll();
@@ -240,21 +254,21 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test(expected=SNEEException.class)
 	public void testGetResults_invalidCount() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		_resultStore.getResults(42);
 	}
 
 	@Test(expected=SNEEException.class)
 	public void testGetResults_zeroCount() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		_resultStore.getResults(0);
 	}
 
 	@Test(expected=SNEEException.class)
 	public void testGetResults_negativeCount() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		/* Request a negative number of results should throw exception */
 		_resultStore.getResults(-42);
@@ -262,7 +276,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResults_countTupleStream() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		recordTupleStreamResultSet(2);
 		replayAll();
@@ -276,7 +290,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResults_countWindowStream() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		recordWindowStreamResultSet(2);
 		replayAll();
@@ -287,7 +301,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test(expected=SNEEException.class)
 	public void testGetResults_zeroDuration() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		/* Request a 0 duration of results should throw exception */
 		_resultStore.getResults(new Duration(0));
@@ -295,7 +309,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetResults_negativeDuration() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		/* Requesting a negative duration should throw exception */
 		_resultStore.getResults(new Duration(-42));
@@ -303,7 +317,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test(expected=SNEEException.class)
 	public void testGetResults_invalidDuraction() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		//Record
 //		expect(mockQEP.getMetaData()).andReturn(mockQEPMetadata);
@@ -321,7 +335,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResults_validSubDuractionStreamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		recordTupleStreamResultSet(3);
 		/*
@@ -348,7 +362,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResults_validSubDuractionStreamWindows() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		recordWindowStreamResultSet(3);
 		/*
@@ -371,21 +385,21 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromIndex_negativeIndex() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		_resultStore.getResultsFromIndex(-4);
 	}
 
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromIndex_invalidIndex() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		_resultStore.getResultsFromIndex(400);
 	}
 
 	@Test
 	public void testGetResultsFromIndex_zeroIndexStreamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		/* Returns entire result set */
 		recordTupleStreamResultSet(10);
@@ -400,7 +414,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromIndex_zeroIndexStreamWindows() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		/* Returns entire result set */
 		recordWindowStreamResultSet(10);
@@ -412,7 +426,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 		
 	@Test
 	public void testGetResultsFromIndex_streamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		recordTupleStreamResultSet(6);
 		replayAll();
@@ -426,7 +440,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromIndex_streamWindows() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		recordWindowStreamResultSet(6);
 		replayAll();
@@ -438,7 +452,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test(expected=SNEEException.class)
 	public void testGetResultFromIndexSingleton()
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		ResultStoreImpl singletonResultSet = 
 			new ResultStoreImpl(testQuery, mockQEP) {
 			
@@ -448,8 +462,9 @@ public class ResultStoreImplTest extends EasyMockSupport {
 				return mockMetaData;
 			}
 			
-			protected List<Output> createDataStore() {
-				List<Output> dataList = new ArrayList<Output>();
+			protected CircularArray<Output> createDataStore() {
+				CircularArray<Output> dataList = 
+					new CircularArray<Output>(1);
 				dataList.add(mockOutput);//1
 				return dataList;
 			}
@@ -460,35 +475,35 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromIndexCount_negativeIndex() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		_resultStore.getResultsFromIndex(-4, 3);
 	}
 
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromIndexCount_invalidIndex() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		_resultStore.getResultsFromIndex(400, 5);
 	}
 	
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromIndexCount_invalidCount() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		_resultStore.getResultsFromIndex(2, 42);
 	}
 
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromIndexCount_zeroCount() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		_resultStore.getResultsFromIndex(7, 0);
 	}
 
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromIndexCount_negativeCount() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		/* Request a negative number of results should throw exception */
 		_resultStore.getResultsFromIndex(3, -42);
@@ -496,7 +511,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test
 	public void testGetResultsFromIndexCount_zeroIndexStreamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		recordTupleStreamResultSet(7);
 		replayAll();
@@ -511,7 +526,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromIndexCount_zeroIndexStreamWindows() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		recordWindowStreamResultSet(7);
 		replayAll();
@@ -523,14 +538,14 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromIndexCount_invalidCountIndex() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		_resultStore.getResultsFromIndex(8, 5);
 	}
 
 	@Test
 	public void testGetResultsFromIndexCountStreamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		recordTupleStreamResultSet(2);
 		replayAll();
@@ -545,7 +560,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromIndexCountStreamWindows() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		recordWindowStreamResultSet(2);
 		replayAll();
@@ -556,7 +571,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromIndexJustLargerCountStreamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		replayAll();
 		_resultStore.getResultsFromIndex(0, 11);
@@ -565,7 +580,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test
 	public void testGetResultsFromIndexFullCountStreamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		recordTupleStreamResultSet(10);
 		replayAll();
@@ -580,7 +595,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromIndexFullCountStreamWindows() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		recordWindowStreamResultSet(6);
 		replayAll();
@@ -591,7 +606,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromIndexDuration() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		_resultStore.getResultsFromIndex(3, new Duration(3000));
 	}
@@ -605,7 +620,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromTimestamp_invalidFutureTimestamp() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		Timestamp ts = new Timestamp(System.currentTimeMillis() + 500000);
 		_resultStore.getResultsFromTimestamp(ts);
@@ -613,7 +628,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromTimestamp_invalidOldTimestamp() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		/*
 		 * Record 10 second result set
@@ -629,7 +644,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromTimestamp_streamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		recordTupleStreamResultSet(5);
 		/*
@@ -662,7 +677,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromTimestamp_streamWindows() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		recordWindowStreamResultSet(5);
 		/*
@@ -691,7 +706,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromTimestampCount_invalidFutureTimestamp() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		Timestamp ts = new Timestamp(System.currentTimeMillis() + 500000);
 		_resultStore.getResultsFromTimestamp(ts, 3);
@@ -699,7 +714,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromTimestampCount_invalidOldTimestamp() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		/*
 		 * Record 10 second result set 
@@ -715,7 +730,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromTimestampCount_invalidCount() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		long currentTime = System.currentTimeMillis();
 		Timestamp ts = new Timestamp(currentTime + 5000);
@@ -724,7 +739,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromTimestampCount_negativeCount() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		Timestamp ts = new Timestamp(System.currentTimeMillis() + 5000);
 		_resultStore.getResultsFromTimestamp(ts, -92);
@@ -732,7 +747,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromTimestampCount_zeroCount() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		Timestamp ts = new Timestamp(System.currentTimeMillis() + 5000);
 		_resultStore.getResultsFromTimestamp(ts, 0);
@@ -740,7 +755,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromTimestampCount_streamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		recordTupleStreamResultSet(3);
 		/*
@@ -771,7 +786,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromTimestampCount_streamWindows() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		recordWindowStreamResultSet(3);
 		/*
@@ -798,7 +813,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromTimestampCount_fullSetStreamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		recordTupleStreamResultSet(10);
 		/*
@@ -830,7 +845,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromTimestampCount_fullSetStreamWindows() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		recordWindowStreamResultSet(10);
 		/*
@@ -858,7 +873,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromTimestampDuration_invalidFutureTimestamp() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		Timestamp ts = new Timestamp(System.currentTimeMillis() + 500000);
 		_resultStore.getResultsFromTimestamp(ts, new Duration(45000));
@@ -866,7 +881,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromTimestampDuration_invalidOldTimestamp() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		/*
 		 * Record 10 second result set
@@ -882,7 +897,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromTimestampDuration_zeroDuration() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		Timestamp ts = new Timestamp(System.currentTimeMillis() + 5000);
 		/* Request a 0 duration of results should throw exception */
@@ -891,7 +906,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromTimestampDuration_negativeDuration() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		Timestamp ts = new Timestamp(System.currentTimeMillis() + 5000);
 		/* Requesting a negative duration should throw exception */
@@ -900,7 +915,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test(expected=SNEEException.class)
 	public void testGetResultsFromTimestampDuration_invalidDuraction() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		//Record result set of 10 seconds
 		long currentTime = System.currentTimeMillis();
@@ -915,7 +930,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromTimestampDuration_validSubDuractionStreamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		recordTupleStreamResultSet(2);
 		/*
@@ -950,7 +965,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetResultsFromTimestampDuration_validSubDuractionStreamWindows() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		recordWindowStreamResultSet(2);
 		/*
@@ -981,7 +996,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetNewestResults_fullCountStreamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		recordTupleStreamResultSet(10);
 		replayAll();
@@ -996,7 +1011,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetNewestResults_fullCountStreamWindows() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		recordWindowStreamResultSet(10);
 		replayAll();
@@ -1008,7 +1023,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test(expected=SNEEException.class)
 	public void testGetNewestResults_invalidCount() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		/* Request a larger number of results than exist 
 		 * should throw exception */
@@ -1017,7 +1032,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetNewestResults_zeroCount() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		/* Request a 0 number of results should throw exception */
 		_resultStore.getNewestResults(0);
@@ -1025,7 +1040,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetNewestResults_negativeCount() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		/* Request a negative number of results should throw exception */
 		_resultStore.getNewestResults(-42);
@@ -1033,7 +1048,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetNewestResults_countStreamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		/*
 		 * Test resultset contains 10 tuples
@@ -1053,7 +1068,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetNewestResults_countStreamWindows() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		/*
 		 * Test resultset contains 10 tuples
@@ -1069,7 +1084,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test(expected=SNEEException.class)
 	public void testGetNewestResults_zeroDuration() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		/* Request a 0 duration of results should throw exception */
 		_resultStore.getNewestResults(new Duration(0));
@@ -1077,7 +1092,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetNewestResults_negativeDuration() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		/* Requesting a negative duration should throw exception */
 		_resultStore.getNewestResults(new Duration(-42));
@@ -1085,7 +1100,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	@Test(expected=SNEEException.class)
 	public void testGetNewestResults_invalidDuraction() 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		setUpTupleStream();
 		/* Request a larger duration of results than exist 
 		 * should throw exception */
@@ -1098,7 +1113,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetNewestResults_validSubDuractionStreamTuples() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpTupleStream();
 		recordTupleStreamResultSet(5);
 		/* 
@@ -1127,7 +1142,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetNewestResults_validSubDuractionStreamWindows() 
-	throws SNEEException, SQLException {
+	throws SNEEException, SQLException, SNEEConfigurationException {
 		setUpWindowStream();
 		recordWindowStreamResultSet(5);
 		/* 

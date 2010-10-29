@@ -1,14 +1,13 @@
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Observable;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
@@ -34,9 +33,10 @@ extends EvaluatorPhysicalOperator {
 
 	private List<Expression> expressions;
 
-	public AggregationOperatorImpl(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
-		super(op);
+	public AggregationOperatorImpl(LogicalOperator op, int qid) 
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
+		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER AggregationOperatorImpl() " + op);
 		}
@@ -131,7 +131,8 @@ extends EvaluatorPhysicalOperator {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + m_qid + " " +
+					" with " + observed);
 		try {
 			List<Output> result = new ArrayList<Output>();
 			if (observed instanceof List<?>) {
