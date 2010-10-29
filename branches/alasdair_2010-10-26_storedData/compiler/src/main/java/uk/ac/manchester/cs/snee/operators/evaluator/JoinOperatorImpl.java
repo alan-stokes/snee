@@ -45,10 +45,10 @@ public class JoinOperatorImpl extends EvaluationOperator {
 
 	private List<Attribute> returnAttrs;
 
-	public JoinOperatorImpl(LogicalOperator op) 
+	public JoinOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
 	SNEEConfigurationException {
-		super(op);
+		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER JoinOperatorImpl() " + op);
 		}
@@ -169,7 +169,8 @@ public class JoinOperatorImpl extends EvaluationOperator {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + m_qid + " " +
+					" with " + observed);
 		}
 		try {
 			List<Output> resultItems = new ArrayList<Output>();

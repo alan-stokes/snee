@@ -61,8 +61,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import uk.ac.manchester.cs.snee.SNEEException;
-
 /**
  * Provides utility methods
  * 

@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
-import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class Tree extends Graph {
@@ -17,7 +16,7 @@ public class Tree extends Graph {
 	 * Logger for this class.
 	 */
 	private Logger logger = 
-		Logger.getLogger(Router.class.getName());
+		Logger.getLogger(Tree.class.getName());
 	
 	/**
 	 * The root of the tree.

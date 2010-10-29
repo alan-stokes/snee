@@ -7,17 +7,14 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.ac.manchester.cs.snee</groupId>
-	<artifactId>snee-compiler</artifactId>
-	<name>SNEE Compiler</name>
+	<artifactId>snee-core</artifactId>
+	<name>SNEE Core</name>
 	<version>1.4.0</version>
 	<description>Compiles a SNEEql query into a query plan</description>
 
-	<dependencyManagement>
-		<dependencies>
-		</dependencies>
-	</dependencyManagement>
 	<properties>
 		<sds.version>0.1.1</sds.version>
+		<wsdair.version>0.0.1-SNAPSHOT</wsdair.version>
 		<cxf.version>2.2.8</cxf.version>
 		<wsdl.location>${project.build.directory}/wsdl</wsdl.location>
 	</properties>
@@ -32,6 +29,11 @@
 			<groupId>eu.semsorgrid4env.service.sds</groupId>
 			<artifactId>sds-wsdl</artifactId>
 			<version>${sds.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.semsorgrid4env.service.wsdair</groupId>
+			<artifactId>wsdair-wsdl</artifactId>
+			<version>${wsdair.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.easymock</groupId>
@@ -54,12 +56,6 @@
 			<type>jar</type>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>uk.ac.manchester.cs.snee</groupId>
-			<artifactId>snee-core</artifactId>
-			<version>1.4.0</version>
-			<scope>provided</scope>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -80,6 +76,12 @@
 									<groupId>eu.semsorgrid4env.service.sds</groupId>
 									<artifactId>sds-wsdl</artifactId>
 									<version>${sds.version}</version>
+									<type>jar</type>
+								</artifactItem>
+								<artifactItem>
+									<groupId>eu.semsorgrid4env.service.wsdair</groupId>
+									<artifactId>wsdair-wsdl</artifactId>
+									<version>${wsdair.version}</version>
 									<type>jar</type>
 								</artifactItem>
 							</artifactItems>
@@ -130,6 +132,15 @@
 								<wsdlOption>
 									<wsdl>${wsdl.location}/subscription_manager_service.wsdl</wsdl>
 								</wsdlOption>
+								<wsdlOption>
+									<wsdl>${wsdl.location}/wsdair/sqlaccess_service_service.wsdl</wsdl>
+								</wsdlOption>
+								<wsdlOption>
+									<wsdl>${wsdl.location}/wsdair/sqlresponse_service_service.wsdl</wsdl>
+								</wsdlOption>
+								<wsdlOption>
+									<wsdl>${wsdl.location}/wsdair/sqlrowset_service_service.wsdl</wsdl>
+								</wsdlOption>
 							</wsdlOptions>
 						</configuration>
 						<goals>
@@ -138,7 +149,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
+ <!--   	<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antlr-plugin</artifactId>
 				<version>2.0-beta-1</version>
@@ -153,7 +164,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!--
+-->			<!--
 				<plugin> <groupId>org.codehaus.mojo</groupId>
 				<artifactId>antlr-maven-plugin</artifactId> <configuration> Comma
 				separated list of grammar files or pattern grammar files By default,
@@ -166,20 +177,20 @@
 		</plugins>
 	</build>
 
-	<reporting>
+ 	<reporting>
 		<plugins>
-			<plugin>
+<!--			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>antlr-maven-plugin</artifactId>
-				<configuration>
+				<configuration> -->
 					<!--
 						Comma separated list of grammar files or pattern grammar files By
 						default, grammar file(s) is in ${basedir}/src/main/antlr
 					-->
-					<grammars>SNEEql.g</grammars>
+<!-- 					<grammars>SNEEql.g</grammars>
 				</configuration>
-			</plugin>
+			</plugin> -->
 		</plugins>
-	</reporting>
+	</reporting>  
 
 </project>

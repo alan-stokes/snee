@@ -7,8 +7,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.ResultStoreImpl;
-
 public class CircularArray<E> implements Iterable<E> {
 
 	private Logger logger = 

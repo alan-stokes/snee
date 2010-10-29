@@ -33,67 +33,144 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
 
-/**
- * Interface for any expression.
- * Includs arithmatic, aggeragation and boolean expressions.
- * @author Christian
- */
-public interface Expression {
+/** Expression to hold an aggregation. */
+public class AggregationExpression implements Expression {
 
 	/** 
-	 * List of the attributes required to produce this expression.
-	 * 
-	 * @return The zero or more attributes required for this expression.
-	 * Return may contain duplicates.
+	 * Keeps track of the next aggregation numeration to assign.
 	 */
-	List<Attribute> getRequiredAttributes();
+	private int nextNumeration = 1;
 	
 	/**
-	 * The raw data type of this expression.
-	 *  
-	 * @return The raw data type of this expression.
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
+	 * The numeration assigned to this aggregation.
+	 * Used to assign short unique local names. 
 	 */
-	AttributeType getType() 
-	throws SchemaMetadataException, TypeMappingException;
+	private int numeration;
 	
+	/** The expression over which the aggregation will be done. */
+	private Expression expression;
+	
+	/** The aggregation to be done. */
+	private AggregationType type;
+
+	private AttributeType _returnType;
+	
+	public AggregationExpression(Expression inner, 
+			AggregationType aggType, AttributeType returnType) {
+        expression = inner;
+        this.type = aggType;
+        _returnType = returnType;
+        numeration = nextNumeration++;
+	}
+
+    /** {@inheritDoc}*/
+	public List<Attribute> getRequiredAttributes() {
+		return expression.getRequiredAttributes();
+	}
+	
+	/** {@inheritDoc} */
+	public AttributeType getType() {
+		return _returnType;
+	}
+	
+	/** 
+	 * Gets the type of the aggregation.
+	 * @return The type of the aggregation.
+	 */
+	public AggregationType getAggregationType() {
+		return type;
+	}
+	
+	/** 
+	 * Checks if any of the aggregates need count.
+	 * For example Average and Count both need a count kept.
+	 * 
+	 * @return TRUE if one or more of the aggregates need a count kept.
+	 */
+	public boolean needsCount() {
+		if (type == AggregationType.AVG) {
+			return true;
+		} 
+		if (type == AggregationType.COUNT) {
+			return true;
+		}
+		return false;
+	}
+	
+	/** {@inheritDoc}*/
+	public String toString() {
+		return (type + "(" + expression + ")");
+	}
+	
+	/**
+	 * Assign a value to any intermediate values 
+	 * used to represent partial results. 
+	 * @return A unique string name for this attribute.
+	 */
+	public String getShortName() {
+		if (type == AggregationType.COUNT) {
+			return "count";
+		}
+		return type.toString() + numeration;		
+	}
+
 	/** 
 	 * Extracts the aggregates from within this expression.
 	 * 
-	 * @return A List of all the aggregates within this expressions.
+	 * @return An array List of all the aggregates within this expressions.
 	 * Could contain duplicates.
 	 */
-	List<AggregationExpression> getAggregates();
-	
+	public List<AggregationExpression> getAggregates()	{
+		List<AggregationExpression> list 
+			= new ArrayList<AggregationExpression>(1);
+		list.add(this);
+		return list;
+	}
+
+	/** 
+	 * Gets the expression inside the aggregate.
+	 * @return The input expression.
+	 */
+	public Expression getExpression() {
+		return expression;
+	}
+
 	/**
 	 * Finds the minimum value that this expression can return.
 	 * @return The minimum value for this expressions
 	 * @throws AssertionError If Expression returns a boolean.
 	 */
-	public double getMinValue();
+	public double getMinValue() {
+    	throw new AssertionError("Illegal call to getMinValue");
+		//return 0;
+	}
 	
 	/**
 	 * Finds the maximum value that this expression can return.
 	 * @return The maximum value for this expressions
 	 * @throws AssertionError If Expression returns a boolean.
 	 */
-	public double getMaxValue();
+	public double getMaxValue() {
+    	throw new AssertionError("Illegal call to getMaxValue");
+	}
 	
 	/**
 	 * Finds the expected selectivity of this expression can return.
 	 * @return The expected selectivity
 	 * @throws AssertionError If Expression does not return a boolean.
 	 */
-	public double getSelectivity();
-	
+	public double getSelectivity() {
+    	throw new AssertionError("Illegal call to getSelectivity");
+	}
+
 	/**
 	 * Checks if the Expression can be directly used in an Aggregation Operator.
 	 * Expressions such as attributes that can only be used inside a aggregation expression return false.
@@ -101,15 +178,21 @@ public interface Expression {
 	 * @return true if this expression can be directly used in a Aggregation Operator. 
 	 * @throws ParserValidationException 
 	 */
-	public boolean allowedInAggregationOperator() 
-	throws ParserValidationException;
-	
+	public boolean allowedInAggregationOperator() throws ExpressionException {
+		if (expression.allowedInProjectOperator())
+			return true;
+		throw new ExpressionException("Aggregate: " + this.type +
+				" not allowed over Expression " + expression);
+	}
+
 	/**
 	 * Checks if the Expression can be used in a Project Operator.
 	 * 
-	 * @return true if this expression can be used in a Project Operator. 
+	 * @return false 
 	 */
-	public boolean allowedInProjectOperator();
+	public boolean allowedInProjectOperator(){
+		return false;
+	}
 
 	/**
 	 * Converts this Expression to an Attribute.
@@ -119,6 +202,7 @@ public interface Expression {
 	 * @throws TypeMappingException 
 	 */
 	public Attribute toAttribute() 
-	throws SchemaMetadataException, TypeMappingException;
-	
-}	
+	throws SchemaMetadataException, TypeMappingException{
+		return new DataAttribute("", type.toString(), this.getType()); 
+	}
+}

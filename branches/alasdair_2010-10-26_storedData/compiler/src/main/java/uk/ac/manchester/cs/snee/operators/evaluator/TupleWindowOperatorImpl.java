@@ -19,10 +19,10 @@ public class TupleWindowOperatorImpl extends WindowOperatorImpl {
 	private Tuple[] buffer;
 	private int nextIndex = 0;
 
-	public TupleWindowOperatorImpl(LogicalOperator op) 
+	public TupleWindowOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
 	SNEEConfigurationException {
-		super(op);
+		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER TupleWindowOperatorImpl() with " + op);
 		}
@@ -50,7 +50,8 @@ public class TupleWindowOperatorImpl extends WindowOperatorImpl {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + m_qid + " " +
+					" with " + observed);
 		List<Output> resultItems = new ArrayList<Output>();
 		if (observed instanceof TaggedTuple){
 			processTuple(observed, resultItems);

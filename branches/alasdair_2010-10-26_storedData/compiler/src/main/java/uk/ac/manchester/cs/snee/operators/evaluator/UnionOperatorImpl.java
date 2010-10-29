@@ -62,13 +62,14 @@ public class UnionOperatorImpl extends EvaluatorPhysicalOperator {
 
 	private EvaluatorPhysicalOperator rightOperator;
 
-	public UnionOperatorImpl(LogicalOperator op) 
+	public UnionOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
 	SNEEConfigurationException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER UnionOperatorImpl() " + op);
 		}
 
+		m_qid = qid;
 		// Create connections to child operators
 		Iterator<LogicalOperator> iter = op.childOperatorIterator();
 		leftOperator = getEvaluatorOperator(iter.next());
@@ -140,7 +141,8 @@ public class UnionOperatorImpl extends EvaluatorPhysicalOperator {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + m_qid + 
+					" with " + observed);
 		if (observed instanceof Output || observed instanceof List<?>) {
 			setChanged();
 			notifyObservers(observed);

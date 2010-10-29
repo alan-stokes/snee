@@ -64,8 +64,8 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
-import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -158,7 +158,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	throws SchemaMetadataException, EvaluatorException, 
 	SNEECompilerException, SNEEException, MetadataException,
 	RecognitionException, TokenStreamException, TypeMappingException, 
-	ParserValidationException, OptimizationException, ParserException,
+	ExpressionException, OptimizationException, ParserException,
 	SNEEConfigurationException 
 	{
 		assertEquals(1, _snee.addQuery(mQuery, 
@@ -182,7 +182,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	public void testRemoveQuery_queryAdded() 
 	throws RecognitionException, TokenStreamException, SNEEException, 
 	TypeMappingException, SchemaMetadataException,
-	ParserValidationException, OptimizationException, ParserException, 
+	ExpressionException, OptimizationException, ParserException, 
 	SNEEConfigurationException, MetadataException, EvaluatorException,
 	SNEECompilerException, SourceAllocatorException, WhenSchedulerException  
 	{		//Record expected calls to the mock objects
@@ -201,7 +201,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	public void testClose() 
 	throws SNEEException, 
 	TypeMappingException, SchemaMetadataException, 
-	ParserValidationException, OptimizationException, ParserException, 
+	ExpressionException, OptimizationException, ParserException, 
 	EvaluatorException, RecognitionException, TokenStreamException,
 	SNEEConfigurationException, SNEECompilerException, MetadataException, 
 	SourceAllocatorException, WhenSchedulerException {
@@ -230,7 +230,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	public void testGetResults_invalidQueryId() 
 	throws SNEEException, 
 	TypeMappingException, SchemaMetadataException, 
-	ParserValidationException, OptimizationException, ParserException,
+	ExpressionException, OptimizationException, ParserException,
 	EvaluatorException, QoSException, SNEECompilerException,
 	MetadataException, SNEEConfigurationException  {
 		int qID = _snee.addQuery(mQuery, null);
@@ -241,7 +241,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	public void testGetResults_validQueryId() 
 	throws SNEEException, SchemaMetadataException, 
 	TypeMappingException, 
-	ParserValidationException, OptimizationException, ParserException, 
+	ExpressionException, OptimizationException, ParserException, 
 	EvaluatorException, RecognitionException, TokenStreamException, 
 	SNEEConfigurationException, SNEECompilerException, MetadataException,
 	SourceAllocatorException, WhenSchedulerException

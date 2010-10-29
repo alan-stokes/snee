@@ -33,10 +33,10 @@ extends EvaluatorPhysicalOperator {
 
 	private List<Expression> expressions;
 
-	public AggregationOperatorImpl(LogicalOperator op) 
+	public AggregationOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
 	SNEEConfigurationException {
-		super(op);
+		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER AggregationOperatorImpl() " + op);
 		}
@@ -131,7 +131,8 @@ extends EvaluatorPhysicalOperator {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + m_qid + " " +
+					" with " + observed);
 		try {
 			List<Output> result = new ArrayList<Output>();
 			if (observed instanceof List<?>) {

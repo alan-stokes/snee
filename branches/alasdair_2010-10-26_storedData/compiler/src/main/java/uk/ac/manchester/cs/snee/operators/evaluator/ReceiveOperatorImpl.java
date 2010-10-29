@@ -117,14 +117,17 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	 * @throws SchemaMetadataException 
 	 * @throws SNEEConfigurationException 
 	 */
-	public ReceiveOperatorImpl(LogicalOperator op) 
+	public ReceiveOperatorImpl(LogicalOperator op, int qid) 
 	throws SchemaMetadataException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER ReceiveOperatorImpl() with " + op);
+			logger.debug("ENTER ReceiveOperatorImpl() for query " + 
+					qid + " " +
+					" with " + op);
 		}
 		
 		// Instantiate this as a receive operator
 		receiveOp = (ReceiveOperator) op;
+		m_qid = qid;
 		try {
 			attributes = receiveOp.getAllReceivedAttributes();
 		} catch (TypeMappingException e) {
@@ -333,7 +336,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	
 		public void run(){
 			if (logger.isDebugEnabled()) {
-				logger.debug("ENTER run()");
+				logger.debug("ENTER run() for query " + m_qid);
 			}
 			Tuple tuple = null ;
 			/* 
@@ -377,7 +380,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER update()");
+			logger.debug("ENTER update() for query " + m_qid);
 		}
 		logger.error("Receiver cannot be the parent of another operator");
 		executing = false;
