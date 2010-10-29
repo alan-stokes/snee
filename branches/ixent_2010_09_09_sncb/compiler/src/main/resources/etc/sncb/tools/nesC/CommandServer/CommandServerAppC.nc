@@ -45,7 +45,6 @@
  * @version $Revision: 1.6 $ $Date: 2007/04/18 04:02:06 $
  */
 
-#include "StorageVolumes.h"
 #include "Deluge.h"
 #include "CommandServer.h"
 
@@ -78,12 +77,12 @@ implementation {
   CommandServerC.Timer -> TimerMilliC;
 
   components NetProgC;
-  components BlockStorageManagerC;
   CommandServerC.NetProg -> NetProgC;
-  CommandServerC.StorageMap -> BlockStorageManagerC;
 
+#ifdef COMMAND_SERVER_BASESTATION
   components new SerialAMReceiverC(SNEE_OTA_MANAGER);
   CommandServerC.Receive -> SerialAMReceiverC;
+#endif
 
   SplitControl = CommandServerC;
   StateChanged = CommandServerC;

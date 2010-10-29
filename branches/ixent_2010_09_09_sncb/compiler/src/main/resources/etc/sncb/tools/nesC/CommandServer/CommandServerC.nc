@@ -1,5 +1,3 @@
-#include <Timer.h>
-
 /*
  * Copyright (c) 2006 Arched Rock Corporation
  * All rights reserved.
@@ -32,21 +30,7 @@
  *
  */
 
-/**
- * TestDisseminationC exercises the dissemination layer, by causing
- * the node with ID 1 to inject 2 new values into the network every 4
- * seconds. For the 32-bit object with key 0x1234, node 1 Toggles LED
- * 0 when it sends, and every other node Toggles LED 0 when it
- * receives the correct value. For the 16-bit object with key 0x2345,
- * node 1 Toggles LED 1 when it sends, and every other node Toggles
- * LED 1 when it receives the correct value.
- *
- * See TEP118 - Dissemination for details.
- * 
- * @author Gilman Tolle <gtolle@archedrock.com>
- * @version $Revision: 1.6 $ $Date: 2007/04/18 04:02:06 $
- */
-
+#include <Timer.h>
 #include "CommandServer.h"
 
 module CommandServerC {
@@ -69,14 +53,15 @@ module CommandServerC {
     interface Timer<TMilli>;
 
     interface NetProg;
-    interface StorageMap[uint8_t volumeId];
 
+#ifdef COMMAND_SERVER_BASESTATION
     interface Receive;
+#endif
   }
 }
 implementation {
 
-  uint8_t newImageNum;
+  uint32_t newImageNum;
 
   task void signalStopDone();
 
@@ -109,6 +94,7 @@ implementation {
     signal SplitControl.stopDone(SUCCESS);
   }
 
+#ifdef COMMAND_SERVER_BASESTATION
   event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {        
     serial_msg_t* serial_msg;
     command_msg_t cmd;
@@ -121,6 +107,7 @@ implementation {
 
     return msg;
   }
+#endif
 
   event void DisseminationValue.changed() {
     const command_msg_t* newCmd = call DisseminationValue.get();
@@ -128,52 +115,58 @@ implementation {
     if (newCmd->cmd == REFLASH_IMAGE) {
 // Don't reboot the basestation!
 #ifndef COMMAND_SERVER_BASESTATION      
-      newImageNum = newCmd->imageNum;
 // Prevent reflashing of current image. This could probably be improved.
-      if (SNEE_IMAGE_ID == newImageNum) { return; }
+      if (SNEE_IMAGE_ID == newCmd->imageNum) { return; }
 
-      if (newImageNum == 0) {
-        call Leds.led0On();
-      } else if (newImageNum == 1) {
-        call Leds.led1On();
-      } else if (newImageNum == 2) {
-        call Leds.led2Off();
-      } else {
-        call Leds.led0On();
-        call Leds.led1On();
-        call Leds.led2On();
+      switch (newCmd->imageNum) {
+        case 0:
+          call Leds.led0On();
+          newImageNum = SLOT_1;
+          break;
+        case 1:
+          call Leds.led1On();
+          newImageNum = SLOT_2;
+          break;
+        case 2:
+          call Leds.led2On();
+          newImageNum = SLOT_3;
+          break;
+        default:
+          call Leds.led0On();
+          call Leds.led1On();
+          call Leds.led2On();
+          break;
       }
 
       call Timer.startOneShot(REBOOT_TIME);		
 #endif
     } else {
 // Do signal start/stop to the basestation
-/*
-      if (newCmd->cmd == START) {
-        call Leds.led0On();
-      }
-      if (newCmd->cmd == STOP) { 
-        call Leds.led1On();
-      }
-*/
       signal StateChanged.changed(newCmd->cmd);
     }
   }
 
   event void Timer.fired() {
+      switch (newImageNum) {
+        case 0:
+          call Leds.led0Off();
+          break;
+        case 1:
+          call Leds.led1Off();
+          break;
+        case 2:
+          call Leds.led2Off();
+          break;
+        default:
+          call Leds.led0Off();
+          call Leds.led1Off();
+          call Leds.led2Off();
+          break;
+      }
 
-    if (newImageNum == 0) {
-      call Leds.led0Off();
-    } else if (newImageNum == 1) {
-      call Leds.led1Off();
-    } else if (newImageNum == 2) {
-      call Leds.led2Off();
-    } else {
-      call Leds.led0Off();
-      call Leds.led1Off();
-      call Leds.led2Off();
-    }
-
-    call NetProg.programImageAndReboot(call StorageMap.getPhysicalAddress[newImageNum](0));
+// Call programImageAndReboot() with the image address rather than use 
+// StorageMap, this saves about 4K. If the image boundaries change you will need
+// to redefine the address in CommandServer.h
+    call NetProg.programImageAndReboot(newImageNum);
   }
 }
