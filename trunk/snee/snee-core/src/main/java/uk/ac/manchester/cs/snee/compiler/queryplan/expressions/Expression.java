@@ -33,145 +33,66 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.translator.ParserValidationException;
-import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
 
-/** Expression to hold an aggregation. */
-public class AggregationExpression implements Expression {
+/**
+ * Interface for any expression.
+ * Includs arithmatic, aggeragation and boolean expressions.
+ * @author Christian
+ */
+public interface Expression {
 
 	/** 
-	 * Keeps track of the next aggregation numeration to assign.
-	 */
-	private int nextNumeration = 1;
-	
-	/**
-	 * The numeration assigned to this aggregation.
-	 * Used to assign short unique local names. 
-	 */
-	private int numeration;
-	
-	/** The expression over which the aggregation will be done. */
-	private Expression expression;
-	
-	/** The aggregation to be done. */
-	private AggregationType type;
-
-	private AttributeType _returnType;
-	
-	public AggregationExpression(Expression inner, 
-			AggregationType aggType, AttributeType returnType) {
-        expression = inner;
-        this.type = aggType;
-        _returnType = returnType;
-        numeration = nextNumeration++;
-	}
-
-    /** {@inheritDoc}*/
-	public List<Attribute> getRequiredAttributes() {
-		return expression.getRequiredAttributes();
-	}
-	
-	/** {@inheritDoc} */
-	public AttributeType getType() {
-		return _returnType;
-	}
-	
-	/** 
-	 * Gets the type of the aggregation.
-	 * @return The type of the aggregation.
-	 */
-	public AggregationType getAggregationType() {
-		return type;
-	}
-	
-	/** 
-	 * Checks if any of the aggregates need count.
-	 * For example Average and Count both need a count kept.
+	 * List of the attributes required to produce this expression.
 	 * 
-	 * @return TRUE if one or more of the aggregates need a count kept.
+	 * @return The zero or more attributes required for this expression.
+	 * Return may contain duplicates.
 	 */
-	public boolean needsCount() {
-		if (type == AggregationType.AVG) {
-			return true;
-		} 
-		if (type == AggregationType.COUNT) {
-			return true;
-		}
-		return false;
-	}
-	
-	/** {@inheritDoc}*/
-	public String toString() {
-		return (type + "(" + expression + ")");
-	}
+	List<Attribute> getRequiredAttributes();
 	
 	/**
-	 * Assign a value to any intermediate values 
-	 * used to represent partial results. 
-	 * @return A unique string name for this attribute.
+	 * The raw data type of this expression.
+	 *  
+	 * @return The raw data type of this expression.
+	 * @throws SchemaMetadataException 
+	 * @throws TypeMappingException 
 	 */
-	public String getShortName() {
-		if (type == AggregationType.COUNT) {
-			return "count";
-		}
-		return type.toString() + numeration;		
-	}
-
+	AttributeType getType() 
+	throws SchemaMetadataException, TypeMappingException;
+	
 	/** 
 	 * Extracts the aggregates from within this expression.
 	 * 
-	 * @return An array List of all the aggregates within this expressions.
+	 * @return A List of all the aggregates within this expressions.
 	 * Could contain duplicates.
 	 */
-	public List<AggregationExpression> getAggregates()	{
-		List<AggregationExpression> list 
-			= new ArrayList<AggregationExpression>(1);
-		list.add(this);
-		return list;
-	}
-
-	/** 
-	 * Gets the expression inside the aggregate.
-	 * @return The input expression.
-	 */
-	public Expression getExpression() {
-		return expression;
-	}
-
+	List<AggregationExpression> getAggregates();
+	
 	/**
 	 * Finds the minimum value that this expression can return.
 	 * @return The minimum value for this expressions
 	 * @throws AssertionError If Expression returns a boolean.
 	 */
-	public double getMinValue() {
-    	throw new AssertionError("Illegal call to getMinValue");
-		//return 0;
-	}
+	public double getMinValue();
 	
 	/**
 	 * Finds the maximum value that this expression can return.
 	 * @return The maximum value for this expressions
 	 * @throws AssertionError If Expression returns a boolean.
 	 */
-	public double getMaxValue() {
-    	throw new AssertionError("Illegal call to getMaxValue");
-	}
+	public double getMaxValue();
 	
 	/**
 	 * Finds the expected selectivity of this expression can return.
 	 * @return The expected selectivity
 	 * @throws AssertionError If Expression does not return a boolean.
 	 */
-	public double getSelectivity() {
-    	throw new AssertionError("Illegal call to getSelectivity");
-	}
-
+	public double getSelectivity();
+	
 	/**
 	 * Checks if the Expression can be directly used in an Aggregation Operator.
 	 * Expressions such as attributes that can only be used inside a aggregation expression return false.
@@ -179,21 +100,15 @@ public class AggregationExpression implements Expression {
 	 * @return true if this expression can be directly used in a Aggregation Operator. 
 	 * @throws ParserValidationException 
 	 */
-	public boolean allowedInAggregationOperator() throws ParserValidationException {
-		if (expression.allowedInProjectOperator())
-			return true;
-		throw new ParserValidationException("Aggregate: " + this.type +
-				" not allowed over Expression " + expression);
-	}
-
+	public boolean allowedInAggregationOperator() 
+	throws ExpressionException;
+	
 	/**
 	 * Checks if the Expression can be used in a Project Operator.
 	 * 
-	 * @return false 
+	 * @return true if this expression can be used in a Project Operator. 
 	 */
-	public boolean allowedInProjectOperator(){
-		return false;
-	}
+	public boolean allowedInProjectOperator();
 
 	/**
 	 * Converts this Expression to an Attribute.
@@ -203,7 +118,6 @@ public class AggregationExpression implements Expression {
 	 * @throws TypeMappingException 
 	 */
 	public Attribute toAttribute() 
-	throws SchemaMetadataException, TypeMappingException{
-		return new DataAttribute("", type.toString(), this.getType()); 
-	}
-}
+	throws SchemaMetadataException, TypeMappingException;
+	
+}	
