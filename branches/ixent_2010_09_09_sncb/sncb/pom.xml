@@ -6,10 +6,10 @@
     <version>1.2.3</version>
   </parent>
   <groupId>uk.ac.manchester.cs.snee</groupId>
-  <artifactId>tinyos-tools</artifactId>
+  <artifactId>snee-sncb</artifactId>
   <packaging>jar</packaging>
   <version>1.2.2-SNAPSHOT</version>
-  <name>TinyOS Tools</name>
+  <name>Sensor Network Connectivity Bridge</name>
   <description>Tools to interface with sensor network.  Includes metadata collection, over the air programming and command dissemination.</description>
 
 <!--
