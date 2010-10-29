@@ -55,6 +55,7 @@
 			<groupId>uk.ac.manchester.cs.snee</groupId>
 			<artifactId>snee-sncb</artifactId>
 			<version>1.3.0-SNAPSHOT</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.tinyos</groupId>
@@ -88,8 +89,8 @@
 								</artifactItem>
 								<artifactItem>
 									<groupId>uk.ac.manchester.cs.snee</groupId>
-									<artifactId>tinyos-tools</artifactId>
-									<version>${tos.tools.version}</version>
+									<artifactId>snee-sncb</artifactId>
+									<version>1.3.0-SNAPSHOT</version>
 									<type>jar</type>
 									<outputDirectory>${project.build.directory}/etc/sncb</outputDirectory>
 									<includes>src/main/**/*</includes>
