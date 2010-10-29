@@ -9,7 +9,7 @@
 	<description>Continuous query processing engine for streaming and stored data.</description>
 
 	<modules>
-		<module>tinyos-tools</module>
+		<module>sncb</module>
 		<module>compiler</module>
 		<!--<module>datasource</module>-->
 		<module>clients</module>
