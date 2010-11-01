@@ -7,7 +7,9 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.sncb.SNCB;
 
 /**
  * Query Plan for Sensor Network that supports In-Network Query Processing.
@@ -88,6 +90,13 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 
 	public CostParameters getCostParameters() {
 		return this.getAgenda().getCostParameters();
+	}
+
+	public SNCB getSNCB() {
+		//XXX: This works only because there is one sensor network assumed.
+		SensorNetworkSourceMetadata metadata = 
+			(SensorNetworkSourceMetadata)this.dlaf.getSources().get(0);
+		return metadata.getSNCB();
 	}
 
 	

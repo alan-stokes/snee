@@ -93,6 +93,10 @@ public class CostParameters {
 	
 	private int tossimSynchronizationPeriodLength = 3000;
 	
+	private int managementSection = 10000;
+	
+	private int endManagementSection = 100;
+	
 	/** Constant for length of per tuple overhead String. */ 
 	private int deliverOverhead = 10;
 
@@ -124,6 +128,8 @@ public class CostParameters {
 		    setAValue = getFloatValue(root, "SetAValue", "time");
 		    deliverTuple = getFloatValue(root, "DeliverTuple", "time");
 		    minimumTimerInterval = getFloatValue(root, "MinimumTimerInterval", "time");
+		    managementSection = (int)getFloatValue(root, "ManagementSection", "time");
+		    endManagementSection = (int)getFloatValue(root, "EndManagementSection", "time");
 		    //root = (Element) root.getNextSibling().getNextSibling();
 		    maxMessagePayloadSize = (int)getFloatValue(root, "MaxMessagePayloadSize", "bytes");
 		    payloadOverhead = (int)getFloatValue(root, "PayloadOverhead", "bytes");
@@ -247,6 +253,14 @@ public class CostParameters {
     
     public int getTossimSynchronizationPeriodLength() {
     	return this.tossimSynchronizationPeriodLength;
+    }
+    
+    public int getManagementSectionDuration() {
+    	return this.managementSection;
+    }
+    
+    public int getEndManagementSectionDuration() {
+    	return this.endManagementSection;
     }
     
     /**

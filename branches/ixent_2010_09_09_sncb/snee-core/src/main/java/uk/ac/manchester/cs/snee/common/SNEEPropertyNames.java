@@ -53,6 +53,13 @@ public final class SNEEPropertyNames {
     	"compiler.convert_graphs";
 
     /**
+     * Used to indicate whether operator output types should
+     * be displayed in the operator trees.
+     */
+    public static final String SHOW_OPERATOR_TUPLE_TYPE = 
+    	"compiler.debug.show_operator_tuple_type";
+    
+    /**
      * Used to provide the path to the GraphViz executatble
      * Optional, must be set if GENERAL_GENERATE_GRAPHS=true 
      */
@@ -150,9 +157,35 @@ public final class SNEEPropertyNames {
 	 */	
 	public static String INPUTS_UNITS_FILE =
 		"units_file";
+	
+	/**
+	 * The root TinyOS directory.
+	 */
+	public static String SNCB_TINYOS_ROOT = "sncb.tinyos_root";
 
 	public static String RESULTS_HISTORY_SIZE_TUPLES =
 		"results.history_size.tuples";
+
+	/**
+	 * Specifies whether the metadata collection program should be invoked, 
+	 * or default metadata should be used.
+	 */
+	public static String SNCB_PERFORM_METADATA_COLLECTION = 
+		"sncb.perform_metadata_collection";
+	
+	/**
+	 * Specifies whether the command server should be included with SNEE 
+	 * query plan
+	 */
+	public static String SNCB_INCLUDE_COMMAND_SERVER =
+		"sncb.include_command_server";
+	
+	/**
+	 * Flag to determine whether individual images or a single image is sent
+	 * to WSN nodes.
+	 */
+	public static String SNCB_GENERATE_COMBINED_IMAGE = 
+		"sncb.generate_combined_image";
 }
 
 

@@ -26,7 +26,7 @@ import uk.ac.manchester.cs.snee.sncb.tos.CodeGenUtils;
 
 //Based on TinyOS MsgReader.java class
 public class SerialPortMessageReceiver extends Observable 
-implements net.tinyos.message.MessageListener {
+implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 
 	private Logger logger = 
 		Logger.getLogger(TinyOS_SNCB.class.getName());

@@ -60,6 +60,7 @@ import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
@@ -81,6 +82,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.data.webservice.PullSourceWrapper;
+import uk.ac.manchester.cs.snee.sncb.SNCB;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public class Metadata {
 
@@ -123,13 +126,14 @@ public class Metadata {
 	 * @throws MalformedURLException 
 	 * @throws SNEEDataSourceException 
 	 * @throws CostParametersException 
+	 * @throws SNCBException 
 	 */
-	public Metadata() 
+	public Metadata(SNCB sncb) 
 	throws TypeMappingException, SchemaMetadataException, 
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException {
+	SNEEDataSourceException, CostParametersException, SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER Metadata()");
 		logger.trace("Processing types.");
@@ -146,7 +150,7 @@ public class Metadata {
 		logger.trace("Processing physical schema.");
 		if (SNEEProperties.isSet(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE)) {
 			processPhysicalSchema(
-					SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE));
+					SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE), sncb);
 		}
 		//cardinalities for SN sources can only be estimated after physical schema
 		//known, as they depend on the number of source sites.
@@ -161,6 +165,14 @@ public class Metadata {
 			logger.debug("RETURN Metadata()");
 	}
 
+	public Metadata() throws MalformedURLException, TypeMappingException, 
+		SchemaMetadataException, SNEEConfigurationException, MetadataException,
+		UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, 
+		SNEEDataSourceException, CostParametersException, SNCBException {
+
+		this(null);
+	}
+	
 	private void processLogicalSchema(String logicalSchemaFile) 
 	throws SchemaMetadataException, MetadataException, 
 	TypeMappingException, UnsupportedAttributeTypeException {
@@ -251,10 +263,10 @@ public class Metadata {
 			parseAttributes(element.getElementsByTagName("column"),
 					extentName);
 		if (extentType == ExtentType.SENSED) {
-			attributes.add(0, new IDAttribute(extentName, 
-					Constants.ACQUIRE_ID, idType));
-			attributes.add(1, new TimeAttribute(extentName, 
-					Constants.ACQUIRE_TIME, timeType));
+//			attributes.add(0, new IDAttribute(extentName, 
+//					Constants.ACQUIRE_ID, idType));
+//			attributes.add(1, new TimeAttribute(extentName, 
+//					Constants.ACQUIRE_TIME, timeType));
 		}
 		ExtentMetadata extent =
 			new ExtentMetadata(extentName, attributes, extentType);
@@ -296,11 +308,11 @@ public class Metadata {
 		return attributes;
 	}
 
-	private void processPhysicalSchema(String physicalSchemaFile) 
+	private void processPhysicalSchema(String physicalSchemaFile, SNCB sncb) 
 	throws MetadataException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
 	SNEEDataSourceException, SchemaMetadataException, 
-	TypeMappingException 
+	TypeMappingException, SNCBException, SNEEConfigurationException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER processPhysicalSchema() with " +
@@ -308,7 +320,7 @@ public class Metadata {
 		Document physicalSchemaDoc = parseFile(physicalSchemaFile);
 		Element root = (Element) physicalSchemaDoc.getFirstChild();
 		logger.trace("Root:" + root);
-		addSensorNetworkSources(root.getElementsByTagName("sensor_network"));
+		addSensorNetworkSources(root.getElementsByTagName("sensor_network"), sncb);
 		addUdpSources(root.getElementsByTagName("udp_source"));
 		addServiceSources(root.getElementsByTagName("service_source"));
 		if (logger.isInfoEnabled())
@@ -320,9 +332,9 @@ public class Metadata {
 					_sources.size());
 	}
 
-	private void addSensorNetworkSources(NodeList wsnSources) 
+	private void addSensorNetworkSources(NodeList wsnSources, SNCB sncb) 
 	throws MetadataException, SourceMetadataException, 
-	TopologyReaderException {
+	TopologyReaderException, SNCBException, SNEEConfigurationException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER addSensorNetworkSources() #=" + 
 					wsnSources.getLength());
@@ -334,11 +346,11 @@ public class Metadata {
 			logger.trace("WSN sourceName="+sourceName);
 			Node topologyElem = wsnElem.getElementsByTagName("topology").
 			item(0).getFirstChild();
-			String topologyFile = topologyElem.getNodeValue();
+			String topologyFile = Utils.getResourcePath(topologyElem.getNodeValue());
 			logger.trace("topologyFile="+topologyFile);
 			Node resElem = wsnElem.getElementsByTagName(
 			"site-resources").item(0).getFirstChild();
-			String resFile = resElem.getNodeValue();
+			String resFile = Utils.getResourcePath(resElem.getNodeValue());
 			logger.trace("resourcesFile="+resFile);
 			Node gatewaysElem = wsnElem.getElementsByTagName("gateways").
 			item(0).getFirstChild();
@@ -350,7 +362,7 @@ public class Metadata {
 					extentNames);
 			SourceMetadata source = new SensorNetworkSourceMetadata(
 					sourceName, extentNames, extentsElem, topologyFile, 
-					resFile, gateways);
+					resFile, gateways, sncb);
 			_sources.add(source);
 		}
 		if (logger.isTraceEnabled())

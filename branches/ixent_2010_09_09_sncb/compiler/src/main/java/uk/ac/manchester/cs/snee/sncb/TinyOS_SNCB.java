@@ -36,7 +36,7 @@ public class TinyOS_SNCB implements SNCB {
 	
 	private boolean demoMode = true;
 	
-	public TinyOS_SNCB(SensorNetworkSourceMetadata metadata)
+	public TinyOS_SNCB()
 	throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER TinyOS_SNCB()");

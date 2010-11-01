@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.metadata.source;
 
+import java.util.Date;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -42,10 +43,14 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import uk.ac.manchester.cs.snee.MetadataException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReader;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.SNCB;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 /**
  * Maintains metadata required about a sensor network capable of
@@ -56,25 +61,50 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 	Logger logger = 
 		Logger.getLogger(SensorNetworkSourceMetadata.class.getName());
 
-//	//TODO: Ixent doesn't understand what this is for.
-//	private int _cardinality = 100;
-
+	/**
+	 * Source sites in the sensor network.
+	 */
 	private int[] _sourceNodes;
 
-	//Sink node id of the sensor network
+	/**
+	 * Sink node id of the sensor network
+	 */
 	private int[] _gateways;
 
-	//Sensor Network topology
+	/**
+	 * Sensor Network topology
+	 */
 	private Topology _topology;
 	
-	//Maps extent names to source nodes
+	/**
+	 * Maps extent names to source nodes
+	 */
 	private TreeMap<String,int[]> _extentToSitesMapping = 
 		new TreeMap<String,int[]>(); 
 	
-	public SensorNetworkSourceMetadata(String sourceName, 
-			List<String> extentNames, Element xml,
-			String topFile, String resFile, int[] gateways) 
-	throws SourceMetadataException, TopologyReaderException {
+	/**
+	 * The Sensor Network Connectivity bridge to interface with this sensor network.
+	 */
+ 	private SNCB sncb;	
+		
+	/**
+	 * Constructor for Sensor Network Metadata.
+	 * @param sourceName
+	 * @param extentNames
+	 * @param xml
+	 * @param defaultTopFile
+	 * @param defaultResFile
+	 * @param gateways
+	 * @throws SourceMetadataException
+	 * @throws TopologyReaderException
+	 * @throws SNCBException 
+	 * @throws SNEEConfigurationException 
+	 */
+	public SensorNetworkSourceMetadata(String sourceName, List<String> 
+	extentNames, Element xml, String defaultTopFile, String defaultResFile, int[] gateways,
+	SNCB sncb) 
+	throws SourceMetadataException, TopologyReaderException, SNCBException, 
+	SNEEConfigurationException {
 		super(sourceName, extentNames, SourceType.SENSOR_NETWORK);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SensorNetworkSourceMetadata()");
@@ -88,34 +118,35 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 					"specified for sensor network "+sourceName + "; this is " +
 					"currently not supported.");
 		}
-		this._gateways = gateways;
-		this._topology = TopologyReader.readNetworkTopology(topFile, resFile);
-		setSourceSites(xml.getElementsByTagName("extent"));
-		verifyGateways();
+		this.sncb = sncb;
 		
+		if (SNEEProperties.getBoolSetting(
+			SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION)) {
+			logger.info("Invoking network formation and metadata collection");
+			Date now = new Date();
+			String timeStampStr = now.toString().replaceAll(" ", "_").replaceAll(":", "_");
+			String root = System.getProperty("user.dir")+"/output/metadata/";
+			String topFile = root + "topology-"+this.getSourceName()+"-"+timeStampStr+".xml";
+			String resFile = root + "resources-"+this.getSourceName()+"-"+timeStampStr+".xml";
+			System.out.println(topFile + "\n" + resFile);
+			this.sncb.init(topFile, resFile);
+			this._topology = TopologyReader.readNetworkTopology(
+					topFile, resFile);
+		} else {
+			logger.info("Using default topology file: "+defaultTopFile);
+			this._topology = TopologyReader.readNetworkTopology(
+					defaultTopFile, defaultResFile);			
+		}
+
+		this._gateways = gateways;
+		setSourceSites(xml.getElementsByTagName("extent"));
+		validateGateways();	
+			
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SensorNetworkSourceMetadata()");
 	}
-
-//	public boolean equals(Object ob) {
-//		boolean result = false;
-//		if (ob instanceof SensorNetworkSourceMetadata) {
-//			SensorNetworkSourceMetadata source = (SensorNetworkSourceMetadata) ob;
-//			//XXX: Not necessarily a complete check of source metadata equality
-//			/*
-//			 * Equality assumed if source refer to the same source type
-//			 * and the same extent.
-//			 */
-//			if (logger.isTraceEnabled())
-//				logger.trace("Testing " + source + "\nwith " + this);
-//			if (source.getName().equals(_name) &&
-//					source.getSourceType() == _sourceType)
-//					result = true;
-//		}
-//		return result;
-//	}
 	
-	private void verifyGateways() throws SourceMetadataException {
+	private void validateGateways() throws SourceMetadataException {
 
 		for (int i=0; i<_gateways.length; i++) {
 			int g = _gateways[i];
@@ -125,7 +156,6 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 						"the topology file.");
 			}
 		}
-		
 	}
 
 	/**
@@ -166,32 +196,13 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 			logger.trace("sites text " + sourceSitesText);
 		_sourceNodes = SourceMetadataUtils.convertNodes(
 				sourceSitesText.toString());
-//		_cardinality = _sourceNodes.length;
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN setSourceSites()");
 	}
 
-
-//	/**
-//	 * Count the number of tokens.
-//	 * @param tokens
-//	 * @return
-//	 * @throws SourceMetadataException No tokens exist
-//	 */
-//
-//	protected void setCardinality (int cardinality)
-//	{
-//		_cardinality = cardinality;
-//	}
-//
-//	public int getCardinality() {
-//		return _cardinality;
-//	}
-
 	@Override
 	public String toString() {
 		StringBuffer s = new StringBuffer(super.toString());
-//		s.append("   Cardinality: " + _cardinality);
 		return s.toString();
 	}
 
@@ -225,4 +236,7 @@ public class SensorNetworkSourceMetadata extends SourceMetadata {
 		return this._gateways[0];
 	}
 	
+	public SNCB getSNCB() {
+		return this.sncb;
+	}
 }

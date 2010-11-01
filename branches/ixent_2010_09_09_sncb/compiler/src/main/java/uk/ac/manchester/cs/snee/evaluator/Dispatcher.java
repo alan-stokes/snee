@@ -59,6 +59,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
+import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 import uk.ac.manchester.cs.snee.sncb.SerialPortMessageReceiver;
 import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
@@ -142,7 +143,7 @@ public class Dispatcher {
 						SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
 						sep + queryPlan.getQueryName() + sep;
 				SNCB sncb = snQueryPlan.getSNCB();
-				SerialPortMessageReceiver mr = 
+				SNCBSerialPortReceiver mr = 
 					sncb.register(snQueryPlan, outputDir, costParams);
 				InNetworkQueryEvaluator queryEvaluator = 
 					new InNetworkQueryEvaluator(queryID, snQueryPlan, 

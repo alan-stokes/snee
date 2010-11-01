@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.sncb;
 
 import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.compiler.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 
 public interface SNCB {
@@ -8,7 +9,7 @@ public interface SNCB {
 	public void init(String topFile, String resFile) 
 	throws SNCBException;
 	
-	public SerialPortMessageReceiver register(SensorNetworkQueryPlan qep, 
+	public SNCBSerialPortReceiver register(SensorNetworkQueryPlan qep, 
 	String queryOutputDir, CostParameters costParams) 
 	throws SNCBException;
 	
