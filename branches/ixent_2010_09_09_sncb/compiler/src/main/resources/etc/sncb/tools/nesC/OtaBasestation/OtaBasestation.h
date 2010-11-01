@@ -31,4 +31,12 @@ typedef nx_struct ota_data_msg_t {
 	nx_uint8_t data[0];
 } ota_data_msg_t;
 
+enum {
+  ERROR_SUCCESS = 0,
+  ERROR_NO_ROUTE = 1,
+  ERROR_NO_REPLY = 2,
+};
+
+#define TIMEOUT 2048
+
 #endif

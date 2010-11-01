@@ -4,10 +4,10 @@ configuration OtaBasestationAppC {}
 implementation {
   components OtaBasestationC as App, MainC;
   components SerialActiveMessageC;
-//  components LedsC;
+  components LedsC;
 
   App.Boot -> MainC.Boot;
-//  App.Leds -> LedsC;
+  App.Leds -> LedsC;
   App.SplitControl -> SerialActiveMessageC;
 
 // Flash manager wiring
@@ -28,6 +28,9 @@ implementation {
   App.StateChanged -> CommandServerAppC.StateChanged;
 
   components SerialStarterC;
+
+  components new TimerMilliC();
+  App.Timer -> TimerMilliC;
 }
 
 
