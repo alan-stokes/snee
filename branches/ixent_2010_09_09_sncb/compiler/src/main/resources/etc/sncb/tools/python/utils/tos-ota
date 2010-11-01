@@ -58,8 +58,9 @@ DM_CMD_DISSEMINATE_AND_REPROGRAM = 4
 DM_CMD_REPROGRAM        = 7
 DM_CMD_BOOT             = 6
 
-ERROR_SUCCESS = 0   # T2-compatible
-ERROR_FAIL    = 1   # T2-compatible
+ERROR_SUCCESS  = 0   # T2-compatible
+ERROR_NO_ROUTE = 1
+
 
 # Deluge parameters
 DELUGE_MAX_PAGES    = 128
@@ -178,8 +179,17 @@ def ident(destId, timeout=None):
 #        print("")
 
         reply = SerialReplyPacket(packet.data)
+
         if reply.error == ERROR_SUCCESS:
             return ShortIdent(reply.data)
+        if reply.error == ERROR_NO_ROUTE:
+            print "ERROR: Unable to communicate with destination mote."
+            print "Possible reasons are:"
+            print "-- Broken hardware"
+            print "-- Destination mote has not enough power"
+            print "-- OtaServer isn't installed on the destination mote"
+            print "-- OtaBasestation isn't installed on the basestation"
+            print "-- No route can be found to the destination mote"
     return 0
 
 def read(destId, imgNum, offset, length):
@@ -297,7 +307,7 @@ def write(destId, imgNum, data):
 
         if packet != None:
             reply = SerialReplyPacket(packet.data)
-            if reply.error != ERROR_SUCCESS:
+            if reply.error == ERROR_NO_ROUTE:
                 print 
                 print "ERROR: Unable to write to the flash volume (file offset: %d)" % sreqpkt.offset
                 return False
@@ -489,12 +499,10 @@ if len(sys.argv) >= 5:
     am = tos.AM()
     checkDestinationId()
 
-    try:
-        print "Checking if node is a Deluge T2 base station ..."
-        ident(destId, timeout=1)
-    except tos.Timeout:
-        print "ERROR: Timeout. Is the node a Deluge T2 base station?"
-        sys.exit(-1)
+    print "Checking if node is a Deluge T2 base station ..."
+    result = ident(destId, timeout=4)
+    if result == 0:
+        sys.exit(-1)   
 
     if sys.argv[3] in ["-p", "--ping"]:
         checkImgNum()
