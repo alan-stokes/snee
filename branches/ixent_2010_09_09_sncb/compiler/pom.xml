@@ -87,15 +87,14 @@
 									<outputDirectory>${project.build.directory}/wsdl</outputDirectory>
 									<includes>**/*.wsdl,**/*.xsd</includes>
 								</artifactItem>
-<!-- 								<artifactItem>
+ 								<artifactItem>
 									<groupId>uk.ac.manchester.cs.snee</groupId>
 									<artifactId>snee-sncb</artifactId>
 									<version>1.4.1-SNAPSHOT</version>
 									<type>jar</type>
-									<outputDirectory>${project.build.directory}/etc/sncb</outputDirectory>
-									<includes>src/main/**/*</includes>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<includes>etc/sncb/**/*</includes>
 								</artifactItem>
- -->
 							</artifactItems>
 						</configuration>
 					</execution>
