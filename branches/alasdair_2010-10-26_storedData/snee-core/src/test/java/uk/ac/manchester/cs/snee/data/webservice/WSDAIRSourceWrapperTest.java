@@ -1,8 +1,8 @@
 package uk.ac.manchester.cs.snee.data.webservice;
 
 import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.net.MalformedURLException;
 
@@ -15,19 +15,17 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import eu.semsorgrid4env.service.wsdai.DataResourceUnavailableFault;
-import eu.semsorgrid4env.service.wsdai.GetDataResourcePropertyDocumentRequest;
-import eu.semsorgrid4env.service.wsdai.InvalidResourceNameFault;
-import eu.semsorgrid4env.service.wsdai.NotAuthorizedFault;
-import eu.semsorgrid4env.service.wsdai.ServiceBusyFault;
-
-import uk.ac.manchester.cs.snee.SNEEControllerTest;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
+import eu.semsorgrid4env.service.wsdai.DataResourceUnavailableFault;
+import eu.semsorgrid4env.service.wsdai.GetDataResourcePropertyDocumentRequest;
+import eu.semsorgrid4env.service.wsdai.InvalidResourceNameFault;
+import eu.semsorgrid4env.service.wsdai.NotAuthorizedFault;
+import eu.semsorgrid4env.service.wsdai.ServiceBusyFault;
 
 public class WSDAIRSourceWrapperTest extends EasyMockSupport {
 	
@@ -43,7 +41,7 @@ public class WSDAIRSourceWrapperTest extends EasyMockSupport {
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
 		PropertyConfigurator.configure(
-				SNEEControllerTest.class.getClassLoader().getResource(
+				WSDAIRSourceWrapperTest.class.getClassLoader().getResource(
 				"etc/log4j.properties"));
 	}
 
@@ -80,9 +78,8 @@ public class WSDAIRSourceWrapperTest extends EasyMockSupport {
 	@Test@Ignore
 	public void testGetSchema() 
 	throws SNEEDataSourceException, SchemaMetadataException, 
-	TypeMappingException, InvalidResourceNameFault, 
-	DataResourceUnavailableFault, NotAuthorizedFault, ServiceBusyFault,
-	UtilsException 
+	TypeMappingException, UtilsException, InvalidResourceNameFault,
+	DataResourceUnavailableFault, NotAuthorizedFault, ServiceBusyFault 
 	{
 		String propDocFile = 
 			Utils.validateFileLocation("etc/cco_sqlPropertyDoc.xml");

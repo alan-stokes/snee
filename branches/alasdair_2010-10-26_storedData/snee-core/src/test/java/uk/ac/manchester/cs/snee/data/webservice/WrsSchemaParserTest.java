@@ -17,7 +17,6 @@ import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.evaluator.QueryEvaluatorTest;
 
 public class WrsSchemaParserTest {
 
@@ -25,7 +24,7 @@ public class WrsSchemaParserTest {
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
 		PropertyConfigurator.configure(
-				QueryEvaluatorTest.class.getClassLoader().getResource(
+				WrsSchemaParserTest.class.getClassLoader().getResource(
 						"etc/log4j.properties"));
 	}
 
