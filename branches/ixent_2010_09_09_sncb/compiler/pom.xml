@@ -63,18 +63,12 @@
 			<version>1.4.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>net.tinyos</groupId>
-			<artifactId>tinyos</artifactId>
-			<version>2.1</version>
-			<scope>provided</scope>
-		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
+ 			<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
@@ -93,7 +87,7 @@
 									<outputDirectory>${project.build.directory}/wsdl</outputDirectory>
 									<includes>**/*.wsdl,**/*.xsd</includes>
 								</artifactItem>
-								<artifactItem>
+<!-- 								<artifactItem>
 									<groupId>uk.ac.manchester.cs.snee</groupId>
 									<artifactId>snee-sncb</artifactId>
 									<version>1.4.1-SNAPSHOT</version>
@@ -101,11 +95,13 @@
 									<outputDirectory>${project.build.directory}/etc/sncb</outputDirectory>
 									<includes>src/main/**/*</includes>
 								</artifactItem>
+ -->
 							</artifactItems>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
+ 
 			<plugin>
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-codegen-plugin</artifactId>
