@@ -12,6 +12,37 @@
   <name>Sensor Network Connectivity Bridge</name>
   <description>Tools to interface with sensor network.  Includes metadata collection, over the air programming and command dissemination.</description>
 
+<!-- 	<build>
+		<plugins>
+			<plugin>
+ 			<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>unpack</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+ 								<artifactItem>
+									<groupId>uk.ac.manchester.cs.snee</groupId>
+									<artifactId>snee-sncb</artifactId>
+									<version>1.4.1-SNAPSHOT</version>
+									<type>jar</type>
+									<outputDirectory>${project.build.directory}/etc/sncb</outputDirectory>
+									<includes>src/main/resources/etc/sncb/**/*</includes>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+	</plugins>
+</build>
+ -->
+
 <!--
   <build>
     <plugins>
