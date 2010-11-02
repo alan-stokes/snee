@@ -24,5 +24,12 @@
   		<type>jar</type>
   		<scope>provided</scope>
   	</dependency>
+  	<dependency>
+  		<groupId>uk.ac.manchester.cs.snee</groupId>
+  		<artifactId>snee-sncb</artifactId>
+  		<version>1.4.1-SNAPSHOT</version>
+  		<type>jar</type>
+  		<scope>provided</scope>
+  	</dependency>
   </dependencies>
 </project>
