@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+# First thing, append the utils directory to the search path.
+import sys, os, subprocess
+utils_dir = os.path.dirname(__file__) + '/utils'
+sys.path.append(utils_dir)
+
+# Now we can import the basestation module
+import basestation
+
+# Now add the snee utilities to PATH
+os.environ['PATH'] = utils_dir + ':' + os.environ['PATH']
+
+# Discover the environment variables
+basestation = basestation.find_basestation()
+source = 'serial@' + basestation + ':115200'
+
+# Check if we are trying to flash the basestation
+if sys.argv[2] == sys.argv[3]:
+# If we are we need to overwrite the running image on the basestation with the
+# new image. NOTE! You should always flash the basestation last because you
+# will be unable to flash remote motes after the re-image occurs.
+
+# Set the symbols in the file
+    ihex_file = sys.argv[1].replace('tos_image.xml', 'main.ihex')
+    subprocess.call(['tos-set-symbols', '--objcopy', 'msp430-objcopy', '--objdump', 'msp430-objdump', '--target', 'ihex', ihex_file, ihex_file + '-' + sys.argv[3], 'TOS_NODE_ID=' + sys.argv[3], 'ActiveMessageAddressC__addr=' + sys.argv[3]])
+# Flash the mote
+    subprocess.call(['tos-bsl', '--telosb', '-c', basestation, '-r', '-e', '-I', '-p', ihex_file + '-' + sys.argv[3]])
+else:
+# If not call tos-ota
+    subprocess.call(['tos-ota', source, sys.argv[2], '--inject', '2', sys.argv[1]])
