@@ -21,7 +21,7 @@ The code for these programs is located at {{{$SNEEROOT/SNEE/compiler/src/main/re
 
 == Install the OTA tool into the Nodes' External Flash Memory (Slot 1) ==
 
-  * First, manually with a USB cable, add OTAServer to the non-basestation mote:
+  * First, manually with a USB cable, add OTAServer to each non-basestation mote:
   {{{ make telosb install,<node_id> }}}
 
   * Then, manually with a USB cable, and OTABasestation to the basestation mote.
