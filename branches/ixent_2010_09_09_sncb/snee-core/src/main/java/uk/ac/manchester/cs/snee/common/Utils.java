@@ -46,6 +46,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Map;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -351,30 +352,34 @@ public class Utils {
 	 * @param env
 	 * @throws IOException
 	 */
-	public static void runExternalProgram(String progName, String[] params, String[] env) throws IOException {
+	public static void runExternalProgram(String progName, String[] params, 
+	Map<String,String> extraEnvVars, String workingDir) throws IOException {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER runExternalProgram()");
-		final Runtime rt = Runtime.getRuntime();
+			logger.debug("ENTER runExternalProgram()");	
+		
 		String cmdarray[] = concat(new String[]{progName}, params);
-		Process proc = rt.exec(cmdarray, env, new File(System.getProperty("user.dir")));
+		logger.info("Command array="+Arrays.toString(cmdarray));
+
+		ProcessBuilder pb = new ProcessBuilder(cmdarray);
+		pb.redirectErrorStream(true);
+		pb.directory(new File(workingDir));
+		Map<String,String> env = pb.environment();
+		env.putAll(extraEnvVars);
 		
-		String cmdString = Arrays.toString(cmdarray).replaceAll(",", " ").replaceAll("\\[|\\]", "");
-		System.out.println("     "+ cmdString);
-		logger.info("*** "+cmdString);
-		logger.info("Environment="+Arrays.toString(env));
-		
-	    final InputStream stderr = proc.getErrorStream();
-	    final InputStreamReader isr = new InputStreamReader(stderr);
+		Process proc = pb.start();
+	    final InputStream is = proc.getInputStream();
+	    final InputStreamReader isr = new InputStreamReader(is);
 	    final BufferedReader br = new BufferedReader(isr);
-	    String line = null;
+	    String line;
 
 	    while ((line = br.readLine()) != null) {
-	    	logger.warn(line);
-	    	System.err.println(line);
+	    	logger.trace(line);
+	    	System.out.println(line);
 	    }
 	    if (logger.isDebugEnabled())
 			logger.debug("RETURN runExternalProgram()");
 	}
+
 
 	/**
 	 * Given a resource in the class loader search path, returns an absolute path to this resource.

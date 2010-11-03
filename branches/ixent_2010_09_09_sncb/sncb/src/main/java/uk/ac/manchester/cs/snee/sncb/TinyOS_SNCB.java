@@ -1,7 +1,9 @@
 package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import net.tinyos.message.Message;
 
@@ -15,7 +17,6 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
@@ -27,8 +28,9 @@ public class TinyOS_SNCB implements SNCB {
 	private Logger logger = 
 		Logger.getLogger(TinyOS_SNCB.class.getName());
 	
+	private Map<String,String> tinyOSEnvVars;
 	
-	private String tinyOSEnvVars[];
+	private String workingDir;
 
 	private boolean combinedImage = false;
 
@@ -46,24 +48,31 @@ public class TinyOS_SNCB implements SNCB {
 					replace("~", System.getenv("HOME"));
 
 			//TinyOS environment variables
+			this.tinyOSEnvVars = new HashMap<String,String>();
+			this.tinyOSEnvVars.put("MOTECOM", "=serial@"+serialPort);
+			this.tinyOSEnvVars.put("SERIAL_PORT", serialPort);			
 			//TODO: Need to figure out which env vars are needed for mig. For now,
 			//eclipse must be invoked from terminal for it to work.
-			this.tinyOSEnvVars = new String[] {
-					"MOTECOM=serial@"+serialPort,
-					"SERIAL_PORT="+serialPort,
-					"TOSROOT="+tosRootDir,
-					"TOSDIR="+tosRootDir+"/tos",
-					"MAKERULES="+tosRootDir+"/support/make/Makerules",
-					"PYTHONPATH=.:"+tosRootDir+"/support/sdk/python",
-					"CLASSPATH=.:"+tosRootDir+"/support/sdk/java/tinyos.jar",
-					"PATH="+System.getenv("PATH")+":"+tosRootDir+"/bin:"+
-					tosRootDir+"/support/sdk/c:"+
-					"/opt/local/bin:/opt/local/sbin:/Library/Java/Home/bin"+
-					":/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/compiler/src/main/resources/etc/sncb/tools/python/utils:"+
-					"/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/compiler/src/main/resources/etc/sncb/tools/python"};
+//			this.tinyOSEnvVars = new String[] {
+//					"MOTECOM=serial@"+serialPort,
+//					"SERIAL_PORT="+serialPort,
+//					"TOSROOT="+tosRootDir,
+//					"TOSDIR="+tosRootDir+"/tos",
+//					"MAKERULES="+tosRootDir+"/support/make/Makerules",
+//					"PYTHONPATH=.:"+tosRootDir+"/support/sdk/python",
+//					"CLASSPATH=.:"+tosRootDir+"/support/sdk/java/tinyos.jar",
+//					"PATH="+System.getenv("PATH")+":"+tosRootDir+"/bin:"+
+//					tosRootDir+"/support/sdk/c:"+
+//					"/opt/local/bin:/opt/local/sbin:/Library/Java/Home/bin"+
+//					":/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/compiler/src/main/resources/etc/sncb/tools/python/utils:"+
+//					"/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/compiler/src/main/resources/etc/sncb/tools/python"};
+
 //					"PATH=/opt/local/bin:/opt/local/sbin:/usr/local/mysql/bin:/bin:/Library/Java/Home/bin:/Users/ixent/work/tinyos-2.x/bin:/Users/ixent/work/tinyos-2.x/support/sdk/c:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/git/bin:/usr/X11/bin:/Users/ixent/Documents/workspace/qos-aware/scripts/batch:/Users/ixent/Documents/workspace/qos-aware/scripts/utils:/Users/ixent/Documents/workspace/qos-aware/scripts/qos-exp",
 //					"JAVA_HOME=/Library/Java/Home",
 //					"JAVAHOME=/usr/bin"};
+			workingDir = Utils.getResourcePath("etc/sncb/tools/python");
+			String currentPath = System.getenv("PATH");
+			this.tinyOSEnvVars.put("PATH", currentPath+":"+workingDir+":"+workingDir+"/utils");
 
 			this.combinedImage = SNEEProperties.getBoolSetting(
 					SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE);
@@ -87,7 +96,7 @@ public class TinyOS_SNCB implements SNCB {
 			
 			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/init");
 			String params[] = {pythonScript, topFile, resFile};
-			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
 		} catch (Exception e) {
 			logger.warn(e);
 			throw new SNCBException(e.getLocalizedMessage(), e);
@@ -146,7 +155,7 @@ public class TinyOS_SNCB implements SNCB {
 			}
 				
 		} catch (Exception e) {
-			logger.warn(e);
+			logger.warn(e.getLocalizedMessage(), e);
 			throw new SNCBException(e.getLocalizedMessage(), e);
 		}
 		if (logger.isDebugEnabled())
@@ -198,7 +207,7 @@ public class TinyOS_SNCB implements SNCB {
 		String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/utils/compileNesCCode.py");
 		String nescDirParam = "--nesc-dir="+nescOutputDir;
 		String params[] = {pythonScript, nescDirParam};
-		Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
+		Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN compileNesCCode()");
 	}
@@ -216,7 +225,7 @@ public class TinyOS_SNCB implements SNCB {
 		String outputJavaFile = System.getProperty("user.dir")+"/"+queryOutputDir+"DeliverMessage.java";
 		String params[] = {"java", "-target=null", "-java-classname=DeliverMessage",
 				nesCHeaderFile, "DeliverMessage", "-o", outputJavaFile};
-		Utils.runExternalProgram("mig", params, this.tinyOSEnvVars);
+		Utils.runExternalProgram("mig", params, this.tinyOSEnvVars, workingDir);
 		String deliverMessageJavaClassContent = Utils.readFileToString(outputJavaFile);
 		logger.trace("deliverMessageJavaClassContent="+deliverMessageJavaClassContent);
 //		logger.trace("Using null;");
@@ -263,7 +272,7 @@ public class TinyOS_SNCB implements SNCB {
 			String imageFile = nescOutputDir+"/mote"+siteID+"/build/telosb/tos_image.xml";
 			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register");
 			String params[] = {pythonScript, imageFile, siteID, gatewayID};
-			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
 		}
 		//do the basestation last
 		logger.trace("Imaging basestastion");
@@ -271,7 +280,7 @@ public class TinyOS_SNCB implements SNCB {
 		String imageFile = nescOutputDir+"/mote"+gatewayID+"/build/telosb/tos_image.xml";
 		String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register");
 		String params[] = {pythonScript, imageFile, gatewayID, gatewayID};
-		Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
+		Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
 		
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN disseminateQueryPlanImages()");
@@ -287,7 +296,7 @@ public class TinyOS_SNCB implements SNCB {
 			
 			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/start");
 			String params[] = {pythonScript};
-			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
 		} catch (IOException e) {
 			logger.warn(e.getLocalizedMessage());
 			throw new SNCBException(e.getLocalizedMessage(), e);
@@ -307,7 +316,7 @@ public class TinyOS_SNCB implements SNCB {
 			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/stop");
 			String gatewayID = ""+qep.getGateway();
 			String params[] = {pythonScript, gatewayID};
-			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
 		} catch (Exception e) {
 			logger.warn(e.getLocalizedMessage());
 			throw new SNCBException(e.getLocalizedMessage(), e);			
@@ -332,7 +341,7 @@ public class TinyOS_SNCB implements SNCB {
 				siteString.append(site.getID()+" ");
 			}
 			String params[] = {pythonScript, siteString.toString()};
-			Utils.runExternalProgram("python", params, this.tinyOSEnvVars);
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
 		} catch (Exception e) {
 			logger.warn(e.getLocalizedMessage());
 			throw new SNCBException(e.getLocalizedMessage(), e);			
