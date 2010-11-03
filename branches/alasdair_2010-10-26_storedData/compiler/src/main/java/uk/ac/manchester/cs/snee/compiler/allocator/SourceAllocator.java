@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
@@ -36,7 +36,7 @@ public class SourceAllocator {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER allocateSources() laf="+laf.getID());
 		DLAF dlaf = new DLAF(laf, laf.getQueryName());
-		List<SourceMetadata> sources = retrieveSources(laf);
+		List<SourceMetadataAbstract> sources = retrieveSources(laf);
 		validateSources(sources);
 		dlaf.setSources(sources);
 //		SourceType sourceType = onlySource.getSourceType();
@@ -47,23 +47,23 @@ public class SourceAllocator {
 		return dlaf;
 	}
 
-	private List<SourceMetadata> retrieveSources(LAF laf)
+	private List<SourceMetadataAbstract> retrieveSources(LAF laf)
 			throws SourceAllocatorException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER retrieveSources() for " + laf.getID());
 		}
-		List<SourceMetadata> sources = new ArrayList<SourceMetadata>();
+		List<SourceMetadataAbstract> sources = new ArrayList<SourceMetadataAbstract>();
 		Iterator<LogicalOperator> opIter =
 			laf.operatorIterator(TraversalOrder.PRE_ORDER);
 		while (opIter.hasNext()) {
 			LogicalOperator op = opIter.next();
 			if (op instanceof AcquireOperator) {
 				AcquireOperator acquireOp = (AcquireOperator) op;
-				List<SourceMetadata> acqSources = acquireOp.getSources();
+				List<SourceMetadataAbstract> acqSources = acquireOp.getSources();
 				sources.addAll(acqSources);
 			} else if (op instanceof ReceiveOperator) {
 				ReceiveOperator receiveOp = (ReceiveOperator) op;
-				List<SourceMetadata> recSources = receiveOp.getSources();
+				List<SourceMetadataAbstract> recSources = receiveOp.getSources();
 				sources.addAll(recSources);
 			} else if (op instanceof ScanOperator) {
 				String msg = "Scan operator found in LAF; " +
@@ -81,7 +81,7 @@ public class SourceAllocator {
 		return sources;
 	}
 
-	private void validateSources(List<SourceMetadata> sources)
+	private void validateSources(List<SourceMetadataAbstract> sources)
 			throws SourceAllocatorException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER validateSources() #sources=" +
@@ -92,7 +92,7 @@ public class SourceAllocator {
 			 * Permit more than one pull-stream or push-stream
 			 * source to be used 
 			 */
-			for (SourceMetadata source : sources) {
+			for (SourceMetadataAbstract source : sources) {
 				switch (source.getSourceType()) {
 				case PULL_STREAM_SERVICE:
 				case PUSH_STREAM_SERVICE:

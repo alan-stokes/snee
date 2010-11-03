@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.compiler.metadata.source;
+package uk.ac.manchester.cs.snee.metadata.source;
 
 import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;

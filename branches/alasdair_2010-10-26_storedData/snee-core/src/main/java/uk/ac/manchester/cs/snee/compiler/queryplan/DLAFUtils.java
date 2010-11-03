@@ -5,7 +5,7 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 
 /**
  * Utility class for displaying DLAF.
@@ -48,7 +48,7 @@ public class DLAFUtils extends LAFUtils {
 	throws SchemaMetadataException {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("\\nSources:");
-		for (SourceMetadata source : dlaf.getSources()) {
+		for (SourceMetadataAbstract source : dlaf.getSources()) {
 			buffer.append("\\n\\t");
 			buffer.append(source.getSourceName());
 			buffer.append("(");

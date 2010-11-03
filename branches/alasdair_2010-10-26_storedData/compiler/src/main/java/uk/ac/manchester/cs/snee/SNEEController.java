@@ -56,7 +56,7 @@ import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
-import uk.ac.manchester.cs.snee.metadata.Metadata;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -80,7 +80,7 @@ public class SNEEController implements SNEE {
 	/**
 	 * Metadata stored about extents, data sources and cost parameters.
 	 */
-	private Metadata _metadata;
+	private MetadataManager _metadata;
 	
 	/**
 	 * The compiler object for compiling queries
@@ -231,7 +231,7 @@ public class SNEEController implements SNEE {
 			logger.debug("RETURN initialise()");
 	}
 
-	protected Metadata initialiseMetadata() 
+	protected MetadataManager initialiseMetadata() 
 	throws MetadataException, SchemaMetadataException, 
 	TypeMappingException, UnsupportedAttributeTypeException, 
 	SourceMetadataException, SNEEConfigurationException, 
@@ -240,7 +240,7 @@ public class SNEEController implements SNEE {
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseSchema()");
-		Metadata metadata = new Metadata();
+		MetadataManager metadata = new MetadataManager();
 		return metadata;
 	}
 
@@ -468,7 +468,7 @@ public class SNEEController implements SNEE {
 			logger.debug("ENTER addServiceSource() with name=" +
 					name + " type=" + interfaceType + " url="+ url);
 		try {
-			_metadata.addServiceSource(name, url, 
+			_metadata.addDataSource(name, url, 
 					SourceType.PULL_STREAM_SERVICE);
 		} catch (SchemaMetadataException e) {
 			logger.warn("Throwing a MetadataException. Cause " + e);

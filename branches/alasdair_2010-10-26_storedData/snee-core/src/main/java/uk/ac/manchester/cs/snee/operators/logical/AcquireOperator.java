@@ -51,7 +51,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 
 public class AcquireOperator extends LogicalOperatorImpl {
 
@@ -95,7 +95,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * Contains metadata information about which sources contribute
 	 * data via an acquire mechanism
 	 */
-	private List<SourceMetadata> _sources;
+	private List<SourceMetadataAbstract> _sources;
 	
 	/**
 	 * Number of source sites in the sensor network providing data for this extent.
@@ -118,7 +118,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 */
 	public AcquireOperator(ExtentMetadata extentMetadata, 
 			Types types, 
-			List<SourceMetadata> sources,
+			List<SourceMetadataAbstract> sources,
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException {
 		super(boolType);
@@ -137,7 +137,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 		
 		StringBuffer sourcesStr = new StringBuffer(" sources={");
 		boolean first = true;
-		for (SourceMetadata sm : _sources) {
+		for (SourceMetadataAbstract sm : _sources) {
 			if (first) {
 				first=false;
 			} else {
@@ -166,7 +166,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * Return details of the data sources
 	 * @return
 	 */
-	public List<SourceMetadata> getSources() {
+	public List<SourceMetadataAbstract> getSources() {
 		return _sources;
 	}
 

@@ -55,7 +55,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.PullSourceMetadata;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.UDPSourceMetadata;
@@ -174,8 +174,8 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		if(logger.isTraceEnabled()) {
 			logger.trace("ENTER initializeStreamReceiver()");
 		}
-		List<SourceMetadata> sources = receiveOp.getSources();
-		for (SourceMetadata source : sources) {
+		List<SourceMetadataAbstract> sources = receiveOp.getSources();
+		for (SourceMetadataAbstract source : sources) {
 			calculateSleepPeriods((PullSourceMetadata) source);
 			SourceType sourceType = source.getSourceType();
 			switch (sourceType) {
@@ -218,7 +218,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		}
 	}
 
-	private void instantiateUdpDataSource(SourceMetadata source)
+	private void instantiateUdpDataSource(SourceMetadataAbstract source)
 	throws ExtentDoesNotExistException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER instantiateUdpDataSource() with " + 
@@ -232,7 +232,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			logger.trace("RETURN instantiateUdpDataSource()");
 	}
 
-	private void instantiatePullServiceDataSource(SourceMetadata source) 
+	private void instantiatePullServiceDataSource(SourceMetadataAbstract source) 
 	throws ExtentDoesNotExistException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER instantiatePullServiceDataSource() with " + 

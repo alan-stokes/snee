@@ -41,9 +41,9 @@ import org.apache.log4j.Logger;
 /**
  * Generic information known about all data sources
  */
-public abstract class SourceMetadata {
+public abstract class SourceMetadataAbstract {
 
-	Logger logger = Logger.getLogger(SourceMetadata.class.getName());
+	Logger logger = Logger.getLogger(SourceMetadataAbstract.class.getName());
 
 	/**
 	 * Name used to identify the source
@@ -64,7 +64,7 @@ public abstract class SourceMetadata {
 	 * @param extentNames names of the extents available from this source
 	 * @param sourceType the type of the source
 	 */
-	public SourceMetadata(String sourceName, 
+	public SourceMetadataAbstract(String sourceName, 
 			List<String> extentNames, SourceType sourceType) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER SourceMetadata() with " + sourceName +
@@ -82,8 +82,8 @@ public abstract class SourceMetadata {
 	 */
 	public boolean equals(Object ob) {
 		boolean result = false;
-		if (ob instanceof SourceMetadata) {
-			SourceMetadata source = (SourceMetadata) ob;
+		if (ob instanceof SourceMetadataAbstract) {
+			SourceMetadataAbstract source = (SourceMetadataAbstract) ob;
 			/*
 			 * Equality assumed if source refer to the same source type
 			 * and the same extents.

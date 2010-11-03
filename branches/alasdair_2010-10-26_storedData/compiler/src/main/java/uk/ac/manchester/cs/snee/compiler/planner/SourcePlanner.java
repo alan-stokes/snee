@@ -26,7 +26,7 @@ import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.sn.where.WhereScheduler;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
-import uk.ac.manchester.cs.snee.metadata.Metadata;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
@@ -43,12 +43,12 @@ public class SourcePlanner {
 	 */
 	Logger logger = Logger.getLogger(this.getClass().getName());
 	
-	Metadata metadata;
+	MetadataManager metadata;
 	
 	/**
 	 * SourcePlanner constructor.
 	 */
-	public SourcePlanner (Metadata metadata) {
+	public SourcePlanner (MetadataManager metadata) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER SourcePlanner()");
 		this.metadata=metadata;

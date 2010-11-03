@@ -22,7 +22,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
-import uk.ac.manchester.cs.snee.metadata.Metadata;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
@@ -30,7 +30,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
@@ -53,7 +53,7 @@ public class Translator {
 
 	Logger logger = Logger.getLogger(this.getClass().getName());
 
-	private	Metadata _metadata;
+	private	MetadataManager _metadata;
 
 	private Types _types;
 
@@ -61,7 +61,7 @@ public class Translator {
 
 	private Map<String, String> extentNameMappings;
 
-	public Translator (Metadata metadata) 
+	public Translator (MetadataManager metadata) 
 	throws TypeMappingException, SchemaMetadataException 
 	{
 		if (logger.isDebugEnabled()) {
@@ -626,7 +626,7 @@ public class Translator {
 			extentName = ast.getText();
 			ExtentMetadata extentMetadata = 
 				_metadata.getExtentMetadata(extentName);
-			List<SourceMetadata> sources = 
+			List<SourceMetadataAbstract> sources = 
 				_metadata.getSources(extentName);
 			switch (extentMetadata.getExtentType()) {
 			case SENSED:

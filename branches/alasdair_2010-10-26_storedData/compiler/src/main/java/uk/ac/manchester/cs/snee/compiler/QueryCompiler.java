@@ -61,7 +61,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionExcepti
 import uk.ac.manchester.cs.snee.compiler.rewriter.LogicalRewriter;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.translator.Translator;
-import uk.ac.manchester.cs.snee.metadata.Metadata;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -85,9 +85,9 @@ public class QueryCompiler {
 	/**
 	 * The metadata being used. 
 	 */
-	private Metadata metadata;
+	private MetadataManager metadata;
 
-	public QueryCompiler(Metadata schema) 
+	public QueryCompiler(MetadataManager schema) 
 	throws TypeMappingException {
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER QueryCompiler()");

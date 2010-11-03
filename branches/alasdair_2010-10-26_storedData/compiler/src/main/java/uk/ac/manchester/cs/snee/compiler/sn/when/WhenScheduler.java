@@ -14,7 +14,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
-import uk.ac.manchester.cs.snee.metadata.Metadata;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -34,7 +34,7 @@ public class WhenScheduler {
 	/**
 	 * Constructor for Sensor Network When-Scheduling Decision Maker.
 	 */
-	public WhenScheduler(boolean decreaseBetaForValidAlpha, Metadata m) {
+	public WhenScheduler(boolean decreaseBetaForValidAlpha, MetadataManager m) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER WhenScheduler()");
 		this.decreaseBetaForValidAlpha=decreaseBetaForValidAlpha;

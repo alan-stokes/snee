@@ -51,7 +51,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderExceptio
  * Maintains metadata required about a sensor network capable of
  * in-network query processing
  */
-public class SensorNetworkSourceMetadata extends SourceMetadata {
+public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 
 	Logger logger = 
 		Logger.getLogger(SensorNetworkSourceMetadata.class.getName());

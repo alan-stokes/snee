@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
@@ -53,10 +53,10 @@ public class SourceAllocatorTest extends EasyMockSupport {
 		createMock(ReceiveOperator.class);
 	final ScanOperator mockScanOperator = 
 		createMock(ScanOperator.class);
-	final List<SourceMetadata> mockList =
+	final List<SourceMetadataAbstract> mockList =
 		createMock(List.class);
-	final SourceMetadata mockSourceMetadata =
-		createMock(SourceMetadata.class);
+	final SourceMetadataAbstract mockSourceMetadata =
+		createMock(SourceMetadataAbstract.class);
 	
 	@Test(expected=SourceAllocatorException.class)
 	public void testAllocateSources_noOperators() 

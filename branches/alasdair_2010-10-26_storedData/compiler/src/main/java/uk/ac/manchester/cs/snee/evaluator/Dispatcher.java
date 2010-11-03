@@ -55,7 +55,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
-import uk.ac.manchester.cs.snee.metadata.Metadata;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
@@ -67,11 +67,11 @@ public class Dispatcher {
 	private static Logger logger = 
 		Logger.getLogger(Dispatcher.class.getName());
 	
-	private Metadata _schema;
+	private MetadataManager _schema;
 	
 	private Map<Integer,QueryEvaluator> _queryEvaluators;
 	
-	public Dispatcher(Metadata schema) {
+	public Dispatcher(MetadataManager schema) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER Dispatcher()");
 		}

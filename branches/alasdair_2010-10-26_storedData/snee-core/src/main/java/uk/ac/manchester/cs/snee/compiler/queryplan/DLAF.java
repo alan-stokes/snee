@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.Tree;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
@@ -33,8 +33,8 @@ public class DLAF extends SNEEAlgebraicForm {
 	/**
 	 * The sources that are used in this query operator tree.
 	 */
-	private List<SourceMetadata> sources = 
-		new ArrayList<SourceMetadata>();
+	private List<SourceMetadataAbstract> sources = 
+		new ArrayList<SourceMetadataAbstract>();
 	
     /**
      * Counter to assign unique id to different candidates.
@@ -87,11 +87,11 @@ public class DLAF extends SNEEAlgebraicForm {
 		return this.getID()+"-"+this.laf.getDescendantsString();
 	}
 
-	public void setSources(List<SourceMetadata> sources) {
+	public void setSources(List<SourceMetadataAbstract> sources) {
 		this.sources.addAll(sources);
 	}
 
-	public List<SourceMetadata> getSources() {
+	public List<SourceMetadataAbstract> getSources() {
 		return sources;
 	}
 
