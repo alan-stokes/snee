@@ -19,19 +19,19 @@
 		<!--<wsdl.location>${basedir}/src/main/wsdl</wsdl.location>-->
 	</properties>
 	
-	<dependencies>
-		<dependency>
-			<groupId>uk.ac.manchester.cs.snee</groupId>
-			<artifactId>snee-sncb</artifactId>
-			<version>1.4.1-SNAPSHOT</version>
-			<scope>provided</scope>
-		</dependency>		
+	<dependencies>		
  		<dependency>
 			<groupId>uk.ac.manchester.cs.snee</groupId>
 			<artifactId>snee-core</artifactId>
 			<version>1.4.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-sncb</artifactId>
+			<version>1.4.1-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>		
 		<dependency>
 			<groupId>antlr</groupId>
 			<artifactId>antlr</artifactId>
