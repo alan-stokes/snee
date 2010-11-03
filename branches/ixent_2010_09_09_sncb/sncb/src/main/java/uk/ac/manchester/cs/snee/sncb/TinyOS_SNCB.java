@@ -34,7 +34,7 @@ public class TinyOS_SNCB implements SNCB {
 
 	private boolean combinedImage = false;
 
-	private String serialPort = "/dev/tty.usbserial-XBTE03FA";
+	private String serialPort = "/dev/tty.usbserial-XBTDYCY7";
 	
 	private boolean demoMode = true;
 	
