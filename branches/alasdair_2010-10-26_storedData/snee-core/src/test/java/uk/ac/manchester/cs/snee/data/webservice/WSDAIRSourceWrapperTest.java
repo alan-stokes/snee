@@ -21,6 +21,8 @@ import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.datasource.webservice.WSDAIRAccessServiceClient;
+import uk.ac.manchester.cs.snee.datasource.webservice.WSDAIRSourceWrapper;
 import eu.semsorgrid4env.service.wsdai.DataResourceUnavailableFault;
 import eu.semsorgrid4env.service.wsdai.GetDataResourcePropertyDocumentRequest;
 import eu.semsorgrid4env.service.wsdai.InvalidResourceNameFault;

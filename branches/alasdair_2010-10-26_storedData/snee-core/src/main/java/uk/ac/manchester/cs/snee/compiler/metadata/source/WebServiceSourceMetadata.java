@@ -41,7 +41,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
-import uk.ac.manchester.cs.snee.data.webservice.PullSourceWrapper;
+import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapper;
 
 /**
  * Implementation of the metadata imported from a web service source.

@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.data.webservice;
+package uk.ac.manchester.cs.snee.datasource.webservice;
 
 import java.net.MalformedURLException;
 import java.net.URL;

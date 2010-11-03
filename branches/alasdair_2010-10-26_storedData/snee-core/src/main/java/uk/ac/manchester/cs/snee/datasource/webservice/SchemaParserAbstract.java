@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.data.webservice;
+package uk.ac.manchester.cs.snee.datasource.webservice;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.NodeList;

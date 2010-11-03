@@ -80,7 +80,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
-import uk.ac.manchester.cs.snee.data.webservice.PullSourceWrapper;
+import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapper;
 
 public class Metadata {
 
