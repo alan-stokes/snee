@@ -10,8 +10,8 @@
 
 	<modules>
 		<module>snee-core</module>
+		<module>data-source</module>
 		<module>compiler</module>
-		<!--<module>datasource</module>-->
 		<module>clients</module>
 	</modules>
 
