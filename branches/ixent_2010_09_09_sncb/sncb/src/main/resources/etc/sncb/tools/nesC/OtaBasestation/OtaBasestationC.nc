@@ -102,7 +102,7 @@ implementation {
 		  if (!serialStackLocked) {
         serialStackLocked = TRUE;
 
-			  serialPayload->error = ERROR_FAIL;
+			  serialPayload->error = ERROR_NO_ROUTE;
 
   		  if (call FlashManagerSender.send(AM_BROADCAST_ADDR, &serialPacket, sizeof(SerialReplyPacket)) != SUCCESS) {				
 			  	serialStackLocked = FALSE;
