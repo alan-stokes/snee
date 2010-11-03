@@ -14,8 +14,9 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapper;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
+import uk.ac.manchester.cs.snee.metadata.source.WebServiceSourceMetadata;
 
 public class WebServiceSourceMetadataTest extends EasyMockSupport {
 

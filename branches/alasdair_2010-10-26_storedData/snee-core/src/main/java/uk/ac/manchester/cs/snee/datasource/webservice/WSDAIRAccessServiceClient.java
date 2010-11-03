@@ -14,7 +14,7 @@ import org.ggf.namespaces._2005._12.ws_dair.SQLExecuteResponse;
 import org.ggf.namespaces._2005._12.ws_dair.SQLPropertyDocumentType;
 
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import eu.semsorgrid4env.service.wsdai.CoreDataAccessPT;
 import eu.semsorgrid4env.service.wsdai.CoreResourceListPT;
 import eu.semsorgrid4env.service.wsdai.DataResourceUnavailableFault;

@@ -35,8 +35,8 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class AMSendComponent extends GenericNesCComponent implements
 	TinyOS2Component {
