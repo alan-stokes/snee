@@ -16,9 +16,9 @@ basestation = basestation.find_basestation()
 source = 'serial@' + basestation + ':115200'
 
 # disseminate a reprogram command; switch to query fragment
-subprocess.call(['cmd-srvr', source, '--reprogram', '2'])
+subprocess.call(['python', utils_dir+'cmd-srvr', source, '--reprogram', '2'])
 
 time.sleep(30)
 
 # disseminate the start command
-subprocess.call(['cmd-srvr', source, '--start'])
+subprocess.call(['python', utils_dir+'cmd-srvr', source, '--start'])

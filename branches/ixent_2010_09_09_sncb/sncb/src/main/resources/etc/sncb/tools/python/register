@@ -28,4 +28,4 @@ if sys.argv[2] == sys.argv[3]:
     subprocess.call(['tos-bsl', '--telosb', '-c', basestation, '-r', '-e', '-I', '-p', ihex_file + '-' + sys.argv[3]])
 else:
 # If not call tos-ota
-    subprocess.call(['tos-ota', source, sys.argv[2], '--inject', '2', sys.argv[1]])
+    subprocess.call(['python', utils_dir+'/tos-ota', source, sys.argv[2], '--inject', '2', sys.argv[1]])
