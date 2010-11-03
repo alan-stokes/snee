@@ -20,4 +20,4 @@ mote_ids = getopt.getopt(sys.argv[1:], '')[1]
 
 #iterate over the mote ids to register the query fragment
 for mote_id in mote_ids:
-    subprocess.call(['python', utils_dir+'tos-ota', source, mote_id, '--erase', '2'])
+    subprocess.call(['python', utils_dir+'/tos-ota', source, mote_id, '--erase', '2'])

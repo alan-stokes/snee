@@ -383,7 +383,7 @@ def inject(destId, imgNum, tos_image_xml):
 
     # Creates binary image from the TOS image XML
     print "--------------------------------------------------"
-    cmd = [PATH_PY_BUILD_IMAGE, "-i", str(imgNum), tos_image_xml]
+    cmd = ["python", PATH_PY_BUILD_IMAGE, "-i", str(imgNum), tos_image_xml]
     print "Create image:", ' '.join(cmd)
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     (out, err) = p.communicate(None)
