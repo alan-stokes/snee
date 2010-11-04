@@ -160,11 +160,6 @@ public final class SNEEPropertyNames {
 	
 	public static String SNCB_ENABLE = "sncb.enable";
 	
-	/**
-	 * The root TinyOS directory.
-	 */
-	public static String SNCB_TINYOS_ROOT = "sncb.tinyos_root";
-
 	public static String RESULTS_HISTORY_SIZE_TUPLES =
 		"results.history_size.tuples";
 
