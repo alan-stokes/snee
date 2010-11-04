@@ -2592,9 +2592,9 @@ public class TinyOSGenerator {
 			replacements.put("__COMMAND_SERVER__", "");
 		}
 		if (this.useNodeController && isSink) {
-			replacements.put("__OTA_BASESTATION__", "CFLAGS += -DOTA_BASESTATION_ENABLED");
+			replacements.put("__BASESTATION__", "CFLAGS +=-DCOMMAND_SERVER_BASESTATION");
 		} else {
-			replacements.put("__OTA_BASESTATION__", "");
+			replacements.put("__BASESTATION__", "");
 		}
 		
 		Template.instantiate(NESC_MISC_FILES_DIR
