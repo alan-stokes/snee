@@ -9,6 +9,7 @@
 
  * Install Maven
   * http://maven.apache.org/ <br> (Version 2.2.1 or higher is required)
+  * Using a Linux package manager: apt-get install maven2
 
  * Install Eclipse
   * http://www.eclipse.org/downloads <br> (Galileo or preferably Helios is required)
@@ -20,6 +21,9 @@
   * m2eclipse (for Maven support, including the extras)
     * http://m2eclipse.sonatype.org/installing-m2eclipse.html
     * The Eclipse update sites are http://m2eclipse.sonatype.org/sites/m2e and http://m2eclipse.sonatype.org/sites/m2e-extras.
+
+Note, for linux you need to install libsvn-java.  Using a package manager, this involves invoking: 
+  * apt-get install libsvn-java
 
 = Obtain and Build the Source Code =
 
