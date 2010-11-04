@@ -42,11 +42,7 @@ public class TinyOS_SNCB implements SNCB {
 	throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER TinyOS_SNCB()");
-		try {
-			String tosRootDir = SNEEProperties.getSetting(
-					SNEEPropertyNames.SNCB_TINYOS_ROOT).
-					replace("~", System.getenv("HOME"));
-			
+		try {			
 			//TinyOS environment variables
 			this.tinyOSEnvVars = new HashMap<String,String>();
 			workingDir = Utils.getResourcePath("etc/sncb/tools/python");
