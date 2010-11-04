@@ -338,11 +338,15 @@ public class TinyOS_SNCB implements SNCB {
 			System.out.println("Invoking deregister command");
 			
 			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/deregister");
+			String gatewayID = ""+qep.getGateway();
 			Iterator<Site> siteIter = qep.siteIterator(TraversalOrder.POST_ORDER);
 			StringBuffer siteString = new StringBuffer();
 			while (siteIter.hasNext()) {
-				Site site = siteIter.next();
-				siteString.append(site.getID()+" ");
+				String siteID = siteIter.next().getID();
+				//skip the gateway
+				if (siteID.equals(gatewayID)) 
+					continue;
+				siteString.append(siteID+" ");
 			}
 			String params[] = {pythonScript, siteString.toString()};
 			Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
