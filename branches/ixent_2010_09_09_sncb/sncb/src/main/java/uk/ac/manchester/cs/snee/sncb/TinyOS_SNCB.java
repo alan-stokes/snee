@@ -36,7 +36,7 @@ public class TinyOS_SNCB implements SNCB {
 
 	private String serialPort = "/dev/tty.usbserial-XBTDYCY7";
 	
-	private boolean demoMode = true;
+	private boolean demoMode = false;
 	
 	public TinyOS_SNCB()
 	throws SNCBException {
