@@ -65,6 +65,7 @@ import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
+import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
@@ -78,6 +79,12 @@ public class SNEEController implements SNEE {
 
 	private static Logger logger = 
 		Logger.getLogger(SNEEController.class.getName());
+	
+	/**
+	 * Sensor Network Connectivity Bridge.  For now, assume that there 
+	 * is one instance max.
+	 */
+	private SNCB _sncb = null;
 	
 	/**
 	 * Metadata stored about extents, data sources and cost parameters.
@@ -178,7 +185,9 @@ public class SNEEController implements SNEE {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER initialise()");
 
-		try {			
+		try {
+			_sncb = initialiseSNCB();
+			
 			/* Process metadata */
 			_metadata = initialiseMetadata();
 			
@@ -240,6 +249,21 @@ public class SNEEController implements SNEE {
 			logger.debug("RETURN initialise()");
 	}
 
+	protected SNCB initialiseSNCB() throws SNEEConfigurationException, SNCBException {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER initialiseSNCB()");
+		
+		//This is done here because otherwise TinyOS_SNCB would have
+		//to be part of snee-core
+		if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_ENABLE)) {
+			if (SNEEProperties.getBoolSetting(SNEEPropertyNames.SNCB_ENABLE)) {
+				return new TinyOS_SNCB();
+			}
+		}
+		return null;
+		
+	}
+	
 	protected Metadata initialiseMetadata() 
 	throws MetadataException, SchemaMetadataException, 
 	TypeMappingException, UnsupportedAttributeTypeException, 
@@ -248,9 +272,9 @@ public class SNEEController implements SNEE {
 	SNEEDataSourceException, CostParametersException, SNCBException 
 	{
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER initialiseSchema()");
-		TinyOS_SNCB sncb = new TinyOS_SNCB(); 
-		Metadata metadata = new Metadata(sncb);
+			logger.trace("ENTER initialiseMetadata()");
+		
+		Metadata metadata = new Metadata(_sncb);
 		return metadata;
 	}
 

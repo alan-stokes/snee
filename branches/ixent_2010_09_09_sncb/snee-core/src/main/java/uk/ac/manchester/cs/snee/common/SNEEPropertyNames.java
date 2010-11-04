@@ -158,6 +158,8 @@ public final class SNEEPropertyNames {
 	public static String INPUTS_UNITS_FILE =
 		"units_file";
 	
+	public static String SNCB_ENABLE = "sncb.enable";
+	
 	/**
 	 * The root TinyOS directory.
 	 */
