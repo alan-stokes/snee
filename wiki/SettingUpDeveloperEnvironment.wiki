@@ -51,7 +51,16 @@ Note, for linux you need to install libsvn-java.  Using a package manager, this 
  * Right click on the compiler module project, go to the maven context menu, select ‘update project configuration’.
   * This configures the build path to use the generated antlr parser
 
-== Building the Project ==
+== Building the Project Using Eclipse ==
 
  * Within the Eclipse package explorer, right-click on the SNEE project and select 'Run As' -> 'Maven package'
  * Tip: If you update from the SVN, and experience problems building the project, try right-clicking on the SNEE project and selecting 'Run As' -> 'Maven clean'
+
+== Building the Project From the Command Line ==
+
+The Maven Eclipse plugin doesn't always work perfectly.  If you are still having problems, from the terminal go to the root directory of the SNEE parent project and invoke:
+ * mvn clean
+ * mvn install
+ * mvn package
+Then in eclipse refresh the files, and all errors should disappear.
+ 
