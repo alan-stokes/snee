@@ -13,5 +13,10 @@ public class SNCBException extends Exception {
 	public SNCBException(String msg, Exception e) {
 		super(msg, e);
 	}
+
+
+	public SNCBException(String string) {
+
+	}
 	
 }

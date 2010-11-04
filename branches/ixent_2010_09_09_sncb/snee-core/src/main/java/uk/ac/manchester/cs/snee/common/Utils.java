@@ -352,7 +352,7 @@ public class Utils {
 	 * @param env
 	 * @throws IOException
 	 */
-	public static void runExternalProgram(String progName, String[] params, 
+	public static String runExternalProgram(String progName, String[] params, 
 	Map<String,String> extraEnvVars, String workingDir) throws IOException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER runExternalProgram()");	
@@ -372,12 +372,15 @@ public class Utils {
 	    final BufferedReader br = new BufferedReader(isr);
 	    String line;
 
+	    StringBuffer output = new StringBuffer();
 	    while ((line = br.readLine()) != null) {
 	    	logger.trace(line);
 	    	System.out.println(line);
+	    	output.append(line + "\n");
 	    }
 	    if (logger.isDebugEnabled())
 			logger.debug("RETURN runExternalProgram()");
+	    return output.toString();
 	}
 
 

@@ -34,7 +34,7 @@ public class TinyOS_SNCB implements SNCB {
 
 	private boolean combinedImage = false;
 
-	private String serialPort = "/dev/tty.usbserial-XBTDYCY7";
+	private String serialPort;
 	
 	private boolean demoMode = false;
 	
@@ -46,11 +46,10 @@ public class TinyOS_SNCB implements SNCB {
 			String tosRootDir = SNEEProperties.getSetting(
 					SNEEPropertyNames.SNCB_TINYOS_ROOT).
 					replace("~", System.getenv("HOME"));
-
+			
 			//TinyOS environment variables
 			this.tinyOSEnvVars = new HashMap<String,String>();
-			this.tinyOSEnvVars.put("MOTECOM", "=serial@"+serialPort);
-			this.tinyOSEnvVars.put("SERIAL_PORT", serialPort);			
+
 			//TODO: Need to figure out which env vars are needed for mig. For now,
 			//eclipse must be invoked from terminal for it to work.
 //			this.tinyOSEnvVars = new String[] {
@@ -76,8 +75,13 @@ public class TinyOS_SNCB implements SNCB {
 
 			this.combinedImage = SNEEProperties.getBoolSetting(
 					SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE);
+
+			this.serialPort = this.getBaseStation();
+			this.tinyOSEnvVars.put("MOTECOM", "=serial@"+serialPort);
+			this.tinyOSEnvVars.put("SERIAL_PORT", serialPort);			
+			
 		} catch (Exception e) {
-			logger.warn(e);
+			logger.warn(e.getLocalizedMessage(), e);
 			throw new SNCBException(e.getLocalizedMessage(), e);
 		}
 		if (logger.isDebugEnabled())
@@ -85,6 +89,30 @@ public class TinyOS_SNCB implements SNCB {
 	}
 	
 
+	private String getBaseStation() throws SNCBException {
+		if (logger.isTraceEnabled())
+			logger.debug("ENTER getBaseStation()");
+		String serialPort;
+		try {
+			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/utils/basestation.py");
+			String params[] = {pythonScript};
+			String outputLines = Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
+			String outputList[] = outputLines.split("\n");
+			if (outputList.length<2) {
+				throw new SNCBException("Base station mote not plugged in.");
+			} else if (outputList.length>2) {
+				throw new SNCBException("Unable to determine base station mote, as more than one mote is plugged in.");				
+			}
+			serialPort = outputList[1];
+		} catch (Exception e) {
+			logger.warn(e.getLocalizedMessage(), e);
+			throw new SNCBException(e.getLocalizedMessage(), e);
+		}
+		
+		if (logger.isTraceEnabled())
+			logger.debug("RETURN getBaseStation()");
+		return serialPort;
+	}
 	
 	@Override
 	public void init(String topFile, String resFile) throws SNCBException {
