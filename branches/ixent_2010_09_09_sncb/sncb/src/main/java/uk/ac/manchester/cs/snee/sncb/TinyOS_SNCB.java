@@ -49,26 +49,6 @@ public class TinyOS_SNCB implements SNCB {
 			
 			//TinyOS environment variables
 			this.tinyOSEnvVars = new HashMap<String,String>();
-
-			//TODO: Need to figure out which env vars are needed for mig. For now,
-			//eclipse must be invoked from terminal for it to work.
-//			this.tinyOSEnvVars = new String[] {
-//					"MOTECOM=serial@"+serialPort,
-//					"SERIAL_PORT="+serialPort,
-//					"TOSROOT="+tosRootDir,
-//					"TOSDIR="+tosRootDir+"/tos",
-//					"MAKERULES="+tosRootDir+"/support/make/Makerules",
-//					"PYTHONPATH=.:"+tosRootDir+"/support/sdk/python",
-//					"CLASSPATH=.:"+tosRootDir+"/support/sdk/java/tinyos.jar",
-//					"PATH="+System.getenv("PATH")+":"+tosRootDir+"/bin:"+
-//					tosRootDir+"/support/sdk/c:"+
-//					"/opt/local/bin:/opt/local/sbin:/Library/Java/Home/bin"+
-//					":/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/compiler/src/main/resources/etc/sncb/tools/python/utils:"+
-//					"/Users/ixent/Documents/workspaces/SNCBworkspace/SNEE/compiler/src/main/resources/etc/sncb/tools/python"};
-
-//					"PATH=/opt/local/bin:/opt/local/sbin:/usr/local/mysql/bin:/bin:/Library/Java/Home/bin:/Users/ixent/work/tinyos-2.x/bin:/Users/ixent/work/tinyos-2.x/support/sdk/c:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/git/bin:/usr/X11/bin:/Users/ixent/Documents/workspace/qos-aware/scripts/batch:/Users/ixent/Documents/workspace/qos-aware/scripts/utils:/Users/ixent/Documents/workspace/qos-aware/scripts/qos-exp",
-//					"JAVA_HOME=/Library/Java/Home",
-//					"JAVAHOME=/usr/bin"};
 			workingDir = Utils.getResourcePath("etc/sncb/tools/python");
 			String currentPath = System.getenv("PATH");
 			this.tinyOSEnvVars.put("PATH", currentPath+":"+workingDir+":"+workingDir+"/utils");
