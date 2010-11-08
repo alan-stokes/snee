@@ -25,7 +25,9 @@ if sys.argv[2] == sys.argv[3]:
     ihex_file = sys.argv[1].replace('tos_image.xml', 'main.ihex')
     subprocess.call(['tos-set-symbols', '--objcopy', 'msp430-objcopy', '--objdump', 'msp430-objdump', '--target', 'ihex', ihex_file, ihex_file + '-' + sys.argv[3], 'TOS_NODE_ID=' + sys.argv[3], 'ActiveMessageAddressC__addr=' + sys.argv[3]])
 # Flash the mote
+    print "Installing query fragment on mote " + str(sys.argv[3])
     subprocess.call(['tos-bsl', '--telosb', '-c', basestation, '-r', '-e', '-I', '-p', ihex_file + '-' + sys.argv[3]])
 else:
 # If not call tos-ota
-    subprocess.call(['python', utils_dir+'/tos-ota', source, sys.argv[2], '--inject', '2', sys.argv[1]])
+    print "Installing query fragment on mote " + str(sys.argv[2])
+    subprocess.call(['tos-ota', source, sys.argv[2], '--inject', '2', sys.argv[1]])
