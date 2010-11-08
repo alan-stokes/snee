@@ -2,11 +2,13 @@
 
 # First thing, append the utils directory to the search path.
 import sys, os, subprocess
+
 utils_dir = os.path.dirname(__file__) + '/utils'
 sys.path.append(utils_dir)
 
 # Now we can import the basestation module
 import basestation
+from error_handling import handleReturnCode
 
 # Now add the snee utilities to PATH
 os.environ['PATH'] = utils_dir + ':' + os.environ['PATH']
@@ -14,8 +16,6 @@ os.environ['PATH'] = utils_dir + ':' + os.environ['PATH']
 # Discover the environment variables
 basestation = basestation.find_basestation()
 source = 'serial@' + basestation + ':115200'
-
-print os.environ['PATH']
 
 # Check if we are trying to flash the basestation
 if sys.argv[2] == sys.argv[3]:
@@ -25,10 +25,12 @@ if sys.argv[2] == sys.argv[3]:
 
 # Set the symbols in the file
     ihex_file = sys.argv[1].replace('tos_image.xml', 'main.ihex')
-    subprocess.call(['tos-set-symbols', '--objcopy', 'msp430-objcopy', '--objdump', 'msp430-objdump', '--target', 'ihex', ihex_file, ihex_file + '-' + sys.argv[3], 'TOS_NODE_ID=' + sys.argv[3], 'ActiveMessageAddressC__addr=' + sys.argv[3]])
+    retcode = subprocess.call(['tos-set-symbols', '--objcopy', 'msp430-objcopy', '--objdump', 'msp430-objdump', '--target', 'ihex', ihex_file, ihex_file + '-' + sys.argv[3], 'TOS_NODE_ID=' + sys.argv[3], 'ActiveMessageAddressC__addr=' + sys.argv[3]])
+    handleReturnCode(retcode)    
 # Flash the mote
     print "Installing query fragment on mote " + str(sys.argv[3])
-    subprocess.call(['tos-bsl', '--telosb', '-c', basestation, '-r', '-e', '-I', '-p', ihex_file + '-' + sys.argv[3]])
+    retcode = subprocess.call(['tos-bsl', '--telosb', '-c', basestation, '-r', '-e', '-I', '-p', ihex_file + '-' + sys.argv[3]])
+    handleReturnCode(retcode, 'Couldn\'t install OTA basestation on mote')
 else:
 # If not call tos-ota
     print "Installing query fragment on mote " + str(sys.argv[2])
