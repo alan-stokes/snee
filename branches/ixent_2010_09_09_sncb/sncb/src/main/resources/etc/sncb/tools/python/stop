@@ -15,17 +15,18 @@ os.environ['PATH'] = utils_dir + ':' + os.environ['PATH']
 basestation = basestation.find_basestation()
 source = 'serial@' + basestation + ':115200'
 
-# disseminate the stop command
-subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--stop'])
+print "Disseminate the stop command"
+subprocess.call(['cmd-srvr', source, '--stop'])
 
-# sleep for 10 seconds
+print 'Waiting to make sure all nodes are in stop state'
 time.sleep(10)
 
-# disseminate a reprogram command; switch to ota
-subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--reprogram', '1'])
+print "Disseminate a reprogram command; switch to ota"
+subprocess.call(['cmd-srvr', source, '--reprogram', '1'])
 
-time.sleep(20)
+print 'Waiting to make sure all nodes are running ota'
+time.sleep(30)
 
-# reprogram the gateway mote to ota basestation
+print "Reprogram the gateway mote to ota basestation"
 os.chdir(os.path.dirname(__file__) + '/../nesC/OtaBasestation')
 subprocess.call(['make', 'telosb', 'install,' + sys.argv[1], 'bsl,' + basestation])
