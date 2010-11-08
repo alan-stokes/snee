@@ -5,7 +5,7 @@ E_FAIL = 1
 
 def handleReturnCode(retcode, msg=None):
     if retcode == E_SUCCESS:
+        print 'E_SUCCESS'        
     elif retcode == E_FAIL:
         print 'E_FAIL: ' + str(msg)
-        sys.exit(E_FAIL)
-        
+        sys.exit(E_FAIL)        
