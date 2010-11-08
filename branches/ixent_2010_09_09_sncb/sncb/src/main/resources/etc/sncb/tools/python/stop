@@ -7,6 +7,7 @@ sys.path.append(utils_dir)
 
 # Now we can import the basestation module
 import basestation
+from error_handling import handleReturnCode
 
 # Now add the snee utilities to PATH
 os.environ['PATH'] = utils_dir + ':' + os.environ['PATH']
@@ -29,4 +30,5 @@ time.sleep(30)
 
 print "Reprogram the gateway mote to ota basestation"
 os.chdir(os.path.dirname(__file__) + '/../nesC/OtaBasestation')
-subprocess.call(['make', 'telosb', 'install,' + sys.argv[1], 'bsl,' + basestation])
+retcode = subprocess.call(['make', 'telosb', 'install,' + sys.argv[1], 'bsl,' + basestation])
+handleReturnCode(retcode, 'Couldn\'t install OTA basestation on mote')

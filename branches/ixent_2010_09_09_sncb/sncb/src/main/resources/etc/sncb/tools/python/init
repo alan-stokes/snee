@@ -7,6 +7,7 @@ sys.path.append(utils_dir)
 
 # Now we can import the basestation module
 import basestation
+from error_handling import handleReturnCode
 
 # Now add the snee utilities to PATH
 os.environ['PATH'] = utils_dir + ':' + os.environ['PATH']
@@ -18,7 +19,8 @@ source = 'serial@' + basestation + ':115200'
 # deploy the metadata collector basestion
 print "Deploying the metadata collector basestion"
 os.chdir(os.path.abspath(os.path.dirname(__file__)) + '/../nesC/MetadataCollectorBasestation')
-subprocess.call(['make', 'telosb', 'install,' + sys.argv[3], 'bsl,' + basestation])
+retcode = subprocess.call(['make', 'telosb', 'install,' + sys.argv[3], 'bsl,' + basestation])
+handleReturnCode(retcode, 'Couldn\'t install metadata collector basestation on mote')
 
 # start sending metadata
 print "Start collecting metadata"
@@ -50,4 +52,5 @@ time.sleep(10)
 # deploy the OTA basestion
 print "Deploying the OTA basestion"
 os.chdir(os.path.abspath(os.path.dirname(__file__)) + '/../OtaBasestation')
-subprocess.call(['make', 'telosb', 'install,' + sys.argv[3], 'bsl,' + basestation])
+retcode = subprocess.call(['make', 'telosb', 'install,' + sys.argv[3], 'bsl,' + basestation])
+handleReturnCode(retcode, 'Couldn\'t install OTA basestation on mote')
