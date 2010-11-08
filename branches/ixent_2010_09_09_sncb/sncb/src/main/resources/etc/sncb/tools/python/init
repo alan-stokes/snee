@@ -16,29 +16,38 @@ basestation = basestation.find_basestation()
 source = 'serial@' + basestation + ':115200'
 
 # deploy the metadata collector basestion
+print "Deploying the metadata collector basestion"
 os.chdir(os.path.abspath(os.path.dirname(__file__)) + '/../nesC/MetadataCollectorBasestation')
 subprocess.call(['make', 'telosb', 'install,' + sys.argv[3], 'bsl,' + basestation])
 
 # start sending metadata
-subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--start'])
+print "Start collecting metadata"
+subprocess.call(['cmd-srvr', source, '--start'])
 
 # collect metadata
-subprocess.call(['python', utils_dir+'/metadata-collector', source, sys.argv[1], sys.argv[2]])
+print "Collecting..."
+subprocess.call(['metadata-collector', source, sys.argv[1], sys.argv[2]])
 
 # stop sending metadata
-subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--stop'])
+print "Stop collecting metadata"
+subprocess.call(['cmd-srvr', source, '--stop'])
 
 # parse text file and convert to xml
-subprocess.call(['python', utils_dir+'/snee-txt-to-xml', sys.argv[1], sys.argv[2]])
+print "Processing..."
+subprocess.call(['snee-txt-to-xml', sys.argv[1], sys.argv[2]])
 
+print "Waiting to make sure all motes have stopped"
 time.sleep(10)
 
 # boot into ota
-subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--reprogram', '1'])
+print "Switch motes to OTA server"
+subprocess.call(['cmd-srvr', source, '--reprogram', '1'])
 
 # wait for motes to boot into ota before continuing
+print "Waiting to make sure all motes have received the reprogram command"
 time.sleep(10)
 
 # deploy the OTA basestion
+print "Deploying the OTA basestion"
 os.chdir(os.path.abspath(os.path.dirname(__file__)) + '/../OtaBasestation')
 subprocess.call(['make', 'telosb', 'install,' + sys.argv[3], 'bsl,' + basestation])
