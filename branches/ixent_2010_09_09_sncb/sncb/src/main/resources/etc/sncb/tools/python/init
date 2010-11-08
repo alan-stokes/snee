@@ -22,26 +22,26 @@ subprocess.call(['make', 'telosb', 'install,' + sys.argv[3], 'bsl,' + basestatio
 
 # start sending metadata
 print "Start collecting metadata"
-subprocess.call(['cmd-srvr', source, '--start'])
+subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--start'])
 
 # collect metadata
 print "Collecting..."
-subprocess.call(['metadata-collector', source, sys.argv[1], sys.argv[2]])
+subprocess.call(['python', utils_dir+'/metadata-collector', source, sys.argv[1], sys.argv[2]])
 
 # stop sending metadata
 print "Stop collecting metadata"
-subprocess.call(['cmd-srvr', source, '--stop'])
+subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--stop'])
 
 # parse text file and convert to xml
 print "Processing..."
-subprocess.call(['snee-txt-to-xml', sys.argv[1], sys.argv[2]])
+subprocess.call(['python', utils_dir+'/snee-txt-to-xml', sys.argv[1], sys.argv[2]])
 
 print "Waiting to make sure all motes have stopped"
 time.sleep(10)
 
 # boot into ota
 print "Switch motes to OTA server"
-subprocess.call(['cmd-srvr', source, '--reprogram', '1'])
+subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--reprogram', '1'])
 
 # wait for motes to boot into ota before continuing
 print "Waiting to make sure all motes have received the reprogram command"

@@ -16,13 +16,13 @@ basestation = basestation.find_basestation()
 source = 'serial@' + basestation + ':115200'
 
 print "Disseminate the stop command"
-subprocess.call(['cmd-srvr', source, '--stop'])
+subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--stop'])
 
 print 'Waiting to make sure all nodes are in stop state'
 time.sleep(10)
 
 print "Disseminate a reprogram command; switch to ota"
-subprocess.call(['cmd-srvr', source, '--reprogram', '1'])
+subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--reprogram', '1'])
 
 print 'Waiting to make sure all nodes are running ota'
 time.sleep(30)

@@ -15,6 +15,8 @@ os.environ['PATH'] = utils_dir + ':' + os.environ['PATH']
 basestation = basestation.find_basestation()
 source = 'serial@' + basestation + ':115200'
 
+print os.environ['PATH']
+
 # Check if we are trying to flash the basestation
 if sys.argv[2] == sys.argv[3]:
 # If we are we need to overwrite the running image on the basestation with the
@@ -30,4 +32,4 @@ if sys.argv[2] == sys.argv[3]:
 else:
 # If not call tos-ota
     print "Installing query fragment on mote " + str(sys.argv[2])
-    subprocess.call(['tos-ota', source, sys.argv[2], '--inject', '2', sys.argv[1]])
+    subprocess.call(['python', utils_dir+'/tos-ota', source, sys.argv[2], '--inject', '2', sys.argv[1]])
