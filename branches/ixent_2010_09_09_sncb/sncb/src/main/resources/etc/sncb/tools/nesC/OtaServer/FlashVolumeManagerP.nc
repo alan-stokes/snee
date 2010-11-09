@@ -41,10 +41,6 @@ generic module FlashVolumeManagerP()
 	interface AMPacket as MultiHopPacket;
 	interface Packet as RadioPacket;
 
-	interface NetProg;
-	interface Timer<TMilli> as DelayTimer;
-	interface StorageMap[uint8_t volumeId];
-
     interface StateChanged;
   }
 }
@@ -190,12 +186,7 @@ implementation
 /******************************************************************************/
 // Multihop code -- Robert
 
-	uint8_t newImageNum;
 	am_addr_t id;
-
-	enum {
-		DELUGE_CMD_REPROGRAM = 7,
-	};
 
 	event message_t* MultiHopReceive.receive(message_t* msg, void* payload, uint8_t len) {		
     error_t error = SUCCESS;
@@ -273,12 +264,6 @@ implementation
 	  sendReply(SUCCESS, sizeof(SerialReplyPacket) + sizeof(nx_struct ShortIdent));
 	  break;
 
-    		case DELUGE_CMD_REPROGRAM:
-      		newImageNum = request->imgNum;
-      		call DelayTimer.startOneShot(1024);
-      		sendReply(SUCCESS, sizeof(SerialReplyPacket));
-      		break;
-
 	}
       } 
     } else {
@@ -295,10 +280,6 @@ implementation
 	}
 	
   event void MultiHopSend.sendDone(message_t * msg, error_t error) { }
-
-  event void DelayTimer.fired() {
-    call NetProg.programImageAndReboot(call StorageMap.getPhysicalAddress[newImageNum](0));
-  }
 
   void sendReply(error_t error, storage_len_t len) {
     SerialReplyPacket *reply = (SerialReplyPacket *)call RadioPacket.getPayload(&serialMsg, sizeof(SerialReplyPacket));

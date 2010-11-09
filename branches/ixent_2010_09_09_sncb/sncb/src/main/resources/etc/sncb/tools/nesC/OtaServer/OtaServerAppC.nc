@@ -54,14 +54,6 @@ implementation
   FlashVolumeManagerP.MultiHopPacket -> DymoNetworkC;
   FlashVolumeManagerP.RadioPacket -> DymoNetworkC;
 
-// NetProg stuff -- seperate this out into seperate components?
-  components NetProgC;
-  components new TimerMilliC() as Timer;
-  components BlockStorageManagerC;
-  FlashVolumeManagerP.NetProg -> NetProgC;
-  FlashVolumeManagerP.DelayTimer -> Timer;
-  FlashVolumeManagerP.StorageMap -> BlockStorageManagerC;
-
 // Command server stuff
   components CommandServerAppC;
   OtaServerC.CommandServer -> CommandServerAppC.SplitControl;
