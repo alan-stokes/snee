@@ -17,7 +17,7 @@ The first thing that you need to do is install the Over-the-Air Programmer and M
 
 Slot 2 is reserved for the SNEE query plan that will be disseminated.
 
-The code for these programs is located at {{{$SNEEROOT/SNEE/compiler/src/main/resources/etc/sncb/tools/nesC}}}.
+The code for these programs is located at {{{$SNEEROOT/SNEE/sncb/target/classes/etc/sncb/tools/nesC/OtaServer}}}.
 
 == Install the OTA tool into the Nodes' External Flash Memory (Slot 1) ==
 
