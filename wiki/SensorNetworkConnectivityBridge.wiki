@@ -9,7 +9,7 @@ This page describes the commands used by the Sensor Network Connectivity Bridge.
   * TinyOS 2.1.1
   * SNEE set up according to [SettingUpDeveloperEnvironment these instructions]
   * Set $SNEEROOT to point to the root directory of the SNEE workspace you are using.
-  * Add {{{$SNEEROOT/SNEE/compiler/src/main/resources/etc/sncb/tools/python}}} and {{{$SNEEROOT/SNEE/compiler/src/main/resources/etc/sncb/tools/python/utils}}} directories to your PATH.
+  * Add {{{$SNEEROOT/SNEE/sncb/target/classes/etc/sncb/tools/python}}} and {{{$SNEEROOT/SNEE/sncb/target/classes/etc/sncb/tools/python/utils}}} directories to your PATH.
 
 = Setting up the Nodes =
 
@@ -17,7 +17,7 @@ The first thing that you need to do is install the Over-the-Air Programmer and M
 
 Slot 2 is reserved for the SNEE query plan that will be disseminated.
 
-The code for these programs is located at {{{$SNEEROOT/SNEE/sncb/target/classes/etc/sncb/tools/nesC/OtaServer}}}.
+The code for these programs is located at {{{$SNEEROOT/SNEE/sncb/target/classes/etc/sncb/tools/nesC}}}.
 
 == Install the OTA tool into the Nodes' External Flash Memory (Slot 1) ==
 
