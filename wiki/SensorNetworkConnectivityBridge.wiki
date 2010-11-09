@@ -52,7 +52,7 @@ The code for these programs is located at {{{$SNEEROOT/SNEE/sncb/target/classes/
   * init
     * This needs the metadata collector installed on the nodes' program memory.
     * Forms the network and collects metadata.
-    {{{ init <topology_file> <basestation_id> }}}
+    {{{ init <topology_file> <resources_file> <basestation_id> }}}
   * register
     * (This assumes that the OTA image is in external flash slot 1)
     * Installs an image to a specific node.
