@@ -49,15 +49,6 @@ FM_CMD_ADDR      = 4
 FM_CMD_SYNC      = 5
 FM_CMD_IDENT     = 6
 
-# Commands for DelugeManager
-DM_CMD_STOP             = 1
-DM_CMD_LOCAL_STOP       = 2
-DM_CMD_ONLY_DISSEMINATE = 3
-DM_CMD_DISSEMINATE_AND_REPROGRAM = 4
-#DM_CMD_REPROGRAM        = 5
-DM_CMD_REPROGRAM        = 7
-DM_CMD_BOOT             = 6
-
 ERROR_SUCCESS  = 0   # T2-compatible
 ERROR_NO_ROUTE = 1
 
@@ -76,14 +67,6 @@ class FMReqPacket(tos.Packet):
                              ('offset', 'int',  4),
                              ('length', 'int',  2),
                              ('data',   'blob', None)],
-                            packet)
-
-class DMReqPacket(tos.Packet):
-    def __init__(self, packet = None):
-        tos.Packet.__init__(self,
-                            [('id',    'int',  2),
-                             ('cmd',    'int',  1),
-                             ('imgNum', 'int',  1)],
                             packet)
 
 class SerialReplyPacket(tos.Packet):
@@ -134,22 +117,12 @@ def crc16(data):
     return crc
 
 def handleResponse(success, msg):
-#    print("read")
-
     if success == True:
         packet = am.read(timeout=2)
-
-#        sys.stdout.write("read: ")
-#        [sys.stdout.write("[%02x]" % b) for b in packet.payload()]
-#        print("")
 
         while packet and packet.type == 100:
             print "".join([chr(i) for i in packet.data])
             packet = am.read()
-
-#            sys.stdout.write("read: ")     
-#            [sys.stdout.write("[%02x]" % b) for b in packet.payload()]
-#            print("")
 
         if not packet:
             print "No response"
@@ -165,18 +138,10 @@ def handleResponse(success, msg):
     return False
 
 def ident(destId, timeout=None):
-#    print("ident")
     sreqpkt = FMReqPacket((destId, FM_CMD_IDENT, 0, 0, 0, []))
-    
-#    [sys.stdout.write("[%02x]" % b) for b in sreqpkt.payload()]
-#    print("")
 
     if am.write(sreqpkt, FM_AMID, timeout=timeout):
         packet = am.read(timeout=timeout)
-
-#        sys.stdout.write("read: ")
-#        [sys.stdout.write("[%02x]" % b) for b in packet.payload()]
-#        print("")
 
         reply = SerialReplyPacket(packet.data)
 
@@ -193,7 +158,6 @@ def ident(destId, timeout=None):
     return 0
 
 def read(destId, imgNum, offset, length):
-#    print("read")
     r = []
 
     sreqpkt = FMReqPacket((destId, FM_CMD_READ, imgNum, offset, length, []))
@@ -202,16 +166,8 @@ def read(destId, imgNum, offset, length):
         if sreqpkt.length > SERIAL_DATA_LENGTH:
             sreqpkt.length = SERIAL_DATA_LENGTH
 
-#        sys.stdout.write("write: ")
-#        [sys.stdout.write("[%02x]" % b) for b in sreqpkt.payload()]
-#        print("")
-
         if am.write(sreqpkt, FM_AMID):
             packet = am.read()
-
-#            sys.stdout.write("read: ")
-#            [sys.stdout.write("[%02x]" % b) for b in packet.payload()]
-#            print("")
 
             reply = SerialReplyPacket(packet.data)
             if reply.error == ERROR_SUCCESS:
@@ -231,15 +187,11 @@ def read(destId, imgNum, offset, length):
     return r
 
 def erase(destId, imgNum):
-#    print("erase")
     # Note: the normal erase doesn't work properly on AT45DB. A
     # workaround is to do the normal erase (to make happy STM25P)
     # and then overwrite the metadata (to make happy AT45DB).
 
     sreqpkt = FMReqPacket((destId, FM_CMD_ERASE, imgNum, 0, 0, []))
-
-#    [sys.stdout.write("[%02x]" % b) for b in sreqpkt.payload()]
-#    print("")
 
     success = am.write(sreqpkt, FM_AMID)
     result = handleResponse(success, "ERROR: Unable to erase the flash volume")
@@ -255,18 +207,12 @@ def erase(destId, imgNum):
     return sync(destId, imgNum)
 
 def sync(destId, imgNum):
-#    print("sync")
-
     sreqpkt = FMReqPacket((destId, FM_CMD_SYNC, imgNum, 0, 0, []))
-
-#    [sys.stdout.write("[%02x]" % b) for b in sreqpkt.payload()]
-#    print("")
 
     success = am.write(sreqpkt, FM_AMID)
     return handleResponse(success, "ERROR: Unable to sync the flash volume")
 
 def write(destId, imgNum, data):
-#    print("write")
     sreqpkt = FMReqPacket((destId, FM_CMD_WRITE, imgNum, 0, 0, []))
     length = len(data)
     total_length = length   # For progress bar
@@ -289,9 +235,6 @@ def write(destId, imgNum, data):
             sreqpkt.length = length
         sreqpkt.data = data[sreqpkt.offset:sreqpkt.offset+sreqpkt.length]
 
-#        [sys.stdout.write("[%02x]" % b) for b in sreqpkt.payload()]
-#        print("")
-
         # Sends over serial to the mote
         if not am.write(sreqpkt, FM_AMID):
             print
@@ -300,10 +243,6 @@ def write(destId, imgNum, data):
 
         # Waiting for confirmation
         packet = am.read()
-
-#        sys.stdout.write("read: ")
-#        [sys.stdout.write("[%02x]" % b) for b in packet.payload()]
-#        print("")
 
         if packet != None:
             reply = SerialReplyPacket(packet.data)
@@ -330,7 +269,6 @@ def verifyIdent(i):
     return False
 
 def getIdent(destId, imgNum):
-#    print("getIdent")		
     r = read(destId, imgNum, DELUGE_IDENT_OFFSET, DELUGE_IDENT_SIZE)
     if r:
         return Ident(r)
@@ -419,40 +357,7 @@ def ping(destId, imgNum):
     print "--------------------------------------------------"
     return False
 
-def boot():
-    sreqpkt = DMReqPacket((DM_CMD_BOOT, 0))
-#    success = am.write(sreqpkt, DM_AMID)
-    success = am.write(sreqpkt, FM_AMID)
-    return handleResponse(success, "ERROR: Unable to boot the mote")
-
-def reprogram(destId, imgNum):
-    sreqpkt = DMReqPacket((destId, DM_CMD_REPROGRAM, imgNum))
-#    success = am.write(sreqpkt, DM_AMID)
-    success = am.write(sreqpkt, FM_AMID)
-    return handleResponse(success, "ERROR: Unable to reprogram the mote")
-
-def disseminate(imgNum):
-    sreqpkt = DMReqPacket((DM_CMD_ONLY_DISSEMINATE, imgNum))
-    success = am.write(sreqpkt, DM_AMID)
-    return handleResponse(success, "ERROR: Unable to disseminate")
-
-def disseminateAndReboot(imgNum):
-    sreqpkt = DMReqPacket((DM_CMD_DISSEMINATE_AND_REPROGRAM, imgNum))
-    success = am.write(sreqpkt, DM_AMID)
-    return handleResponse(success, "ERROR: Unable to disseminate-and-reboot")
-
-def stop():
-    sreqpkt = DMReqPacket((DM_CMD_STOP, 0))
-    success = am.write(sreqpkt, DM_AMID)
-    return handleResponse(success, "ERROR: Unable to initiate the stop")
-
-def localstop():
-    sreqpkt = DMReqPacket((DM_CMD_LOCAL_STOP, 0))
-    success = am.write(sreqpkt, DM_AMID)
-    return handleResponse(success, "ERROR: Unable to initiate the local stop")
-
 def print_usage():
-#    print "Usage: %s <source> <-p|-i|-r|-d|-e|-s> image_number [options]" % sys.argv[0]
     print "Usage: %s <source> <destination> <-p|-i|-r|-e> image_number [options]" % sys.argv[0]
     print "  <destination>    The AM ID of the destination mote."
     print "  <source> can be:"
@@ -462,15 +367,6 @@ def print_usage():
     print "  -i --inject      Inject a compiled TinyOS application"
     print "                   [options]: tos_image.xml file path"
     print "  -e --erase       Erase an image in the external flash"
-#    print "  -b --boot        Force a reboot of the mote"
-    print "  -r --reprogram   Reprogram the mote"
-#    print "  -d --disseminate Disseminate the image in the external flash to the network"
-#    print "  -dr --disseminate-and-reprogram"
-#    print "  -s --stop        Stop the dissemination "
-#    print "  -ls --local-stop Stop the dissemination only on the local mote"
-
-#     print "  -b --reprogram_bs\n     Reprogram only the directly-connected mote"
-#     print "  -s --reset\n     Reset the versioning information for a given image"
 
 def checkImgNum():
     global imgNum
@@ -516,27 +412,6 @@ if len(sys.argv) >= 5:
         checkImgNum()
         if erase(destId, imgNum):
             print "Image number %d erased" % imgNum
-#    elif sys.argv[2] in ["-b", "--boot"]:
-#        if boot():
-#            print "Command sent"
-    elif sys.argv[3] in ["-r", "--reprogram"]:
-        checkImgNum()
-        if reprogram(destId, imgNum):
-            print "Command sent"
-#    elif sys.argv[2] in ["-d", "--disseminate"]:
-#        checkImgNum()
-#        if disseminate(imgNum):
-#            print "Command sent"
-#    elif sys.argv[2] in ["-dr", "--disseminate-and-reboot"]:
-#        checkImgNum()
-#        if disseminateAndReboot(imgNum):
-#            print "Command sent"
-#    elif sys.argv[2] in ["-s", "--stop"]:
-#        if stop():
-#            print "Command sent"
-#    elif sys.argv[2] in ["-ls", "--local-stop"]:
-#        if localstop():
-#            print "Command sent"
     else:
         print_usage()
 
