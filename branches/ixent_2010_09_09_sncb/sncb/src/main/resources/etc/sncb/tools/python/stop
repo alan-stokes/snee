@@ -17,7 +17,8 @@ basestation = basestation.find_basestation()
 source = 'serial@' + basestation + ':115200'
 
 print "Disseminate the stop command"
-subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--stop'])
+retcode = subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--stop'])
+handleReturnCode(retcode, 'Input/Output error relating to the Node Controller')
 
 print 'Waiting to make sure all nodes are in stop state'
 time.sleep(10)

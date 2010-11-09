@@ -24,7 +24,8 @@ handleReturnCode(retcode, 'Couldn\'t install metadata collector basestation on m
 
 # start sending metadata
 print "Start collecting metadata"
-subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--start'])
+retcode = subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--start'])
+handleReturnCode(retcode, 'Input/Output error relating to the Node Controller')
 
 # collect metadata
 print "Collecting..."
@@ -32,7 +33,8 @@ subprocess.call(['python', utils_dir+'/metadata-collector', source, sys.argv[1],
 
 # stop sending metadata
 print "Stop collecting metadata"
-subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--stop'])
+retcode = subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--stop'])
+handleReturnCode(retcode, 'Input/Output error relating to the Node Controller')
 
 # parse text file and convert to xml
 print "Processing..."
@@ -43,7 +45,8 @@ time.sleep(10)
 
 # boot into ota
 print "Switch motes to OTA server"
-subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--reprogram', '1'])
+retcode = subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--reprogram', '1'])
+handleReturnCode(retcode, 'Input/Output error relating to the Node Controller')
 
 # wait for motes to boot into ota before continuing
 print "Waiting to make sure all motes have received the reprogram command"

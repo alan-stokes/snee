@@ -7,6 +7,7 @@ sys.path.append(utils_dir)
 
 # Now we can import the basestation module
 import basestation
+from error_handling import handleReturnCode
 
 # Now add the snee utilities to PATH
 os.environ['PATH'] = utils_dir + ':' + os.environ['PATH']
@@ -16,10 +17,12 @@ basestation = basestation.find_basestation()
 source = 'serial@' + basestation + ':115200'
 
 print 'Disseminate a reprogram command; switch to query fragment'
-subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--reprogram', '2'])
+retcode = subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--reprogram', '2'])
+handleReturnCode(retcode, 'Input/Output error relating to the Node Controller')
 
 print 'Waiting to make sure all nodes are running the query fragment'
 time.sleep(30)
 
 print 'Disseminate the start command'
-subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--start'])
+retcode = subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--start'])
+handleReturnCode(retcode, 'Input/Output error relating to the Node Controller')
