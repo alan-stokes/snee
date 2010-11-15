@@ -35,7 +35,11 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.evaluator;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -46,10 +50,15 @@ import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
+import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
+import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.operators.evaluator.DeliverOperatorImpl;
 import uk.ac.manchester.cs.snee.operators.evaluator.EvaluatorPhysicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
@@ -205,15 +214,69 @@ public class QueryEvaluator implements Observer {
 		return phyOp;
 	}
 
+	boolean firstTime = true;
+	long currentEvalTime = -1;
+	long prevEvalTime = -2;
+	int currentEvalTimeCount = 0;
+	
+	private void logTupleCount(Output outputItem) {
+		String sep = System.getProperty("file.separator");
+		String outputDir = "/";
+		try {
+			outputDir = SNEEProperties.getSetting(
+					SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
+					"/";
+			String fname = outputDir + sep + "tupleCount.csv";
+	
+			if (firstTime) {
+				//create file, add header
+				PrintWriter out = new PrintWriter(new BufferedWriter(
+						new FileWriter(fname)));
+				out.println("time,numTuples");
+				out.close();
+				firstTime = false;
+			}
+			TaggedTuple tt = (TaggedTuple)outputItem;
+			Tuple t = tt.getTuple();
+			currentEvalTime = (Integer) t.getAttributeValue(0);
+			if (currentEvalTime==prevEvalTime) {
+				currentEvalTimeCount++;
+			} else {
+				//record currentEvalTime,currentEvalTimeCount
+				PrintWriter out = new PrintWriter(new BufferedWriter(
+						new FileWriter(fname, true)));
+				out.println(currentEvalTime+","+currentEvalTimeCount);
+				out.close();
+				currentEvalTimeCount=1;
+				prevEvalTime=currentEvalTime;
+			}
+		
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private void logTupleCount(Collection<Output> outputItemList) {
+		Iterator<Output> iter = outputItemList.iterator();
+		while (iter.hasNext()) {
+			logTupleCount(iter.next());
+		}
+	}
+	
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER update() for query " + _queryId + " " +
 					" with " + observed);
 		if (observed instanceof Output) {
-			_results.add((Output) observed);
+			Output outputItem = (Output) observed;
+			logTupleCount(outputItem);
+			_results.add(outputItem);
 		} else if (observed instanceof List<?>) {
-			_results.addAll((Collection<Output>) observed);
+			Collection<Output> outputItems = (Collection<Output>) observed;
+			logTupleCount(outputItems);
+			_results.addAll(outputItems);
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN update()");
