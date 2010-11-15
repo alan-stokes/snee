@@ -90,7 +90,7 @@
  								<artifactItem>
 									<groupId>uk.ac.manchester.cs.snee</groupId>
 									<artifactId>snee-sncb</artifactId>
-									<version>1.4.1-SNAPSHOT</version>
+									<version>1.4.3-SNAPSHOT</version>
 									<type>jar</type>
 									<outputDirectory>${project.build.directory}</outputDirectory>
 									<includes>etc/sncb/**/*</includes>
