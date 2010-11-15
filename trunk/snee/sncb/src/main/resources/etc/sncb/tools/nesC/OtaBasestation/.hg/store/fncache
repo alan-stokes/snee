@@ -1,0 +1,13 @@
+data/.hgignore.i
+data/Makefile.i
+data/OTADataMsg.h.i
+data/README.txt.i
+data/TestSerial.h.i
+data/TestSerial.java.i
+data/TestSerialAppC.nc.i
+data/TestSerialC.nc.i
+data/OtaBasestation.h.i
+data/OtaBasestationAppC.nc.i
+data/OtaBasestationC.nc.i
+data/volumes-at45db.xml.i
+data/volumes-stm25p.xml.i

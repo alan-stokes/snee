@@ -31,14 +31,18 @@ public class WhenScheduler {
 	
 	private CostParameters costParams;
 	
+	private boolean useNetworkController;
+	
 	/**
 	 * Constructor for Sensor Network When-Scheduling Decision Maker.
 	 */
-	public WhenScheduler(boolean decreaseBetaForValidAlpha, Metadata m) {
+	public WhenScheduler(boolean decreaseBetaForValidAlpha, Metadata m,
+			boolean useNetworkController) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER WhenScheduler()");
 		this.decreaseBetaForValidAlpha=decreaseBetaForValidAlpha;
 		this.costParams = m.getCostParameters();
+		this.useNetworkController = useNetworkController;
 		if (logger.isDebugEnabled());
 			logger.debug("RETURN WhenScheduler()");
 	}
@@ -123,7 +127,7 @@ public class WhenScheduler {
 
 	    try {
 	    	final Agenda agenda = new Agenda(qos.getMaxAcquisitionInterval(), 
-	    			maxBFactorSoFar, daf, costParams, queryName);
+	    			maxBFactorSoFar, daf, costParams, queryName, useNetworkController);
 			if (logger.isDebugEnabled())
 				logger.debug("RETURN doWhenScheduling()");
 	    	return agenda;
@@ -257,7 +261,8 @@ public class WhenScheduler {
 		}
 	    
 		try {
-	    	agenda = new Agenda(qos.getMaxAcquisitionInterval(), beta, daf, costParams, "");
+	    	agenda = new Agenda(qos.getMaxAcquisitionInterval(), beta, daf, 
+	    			costParams, "", useNetworkController);
 		    logger.trace("Agenda constructed successfully length="
 				    + agenda.getLength_bms(Agenda.INCLUDE_SLEEP) + " met target length="
 				    + alpha_bms * beta + " with beta="
@@ -266,7 +271,7 @@ public class WhenScheduler {
 		    
 		} catch (AgendaLengthException e) {
 			
-			if (this.decreaseBetaForValidAlpha) {
+			if (!this.decreaseBetaForValidAlpha) {
 				String msg="Set decrease_bfactor_to_avoid_agenda_overlap=true in the "+
 				 "ini file to avoid need for overlap, as overlapping agendas are not" +
 				 "yet supported.";
@@ -318,7 +323,7 @@ public class WhenScheduler {
 	    do {
 	    	try {
 	    		agenda = new Agenda(qos.getMaxAcquisitionInterval(), 
-	    				currentMaxBuffFactor, daf, costParams, "");
+	    				currentMaxBuffFactor, daf, costParams, "", useNetworkController);
 	    		//CB I don't think this is neseccary as new Agenda throw an error.
 	    		//CB :Left in for safety
 	    		if (agenda.getLength_bms(Agenda.IGNORE_SLEEP) > bmsDeliveryTime) {

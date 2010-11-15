@@ -195,8 +195,10 @@ public class SourcePlanner {
 			logger.debug("ENTER doSNWhenScheduling()");
 		boolean decreaseBetaForValidAlpha = SNEEProperties.getBoolSetting(
 				SNEEPropertyNames.WHEN_SCHED_DECREASE_BETA_FOR_VALID_ALPHA);
+		boolean useNetworkController = SNEEProperties.getBoolSetting(
+				SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
 		WhenScheduler whenSched = new WhenScheduler(decreaseBetaForValidAlpha,
-				metadata);
+				metadata, useNetworkController);
 		Agenda agenda = whenSched.doWhenScheduling(daf, qos, queryName);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new AgendaUtils(agenda, true).generateImage();

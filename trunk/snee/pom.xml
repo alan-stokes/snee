@@ -5,11 +5,12 @@
 	<artifactId>SNEE</artifactId>
 	<packaging>pom</packaging>
 	<name>SNEE</name>
-	<version>1.4.0</version>
+	<version>1.4.2</version>
 	<description>Continuous query processing engine for streaming and stored data.</description>
 
 	<modules>
 		<module>snee-core</module>
+		<module>sncb</module>
 		<module>compiler</module>
 		<!--<module>datasource</module>-->
 		<module>clients</module>
@@ -93,10 +94,6 @@
 		</repository>
 	</repositories>
 
-	<dependencyManagement>
-		<dependencies>
-		</dependencies>
-	</dependencyManagement>
 	<distributionManagement>
 		<repository>
 			<id>ssg4env.internal</id>

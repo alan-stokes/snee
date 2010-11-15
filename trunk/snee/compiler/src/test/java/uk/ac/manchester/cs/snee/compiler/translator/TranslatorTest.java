@@ -39,6 +39,8 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReade
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlLexer;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
+
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -72,7 +74,7 @@ public class TranslatorTest {
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException, UtilsException {
+	SNEEDataSourceException, CostParametersException, UtilsException, SNCBException {
 		Properties props = new Properties();
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
@@ -80,6 +82,8 @@ public class TranslatorTest {
 		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
+		props.setProperty(SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION, "false");
+		props.setProperty(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE, "false");
 		SNEEProperties.initialise(props);
 		Metadata schemaMetadata = new Metadata();
 		translator = new Translator(schemaMetadata);
