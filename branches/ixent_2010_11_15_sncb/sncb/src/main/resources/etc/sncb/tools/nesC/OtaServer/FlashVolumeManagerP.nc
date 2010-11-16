@@ -37,9 +37,9 @@ generic module FlashVolumeManagerP()
     interface Leds;
 
     interface AMSend as MultiHopSend;
-	interface Receive as MultiHopReceive;
-	interface AMPacket as MultiHopPacket;
-	interface Packet as RadioPacket;
+		interface Receive as MultiHopReceive;
+		interface AMPacket as MultiHopPacket;
+		interface Packet as RadioPacket;
 
     interface StateChanged;
   }

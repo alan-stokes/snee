@@ -116,6 +116,17 @@ def crc16(data):
 
     return crc
 
+def handleCommFailure():
+    print "ERROR: Unable to communicate with destination mote."
+    print "Possible reasons are:"
+    print "-- Broken hardware"
+    print "-- Destination mote has not enough power"
+    print "-- OtaServer isn't installed on the destination mote"
+    print "-- OtaBasestation isn't installed on the basestation"
+    print "-- No route can be found to the destination mote"
+    sys.exit(1)
+    
+
 def handleResponse(success, msg):
     if success == True:
         packet = am.read(timeout=2)
@@ -147,16 +158,9 @@ def ident(destId, timeout=None):
 
         if reply.error == ERROR_SUCCESS:
             return ShortIdent(reply.data)
-        if reply.error == ERROR_NO_ROUTE:
-            print "ERROR: Unable to communicate with destination mote."
-            print "Possible reasons are:"
-            print "-- Broken hardware"
-            print "-- Destination mote has not enough power"
-            print "-- OtaServer isn't installed on the destination mote"
-            print "-- OtaBasestation isn't installed on the basestation"
-            print "-- No route can be found to the destination mote"
-    return 0
-
+        else:
+            handleCommFailure()
+        
 def read(destId, imgNum, offset, length):
     r = []
 
@@ -173,11 +177,9 @@ def read(destId, imgNum, offset, length):
             if reply.error == ERROR_SUCCESS:
                 r.extend(reply.data)
             else:
-                r = None
-                break
+                handleCommFailure()
         else:
-            r = None
-            break
+            handleCommFailure()
 
         sreqpkt.offset += sreqpkt.length
         if sreqpkt.offset >= (offset + length):
@@ -396,7 +398,7 @@ if len(sys.argv) >= 5:
     checkDestinationId()
 
     print "Checking if node is a Deluge T2 base station ..."
-    result = ident(destId, timeout=4)
+    result = ident(destId)
     if result == 0:
         sys.exit(-1)   
 
@@ -419,4 +421,5 @@ else:
     print_usage()
 
 sys.exit()
+
 

@@ -11,10 +11,10 @@ implementation {
   App.SplitControl -> SerialActiveMessageC;
 
 // Flash manager wiring
-  components new SerialAMSenderC(0x53) as FlashManagerSender;
-  components new SerialAMReceiverC(0x53) as FlashManagerReceiver;	  
-  App.FlashManagerSender -> FlashManagerSender;
-  App.FlashManagerReceiver -> FlashManagerReceiver;
+  components new SerialAMSenderC(0x53) as SerialAMSender;
+  components new SerialAMReceiverC(0x53) as SerialAMReceiver;	  
+  App.SerialSender -> SerialAMSender;
+  App.SerialReceiver -> SerialAMReceiver;
 
   components DymoNetworkC;
   App.SplitControl -> DymoNetworkC;
@@ -32,5 +32,6 @@ implementation {
   components new TimerMilliC();
   App.Timer -> TimerMilliC;
 }
+
 
 

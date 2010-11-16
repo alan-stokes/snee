@@ -7,8 +7,8 @@ module OtaBasestationC {
     interface Leds;
     interface Boot;
 
-    interface AMSend as FlashManagerSender;
-    interface Receive as FlashManagerReceiver;
+    interface AMSend as SerialSender;
+    interface Receive as SerialReceiver;
 
     interface AMSend as MultiHopSend;
     interface Receive as MultiHopReceive;
@@ -27,9 +27,6 @@ implementation {
 	message_t serialPacket;
 
   bool radioStackLocked = FALSE;
-	bool serialStackLocked = FALSE;
-
-  SerialReplyPacket* serialPayload;
 
 	void programFailure() {
 		call Leds.led0On();
@@ -37,32 +34,56 @@ implementation {
 		call Leds.led2On();
 	}
 
-  event void Boot.booted() {		
-// Start the node controller
-    call SplitControl.start();
-
-// Get a buffer for serial comms
-    serialPayload = (SerialReplyPacket*) call FlashManagerSender.getPayload(&serialPacket, sizeof(SerialReplyPacket));
+  void sendSerialPacket(uint8_t result, void* payload, uint8_t len) {
+    uint8_t packetLen;
+    
+    SerialReplyPacket* serialPayload = (SerialReplyPacket*) call SerialSender.getPayload(&serialPacket, sizeof(SerialReplyPacket));
 
     if (serialPayload == NULL) {
       programFailure();
     }
 
-    if (call FlashManagerSender.maxPayloadLength() < sizeof(SerialReplyPacket)) { 
+    if (call SerialSender.maxPayloadLength() < sizeof(SerialReplyPacket)) { 
       programFailure();
+    }
+
+    if (result != SUCCESS) {
+      serialPayload->error = result;
+      packetLen = sizeof(SerialReplyPacket);
+    } else {
+      memcpy(serialPayload, payload, len);
+      packetLen = len;
+    }
+
+    if (call SerialSender.send(AM_BROADCAST_ADDR, &serialPacket, packetLen) != SUCCESS) {
+      programFailure();
+    }				
+  }
+
+  event void SerialSender.sendDone(message_t* msg, error_t error) {
+	}
+
+  event void Boot.booted() {
+    // ALWAYS start DYMO first!
+    call SplitControl.start();		    
+  }
+
+  event void SplitControl.startDone(error_t error) {
+    if (error == SUCCESS) {
+      call CommandServer.start();
     }
   }
 
-  event void SplitControl.startDone(error_t error) {		
-		if (error != SUCCESS) {
-			programFailure();
-		}
-	}
-
   event void SplitControl.stopDone(error_t error) { }
 
-  event message_t* FlashManagerReceiver.receive(message_t* msg, void* payload, uint8_t len) {
-		error_t result;
+  event void CommandServer.startDone(error_t error) { }
+
+  event void CommandServer.stopDone(error_t error) { }
+
+  event void StateChanged.changed(uint8_t state) { }
+
+  event message_t* SerialReceiver.receive(message_t* msg, void* payload, uint8_t len) {    
+		error_t result;    
 
 		if (radioStackLocked) {
 			programFailure();
@@ -80,12 +101,14 @@ implementation {
 				return msg;
 			}
 
+      // DYMO inserts data into the packet so adjust the packet length
+      // accordingly.
 			memcpy(radioPayload->data, payload + sizeof(uint16_t), len - sizeof(uint16_t));
 
 			result = call MultiHopSend.send(request->id, &radioPacket, len);
 
   		if (result == SUCCESS)	{								
-				radioStackLocked = TRUE;
+				radioStackLocked = TRUE;        
   		} else {
 				programFailure();
 			}
@@ -97,49 +120,31 @@ implementation {
   event void MultiHopSend.sendDone(message_t * msg, error_t error) {
     if (&radioPacket == msg && error == SUCCESS ) {
 // dymo has a route and the packet has been sent.
+      // Start the timeout timer
+      call Timer.startOneShot(TIMEOUT);
     } else if (error == FAIL) {
 // couldn't find a route
-		  if (!serialStackLocked) {
-        serialStackLocked = TRUE;
-
-			  serialPayload->error = ERROR_NO_ROUTE;
-
-  		  if (call FlashManagerSender.send(AM_BROADCAST_ADDR, &serialPacket, sizeof(SerialReplyPacket)) != SUCCESS) {				
-			  	serialStackLocked = FALSE;
-			  }
-		  }    
+      sendSerialPacket(ERROR_NO_ROUTE, NULL, 0);
     } else {
-      // gone wonky here.
+// gone wonky here.
       programFailure();
     }		
     radioStackLocked = FALSE;
   }
 
 	event message_t* MultiHopReceive.receive(message_t* msg, void* payload, uint8_t len) {
-    // Lock the serial stack. The serial stack shouldn't be locked at this
-    // point but check anyway
-		if (!serialStackLocked) {
-      serialStackLocked = TRUE;
+    // Timer should be running, otherwise we have a problem because we've
+    // signalled to the basestation that we didn't get a reply packet.    
+    if (call Timer.isRunning()) {
+      call Timer.stop();
+    }
 
-      // Is len >= sizeof(SerialReplyPacket)? 
-			memcpy(serialPayload, payload, len);
-
-  		if (call FlashManagerSender.send(AM_BROADCAST_ADDR, &serialPacket, len) != SUCCESS) {				
-				serialStackLocked = FALSE;
-			}
-		}
-
+    sendSerialPacket(SUCCESS, payload, len);
 		return msg;
 	}
 
-	event void FlashManagerSender.sendDone(message_t* msg, error_t error) {
-		serialStackLocked = FALSE;	
-	}
-
-  event void CommandServer.startDone(error_t error) { }
-  event void CommandServer.stopDone(error_t error) { }
-  event void StateChanged.changed(uint8_t state) { }
-
   event void Timer.fired() {
+    sendSerialPacket(ERROR_NO_REPLY, NULL, 0);
   }
 }
+
