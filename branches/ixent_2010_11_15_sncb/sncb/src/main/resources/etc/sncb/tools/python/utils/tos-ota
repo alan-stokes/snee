@@ -123,30 +123,28 @@ def handleCommFailure():
     print "-- Destination mote has not enough power"
     print "-- OtaServer isn't installed on the destination mote"
     print "-- OtaBasestation isn't installed on the basestation"
-    print "-- No route can be found to the destination mote"
+    print "-- No route can be found from the destination mote to the basestation"
+    print "-- No route can be found from the basestation to the destination mote"
     sys.exit(1)
     
 
 def handleResponse(success, msg):
     if success == True:
-        packet = am.read(timeout=2)
+        packet = am.read(timeout=4)
 
         while packet and packet.type == 100:
             print "".join([chr(i) for i in packet.data])
             packet = am.read()
 
         if not packet:
-            print "No response"
-            return False
+			handleCommFailure()
         reply = SerialReplyPacket(packet.data)
         if reply.error == ERROR_SUCCESS:
             return True
         else:
-            print msg, reply
-            return False
+			handleCommFailure()
 
-    print "ERROR: Unable to send the command"
-    return False
+	handleCommFailure()
 
 def ident(destId, timeout=None):
     sreqpkt = FMReqPacket((destId, FM_CMD_IDENT, 0, 0, 0, []))
@@ -199,14 +197,14 @@ def erase(destId, imgNum):
     result = handleResponse(success, "ERROR: Unable to erase the flash volume")
     if result: return True;
 
-    print 'Attempt the workaround for AT45DB...'
-    sreqpkt = FMReqPacket((destId, FM_CMD_WRITE, imgNum, 0, 0, []))
-    sreqpkt.data = [0xFF] * DELUGE_IDENT_SIZE
-    sreqpkt.length = DELUGE_IDENT_SIZE
-    success = am.write(sreqpkt, FM_AMID)
-    result = handleResponse(success, "ERROR: Unable to erase the flash volume")
-    if not result: return False;
-    return sync(destId, imgNum)
+#    print 'Attempt the workaround for AT45DB...'
+#    sreqpkt = FMReqPacket((destId, FM_CMD_WRITE, imgNum, 0, 0, []))
+#    sreqpkt.data = [0xFF] * DELUGE_IDENT_SIZE
+#    sreqpkt.length = DELUGE_IDENT_SIZE
+#    success = am.write(sreqpkt, FM_AMID)
+#    result = handleResponse(success, "ERROR: Unable to erase the flash volume")
+#    if not result: return False;
+#    return sync(destId, imgNum)
 
 def sync(destId, imgNum):
     sreqpkt = FMReqPacket((destId, FM_CMD_SYNC, imgNum, 0, 0, []))
