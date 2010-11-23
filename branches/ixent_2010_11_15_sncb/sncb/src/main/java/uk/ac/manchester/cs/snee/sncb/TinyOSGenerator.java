@@ -102,7 +102,6 @@ import uk.ac.manchester.cs.snee.sncb.tos.SensorT1Component;
 import uk.ac.manchester.cs.snee.sncb.tos.SensorT2Component;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialAMReceiveComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialAMSendComponent;
-import uk.ac.manchester.cs.snee.sncb.tos.SerialComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialStarterComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.TXT1Component;
 import uk.ac.manchester.cs.snee.sncb.tos.TXT2Component;
@@ -207,8 +206,6 @@ public class TinyOSGenerator {
     private static String COMPONENT_RADIOTX;
 
     private static String COMPONENT_RADIORX;
-
-    public static String COMPONENT_SERIAL_DEVICE;
     
     public static String COMPONENT_SERIALTX;
     
@@ -370,7 +367,6 @@ public class TinyOSGenerator {
 		    }
 		    	
 		    COMPONENT_LEDS = "LedsC";
-		    COMPONENT_SERIAL_DEVICE = "SerialActiveMessageC";
 		    COMPONENT_SERIALTX = "SerialAMSenderC";
 		    COMPONENT_SERIALRX = "SerialAMReceiverC";
 		    COMPONENT_SERIAL_STARTER = "SerialStarterC";
@@ -1201,10 +1197,6 @@ public class TinyOSGenerator {
 
 	private void t2AddStartupProtocolComponents(final NesCConfiguration config)
 			throws CodeGenerationException {
-		SerialComponent serialComp = new SerialComponent(COMPONENT_SERIAL_DEVICE, config, tossimFlag);
-		config.addComponent(serialComp);
-		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_SERIAL_DEVICE, INTERFACE_SPLITCONTROL, "SerialControl", INTERFACE_SPLITCONTROL);
-		
 		String aid = ActiveMessageIDGenerator.getActiveMessageID("AM_SERIAL_STARTUP_MESSAGE");
 		SerialAMReceiveComponent serialRxComp = 
 			new SerialAMReceiveComponent(COMPONENT_SERIALRX+"StartUp", config, aid, tossimFlag);
@@ -1306,17 +1298,9 @@ public class TinyOSGenerator {
 				
 			} else if (op instanceof SensornetDeliverOperator) {
 				
-				if (this.useNodeController) {
-					SerialStarterComponent serialStartComp = new SerialStarterComponent (
+				SerialStarterComponent serialStartComp = new SerialStarterComponent (
 							COMPONENT_SERIAL_STARTER, config, tossimFlag);
-					config.addComponent(serialStartComp);					
-				} else {
-					/* Wire fragment component to serial device */
-					SerialComponent serialComp = new SerialComponent(COMPONENT_SERIAL_DEVICE, config, tossimFlag);
-					config.addComponent(serialComp);
-					config.addWiring(fragComp.getID(), serialComp.getID(), INTERFACE_SPLITCONTROL, 
-							"SerialAMControl", INTERFACE_SPLITCONTROL);
-				}
+				config.addComponent(serialStartComp);					
 
 				SerialAMSendComponent serialSendComp = new SerialAMSendComponent(currentSite,frag,null,null,
 						COMPONENT_SERIALTX, config, "AM_DELIVERMESSAGE", tossimFlag);
@@ -1837,10 +1821,6 @@ public class TinyOSGenerator {
 			"SendDeliver", "SendDeliver");
 		
 		if (tosVersion==2){
-			if (!this.useNodeController) {
-				fragConfig.linkToExternalProvider(rootOpName, INTERFACE_SPLITCONTROL, 
-					"SerialAMControl", "SerialAMControl");
-			}
 			fragConfig.linkToExternalProvider(rootOpName, INTERFACE_PACKET,
 					"Packet", "Packet");
 		}
@@ -2474,21 +2454,25 @@ public class TinyOSGenerator {
 				"QueryPlan" + siteID, isSink);
 
 		    if (tosVersion==2) {
-		    	Template.instantiate(
-					    NESC_MISC_FILES_DIR + "/itoa.h",
-					    nescOutputDir + nodeDir
-						    + "/itoa.h");
+		    	Template.instantiate(NESC_MISC_FILES_DIR + "/itoa.h",
+					    nescOutputDir + nodeDir + "/itoa.h");
 		    }
 		    
 		    if (this.includeDeluge || this.useNodeController) {
-		    	Template.instantiate(
-					    NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
+		    	Template.instantiate(NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
 					    nescOutputDir + nodeDir +"/volumes-stm25p.xml");	
 		    	
-		    	Template.instantiate(
-					    NESC_MISC_FILES_DIR + "/volumes-at45db.xml",
+		    	Template.instantiate(NESC_MISC_FILES_DIR + "/volumes-at45db.xml",
 					    nescOutputDir + nodeDir +"/volumes-at45db.xml");
-		    }		    
+		    }
+		    if (!this.useNodeController && isSink) {
+		    	Template.instantiate(NESC_MISC_FILES_DIR + "/SerialStarterC.nc",
+		    			nescOutputDir + nodeDir +"/SerialStarterC.nc");
+		    	Template.instantiate(NESC_MISC_FILES_DIR + "/AutoStarterC.nc",
+		    			nescOutputDir + nodeDir +"/AutoStarterC.nc");
+		    	Template.instantiate(NESC_MISC_FILES_DIR + "/AutoStarterP.nc",
+		    			nescOutputDir + nodeDir +"/AutoStarterP.nc");
+		    }
 		}
 	}
 
