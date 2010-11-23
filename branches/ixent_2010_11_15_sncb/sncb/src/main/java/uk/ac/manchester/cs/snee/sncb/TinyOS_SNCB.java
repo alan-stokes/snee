@@ -88,7 +88,7 @@ public class TinyOS_SNCB implements SNCB {
 			String outputList[] = outputLines.split("\n");
 			if (outputList.length<2) {
 				throw new SNCBException("Base station mote not plugged in.");
-			} else if (outputList.length>2) {
+			} else if (outputList.length>2) { //FIXME: This doesn't work.
 				throw new SNCBException("Unable to determine base station mote, as more than one mote is plugged in.");				
 			}
 			serialPort = outputList[1];
