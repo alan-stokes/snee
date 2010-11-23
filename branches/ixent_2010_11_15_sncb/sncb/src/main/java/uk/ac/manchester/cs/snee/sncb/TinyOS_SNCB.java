@@ -38,11 +38,23 @@ public class TinyOS_SNCB implements SNCB {
 	
 	private boolean demoMode = false;
 	
+	private boolean useNodeController = false;
+	
 	public TinyOS_SNCB()
 	throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER TinyOS_SNCB()");
-		try {			
+		try {
+
+			//Check if we are using the node controller
+			try {
+				useNodeController = SNEEProperties.getBoolSetting(
+						SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
+			} catch (SNEEConfigurationException e) {
+				// Using the default setting...
+				e.printStackTrace();
+			}
+			
 			//TinyOS environment variables
 			this.tinyOSEnvVars = new HashMap<String,String>();
 			workingDir = Utils.getResourcePath("etc/sncb/tools/python");
@@ -139,7 +151,13 @@ public class TinyOS_SNCB implements SNCB {
 				System.out.println("nesC code compilation complete.\n");
 				System.in.read();
 			}
-				
+			
+			if (!this.useNodeController) {
+				System.out.println("Not using node controller so unable to disseminate query plan; ");
+				System.out.println("Please proceed manually.  ");				
+				System.exit(0);
+			}
+			
 			logger.trace("Disseminating Query Plan images");
 			System.out.println("Disseminating Query Plan images");
 			disseminateQueryPlanImages(qep, queryOutputDir);
@@ -157,6 +175,7 @@ public class TinyOS_SNCB implements SNCB {
 				System.out.println("Serial port listener for query results ready.");
 				System.in.read();
 			}
+
 				
 		} catch (Exception e) {
 			logger.warn(e.getLocalizedMessage(), e);
@@ -185,15 +204,7 @@ public class TinyOS_SNCB implements SNCB {
 		boolean includeDeluge = false;
 		boolean debugLeds = true;
 		boolean showLocalTime = false;
-		boolean useNodeController = false;
-		
-		try {
-			useNodeController = SNEEProperties.getBoolSetting(
-					SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
-		} catch (SNEEConfigurationException e) {
-			// Using the default setting...
-			e.printStackTrace();
-		}
+
 		TinyOSGenerator codeGenerator = new TinyOSGenerator(tosVersion, tossimFlag, 
 			    targetName, combinedImage, queryOutputDir, costParams, controlRadioOff,
 			    enablePrintf, useStartUpProtocol, enableLeds,
