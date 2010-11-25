@@ -80,6 +80,10 @@ public class TinyOS_SNCB implements SNCB {
 	private String getBaseStation() throws SNCBException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER getBaseStation()");
+		if (!this.useNodeController) {
+			return "XXXXXXX"; //We don't need to worry about this if doing things manually
+		}
+		
 		String serialPort;
 		try {
 			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/utils/basestation.py");
