@@ -359,7 +359,8 @@ public class TinyOSGenerator {
 		    COMPONENT_RADIOTX = "AMSenderC";
 		    COMPONENT_RADIORX = "AMRecieverC";
 		    if (targetName.equals("tmotesky_t2")) {
-		    	COMPONENT_SENSOR = "HamamatsuS1087ParC";
+		    	COMPONENT_SENSOR = "VoltageC";
+//		    	COMPONENT_SENSOR = "HamamatsuS1087ParC";
 		    } else if (tossimFlag) {
 		    	COMPONENT_SENSOR  = "RandomSensorC";
 		    } else {
