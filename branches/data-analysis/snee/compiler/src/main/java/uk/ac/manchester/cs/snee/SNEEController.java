@@ -62,12 +62,12 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException
 import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
-import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
-import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
-import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
+import uk.ac.manchester.cs.snee.sncb.SNCB;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
+import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 /**
@@ -79,6 +79,12 @@ public class SNEEController implements SNEE {
 
 	private static Logger logger = 
 		Logger.getLogger(SNEEController.class.getName());
+	
+	/**
+	 * Sensor Network Connectivity Bridge.  For now, assume that there 
+	 * is one instance max.
+	 */
+	private SNCB _sncb = null;
 	
 	/**
 	 * Metadata stored about extents, data sources and cost parameters.
@@ -94,12 +100,15 @@ public class SNEEController implements SNEE {
 	 * The evaluator object for running queries
 	 */
 	private Dispatcher _dispatcher;
-	
+
+	/**
+	 * Stores the results for each registered query
+	 */
 	private Map<Integer, ResultStore> _queryResults = 
 		new HashMap<Integer, ResultStore>();
 	
 	/**
-	 * Stores the query plan for the registered query
+	 * Stores the query plan for each registered query
 	 */
 	private Map<Integer, QueryExecutionPlan> _queryPlans = 
 		new HashMap<Integer, QueryExecutionPlan>();
@@ -176,7 +185,9 @@ public class SNEEController implements SNEE {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER initialise()");
 
-		try {			
+		try {
+			_sncb = initialiseSNCB();
+			
 			/* Process metadata */
 			_metadata = initialiseMetadata();
 			
@@ -227,6 +238,10 @@ public class SNEEController implements SNEE {
 			String msg = "Problem reading cost parameters file";
 			logger.fatal(msg, e);
 			throw new SNEEException(msg, e);
+		} catch (SNCBException e) {
+			String msg = "Problem intialising sensor network";
+			logger.fatal(msg, e);
+			throw new SNEEException(msg, e);
 		}
 		
 		logger.info("SNEE configured");
@@ -234,16 +249,32 @@ public class SNEEController implements SNEE {
 			logger.debug("RETURN initialise()");
 	}
 
+	protected SNCB initialiseSNCB() throws SNEEConfigurationException, SNCBException {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER initialiseSNCB()");
+		
+		//This is done here because otherwise TinyOS_SNCB would have
+		//to be part of snee-core
+		if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_ENABLE)) {
+			if (SNEEProperties.getBoolSetting(SNEEPropertyNames.SNCB_ENABLE)) {
+				return new TinyOS_SNCB();
+			}
+		}
+		return null;
+		
+	}
+	
 	protected Metadata initialiseMetadata() 
 	throws MetadataException, SchemaMetadataException, 
 	TypeMappingException, UnsupportedAttributeTypeException, 
 	SourceMetadataException, SNEEConfigurationException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException 
+	SNEEDataSourceException, CostParametersException, SNCBException 
 	{
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER initialiseSchema()");
-		Metadata metadata = new Metadata();
+			logger.trace("ENTER initialiseMetadata()");
+		
+		Metadata metadata = new Metadata(_sncb);
 		return metadata;
 	}
 
@@ -287,7 +318,7 @@ public class SNEEController implements SNEE {
 	 */
 	public int addQuery(String query, String queryParamsFile) 
 	throws EvaluatorException, SNEECompilerException, SNEEException,
-	MetadataException 
+	MetadataException, SNEEConfigurationException 
 	{
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER addQuery() with " + query);
@@ -360,7 +391,8 @@ public class SNEEController implements SNEE {
 	 * @throws SNEEConfigurationException 
 	 */
 	private int dispatchQuery(int queryId, String query) 
-	throws SNEEException, MetadataException, EvaluatorException
+	throws SNEEException, MetadataException, EvaluatorException,
+	SNEEConfigurationException
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER dispatchQuery() with " + queryId +
@@ -381,7 +413,7 @@ public class SNEEController implements SNEE {
 
 	protected ResultStore createStreamResultSet(String query,
 			QueryExecutionPlan queryPlan) 
-	throws SNEEException {
+	throws SNEEException, SNEEConfigurationException {
 		ResultStore resultSet = new ResultStoreImpl(query, queryPlan);
 		resultSet.setCommand(query);
 		return resultSet;
@@ -440,13 +472,7 @@ public class SNEEController implements SNEE {
 		}
 	}
 
-	/**
-	 * Retrieve the ResultSet for a specified query if it exists.
-	 * @param queryId Identifier of the query for which the result set should be returned
-	 * @return ResultSet for the query
-	 * @throws SNEEException Specified queryId does not exist
-	 */
-	public ResultStore getResultSet(int queryId) 
+	public ResultStore getResultStore(int queryId) 
 	throws SNEEException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER getResultStore() with query=" + queryId);
@@ -455,7 +481,7 @@ public class SNEEController implements SNEE {
 		if (_queryResults.containsKey(queryId)) {
 			resultSet = _queryResults.get(queryId);
 		} else {
-			String msg = "No ResultSet for query " + queryId;
+			String msg = "No ResultStore for query " + queryId;
 			logger.warn(msg);
 			throw new SNEEException(msg);
 		}

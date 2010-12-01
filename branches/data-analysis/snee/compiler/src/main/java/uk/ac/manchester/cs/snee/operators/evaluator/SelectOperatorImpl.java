@@ -7,6 +7,7 @@ import java.util.Observable;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
@@ -23,9 +24,10 @@ public class SelectOperatorImpl extends EvaluationOperator {
 
 	private SelectOperator _select;
 
-	public SelectOperatorImpl(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
-		super(op);
+	public SelectOperatorImpl(LogicalOperator op, int qid) 
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
+		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SelectOperatorImpl " + op);
 		}
@@ -41,7 +43,8 @@ public class SelectOperatorImpl extends EvaluationOperator {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + m_qid + " " +
+					" with " + observed);
 		}
 		try {
 			//FIXME: Cope with bag of results being passed up!

@@ -42,6 +42,7 @@ import java.util.Observable;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
@@ -58,9 +59,10 @@ extends EvaluatorPhysicalOperator {
 	
 	int nextIndex = 0;
 
-	public DeliverOperatorImpl(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
-		super(op);
+	public DeliverOperatorImpl(LogicalOperator op, int qid) 
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
+		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER DeliverOperatorImpl() " + op);
 			logger.debug("Attribute List: " + op.getAttributes());
@@ -103,7 +105,8 @@ extends EvaluatorPhysicalOperator {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + m_qid + " " +
+					" with " + observed);
 		List<Output> resultList = new ArrayList<Output>();
 		if (observed instanceof List<?>) {
 			List<Output> outputList = (List<Output>) observed;

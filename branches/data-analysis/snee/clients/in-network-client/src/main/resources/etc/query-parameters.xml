@@ -28,7 +28,7 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk query-parameters.xsd">
 			<constraint>
 				<range>	
 					<min-val>1</min-val>
-					<max-val>9999</max-val>					
+					<max-val>1</max-val>					
 				</range>	
 			</constraint>
 			<weighting>1</weighting>

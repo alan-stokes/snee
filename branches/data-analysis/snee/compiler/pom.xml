@@ -3,13 +3,13 @@
 	<parent>
 		<artifactId>SNEE</artifactId>
 		<groupId>uk.ac.manchester.cs.snee</groupId>
-		<version>1.2.4</version>
+		<version>1.4.2</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.ac.manchester.cs.snee</groupId>
 	<artifactId>snee-compiler</artifactId>
 	<name>SNEE Compiler</name>
-	<version>1.2.4</version>
+	<version>1.4.2</version>
 	<description>Compiles a SNEEql query into a query plan</description>
 
 	<properties>
@@ -19,7 +19,19 @@
 		<!--<wsdl.location>${basedir}/src/main/wsdl</wsdl.location>-->
 	</properties>
 	
-	<dependencies>
+	<dependencies>		
+ 		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-core</artifactId>
+			<version>1.4.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-sncb</artifactId>
+			<version>1.4.2</version>
+			<scope>provided</scope>
+		</dependency>		
 		<dependency>
 			<groupId>antlr</groupId>
 			<artifactId>antlr</artifactId>
@@ -56,7 +68,7 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
+ 			<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
@@ -72,14 +84,23 @@
 									<artifactId>sds-wsdl</artifactId>
 									<version>${sds.version}</version>
 									<type>jar</type>
+									<outputDirectory>${project.build.directory}/wsdl</outputDirectory>
+									<includes>**/*.wsdl,**/*.xsd</includes>
+								</artifactItem>
+ 								<artifactItem>
+									<groupId>uk.ac.manchester.cs.snee</groupId>
+									<artifactId>snee-sncb</artifactId>
+									<version>1.4.2</version>
+									<type>jar</type>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+									<includes>etc/sncb/**/*</includes>
 								</artifactItem>
 							</artifactItems>
-							<outputDirectory>${project.build.directory}/wsdl</outputDirectory>
-							<includes>**/*.wsdl,**/*.xsd</includes>
 						</configuration>
 					</execution>
 				</executions>
 			</plugin>
+ 
 			<plugin>
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-codegen-plugin</artifactId>

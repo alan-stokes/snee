@@ -5,6 +5,7 @@ import java.util.Observable;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
@@ -23,9 +24,10 @@ public abstract class WindowOperatorImpl extends EvaluatorPhysicalOperator {
 	// Defines the size of slide. Instantiated in constructor
 	protected int slide;
 	
-	public WindowOperatorImpl(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
-		super(op);
+	public WindowOperatorImpl(LogicalOperator op, int qid) 
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
+		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER WindowOperatorImpl() with " + op);
 		}

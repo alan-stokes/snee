@@ -39,10 +39,13 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReade
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlLexer;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
+
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
 import antlr.CommonAST;
@@ -71,7 +74,7 @@ public class TranslatorTest {
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException, UtilsException {
+	SNEEDataSourceException, CostParametersException, UtilsException, SNCBException {
 		Properties props = new Properties();
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
@@ -79,6 +82,8 @@ public class TranslatorTest {
 		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
+		props.setProperty(SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION, "false");
+		props.setProperty(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE, "false");
 		SNEEProperties.initialise(props);
 		Metadata schemaMetadata = new Metadata();
 		translator = new Translator(schemaMetadata);
@@ -93,7 +98,7 @@ public class TranslatorTest {
 	
 	private LAF testQuery(String query) 
 	throws ParserException, SchemaMetadataException,
-	ParserValidationException, AssertionError, OptimizationException,
+	ExpressionException, AssertionError, OptimizationException,
 	SourceDoesNotExistException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException 
 	{
@@ -161,7 +166,7 @@ public class TranslatorTest {
 	@Test(expected=ParserException.class)
 	public void testRubbish() 
 	throws ParserException, SourceDoesNotExistException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("Some rubbish;");
@@ -170,7 +175,7 @@ public class TranslatorTest {
 	@Test(expected=ParserException.class)
 	public void testGibberish() 
 	throws ParserException, SourceDoesNotExistException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("Some gibberish that is not a query;");
@@ -179,7 +184,7 @@ public class TranslatorTest {
 	@Test
 	public void testSimpleQuery() 
 	throws ParserException, SourceDoesNotExistException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT * FROM TestStream;");
@@ -188,7 +193,7 @@ public class TranslatorTest {
 	@Test
 	public void testSimpleQuery_paren() 
 	throws ParserException, SourceDoesNotExistException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("(SELECT * FROM TestStream);");
@@ -197,7 +202,7 @@ public class TranslatorTest {
 	@Test
 	public void testSimpleProject() 
 	throws ParserException, SourceDoesNotExistException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT timestamp FROM TestStream;");
@@ -206,7 +211,7 @@ public class TranslatorTest {
 	@Test
 	public void testSimpleProject_paren() 
 	throws ParserException, SourceDoesNotExistException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("(SELECT timestamp FROM TestStream);");
@@ -217,7 +222,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException,
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
-	ParserValidationException, AssertionError, 
+	ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException 
 	{
 		LAF laf = testQuery("SELECT timestamp AS time " +
@@ -236,7 +241,7 @@ public class TranslatorTest {
 	@Test
 	public void testSimpleSelect() 
 	throws ParserException, SourceDoesNotExistException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT Timestamp " +
@@ -247,7 +252,7 @@ public class TranslatorTest {
 	@Test
 	public void testSimpleSelect_attrComparison() 
 	throws ParserException, SourceDoesNotExistException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT Timestamp " +
@@ -258,7 +263,7 @@ public class TranslatorTest {
 	@Test
 	public void testRowWindow() throws ParserException, 
 	SourceDoesNotExistException, SchemaMetadataException, 
-	ParserValidationException, AssertionError, OptimizationException, 
+	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT * " +
@@ -268,7 +273,7 @@ public class TranslatorTest {
 	@Test
 	public void testRowWindow_toNow() throws ParserException, 
 	SourceDoesNotExistException, SchemaMetadataException, 
-	ParserValidationException, AssertionError, OptimizationException, 
+	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT * " +
@@ -278,7 +283,7 @@ public class TranslatorTest {
 	@Test
 	public void testNowWindow() throws ParserException, 
 	SourceDoesNotExistException, SchemaMetadataException, 
-	ParserValidationException, AssertionError, OptimizationException, 
+	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT * " +
@@ -288,7 +293,7 @@ public class TranslatorTest {
 	@Test
 	public void testNowSlideWindow() throws ParserException, 
 	SourceDoesNotExistException, SchemaMetadataException, 
-	ParserValidationException, AssertionError, OptimizationException, 
+	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT * " +
@@ -299,7 +304,7 @@ public class TranslatorTest {
 	@Test
 	public void testNowToNowWindow() throws ParserException, 
 	SourceDoesNotExistException, SchemaMetadataException, 
-	ParserValidationException, AssertionError, OptimizationException, 
+	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		//FIXME: Correct parser/translator for FROM NOW TO NOW
@@ -310,7 +315,7 @@ public class TranslatorTest {
 	@Test
 	public void testTimeWindow() throws ParserException, 
 	SourceDoesNotExistException, SchemaMetadataException, 
-	ParserValidationException, AssertionError, OptimizationException, 
+	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT * " +
@@ -320,7 +325,7 @@ public class TranslatorTest {
 	@Test@Ignore
 	public void testTimeWindow_noSlide() throws ParserException, 
 	SourceDoesNotExistException, SchemaMetadataException, 
-	ParserValidationException, AssertionError, OptimizationException, 
+	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		//FIXME: Correct translator
@@ -331,7 +336,7 @@ public class TranslatorTest {
 	@Test
 	public void testNowEquiJoin() throws ParserException, 
 	SourceDoesNotExistException, SchemaMetadataException, 
-	ParserValidationException, AssertionError, OptimizationException, 
+	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT * " +
@@ -342,7 +347,7 @@ public class TranslatorTest {
 	@Test
 	public void testTimeEquiJoin() throws ParserException, 
 	SourceDoesNotExistException, SchemaMetadataException, 
-	ParserValidationException, AssertionError, OptimizationException, 
+	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT * " +
@@ -354,7 +359,7 @@ public class TranslatorTest {
 	public void testJoinQueryRename() 
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException, 
-	ParserValidationException, AssertionError, OptimizationException, 
+	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException
 	{
 		// Record result
@@ -387,7 +392,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, 
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
-	ParserValidationException, AssertionError,
+	ExpressionException, AssertionError,
 	OptimizationException, TypeMappingException
 	{
 		testQuery("RSTREAM SELECT * FROM TestStream[NOW];");
@@ -398,7 +403,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, 
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
-	ParserValidationException, AssertionError,
+	ExpressionException, AssertionError,
 	OptimizationException, TypeMappingException
 	{
 		testQuery("SELECT RSTREAM * FROM TestStream[NOW];");
@@ -429,7 +434,7 @@ public class TranslatorTest {
 	@Test(expected=ParserException.class)
 	public void testUnionQuery_withoutParen() 
 	throws SourceDoesNotExistException, ParserException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		/* Union queries must contain parentheses around subqueries */
@@ -440,7 +445,7 @@ public class TranslatorTest {
 	@Test
 	public void testUnionQuery_paren() 
 	throws SourceDoesNotExistException, ParserException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) " +
@@ -452,7 +457,7 @@ public class TranslatorTest {
 	@Test
 	public void testUnionQuery_Union3Query() 
 	throws SourceDoesNotExistException, ParserException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) UNION " +
@@ -464,7 +469,7 @@ public class TranslatorTest {
 	@Test
 	public void testUnionQuery_Union4Query() 
 	throws SourceDoesNotExistException, ParserException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) UNION " +
@@ -478,7 +483,7 @@ public class TranslatorTest {
 	public void testUnionQuery_windows() 
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException,
-	ParserValidationException, AssertionError, OptimizationException, 
+	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException
 	{
 		testQuery("(SELECT timestamp " +
@@ -492,7 +497,7 @@ public class TranslatorTest {
 	public void testUnionQuery_streamWindow() 
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException,
-	ParserValidationException, AssertionError, OptimizationException, 
+	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException
 	{
 		testQuery("(SELECT timestamp " +
@@ -505,7 +510,7 @@ public class TranslatorTest {
 	@Test
 	public void testUnionQuery_diffAttrSameType() 
 	throws SourceDoesNotExistException, ParserException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) " +
@@ -517,7 +522,7 @@ public class TranslatorTest {
 	@Test(expected=ParserException.class)
 	public void testUnionQuery_diffAttrDiffType() 
 	throws SourceDoesNotExistException, ParserException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("(SELECT timestamp FROM TestStream) " +
@@ -528,7 +533,7 @@ public class TranslatorTest {
 	@Test(expected=ParserException.class)
 	public void testUnionQuery_diffNumAttr() 
 	throws SourceDoesNotExistException, ParserException, 
-	SchemaMetadataException, ParserValidationException, AssertionError, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("(SELECT timestamp FROM TestStream) " +

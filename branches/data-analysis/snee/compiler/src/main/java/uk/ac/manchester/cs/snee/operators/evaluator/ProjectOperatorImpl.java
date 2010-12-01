@@ -8,6 +8,7 @@ import java.util.Stack;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -40,9 +41,10 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 	ProjectOperator project;
 	List<Attribute> attributes;
 
-	public ProjectOperatorImpl(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
-		super(op);
+	public ProjectOperatorImpl(LogicalOperator op, int qid) 
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
+		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ProjectOperatorImpl() " + op.getText());
 			logger.debug("Project List: " + op.getAttributes());
@@ -74,7 +76,8 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + m_qid + " " +
+					" with " + observed);
 		List<Output> result = new ArrayList<Output>();
 		try {
 			if (observed instanceof List<?>) {

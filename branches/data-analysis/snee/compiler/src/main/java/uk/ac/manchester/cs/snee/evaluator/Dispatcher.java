@@ -44,8 +44,8 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.MetadataException;
-import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.ResultStore;
+import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
@@ -59,12 +59,12 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
-import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB;
+import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 public class Dispatcher {
 
-	private static Logger logger = 
+	private Logger logger = 
 		Logger.getLogger(Dispatcher.class.getName());
 	
 	private Metadata _schema;
@@ -104,7 +104,8 @@ public class Dispatcher {
 	 */
 	public void startQuery(int queryID, ResultStore resultSet, 
 			QueryExecutionPlan queryPlan) 
-	throws SNEEException, MetadataException, EvaluatorException {
+	throws SNEEException, MetadataException, EvaluatorException,
+	SNEEConfigurationException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER queryID " + queryID + " " + queryPlan);
 		}
@@ -139,11 +140,14 @@ public class Dispatcher {
 				String outputDir = SNEEProperties.getSetting(
 						SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
 						sep + queryPlan.getQueryName() + sep;
-				SNCB sncb = new TinyOS_SNCB(outputDir, costParams);
-				sncb.register(snQueryPlan);
+				SNCB sncb = snQueryPlan.getSNCB();
+				SNCBSerialPortReceiver mr = 
+					sncb.register(snQueryPlan, outputDir, costParams);
+				InNetworkQueryEvaluator queryEvaluator = 
+					new InNetworkQueryEvaluator(queryID, snQueryPlan, 
+					mr, resultSet);
+				_queryEvaluators.put(queryID, queryEvaluator);
 				sncb.start();
-				System.out.println("Code generation complete");
-				System.exit(0);
 			} catch (Exception e) {
 				logger.warn(e.getLocalizedMessage(), e);
 				throw new EvaluatorException(e);
@@ -164,10 +168,12 @@ public class Dispatcher {
 	 * @throws SNEEException Invalid query plan
 	 * @throws SchemaMetadataException Problem with the schema
 	 * @throws EvaluatorException 
+	 * @throws SNEEConfigurationException 
 	 */
 	protected QueryEvaluator createQueryEvaluator(int queryId, 
 			LAF queryPlan, ResultStore resultSet) 
-	throws SNEEException, SchemaMetadataException, EvaluatorException {
+	throws SNEEException, SchemaMetadataException,
+	EvaluatorException, SNEEConfigurationException {
 		QueryEvaluator queryEvaluator = 
 			new QueryEvaluator(queryId, queryPlan, _schema, resultSet);
 		return queryEvaluator;

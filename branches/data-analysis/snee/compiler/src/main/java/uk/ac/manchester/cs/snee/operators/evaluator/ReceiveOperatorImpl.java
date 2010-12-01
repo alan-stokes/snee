@@ -45,6 +45,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
@@ -56,7 +57,6 @@ import uk.ac.manchester.cs.snee.compiler.metadata.source.UDPSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.WebServiceSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
-import uk.ac.manchester.cs.snee.evaluator.types.CircularList;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
@@ -73,15 +73,6 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		Logger.getLogger(ReceiveOperatorImpl.class.getName());
 
 	private SourceReceiver _streamReceiver;
-
-	//NOTE: This used to be in the helper class, may need to move it back if needed by more than this operator
-	public final static int MAX_BUFFER_SIZE = 20000; 
-
-	/**
-	 * Tuples are stored in main memory. 
-	 * Tuples overwritten once they become too old.
-	 */
-	private CircularList _tupleList ;
 
 	// streamName is the variable that stores the local extent name.
 	private String _streamName;
@@ -124,15 +115,19 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	 * Instantiates the receive operator
 	 * @param op
 	 * @throws SchemaMetadataException 
+	 * @throws SNEEConfigurationException 
 	 */
-	public ReceiveOperatorImpl(LogicalOperator op) 
+	public ReceiveOperatorImpl(LogicalOperator op, int qid) 
 	throws SchemaMetadataException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER ReceiveOperatorImpl() with " + op);
+			logger.debug("ENTER ReceiveOperatorImpl() for query " + 
+					qid + " " +
+					" with " + op);
 		}
-	
+		
 		// Instantiate this as a receive operator
 		receiveOp = (ReceiveOperator) op;
+		m_qid = qid;
 		try {
 			attributes = receiveOp.getAllReceivedAttributes();
 		} catch (TypeMappingException e) {
@@ -156,7 +151,6 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		}
 		try {
 			initializeStreamReceiver();
-			_tupleList = new CircularList(MAX_BUFFER_SIZE);
 
 			// Start the receive operator to run immediately
 			executing = true;
@@ -342,8 +336,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	
 		public void run(){
 			if (logger.isDebugEnabled()) {
-				logger.debug("ENTER run() #existing tuples=" +
-						_tupleList.size() + " of " + MAX_BUFFER_SIZE);
+				logger.debug("ENTER run() for query " + m_qid);
 			}
 			Tuple tuple = null ;
 			/* 
@@ -355,8 +348,6 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 					tuple = _streamReceiver.receive();
 					// create a tagged tuple from the received tuple
 					TaggedTuple taggedTuple = new TaggedTuple(tuple);
-					// Add the tuple to the tuple list
-					_tupleList.add(taggedTuple);
 		
 					setChanged();
 					notifyObservers(taggedTuple);
@@ -389,11 +380,12 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER update()");
+			logger.debug("ENTER update() for query " + m_qid);
 		}
 		logger.error("Receiver cannot be the parent of another operator");
 		executing = false;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN update()");
 	}
+	
 }

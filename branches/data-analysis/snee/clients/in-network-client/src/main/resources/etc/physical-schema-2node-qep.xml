@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<source xmlns="http://snee.cs.man.ac.uk/namespace/physical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../schema/physical-schema.xsd ">
+
+	<sensor_network name="wsn1">
+		<topology>etc/wsn1-topology.xml</topology>
+		<site-resources>etc/tmotesky-site-resources.xml</site-resources>
+		<gateways>1</gateways>
+		<extents>
+			<extent name="Castilla">
+				<sites>2</sites>
+			</extent>
+<!-- 		<extent name="Meadow">
+				<sites>2</sites>
+			</extent>
+			<extent name="Forest">
+				<sites>2</sites>
+			</extent> -->			
+		</extents>
+	</sensor_network>
+
+</source>

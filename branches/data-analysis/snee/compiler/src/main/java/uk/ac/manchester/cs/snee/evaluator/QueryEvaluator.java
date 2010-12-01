@@ -43,21 +43,21 @@ import java.util.Observer;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.EvaluatorException;
-import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.ResultStore;
+import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
-import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.operators.evaluator.DeliverOperatorImpl;
 import uk.ac.manchester.cs.snee.operators.evaluator.EvaluatorPhysicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
-public class QueryEvaluator implements Observer {//Runnable {
+public class QueryEvaluator implements Observer {
 	
-	private boolean executing = false;
+	protected boolean executing = false;
 	
 	protected boolean isExecuting() {
 		return executing;
@@ -66,9 +66,9 @@ public class QueryEvaluator implements Observer {//Runnable {
 	/**
 	 * The identifier for the query
 	 */
-	private int _queryId;
+	protected int _queryId;
 	
-	private ResultStore _results;
+	protected ResultStore _results;
 
 	/**
 	 * The query plan to be evaluated
@@ -91,9 +91,11 @@ public class QueryEvaluator implements Observer {//Runnable {
 	public QueryEvaluator(int queryId, LAF queryPlan, 
 			Metadata schema, 
 			ResultStore resultSet) 
-	throws SNEEException, SchemaMetadataException, EvaluatorException {
+	throws SNEEException, SchemaMetadataException, 
+	EvaluatorException, SNEEConfigurationException {
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER QueryEvaluator() with queryID: " + queryId + " " + 
+			logger.debug("ENTER QueryEvaluator() with queryID: " + 
+					queryId + " " + 
 					queryPlan.toString());
 		}
 		_queryId = queryId;
@@ -167,7 +169,8 @@ public class QueryEvaluator implements Observer {//Runnable {
 //	}
 
 	private void openQueryPlan() 
-	throws SNEEException, SchemaMetadataException, EvaluatorException {
+	throws SNEEException, SchemaMetadataException, EvaluatorException,
+	SNEEConfigurationException {
 		if (logger.isDebugEnabled())
 			logger.trace("ENTER openQueryPlan()");
 		// Condition tested to allow for testing with a null plan
@@ -183,13 +186,14 @@ public class QueryEvaluator implements Observer {//Runnable {
 	}
 
 	private EvaluatorPhysicalOperator getInstance(LogicalOperator op) 
-	throws SNEEException, SchemaMetadataException {
+	throws SNEEException, SchemaMetadataException,
+	SNEEConfigurationException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER getInstance() with " + op);
 		EvaluatorPhysicalOperator phyOp = null;
 		/* Query plans must have a deliver operator at their root */
 		if (op instanceof DeliverOperator) {
-			phyOp = new DeliverOperatorImpl(op);
+			phyOp = new DeliverOperatorImpl(op, _queryId);
 		} else {
 			String msg = "Unsupported operator " + op.getOperatorName() +
 				". Query plans should have a DeliverOperator as their root.";
@@ -204,7 +208,8 @@ public class QueryEvaluator implements Observer {//Runnable {
 	@Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER update() with " + observed);
+			logger.debug("ENTER update() for query " + _queryId + " " +
+					" with " + observed);
 		if (observed instanceof Output) {
 			_results.add((Output) observed);
 		} else if (observed instanceof List<?>) {

@@ -1,35 +1,23 @@
 package uk.ac.manchester.cs.snee.compiler.sn.when;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
-import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
-import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
-import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
 public class WhenScheduler {
 
@@ -43,14 +31,18 @@ public class WhenScheduler {
 	
 	private CostParameters costParams;
 	
+	private boolean useNetworkController;
+	
 	/**
 	 * Constructor for Sensor Network When-Scheduling Decision Maker.
 	 */
-	public WhenScheduler(boolean decreaseBetaForValidAlpha, Metadata m) {
+	public WhenScheduler(boolean decreaseBetaForValidAlpha, Metadata m,
+			boolean useNetworkController) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER WhenScheduler()");
 		this.decreaseBetaForValidAlpha=decreaseBetaForValidAlpha;
 		this.costParams = m.getCostParameters();
+		this.useNetworkController = useNetworkController;
 		if (logger.isDebugEnabled());
 			logger.debug("RETURN WhenScheduler()");
 	}
@@ -135,7 +127,7 @@ public class WhenScheduler {
 
 	    try {
 	    	final Agenda agenda = new Agenda(qos.getMaxAcquisitionInterval(), 
-	    			maxBFactorSoFar, daf, costParams, queryName);
+	    			maxBFactorSoFar, daf, costParams, queryName, useNetworkController);
 			if (logger.isDebugEnabled())
 				logger.debug("RETURN doWhenScheduling()");
 	    	return agenda;
@@ -269,7 +261,8 @@ public class WhenScheduler {
 		}
 	    
 		try {
-	    	agenda = new Agenda(qos.getMaxAcquisitionInterval(), beta, daf, costParams, "");
+	    	agenda = new Agenda(qos.getMaxAcquisitionInterval(), beta, daf, 
+	    			costParams, "", useNetworkController);
 		    logger.trace("Agenda constructed successfully length="
 				    + agenda.getLength_bms(Agenda.INCLUDE_SLEEP) + " met target length="
 				    + alpha_bms * beta + " with beta="
@@ -278,7 +271,7 @@ public class WhenScheduler {
 		    
 		} catch (AgendaLengthException e) {
 			
-			if (this.decreaseBetaForValidAlpha) {
+			if (!this.decreaseBetaForValidAlpha) {
 				String msg="Set decrease_bfactor_to_avoid_agenda_overlap=true in the "+
 				 "ini file to avoid need for overlap, as overlapping agendas are not" +
 				 "yet supported.";
@@ -330,7 +323,7 @@ public class WhenScheduler {
 	    do {
 	    	try {
 	    		agenda = new Agenda(qos.getMaxAcquisitionInterval(), 
-	    				currentMaxBuffFactor, daf, costParams, "");
+	    				currentMaxBuffFactor, daf, costParams, "", useNetworkController);
 	    		//CB I don't think this is neseccary as new Agenda throw an error.
 	    		//CB :Left in for safety
 	    		if (agenda.getLength_bms(Agenda.IGNORE_SLEEP) > bmsDeliveryTime) {

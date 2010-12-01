@@ -15,7 +15,9 @@
 		<RadioSyncWindow time ="5"/>
 		<SendPacket time = "30"/> <!-- Tested as 28 set to 30 for safety -->
 		<SetAValue time = "0.02"/>
-		<DeliverTuple time = "50"/>  
+		<DeliverTuple time = "50"/> 
+		<ManagementSection time = "5000"/>
+		<EndManagementSection time = "100"/>
 	</Time>
 	<MinimumTimerInterval time = "10"/>
 	<Space>
