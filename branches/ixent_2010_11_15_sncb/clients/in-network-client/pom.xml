@@ -10,6 +10,7 @@
   <version>1.4.3-SNAPSHOT</version>
   <name>In-network test client</name>
   <description>Test client for In-Network SNEE.</description>
+ 
   <dependencies>
   	<dependency>
   		<groupId>uk.ac.manchester.cs.snee.client</groupId>
@@ -32,4 +33,32 @@
   		<scope>provided</scope>
   	</dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+	  <artifactId>exec-maven-plugin</artifactId>
+            <version>1.1</version>
+               <executions>
+                   <execution>
+                       <goals>
+                           <goal>java</goal>
+                       </goals>
+                   </execution>
+               </executions>
+               <configuration>
+                   <executable>java</executable>
+                   <arguments>
+                   <argument>-classpath</argument>
+                   <!-- automatically creates the classpath using all project dependencies,
+                   also adding the project build directory -->
+                   <classpath/>
+                   <mainClass>uk.ac.manchester.snee.client.SNEEClientUsingInNetworkSource</mainClass>
+                   </arguments>
+               </configuration>
+       </plugin>
+    </plugins>
+  </build>
+  
 </project>
