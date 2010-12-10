@@ -24,7 +24,7 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapper;
-import uk.ac.manchester.cs.snee.datasource.webservice.WSDAIRSourceWrapper;
+//import uk.ac.manchester.cs.snee.datasource.webservice.WSDAIRSourceWrapper;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentType;
@@ -98,6 +98,8 @@ public class SourceManagerTest extends EasyMockSupport {
 		mockResourceList.add("resource2");
 		expect(mockWrapper.getResourceNames()).
 			andReturn(mockResourceList);
+		expect(mockWrapper.getSourceType()).
+			andReturn(SourceType.PULL_STREAM_SERVICE).times(2);
 		List<ExtentMetadata> extents = new ArrayList<ExtentMetadata>();
 		extents.add(mockExtent);
 		expect(mockWrapper.getSchema("resource1")).andReturn(extents);
@@ -132,54 +134,54 @@ public class SourceManagerTest extends EasyMockSupport {
 //		assertEquals(2, schema.getExtentNames().size());
 	}
 
-	@Test@Ignore
-	public void testStoredDataServiceSource() 
-	throws TypeMappingException, SchemaMetadataException, 
-	SNEEConfigurationException, MetadataException, 
-	UnsupportedAttributeTypeException, SourceMetadataException, 
-	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException {
-		final WSDAIRSourceWrapper mockWrapper = 
-			createMock(WSDAIRSourceWrapper.class);
-		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
-		List<String> mockResourceList = new ArrayList<String>();
-		mockResourceList.add("resource1");
-		mockResourceList.add("resource2");
-		expect(mockWrapper.getResourceNames()).
-			andReturn(mockResourceList);
-		List<ExtentMetadata> extents = new ArrayList<ExtentMetadata>();
-		extents.add(mockExtent);
-		expect(mockWrapper.getSchema("resource1")).andReturn(extents);
-		expect(mockExtent.getExtentName()).andReturn("extent1");
-		expect(mockExtent.getExtentType()).andReturn(ExtentType.TABLE);
-		expect(mockWrapper.getSchema("resource2")).andReturn(extents);
-		expect(mockExtent.getExtentName()).andReturn("extent2");
-		expect(mockExtent.getExtentType()).andReturn(ExtentType.TABLE);
-		replayAll();
-
-		String typesFile = 
-			SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_TYPES_FILE);
-		Types types = new Types(typesFile);
-		Map<String,ExtentMetadata> schema = 
-			new HashMap<String, ExtentMetadata>(); 
-		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, 
-			"etc/physical-schema_wsdair-source.xml");
-		SNEEProperties.initialise(props);
-		String physSchemaFile = 
-			SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE);
-		
-		SourceManager sources = new SourceManager(schema, types){
-			protected WSDAIRSourceWrapper createWSDAIRSource(String url)
-			throws MalformedURLException {
-				return mockWrapper;
-			}
-		};
-		sources.processPhysicalSchema(physSchemaFile);
-
-		//Expect 1 source which provides 2 extents
-		assertEquals(1, sources.getSources().size());
-//		assertEquals(2, schema.getExtentNames().size());
-	}
+//	@Test@Ignore
+//	public void testStoredDataServiceSource() 
+//	throws TypeMappingException, SchemaMetadataException, 
+//	SNEEConfigurationException, MetadataException, 
+//	UnsupportedAttributeTypeException, SourceMetadataException, 
+//	TopologyReaderException, MalformedURLException,
+//	SNEEDataSourceException, CostParametersException {
+//		final WSDAIRSourceWrapper mockWrapper = 
+//			createMock(WSDAIRSourceWrapper.class);
+//		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
+//		List<String> mockResourceList = new ArrayList<String>();
+//		mockResourceList.add("resource1");
+//		mockResourceList.add("resource2");
+//		expect(mockWrapper.getResourceNames()).
+//			andReturn(mockResourceList);
+//		List<ExtentMetadata> extents = new ArrayList<ExtentMetadata>();
+//		extents.add(mockExtent);
+//		expect(mockWrapper.getSchema("resource1")).andReturn(extents);
+//		expect(mockExtent.getExtentName()).andReturn("extent1");
+//		expect(mockExtent.getExtentType()).andReturn(ExtentType.TABLE);
+//		expect(mockWrapper.getSchema("resource2")).andReturn(extents);
+//		expect(mockExtent.getExtentName()).andReturn("extent2");
+//		expect(mockExtent.getExtentType()).andReturn(ExtentType.TABLE);
+//		replayAll();
+//
+//		String typesFile = 
+//			SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_TYPES_FILE);
+//		Types types = new Types(typesFile);
+//		Map<String,ExtentMetadata> schema = 
+//			new HashMap<String, ExtentMetadata>(); 
+//		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, 
+//			"etc/physical-schema_wsdair-source.xml");
+//		SNEEProperties.initialise(props);
+//		String physSchemaFile = 
+//			SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE);
+//		
+//		SourceManager sources = new SourceManager(schema, types){
+//			protected WSDAIRSourceWrapper createWSDAIRSource(String url)
+//			throws MalformedURLException {
+//				return mockWrapper;
+//			}
+//		};
+//		sources.processPhysicalSchema(physSchemaFile);
+//
+//		//Expect 1 source which provides 2 extents
+//		assertEquals(1, sources.getSources().size());
+////		assertEquals(2, schema.getExtentNames().size());
+//	}
 
 	@Test(expected=SourceMetadataException.class)
 	public void testPushStreamServiceSource() 
@@ -311,6 +313,8 @@ public class SourceManagerTest extends EasyMockSupport {
 		//Record mocks
 		expect(mockSourceWrapper.getResourceNames()).
 			andReturn(mockResourceList);
+		expect(mockSourceWrapper.getSourceType()).
+			andReturn(SourceType.PULL_STREAM_SERVICE);
 		List<ExtentMetadata> extents = new ArrayList<ExtentMetadata>();
 		extents.add(mockExtent);
 		expect(mockSourceWrapper.getSchema(resourceName)).andReturn(extents);

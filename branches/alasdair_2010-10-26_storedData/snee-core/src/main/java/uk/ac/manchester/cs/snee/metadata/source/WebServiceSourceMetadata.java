@@ -40,13 +40,13 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapper;
+import uk.ac.manchester.cs.snee.datasource.webservice.SourceWrapper;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
 
 /**
  * Implementation of the metadata imported from a web service source.
  */
-public class WebServiceSourceMetadata extends PullSourceMetadata {
+public class WebServiceSourceMetadata extends SourceMetadata {
 
 	Logger logger = 
 		Logger.getLogger(WebServiceSourceMetadata.class.getName());
@@ -58,12 +58,12 @@ public class WebServiceSourceMetadata extends PullSourceMetadata {
 	 */
 	private Map<String, String> _resources;
 
-	private PullSourceWrapper _pullSource;
+	private SourceWrapper _source;
 
 	public WebServiceSourceMetadata(String sourceName, 
 			List<String> extentNames, String url, 
-			Map<String, String> resources, PullSourceWrapper pullSource) {
-		super(sourceName, extentNames, SourceType.PULL_STREAM_SERVICE);
+			Map<String, String> resources, SourceWrapper sourceWrapper) {
+		super(sourceName, extentNames, sourceWrapper.getSourceType());
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER WebServiceSourceMetadata() with " + url);
 		}
@@ -74,7 +74,7 @@ public class WebServiceSourceMetadata extends PullSourceMetadata {
 		}
 		_url = url;
 		_resources = resources;
-		_pullSource = pullSource;
+		_source = sourceWrapper;
 		setStreamRates();
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN WebServiceSourceMetadata() " + this);
@@ -152,8 +152,8 @@ public class WebServiceSourceMetadata extends PullSourceMetadata {
 		return resourceName;
 	}
 
-	public PullSourceWrapper getPullSource() {
-		return _pullSource;
+	public SourceWrapper getSource() {
+		return _source;
 	}
 
 }

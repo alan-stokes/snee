@@ -8,9 +8,13 @@
 	<version>1.5.0-SNAPSHOT</version>
 	<description>Continuous query processing engine for streaming and stored data.</description>
 
+	<properties>
+		<snee.version>1.5.0-SNAPSHOT</snee.version>
+	</properties>
 	<modules>
-		<module>snee-core</module>
+		<module>snee-api</module>
 		<module>data-source</module>
+		<module>snee-core</module>
 		<module>compiler</module>
 		<module>clients</module>
 	</modules>

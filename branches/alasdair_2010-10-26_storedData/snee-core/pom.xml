@@ -10,25 +10,8 @@
 	<artifactId>snee-core</artifactId>
 	<name>SNEE Core</name>
 	<description>Compiles a SNEEql query into a query plan</description>
-
-	<properties>
-		<sds.version>0.1.1</sds.version>
-		<wsdair.version>0.0.1-SNAPSHOT</wsdair.version>
-		<cxf.version>2.2.8</cxf.version>
-		<wsdl.location>${project.build.directory}/wsdl</wsdl.location>
-	</properties>
 	
 	<dependencies>
-		<dependency>
-			<groupId>eu.semsorgrid4env.service.sds</groupId>
-			<artifactId>sds-wsdl</artifactId>
-			<version>${sds.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.semsorgrid4env.service.wsdair</groupId>
-			<artifactId>wsdair-wsdl</artifactId>
-			<version>${wsdair.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>org.easymock</groupId>
 			<artifactId>easymockclassextension</artifactId>
@@ -50,41 +33,30 @@
 			<type>jar</type>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-api</artifactId>
+			<version>${snee.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>data-source-core</artifactId>
+			<version>${snee.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>data-source-pull-stream</artifactId>
+			<version>${snee.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
-	<build>
+	<!--<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>unpack</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>eu.semsorgrid4env.service.sds</groupId>
-									<artifactId>sds-wsdl</artifactId>
-									<version>${sds.version}</version>
-									<type>jar</type>
-								</artifactItem>
-								<artifactItem>
-									<groupId>eu.semsorgrid4env.service.wsdair</groupId>
-									<artifactId>wsdair-wsdl</artifactId>
-									<version>${wsdair.version}</version>
-									<type>jar</type>
-								</artifactItem>
-							</artifactItems>
-							<outputDirectory>${project.build.directory}/wsdl</outputDirectory>
-							<includes>**/*.wsdl,**/*.xsd</includes>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-codegen-plugin</artifactId>
@@ -143,48 +115,7 @@
 					</execution>
 				</executions>
 			</plugin>
- <!--   	<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antlr-plugin</artifactId>
-				<version>2.0-beta-1</version>
-				<configuration>
-					<grammars>SNEEql.g</grammars>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
--->			<!--
-				<plugin> <groupId>org.codehaus.mojo</groupId>
-				<artifactId>antlr-maven-plugin</artifactId> <configuration> Comma
-				separated list of grammar files or pattern grammar files By default,
-				grammar file(s) is in ${basedir}/src/main/antlr
-
-				<grammars>SNEEql.g</grammars> </configuration> <executions>
-				<execution> <goals> <goal>generate</goal> </goals> </execution>
-				</executions> </plugin>
-			-->
-		</plugins>
-	</build>
-
- 	<reporting>
-		<plugins>
-<!--			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>antlr-maven-plugin</artifactId>
-				<configuration> -->
-					<!--
-						Comma separated list of grammar files or pattern grammar files By
-						default, grammar file(s) is in ${basedir}/src/main/antlr
-					-->
-<!-- 					<grammars>SNEEql.g</grammars>
-				</configuration>
-			</plugin> -->
-		</plugins>
-	</reporting>  
+ 		</plugins>
+	</build>-->
 
 </project>

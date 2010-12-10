@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class PullSourceMetadata extends SourceMetadataAbstract {
+public abstract class SourceMetadata extends SourceMetadataAbstract {
 
 	/**
 	 * Publication rate for each extent
@@ -12,7 +12,7 @@ public abstract class PullSourceMetadata extends SourceMetadataAbstract {
 	protected Map<String, Double> _extentRates = 
 		new HashMap<String, Double>();
 
-	public PullSourceMetadata(String sourceName, List<String> extentNames,
+	public SourceMetadata(String sourceName, List<String> extentNames,
 			SourceType sourceType) {
 		super(sourceName, extentNames, sourceType);
 	}

@@ -7,13 +7,14 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapper;
+import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapperImpl;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.WebServiceSourceMetadata;
 
 public class PullServiceReceiver implements SourceReceiver {
@@ -23,7 +24,7 @@ public class PullServiceReceiver implements SourceReceiver {
 
 	private String _resourceName;
 
-	private PullSourceWrapper _pullSource;
+	private PullSourceWrapperImpl _pullSource;
 
 	private Timestamp lastTs;
 
@@ -33,13 +34,19 @@ public class PullServiceReceiver implements SourceReceiver {
 
 	public PullServiceReceiver(String streamName,
 			WebServiceSourceMetadata webSource, long sleep) 
-	throws ExtentDoesNotExistException {
+	throws ExtentDoesNotExistException, SNEEDataSourceException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER PullServiceReceiver() with " + 
 					streamName + " sleep duration=" + sleep);
 		extentName = streamName;
 		_resourceName = webSource.getResourceName(streamName);
-		_pullSource = webSource.getPullSource();
+		if (webSource.getSourceType() == SourceType.PULL_STREAM_SERVICE) {
+			_pullSource = (PullSourceWrapperImpl) webSource.getSource();
+		} else {
+			String message = "Incorrect data source type.";
+			logger.error(message);
+			throw new SNEEDataSourceException(message);
+		}
 		_sleep = sleep;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN PullServiceReceiver()");

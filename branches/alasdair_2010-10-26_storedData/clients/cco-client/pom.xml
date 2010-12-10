@@ -15,13 +15,13 @@
   	<dependency>
   		<groupId>uk.ac.manchester.cs.snee.client</groupId>
   		<artifactId>client</artifactId>
-  		<version>1.5.0-SNAPSHOT</version>
+  		<version>${snee.version}</version>
   		<scope>provided</scope>
   	</dependency>
   	<dependency>
   		<groupId>uk.ac.manchester.cs.snee</groupId>
-  		<artifactId>snee-core</artifactId>
-  		<version>1.5.0-SNAPSHOT</version>
+  		<artifactId>snee-api</artifactId>
+  		<version>${snee.version}</version>
   		<type>jar</type>
   		<scope>provided</scope>
   	</dependency>

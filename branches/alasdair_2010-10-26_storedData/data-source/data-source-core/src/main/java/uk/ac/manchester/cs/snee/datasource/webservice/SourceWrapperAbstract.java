@@ -23,16 +23,11 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 import com.sun.rowset.WebRowSetImpl;
 
-import eu.semsorgrid4env.service.wsdai.DataResourceAddressType;
-import eu.semsorgrid4env.service.wsdai.GetResourceListRequest;
-import eu.semsorgrid4env.service.wsdai.GetResourceListResponse;
-import eu.semsorgrid4env.service.wsdai.NotAuthorizedFault;
-import eu.semsorgrid4env.service.wsdai.ServiceBusyFault;
-
-public abstract class SourceWrapperAbstract {
+public abstract class SourceWrapperAbstract implements SourceWrapper {
 
 	private static Logger logger = 
 		Logger.getLogger(SourceWrapperAbstract.class.getName());
@@ -40,6 +35,8 @@ public abstract class SourceWrapperAbstract {
 	protected static final String DATASET_FORMAT = 
 		"http://java.sun.com/xml/ns/jdbc";
 
+	protected SourceType _sourceType;
+	
 	protected String _url;
 
 	protected Types _types;
@@ -52,6 +49,11 @@ public abstract class SourceWrapperAbstract {
     	_url = url;
         if (logger.isDebugEnabled())
         	logger.debug("RETURN SourceWrapperAbstract()");
+    }
+    
+	@Override
+	public SourceType getSourceType() {
+    	return _sourceType;
     }
     
 	protected List<ExtentMetadata> extractSchema(SchemaParser schemaParser,

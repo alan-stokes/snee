@@ -48,7 +48,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
 /**
  * Implementation of the metadata imported from a UDP source.
  */
-public class UDPSourceMetadata extends PullSourceMetadata {
+public class UDPSourceMetadata extends SourceMetadata {
 
 	Logger logger = 
 		Logger.getLogger(UDPSourceMetadata.class.getName());

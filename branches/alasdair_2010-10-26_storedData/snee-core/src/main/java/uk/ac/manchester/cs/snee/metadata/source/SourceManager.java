@@ -22,6 +22,8 @@ import org.xml.sax.SAXException;
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapper;
+import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapperImpl;
+import uk.ac.manchester.cs.snee.datasource.webservice.SourceWrapper;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -119,6 +121,7 @@ public class SourceManager {
 	private void addSensorNetworkSources(NodeList wsnSources) 
 	throws MetadataException, SourceMetadataException, 
 	TopologyReaderException {
+		//FIXME: This should be abstracted out into a data source module for sensor networks
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER addSensorNetworkSources() #=" + 
 					wsnSources.getLength());
@@ -292,7 +295,7 @@ public class SourceManager {
 					serviceName + " type=" + interfaceType + " epr=" +
 					epr);
 		}
-		PullSourceWrapper sourceWrapper;
+		SourceWrapper sourceWrapper;
 		switch (interfaceType) {
 		case PULL_STREAM_SERVICE:
 			sourceWrapper = createPullSource(epr);
@@ -316,21 +319,22 @@ public class SourceManager {
 
 	protected PullSourceWrapper createPullSource(String url)
 	throws MalformedURLException {
-		PullSourceWrapper pullClient = new PullSourceWrapper(url, _types);
+		PullSourceWrapper pullClient = 
+			new PullSourceWrapperImpl(url, _types);
 		return pullClient;
 	}
 
 	private void createServiceSourceMetadata(
 			String sourceName,
-			String url, PullSourceWrapper pullSource) 
+			String url, SourceWrapper sourceWrapper) 
 	throws SNEEDataSourceException, SchemaMetadataException,
 	TypeMappingException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER createServiceSourceMetadata() with " +
 					"name=" + sourceName +
-					" url=" + url + " sourceWrapper=" + pullSource);
+					" url=" + url + " sourceWrapper=" + sourceWrapper);
 		}
-		List<String> resources = pullSource.getResourceNames();
+		List<String> resources = sourceWrapper.getResourceNames();
 		List<String> extentNames = new ArrayList<String>();
 		//FIXME: Read stream rate from property document!
 		Map<String, String> resourcesByExtent = 
@@ -339,7 +343,7 @@ public class SourceManager {
 			if (logger.isTraceEnabled())
 				logger.trace("Retrieving schema for " + resource);
 			List<ExtentMetadata> extents = 
-				pullSource.getSchema(resource);
+				sourceWrapper.getSchema(resource);
 			for (ExtentMetadata extent : extents) {
 				String extentName = extent.getExtentName();
 				_schema.put(extentName, extent);
@@ -353,7 +357,7 @@ public class SourceManager {
 		}
 		WebServiceSourceMetadata source = 
 			new WebServiceSourceMetadata(sourceName, extentNames, url, 
-					resourcesByExtent, pullSource);
+					resourcesByExtent, sourceWrapper);
 		_sources.add(source);
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN createServiceSourceMetadata()");

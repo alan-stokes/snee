@@ -14,10 +14,22 @@
   <dependencies>
   	<dependency>
   		<groupId>uk.ac.manchester.cs.snee</groupId>
+  		<artifactId>snee-api</artifactId>
+  		<version>${snee.version}</version>
+  		<type>jar</type>
+  	</dependency>
+  	<dependency>
+  		<groupId>uk.ac.manchester.cs.snee</groupId>
   		<artifactId>snee-core</artifactId>
+  		<version>${snee.version}</version>
+  		<scope>compile</scope>
+  	</dependency>
+  	<dependency>
+  		<groupId>uk.ac.manchester.cs.snee</groupId>
+  		<artifactId>snee-compiler</artifactId>
   		<version>1.5.0-SNAPSHOT</version>
   		<type>jar</type>
-  		<scope>provided</scope>
+  		<scope>compile</scope>
   	</dependency>
   </dependencies>
 </project>

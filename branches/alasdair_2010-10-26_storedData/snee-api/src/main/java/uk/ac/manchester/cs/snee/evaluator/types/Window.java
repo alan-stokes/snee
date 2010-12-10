@@ -38,6 +38,7 @@ package uk.ac.manchester.cs.snee.evaluator.types;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.log4j.Logger;
 
 public class Window implements Output {

@@ -18,6 +18,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import eu.semsorgrid4env.service.stream.StreamDescriptionType;
 import eu.semsorgrid4env.service.stream.pull.GetStreamItemRequest;
 import eu.semsorgrid4env.service.stream.pull.GetStreamNewestItemRequest;
@@ -34,10 +35,11 @@ import eu.semsorgrid4env.service.wsdai.NotAuthorizedFault;
 import eu.semsorgrid4env.service.wsdai.PropertyDocumentType;
 import eu.semsorgrid4env.service.wsdai.ServiceBusyFault;
 
-public class PullSourceWrapper extends SourceWrapperAbstract {
+public class PullSourceWrapperImpl extends SourceWrapperAbstract
+implements PullSourceWrapper {
 
 	private static Logger logger = 
-		Logger.getLogger(PullSourceWrapper.class.getName());
+		Logger.getLogger(PullSourceWrapperImpl.class.getName());
 
 	private DateFormat dateFormat = 
 		new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
@@ -46,12 +48,13 @@ public class PullSourceWrapper extends SourceWrapperAbstract {
 
 	private PullStreamServiceClient _pullClient;
 
-    public PullSourceWrapper(String url, Types types) 
+    public PullSourceWrapperImpl(String url, Types types) 
     throws MalformedURLException {
     	super(url, types);
     	if (logger.isDebugEnabled())
     		logger.debug("ENTER PullSourceWrapper() with URL " + url);
     	_pullClient = createServiceClient(url);
+    	_sourceType = SourceType.PULL_STREAM_SERVICE;
         if (logger.isDebugEnabled())
         	logger.debug("RETURN PullSourceWrapper()");
     }
@@ -312,7 +315,7 @@ public class PullSourceWrapper extends SourceWrapperAbstract {
 			logger.trace("ENTER processGenericQueryResponse() with " +
 					response);
 		List<Tuple> tuples = new ArrayList<Tuple>();
-		DatasetType dataset = response.getDataset().getValue();
+		DatasetType dataset = response.getDataset();
 		String formatURI = dataset.getDatasetFormatURI();
 		if (formatURI.trim().equalsIgnoreCase(DATASET_FORMAT)) {
 			if (logger.isTraceEnabled()) {
