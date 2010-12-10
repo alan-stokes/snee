@@ -10,7 +10,6 @@
   <groupId>uk.ac.manchester.cs.snee.client</groupId>
   <artifactId>cco-client</artifactId>
   <name>CCO Client</name>
-  <version>1.5.0-SNAPSHOT</version>
   <description>Command line single use client that uses the CCO Pull-stream service as a data source.</description>
   <dependencies>
   	<dependency>
