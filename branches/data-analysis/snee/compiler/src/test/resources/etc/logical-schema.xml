@@ -94,4 +94,50 @@
          </column>
      </table>
 
+	<!-- Testing for the newly created schema, that takes DATs into account. This is a testing
+	table for the Linear Regression, so we only have 2 columns. -->
+      <table name="forestlrf" isIntensional="true">
+    	<column name="temperature">
+        	<type class ="integer"/>
+         </column>
+         <column name="pressure">
+          	<type class ="integer"/>
+         </column>
+         <datParams type="CLASSIFIER" subtype="LinearRegressionFunction">
+			<derivedAttribute name="pressure"/>
+			<source>SELECT temperature, pressure FROM TestStream</source>
+			<!-- <source>SELECT ts.pressure, ts.temperature FROM TestStream ts</source> -->
+         </datParams>
+     </table>
+
+
+      <stream name="flood" type="pull">
+    	<column name="timestamp">
+        	<type class ="integer"/>
+         </column>
+         <column name="temperature">
+          	<type class ="integer"/>
+         </column>
+     </stream>
+
+
+	<!-- Testing table for D3 algorithm. Example taken from the Design Document (Upd. Grammar) -->
+      <table name="d3e" isIntensional="true">
+    	<column name="temperature">
+        	<type class ="integer"/>
+         </column>
+         <column name="probability">
+          	<type class ="float"/>
+         </column>
+         <datParams type="OUTLIER_DETECTION" subtype="d3">
+			<derivedAttribute name="probability"/>
+			<parameters>
+				<parameter value="5"/>
+			</parameters>
+			<source>SELECT s.temperature, s.pressure FROM flood[FROM NOW-20 MIN TO NOW] s</source>
+			<!-- <source>SELECT ts.pressure, ts.temperature FROM TestStream ts</source> -->
+         </datParams>
+     </table>
+
+
 </schema>

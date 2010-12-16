@@ -34,6 +34,9 @@
 
 package uk.ac.manchester.cs.snee.compiler;
 
+import gr.uoa.di.ssg4e.dat.excep.DATException;
+import gr.uoa.di.ssg4e.query.QueryRefactorer;
+
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -87,11 +90,14 @@ public class QueryCompiler {
 	 */
 	private Metadata metadata;
 
+	private QueryRefactorer refactor = null;
+
 	public QueryCompiler(Metadata schema) 
 	throws TypeMappingException {
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER QueryCompiler()");
 		metadata = schema;
+		refactor = new QueryRefactorer(metadata);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN QueryCompiler()");
 	}
@@ -241,6 +247,8 @@ public class QueryCompiler {
 	 * @throws SourceAllocatorException 
 	 * @throws WhenSchedulerException 
 	 * @throws ExpressionException 
+	 * @throws gr.uoa.di.ssg4e.query.excep.ParserException 
+	 * @throws DATException 
 	 */
 	public QueryExecutionPlan compileQuery(int queryID, String query, 
 			QoSExpectations qos) 
@@ -249,7 +257,7 @@ public class QueryCompiler {
 	ParserException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException, 
 	SNEEConfigurationException, SourceAllocatorException, WhenSchedulerException,
-	ExpressionException 
+	ExpressionException, gr.uoa.di.ssg4e.query.excep.ParserException, DATException 
 	 {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER: queryID: " + queryID + "\n\tquery: " + query);
@@ -259,7 +267,11 @@ public class QueryCompiler {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER: queryID: " + queryID + 
 					" dir: " + outputDir + "\n\tquery: " + query);
-		
+
+		if (logger.isInfoEnabled()) 
+			logger.info("Starting refactoring for queryID " + queryID);
+		query = refactor.refactorQuery(query);
+
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting parsing for queryID " + queryID);
 		CommonAST ast = doParsing(query, queryID, outputDir);

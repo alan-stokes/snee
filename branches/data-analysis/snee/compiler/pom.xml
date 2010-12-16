@@ -63,6 +63,13 @@
 			<type>jar</type>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>gr.uoa.di.kddlab.ssg4e</groupId>
+			<artifactId>snee-dat</artifactId>
+			<version>0.9.9</version>
+			<scope>provided</scope>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 
 	<build>
