@@ -69,14 +69,48 @@
 	</xs:complexType>	
 	<xs:element name="column" type="columnType"/>
 
+	<xs:complexType name="parametersType">
+		<xs:sequence>
+			<xs:element name="parameter" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:attribute name="value" use="required" type="xs:string"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="parameters" type="parametersType"/>
+
+    <xs:complexType name="datParametersType">
+		<xs:sequence>
+			<xs:element name="derivedAttribute" minOccurs="1" maxOccurs="1">
+				<xs:complexType>
+					<xs:attribute name="name" use="required" type="xs:string"/>
+				</xs:complexType>
+			</xs:element>
+			<xs:element ref="parameters" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="source" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+
+    	<xs:attribute name="type" use="required" type="xs:string"/>
+    	<xs:attribute name="subtype" use="required" type="xs:string"/>
+	</xs:complexType>	
+	<xs:element name="datParams" type="datParametersType"/>
+
+	<!-- Extent Type now covers both intentional and extentional extents.
+	The augmentation involves specifying the isIntentional attribute and placing the
+	datParams element in the previously existing type -->
 	<xs:complexType name="extentType">
 		<xs:sequence>
 			<xs:element ref="column" minOccurs="1" maxOccurs="unbounded" />
+			<xs:element ref="datParams" minOccurs="0" maxOccurs="1" />
 		</xs:sequence>
 		<xs:attribute name="name" use="required" type="xs:string"/>
+
+		<!-- Used to identify if the extent is a DAT -->
+		<xs:attribute name="isIntentional" type="xs:string" default="false"/>
 	</xs:complexType>
 	<xs:element name="table" type="extentType"/>
-	
+
 	<xs:complexType name="streamExtentType">
 		<xs:complexContent>
 			<xs:extension base="extentType">
