@@ -1,0 +1,46 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>SNEE</artifactId>
+    <groupId>uk.ac.manchester.cs.snee</groupId>
+    <version>1.4.2</version>
+  </parent>
+  <groupId>gr.uoa.di.ssg4e</groupId>
+  <artifactId>snee-dat</artifactId>
+  <version>0.9.9</version>
+  <name>snee-dat</name>
+  <description>Provides Data Analysis Technique (DATs) capabilities for the snee engine. DATs include classification, clustering, association rules, outlier detection, sampling etc</description>
+  <organization>
+  	<name>University of Athens, kddlab group</name>
+  	<url>http://kddlab.di.uoa.gr</url>
+  </organization>
+  <dependencies>
+    <dependency>
+      <groupId>uk.ac.manchester.cs.snee</groupId>
+      <artifactId>snee-core</artifactId>
+      <version>1.4.2</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>antlr</groupId>
+    	<artifactId>antlr</artifactId>
+    	<version>2.7.5</version>
+    	<type>jar</type>
+    	<scope>compile</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.easymock</groupId>
+    	<artifactId>easymockclassextension</artifactId>
+    	<version>2.5.2</version>
+    	<type>jar</type>
+    	<scope>test</scope>
+    </dependency>
+    <dependency>
+    	<groupId>uk.ac.manchester.cs.snee</groupId>
+    	<artifactId>snee-compiler</artifactId>
+    	<version>1.4.2</version>
+    	<type>jar</type>
+    	<scope>provided</scope>
+    </dependency>
+  </dependencies>
+</project>
