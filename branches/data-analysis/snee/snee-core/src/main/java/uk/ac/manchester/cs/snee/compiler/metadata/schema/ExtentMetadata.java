@@ -34,6 +34,7 @@
 package uk.ac.manchester.cs.snee.compiler.metadata.schema;
 
 import gr.uoa.di.ssg4e.dat.schema.DATMetadata;
+import gr.uoa.di.ssg4e.query.IExtentMetadata;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 
-public class ExtentMetadata {
+public class ExtentMetadata implements IExtentMetadata {
 	
 	private Logger logger = 
 		Logger.getLogger(ExtentMetadata.class.getName());

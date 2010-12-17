@@ -35,6 +35,8 @@ package uk.ac.manchester.cs.snee.compiler.metadata;
 
 import gr.uoa.di.ssg4e.dat.excep.DATSchemaException;
 import gr.uoa.di.ssg4e.dat.schema.DATMetadata;
+import gr.uoa.di.ssg4e.query.IExtentMetadata;
+import gr.uoa.di.ssg4e.query.IMetadata;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -86,7 +88,7 @@ import uk.ac.manchester.cs.snee.data.webservice.PullSourceWrapper;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
-public class Metadata {
+public class Metadata implements IMetadata {
 
 	private Logger logger = 
 		Logger.getLogger(Metadata.class.getName());
