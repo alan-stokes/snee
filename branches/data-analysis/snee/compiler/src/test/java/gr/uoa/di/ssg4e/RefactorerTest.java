@@ -624,7 +624,20 @@ public class RefactorerTest {
 	DATSchemaException, DATException,
 	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("SELECT s.Timestamp " +
-				"FROM (SELECT timestamp FROM TestStream) s " +
+				"FROM (SELECT timestamp FROM TestStream s) " +
+				"WHERE s.Timestamp < 42;");
+	}
+
+	@Test
+	public void testNestedSelect_Problematic() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
+		testQuery("SELECT s.Timestamp " +
+				"FROM ( SELECT timestamp FROM TestStream ) s " +
 				"WHERE s.Timestamp < 42;");
 	}
 
