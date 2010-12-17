@@ -1,10 +1,14 @@
-package uk.ac.manchester.cs.snee.compiler.translator;
+package gr.uoa.di.ssg4e;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import gr.uoa.di.ssg4e.dat.excep.DATException;
 import gr.uoa.di.ssg4e.dat.excep.DATSchemaException;
+import gr.uoa.di.ssg4e.query.IException;
+import gr.uoa.di.ssg4e.query.IMetadata;
+import gr.uoa.di.ssg4e.query.QueryRefactorer;
 
 import java.io.StringReader;
 import java.net.MalformedURLException;
@@ -28,6 +32,7 @@ import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
 import uk.ac.manchester.cs.snee.compiler.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
 import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
@@ -48,6 +53,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
+import uk.ac.manchester.cs.snee.compiler.translator.Translator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
 import antlr.CommonAST;
@@ -55,21 +61,23 @@ import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
 
-public class TranslatorTest {
+public class RefactorerTest {
 
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	private Logger logger = Logger.getLogger(this.getClass().getName());
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
 		PropertyConfigurator.configure(
-				TranslatorTest.class.getClassLoader().getResource(
+				RefactorerTest.class.getClassLoader().getResource(
 						"etc/log4j.properties"));
 	}
+	
+	private QueryRefactorer refactor;
 
 	private Translator translator;
 	private Types types;
-
+	
 	@Before
 	public void setUp() 
 	throws TypeMappingException, SchemaMetadataException, 
@@ -77,7 +85,9 @@ public class TranslatorTest {
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
 	SNEEDataSourceException, CostParametersException, UtilsException, 
-	SNCBException, DATSchemaException {
+	SNCBException, 
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException{
 		Properties props = new Properties();
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
@@ -89,12 +99,13 @@ public class TranslatorTest {
 		props.setProperty(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE, "false");
 		SNEEProperties.initialise(props);
 		Metadata schemaMetadata = new Metadata();
+		refactor = new QueryRefactorer((IMetadata)schemaMetadata);
 		translator = new Translator(schemaMetadata);
 		String typesFileLoc = 
 			Utils.validateFileLocation("etc/Types.xml");
 		types = new Types(typesFileLoc);
 	}
-
+	
 	@After
 	public void tearDown() throws Exception {
 	}	
@@ -103,8 +114,14 @@ public class TranslatorTest {
 	throws ParserException, SchemaMetadataException,
 	ExpressionException, AssertionError, OptimizationException,
 	SourceDoesNotExistException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException 
-	{
+	RecognitionException, 
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
+
+
+		query = refactor.refactorQuery(query);
+		System.out.println("Refactored Query: " + query);
+
 		SNEEqlLexer lexer = new SNEEqlLexer(new StringReader(query));
 		SNEEqlParser parser = new SNEEqlParser(lexer);
 		try {
@@ -125,7 +142,7 @@ public class TranslatorTest {
 			StringBuffer buffer = new StringBuffer("Parse tree:");
 			buffer.append(displayNode(parseTree, 0));
 			logger.info(buffer.toString());
-//			System.out.println(query + "\n" + buffer.toString());
+	//				System.out.println(query + "\n" + buffer.toString());
 		}
 		return translator.translate(parseTree, 1);
 	}
@@ -144,7 +161,7 @@ public class TranslatorTest {
 		}
 		return buffer.toString();
 	}
-
+	
 	//TODO: Write tests for queries
 	/*
 	 * Queries that have worked in the past, should have tests written for them
@@ -166,21 +183,25 @@ public class TranslatorTest {
 	 * SELECT temperature, pressure, (temperature * 9 / 5) + 32 as Fahrenheit FROM InFlow;
 	 */
 	
-	@Test(expected=ParserException.class)
+	@Test(expected=gr.uoa.di.ssg4e.query.excep.ParserException.class)
 	public void testRubbish() 
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("Some rubbish;");
 	}
 	
-	@Test(expected=ParserException.class)
+	@Test(expected=gr.uoa.di.ssg4e.query.excep.ParserException.class)
 	public void testGibberish() 
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("Some gibberish that is not a query;");
 	}
 	
@@ -189,7 +210,9 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("SELECT * FROM TestStream;");
 	}
 	
@@ -198,7 +221,9 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("(SELECT * FROM TestStream);");
 	}
 	
@@ -207,7 +232,9 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("SELECT timestamp FROM TestStream;");
 	}
 		
@@ -216,7 +243,9 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("(SELECT timestamp FROM TestStream);");
 	}
 	
@@ -226,8 +255,9 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
-	{
+	OptimizationException, TypeMappingException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		LAF laf = testQuery("SELECT timestamp AS time " +
 				"FROM TestStream;");
 		LogicalOperator rootOperator = laf.getRootOperator();
@@ -246,7 +276,9 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("SELECT Timestamp " +
 				"FROM TestStream " +
 				"WHERE Timestamp < 42;");
@@ -257,7 +289,9 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("SELECT Timestamp " +
 				"FROM TestStream " +
 				"WHERE Timestamp < integetColumn;");
@@ -268,7 +302,9 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("SELECT * " +
 				"FROM TestStream[FROM NOW-10 ROWS TO NOW - 0 SLIDE 5 ROWS];");
 	}
@@ -278,7 +314,9 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("SELECT * " +
 				"FROM TestStream[FROM NOW-10 ROWS TO NOW SLIDE 5 ROWS];");
 	}
@@ -288,7 +326,9 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("SELECT * " +
 				"FROM TestStream[NOW];");
 	}
@@ -298,7 +338,9 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("SELECT * " +
 				"FROM TestStream[NOW SLIDE 5 ROWS];");
 	}
@@ -309,7 +351,9 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		//FIXME: Correct parser/translator for FROM NOW TO NOW
 		testQuery("SELECT * " +
 				"FROM TestStream[FROM NOW TO NOW];");
@@ -320,7 +364,9 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("SELECT * " +
 				"FROM TestStream[FROM NOW-10 MINUTES TO NOW SLIDE 30 SECONDS];");
 	}
@@ -330,7 +376,9 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		//FIXME: Correct translator
 		testQuery("SELECT * " +
 				"FROM TestStream[FROM NOW-10 MINUTES TO NOW];");
@@ -341,7 +389,9 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("SELECT * " +
 				"FROM TestStream[NOW] t, PullStream[NOW] p " +
 				"WHERE t.timestamp = p.timestamp;");
@@ -352,7 +402,9 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("SELECT * " +
 				"FROM TestStream[FROM NOW - 5 SECONDS TO NOW SLIDE 1 SECOND] t, PullStream[FROM NOW - 5 SECONDS TO NOW SLIDE 1 SECOND] p " +
 				"WHERE t.timestamp = p.timestamp;");
@@ -363,8 +415,9 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException
-	{
+	TypeMappingException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		// Record result
 		Attribute testTimestampAttr = 
 			new DataAttribute("teststream", "timestamp", 
@@ -396,8 +449,9 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError,
-	OptimizationException, TypeMappingException
-	{
+	OptimizationException, TypeMappingException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("RSTREAM SELECT * FROM TestStream[NOW];");
 	}
 	
@@ -407,8 +461,9 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError,
-	OptimizationException, TypeMappingException
-	{
+	OptimizationException, TypeMappingException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException  {
 		testQuery("SELECT RSTREAM * FROM TestStream[NOW];");
 	}
 	
@@ -420,7 +475,7 @@ public class TranslatorTest {
 		int unionCount = 0;
 		while (it.hasNext()) {
 			LogicalOperator op = it.next();
-//			System.out.println(op.getOperatorName());
+	//				System.out.println(op.getOperatorName());
 			if (op.isLeaf()) {
 				leafCount++;
 			}
@@ -433,13 +488,15 @@ public class TranslatorTest {
 		assertEquals("Check number of leaf operators",
 				numLeaves, leafCount);
 	}
-
+	
 	@Test(expected=ParserException.class)
 	public void testUnionQuery_withoutParen() 
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException  {
 		/* Union queries must contain parentheses around subqueries */
 		testQuery("SELECT timestamp FROM TestStream UNION " +
 				"SELECT timestamp FROM PullStream;");
@@ -450,19 +507,23 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) " +
 				"UNION " +
 				"(SELECT timestamp FROM PullStream);");
 		verifyUnionQuery(laf, 1, 2);
 	}
-
+	
 	@Test
 	public void testUnionQuery_Union3Query() 
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) UNION " +
 				"(SELECT timestamp FROM PullStream) UNION" +
 				"(SELECT timestamp FROM PushStream);");
@@ -474,7 +535,9 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) UNION " +
 				"(SELECT timestamp FROM PullStream) UNION" +
 				"(SELECT timestamp FROM PushStream) UNION " +
@@ -487,8 +550,9 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException,
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException
-	{
+	TypeMappingException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("(SELECT timestamp " +
 				"FROM TestStream[FROM NOW - 10 SECONDS TO NOW SLIDE 1 SECOND]) " +
 				"UNION " +
@@ -501,8 +565,9 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException,
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException
-	{
+	TypeMappingException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("(SELECT timestamp " +
 				"FROM TestStream) " +
 				"UNION " +
@@ -515,7 +580,9 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) " +
 				"UNION " +
 				"(SELECT integetColumn FROM PullStream);");
@@ -527,7 +594,9 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("(SELECT timestamp FROM TestStream) " +
 				"UNION " +
 				"(SELECT floatColumn FROM PullStream);");
@@ -538,32 +607,25 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("(SELECT timestamp FROM TestStream) " +
 				"UNION " +
 				"(SELECT timestamp, floatColumn FROM PullStream);");
 	}
-
+	
 	@Test
 	public void testRefactorLRF() 
 	throws SourceDoesNotExistException,
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
-	{
-		LAF laf = testQuery( "SELECT RSTREAM F.temperature, RF.pressure " +
+	OptimizationException, TypeMappingException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
+		testQuery( "SELECT RSTREAM F.temperature, RF.pressure " +
 				"FROM forestTemp[NOW] F, forestLRF RF " +
 				"WHERE F.temperature=RF.temperature;");
-		LogicalOperator rootOperator = laf.getRootOperator();
-		List<Attribute> attributes = 
-			rootOperator.getAttributes();
-		assertEquals(1, attributes.size());
-		Attribute attribute = attributes.get(0);
-		assertTrue(attribute.getAttributeDisplayName().
-				equalsIgnoreCase("time"));
-		assertTrue(attribute.getAttributeSchemaName().
-				equalsIgnoreCase("timestamp"));
 	}
-
 }

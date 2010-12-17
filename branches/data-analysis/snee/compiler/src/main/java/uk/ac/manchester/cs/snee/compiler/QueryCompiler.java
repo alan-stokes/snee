@@ -35,6 +35,7 @@
 package uk.ac.manchester.cs.snee.compiler;
 
 import gr.uoa.di.ssg4e.dat.excep.DATException;
+import gr.uoa.di.ssg4e.query.IException;
 import gr.uoa.di.ssg4e.query.IMetadata;
 import gr.uoa.di.ssg4e.query.QueryRefactorer;
 
@@ -258,7 +259,8 @@ public class QueryCompiler {
 	ParserException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException, 
 	SNEEConfigurationException, SourceAllocatorException, WhenSchedulerException,
-	ExpressionException, gr.uoa.di.ssg4e.query.excep.ParserException, DATException 
+	ExpressionException, 
+	gr.uoa.di.ssg4e.query.excep.ParserException, DATException 
 	 {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER: queryID: " + queryID + "\n\tquery: " + query);
@@ -271,7 +273,11 @@ public class QueryCompiler {
 
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting refactoring for queryID " + queryID);
-		query = refactor.refactorQuery(query);
+		try{
+			query = refactor.refactorQuery(query);
+		}catch(IException ie){
+			throw new SchemaMetadataException(ie.getMessage());
+		}
 
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting parsing for queryID " + queryID);

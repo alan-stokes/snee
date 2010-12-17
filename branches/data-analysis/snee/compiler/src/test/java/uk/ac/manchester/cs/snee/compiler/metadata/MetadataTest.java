@@ -92,7 +92,7 @@ public class MetadataTest extends EasyMockSupport {
 		SNEEProperties.initialise(props);
 
 		Metadata schema = new Metadata();
-		assertEquals(3, schema.getAcquireExtents().size());
+		assertEquals(4, schema.getAcquireExtents().size());
 	}
 
 	@Test

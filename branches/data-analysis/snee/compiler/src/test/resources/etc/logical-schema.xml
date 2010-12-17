@@ -94,6 +94,15 @@
          </column>
      </table>
 
+      <stream name="ForestTemp" type="pull">
+    	<column name="timestamp">
+        	<type class ="integer"/>
+         </column>
+         <column name="temperature">
+          	<type class ="integer"/>
+         </column>
+     </stream>
+
 	<!-- Testing for the newly created schema, that takes DATs into account. This is a testing
 	table for the Linear Regression, so we only have 2 columns. -->
       <table name="forestlrf" isIntensional="true">
