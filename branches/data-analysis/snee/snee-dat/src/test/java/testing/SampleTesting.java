@@ -23,6 +23,13 @@ public class SampleTesting {
 
 		try {
 
+			/* These actions need to be performed in order to correctly initialize any items that
+			 * are needed by the Metadata class */
+//			props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
+//			props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
+//			props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
+//			SNEEProperties.initialise(props);
+
 			URL[] us = {new URL("file:" + baseClassPath)};
 			ClassLoader ucl = new URLClassLoader(us, IMetadata.class.getClassLoader());
 			IMetadata metadata = (IMetadata)ucl.loadClass(className).newInstance();
