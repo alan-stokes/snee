@@ -60,15 +60,14 @@ public abstract class DataAnalysisTechnique  {
 	 * used in order to create the necessary 
 	 *  */
 	static {
-
-		File f = new File(DATsPath + DATMetadataFilename);
-
-		try { /* Try and create the file */
-			if ( !f.exists() )
-				f.createNewFile();
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
+//		File f = new File(DATsPath + DATMetadataFilename);
+//
+//		try { /* Try and create the file */
+//			if ( !f.exists() )
+//				f.createNewFile();
+//		} catch (final IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	protected DataAnalysisTechnique(String modelName){

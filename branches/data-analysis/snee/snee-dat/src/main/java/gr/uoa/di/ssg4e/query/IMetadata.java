@@ -16,5 +16,5 @@ public interface IMetadata {
 	/**
 	 * Retrieve the metadata about a particular extent
 	 * */
-	public IExtentMetadata getExtentMetadata(String name);
+	public IExtentMetadata getExtentMetadata(String name) throws IException;
 }

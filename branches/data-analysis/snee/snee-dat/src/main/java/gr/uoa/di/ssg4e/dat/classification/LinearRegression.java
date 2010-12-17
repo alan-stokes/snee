@@ -63,21 +63,20 @@ class LinearRegression extends AbstractClassifier {
 
 		int predAttrIdx = -1; /* This is the predicted attribute index */
 
-		/* Create on the fly a SNEEql query. */
+		/* Create a SNEEql query for the dat source */
 		SNEEqlQuery q = new SNEEqlQuery(datSource);
 
 		String[] selArgs = q.getSelectArgs();
 
 		String tableIter = "";
 		String derAttr = derivedAttributeName;
-		if ( q.getTupleIterators() != null ){
+		if ( q.getTupleIterators() != null && (!q.getTupleIterators()[0].isEmpty()) ){
 			tableIter = q.getTupleIterators()[0] + ".";
 			derAttr = tableIter + derivedAttributeName;
 		}
 
-		/* One of the arguments is the output parameter */
+		/* One of the arguments is the output parameter. Skip it */
 		input_Xi = new String[selArgs.length - 1];
-
 		for ( int i = 0; i < selArgs.length; i++ ){
 			if ( selArgs[i].equals(derAttr) )
 				predAttrIdx = i; /* store the index of the predicted attribute */
@@ -115,10 +114,10 @@ class LinearRegression extends AbstractClassifier {
 			"FROM (" +
 			"	SELECT	COUNT(*) as n," +
 			"			SUM( S." + inp_x + " * S." + inp_y + " ) as sum_xy," +
-			"			SUM( S." + inp_x + ") as sum_x," +
-			"			SUM( S." + inp_y + ") as sum_y," +
-			"			SUM( S." + inp_x + " * S." + inp_x + ") as sum_sqr_x" +
-			"	FROM ( " + super.datSource.toString() + ") S " +
+			"			SUM( S." + inp_x + " ) as sum_x," +
+			"			SUM( S." + inp_y + " ) as sum_y," +
+			"			SUM( S." + inp_x + " * S." + inp_x + " ) as sum_sqr_x" +
+			"	FROM ( " + super.datSource.toString() + " ) S " +
 			") S ";
 	}
 

@@ -9,7 +9,7 @@ public enum DATSubType {
 	KNN ( DATType.CLASSIFIER ), /** K-Nearest Neighbor */
 	DecisionTree ( DATType.CLASSIFIER ), /** Decision Trees classification. Default for C4.5 */
 	HoeffdingTree ( DATType.CLASSIFIER ), /** Decision Trees classification with Hoeffding Trees */
-	LinearRegression (DATType.CLASSIFIER), /** Linear Regression, currently being implemented */
+	LinearRegressionFunction (DATType.CLASSIFIER), /** Linear Regression, currently being implemented */
 	
 	/** Sub types of the CLUSTERING Family */
 	KMEANS ( DATType.CLUSTER ), /** K-Nearest Neighbor */
@@ -77,8 +77,8 @@ public enum DATSubType {
 			foundSubtype = KMEDOIDS;
 		}else if ( subTypeTag.equalsIgnoreCase(DATSubType.KNN.name()) ){
 			foundSubtype = KNN;
-		}else if ( subTypeTag.equalsIgnoreCase(DATSubType.LinearRegression.name()) ){
-			foundSubtype = LinearRegression;
+		}else if ( subTypeTag.equalsIgnoreCase(DATSubType.LinearRegressionFunction.name()) ){
+			foundSubtype = LinearRegressionFunction;
 		}else if ( subTypeTag.equalsIgnoreCase(DATSubType.NHC.name()) ){
 			foundSubtype = NHC;
 		}else if ( subTypeTag.equalsIgnoreCase(DATSubType.RANDOM.name()) ){

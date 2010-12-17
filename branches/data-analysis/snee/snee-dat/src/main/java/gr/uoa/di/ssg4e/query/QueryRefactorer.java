@@ -34,10 +34,10 @@ public class QueryRefactorer {
 	 *  
 	 * @throws ParserException in case a parsing error occurs
 	 * @throws DATException if the DAT that is used
-	 * @throws ExtentDoesNotExistException 
+	 * @throws IException 
 	 *  */
 	public String refactorQuery( String query ) 
-	throws ParserException, DATException{
+	throws ParserException, DATException, IException{
 
 		/*
 		 * FIXME: Known Limitations: UNION can only be top level.
@@ -84,9 +84,10 @@ public class QueryRefactorer {
 	 *  
 	 * @throws ParserException in case a parsing error of the query occurs
 	 * @throws DATException if the DAT that is used
+	 * @throws IException 
 	 *  */
 	private void refactorQuery( SNEEqlQuery query, StringBuilder sb ) 
-	throws ParserException, DATException {
+	throws ParserException, DATException, IException {
 
 		if ( query == null )
 			return;

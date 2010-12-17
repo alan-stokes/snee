@@ -83,7 +83,7 @@ public abstract class AbstractClassifier extends DataAnalysisTechnique {
 			break;
 		case KNN:
 			break;
-		case LinearRegression:
+		case LinearRegressionFunction:
 			classifier = new LinearRegression( modelName, datParameters, output, sourceQuery);
 			break;
 		default:
