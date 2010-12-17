@@ -1,22 +1,23 @@
 package gr.uoa.di.ssg4e.query;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
 import gr.uoa.di.ssg4e.dat.DataAnalysisTechnique;
 import gr.uoa.di.ssg4e.dat.excep.DATException;
 import gr.uoa.di.ssg4e.dat.schema.DATMetadata;
 import gr.uoa.di.ssg4e.query.excep.ParserException;
 
+/**
+ * Class that implements the Query Refactorer object. The item takes as 
+ * input the metadata of existing extents.
+ * */
 public class QueryRefactorer {
 
 	/* The controller used by this refactoring object */
-	private Metadata _metadata = null;
+	private IMetadata _metadata = null;
 
 	/**
 	 * Constructor for a new query refactoring object
 	 * */
-	public QueryRefactorer( Metadata metadata ){
+	public QueryRefactorer( IMetadata metadata ){
 		_metadata = metadata;
 	}
 
@@ -36,7 +37,7 @@ public class QueryRefactorer {
 	 * @throws ExtentDoesNotExistException 
 	 *  */
 	public String refactorQuery( String query ) 
-	throws ParserException, DATException, ExtentDoesNotExistException{
+	throws ParserException, DATException{
 
 		/*
 		 * FIXME: Known Limitations: UNION can only be top level.
@@ -85,7 +86,7 @@ public class QueryRefactorer {
 	 * @throws DATException if the DAT that is used
 	 *  */
 	private void refactorQuery( SNEEqlQuery query, StringBuilder sb ) 
-	throws ParserException, DATException, ExtentDoesNotExistException {
+	throws ParserException, DATException {
 
 		if ( query == null )
 			return;
@@ -116,53 +117,47 @@ public class QueryRefactorer {
 
 			}else{
 
-				try {
-
-					/* Get the source name */
-					String src = sources[i].trim();
-					int idx = src.indexOf('[');
-					if ( idx < 0 ){
-						/* Since the opening bracket does not exist, go to the end */
-						for ( idx = src.length() - 1; idx >= 0; idx-- )
-							if ( Character.isWhitespace(src.charAt(idx)) )
-								break;
-					}
-
-					/* No whitespaces, the src is the entire source[i]. Otherwise
-					 * it is the  */
-					if ( idx <= 0 )
-						idx = src.length();
-					src = src.substring(0, idx).trim();
-
-
-					/* The source is not a subquery. Get the metadata for this source */
-					ExtentMetadata metadata = _metadata.getExtentMetadata(src);
-
-					/* If it is a Data Analysis Technique, i.e. an intentional extent
-					 * FIXME: We should only try and refactor if we know that the DAT is
-					 * refactorable */
-					if ( metadata.isIntentional() ){
-
-						DATMetadata datMeta = metadata.getDATMetadata();
-
-						/* Load the appropriate DAT, given the DAT metadata */
-						DataAnalysisTechnique dat = DataAnalysisTechnique.loadDAT( sources[i], datMeta );
-
-						/* There can be only one DAT FIXME: Is this correct???
-						 * If the DAT is found, we do not append. We directly add the
-						 * refactored query to sb */
-						sb.replace(tmpLen, sb.length(), dat.refactorQuery( query, i ));
-						sources = null;
-						return;
-					}
-
-					sb.append(sources[i]);
-					if ( !query.getTupleIterators()[i].isEmpty() )
-						sb.append(' ').append(query.getTupleIterators()[i]);
-
-				} catch (ExtentDoesNotExistException e) {
-					e.printStackTrace();
+				/* Get the source name */
+				String src = sources[i].trim();
+				int idx = src.indexOf('[');
+				if ( idx < 0 ){
+					/* Since the opening bracket does not exist, go to the end */
+					for ( idx = src.length() - 1; idx >= 0; idx-- )
+						if ( Character.isWhitespace(src.charAt(idx)) )
+							break;
 				}
+
+				/* No whitespaces, the src is the entire source[i]. Otherwise
+				 * it is the  */
+				if ( idx <= 0 )
+					idx = src.length();
+				src = src.substring(0, idx).trim();
+
+
+				/* The source is not a subquery. Get the metadata for this source */
+				IExtentMetadata metadata = _metadata.getExtentMetadata(src);
+
+				/* If it is a Data Analysis Technique, i.e. an intentional extent
+				 * FIXME: We should only try and refactor if we know that the DAT is
+				 * refactorable */
+				if ( metadata.isIntensional() ){
+
+					DATMetadata datMeta = metadata.getDATMetadata();
+
+					/* Load the appropriate DAT, given the DAT metadata */
+					DataAnalysisTechnique dat = DataAnalysisTechnique.loadDAT( sources[i], datMeta );
+
+					/* There can be only one DAT FIXME: Is this correct???
+					 * If the DAT is found, we do not append. We directly add the
+					 * refactored query to sb */
+					sb.replace(tmpLen, sb.length(), dat.refactorQuery( query, i ));
+					sources = null;
+					return;
+				}
+
+				sb.append(sources[i]);
+				if ( !query.getTupleIterators()[i].isEmpty() )
+					sb.append(' ').append(query.getTupleIterators()[i]);
 			}
 
 			sb.append(",");

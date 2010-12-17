@@ -1,26 +1,38 @@
 package testing;
 
 import gr.uoa.di.ssg4e.dat.excep.DATException;
+import gr.uoa.di.ssg4e.query.IMetadata;
 import gr.uoa.di.ssg4e.query.QueryRefactorer;
 import gr.uoa.di.ssg4e.query.excep.ParserException;
 
 import java.net.MalformedURLException;
-
-import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.MetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
+import java.net.URL;
+import java.net.URLClassLoader;
 
 public class SampleTesting {
 
 	public static final String schemaName = "java/resources/logical-schema.xml";
 
+	public static final String baseClassPath = 
+		"/home/lebiathan/.m2/repository/uk/ac/manchester/cs/snee/snee-core/1.4.2/snee-core-1.4.2.jar";
+
+	public static final String className = 
+		"uk.ac.manchester.cs.snee.compiler.metadata.Metadata";
+
 	public static void main( String[] args ){
 
 		try {
 
-			Metadata metadata = new Metadata(schemaName);
+			URL[] us = {new URL("file:" + baseClassPath)};
+			ClassLoader ucl = new URLClassLoader(us, IMetadata.class.getClassLoader());
+			IMetadata metadata = (IMetadata)ucl.loadClass(className).newInstance();
+
+//			IMetadata metadata = (IMetadata) metadataClass
+//			Method myMethod = metadataClass.getMethod("Metadata",
+//					new Class[] { String.class });
+//			String returnValue = (String) myMethod.invoke(metadata,
+//					new Object[] {  });
+
 			QueryRefactorer refactor = new QueryRefactorer(metadata);
 
 			String query = null; /* initial query */
@@ -86,22 +98,22 @@ public class SampleTesting {
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (TypeMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SchemaMetadataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (MetadataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnsupportedAttributeTypeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (ParserException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (DATException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

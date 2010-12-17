@@ -7,9 +7,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-
 import gr.uoa.di.ssg4e.dat.DATSubType;
+import gr.uoa.di.ssg4e.dat.excep.DATSchemaException;
 
 
 public class DATMetadata {
@@ -90,7 +89,7 @@ public class DATMetadata {
 	 * contain the appropriate attributes / elements.
 	 * */
 	public static DATMetadata parse( Element datParams )
-	throws SchemaMetadataException{
+	throws DATSchemaException{
 
 		/* If the datParams element is null, then we return null */
 		if ( datParams == null )
@@ -121,14 +120,10 @@ public class DATMetadata {
 			if ( params.getLength() != 0 ){
 
 				params = ((Element)params.item(0)).getElementsByTagName("parameter");
-				if ( ((Element)params.item(0)).getChildNodes().getLength() != params.getLength() )
-					throw new SchemaMetadataException("Element parameters contains elements that " +
-							"were not supposed to exist. Please check your schema file");
-
 				paramCnt = params.getLength();
 				paramValues = new ArrayList<Object>(paramCnt);
 				for ( int i = 0; i < paramCnt; i++ ){
-					Element paramElement = (Element)params.item(0);
+					Element paramElement = (Element)params.item(i);
 					paramValues.add( paramElement.getAttribute("value") );
 				}
 			}
@@ -142,28 +137,28 @@ public class DATMetadata {
 			 * did not exist, though it was supposed to */
 
 			if ( type == null ) /* type attribute missing */
-				throw new SchemaMetadataException("Expected attribute type in element datParams but " +
+				throw new DATSchemaException("Expected attribute type in element datParams but " +
 						"was not encountered during parsing. Review your logical-schema.xml file");
 
 			if ( subType == null ) /* subtype attribute missing */
-				throw new SchemaMetadataException("Expected attribute subType in element datParams but " +
+				throw new DATSchemaException("Expected attribute subType in element datParams but " +
 						"was not encountered during parsing. Review your logical-schema.xml file");
 
 			if ( derivedAttr == null )  /* derived attribute was missing */
-				throw new SchemaMetadataException("Expected element derivedAttribute in datParams but " +
+				throw new DATSchemaException("Expected element derivedAttribute in datParams but " +
 				"was not encountered during parsing. Review your logical-schema.xml file");
 
 			if ( paramValues == null ) /* parameters element missing */
-				throw new SchemaMetadataException("Expected element parameters in datParams but " +
+				throw new DATSchemaException("Expected element parameters in datParams but " +
 						"was not encountered during parsing. Review your logical-schema.xml file");
 				
 			if ( paramCnt != paramValues.size() ) /* attribute value missing in one of parameter element */
-				throw new SchemaMetadataException("Expected attribute value in " + 
+				throw new DATSchemaException("Expected attribute value in " + 
 						(paramValues.size() + 1) + "-th element parameter but was not encountered. " +
 								"Review your logical-schema.xml file");
 
 			if ( src == null ) /* source element missing */
-				throw new SchemaMetadataException("Expected element source in element datParams but " +
+				throw new DATSchemaException("Expected element source in element datParams but " +
 						"was not encountered. Review your logical-schema.xml file");
 		}
 

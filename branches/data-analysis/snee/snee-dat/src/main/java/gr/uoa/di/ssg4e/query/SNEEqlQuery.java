@@ -16,6 +16,9 @@ import java.util.List;
 /**
  * Simple SNEEql Query class that understands the SELECT-FROM-WHERE clauses and splits a given query
  * to those individual statements. Identifies the SELECT arguments as well as the FROM sources.
+ * 
+ * TODO: The SNEEqlQuery should not be visible outside the scope of DATs. Is this possible without
+ * major modifications?
  * */
 public class SNEEqlQuery {
 

@@ -2,7 +2,6 @@
  * @author lebiathan (LebLab)
  * */
 
-
 package gr.uoa.di.ssg4e.query.excep;
 
 public class ParserException extends SNEEqlException {
