@@ -20,6 +20,13 @@
   		<version>1.4.2</version>
   		<scope>provided</scope>
   	</dependency>
+  	<dependency>
+  		<groupId>gr.uoa.di.ssg4e</groupId>
+  		<artifactId>snee-dat</artifactId>
+  		<version>1.0.0</version>
+  		<type>jar</type>
+  		<scope>provided</scope>
+  	</dependency>
   </dependencies>
   <modules>
     <module>client</module>
