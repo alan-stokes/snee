@@ -614,8 +614,22 @@ public class RefactorerTest {
 				"UNION " +
 				"(SELECT timestamp, floatColumn FROM PullStream);");
 	}
-	
+
 	@Test
+	public void testNestedSelect() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
+		testQuery("SELECT s.Timestamp " +
+				"FROM (SELECT timestamp FROM TestStream) s " +
+				"WHERE s.Timestamp < 42;");
+	}
+
+	@Test
+	@Ignore
 	public void testRefactorLRF() 
 	throws SourceDoesNotExistException,
 	ExtentDoesNotExistException, RecognitionException, 
