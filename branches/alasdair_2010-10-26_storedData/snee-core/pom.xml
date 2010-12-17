@@ -13,27 +13,6 @@
 	
 	<dependencies>
 		<dependency>
-			<groupId>org.easymock</groupId>
-			<artifactId>easymockclassextension</artifactId>
-			<version>2.5.2</version>
-			<type>jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib-nodep</artifactId>
-			<version>2.2</version>
-			<type>jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.objenesis</groupId>
-			<artifactId>objenesis</artifactId>
-			<version>1.2</version>
-			<type>jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>uk.ac.manchester.cs.snee</groupId>
 			<artifactId>snee-api</artifactId>
 			<version>${snee.version}</version>
@@ -53,69 +32,13 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>data-source-wsdair</artifactId>
+			<version>${snee.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
-
-	<!--<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf-codegen-plugin</artifactId>
-				<version>${cxf.version}</version>
-				<executions>
-					<execution>
-						<id>generate-sources</id>
-						<phase>generate-sources</phase>
-						<configuration>
-							<sourceRoot>${basedir}/target/generated/src/main/java
-							</sourceRoot>
-							<defaultOptions>
-								<extraargs>
-									<extraarg>-p</extraarg>
-									<extraarg>http://www.semsorgrid4env.eu/namespace/2009/10/SDS=eu.semsorgrid4env.service.stream</extraarg>
-									<extraarg>-p</extraarg>
-									<extraarg>http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query=eu.semsorgrid4env.service.stream.query</extraarg>
-									<extraarg>-p</extraarg>
-									<extraarg>http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Pull=eu.semsorgrid4env.service.stream.pull</extraarg>
-									<extraarg>-p</extraarg>
-									<extraarg>http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push=eu.semsorgrid4env.service.stream.push</extraarg>
-									<extraarg>-p</extraarg>
-									<extraarg>http://www.ggf.org/namespaces/2005/12/WS-DAI=eu.semsorgrid4env.service.wsdai</extraarg>
-									<extraarg>-noAddressBinding</extraarg>
-									<extraarg>-validate</extraarg>
-									<extraarg>-defaultValues</extraarg>
-								</extraargs>
-							</defaultOptions>
-							<wsdlOptions>
-								<wsdlOption>
-									<wsdl>${wsdl.location}/query_service.wsdl</wsdl>
-								</wsdlOption>
-								<wsdlOption>
-									<wsdl>${wsdl.location}/pull_stream_service.wsdl</wsdl>
-								</wsdlOption>
-								<wsdlOption>
-									<wsdl>${wsdl.location}/push_stream_service.wsdl</wsdl>
-								</wsdlOption>
-								<wsdlOption>
-									<wsdl>${wsdl.location}/subscription_manager_service.wsdl</wsdl>
-								</wsdlOption>
-								<wsdlOption>
-									<wsdl>${wsdl.location}/wsdair/sqlaccess_service_service.wsdl</wsdl>
-								</wsdlOption>
-								<wsdlOption>
-									<wsdl>${wsdl.location}/wsdair/sqlresponse_service_service.wsdl</wsdl>
-								</wsdlOption>
-								<wsdlOption>
-									<wsdl>${wsdl.location}/wsdair/sqlrowset_service_service.wsdl</wsdl>
-								</wsdlOption>
-							</wsdlOptions>
-						</configuration>
-						<goals>
-							<goal>wsdl2java</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
- 		</plugins>
-	</build>-->
 
 </project>

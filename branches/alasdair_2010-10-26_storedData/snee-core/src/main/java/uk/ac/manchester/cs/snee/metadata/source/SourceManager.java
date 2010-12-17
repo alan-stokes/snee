@@ -24,6 +24,7 @@ import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapper;
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapperImpl;
 import uk.ac.manchester.cs.snee.datasource.webservice.SourceWrapper;
+import uk.ac.manchester.cs.snee.datasource.webservice.WSDAIRSourceWrapperImpl;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -305,6 +306,9 @@ public class SourceManager {
 				"Push-stream services are not currently supported.";
 			logger.warn(message);
 			throw new SourceMetadataException(message);
+		case WSDAIR:
+			sourceWrapper = createWSDAIRSource(epr);
+			break;
 		default:
 			message = 
 				"Unknown interface type.";
@@ -319,9 +323,28 @@ public class SourceManager {
 
 	protected PullSourceWrapper createPullSource(String url)
 	throws MalformedURLException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER createPullSource() with " + url);
+		}
 		PullSourceWrapper pullClient = 
 			new PullSourceWrapperImpl(url, _types);
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN createPullSource()");
+		}
 		return pullClient;
+	}
+
+	protected WSDAIRSourceWrapperImpl createWSDAIRSource(String url)
+	throws MalformedURLException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER createWSDAIRSource() with " + url);
+		}
+		WSDAIRSourceWrapperImpl wsdairClient = 
+			new WSDAIRSourceWrapperImpl(url, _types);
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN createWSDAIRSource()");
+		}
+		return wsdairClient;
 	}
 
 	private void createServiceSourceMetadata(

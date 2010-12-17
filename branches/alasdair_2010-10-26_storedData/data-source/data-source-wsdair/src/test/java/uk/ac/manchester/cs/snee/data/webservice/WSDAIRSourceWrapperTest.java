@@ -16,10 +16,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
-import uk.ac.manchester.cs.snee.common.Utils;
-import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.datasource.webservice.WSDAIRAccessServiceClient;
-import uk.ac.manchester.cs.snee.datasource.webservice.WSDAIRSourceWrapper;
+import uk.ac.manchester.cs.snee.datasource.webservice.WSDAIRSourceWrapperImpl;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
@@ -31,9 +29,10 @@ import eu.semsorgrid4env.service.wsdai.ServiceBusyFault;
 
 public class WSDAIRSourceWrapperTest extends EasyMockSupport {
 	
-	private static final String WSDAI_OGSA_ACCESS_CCO_DATA_RESOURCE = "wsdai:OGSAAccessCCODataResource";
+	private static final String WSDAI_OGSA_ACCESS_CCO_DATA_RESOURCE = 
+		"wsdai:OGSAAccessCCODataResource";
 
-	private WSDAIRSourceWrapper wsdairSource;
+	private WSDAIRSourceWrapperImpl wsdairSource;
 
 	// Mock Objects
 	final WSDAIRAccessServiceClient mockWsdairClient = 
@@ -55,11 +54,12 @@ public class WSDAIRSourceWrapperTest extends EasyMockSupport {
 	public void setUp() throws Exception {
 		// Configure the types
 		String typesFileLoc = 
-			Utils.validateFileLocation("etc/Types.xml");
+			WSDAIRSourceWrapperTest.class.getClassLoader().
+			getResource("etc/Types.xml").getFile();
 		Types types = new Types(typesFileLoc);
 
 		// Create a source wrapper to test
-		wsdairSource = new WSDAIRSourceWrapper("http://example.org", types) {
+		wsdairSource = new WSDAIRSourceWrapperImpl("http://example.org", types) {
 			protected WSDAIRAccessServiceClient createServiceClient(
 					String url) 
 		    throws MalformedURLException {
@@ -80,11 +80,11 @@ public class WSDAIRSourceWrapperTest extends EasyMockSupport {
 	@Test@Ignore
 	public void testGetSchema() 
 	throws SNEEDataSourceException, SchemaMetadataException, 
-	TypeMappingException, UtilsException, InvalidResourceNameFault,
+	TypeMappingException, InvalidResourceNameFault,
 	DataResourceUnavailableFault, NotAuthorizedFault, ServiceBusyFault 
 	{
-		String propDocFile = 
-			Utils.validateFileLocation("etc/cco_sqlPropertyDoc.xml");
+		String propDocFile = WSDAIRSourceWrapperTest.class.getClassLoader().
+			getResource("etc/cco_sqlPropertyDoc.xml").getFile();
 		GetDataResourcePropertyDocumentRequest request = 
 			new GetDataResourcePropertyDocumentRequest();
 		expect(mockWsdairClient.getPropertyDocument(request)).andReturn(null);

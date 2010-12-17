@@ -469,7 +469,7 @@ public class SNEEController implements SNEE {
 					name + " type=" + interfaceType + " url="+ url);
 		try {
 			_metadata.addDataSource(name, url, 
-					SourceType.PULL_STREAM_SERVICE);
+					interfaceType);
 		} catch (SchemaMetadataException e) {
 			logger.warn("Throwing a MetadataException. Cause " + e);
 			throw new MetadataException(e.getLocalizedMessage());

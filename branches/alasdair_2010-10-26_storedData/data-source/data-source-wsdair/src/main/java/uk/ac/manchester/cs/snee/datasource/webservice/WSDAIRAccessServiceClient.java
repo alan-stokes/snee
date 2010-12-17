@@ -30,13 +30,25 @@ import eu.semsorgrid4env.service.wsdai.PropertyDocumentType;
 import eu.semsorgrid4env.service.wsdai.ServiceBusyFault;
 
 public class WSDAIRAccessServiceClient {
+	private static final QName SERVICE_NAME = 
+		new QName("http://www.ggf.org/namespaces/2005/12/WS-DAIR", "SQLAccessService");
 
 	private static Logger logger = 
-		Logger.getLogger(PullStreamServiceClient.class.getName());
+		Logger.getLogger(WSDAIRAccessServiceClient.class.getName());
 
-	private static final QName SERVICE_NAME = 
-		new QName("http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Pull", 
-		"PullStreamService");
+//	private static final String WSDAI_NAMESPACE = 
+//		"http://www.ggf.org/namespaces/2005/12/WS-DAI";
+
+	private static final String WSDAIR_NAMESPACE =
+		"http://www.ggf.org/namespaces/2005/12/WS-DAIR";
+
+//	private static final QName CORE_DATA_ACCESS_SERVICE_NAME = 
+//		new QName(WSDAI_NAMESPACE, 
+//		"CoreDataAccessPT");
+
+	private static final QName SQL_ACCESS_SERVICE_NAME = 
+		new QName(WSDAIR_NAMESPACE, 
+		"SQLAccessService");
 
 	private String _serviceUrl;
 
@@ -59,6 +71,10 @@ public class WSDAIRAccessServiceClient {
 		/*
 		 * Using a method to construct the service so that it can
 		 * be overridden as a mock object for testing
+		 * 
+		 * URL is expected to be the EPR for all of the services, 
+		 * i.e. not the one including the service name and wsdl,
+		 * the rest is added programmatically.
 		 */
 		SQLAccessService accessService = 
 			createSQLAccessService(_serviceUrl);
@@ -76,8 +92,9 @@ public class WSDAIRAccessServiceClient {
 			logger.trace("ENTER createService() with URL " + url);
 		SQLAccessService ss;
 		try {
-			URL wsdlURL = new URL(url);
-			ss = new SQLAccessService(wsdlURL, SERVICE_NAME);			
+			URL wsdlURL = new URL(url + "AccessServiceAccessPT?wsdl");
+			ss = new SQLAccessService(wsdlURL, SQL_ACCESS_SERVICE_NAME);
+//			System.out.println(ss.toString());
 			logger.trace("Service created");
 		} catch (MalformedURLException e) {
 			logger.warn(e.getLocalizedMessage());
@@ -94,7 +111,9 @@ public class WSDAIRAccessServiceClient {
 		}
 		CoreResourceListPT coreResourceSource = 
 			accessService.getAccessServiceCoreResourceListPT();
-		logger.trace("Port added to service");
+		if (logger.isTraceEnabled()) {
+			logger.trace("Port added to service.\n\t" + coreResourceSource);
+		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN createCorePT()");
 		}
@@ -107,7 +126,9 @@ public class WSDAIRAccessServiceClient {
 		}
 		CoreDataAccessPT coreAccessSource = 
 			accessService.getAccessServiceCoreDataAccessPT();
-		logger.trace("Port added to service");
+		if (logger.isTraceEnabled()) {
+			logger.trace("Port added to service.\n\t" + coreAccessSource);
+		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN createAccessCorePT()");
 		}
@@ -120,16 +141,37 @@ public class WSDAIRAccessServiceClient {
 		}
 		SQLAccessPT sqlAccessSource = 
 			accessService.getAccessServiceAccessPT();
-		logger.trace("Port added to service");
+		if (logger.isTraceEnabled()) {
+			logger.trace("Port added to service.\n\t" + sqlAccessSource);
+		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN createSQLAccessPT()");
 		}
 		return sqlAccessSource;
 	}
 
+//    System.out.println("Invoking getResourceList...");
+//    eu.semsorgrid4env.service.wsdai.GetResourceListRequest 
+//	_getResourceList_getResourceListRequest = 
+//	new eu.semsorgrid4env.service.wsdai.GetResourceListRequest();
+//    try {
+//        eu.semsorgrid4env.service.wsdai.GetResourceListResponse 
+//	_getResourceList__return = 
+//	port.getResourceList(_getResourceList_getResourceListRequest);
+//        System.out.println("getResourceList.result=" + _getResourceList__return);
+//
+//    } catch (ServiceBusyFault e) { 
+//        System.out.println("Expected exception: ServiceBusyFault has occurred.");
+//        System.out.println(e.toString());
+//    } catch (NotAuthorizedFault e) { 
+//        System.out.println("Expected exception: NotAuthorizedFault has occurred.");
+//        System.out.println(e.toString());
+//    }
+
+	
 	public GetResourceListResponse getResourceList(
 			GetResourceListRequest request) 
-	throws NotAuthorizedFault, ServiceBusyFault 
+	throws NotAuthorizedFault, ServiceBusyFault, SNEEDataSourceException 
 	{
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getResourceList()");
@@ -142,6 +184,9 @@ public class WSDAIRAccessServiceClient {
 		} catch (ServiceBusyFault e) {
 			logger.warn(e.getLocalizedMessage());
 			throw e;
+		} catch (Exception e) {
+			logger.warn(e.getLocalizedMessage());
+			throw new SNEEDataSourceException(e);
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getResourceList() with response " + 
@@ -197,7 +242,7 @@ public class WSDAIRAccessServiceClient {
 			throw new SNEEDataSourceException(message, e);
 		} catch (NotAuthorizedFault e) {
 			String msg = "Not authorised to use service " + 
-				SERVICE_NAME + ".";
+				SQL_ACCESS_SERVICE_NAME + ".";
 			logger.warn(msg, e);
 			throw new SNEEDataSourceException(msg, e);
 		} catch (InvalidSQLExpressionParameterFault e) {
@@ -211,17 +256,17 @@ public class WSDAIRAccessServiceClient {
 		} catch (DataResourceUnavailableFault e) {
 			String msg = "Resource " + 
 				request.getDataResourceAbstractName() + 
-				" currently unavailable on " + SERVICE_NAME + ".";
+				" currently unavailable on " + SQL_ACCESS_SERVICE_NAME + ".";
 			logger.warn(msg, e);
 			throw new SNEEDataSourceException(msg, e);
 		} catch (InvalidResourceNameFault e) {
 			String msg = "Resource name " + 
 				request.getDataResourceAbstractName() + 
-				" unknown to service " + SERVICE_NAME + ".";
+				" unknown to service " + SQL_ACCESS_SERVICE_NAME + ".";
 			logger.warn(msg, e);
 			throw new SNEEDataSourceException(msg, e);
 		} catch (ServiceBusyFault e) {
-			String msg = "Service " + SERVICE_NAME + " is busy.";
+			String msg = "Service " + SQL_ACCESS_SERVICE_NAME + " is busy.";
 			logger.warn(msg, e);
 			throw new SNEEDataSourceException(msg, e);
 		} catch (InvalidDatasetFormatFault e) {

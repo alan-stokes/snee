@@ -30,17 +30,18 @@ import eu.semsorgrid4env.service.wsdai.NotAuthorizedFault;
 import eu.semsorgrid4env.service.wsdai.PropertyDocumentType;
 import eu.semsorgrid4env.service.wsdai.ServiceBusyFault;
 
-public class WSDAIRSourceWrapper extends SourceWrapperAbstract {
+public class WSDAIRSourceWrapperImpl extends SourceWrapperAbstract 
+implements SourceWrapper {
 
 	private static Logger logger = 
-		Logger.getLogger(WSDAIRSourceWrapper.class.getName());
+		Logger.getLogger(WSDAIRSourceWrapperImpl.class.getName());
 	
 	private static String _languageURI =
 		"http://www.sqlquery.org/sql-92";
 
 	private WSDAIRAccessServiceClient _wsdairClient;
 
-    public WSDAIRSourceWrapper(String url, Types types) 
+    public WSDAIRSourceWrapperImpl(String url, Types types) 
     throws MalformedURLException {
     	super(url, types);
     	if (logger.isDebugEnabled())
@@ -233,4 +234,17 @@ public class WSDAIRSourceWrapper extends SourceWrapperAbstract {
 		return tuples;
 	}
     
+	public List<Tuple> getData(String resourceName)
+	throws SNEEDataSourceException, TypeMappingException, 
+	SchemaMetadataException, SNEEException
+	{
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER getData() with " + resourceName);
+		}
+		List<Tuple> tuples = new ArrayList<Tuple>();
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN getData() #tuples " + tuples.size());
+		}
+		return tuples;
+	}
 }

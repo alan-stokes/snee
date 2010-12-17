@@ -88,6 +88,7 @@ public class PullStreamServiceClient {
 			logger.debug("ENTER getResourceList()");
 		GetResourceListResponse response;
 		try {
+			System.out.println(_pullSource.toString());
 			response = _pullSource.getResourceList(request);
 		} catch (NotAuthorizedFault e) {
 			logger.warn(e.getLocalizedMessage());

@@ -18,27 +18,6 @@
 			<version>2.7.5</version>
 		</dependency>
 		<dependency>
-			<groupId>org.easymock</groupId>
-			<artifactId>easymockclassextension</artifactId>
-			<version>2.5.2</version>
-			<type>jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib-nodep</artifactId>
-			<version>2.2</version>
-			<type>jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.objenesis</groupId>
-			<artifactId>objenesis</artifactId>
-			<version>1.2</version>
-			<type>jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>uk.ac.manchester.cs.snee</groupId>
 			<artifactId>snee-core</artifactId>
 			<version>${snee.version}</version>
@@ -59,13 +38,13 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-		<!--<dependency>
+		<dependency>
 			<groupId>uk.ac.manchester.cs.snee</groupId>
 			<artifactId>data-source-wsdair</artifactId>
 			<version>${snee.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
-		</dependency>-->
+		</dependency>
 		<dependency>
 			<groupId>uk.ac.manchester.cs.snee</groupId>
 			<artifactId>snee-api</artifactId>

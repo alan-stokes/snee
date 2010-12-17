@@ -45,6 +45,8 @@ public enum SourceType {
 	PULL_STREAM_SERVICE ("pull-stream service source",false),
 	/** Source is a push interface web service */
 	PUSH_STREAM_SERVICE ("push-stream service source",false),
+	/** Source is a ws-dair web service */
+	WSDAIR ("ws-dair service source",true),
 	/** Source is a UDP source */
 	UDP_SOURCE ("UDP source", false),
 	/** Data is a table with a relation (bag of tuples). */
