@@ -67,7 +67,7 @@
 			<groupId>gr.uoa.di.ssg4e</groupId>
 			<artifactId>snee-dat</artifactId>
 			<version>1.0.0</version>
-			<optional>true</optional>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
