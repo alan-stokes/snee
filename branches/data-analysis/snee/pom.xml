@@ -9,6 +9,7 @@
 	<description>Continuous query processing engine for streaming and stored data.</description>
 
 	<modules>
+		<module>snee-dat</module>
 		<module>snee-core</module>
 		<module>sncb</module>
 		<module>compiler</module>
