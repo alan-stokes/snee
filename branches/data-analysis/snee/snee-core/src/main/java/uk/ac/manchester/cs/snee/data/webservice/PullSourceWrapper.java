@@ -213,8 +213,10 @@ public class PullSourceWrapper {
 		String extentName = schemaParser.getExtentName();
 		List<Attribute> attributes = 
 			schemaParser.getColumns(extentName);
+
+		//FIXME: Lebi - DATs may not always be null in this occasion
 		extentMetadata  = new ExtentMetadata(extentName, attributes, 
-				ExtentType.PUSHED);
+				ExtentType.PUSHED, null);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN extractSchema() with " + 
 					extentMetadata);

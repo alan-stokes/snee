@@ -61,7 +61,7 @@ public class ExtentMetadata {
 	//to be a something considered during early steps of query optimization.
 	private int cardinality = 1;
 
-	/** Whether an extent is intentional or extentional. Default value is false */
+	/** Whether an extent is intensional or extensional. Default value is false */
 	private DATMetadata _datMetadata = null;
 
 	public ExtentMetadata(String extentName, 
@@ -128,11 +128,11 @@ public class ExtentMetadata {
 
 	/**
 	 * @author George Valkanas
-	 * Returns whether this is an intentional extent
+	 * Returns whether this is an intensional extent
 	 * 
-	 * @return True if the extent is intentional, false otherwise
+	 * @return True if the extent is intensional, false otherwise
 	 * */
-	public boolean isIntentional(){
+	public boolean isIntensional(){
 		return (_datMetadata != null);
 	}
 

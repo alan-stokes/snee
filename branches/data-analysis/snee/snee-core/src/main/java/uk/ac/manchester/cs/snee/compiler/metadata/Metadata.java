@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.metadata;
 
+import gr.uoa.di.ssg4e.dat.excep.DATSchemaException;
 import gr.uoa.di.ssg4e.dat.schema.DATMetadata;
 
 import java.io.IOException;
@@ -127,13 +128,14 @@ public class Metadata {
 	 * @throws SNEEDataSourceException 
 	 * @throws CostParametersException 
 	 * @throws SNCBException 
+	 * @throws DATSchemaException 
 	 */
 	public Metadata(SNCB sncb) 
 	throws TypeMappingException, SchemaMetadataException, 
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException, SNCBException {
+	SNEEDataSourceException, CostParametersException, SNCBException, DATSchemaException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER Metadata()");
 		logger.trace("Processing types.");
@@ -168,14 +170,14 @@ public class Metadata {
 	public Metadata() throws MalformedURLException, TypeMappingException, 
 		SchemaMetadataException, SNEEConfigurationException, MetadataException,
 		UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, 
-		SNEEDataSourceException, CostParametersException, SNCBException {
+		SNEEDataSourceException, CostParametersException, SNCBException, DATSchemaException {
 
 		this(null);
 	}
 	
 	private void processLogicalSchema(String logicalSchemaFile) 
 	throws SchemaMetadataException, MetadataException, 
-	TypeMappingException, UnsupportedAttributeTypeException {
+	TypeMappingException, UnsupportedAttributeTypeException, DATSchemaException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER processLogicalSchema() with " +
 					logicalSchemaFile);
@@ -250,9 +252,10 @@ public class Metadata {
 	 * @param element XML element for the source metadata 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
+	 * @throws DATSchemaException 
 	 */
 	private void addExtent(ExtentType extentType, Element element) 
-	throws TypeMappingException, SchemaMetadataException 
+	throws TypeMappingException, SchemaMetadataException, DATSchemaException 
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER addExtent() of type " + extentType);
@@ -322,10 +325,11 @@ public class Metadata {
 	 * Parses the datParams element that an element may have
 	 * 
 	 * If the metadata does not exist
+	 * @throws DATSchemaException 
 	 * */
 	private DATMetadata parseDATMetadata(NodeList datElement, 
 			String extentName, boolean isIntentional)
-	throws SchemaMetadataException{
+	throws SchemaMetadataException, DATSchemaException{
 
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER parseDATMetadata() ");
