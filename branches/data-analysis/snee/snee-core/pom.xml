@@ -56,6 +56,7 @@
 			<artifactId>snee-dat</artifactId>
 			<version>1.0.0</version>
 			<type>jar</type>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 

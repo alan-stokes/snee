@@ -266,14 +266,14 @@ public class Metadata {
 			parseAttributes(element.getElementsByTagName("column"),
 					extentName);
 
-		/* Get if the extent is intentional or not */
-		String isIntent = 
-			element.getAttribute("isIntentional").toLowerCase();
+		/* Get if the extent is intensional or not */
+		String isIntens = 
+			element.getAttribute("isIntensional").toLowerCase();
 		NodeList datParams = element.getElementsByTagName("datParams");
 
 		/* Parse the datMetadata */
 		DATMetadata datMeta = parseDATMetadata( 
-				datParams, extentName, isIntent.equals("true") );
+				datParams, extentName, isIntens.equals("true") );
 
 		if (extentType == ExtentType.SENSED) {
 //			attributes.add(0, new IDAttribute(extentName, 
@@ -328,7 +328,7 @@ public class Metadata {
 	 * @throws DATSchemaException 
 	 * */
 	private DATMetadata parseDATMetadata(NodeList datElement, 
-			String extentName, boolean isIntentional)
+			String extentName, boolean isIntensional)
 	throws SchemaMetadataException, DATSchemaException{
 
 		if (logger.isTraceEnabled())
@@ -336,22 +336,22 @@ public class Metadata {
 
 		/* Parse the datParams element of the XML file. If the
 		 * datParams is malformed, then an exception will be thrown */
-		DATMetadata datMeta = DATMetadata.parse((Element)datElement);
+		DATMetadata datMeta = DATMetadata.parse((Element)datElement.item(0));
 
-		/* If it is not intentional, the datParams should not exist */
-		if ( !isIntentional && (datMeta != null) ){
+		/* If it is not intensional, the datParams should not exist */
+		if ( !isIntensional && (datMeta != null) ){
 			datMeta = null;
 			throw new SchemaMetadataException(
-					"Error in parsing extentional extent " + extentName + 
-					" : Extent is extentional but DAT Parameters element " +
+					"Error in parsing extensional extent " + extentName + 
+					" : Extent is extensional but DAT Parameters element " +
 					"was specified");
 		}
 
-		/* If it is intentional but the datParams does not exist */
-		if ( isIntentional && (datMeta == null) ){
+		/* If it is intensional but the datParams does not exist */
+		if ( isIntensional && (datMeta == null) ){
 			throw new SchemaMetadataException(
-					"Error in parsing extentional extent " + extentName + 
-					" : Extent is intentional but DAT Parameters element " +
+					"Error in parsing intensional extent " + extentName + 
+					" : Extent is intensional but DAT Parameters element " +
 					"was missing");
 		}
 
