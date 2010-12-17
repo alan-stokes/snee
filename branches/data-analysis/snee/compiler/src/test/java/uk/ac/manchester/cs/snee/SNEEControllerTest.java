@@ -41,6 +41,8 @@ import static org.easymock.EasyMock.expectLastCall;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import gr.uoa.di.ssg4e.dat.excep.DATException;
+
 import java.net.MalformedURLException;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -184,7 +186,8 @@ public class SNEEControllerTest extends EasyMockSupport {
 	TypeMappingException, SchemaMetadataException,
 	ExpressionException, OptimizationException, ParserException, 
 	SNEEConfigurationException, MetadataException, EvaluatorException,
-	SNEECompilerException, SourceAllocatorException, WhenSchedulerException  
+	SNEECompilerException, SourceAllocatorException, WhenSchedulerException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, DATException  
 	{		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery, null)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
@@ -204,7 +207,8 @@ public class SNEEControllerTest extends EasyMockSupport {
 	ExpressionException, OptimizationException, ParserException, 
 	EvaluatorException, RecognitionException, TokenStreamException,
 	SNEEConfigurationException, SNEECompilerException, MetadataException, 
-	SourceAllocatorException, WhenSchedulerException {
+	SourceAllocatorException, WhenSchedulerException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, DATException {
 		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery, null)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
@@ -244,7 +248,8 @@ public class SNEEControllerTest extends EasyMockSupport {
 	ExpressionException, OptimizationException, ParserException, 
 	EvaluatorException, RecognitionException, TokenStreamException, 
 	SNEEConfigurationException, SNEECompilerException, MetadataException,
-	SourceAllocatorException, WhenSchedulerException
+	SourceAllocatorException, WhenSchedulerException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, DATException
 	{
 		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery, null)).andReturn(mockPlan);

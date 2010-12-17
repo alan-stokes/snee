@@ -36,6 +36,8 @@
 
 package uk.ac.manchester.cs.snee;
 
+import gr.uoa.di.ssg4e.dat.excep.DATSchemaException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -242,6 +244,9 @@ public class SNEEController implements SNEE {
 			String msg = "Problem intialising sensor network";
 			logger.fatal(msg, e);
 			throw new SNEEException(msg, e);
+		} catch (DATSchemaException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 		logger.info("SNEE configured");
@@ -269,7 +274,7 @@ public class SNEEController implements SNEE {
 	TypeMappingException, UnsupportedAttributeTypeException, 
 	SourceMetadataException, SNEEConfigurationException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException, SNCBException 
+	SNEEDataSourceException, CostParametersException, SNCBException, DATSchemaException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseMetadata()");

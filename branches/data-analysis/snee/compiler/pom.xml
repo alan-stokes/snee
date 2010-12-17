@@ -64,10 +64,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>gr.uoa.di.kddlab.ssg4e</groupId>
+			<groupId>gr.uoa.di.ssg4e</groupId>
 			<artifactId>snee-dat</artifactId>
-			<version>0.9.9</version>
-			<scope>provided</scope>
+			<version>1.0.0</version>
 			<optional>true</optional>
 		</dependency>
 	</dependencies>

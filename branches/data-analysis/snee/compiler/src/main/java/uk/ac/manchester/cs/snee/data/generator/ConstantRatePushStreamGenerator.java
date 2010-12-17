@@ -35,6 +35,8 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.data.generator;
 
+import gr.uoa.di.ssg4e.dat.excep.DATSchemaException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -114,13 +116,15 @@ public class ConstantRatePushStreamGenerator {
 	 * @throws MalformedURLException 
 	 * @throws CostParametersException 
 	 * @throws SNCBException 
+	 * @throws DATSchemaException 
 	 */
 	public ConstantRatePushStreamGenerator() 
 	throws TypeMappingException, MetadataException, 
 	SchemaMetadataException, UnsupportedAttributeTypeException,
 	SourceMetadataException, SNEEConfigurationException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException, SNCBException 
+	SNEEDataSourceException, CostParametersException, SNCBException, 
+	DATSchemaException 
 	{
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ConstantRatePushStreamGenerator()");

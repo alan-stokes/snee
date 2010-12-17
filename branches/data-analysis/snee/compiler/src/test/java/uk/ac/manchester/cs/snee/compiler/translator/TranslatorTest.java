@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import gr.uoa.di.ssg4e.dat.excep.DATSchemaException;
+
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.util.Iterator;
@@ -74,7 +76,8 @@ public class TranslatorTest {
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException, UtilsException, SNCBException {
+	SNEEDataSourceException, CostParametersException, UtilsException, 
+	SNCBException, DATSchemaException {
 		Properties props = new Properties();
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");

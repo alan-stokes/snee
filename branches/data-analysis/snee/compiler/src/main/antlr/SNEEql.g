@@ -1,5 +1,6 @@
 header
 {
+//updated grammar which includes CREATE statements for Data Analysis Techniques
 package uk.ac.manchester.cs.snee.compiler.parser;
 }
 
@@ -21,16 +22,13 @@ parse: queryExp s:SEMI^ {#s.setType(QUERY);} ;
 queryExp:
 	  query
 	| unionCommand
+	| ddlIntExtent
 	; 
 
 unionCommand:
 		unionQuery ( UNION^ unionQuery )*
-//		LPAREN query RPAREN! ( UNION^ LPAREN query RPAREN! )*
-////		  queryExp ( UNION^ queryExp )*
-////		  (query ( UNION query )*) =>
-////		| LPAREN! query RPAREN! ( UNION^ LPAREN! query RPAREN! )* 
 		;
-	       
+
 unionQuery:
 		LPAREN^ query RPAREN!;
 	       
@@ -189,7 +187,89 @@ boolExpr : ( LPAREN bools) =>
          | expr PRED^ expr        
          | NOT^ boolExpr
          ;
+
+
+/* RULES CREATED SPECIFICALLY FOR DATs */
+
+/* The lines below are for DAT types and specific subtypes. If you want to
+add a new DAT subtype, simply go to the appropriate type that it belongs to
+(e.g. classification) and add a new line with the DAT subtype name and the
+parameters that it requires. The subtype name should also be added in the
+tokens list that is found some lines below */
+
+ddlIntExtent:
+	createClause from;
+
+createClause:
+	CREATE^ dat Identifier;
+
+dat:
+	specificdat COMMA! outputargument RSQUARE!;
+
+outputargument:
+	Identifier;
+
+specificdat:
+	  classification
+	| clustering
+	| associations
+	| outliers
+	| sampling
+	| probfns
+	| views
+	;	
+
+/* Rules for Classification DATs */
+classification:
+	CLASSIFIER^ LSQUARE! classifier_subtype;
+
+classifier_subtype:
+	LRF^ //linear regression. It does not take any parameters
+	;
+
+/* Rules for Clustering DATs */
+clustering:
+	CLUSTER^ LSQUARE! cluster_subtype;
+
+cluster_subtype:
+	  NHC^ COMMA! Int		// Naive Hierarchical clustering
+	;
          
+/* Rules for Association rules DATs */
+associations:
+	ASSOCIATIONRULE^ LSQUARE! assocrule_subtype;
+
+assocrule_subtype:
+	APRIORI^ COMMA! Flt COMMA! Flt //Apriori algorithm. First param is support. Second param is confidence
+	;
+         
+outliers:
+	OUTLIER_DETECTION^ LSQUARE! outliers_subtype;
+
+outliers_subtype:
+	/* 	D3 exists in 2 forms. With 1 parameter where only the range is specified
+		or with 2 parameters where we define also the probability beforehand	*/
+	  D3^ COMMA! (Flt|Int) (COMMA! Flt)?	
+	;
+
+sampling:
+	SAMPLE^ LSQUARE! sampling_subtype;
+
+sampling_subtype:
+	RND^ COMMA! Flt;		// random sampling
+         
+probfns:
+	PROBFN^ LSQUARE! probfns_subtype;
+
+probfns_subtype:
+	KDE^ ;
+
+views:
+	VIEW^ LSQUARE! view_subtype;
+
+view_subtype:
+	VIEW_SUBTYPE^ ;         
+
 class SNEEqlLexer extends Lexer;
 
 options { k=2; filter=true;
@@ -233,7 +313,26 @@ TO          = "to";
 UNBOUNDED   = "unbounded";
 UNION		= "union";
 WHERE       = "where";
- 
+
+/* Tokens added by Lebi to support DATs */
+CREATE				= "create";	// for CREATE commands
+CLASSIFIER			= "classifier";	// for classifiers
+CLUSTER				= "cluster";	// for clustering
+ASSOCIATIONRULE 	= "association_rule"; //for assocation rules
+OUTLIER_DETECTION 	= "outlier_detection";	// for outlier detection
+SAMPLE 				= "sample";		// for sampling
+PROBFN	 			= "probfn";		// for probability functions
+VIEW				= "view";		// for views
+
+/* In order to support specific DAT subtypes, we also need to add the names of the subtypes */
+LRF		= "linearRegressionFunction";
+D3		= "d3";
+APRIORI = "apriori";
+NHC		= "nhc";
+RND		= "random";
+KDE		= "kde";
+VIEW_SUBTYPE	= "view_subtype";
+
 //These are used to retype in the parser.
 //AGGREGATE = "do_not_use_this_string_as_it_is_just_a_place_filler_to_create_a_rename_token_for_AGGREGATE";
 BOOLEXPR  = "do_not_use_this_string_as_it_is_just_a_place_filler_to_create_a_rename_token_for_BOOLEXPR";

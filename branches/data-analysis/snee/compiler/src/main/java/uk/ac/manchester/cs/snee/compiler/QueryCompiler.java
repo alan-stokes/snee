@@ -35,6 +35,7 @@
 package uk.ac.manchester.cs.snee.compiler;
 
 import gr.uoa.di.ssg4e.dat.excep.DATException;
+import gr.uoa.di.ssg4e.query.IMetadata;
 import gr.uoa.di.ssg4e.query.QueryRefactorer;
 
 import java.io.IOException;
@@ -97,7 +98,7 @@ public class QueryCompiler {
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER QueryCompiler()");
 		metadata = schema;
-		refactor = new QueryRefactorer(metadata);
+		refactor = new QueryRefactorer((IMetadata)metadata);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN QueryCompiler()");
 	}
