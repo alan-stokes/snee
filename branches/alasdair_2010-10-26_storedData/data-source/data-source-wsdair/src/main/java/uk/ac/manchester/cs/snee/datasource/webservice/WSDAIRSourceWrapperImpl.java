@@ -4,13 +4,26 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.cxf.ws.addressing.ReferenceParametersType;
 import org.apache.log4j.Logger;
+import org.ggf.namespaces._2005._12.ws_dai.DataResourceAddressType;
+import org.ggf.namespaces._2005._12.ws_dai.DataResourceUnavailableFault;
+import org.ggf.namespaces._2005._12.ws_dai.GetDataResourcePropertyDocumentRequest;
+import org.ggf.namespaces._2005._12.ws_dai.GetResourceListRequest;
+import org.ggf.namespaces._2005._12.ws_dai.GetResourceListResponse;
+import org.ggf.namespaces._2005._12.ws_dai.InvalidResourceNameFault;
+import org.ggf.namespaces._2005._12.ws_dai.NotAuthorizedFault;
+import org.ggf.namespaces._2005._12.ws_dai.PropertyDocumentType;
+import org.ggf.namespaces._2005._12.ws_dai.ServiceBusyFault;
 import org.ggf.namespaces._2005._12.ws_dair.SQLDatasetType;
 import org.ggf.namespaces._2005._12.ws_dair.SQLExecuteRequest;
 import org.ggf.namespaces._2005._12.ws_dair.SQLExecuteResponse;
 import org.ggf.namespaces._2005._12.ws_dair.SQLExpressionType;
 import org.ggf.namespaces._2005._12.ws_dair.SQLPropertyDocumentType;
 import org.ggf.namespaces._2005._12.ws_dair.SchemaDescription;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
@@ -20,15 +33,6 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
-import eu.semsorgrid4env.service.wsdai.DataResourceAddressType;
-import eu.semsorgrid4env.service.wsdai.DataResourceUnavailableFault;
-import eu.semsorgrid4env.service.wsdai.GetDataResourcePropertyDocumentRequest;
-import eu.semsorgrid4env.service.wsdai.GetResourceListRequest;
-import eu.semsorgrid4env.service.wsdai.GetResourceListResponse;
-import eu.semsorgrid4env.service.wsdai.InvalidResourceNameFault;
-import eu.semsorgrid4env.service.wsdai.NotAuthorizedFault;
-import eu.semsorgrid4env.service.wsdai.PropertyDocumentType;
-import eu.semsorgrid4env.service.wsdai.ServiceBusyFault;
 
 public class WSDAIRSourceWrapperImpl extends SourceWrapperAbstract 
 implements SourceWrapper {
@@ -36,9 +40,12 @@ implements SourceWrapper {
 	private static Logger logger = 
 		Logger.getLogger(WSDAIRSourceWrapperImpl.class.getName());
 	
-	private static String _languageURI =
+	private static String LANGUAGE_URI =
 		"http://www.sqlquery.org/sql-92";
 
+	private static String WSDAI_NS =
+		"http://www.ggf.org/namespaces/2005/12/WS-DAI/";
+	
 	private WSDAIRAccessServiceClient _wsdairClient;
 
     public WSDAIRSourceWrapperImpl(String url, Types types) 
@@ -72,9 +79,23 @@ implements SourceWrapper {
     	List<String> resourceNames = new ArrayList<String>();
     	try {
     		response = _wsdairClient.getResourceList(request);
-    		List<DataResourceAddressType> addresses = response.getDataResourceAddress();
+    		List<DataResourceAddressType> addresses = 
+    			response.getDataResourceAddress();
+    		String nameLog = "";
+    		if (logger.isTraceEnabled()) {
+    			logger.trace("Number of addresses: " + addresses.size());
+    		}
     		for (DataResourceAddressType address : addresses) {
-    			resourceNames.add(address.getAddress().getValue());
+    			ReferenceParametersType refParams = 
+    				address.getReferenceParameters();
+    			Node xmlNode = (Node) refParams.getAny().get(0);
+    			String resourceName = xmlNode.getTextContent();
+    			resourceNames.add(resourceName);
+				nameLog += resourceName + ", ";
+    		}
+    		if (logger.isTraceEnabled()) {
+    			logger.trace("Resource Names: " + 
+    					nameLog.substring(0, nameLog.lastIndexOf(",")));
     		}
     	} catch (NotAuthorizedFault e) {
     		String msg = "Not authorized to access service.";
@@ -178,7 +199,7 @@ implements SourceWrapper {
 		request.setDatasetFormatURI(DATASET_FORMAT);
 		SQLExpressionType sqlExpression = new SQLExpressionType();
 		sqlExpression.setExpression(query);
-		sqlExpression.setLanguage(_languageURI);
+		sqlExpression.setLanguage(LANGUAGE_URI);
 		request.setSQLExpression(sqlExpression);
 		SQLExecuteResponse response = _wsdairClient.sqlExecute(request);
 		List <Tuple> tuples = processSQLQueryResponse(response);

@@ -13,7 +13,6 @@
 	<description>Module for managing and accessing data sources</description>
 
 	<properties>
-		<cxf.version>2.2.8</cxf.version>
 		<wsdl.location>${project.build.directory}/wsdl</wsdl.location>
 	</properties>
 

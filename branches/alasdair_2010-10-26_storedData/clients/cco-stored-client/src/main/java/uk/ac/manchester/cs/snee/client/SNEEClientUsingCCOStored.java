@@ -23,9 +23,8 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 		Logger.getLogger(SNEEClientUsingCCOStored.class.getName());
 	
 	private String serviceUrl = 
-		"http://webgis1.geodata.soton.ac.uk/dai/services/";// +
-//			"AccessServiceAccessPT?wsdl";
-	
+		"http://webgis1.geodata.soton.ac.uk:8080/dai/services/";
+//		"http://localhost:8080/dai/services/";
 
 	public SNEEClientUsingCCOStored(String query, double duration) 
 	throws SNEEException, IOException, SNEEConfigurationException,

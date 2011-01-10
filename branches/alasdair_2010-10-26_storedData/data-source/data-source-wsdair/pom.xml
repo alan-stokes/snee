@@ -77,16 +77,9 @@
 							</sourceRoot>
 							<defaultOptions>
 								<extraargs>
-									<extraarg>-p</extraarg>
-									<extraarg>http://www.semsorgrid4env.eu/namespace/2009/10/SDS=eu.semsorgrid4env.service.stream</extraarg>
-									<extraarg>-p</extraarg>
-									<extraarg>http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query=eu.semsorgrid4env.service.stream.query</extraarg>
-									<extraarg>-p</extraarg>
-									<extraarg>http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Pull=eu.semsorgrid4env.service.stream.pull</extraarg>
-									<extraarg>-p</extraarg>
-									<extraarg>http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push=eu.semsorgrid4env.service.stream.push</extraarg>
-									<extraarg>-p</extraarg>
+									<!--<extraarg>-p</extraarg>
 									<extraarg>http://www.ggf.org/namespaces/2005/12/WS-DAI=eu.semsorgrid4env.service.wsdai</extraarg>
+									-->
 									<extraarg>-noAddressBinding</extraarg>
 									<extraarg>-validate</extraarg>
 									<extraarg>-defaultValues</extraarg>
