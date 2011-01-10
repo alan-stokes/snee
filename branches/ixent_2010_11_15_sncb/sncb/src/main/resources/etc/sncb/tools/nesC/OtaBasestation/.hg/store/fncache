@@ -11,3 +11,12 @@ data/OtaBasestationAppC.nc.i
 data/OtaBasestationC.nc.i
 data/volumes-at45db.xml.i
 data/volumes-stm25p.xml.i
+data/.svn/all-wcprops.i
+data/.svn/entries.i
+data/.svn/text-base/.hgignore.svn-base.i
+data/.svn/text-base/Makefile.svn-base.i
+data/.svn/text-base/OtaBasestation.h.svn-base.i
+data/.svn/text-base/OtaBasestationAppC.nc.svn-base.i
+data/.svn/text-base/OtaBasestationC.nc.svn-base.i
+data/.svn/text-base/volumes-at45db.xml.svn-base.i
+data/.svn/text-base/volumes-stm25p.xml.svn-base.i

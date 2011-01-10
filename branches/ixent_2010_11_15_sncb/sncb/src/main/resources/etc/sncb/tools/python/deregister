@@ -21,4 +21,22 @@ mote_ids = getopt.getopt(sys.argv[1:], '')[1]
 #iterate over the mote ids to register the query fragment
 for mote_id in mote_ids:
     print "Erasing query fragment on mote " + str(mote_id)
-    subprocess.call(['python', utils_dir+'/tos-ota', source, mote_id, '--erase', '2'])
+    retcode = subprocess.call(['python', utils_dir+'/tos-ota', source, mote_id, '--erase', '2'])
+
+    retry_count = 0
+    if retcode != 0: # If the tos-ota call didn't complete successfully
+        while retry_count < 4 and retcode != 0:
+            retry_count = retry_count + 1
+                
+            print
+            print "Erase failed. Waiting for a moment before retrying..."
+            time.sleep(5)
+
+            print "Retrying (" + str(retry_count) + ") ..."
+            retcode = subprocess.call(['python', utils_dir+'/tos-ota', source, mote_id, '--erase', '2'])
+
+    # Check that everything is in order
+    if retcode != 0:
+        print
+        print "E_FAIL: Unable to remove program image from remote mote"
+        sys.exit(1)

@@ -2,36 +2,34 @@
 
 configuration OtaBasestationAppC {}
 implementation {
-  components OtaBasestationC as App, MainC;
-  components SerialActiveMessageC;
-  components LedsC;
-
+  components OtaBasestationC as App;
+  components MainC;
   App.Boot -> MainC.Boot;
-  App.Leds -> LedsC;
-  App.SplitControl -> SerialActiveMessageC;
 
-// Flash manager wiring
+  components LedsC;
+  App.Leds -> LedsC;
+
+  // auto-start serial stack
+  components SerialStarterC;
+  // serial wirings
   components new SerialAMSenderC(0x53) as SerialAMSender;
   components new SerialAMReceiverC(0x53) as SerialAMReceiver;	  
-  App.SerialSender -> SerialAMSender;
-  App.SerialReceiver -> SerialAMReceiver;
+  App.SerialAMSender -> SerialAMSender;
+  App.SerialAMReceiver -> SerialAMReceiver;
 
+  // DYMO
   components DymoNetworkC;
-  App.SplitControl -> DymoNetworkC;
+  App.MultiHopSplitControl -> DymoNetworkC;
+  App.Packet -> DymoNetworkC;
+  App.MultiHopPacket -> DymoNetworkC;
   App.MultiHopReceive -> DymoNetworkC.Receive[DYMO_OTA_PACKET];
   App.MultiHopSend -> DymoNetworkC.MHSend[DYMO_OTA_PACKET];
-  App.MultiHopPacket -> DymoNetworkC;
-  App.RadioPacket -> DymoNetworkC;
 
+  // Node Controller
   components CommandServerAppC;
   App.CommandServer -> CommandServerAppC.SplitControl;
-  App.StateChanged -> CommandServerAppC.StateChanged;
-
-  components SerialStarterC;
+  App.NetworkState -> CommandServerAppC.NetworkState;
 
   components new TimerMilliC();
-  App.Timer -> TimerMilliC;
+  App.TimeoutTimer -> TimerMilliC;
 }
-
-
-

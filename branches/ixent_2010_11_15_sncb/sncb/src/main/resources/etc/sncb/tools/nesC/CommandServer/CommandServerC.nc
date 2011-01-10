@@ -32,11 +32,12 @@
 
 #include <Timer.h>
 #include "CommandServer.h"
+#include "NetworkState.h"
 
 module CommandServerC {
   provides {
     interface SplitControl;
-    interface StateChanged;
+    interface NetworkState;
   }
   uses {
     interface Boot;
@@ -99,7 +100,7 @@ implementation {
     serial_msg_t* serial_msg;
     command_msg_t cmd;
 
-	serial_msg = (serial_msg_t*)payload;
+	  serial_msg = (serial_msg_t*)payload;
     cmd.cmd = serial_msg->cmd;
     cmd.imageNum = serial_msg->imageNum;
 
@@ -142,7 +143,7 @@ implementation {
 #endif
     } else {
 // Do signal start/stop to the basestation
-      signal StateChanged.changed(newCmd->cmd);
+      signal NetworkState.changed(newCmd->cmd);
     }
   }
 
@@ -168,5 +169,11 @@ implementation {
 // StorageMap, this saves about 4K. If the image boundaries change you will need
 // to redefine the address in CommandServer.h
     call NetProg.programImageAndReboot(newImageNum);
+  }
+
+  command void NetworkState.setNetworkFailureState() {
+    command_msg_t cmd;
+    cmd.cmd = NETWORK_FAILURE;
+    call DisseminationUpdate.change(&cmd);
   }
 }

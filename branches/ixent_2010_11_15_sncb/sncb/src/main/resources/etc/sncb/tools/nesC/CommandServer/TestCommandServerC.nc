@@ -1,9 +1,10 @@
 #include "CommandServer.h"
+#include "NetworkState.h"
 
 module TestCommandServerC {
   uses {
     interface SplitControl;
-    interface StateChanged;
+    interface NetworkState;
     interface Boot;
     interface Leds;
   }
@@ -18,7 +19,7 @@ implementation {
     
   event void SplitControl.stopDone(error_t error) { }
 
-  event void StateChanged.changed(uint8_t state) {
+  event void NetworkState.changed(network_state_t state) {
     if (state == START) {
       call Leds.led0On();
     } else if (state == STOP) {

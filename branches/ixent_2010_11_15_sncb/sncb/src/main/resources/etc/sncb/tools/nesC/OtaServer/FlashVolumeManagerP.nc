@@ -37,11 +37,11 @@ generic module FlashVolumeManagerP()
     interface Leds;
 
     interface AMSend as MultiHopSend;
-		interface Receive as MultiHopReceive;
-		interface AMPacket as MultiHopPacket;
-		interface Packet as RadioPacket;
+    interface Receive as MultiHopReceive;
+    interface AMPacket as MultiHopPacket;
+    interface Packet as RadioPacket;
 
-    interface StateChanged;
+    interface NetworkState;
   }
 }
 
@@ -188,13 +188,14 @@ implementation
 
 	am_addr_t id;
 
-	event message_t* MultiHopReceive.receive(message_t* msg, void* payload, uint8_t len) {		
+	event message_t* MultiHopReceive.receive(message_t* msg, void* payload, uint8_t len) {
     error_t error = SUCCESS;
     SerialReqPacket *request = (SerialReqPacket *)payload;
     SerialReplyPacket *reply = (SerialReplyPacket *)call RadioPacket.getPayload(&serialMsg, sizeof(SerialReplyPacket));
     nx_struct ShortIdent *shortIdent;
     uint8_t imgNum = 0xFF;
-		id = call MultiHopPacket.source(msg);
+
+    id = call MultiHopPacket.source(msg);
 
     if (reply == NULL) {
       return msg;
@@ -290,5 +291,5 @@ implementation
     call MultiHopSend.send(id, &serialMsg, len);
   }
 
-  event void StateChanged.changed(uint8_t newState) { }
+  event void NetworkState.changed(uint8_t newState) { }
 }

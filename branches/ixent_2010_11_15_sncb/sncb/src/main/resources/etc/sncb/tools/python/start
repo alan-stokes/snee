@@ -18,11 +18,11 @@ source = 'serial@' + basestation + ':115200'
 
 print 'Disseminate a reprogram command; switch to query fragment'
 retcode = subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--reprogram', '2'])
-handleReturnCode(retcode, 'Input/Output error relating to the Node Controller')
+#handleReturnCode(retcode, 'Input/Output error relating to the Node Controller')
 
 print 'Waiting to make sure all nodes are running the query fragment'
 time.sleep(30)
 
 print 'Disseminate the start command'
 retcode = subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--start'])
-handleReturnCode(retcode, 'Input/Output error relating to the Node Controller')
+#handleReturnCode(retcode, 'Input/Output error relating to the Node Controller')

@@ -18,7 +18,7 @@ source = 'serial@' + basestation + ':115200'
 
 print "Disseminate the stop command"
 retcode = subprocess.call(['python', utils_dir+'/cmd-srvr', source, '--stop'])
-handleReturnCode(retcode, 'Input/Output error relating to the Node Controller')
+#handleReturnCode(retcode, 'Input/Output error relating to the Node Controller')
 
 print 'Waiting to make sure all nodes are in stop state'
 time.sleep(10)
@@ -32,4 +32,4 @@ time.sleep(30)
 print "Reprogram the gateway mote to ota basestation"
 os.chdir(os.path.dirname(__file__) + '/../nesC/OtaBasestation')
 retcode = subprocess.call(['make', 'telosb', 'install,' + sys.argv[1], 'bsl,' + basestation])
-handleReturnCode(retcode, 'Couldn\'t install OTA basestation on mote')
+#handleReturnCode(retcode, 'Couldn\'t install OTA basestation on mote')

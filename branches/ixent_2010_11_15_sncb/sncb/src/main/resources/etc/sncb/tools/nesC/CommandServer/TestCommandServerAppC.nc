@@ -7,7 +7,7 @@ implementation {
   TestCommandServerC.Boot -> MainC.Boot;
   TestCommandServerC.Leds -> LedsC;  
   TestCommandServerC.SplitControl -> CommandServerAppC.SplitControl;
-  TestCommandServerC.StateChanged -> CommandServerAppC.StateChanged;
+  TestCommandServerC.NetworkState -> CommandServerAppC.NetworkState;
 
 #ifdef COMMAND_SERVER_BASESTATION
   components SerialStarterC;

@@ -229,7 +229,7 @@ public class TinyOSGenerator {
 
     public static String INTERFACE_SPLITCONTROL;
     
-    public static String INTERFACE_STATECHANGED;
+    public static String INTERFACE_NETWORKSTATE;
     
     public static String TYPE_TMILLI;
 
@@ -385,7 +385,7 @@ public class TinyOSGenerator {
 		    INTERFACE_SNOOZE = "Snooze";
 		    INTERFACE_LEDS = "Leds";
 		    INTERFACE_SPLITCONTROL = "SplitControl";
-		    INTERFACE_STATECHANGED = "StateChanged";
+		    INTERFACE_NETWORKSTATE = "NetworkState";
 		    TYPE_TMILLI = "TMilli";
 		    TYPE_READ = "uint16_t";
 		}
@@ -1236,8 +1236,8 @@ public class TinyOSGenerator {
 				INTERFACE_SPLITCONTROL);
 		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_NODE_CONTROLLER, 
 		
-				INTERFACE_STATECHANGED, "CommandServerUpdate", 
-				INTERFACE_STATECHANGED);
+				INTERFACE_NETWORKSTATE, "CommandServerUpdate", 
+				INTERFACE_NETWORKSTATE);
 	}
 
     /**
