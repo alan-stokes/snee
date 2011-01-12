@@ -9,7 +9,7 @@
 		<gateways>1</gateways>
 		<extents>
 			<extent name="Castilla">
-				<sites>2,3,4,5,6,7</sites>
+				<sites>9,10</sites>
 			</extent>
 <!-- 			<extent name="Meadow">
 				<sites>2</sites>
