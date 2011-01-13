@@ -14,9 +14,6 @@ import gr.uoa.di.ssg4e.dat.schema.DATMetadata;
 import gr.uoa.di.ssg4e.query.SNEEqlQuery;
 import gr.uoa.di.ssg4e.query.excep.ParserException;
 
-import java.io.File;
-import java.io.IOException;
-
 public abstract class DataAnalysisTechnique  {
 
 	/************************************************************************************************

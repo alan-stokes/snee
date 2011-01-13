@@ -114,7 +114,8 @@ public class QueryRefactorer {
 				 * recursively by calling the refactoring method */
 				sb.append(' ');
 				refactorQuery(new SNEEqlQuery(sources[i]), sb);
-				sb.append(' ').append(query.getTupleIterators()[i]);
+				if ( query.getTupleIterators()[i] != null )
+					sb.append(' ').append(query.getTupleIterators()[i]);
 
 			}else{
 
