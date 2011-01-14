@@ -21,6 +21,8 @@ import org.xml.sax.SAXException;
 
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapper;
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapperImpl;
 import uk.ac.manchester.cs.snee.datasource.webservice.SourceWrapper;
@@ -31,6 +33,8 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.SNCB;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public class SourceManager {
 
@@ -65,11 +69,11 @@ public class SourceManager {
 	 * @throws SchemaMetadataException
 	 * @throws TypeMappingException
 	 */
-	public void processPhysicalSchema(String physicalSchemaFile) 
+	public void processPhysicalSchema(String physicalSchemaFile, SNCB sncb) 
 	throws MetadataException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
 	SNEEDataSourceException, SchemaMetadataException, 
-	TypeMappingException 
+	TypeMappingException, SNCBException, SNEEConfigurationException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER processPhysicalSchema() with " +
@@ -77,7 +81,7 @@ public class SourceManager {
 		Document physicalSchemaDoc = parseFile(physicalSchemaFile);
 		Element root = (Element) physicalSchemaDoc.getFirstChild();
 		logger.trace("Root:" + root);
-		addSensorNetworkSources(root.getElementsByTagName("sensor_network"));
+		addSensorNetworkSources(root.getElementsByTagName("sensor_network"), sncb);
 		addUdpSources(root.getElementsByTagName("udp_source"));
 		addServiceSources(root.getElementsByTagName("service_source"));
 		if (logger.isInfoEnabled())
@@ -119,30 +123,39 @@ public class SourceManager {
 		return document;
 	}
 
-	private void addSensorNetworkSources(NodeList wsnSources) 
+	private void addSensorNetworkSources(NodeList wsnSources, SNCB sncb) 
 	throws MetadataException, SourceMetadataException, 
-	TopologyReaderException {
+	TopologyReaderException, SNCBException, SNEEConfigurationException {
 		//FIXME: This should be abstracted out into a data source module for sensor networks
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER addSensorNetworkSources() #=" + 
 					wsnSources.getLength());
-		logger.trace("Create sensor network sources");
+			logger.trace("Create sensor network sources");
+		}			
 		for (int i = 0; i < wsnSources.getLength(); i++) {
 			Element wsnElem = (Element) wsnSources.item(i);
 			NamedNodeMap attrs = wsnElem.getAttributes();
 			String sourceName = attrs.getNamedItem("name").getNodeValue();
-			logger.trace("WSN sourceName="+sourceName);
+			if (logger.isTraceEnabled()) {
+				logger.trace("WSN sourceName="+sourceName);
+			}
 			Node topologyElem = wsnElem.getElementsByTagName("topology").
 			item(0).getFirstChild();
-			String topologyFile = topologyElem.getNodeValue();
-			logger.trace("topologyFile="+topologyFile);
+			String topologyFile = Utils.getResourcePath(topologyElem.getNodeValue());
+			if (logger.isTraceEnabled()) {
+				logger.trace("topologyFile="+topologyFile);
+			}
 			Node resElem = wsnElem.getElementsByTagName(
-			"site-resources").item(0).getFirstChild();
-			String resFile = resElem.getNodeValue();
-			logger.trace("resourcesFile="+resFile);
+				"site-resources").item(0).getFirstChild();
+			String resFile = Utils.getResourcePath(resElem.getNodeValue());
+			if (logger.isTraceEnabled()) {
+				logger.trace("resourcesFile="+resFile);
+			}
 			Node gatewaysElem = wsnElem.getElementsByTagName("gateways").
 			item(0).getFirstChild();
-			logger.trace("gateway="+gatewaysElem.getNodeValue());
+			if (logger.isTraceEnabled()) {
+				logger.trace("gateway="+gatewaysElem.getNodeValue());
+			}
 			int[] gateways = SourceMetadataUtils.convertNodes(
 					gatewaysElem.getNodeValue());
 			List<String> extentNames = new ArrayList<String>();
@@ -150,7 +163,7 @@ public class SourceManager {
 					extentNames);
 			SourceMetadataAbstract source = new SensorNetworkSourceMetadata(
 					sourceName, extentNames, extentsElem, topologyFile, 
-					resFile, gateways);
+					resFile, gateways, sncb);
 			_sources.add(source);
 		}
 		if (logger.isTraceEnabled())

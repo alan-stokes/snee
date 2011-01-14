@@ -34,6 +34,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeExceptio
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public class MetadataManagerTest extends EasyMockSupport {
 
@@ -54,6 +55,8 @@ public class MetadataManagerTest extends EasyMockSupport {
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
+		props.setProperty(SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION, "false");
+		props.setProperty(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE, "false");
 	}
 	
 	@After
@@ -66,13 +69,13 @@ public class MetadataManagerTest extends EasyMockSupport {
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException {
+	SNEEDataSourceException, CostParametersException, SNCBException {
 		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
 		SNEEProperties.initialise(props);
 
-		MetadataManager schema = new MetadataManager();
+		MetadataManager schema = new MetadataManager(null);
 		assertEquals(2, schema.getPushedExtents().size());
 	}
 
@@ -82,13 +85,13 @@ public class MetadataManagerTest extends EasyMockSupport {
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException {
+	SNEEDataSourceException, CostParametersException, SNCBException {
 		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
 		SNEEProperties.initialise(props);
 
-		MetadataManager schema = new MetadataManager();
+		MetadataManager schema = new MetadataManager(null);
 		assertEquals(2, schema.getAcquireExtents().size());
 	}
 
@@ -98,13 +101,13 @@ public class MetadataManagerTest extends EasyMockSupport {
 	MetadataException, UnsupportedAttributeTypeException, 
 	SNEEConfigurationException, SourceMetadataException,
 	TopologyReaderException, MalformedURLException, 
-	SNEEDataSourceException, CostParametersException {
+	SNEEDataSourceException, CostParametersException, SNCBException {
 		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
 		SNEEProperties.initialise(props);
 
-		MetadataManager schema = new MetadataManager(); 
+		MetadataManager schema = new MetadataManager(null); 
 		assertEquals(1, schema.getStoredExtents().size());
 	}
 
@@ -114,13 +117,13 @@ public class MetadataManagerTest extends EasyMockSupport {
 	MetadataException, UnsupportedAttributeTypeException, 
 	SNEEConfigurationException, SourceMetadataException,
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException {
+	SNEEDataSourceException, CostParametersException, SNCBException {
 		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
 		SNEEProperties.initialise(props);
 
-		MetadataManager schema = new MetadataManager(); 
+		MetadataManager schema = new MetadataManager(null); 
 		ExtentMetadata extentMetadata = 
 			schema.getExtentMetadata("PushStream");
 		assertEquals("PushStream".toLowerCase(), 
@@ -133,14 +136,14 @@ public class MetadataManagerTest extends EasyMockSupport {
 	TypeMappingException, UnsupportedAttributeTypeException,
 	SNEEConfigurationException, SourceMetadataException,
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException 
+	SNEEDataSourceException, CostParametersException, SNCBException 
 	{
 		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
 		SNEEProperties.initialise(props);
 
-		MetadataManager schema = new MetadataManager(); 
+		MetadataManager schema = new MetadataManager(null); 
 		
 		schema.getExtentMetadata("Random");
 	}
@@ -151,9 +154,9 @@ public class MetadataManagerTest extends EasyMockSupport {
 	MalformedURLException, SNEEDataSourceException, 
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
-	TopologyReaderException, CostParametersException 
+	TopologyReaderException, CostParametersException, SNCBException 
 	{
-		MetadataManager schema = new MetadataManager();//{
+		MetadataManager schema = new MetadataManager(null);//{
 //			private SourceManager createSourceManager() {
 //				return mockSourceManager;
 //			}
@@ -173,6 +176,7 @@ public class MetadataManagerTest extends EasyMockSupport {
 	 * @throws SNEEDataSourceException 
 	 * @throws MalformedURLException 
 	 * @throws CostParametersException 
+	 * @throws SNCBException 
 	 */
 	@Test@Ignore
 	public void testPullStreamServiceSource() 
@@ -180,7 +184,7 @@ public class MetadataManagerTest extends EasyMockSupport {
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException {
+	SNEEDataSourceException, CostParametersException, SNCBException {
 		final PullSourceWrapper mockWrapper = 
 			createMock(PullSourceWrapper.class);
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
@@ -203,7 +207,7 @@ public class MetadataManagerTest extends EasyMockSupport {
 				"etc/physical-schema_pull-stream-source.xml");
 		SNEEProperties.initialise(props);
 
-		MetadataManager schema = new MetadataManager();// {
+		MetadataManager schema = new MetadataManager(null);// {
 //			protected PullSourceWrapper createPullSource(String url)
 //			throws MalformedURLException {
 //				return mockWrapper;
@@ -260,11 +264,11 @@ public class MetadataManagerTest extends EasyMockSupport {
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException {
+	SNEEDataSourceException, CostParametersException, SNCBException {
 		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, 
 				"etc/physical-schema_push-stream-source.xml");
 		SNEEProperties.initialise(props);
-		new MetadataManager();
+		new MetadataManager(null);
 	}
 	
 	@Test(expected=SourceMetadataException.class)
@@ -273,11 +277,11 @@ public class MetadataManagerTest extends EasyMockSupport {
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException {
+	SNEEDataSourceException, CostParametersException, SNCBException {
 		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, 
 				"etc/physical-schema_query-source.xml");
 		SNEEProperties.initialise(props);
-		new MetadataManager();
+		new MetadataManager(null);
 	}
 	
 	@Test(expected=MalformedURLException.class)
@@ -286,10 +290,10 @@ public class MetadataManagerTest extends EasyMockSupport {
 	TypeMappingException, MalformedURLException, 
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException,
-	TopologyReaderException, CostParametersException 
+	TopologyReaderException, CostParametersException, SNCBException 
 	{
 		SNEEProperties.initialise(props);
-		MetadataManager schema = new MetadataManager();
+		MetadataManager schema = new MetadataManager(null);
 		schema.addDataSource(
 				"", "notaurl", SourceType.PULL_STREAM_SERVICE);
 	}
@@ -300,10 +304,10 @@ public class MetadataManagerTest extends EasyMockSupport {
 	TypeMappingException, MalformedURLException, 
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException,
-	TopologyReaderException, CostParametersException 
+	TopologyReaderException, CostParametersException, SNCBException 
 	{
 		SNEEProperties.initialise(props);
-		MetadataManager schema = new MetadataManager();
+		MetadataManager schema = new MetadataManager(null);
 		schema.addDataSource(
 				"PushStreamService", "http://example.net", 
 				SourceType.PUSH_STREAM_SERVICE);
@@ -315,10 +319,10 @@ public class MetadataManagerTest extends EasyMockSupport {
 	TypeMappingException, MalformedURLException, 
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException,
-	TopologyReaderException, CostParametersException 
+	TopologyReaderException, CostParametersException, SNCBException 
 	{
 		SNEEProperties.initialise(props);
-		MetadataManager schema = new MetadataManager();
+		MetadataManager schema = new MetadataManager(null);
 		schema.addDataSource(
 				"QueryService", "http://example.net", 
 				SourceType.QUERY_SERVICE);
@@ -330,7 +334,7 @@ public class MetadataManagerTest extends EasyMockSupport {
 	TypeMappingException, MalformedURLException, 
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException,
-	TopologyReaderException, CostParametersException 
+	TopologyReaderException, CostParametersException, SNCBException 
 	{
 		SNEEProperties.initialise(props);
 		//Instantiate mock
@@ -352,7 +356,7 @@ public class MetadataManagerTest extends EasyMockSupport {
 		expect(mockExtent.getExtentType()).andReturn(ExtentType.PUSHED);
 		//Test
 		replayAll();
-		MetadataManager schema = new MetadataManager() {
+		MetadataManager schema = new MetadataManager(null) {
 			protected PullSourceWrapper createPullSource(String url)
 			throws MalformedURLException {
 				return mockSourceWrapper;

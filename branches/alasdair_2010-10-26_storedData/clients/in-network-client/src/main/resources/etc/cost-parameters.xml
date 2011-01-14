@@ -8,14 +8,16 @@
 		<Concatenate time="0.3"/>
 		<CallMethod time="0.1"/>
 		<SignalEvent time="2"/>
-		<AcquireData time="30"/>
+		<AcquireData time="100"/>
 		<ScanTuple time="0.1"/>
 		<TurnOnRadio time="30"/>
 		<TurnOffRadio time="15"/>
-		<RadioSyncWindow time ="5"/>
+		<RadioSyncWindow time ="100"/>
 		<SendPacket time = "30"/> <!-- Tested as 28 set to 30 for safety -->
 		<SetAValue time = "0.02"/>
-		<DeliverTuple time = "50"/>  
+		<DeliverTuple time = "100"/> 
+		<ManagementSection time = "5000"/>
+		<EndManagementSection time = "100"/>
 	</Time>
 	<MinimumTimerInterval time = "10"/>
 	<Space>

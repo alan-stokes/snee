@@ -34,13 +34,19 @@
 
 package uk.ac.manchester.cs.snee.common;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
-
-import org.apache.log4j.Logger;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Map;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -55,17 +61,15 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-/**
- * Provides utility methods
- * 
- * @author Christian Brenninkmeijer
- */
+
+
 public class Utils {
 
 	static Logger logger = Logger.getLogger(Utils.class.getName());
@@ -137,37 +141,37 @@ public class Utils {
 			}
 		}
 	}
-//
-//	/**
-//	 * Delete all the folders and subdirectories of the given directory
-//	 * @param path
-//	 * @return
-//	 */
-//	public static boolean deleteDirectoryContents(File path) {
-//		if (path.exists()) {
-//			File[] files = path.listFiles();
-//			for (int i = 0; i < files.length; i++) {
-//				if (files[i].isDirectory()) {
-//					deleteDirectoryContents(files[i]);
-//					files[i].delete();
-//				} else {
-//					files[i].delete();
-//				}
-//			}
-//			return true;
-//		}
-//		return false;
-//	}
-//
-//	/**
-//	 * Delete the contents of a directory
-//	 * @param pathName directory name 
-//	 * @return
-//	 */
-//	public static boolean deleteDirectoryContents(String pathName) {
-//		File path = new File(pathName);
-//		return deleteDirectoryContents(path);
-//	}
+
+	/**
+	 * Delete all the folders and subdirectories of the given directory
+	 * @param path
+	 * @return
+	 */
+	public static boolean deleteDirectoryContents(File path) {
+		if (path.exists()) {
+			File[] files = path.listFiles();
+			for (int i = 0; i < files.length; i++) {
+				if (files[i].isDirectory()) {
+					deleteDirectoryContents(files[i]);
+					files[i].delete();
+				} else {
+					files[i].delete();
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Delete the contents of a directory
+	 * @param pathName directory name 
+	 * @return
+	 */
+	public static boolean deleteDirectoryContents(String pathName) {
+		File path = new File(pathName);
+		return deleteDirectoryContents(path);
+	}
 //
 //	public int divideAndRoundUp(int dividend, int divisor) {
 //		if ((dividend % divisor) == 0)
@@ -334,5 +338,86 @@ public class Utils {
 //			return fileName;
 //		}
 //	}
+	
+	public static <T> T[] concat(T[] first, T[] second) {
+		  T[] result = Arrays.copyOf(first, first.length + second.length);
+		  System.arraycopy(second, 0, result, first.length, second.length);
+		  return result;
+		}
+	
+	/**
+	 * Runs an external program. Waits until it has finished executing.
+	 * @param progName
+	 * @param params
+	 * @param env
+	 * @throws IOException
+	 */
+	public static String runExternalProgram(String progName, String[] params, 
+	Map<String,String> extraEnvVars, String workingDir) throws IOException {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER runExternalProgram()");	
+		
+		String cmdarray[] = concat(new String[]{progName}, params);
+		logger.info("Command array="+Arrays.toString(cmdarray));
 
+		ProcessBuilder pb = new ProcessBuilder(cmdarray);
+		pb.redirectErrorStream(true);
+		pb.directory(new File(workingDir));
+		Map<String,String> env = pb.environment();
+		env.putAll(extraEnvVars);
+		
+		Process proc = pb.start();
+	    final InputStream is = proc.getInputStream();
+	    final InputStreamReader isr = new InputStreamReader(is);
+	    final BufferedReader br = new BufferedReader(isr);
+	    String line;
+
+	    StringBuffer output = new StringBuffer();
+	    while ((line = br.readLine()) != null) {
+	    	logger.trace(line);
+	    	System.out.println(line);
+	    	output.append(line + "\n");
+	    }
+	    if (logger.isDebugEnabled())
+			logger.debug("RETURN runExternalProgram()");
+	    return output.toString();
+	}
+
+
+	/**
+	 * Given a resource in the class loader search path, returns an absolute path to this resource.
+	 * @param relativeResourcePath
+	 * @return
+	 */
+	public static String getResourcePath(String relativeResourcePath) {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getResourcePath()");
+		URL url = Utils.class.getClassLoader().getResource(relativeResourcePath);
+		File file = new File(url.getFile());
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getResourcePath()");		
+		return file.toString();
+	}
+
+	/**
+	 * Reads a file into a string.
+	 * 
+	 * @param path
+	 * @return
+	 * @throws IOException
+	 */
+	//taken from: http://stackoverflow.com/questions/326390/how-to-create-a-java-string-from-the-contents-of-a-file
+	public static String readFileToString(String path) throws IOException {
+		  FileInputStream stream = new FileInputStream(new File(path));
+		  try {
+		    FileChannel fc = stream.getChannel();
+		    MappedByteBuffer bb = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size());
+		    /* Instead of using default, pass in a decoder. */
+		    return Charset.defaultCharset().decode(bb).toString();
+		  }
+		  finally {
+		    stream.close();
+		  }
+		}
+	
 }

@@ -103,19 +103,11 @@ public class Agenda extends SNEEAlgebraicForm {
      */
     private long nonLeafStart = Integer.MAX_VALUE;
 
-//    /**
-//     * Constructor for MQE Agenda.
-//     * @param uAcqusitionInterval unified Acquisition Interval
-//     * @param uBufferingFactor unified Buffering Factor  
-//     */
-//    public Agenda(final long uAcqusitionInterval, final long uBufferingFactor) {
-//		this.alpha = msToBms_RoundUp(uAcqusitionInterval);
-//		this.beta = uBufferingFactor;
-//    	this.name = "MQE-Agenda";
-//    }
-    
+	private boolean useNetworkController;
+
     public Agenda(final long acquisitionInterval, final long bfactor,
-	final DAF daf, CostParameters costParams, final String queryName) 
+	final DAF daf, CostParameters costParams, final String queryName,
+	boolean useNetworkController) 
     throws AgendaException, AgendaLengthException, OptimizationException, 
     SchemaMetadataException, TypeMappingException {
     	super(queryName);
@@ -126,14 +118,20 @@ public class Agenda extends SNEEAlgebraicForm {
 			this.name = generateID(queryName);
 		}
 		this.costParams=costParams;
-		logger.trace("About to schedule the leaf fragments alpha=" + this.alpha + " bms beta=" + this.beta);
-		//First schedule the leaf fragments
+		this.useNetworkController = useNetworkController;
+		
+		logger.trace("Scheduling leaf fragments alpha=" + this.alpha + " bms beta=" + this.beta);
 		scheduleLeafFragments();
-		logger.trace("Scheduled the leaf fragments");
-		//Now traverse the routing tree, place everything except leaf fragments
+		logger.trace("Scheduling the non-leaf fragments");
 		scheduleNonLeafFragments();
-		logger.trace("Scheduled the NON leaf fragments");
-
+		logger.trace("Scheduling network management section");
+		if (this.useNetworkController) {
+			scheduleNetworkManagementSection();
+			scheduleEndNetworkManagementSection();
+		}
+		logger.trace("Scheduled final sleep task");
+		scheduleFinalSleepTask();
+		
 		long length = this.getLength_bms(Agenda.INCLUDE_SLEEP);
 		logger.trace("Agenda alpha=" + this.alpha + " beta=" + this.beta + " alpha*beta = " + this.alpha * this.beta + " length="+length);
  		if (length > (this.alpha * this.beta)) {
@@ -149,7 +147,41 @@ public class Agenda extends SNEEAlgebraicForm {
 		}
     }
 
-    /**
+    private void scheduleNetworkManagementSection() throws AgendaException {
+		final long start = this.getLength_bms(Agenda.INCLUDE_SLEEP);
+		final long end = start + costParams.getManagementSectionDuration();
+		
+		if (start < 0) {
+		    throw new AgendaException("Start time < 0");
+		}
+		final Iterator<Site> siteIter = this.daf.getRT()
+			.siteIterator(TraversalOrder.POST_ORDER);
+		while (siteIter.hasNext()) {
+		    final Site site = siteIter.next();
+		    this.assertConsistentStartTime(start, site);
+		    ManagementTask mt = new ManagementTask(start, end, site, this.costParams);
+		    this.addTask(mt, site);
+		}
+	}
+
+    private void scheduleEndNetworkManagementSection() throws AgendaException {
+		final long start = this.getLength_bms(Agenda.INCLUDE_SLEEP);
+		final long end = start + costParams.getEndManagementSectionDuration();
+		
+		if (start < 0) {
+		    throw new AgendaException("Start time < 0");
+		}
+		final Iterator<Site> siteIter = this.daf.getRT()
+			.siteIterator(TraversalOrder.POST_ORDER);
+		while (siteIter.hasNext()) {
+		    final Site site = siteIter.next();
+		    this.assertConsistentStartTime(start, site);
+		    EndManagementTask mt = new EndManagementTask(start, end, site, this.costParams);
+		    this.addTask(mt, site);
+		}
+	}
+    
+	/**
      * Resets the counter; use prior to compiling the next query.
      */
     public static void resetCandidateCounter() {
@@ -764,20 +796,18 @@ public class Agenda extends SNEEAlgebraicForm {
 		}
 	    }
 	}
-	//Go active uses the disactivated sleep to represent all nodes do nothing
-	//sleepTask also used to jump to nonLeaf after last leaf.
-	//if (Settings.NESC_DO_SNOOZE || Settings.NESC_CPU_GO_ACTIVE) {
-	//if (Settings.NESC_DO_SNOOZE) {
-
-	final long sleepStart = this.getLength_bms(Agenda.INCLUDE_SLEEP);
-	
-	//A sleep task of at least 10 ms needs to be added here, to turn the radio off
-	final long sleepEnd = Math.max(this.alpha * this.beta, 
-			new Float(sleepStart + costParams.getTurnOffRadio()).longValue());
-	logger.trace("Sleep task scheduled from "+sleepStart+" to "+sleepEnd);
-    this.addSleepTask(sleepStart, sleepEnd, true);
-	this.setNonLeafStart(nonLeafStart);
     }
+
+	private void scheduleFinalSleepTask() throws AgendaException {
+		final long sleepStart = this.getLength_bms(Agenda.INCLUDE_SLEEP);
+		
+		//A sleep task of at least 10 ms needs to be added here, to turn the radio off
+		final long sleepEnd = Math.max(this.alpha * this.beta, 
+				new Float(sleepStart + costParams.getTurnOffRadio()).longValue());
+		logger.trace("Sleep task scheduled from "+sleepStart+" to "+sleepEnd);
+		this.addSleepTask(sleepStart, sleepEnd, true);
+		this.setNonLeafStart(nonLeafStart);
+	}
 
 	public CostParameters getCostParameters() {
 		return this.costParams;

@@ -76,6 +76,8 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.SNCB;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public class MetadataManager {
 
@@ -114,13 +116,14 @@ public class MetadataManager {
 	 * @throws MalformedURLException 
 	 * @throws SNEEDataSourceException 
 	 * @throws CostParametersException 
+	 * @throws SNCBException 
 	 */
-	public MetadataManager() 
+	public MetadataManager(SNCB sncb) 
 	throws TypeMappingException, SchemaMetadataException, 
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException {
+	SNEEDataSourceException, CostParametersException, SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER MetadataManger()");
 		logger.trace("Processing types.");
@@ -139,7 +142,7 @@ public class MetadataManager {
 		_sources = createSourceManager();
 		if (SNEEProperties.isSet(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE)) {
 			_sources.processPhysicalSchema(
-					SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE));
+					SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE), sncb);
 		}
 		//cardinalities for SN sources can only be estimated after physical schema
 		//known, as they depend on the number of source sites.

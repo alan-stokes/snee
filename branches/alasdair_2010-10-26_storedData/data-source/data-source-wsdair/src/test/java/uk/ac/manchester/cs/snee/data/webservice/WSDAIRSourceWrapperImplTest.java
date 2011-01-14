@@ -179,7 +179,6 @@ public class WSDAIRSourceWrapperImplTest extends EasyMockSupport {
 		Document document = createXMLDocument(newNode);
 		Node node = document.getFirstChild();
 		nodeList.add(node);
-		System.out.println(node.getTextContent());
 				
 		expect(mockWsdairClient.getSQLPropertyDocument(isA(
 				GetDataResourcePropertyDocumentRequest.class)))

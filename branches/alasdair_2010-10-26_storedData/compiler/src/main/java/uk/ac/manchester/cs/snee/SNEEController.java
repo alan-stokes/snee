@@ -65,6 +65,9 @@ import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeExceptio
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.SNCB;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
+import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 /**
@@ -77,6 +80,12 @@ public class SNEEController implements SNEE {
 	private static Logger logger = 
 		Logger.getLogger(SNEEController.class.getName());
 	
+	/**
+	 * Sensor Network Connectivity Bridge.  For now, assume that there 
+	 * is one instance max.
+	 */
+	private SNCB _sncb = null;
+		
 	/**
 	 * Metadata stored about extents, data sources and cost parameters.
 	 */
@@ -91,12 +100,15 @@ public class SNEEController implements SNEE {
 	 * The evaluator object for running queries
 	 */
 	private Dispatcher _dispatcher;
-	
+
+	/**
+	 * Stores the results for each registered query
+	 */
 	private Map<Integer, ResultStore> _queryResults = 
 		new HashMap<Integer, ResultStore>();
 	
 	/**
-	 * Stores the query plan for the registered query
+	 * Stores the query plan for each registered query
 	 */
 	private Map<Integer, QueryExecutionPlan> _queryPlans = 
 		new HashMap<Integer, QueryExecutionPlan>();
@@ -173,7 +185,9 @@ public class SNEEController implements SNEE {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER initialise()");
 
-		try {			
+		try {
+			_sncb = initialiseSNCB();
+			
 			/* Process metadata */
 			_metadata = initialiseMetadata();
 			
@@ -224,6 +238,10 @@ public class SNEEController implements SNEE {
 			String msg = "Problem reading cost parameters file";
 			logger.fatal(msg, e);
 			throw new SNEEException(msg, e);
+		} catch (SNCBException e) {
+			String msg = "Problem intialising sensor network";
+			logger.fatal(msg, e);
+			throw new SNEEException(msg, e);
 		}
 		
 		logger.info("SNEE configured");
@@ -231,16 +249,31 @@ public class SNEEController implements SNEE {
 			logger.debug("RETURN initialise()");
 	}
 
+	protected SNCB initialiseSNCB() throws SNEEConfigurationException, SNCBException {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER initialiseSNCB()");
+		
+		//This is done here because otherwise TinyOS_SNCB would have
+		//to be part of snee-core
+		if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_ENABLE)) {
+			if (SNEEProperties.getBoolSetting(SNEEPropertyNames.SNCB_ENABLE)) {
+				return new TinyOS_SNCB();
+			}
+		}
+		return null;
+		
+	}
+	
 	protected MetadataManager initialiseMetadata() 
 	throws MetadataException, SchemaMetadataException, 
 	TypeMappingException, UnsupportedAttributeTypeException, 
 	SourceMetadataException, SNEEConfigurationException, 
 	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException 
+	SNEEDataSourceException, CostParametersException, SNCBException 
 	{
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER initialiseSchema()");
-		MetadataManager metadata = new MetadataManager();
+			logger.trace("ENTER initialiseMetadata()");
+		MetadataManager metadata = new MetadataManager(_sncb);
 		return metadata;
 	}
 

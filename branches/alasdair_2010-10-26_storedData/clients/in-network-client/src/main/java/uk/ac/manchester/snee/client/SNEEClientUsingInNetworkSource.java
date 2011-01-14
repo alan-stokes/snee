@@ -7,6 +7,7 @@ import org.apache.log4j.PropertyConfigurator;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.client.SNEEClient;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator;
 
 public class SNEEClientUsingInNetworkSource extends SNEEClient {
@@ -26,7 +27,7 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 	}
 
 	/**
-	 * The main entry point for the SNEE controller
+	 * The main entry point for the SNEE in-network client.
 	 * @param args
 	 * @throws IOException
 	 * @throws InterruptedException 
@@ -46,8 +47,8 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 					"\t\"query duration in seconds\"\n" +
 					"\t\"query parameters file\"\n");
 			//XXX: Use default query
-			query = "SELECT * FROM PullStream;";
-			duration = Long.valueOf("20");
+			query = "SELECT * FROM Castilla;";
+			duration = Long.valueOf("120");
 			queryParams= "etc/query-parameters.xml";
 //			System.exit(1);
 		} else {	
@@ -61,12 +62,12 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 				SNEEClientUsingInNetworkSource client = 
 					new SNEEClientUsingInNetworkSource(query, duration, queryParams);
 				/* Initialise and run data source */
-				_myDataSource = new ConstantRatePushStreamGenerator();
-				_myDataSource.startTransmission();
+//				_myDataSource = new ConstantRatePushStreamGenerator();
+//				_myDataSource.startTransmission();
 				/* Run SNEEClient */
 				client.run();
 				/* Stop the data source */
-				_myDataSource.stopTransmission();
+//				_myDataSource.stopTransmission();
 			} catch (Exception e) {
 				System.out.println("Execution failed. See logs for detail.");
 				logger.fatal(e);

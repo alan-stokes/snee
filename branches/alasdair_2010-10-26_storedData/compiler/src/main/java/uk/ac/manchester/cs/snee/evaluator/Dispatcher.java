@@ -44,8 +44,8 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.MetadataException;
-import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.ResultStore;
+import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
@@ -59,12 +59,12 @@ import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
-import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB;
+import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 public class Dispatcher {
 
-	private static Logger logger = 
+	private Logger logger = 
 		Logger.getLogger(Dispatcher.class.getName());
 	
 	private MetadataManager _schema;
@@ -140,11 +140,14 @@ public class Dispatcher {
 				String outputDir = SNEEProperties.getSetting(
 						SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
 						sep + queryPlan.getQueryName() + sep;
-				SNCB sncb = new TinyOS_SNCB(outputDir, costParams);
-				sncb.register(snQueryPlan);
+				SNCB sncb = snQueryPlan.getSNCB();
+				SNCBSerialPortReceiver mr = 
+					sncb.register(snQueryPlan, outputDir, costParams);
+				InNetworkQueryEvaluator queryEvaluator = 
+					new InNetworkQueryEvaluator(queryID, snQueryPlan, 
+					mr, resultSet);
+				_queryEvaluators.put(queryID, queryEvaluator);
 				sncb.start();
-				System.out.println("Code generation complete");
-				System.exit(0);
 			} catch (Exception e) {
 				logger.warn(e.getLocalizedMessage(), e);
 				throw new EvaluatorException(e);
