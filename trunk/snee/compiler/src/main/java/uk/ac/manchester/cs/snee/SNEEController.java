@@ -51,20 +51,20 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
-import uk.ac.manchester.cs.snee.compiler.metadata.CostParametersException;
-import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
+import uk.ac.manchester.cs.snee.metadata.CostParametersException;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB;
@@ -76,7 +76,7 @@ import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
  * over the available sensor network and robust networks.
  */
 public class SNEEController implements SNEE {
-
+//FIXME: This should really be in the core module with interfaces used for the various snee modules
 	private static Logger logger = 
 		Logger.getLogger(SNEEController.class.getName());
 	
@@ -85,11 +85,11 @@ public class SNEEController implements SNEE {
 	 * is one instance max.
 	 */
 	private SNCB _sncb = null;
-	
+		
 	/**
 	 * Metadata stored about extents, data sources and cost parameters.
 	 */
-	private Metadata _metadata;
+	private MetadataManager _metadata;
 	
 	/**
 	 * The compiler object for compiling queries
@@ -264,7 +264,7 @@ public class SNEEController implements SNEE {
 		
 	}
 	
-	protected Metadata initialiseMetadata() 
+	protected MetadataManager initialiseMetadata() 
 	throws MetadataException, SchemaMetadataException, 
 	TypeMappingException, UnsupportedAttributeTypeException, 
 	SourceMetadataException, SNEEConfigurationException, 
@@ -273,8 +273,7 @@ public class SNEEController implements SNEE {
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseMetadata()");
-		
-		Metadata metadata = new Metadata(_sncb);
+		MetadataManager metadata = new MetadataManager(_sncb);
 		return metadata;
 	}
 
@@ -502,8 +501,8 @@ public class SNEEController implements SNEE {
 			logger.debug("ENTER addServiceSource() with name=" +
 					name + " type=" + interfaceType + " url="+ url);
 		try {
-			_metadata.addServiceSource(name, url, 
-					SourceType.PULL_STREAM_SERVICE);
+			_metadata.addDataSource(name, url, 
+					interfaceType);
 		} catch (SchemaMetadataException e) {
 			logger.warn("Throwing a MetadataException. Cause " + e);
 			throw new MetadataException(e.getLocalizedMessage());

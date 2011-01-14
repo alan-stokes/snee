@@ -5,20 +5,31 @@
   <parent>
     <artifactId>clients</artifactId>
     <groupId>uk.ac.manchester.cs.snee</groupId>
-    <version>1.4.2</version>
+    <version>1.5.0-SNAPSHOT</version>
   </parent>
   <groupId>uk.ac.manchester.cs.snee.client</groupId>
   <artifactId>client</artifactId>
   <name>Client</name>
-  <version>1.4.2</version>
   <description>Common code for command line clients.</description>
   <dependencies>
   	<dependency>
   		<groupId>uk.ac.manchester.cs.snee</groupId>
-  		<artifactId>snee-core</artifactId>
-  		<version>1.4.2</version>
+  		<artifactId>snee-api</artifactId>
+  		<version>${snee.version}</version>
   		<type>jar</type>
-  		<scope>provided</scope>
+  	</dependency>
+  	<dependency>
+  		<groupId>uk.ac.manchester.cs.snee</groupId>
+  		<artifactId>snee-core</artifactId>
+  		<version>${snee.version}</version>
+  		<scope>compile</scope>
+  	</dependency>
+  	<dependency>
+  		<groupId>uk.ac.manchester.cs.snee</groupId>
+  		<artifactId>snee-compiler</artifactId>
+  		<version>1.5.0-SNAPSHOT</version>
+  		<type>jar</type>
+  		<scope>compile</scope>
   	</dependency>
   </dependencies>
 </project>

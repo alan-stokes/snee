@@ -46,9 +46,9 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
@@ -67,7 +67,7 @@ implements Observer
 
 	protected Logger logger = Logger.getLogger(this.getClass().getName());
 
-	private Metadata _schema;
+	private MetadataManager _schema;
 	
 	protected EvaluatorPhysicalOperator child;
 
@@ -140,14 +140,14 @@ implements Observer
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.evaluator.operators.EvaluatorOperator#getSchema()
 	 */
-	public Metadata getSchema() {
+	public MetadataManager getSchema() {
 		return _schema;
 	}
 
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.evaluator.operators.EvaluatorOperator#setSchema(uk.ac.manchester.cs.diasmc.schemas.Schema)
 	 */
-	public void setSchema(Metadata schema) {
+	public void setSchema(MetadataManager schema) {
 		_schema = schema;
 	}
 	

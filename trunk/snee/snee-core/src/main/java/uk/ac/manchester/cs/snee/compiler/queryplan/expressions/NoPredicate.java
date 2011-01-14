@@ -35,7 +35,7 @@ package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
 import java.util.ArrayList;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
+import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 
 /** 
  * Special case predicate when there is no predicate.

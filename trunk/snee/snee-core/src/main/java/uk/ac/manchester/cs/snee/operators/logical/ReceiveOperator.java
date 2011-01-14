@@ -39,14 +39,14 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
+import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 
 public class ReceiveOperator extends LogicalOperatorImpl {
 
@@ -79,7 +79,7 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 	/**
 	 * Contains details of the data sources that contribute data
 	 */
-	private List<SourceMetadata> _sources;
+	private List<SourceMetadataAbstract> _sources;
 	
 	/**
 	 * Constructs a new Receive operator.
@@ -91,7 +91,7 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 	 * @throws TypeMappingException
 	 */
 	public ReceiveOperator(ExtentMetadata extentMetaData, 
-			List<SourceMetadata> sources, 
+			List<SourceMetadataAbstract> sources, 
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException {
 		super(boolType);
@@ -109,7 +109,7 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 		
 		StringBuffer sourcesStr = new StringBuffer(" sources={");
 		boolean first = true;
-		for (SourceMetadata sm : _sources) {
+		for (SourceMetadataAbstract sm : _sources) {
 			if (first) {
 				first=false;
 			} else {
@@ -136,7 +136,7 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 	 * Return details of the data sources
 	 * @return
 	 */
-	public List<SourceMetadata> getSources() {
+	public List<SourceMetadataAbstract> getSources() {
 		return _sources;
 	}
 	

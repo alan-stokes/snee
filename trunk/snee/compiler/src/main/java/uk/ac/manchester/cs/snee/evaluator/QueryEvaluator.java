@@ -46,10 +46,10 @@ import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.evaluator.DeliverOperatorImpl;
 import uk.ac.manchester.cs.snee.operators.evaluator.EvaluatorPhysicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
@@ -75,7 +75,7 @@ public class QueryEvaluator implements Observer {
 	 */
 	private LAF _queryPlan;
 
-	private Metadata _schema;
+	private MetadataManager _schema;
 
 	private EvaluatorPhysicalOperator _rootOper;
 
@@ -89,7 +89,7 @@ public class QueryEvaluator implements Observer {
 	}
 	
 	public QueryEvaluator(int queryId, LAF queryPlan, 
-			Metadata schema, 
+			MetadataManager schema, 
 			ResultStore resultSet) 
 	throws SNEEException, SchemaMetadataException, 
 	EvaluatorException, SNEEConfigurationException {

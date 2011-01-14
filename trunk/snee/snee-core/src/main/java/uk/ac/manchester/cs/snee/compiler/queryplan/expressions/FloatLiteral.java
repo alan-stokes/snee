@@ -35,12 +35,9 @@ package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
 import java.util.ArrayList;
 
-//XXX-AG: Not sure we should have antlr types here!
-import antlr.collections.AST;
-
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 
 /** 
  * Wrapper for a Float constant expression.
@@ -58,16 +55,6 @@ public class FloatLiteral implements Expression {
 	public FloatLiteral(float newValue, AttributeType type) { 
 		this.value = newValue;
 		_type = type;
-	}
-	
-	/**
-	 * Constructor.
-	 * @param token The FLOATLIT AST token.
-	 */
-	//XXX-AG: FloatLiteral constructor never called
-	public FloatLiteral(AST token) {
-        AST valueToken = token.getFirstChild();
-        value = Float.parseFloat(valueToken.getText());
 	}
 //
 //	/** {@inheritDoc} */
