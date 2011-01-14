@@ -29,6 +29,9 @@ import uk.ac.manchester.cs.snee.metadata.schema.Types;
 
 public class OgsadaiSchemaParser extends SchemaParserAbstract {
 
+	private static final String XML_HEADER =
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+
 	private Logger logger = 
 		Logger.getLogger(OgsadaiSchemaParser.class.getName());
 
@@ -43,8 +46,7 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 					schema);
 		}
 		try {
-			StringReader schemaReader = new StringReader(schema);
-			
+			StringReader schemaReader = new StringReader(XML_HEADER + schema);
 			DocumentBuilderFactory factory = 
 				DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -68,12 +70,25 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 			logger.debug("RETURN OgsadaiSchemaParser()");
 	}
 	
+	public OgsadaiSchemaParser(Element root, Types types) 
+	throws TypeMappingException, SchemaMetadataException {
+		super(types);
+		parse((Element) root);
+	}
+
 	private void parse(Element root) 
 	throws TypeMappingException, SchemaMetadataException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER parse() with " + root);
 		}
-		NodeList extentNodes = root.getElementsByTagName("table");
+		NodeList extentNodes;
+		String rootNS = root.getNamespaceURI();
+		if (rootNS == null) {
+			extentNodes = root.getElementsByTagName("table");
+		} else {
+			extentNodes = root.getElementsByTagNameNS(
+					rootNS, "table");
+		}
 		for (int i = 0; i < extentNodes.getLength(); i++) {
 			Element element = (Element) extentNodes.item(i);
 			String name = element.getAttribute("name").toLowerCase();

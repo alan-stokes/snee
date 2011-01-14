@@ -5,6 +5,7 @@ import java.net.URL;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
+import javax.xml.ws.soap.SOAPFaultException;
 
 import org.apache.log4j.Logger;
 import org.ggf.namespaces._2005._12.ws_dai.CoreDataAccessPT;
@@ -192,25 +193,6 @@ public class WSDAIRAccessServiceClient {
 		}
 		return sqlAccessClient;
 	}
-
-//    System.out.println("Invoking getResourceList...");
-//    eu.semsorgrid4env.service.wsdai.GetResourceListRequest 
-//	_getResourceList_getResourceListRequest = 
-//	new eu.semsorgrid4env.service.wsdai.GetResourceListRequest();
-//    try {
-//        eu.semsorgrid4env.service.wsdai.GetResourceListResponse 
-//	_getResourceList__return = 
-//	port.getResourceList(_getResourceList_getResourceListRequest);
-//        System.out.println("getResourceList.result=" + _getResourceList__return);
-//
-//    } catch (ServiceBusyFault e) { 
-//        System.out.println("Expected exception: ServiceBusyFault has occurred.");
-//        System.out.println(e.toString());
-//    } catch (NotAuthorizedFault e) { 
-//        System.out.println("Expected exception: NotAuthorizedFault has occurred.");
-//        System.out.println(e.toString());
-//    }
-
 	
 	public GetResourceListResponse getResourceList(
 			GetResourceListRequest request) 
@@ -239,6 +221,39 @@ public class WSDAIRAccessServiceClient {
 		return response;
 	}
 
+	public SQLPropertyDocumentType getSQLPropertyDocument(
+			GetDataResourcePropertyDocumentRequest request) 
+	throws SchemaMetadataException, InvalidResourceNameFault, 
+	DataResourceUnavailableFault, NotAuthorizedFault, 
+	ServiceBusyFault, SNEEDataSourceException {
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER getSQLPropertyDocument() with " +
+					request.getDataResourceAbstractName());
+		SQLPropertyDocumentType propDoc;
+		try {
+			propDoc = _wsdairAccessPT.getSQLPropertyDocument(request);
+		} catch (SOAPFaultException e) {
+			logger.warn("Remote service error. " + e.getLocalizedMessage());
+			throw new SNEEDataSourceException("Wrong service type");
+		} catch (InvalidResourceNameFault e) {
+			logger.warn(e.getLocalizedMessage());
+			throw e;
+		} catch (DataResourceUnavailableFault e) {
+			logger.warn(e.getLocalizedMessage());
+			throw e;
+		} catch (NotAuthorizedFault e) {
+			logger.warn(e.getLocalizedMessage());
+			throw e;
+		} catch (ServiceBusyFault e) {
+			logger.warn(e.getLocalizedMessage());
+			throw e;
+		}
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getPropertyDocument() with property " +
+					"document " + propDoc);
+		return propDoc;
+	}
+
 	public PropertyDocumentType getPropertyDocument(
 			GetDataResourcePropertyDocumentRequest request) 
 	throws SchemaMetadataException, InvalidResourceNameFault, 
@@ -249,7 +264,7 @@ public class WSDAIRAccessServiceClient {
 					request.getDataResourceAbstractName());
 		PropertyDocumentType propDoc;
 		try {
-			propDoc = (SQLPropertyDocumentType)
+			propDoc =
 				_wsdairCoreAccessPT.getDataResourcePropertyDocument(request);
 		} catch (InvalidResourceNameFault e) {
 			logger.warn(e.getLocalizedMessage());

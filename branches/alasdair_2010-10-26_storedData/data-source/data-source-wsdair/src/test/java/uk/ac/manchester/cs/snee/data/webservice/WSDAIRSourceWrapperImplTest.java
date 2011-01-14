@@ -1,10 +1,8 @@
 package uk.ac.manchester.cs.snee.data.webservice;
 
 import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.expectLastCall;
 import static org.easymock.EasyMock.isA;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -20,7 +18,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.cxf.ws.addressing.ReferenceParametersType;
 import org.apache.log4j.PropertyConfigurator;
 import org.easymock.classextension.EasyMockSupport;
-import org.easymock.internal.matchers.InstanceOf;
 import org.ggf.namespaces._2005._12.ws_dai.DataResourceAddressType;
 import org.ggf.namespaces._2005._12.ws_dai.DataResourceUnavailableFault;
 import org.ggf.namespaces._2005._12.ws_dai.GetDataResourcePropertyDocumentRequest;
@@ -29,6 +26,8 @@ import org.ggf.namespaces._2005._12.ws_dai.GetResourceListResponse;
 import org.ggf.namespaces._2005._12.ws_dai.InvalidResourceNameFault;
 import org.ggf.namespaces._2005._12.ws_dai.NotAuthorizedFault;
 import org.ggf.namespaces._2005._12.ws_dai.ServiceBusyFault;
+import org.ggf.namespaces._2005._12.ws_dair.SQLPropertyDocumentType;
+import org.ggf.namespaces._2005._12.ws_dair.SchemaDescription;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -36,15 +35,14 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.datasource.webservice.WSDAIRAccessServiceClient;
 import uk.ac.manchester.cs.snee.datasource.webservice.WSDAIRSourceWrapperImpl;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
@@ -116,10 +114,7 @@ public class WSDAIRSourceWrapperImplTest extends EasyMockSupport {
 			"wsdai:OGSAAccessCCODataResource" +
 			"</ns4:DataResourceAbstractName>"; // Convert this to XML
 		
-		Document document = DocumentBuilderFactory
-			.newInstance()
-			.newDocumentBuilder()
-			.parse(new InputSource(new StringReader(newNode)));
+		Document document = createXMLDocument(newNode);
 		Node node = document.getFirstChild();
 		nodeList.add(node);
 		
@@ -139,22 +134,69 @@ public class WSDAIRSourceWrapperImplTest extends EasyMockSupport {
 		assertEquals(false, resourceNames.isEmpty());
 		assertEquals(1, resourceNames.size());
 		assertTrue(resourceNames.get(0).equals(
-				"wsdai:OGSAAccessCCODataResource"));
+				WSDAI_OGSA_ACCESS_CCO_DATA_RESOURCE));
 		verifyAll();
 	}
 
-	@Test@Ignore
-	public void testGetSchema() 
+	private Document createXMLDocument(String nodeText) throws SAXException,
+			IOException, ParserConfigurationException {
+//		System.out.println(nodeText);
+		Document document = DocumentBuilderFactory
+			.newInstance()
+			.newDocumentBuilder()
+			.parse(new InputSource(new StringReader(nodeText)));
+		return document;
+	}
+
+	@Test
+	public void testGetSchema_sqlPropertyDocument() 
 	throws SNEEDataSourceException, SchemaMetadataException, 
 	TypeMappingException, InvalidResourceNameFault,
-	DataResourceUnavailableFault, NotAuthorizedFault, ServiceBusyFault 
+	DataResourceUnavailableFault, NotAuthorizedFault, ServiceBusyFault,
+	SAXException, IOException, ParserConfigurationException 
 	{
-		String propDocFile = WSDAIRSourceWrapperImplTest.class.getClassLoader().
-			getResource("etc/cco_sqlPropertyDoc.xml").getFile();
-		GetDataResourcePropertyDocumentRequest request = 
-			new GetDataResourcePropertyDocumentRequest();
-		expect(mockWsdairClient.getPropertyDocument(request)).andReturn(null);
-		assertNull(wsdairSource.getSchema(WSDAI_OGSA_ACCESS_CCO_DATA_RESOURCE));
+		SQLPropertyDocumentType mockSQLPropDoc = 
+			createMock(SQLPropertyDocumentType.class);
+		SchemaDescription mockSchemaDesc = createMock(SchemaDescription.class);
+		
+		List<Object> nodeList = new ArrayList<Object>();
+		String newNode = 
+			"<databaseSchema xmlns=" +
+			"\"http://ogsadai.org.uk/namespaces/2005/10/properties\" " +
+			"xmlns:ns22=" +
+			"\"http://ogsadai.org.uk/namespaces/2005/10/properties\">" +
+			"<logicalSchema>" +
+			"<table catalog=\"cco\" name=\"site_locations\" schema=\"null\"> " +
+            "<column default=\"null\" fullName=\"site_locations_id\" " +
+            "length=\"10\" name=\"id\" nullable=\"false\" position=\"1\">" +
+            "<sqlTypeName>INT</sqlTypeName><sqlJavaTypeID>4</sqlJavaTypeID>" +
+            "</column><column default=\"null\" fullName=\"site_locations_easting\" " +
+            "length=\"19\" name=\"easting\" nullable=\"true \" position=\"2\"> " +
+            "<sqlTypeName>BIGINT</sqlTypeName><sqlJavaTypeID>-5</sqlJavaTypeID>" +
+            "</column><primaryKey><columnName>id</columnName></primaryKey>" +
+            "</table></logicalSchema></databaseSchema>";
+		
+		Document document = createXMLDocument(newNode);
+		Node node = document.getFirstChild();
+		nodeList.add(node);
+		System.out.println(node.getTextContent());
+				
+		expect(mockWsdairClient.getSQLPropertyDocument(isA(
+				GetDataResourcePropertyDocumentRequest.class)))
+				.andReturn(mockSQLPropDoc);
+		expect(mockSQLPropDoc.getDataResourceAbstractName())
+			.andReturn(WSDAI_OGSA_ACCESS_CCO_DATA_RESOURCE)
+			.times(0, 1);
+		expect(mockSQLPropDoc.getSchemaDescription()).andReturn(mockSchemaDesc);
+		expect(mockSchemaDesc.getAny()).andReturn(nodeList);
+		
+		replayAll();
+		//Perform operation
+		List<ExtentMetadata> extentList = 
+			wsdairSource.getSchema(WSDAI_OGSA_ACCESS_CCO_DATA_RESOURCE);
+		// Verify result
+		assertEquals(1, extentList.size());
+		verifyAll();
 	}
 
 	@Test@Ignore

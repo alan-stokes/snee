@@ -1,89 +1,105 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<SchemaDescription>
-       <databaseSchema xmlns="http://ogsadai.org.uk/namespaces/2005/10/properties" xmlns:ns22="http://ogsadai.org.uk/namespaces/2005/10/properties">
-           <logicalSchema>
-                <table catalog="cco" name="lowtide_ArunPlatform_tide" schema="null">
-                    <column default="0" fullName="lowtide_ArunPlatform_tide_timestamp" length="10" name="timestamp" nullable="false" position="1">
-                        <sqlTypeName>INT</sqlTypeName>
-                        <sqlJavaTypeID>4</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="lowtide_ArunPlatform_tide_height" length="8" name="height" nullable="true" position="2">
-                        <sqlTypeName>FLOAT</sqlTypeName>
-                        <sqlJavaTypeID>7</sqlJavaTypeID>
-                    </column>
-                    <primaryKey>
-                        <columnName>timestamp</columnName>
-                    </primaryKey>
-                </table>
-                <table catalog="cco" name="locations" schema="null">
-                    <column default="null" fullName="locations_id" length="10" name="id" nullable="false" position="1">
-                        <sqlTypeName>INT</sqlTypeName>
-                        <sqlJavaTypeID>4</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_type" length="50" name="type" nullable="true" position="2">
-                        <sqlTypeName>VARCHAR</sqlTypeName>
-                        <sqlJavaTypeID>12</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_location" length="50" name="location" nullable="true" position="3">
-                        <sqlTypeName>VARCHAR</sqlTypeName>
-                        <sqlJavaTypeID>12</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_owner" length="50" name="owner" nullable="true" position="4">
-                        <sqlTypeName>VARCHAR</sqlTypeName>
-                        <sqlJavaTypeID>12</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_easting" length="19" name="easting" nullable="true" position="5">
-                        <sqlTypeName>BIGINT</sqlTypeName>
-                        <sqlJavaTypeID>-5</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_northing" length="19" name="northing" nullable="true" position="6">
-                        <sqlTypeName>BIGINT</sqlTypeName>
-                        <sqlJavaTypeID>-5</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_latitude" length="8" name="latitude" nullable="true" position="7">
-                        <sqlTypeName>DECIMAL</sqlTypeName>
-                        <sqlJavaTypeID>3</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_longitude" length="8" name="longitude" nullable="true" position="8">
-                        <sqlTypeName>DECIMAL</sqlTypeName>
-                        <sqlJavaTypeID>3</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_storm_threshold" length="8" name="storm_threshold" nullable="true" position="9">
-                        <sqlTypeName>DECIMAL</sqlTypeName>
-                        <sqlJavaTypeID>3</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_deployed" length="0" name="deployed" nullable="true" position="10">
-                        <sqlTypeName>DATE</sqlTypeName>
-                        <sqlJavaTypeID>91</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_waves" length="50" name="waves" nullable="true" position="11">
-                        <sqlTypeName>VARCHAR</sqlTypeName>
-                        <sqlJavaTypeID>12</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_tides" length="50" name="tides" nullable="true" position="12">
-                        <sqlTypeName>VARCHAR</sqlTypeName>
-                        <sqlJavaTypeID>12</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_met" length="50" name="met" nullable="true" position="13">
-                        <sqlTypeName>VARCHAR</sqlTypeName>
-                        <sqlJavaTypeID>12</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_status" length="100" name="status" nullable="true" position="14">
-                        <sqlTypeName>VARCHAR</sqlTypeName>
-                        <sqlJavaTypeID>12</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_additional_info_file" length="100" name="additional_info_file" nullable="true" position="15">
-                        <sqlTypeName>VARCHAR</sqlTypeName>
-                        <sqlJavaTypeID>12</sqlJavaTypeID>
-                    </column>
-                    <column default="null" fullName="locations_wave_spectra" length="50" name="wave_spectra" nullable="true" position="16">
-                        <sqlTypeName>VARCHAR</sqlTypeName>
-                        <sqlJavaTypeID>12</sqlJavaTypeID>
-                    </column>
-                    <primaryKey>
-                        <columnName>id</columnName>
-                    </primaryKey>
-                </table>
-           </logicalSchema>
-       </databaseSchema>
-   </SchemaDescription>
+<databaseSchema xmlns="http://ogsadai.org.uk/namespaces/2005/10/properties"
+	xmlns:ns22="http://ogsadai.org.uk/namespaces/2005/10/properties">
+	<logicalSchema>
+		<table catalog="cco" name="lowtide_ArunPlatform_tide" schema="null">
+			<column default="0" fullName="lowtide_ArunPlatform_tide_timestamp"
+				length="10" name="timestamp" nullable="false" position="1">
+				<sqlTypeName>INT</sqlTypeName>
+				<sqlJavaTypeID>4</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="lowtide_ArunPlatform_tide_height"
+				length="8" name="height" nullable="true" position="2">
+				<sqlTypeName>FLOAT</sqlTypeName>
+				<sqlJavaTypeID>7</sqlJavaTypeID>
+			</column>
+			<primaryKey>
+				<columnName>timestamp</columnName>
+			</primaryKey>
+		</table>
+		<table catalog="cco" name="locations" schema="null">
+			<column default="null" fullName="locations_id" length="10"
+				name="id" nullable="false" position="1">
+				<sqlTypeName>INT</sqlTypeName>
+				<sqlJavaTypeID>4</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_type" length="50"
+				name="type" nullable="true" position="2">
+				<sqlTypeName>VARCHAR</sqlTypeName>
+				<sqlJavaTypeID>12</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_location" length="50"
+				name="location" nullable="true" position="3">
+				<sqlTypeName>VARCHAR</sqlTypeName>
+				<sqlJavaTypeID>12</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_owner" length="50"
+				name="owner" nullable="true" position="4">
+				<sqlTypeName>VARCHAR</sqlTypeName>
+				<sqlJavaTypeID>12</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_easting" length="19"
+				name="easting" nullable="true" position="5">
+				<sqlTypeName>BIGINT</sqlTypeName>
+				<sqlJavaTypeID>-5</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_northing" length="19"
+				name="northing" nullable="true" position="6">
+				<sqlTypeName>BIGINT</sqlTypeName>
+				<sqlJavaTypeID>-5</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_latitude" length="8"
+				name="latitude" nullable="true" position="7">
+				<sqlTypeName>DECIMAL</sqlTypeName>
+				<sqlJavaTypeID>3</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_longitude" length="8"
+				name="longitude" nullable="true" position="8">
+				<sqlTypeName>DECIMAL</sqlTypeName>
+				<sqlJavaTypeID>3</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_storm_threshold"
+				length="8" name="storm_threshold" nullable="true" position="9">
+				<sqlTypeName>DECIMAL</sqlTypeName>
+				<sqlJavaTypeID>3</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_deployed" length="0"
+				name="deployed" nullable="true" position="10">
+				<sqlTypeName>DATE</sqlTypeName>
+				<sqlJavaTypeID>91</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_waves" length="50"
+				name="waves" nullable="true" position="11">
+				<sqlTypeName>VARCHAR</sqlTypeName>
+				<sqlJavaTypeID>12</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_tides" length="50"
+				name="tides" nullable="true" position="12">
+				<sqlTypeName>VARCHAR</sqlTypeName>
+				<sqlJavaTypeID>12</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_met" length="50"
+				name="met" nullable="true" position="13">
+				<sqlTypeName>VARCHAR</sqlTypeName>
+				<sqlJavaTypeID>12</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_status" length="100"
+				name="status" nullable="true" position="14">
+				<sqlTypeName>VARCHAR</sqlTypeName>
+				<sqlJavaTypeID>12</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_additional_info_file"
+				length="100" name="additional_info_file" nullable="true" position="15">
+				<sqlTypeName>VARCHAR</sqlTypeName>
+				<sqlJavaTypeID>12</sqlJavaTypeID>
+			</column>
+			<column default="null" fullName="locations_wave_spectra"
+				length="50" name="wave_spectra" nullable="true" position="16">
+				<sqlTypeName>VARCHAR</sqlTypeName>
+				<sqlJavaTypeID>12</sqlJavaTypeID>
+			</column>
+			<primaryKey>
+				<columnName>id</columnName>
+			</primaryKey>
+		</table>
+	</logicalSchema>
+</databaseSchema>

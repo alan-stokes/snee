@@ -13,7 +13,6 @@ import org.ggf.namespaces._2005._12.ws_dai.GetResourceListRequest;
 import org.ggf.namespaces._2005._12.ws_dai.GetResourceListResponse;
 import org.ggf.namespaces._2005._12.ws_dai.InvalidResourceNameFault;
 import org.ggf.namespaces._2005._12.ws_dai.NotAuthorizedFault;
-import org.ggf.namespaces._2005._12.ws_dai.PropertyDocumentType;
 import org.ggf.namespaces._2005._12.ws_dai.ServiceBusyFault;
 import org.ggf.namespaces._2005._12.ws_dair.SQLDatasetType;
 import org.ggf.namespaces._2005._12.ws_dair.SQLExecuteRequest;
@@ -23,7 +22,6 @@ import org.ggf.namespaces._2005._12.ws_dair.SQLPropertyDocumentType;
 import org.ggf.namespaces._2005._12.ws_dair.SchemaDescription;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
@@ -42,9 +40,9 @@ implements SourceWrapper {
 	
 	private static String LANGUAGE_URI =
 		"http://www.sqlquery.org/sql-92";
-
-	private static String WSDAI_NS =
-		"http://www.ggf.org/namespaces/2005/12/WS-DAI/";
+//
+//	private static String WSDAI_NS =
+//		"http://www.ggf.org/namespaces/2005/12/WS-DAI/";
 	
 	private WSDAIRAccessServiceClient _wsdairClient;
 
@@ -118,30 +116,29 @@ implements SourceWrapper {
     	if (logger.isDebugEnabled())
     		logger.debug("ENTER getSchema() with " + resourceName);
     	//XXX: Assumes that a source only provides a single extent
-    	List<ExtentMetadata> extents = null;
+    	List<ExtentMetadata> extents = new ArrayList<ExtentMetadata>();
 		try {
-			PropertyDocumentType propDoc = 
-				getPropertyDocument(resourceName);
-    		/*
-    		 * Convert the property document to a 
-    		 * sql property document
-    		 */
-    		SQLPropertyDocumentType wsdairPropDoc = 
-    			(SQLPropertyDocumentType) propDoc;
-    		SchemaDescription schemaDescription = 
-    			wsdairPropDoc.getSchemaDescription();
-    		if (schemaDescription != null) {
-    			String schemaDoc = 
-    				(String) schemaDescription.getAny().get(0);
-    			SchemaParser schemaParser = 
-    				new OgsadaiSchemaParser(schemaDoc, _types);
-    			extents  = extractSchema(schemaParser, ExtentType.TABLE);
-    		}
-    	} catch (ClassCastException e) {
-    		String msg = "Unable to construct a sql property " +
-    				"document from the received property document.";
-    		logger.warn(msg);
-    		throw new SchemaMetadataException(msg);
+	    	GetDataResourcePropertyDocumentRequest request = 
+	    		new GetDataResourcePropertyDocumentRequest();
+	    	request.setDataResourceAbstractName(resourceName);
+	    	SQLPropertyDocumentType propDoc = 
+	    		_wsdairClient.getSQLPropertyDocument(request);
+			if (logger.isTraceEnabled()) {
+				logger.trace("Retrieving Schema element");
+			}
+			SchemaDescription schemaDescription = 
+				propDoc.getSchemaDescription();
+			if (schemaDescription != null) {					
+				Element schemaDoc = 
+					(Element) schemaDescription.getAny().get(0);
+				SchemaParser schemaParser = 
+					new OgsadaiSchemaParser(schemaDoc, _types);
+				extents  = extractSchema(schemaParser, ExtentType.TABLE);
+			}
+		} catch (SNEEDataSourceException e) {
+			if (!e.getMessage().equals("Wrong service type")) {
+				throw e;
+			}
     	} catch (InvalidResourceNameFault e) {
     		String msg = "Resource name " + resourceName + 
     			" unknown to service " + _url + ".";
@@ -164,27 +161,6 @@ implements SourceWrapper {
     	if (logger.isDebugEnabled())
     		logger.debug("RETURN getSchema() with " + extents);
     	return extents;
-    }
-
-    private PropertyDocumentType getPropertyDocument(
-    		String resourceName)
-    throws SchemaMetadataException, InvalidResourceNameFault,
-    DataResourceUnavailableFault, NotAuthorizedFault, 
-    ServiceBusyFault {
-    	if (logger.isTraceEnabled()) {
-    		logger.trace("ENTER getPropertyDocument() with " + 
-    				resourceName);
-    	}
-    	GetDataResourcePropertyDocumentRequest request = 
-    		new GetDataResourcePropertyDocumentRequest();
-    	request.setDataResourceAbstractName(resourceName);
-    	PropertyDocumentType propDoc = 
-    		_wsdairClient.getPropertyDocument(request);
-    	if (logger.isTraceEnabled()) {
-    		logger.trace("RETURN getPropertyDocument() with " + 
-    				propDoc.getDataResourceAbstractName());
-    	}
-    	return propDoc;
     }
 
 	public List<Tuple> executeQuery(String resourceName, String query) 
