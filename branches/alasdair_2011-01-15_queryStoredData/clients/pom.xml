@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>SNEE</artifactId>
 		<groupId>uk.ac.manchester.cs.snee</groupId>
-		<version>1.5.0</version>
+		<version>1.5.1-SNAPSHOT</version>
 	</parent>
 	<groupId>uk.ac.manchester.cs.snee</groupId>
 	<artifactId>clients</artifactId>
