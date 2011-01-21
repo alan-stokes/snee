@@ -142,7 +142,7 @@ implementation {
       call Timer.startOneShot(REBOOT_TIME);		
 #endif
     } else {
-// Do signal start/stop to the basestation
+// Everybody hears all the other commands
       signal NetworkState.changed(newCmd->cmd);
     }
   }

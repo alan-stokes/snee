@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -25,49 +26,52 @@ import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 public class TinyOS_SNCB implements SNCB {
 
-	private Logger logger = 
-		Logger.getLogger(TinyOS_SNCB.class.getName());
-	
-	private Map<String,String> tinyOSEnvVars;
-	
+	private Logger logger = Logger.getLogger(TinyOS_SNCB.class.getName());
+
+	private Map<String, String> tinyOSEnvVars;
+
 	private String workingDir;
 
 	private boolean combinedImage = false;
 
 	private String serialPort;
-	
+
 	private boolean demoMode = false;
-	
+
 	private boolean useNodeController = false;
-	
-	public TinyOS_SNCB()
-	throws SNCBException {
+
+	// Is the network running?
+	private static boolean isStarted = false;
+	private SerialPortMessageReceiver mr;
+
+	public TinyOS_SNCB() throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER TinyOS_SNCB()");
 		try {
 
-			//Check if we are using the node controller
+			// Check if we are using the node controller
 			try {
-				useNodeController = SNEEProperties.getBoolSetting(
-						SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
+				useNodeController = SNEEProperties
+						.getBoolSetting(SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
 			} catch (SNEEConfigurationException e) {
 				// Using the default setting...
 				e.printStackTrace();
 			}
-			
-			//TinyOS environment variables
-			this.tinyOSEnvVars = new HashMap<String,String>();
+
+			// TinyOS environment variables
+			this.tinyOSEnvVars = new HashMap<String, String>();
 			workingDir = Utils.getResourcePath("etc/sncb/tools/python");
 			String currentPath = System.getenv("PATH");
-			this.tinyOSEnvVars.put("PATH", currentPath+":"+workingDir+":"+workingDir+"/utils");
+			this.tinyOSEnvVars.put("PATH", currentPath + ":" + workingDir + ":"
+					+ workingDir + "/utils");
 
-			this.combinedImage = SNEEProperties.getBoolSetting(
-					SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE);
+			this.combinedImage = SNEEProperties
+					.getBoolSetting(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE);
 
 			this.serialPort = this.getBaseStation();
-			this.tinyOSEnvVars.put("MOTECOM", "=serial@"+serialPort);
-			this.tinyOSEnvVars.put("SERIAL_PORT", serialPort);			
-			
+			this.tinyOSEnvVars.put("MOTECOM", "=serial@" + serialPort);
+			this.tinyOSEnvVars.put("SERIAL_PORT", serialPort);
+
 		} catch (Exception e) {
 			logger.warn(e.getLocalizedMessage(), e);
 			throw new SNCBException(e.getLocalizedMessage(), e);
@@ -75,37 +79,40 @@ public class TinyOS_SNCB implements SNCB {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN TinyOS_SNCB()");
 	}
-	
 
 	private String getBaseStation() throws SNCBException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER getBaseStation()");
 		if (!this.useNodeController) {
-			return "XXXXXXX"; //We don't need to worry about this if doing things manually
+			return "XXXXXXX"; // We don't need to worry about this if doing
+								// things manually
 		}
-		
+
 		String serialPort;
 		try {
-			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/utils/basestation.py");
-			String params[] = {pythonScript};
-			String outputLines = Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
+			String pythonScript = Utils
+					.getResourcePath("etc/sncb/tools/python/utils/basestation.py");
+			String params[] = { pythonScript };
+			String outputLines = Utils.runExternalProgram("python", params,
+					this.tinyOSEnvVars, workingDir);
 			String outputList[] = outputLines.split("\n");
-			if (outputList.length<2) {
+			if (outputList.length < 2) {
 				throw new SNCBException("Base station mote not plugged in.");
-			} else if (outputList.length>2) { //FIXME: This doesn't work.
-				throw new SNCBException("Unable to determine base station mote, as more than one mote is plugged in.");				
+			} else if (outputList.length > 2) { // FIXME: This doesn't work.
+				throw new SNCBException(
+						"Unable to determine base station mote, as more than one mote is plugged in.");
 			}
 			serialPort = outputList[1];
 		} catch (Exception e) {
 			logger.warn(e.getLocalizedMessage(), e);
 			throw new SNCBException(e.getLocalizedMessage(), e);
 		}
-		
+
 		if (logger.isTraceEnabled())
 			logger.debug("RETURN getBaseStation()");
 		return serialPort;
 	}
-	
+
 	@Override
 	public void init(String topFile, String resFile) throws SNCBException {
 		if (logger.isDebugEnabled())
@@ -113,10 +120,12 @@ public class TinyOS_SNCB implements SNCB {
 		try {
 			logger.trace("Forming network and collecting metadata");
 			System.out.println("Forming network and collecting metadata");
-			
-			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/init");
-			String params[] = {pythonScript, topFile, resFile};
-			Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
+
+			String pythonScript = Utils
+					.getResourcePath("etc/sncb/tools/python/init");
+			String params[] = { pythonScript, topFile, resFile };
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars,
+					workingDir);
 		} catch (Exception e) {
 			logger.warn(e);
 			throw new SNCBException(e.getLocalizedMessage(), e);
@@ -124,11 +133,11 @@ public class TinyOS_SNCB implements SNCB {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN init()");
 	}
-	
 
 	@Override
-	public SerialPortMessageReceiver register(SensorNetworkQueryPlan qep, String queryOutputDir, CostParameters costParams) 
-	throws SNCBException {
+	public SerialPortMessageReceiver register(SensorNetworkQueryPlan qep,
+			String queryOutputDir, CostParameters costParams)
+			throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER register()");
 		SerialPortMessageReceiver mr;
@@ -137,7 +146,7 @@ public class TinyOS_SNCB implements SNCB {
 				System.out.println("Query compilation complete.\n");
 				System.in.read();
 			}
-				
+
 			logger.trace("Generating TinyOS/nesC code for query plan.");
 			System.out.println("Generating TinyOS/nesC code for query plan.");
 			generateNesCCode(qep, queryOutputDir, costParams);
@@ -146,41 +155,43 @@ public class TinyOS_SNCB implements SNCB {
 				System.out.println("nesC code generation complete.\n");
 				System.in.read();
 			}
-				
+
 			logger.trace("Compiling TinyOS/nesC code into executable images.");
-			System.out.println("Compiling TinyOS/nesC code into executable images.");
+			System.out
+					.println("Compiling TinyOS/nesC code into executable images.");
 			compileNesCCode(queryOutputDir);
-			
+
 			if (demoMode) {
 				System.out.println("nesC code compilation complete.\n");
 				System.in.read();
 			}
-			
+
 			if (!this.useNodeController) {
-				System.out.println("Not using node controller so unable to disseminate query plan; ");
-				System.out.println("Please proceed manually.  ");				
+				System.out
+						.println("Not using node controller so unable to disseminate query plan; ");
+				System.out.println("Please proceed manually.  ");
 				System.exit(0);
 			}
-			
+
 			logger.trace("Disseminating Query Plan images");
 			System.out.println("Disseminating Query Plan images");
 			disseminateQueryPlanImages(qep, queryOutputDir);
-			
+
 			if (demoMode) {
-				System.out.println("Query plan image dissemination complete.\n");
+				System.out
+						.println("Query plan image dissemination complete.\n");
 				System.in.read();
 			}
-				
+
 			logger.trace("Setting up result collector");
 			System.out.println("Setting up result collector");
 			mr = setUpResultCollector(qep, queryOutputDir);
-			
+
 			if (demoMode) {
 				System.out.println("Serial port listener for query results ready.");
 				System.in.read();
 			}
 
-				
 		} catch (Exception e) {
 			logger.warn(e.getLocalizedMessage(), e);
 			throw new SNCBException(e.getLocalizedMessage(), e);
@@ -190,11 +201,11 @@ public class TinyOS_SNCB implements SNCB {
 		return mr;
 	}
 
-	private void generateNesCCode(SensorNetworkQueryPlan qep, String 
-	queryOutputDir, CostParameters costParams) throws IOException, 
-	SchemaMetadataException, TypeMappingException, OptimizationException,
-	CodeGenerationException {
-		//TODO: move some of these to an sncb .properties file
+	private void generateNesCCode(SensorNetworkQueryPlan qep,
+			String queryOutputDir, CostParameters costParams)
+			throws IOException, SchemaMetadataException, TypeMappingException,
+			OptimizationException, CodeGenerationException {
+		// TODO: move some of these to an sncb .properties file
 		int tosVersion = 2;
 		boolean tossimFlag = false;
 		String targetName = "tmotesky_t2";
@@ -209,136 +220,188 @@ public class TinyOS_SNCB implements SNCB {
 		boolean debugLeds = true;
 		boolean showLocalTime = false;
 
-		TinyOSGenerator codeGenerator = new TinyOSGenerator(tosVersion, tossimFlag, 
-			    targetName, combinedImage, queryOutputDir, costParams, controlRadioOff,
-			    enablePrintf, useStartUpProtocol, enableLeds,
-			    usePowerManagement, deliverLast, adjustRadioPower,
-			    includeDeluge, debugLeds, showLocalTime, useNodeController);
-		//TODO: in the code generator, need to connect controller components to query plan components
-		codeGenerator.doNesCGeneration(qep);		
+		TinyOSGenerator codeGenerator = new TinyOSGenerator(tosVersion,
+				tossimFlag, targetName, combinedImage, queryOutputDir,
+				costParams, controlRadioOff, enablePrintf, useStartUpProtocol,
+				enableLeds, usePowerManagement, deliverLast, adjustRadioPower,
+				includeDeluge, debugLeds, showLocalTime, useNodeController);
+		// TODO: in the code generator, need to connect controller components to
+		// query plan components
+		codeGenerator.doNesCGeneration(qep);
 	}
-	
+
 	private void compileNesCCode(String queryOutputDir) throws IOException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER compileNesCCode()");
-		String nescOutputDir = System.getProperty("user.dir")+"/"+
-		queryOutputDir+"tmotesky_t2";
-		String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/utils/compileNesCCode.py");
-		String nescDirParam = "--nesc-dir="+nescOutputDir;
-		String params[] = {pythonScript, nescDirParam};
-		Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
+		String nescOutputDir = System.getProperty("user.dir") + "/"
+				+ queryOutputDir + "tmotesky_t2";
+		String pythonScript = Utils
+				.getResourcePath("etc/sncb/tools/python/utils/compileNesCCode.py");
+		String nescDirParam = "--nesc-dir=" + nescOutputDir;
+		String params[] = { pythonScript, nescDirParam };
+		Utils.runExternalProgram("python", params, this.tinyOSEnvVars,
+				workingDir);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN compileNesCCode()");
 	}
 
-	
-	private SerialPortMessageReceiver setUpResultCollector(SensorNetworkQueryPlan qep, 
-	String queryOutputDir) throws Exception {
+	private SerialPortMessageReceiver setUpResultCollector(
+			SensorNetworkQueryPlan qep, String queryOutputDir) throws Exception {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER setUpResultCollector()");
-		//TODO: need to set up plumbing for query result collection (using mig?)
-		String nescOutputDir = System.getProperty("user.dir")+"/"+
-			queryOutputDir+"tmotesky_t2";
-		String nesCHeaderFile = nescOutputDir+"/mote"+qep.getGateway()+"/QueryPlan.h";
+		// TODO: need to set up plumbing for query result collection (using
+		// mig?)
+		String nescOutputDir = System.getProperty("user.dir") + "/"
+				+ queryOutputDir + "tmotesky_t2";
+		String nesCHeaderFile = nescOutputDir + "/mote" + qep.getGateway()
+				+ "/QueryPlan.h";
 		System.out.println(nesCHeaderFile);
-		String outputJavaFile = System.getProperty("user.dir")+"/"+queryOutputDir+"DeliverMessage.java";
-		String params[] = {"java", "-target=null", "-java-classname=DeliverMessage",
-				nesCHeaderFile, "DeliverMessage", "-o", outputJavaFile};
+		String outputJavaFile = System.getProperty("user.dir") + "/"
+				+ queryOutputDir + "DeliverMessage.java";
+		String params[] = { "java", "-target=null",
+				"-java-classname=DeliverMessage", nesCHeaderFile,
+				"DeliverMessage", "-o", outputJavaFile };
 		Utils.runExternalProgram("mig", params, this.tinyOSEnvVars, workingDir);
-		String deliverMessageJavaClassContent = Utils.readFileToString(outputJavaFile);
-		logger.trace("deliverMessageJavaClassContent="+deliverMessageJavaClassContent);
-//		logger.trace("Using null;");
-//		ClassLoader parentClassLoader = null;
+		String deliverMessageJavaClassContent = Utils
+				.readFileToString(outputJavaFile);
+		logger.trace("deliverMessageJavaClassContent="
+				+ deliverMessageJavaClassContent);
+		// logger.trace("Using null;");
+		// ClassLoader parentClassLoader = null;
 		logger.trace("Using this.getClass().getClassLoader();");
 		ClassLoader parentClassLoader = this.getClass().getClassLoader();
-//		logger.trace("Using Thread.currentThread().getContextClassLoader();");
-//		ClassLoader parentClassLoader = Thread.currentThread().getContextClassLoader();
-//		logger.trace("Using parentClassLoader=ClassLoader.getSystemClassLoader()");
-//		ClassLoader parentClassLoader = ClassLoader.getSystemClassLoader();
-//		String messageJavaClassContent = Utils.readFileToString(
-//				System.getProperty("user.dir")+"/src/mai)");
-		MemoryClassLoader mcl = new MemoryClassLoader("DeliverMessage", 
+		// logger.trace("Using Thread.currentThread().getContextClassLoader();");
+		// ClassLoader parentClassLoader =
+		// Thread.currentThread().getContextClassLoader();
+		// logger.trace("Using parentClassLoader=ClassLoader.getSystemClassLoader()");
+		// ClassLoader parentClassLoader = ClassLoader.getSystemClassLoader();
+		// String messageJavaClassContent = Utils.readFileToString(
+		// System.getProperty("user.dir")+"/src/mai)");
+		MemoryClassLoader mcl = new MemoryClassLoader("DeliverMessage",
 				deliverMessageJavaClassContent, parentClassLoader);
 		Class msgClass = mcl.loadClass("DeliverMessage");
-		//Class msgClass = Class.forName("DeliverMessage", true, mcl);
+		// Class msgClass = Class.forName("DeliverMessage", true, mcl);
 		Object msgObj = msgClass.newInstance();
-		//Message msg = new DeliverMessage(); // needed for web service, for now.
-		Message msg = (Message)msgObj;
-		DeliverOperator delOp = (DeliverOperator) qep.getLAF().getRootOperator();
-		SerialPortMessageReceiver mr = new SerialPortMessageReceiver("serial@"+this.serialPort+":telos",
-				delOp);
+		// Message msg = new DeliverMessage(); // needed for web service, for
+		// now.
+		Message msg = (Message) msgObj;
+		DeliverOperator delOp = (DeliverOperator) qep.getLAF()
+				.getRootOperator();
+		mr = new SerialPortMessageReceiver("serial@"
+				+ this.serialPort + ":telos", delOp);
 		mr.addMsgType(msg);
 		if (logger.isTraceEnabled())
-			logger.trace("RETURN setUpResultCollector()");	
+			logger.trace("RETURN setUpResultCollector()");
 		return mr;
 	}
-	
-	private void disseminateQueryPlanImages(SensorNetworkQueryPlan qep, 
+
+	private void disseminateQueryPlanImages(SensorNetworkQueryPlan qep,
 			String queryOutputDir) throws IOException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER disseminateQueryPlanImages()");
-		String nescOutputDir = System.getProperty("user.dir")+"/"+
-			queryOutputDir+"tmotesky_t2";
-		String gatewayID = ""+qep.getGateway();
+		String nescOutputDir = System.getProperty("user.dir") + "/"
+				+ queryOutputDir + "tmotesky_t2";
+		String gatewayID = "" + qep.getGateway();
 		Iterator<Site> siteIter = qep.siteIterator(TraversalOrder.POST_ORDER);
 		while (siteIter.hasNext()) {
 			String siteID = siteIter.next().getID();
-			//skip the gateway
-			if (siteID.equals(gatewayID)) 
+			// skip the gateway
+			if (siteID.equals(gatewayID))
 				continue;
-			logger.trace("Imaging mote "+siteID);
-			System.out.println("Imaging mote "+siteID);
-			String imageFile = nescOutputDir+"/mote"+siteID+"/build/telosb/tos_image.xml";
-			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register");
-			String params[] = {pythonScript, imageFile, siteID, gatewayID};
-			Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
+			logger.trace("Imaging mote " + siteID);
+			System.out.println("Imaging mote " + siteID);
+			String imageFile = nescOutputDir + "/mote" + siteID
+					+ "/build/telosb/tos_image.xml";
+			String pythonScript = Utils
+					.getResourcePath("etc/sncb/tools/python/register");
+			String params[] = { pythonScript, imageFile, siteID, gatewayID };
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars,
+					workingDir);
 		}
-		//do the basestation last
+		// do the basestation last
 		logger.trace("Imaging basestastion");
 		System.out.println("Imaging basestation");
-		String imageFile = nescOutputDir+"/mote"+gatewayID+"/build/telosb/tos_image.xml";
-		String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/register");
-		String params[] = {pythonScript, imageFile, gatewayID, gatewayID};
-		Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
-		
+		String imageFile = nescOutputDir + "/mote" + gatewayID
+				+ "/build/telosb/tos_image.xml";
+		String pythonScript = Utils
+				.getResourcePath("etc/sncb/tools/python/register");
+		String params[] = { pythonScript, imageFile, gatewayID, gatewayID };
+		Utils.runExternalProgram("python", params, this.tinyOSEnvVars,
+				workingDir);
+
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN disseminateQueryPlanImages()");
 	}
-	
+
 	@Override
 	public void start() throws SNCBException {
+		// Call python start script
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER start()");
 		try {
 			logger.trace("Invoking start command");
 			System.out.println("Invoking start command");
-			
-			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/start");
-			String params[] = {pythonScript};
-			Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
+
+			String pythonScript = Utils
+					.getResourcePath("etc/sncb/tools/python/start");
+			String params[] = { pythonScript };
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars,
+					workingDir);
 		} catch (IOException e) {
 			logger.warn(e.getLocalizedMessage());
 			throw new SNCBException(e.getLocalizedMessage(), e);
 		}
+		
+		isStarted = true;
+
+		// Kick off a thread to do synchronisation
+		(new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				// loop continuously until the stop() method is invoked
+				while (isStarted) {
+					try {
+						Thread.sleep(60 * 1000);
+
+						// cycle a stop/start to synchronise nodes. NOTE: This
+						// start/stop mechanism does not guarantee
+						// synchronisation. It was chosen as a trade-off
+						// between code size and accuracy.
+						pause();
+						resume();
+					} catch (Exception e) {
+						// General fail case
+						System.out.println("Execution failed. See logs for detail.");
+						logger.fatal(e);
+						System.exit(1);
+					}
+				}
+			}
+		})).start();
+
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN start()");
 	}
 
 	@Override
 	public void stop(SensorNetworkQueryPlan qep) throws SNCBException {
+		isStarted = false;
+		
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER stop()");
 		try {
 			logger.trace("Invoking stop command");
 			System.out.println("Invoking stop command");
-			
-			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/stop");
-			String gatewayID = ""+qep.getGateway();
-			String params[] = {pythonScript, gatewayID};
+
+			String pythonScript = Utils
+					.getResourcePath("etc/sncb/tools/python/stop");
+			String gatewayID = Integer.toString(qep.getGateway());
+			String params[] = { pythonScript, gatewayID };
 			Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
 		} catch (Exception e) {
 			logger.warn(e.getLocalizedMessage());
-			throw new SNCBException(e.getLocalizedMessage(), e);			
+			throw new SNCBException(e.getLocalizedMessage(), e);
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN stop()");
@@ -351,25 +414,78 @@ public class TinyOS_SNCB implements SNCB {
 		try {
 			logger.trace("Invoking deregister command");
 			System.out.println("Invoking deregister command");
-			
-			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/deregister");
-			String gatewayID = ""+qep.getGateway();
-			Iterator<Site> siteIter = qep.siteIterator(TraversalOrder.POST_ORDER);
+
+			String pythonScript = Utils
+					.getResourcePath("etc/sncb/tools/python/deregister");
+			String gatewayID = "" + qep.getGateway();
+			Iterator<Site> siteIter = qep
+					.siteIterator(TraversalOrder.POST_ORDER);
 			StringBuffer siteString = new StringBuffer();
 			while (siteIter.hasNext()) {
 				String siteID = siteIter.next().getID();
-				//skip the gateway
-				if (siteID.equals(gatewayID)) 
+				// skip the gateway
+				if (siteID.equals(gatewayID))
 					continue;
-				siteString.append(siteID+" ");
+				siteString.append(siteID + " ");
 			}
-			String params[] = {pythonScript, siteString.toString()};
+			String params[] = { pythonScript, siteString.toString() };
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars,
+					workingDir);
+		} catch (Exception e) {
+			logger.warn(e.getLocalizedMessage());
+			throw new SNCBException(e.getLocalizedMessage(), e);
+		}
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN deregister()");
+	}
+
+	private void pause() throws SNCBException {
+		if (!isStarted) return;
+		
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER pause()");
+		
+//		// release the serial port		
+//		mr.pause();
+		
+		try {
+			logger.trace("Invoking pause command");
+			System.out.println("Invoking pause command");
+
+			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/pause");
+			String params[] = { pythonScript };
 			Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
 		} catch (Exception e) {
 			logger.warn(e.getLocalizedMessage());
-			throw new SNCBException(e.getLocalizedMessage(), e);			
+			throw new SNCBException(e.getLocalizedMessage(), e);
 		}
+		
 		if (logger.isDebugEnabled())
-		logger.debug("RETURN deregister()");
+			logger.debug("RETURN pause()");
+	}
+
+	private void resume() throws SNCBException {
+		if (!isStarted) return;
+		
+		if (logger.isDebugEnabled())
+			logger.debug("ENTER resume()");
+		
+		try {
+			logger.trace("Invoking resume command");
+			System.out.println("Invoking resume command");
+
+			String pythonScript = Utils.getResourcePath("etc/sncb/tools/python/resume");
+			String params[] = { pythonScript };
+			Utils.runExternalProgram("python", params, this.tinyOSEnvVars, workingDir);
+		} catch (Exception e) {
+			logger.warn(e.getLocalizedMessage());
+			throw new SNCBException(e.getLocalizedMessage(), e);
+		}
+				
+//		// reclaim the serial port
+//		mr.resume();
+		
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN resume()");
 	}
 }
