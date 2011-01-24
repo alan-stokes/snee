@@ -182,14 +182,33 @@ public class TranslatorTest {
 	}
 	
 	@Test
-	public void testSimpleQuery() 
+	public void testSimpleQuery_pushStream() 
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
-		testQuery("SELECT * FROM TestStream;");
+		testQuery("SELECT * FROM PushStream;");
 	}
 	
+	@Test
+	public void testSimpleQuery_pullStream() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT * FROM PullStream;");
+	}
+	
+	@Test(expected=OptimizationException.class)
+	public void testSimpleQuery_table() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException,
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		testQuery("SELECT * FROM TestTable;");
+	}
+
 	@Test
 	public void testSimpleQuery_paren() 
 	throws ParserException, SourceDoesNotExistException, 
@@ -540,5 +559,4 @@ public class TranslatorTest {
 				"UNION " +
 				"(SELECT timestamp, floatColumn FROM PullStream);");
 	}
-	
 }
