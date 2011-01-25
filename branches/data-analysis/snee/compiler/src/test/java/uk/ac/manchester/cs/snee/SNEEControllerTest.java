@@ -57,18 +57,18 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
 import uk.ac.manchester.cs.snee.compiler.allocator.SourceAllocatorException;
-import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 
@@ -78,7 +78,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	private String mQuery = "SELECT * FROM HerneBay_Tide;";
 
 	// Create mock objects
-	final Metadata mockSchema = createMock(Metadata.class);
+	final MetadataManager mockSchema = createMock(MetadataManager.class);
 	final QueryCompiler mockQueryCompiler = createMock(QueryCompiler.class);
 	final Dispatcher mockDispatcher = createMock(Dispatcher.class);
 	final QueryExecutionPlan mockPlan = createMock(QueryExecutionPlan.class);
@@ -100,7 +100,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	public void setUp() throws Exception {
 		_snee = new SNEEController("etc/snee.properties") {
 
-			protected Metadata initialiseMetadata() 
+			protected MetadataManager initialiseMetadata() 
 			throws TypeMappingException, SchemaMetadataException, 
 			MetadataException, UnsupportedAttributeTypeException {
 				//				System.out.println("Overridden initialiseSchemaMetadata()");
@@ -272,7 +272,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 		//Record responses
 		String testUrl = "not a url";
 		//Have to use expectLastCall method since method had void return type 
-		mockSchema.addServiceSource("bad url", testUrl, 
+		mockSchema.addDataSource("bad url", testUrl, 
 				SourceType.PULL_STREAM_SERVICE);
 		expectLastCall().andThrow(new MalformedURLException());
 		//Test
@@ -290,7 +290,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	{
 		String url = 
 			"http://webgis1.geodata.soton.ac.uk:8080/CCO/services/PullStream?wsdl";
-		mockSchema.addServiceSource("CCO-WS", url, 
+		mockSchema.addDataSource("CCO-WS", url, 
 				SourceType.PULL_STREAM_SERVICE);
 		replayAll();
 		_snee.addServiceSource("CCO-WS", url, 

@@ -1,7 +1,7 @@
 package uk.ac.manchester.cs.snee.sncb;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 
 public interface SNCB {

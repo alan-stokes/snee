@@ -57,20 +57,20 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.compiler.metadata.CostParametersException;
-import uk.ac.manchester.cs.snee.compiler.metadata.Metadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentMetadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.UnsupportedAttributeTypeException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.UDPSourceMetadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
+import uk.ac.manchester.cs.snee.metadata.CostParametersException;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
+import uk.ac.manchester.cs.snee.metadata.source.UDPSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public class ConstantRatePushStreamGenerator {
@@ -129,8 +129,8 @@ public class ConstantRatePushStreamGenerator {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ConstantRatePushStreamGenerator()");
 		}
-		Metadata schema = 
-			new Metadata();
+		MetadataManager schema = 
+			new MetadataManager(null);
 		_streams = schema.getPushedExtents();
 		_timers = new ArrayList<Timer>();
 		_tasks = new ArrayList<BroadcastTask>();
@@ -141,7 +141,7 @@ public class ConstantRatePushStreamGenerator {
 			TupleGenerator tupleGeneator = 
 				new TupleGenerator(stream);
 			generators.put(streamName, tupleGeneator);
-			List<SourceMetadata> sources = 
+			List<SourceMetadataAbstract> sources = 
 				schema.getSources(streamName);
 			initialiseSources(stream, streamName, sources);
 		}
@@ -152,12 +152,12 @@ public class ConstantRatePushStreamGenerator {
 	}
 
 	private void initialiseSources(ExtentMetadata stream, 
-			String streamName, List<SourceMetadata> sources) 
+			String streamName, List<SourceMetadataAbstract> sources) 
 	throws ExtentDoesNotExistException, SourceMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseSources() for " + streamName +
 					" #sources=" + sources.size());
-		for (SourceMetadata source : sources) {
+		for (SourceMetadataAbstract source : sources) {
 			if (source.getSourceType() == SourceType.UDP_SOURCE) {
 				UDPSourceMetadata udpSource = 
 					(UDPSourceMetadata) source;

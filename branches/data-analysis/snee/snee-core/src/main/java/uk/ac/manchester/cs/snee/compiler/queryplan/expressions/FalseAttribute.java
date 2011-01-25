@@ -37,7 +37,7 @@ import java.util.ArrayList;
 
 //import uk.ac.manchester.cs.diasmc.
 //	querycompiler.codeGeneration.adt.CodeGenerationException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
+import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 
 /** 
  * Testing attribute with Value True

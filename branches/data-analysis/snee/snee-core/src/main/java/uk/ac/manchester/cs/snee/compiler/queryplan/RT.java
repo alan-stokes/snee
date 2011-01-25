@@ -39,10 +39,10 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.Tree;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Path;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.RadioLink;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Topology;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
 /**
  * Class to represent a Routing Tree, data structure used to determine the 

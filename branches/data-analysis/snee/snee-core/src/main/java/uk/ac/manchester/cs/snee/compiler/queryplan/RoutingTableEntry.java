@@ -34,8 +34,8 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
 import uk.ac.manchester.cs.snee.common.Triple;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Path;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class RoutingTableEntry {
 

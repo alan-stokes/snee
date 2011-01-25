@@ -3,53 +3,41 @@
 	<parent>
 		<artifactId>SNEE</artifactId>
 		<groupId>uk.ac.manchester.cs.snee</groupId>
-		<version>1.4.2</version>
+		<version>1.5.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.ac.manchester.cs.snee</groupId>
 	<artifactId>snee-core</artifactId>
 	<name>SNEE Core</name>
-	<version>1.4.2</version>
 	<description>Compiles a SNEEql query into a query plan</description>
-
-	<properties>
-		<sds.version>0.1.1</sds.version>
-		<cxf.version>2.2.8</cxf.version>
-		<wsdl.location>${project.build.directory}/wsdl</wsdl.location>
-		<!--<wsdl.location>${basedir}/src/main/wsdl</wsdl.location>-->
-	</properties>
 	
 	<dependencies>
 		<dependency>
-			<groupId>antlr</groupId>
-			<artifactId>antlr</artifactId>
-			<version>2.7.5</version>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-api</artifactId>
+			<version>${snee.version}</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>eu.semsorgrid4env.service.sds</groupId>
-			<artifactId>sds-wsdl</artifactId>
-			<version>${sds.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.easymock</groupId>
-			<artifactId>easymockclassextension</artifactId>
-			<version>2.5.2</version>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>data-source-core</artifactId>
+			<version>${snee.version}</version>
 			<type>jar</type>
-			<scope>test</scope>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib-nodep</artifactId>
-			<version>2.2</version>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>data-source-pull-stream</artifactId>
+			<version>${snee.version}</version>
 			<type>jar</type>
-			<scope>test</scope>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.objenesis</groupId>
-			<artifactId>objenesis</artifactId>
-			<version>1.2</version>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>data-source-wsdair</artifactId>
+			<version>${snee.version}</version>
 			<type>jar</type>
-			<scope>test</scope>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>gr.uoa.di.ssg4e</groupId>
@@ -59,125 +47,5 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>unpack</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>eu.semsorgrid4env.service.sds</groupId>
-									<artifactId>sds-wsdl</artifactId>
-									<version>${sds.version}</version>
-									<type>jar</type>
-								</artifactItem>
-							</artifactItems>
-							<outputDirectory>${project.build.directory}/wsdl</outputDirectory>
-							<includes>**/*.wsdl,**/*.xsd</includes>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf-codegen-plugin</artifactId>
-				<version>${cxf.version}</version>
-				<executions>
-					<execution>
-						<id>generate-sources</id>
-						<phase>generate-sources</phase>
-						<configuration>
-							<sourceRoot>${basedir}/target/generated/src/main/java
-							</sourceRoot>
-							<defaultOptions>
-								<extraargs>
-									<extraarg>-p</extraarg>
-									<extraarg>http://www.semsorgrid4env.eu/namespace/2009/10/SDS=eu.semsorgrid4env.service.stream</extraarg>
-									<extraarg>-p</extraarg>
-									<extraarg>http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query=eu.semsorgrid4env.service.stream.query</extraarg>
-									<extraarg>-p</extraarg>
-									<extraarg>http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Pull=eu.semsorgrid4env.service.stream.pull</extraarg>
-									<extraarg>-p</extraarg>
-									<extraarg>http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push=eu.semsorgrid4env.service.stream.push</extraarg>
-									<extraarg>-p</extraarg>
-									<extraarg>http://www.ggf.org/namespaces/2005/12/WS-DAI=eu.semsorgrid4env.service.wsdai</extraarg>
-									<extraarg>-noAddressBinding</extraarg>
-									<extraarg>-validate</extraarg>
-									<extraarg>-defaultValues</extraarg>
-								</extraargs>
-							</defaultOptions>
-							<wsdlOptions>
-								<wsdlOption>
-									<wsdl>${wsdl.location}/query_service.wsdl</wsdl>
-								</wsdlOption>
-								<wsdlOption>
-									<wsdl>${wsdl.location}/pull_stream_service.wsdl</wsdl>
-								</wsdlOption>
-								<wsdlOption>
-									<wsdl>${wsdl.location}/push_stream_service.wsdl</wsdl>
-								</wsdlOption>
-								<wsdlOption>
-									<wsdl>${wsdl.location}/subscription_manager_service.wsdl</wsdl>
-								</wsdlOption>
-							</wsdlOptions>
-						</configuration>
-						<goals>
-							<goal>wsdl2java</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
- <!--   	<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antlr-plugin</artifactId>
-				<version>2.0-beta-1</version>
-				<configuration>
-					<grammars>SNEEql.g</grammars>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
--->			<!--
-				<plugin> <groupId>org.codehaus.mojo</groupId>
-				<artifactId>antlr-maven-plugin</artifactId> <configuration> Comma
-				separated list of grammar files or pattern grammar files By default,
-				grammar file(s) is in ${basedir}/src/main/antlr
-
-				<grammars>SNEEql.g</grammars> </configuration> <executions>
-				<execution> <goals> <goal>generate</goal> </goals> </execution>
-				</executions> </plugin>
-			-->
-		</plugins>
-	</build>
-
- 	<reporting>
-		<plugins>
-<!--			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>antlr-maven-plugin</artifactId>
-				<configuration> -->
-					<!--
-						Comma separated list of grammar files or pattern grammar files By
-						default, grammar file(s) is in ${basedir}/src/main/antlr
-					-->
-<!-- 					<grammars>SNEEql.g</grammars>
-				</configuration>
-			</plugin> -->
-		</plugins>
-	</reporting>  
 
 </project>

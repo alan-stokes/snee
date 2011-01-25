@@ -1,24 +1,36 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <artifactId>clients</artifactId>
-    <groupId>uk.ac.manchester.cs.snee</groupId>
-    <version>1.4.2</version>
-  </parent>
-  <groupId>uk.ac.manchester.cs.snee.client</groupId>
-  <artifactId>client</artifactId>
-  <name>Client</name>
-  <version>1.4.2</version>
-  <description>Common code for command line clients.</description>
-  <dependencies>
-  	<dependency>
-  		<groupId>uk.ac.manchester.cs.snee</groupId>
-  		<artifactId>snee-core</artifactId>
-  		<version>1.4.2</version>
-  		<type>jar</type>
-  		<scope>provided</scope>
-  	</dependency>
-  </dependencies>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>clients</artifactId>
+		<groupId>uk.ac.manchester.cs.snee</groupId>
+		<version>1.5.0</version>
+	</parent>
+	<groupId>uk.ac.manchester.cs.snee.client</groupId>
+	<artifactId>client</artifactId>
+	<name>Client</name>
+	<description>Common code for command line clients.</description>
+	<dependencies>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-api</artifactId>
+			<version>${snee.version}</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-core</artifactId>
+			<version>${snee.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-compiler</artifactId>
+			<version>${snee.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
 </project>

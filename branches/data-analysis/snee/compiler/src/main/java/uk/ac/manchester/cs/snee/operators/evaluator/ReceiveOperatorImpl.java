@@ -46,20 +46,20 @@ import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.ExtentDoesNotExistException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.PullSourceMetadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceMetadataException;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.SourceType;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.UDPSourceMetadata;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.WebServiceSourceMetadata;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
+import uk.ac.manchester.cs.snee.metadata.source.UDPSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.WebServiceSourceMetadata;
 import uk.ac.manchester.cs.snee.operators.evaluator.receivers.PullServiceReceiver;
 import uk.ac.manchester.cs.snee.operators.evaluator.receivers.SourceReceiver;
 import uk.ac.manchester.cs.snee.operators.evaluator.receivers.UDPStreamReceiver;
@@ -162,6 +162,8 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			throw new EvaluatorException(e);
 		} catch (SourceMetadataException e) {
 			throw new EvaluatorException(e);
+		} catch (SNEEDataSourceException e) {
+			throw new EvaluatorException(e);
 		}
 
 		if (logger.isDebugEnabled()) {
@@ -170,13 +172,14 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	}
 
 	private void initializeStreamReceiver() 
-	throws ExtentDoesNotExistException, SourceMetadataException {
+	throws ExtentDoesNotExistException, SourceMetadataException, 
+	SNEEDataSourceException {
 		if(logger.isTraceEnabled()) {
 			logger.trace("ENTER initializeStreamReceiver()");
 		}
-		List<SourceMetadata> sources = receiveOp.getSources();
-		for (SourceMetadata source : sources) {
-			calculateSleepPeriods((PullSourceMetadata) source);
+		List<SourceMetadataAbstract> sources = receiveOp.getSources();
+		for (SourceMetadataAbstract source : sources) {
+			calculateSleepPeriods((SourceMetadata) source);
 			SourceType sourceType = source.getSourceType();
 			switch (sourceType) {
 			case UDP_SOURCE:
@@ -198,7 +201,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		}
 	}
 
-	private void calculateSleepPeriods(PullSourceMetadata source) 
+	private void calculateSleepPeriods(SourceMetadata source) 
 	throws SourceMetadataException 
 	{
 		if (logger.isTraceEnabled()) {
@@ -218,7 +221,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		}
 	}
 
-	private void instantiateUdpDataSource(SourceMetadata source)
+	private void instantiateUdpDataSource(SourceMetadataAbstract source)
 	throws ExtentDoesNotExistException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER instantiateUdpDataSource() with " + 
@@ -232,8 +235,8 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			logger.trace("RETURN instantiateUdpDataSource()");
 	}
 
-	private void instantiatePullServiceDataSource(SourceMetadata source) 
-	throws ExtentDoesNotExistException {
+	private void instantiatePullServiceDataSource(SourceMetadataAbstract source) 
+	throws ExtentDoesNotExistException, SNEEDataSourceException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER instantiatePullServiceDataSource() with " + 
 					source.getSourceName());

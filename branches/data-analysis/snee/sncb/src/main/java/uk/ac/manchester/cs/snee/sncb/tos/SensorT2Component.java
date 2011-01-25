@@ -35,7 +35,7 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class SensorT2Component extends GenericNesCComponent implements

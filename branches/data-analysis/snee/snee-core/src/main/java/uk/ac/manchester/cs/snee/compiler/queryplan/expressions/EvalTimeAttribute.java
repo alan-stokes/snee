@@ -33,8 +33,8 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.AttributeType;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 
 /** Extension of the Attribute for the special case 
  * 		when the Attribute is the EvalTime. 
