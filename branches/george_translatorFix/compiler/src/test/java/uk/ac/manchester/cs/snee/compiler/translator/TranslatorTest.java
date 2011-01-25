@@ -540,5 +540,73 @@ public class TranslatorTest {
 				"UNION " +
 				"(SELECT timestamp, floatColumn FROM PullStream);");
 	}
-	
+
+	/**
+	 * This is a query that demonstrates the fact that we
+	 * allow a window on a nested query!
+	 * 
+	 * FIXME: There should be a renaming of the nested query. This query
+	 * *should* fail (will fail when the translator bug is fixed).
+	 * */
+	@Test
+	public void testQuery_windowOnNestedQuery() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT s.Timestamp " +
+				"FROM " +
+				"	(SELECT timestamp " +
+				"	FROM TestStream s)[FROM NOW - 10 TO NOW];");
+	}
+
+	@Test
+	@Ignore
+	public void testSubQuery_WindowClause() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT timestamp FROM " +
+				"	(SELECT ts.timestamp " +
+				"	FROM TestStream ts)[FROM NOW - 10 SECONDS TO NOW SLIDE 1 SECOND];");
+	}
+
+	@Test
+	public void testQuery_SimpleRenaming() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ts.timestamp FROM TestStream ts;");
+	}
+
+	@Test
+	public void testQuery_SimpleRenamingParen() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("(SELECT ts.timestamp FROM TestStream ts);");
+	}
+
+	@Test
+	public void testQuery_SimpleRenamingWindow() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ts.timestamp " +
+				"FROM TestStream[FROM NOW - 10 SECONDS TO NOW SLIDE 1 SECOND] ts;");
+	}
+
+	@Test
+	public void testUnionQuery_problematicFromClause() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ts.timestamp FROM (SELECT timestamp FROM TestStream) ts;");
+	}
+
 }

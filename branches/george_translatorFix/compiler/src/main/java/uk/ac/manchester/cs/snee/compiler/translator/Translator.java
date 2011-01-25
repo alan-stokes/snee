@@ -618,6 +618,9 @@ public class Translator {
 			output = translateQuery(subQueryAST);
 			windowAST = subQueryAST.getNextSibling();
 			extentName = "";
+
+//			windowAST = null;
+//			extentName = subQueryAST.getNextSibling().getText();
 			break;
 		case SNEEqlParserTokenTypes.SOURCE: 
 			if (logger.isTraceEnabled()) {
