@@ -67,9 +67,9 @@ The Maven Eclipse plugin doesn't always work perfectly.  If you are still having
  * mvn package
 Then in eclipse refresh the files in the package explorer (select all of them, right-click-Refresh).
 Then, again on all the selected packages do:
-* Right click - Maven - Update Dependencies
-* Right click - Maven - Update Snapshorts
-* Right click - Maven - Update Project Config
+ * Right click - Maven - Update Dependencies
+ * Right click - Maven - Update Snapshorts
+ * Right click - Maven - Update Project Config
 (in that order)
 
 and all errors should disappear.
