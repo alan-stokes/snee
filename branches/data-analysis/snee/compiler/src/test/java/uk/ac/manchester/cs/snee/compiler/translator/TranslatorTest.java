@@ -544,7 +544,7 @@ public class TranslatorTest {
 				"(SELECT timestamp, floatColumn FROM PullStream);");
 	}
 
-	@Test
+	@Test(expected=OptimizationException.class)
 	public void testRefactorLRF() 
 	throws SourceDoesNotExistException,
 	ExtentDoesNotExistException, RecognitionException, 

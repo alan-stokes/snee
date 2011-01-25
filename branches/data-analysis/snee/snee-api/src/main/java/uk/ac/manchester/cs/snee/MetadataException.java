@@ -33,10 +33,12 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee;
 
+import gr.uoa.di.ssg4e.query.IException;
+
 /**
  * Generic metadata exception
  */
-public class MetadataException extends Exception {
+public class MetadataException extends IException {
 
 	/**
 	 * 

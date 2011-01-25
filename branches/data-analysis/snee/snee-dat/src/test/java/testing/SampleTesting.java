@@ -1,14 +1,9 @@
 package testing;
 
-import gr.uoa.di.ssg4e.dat.excep.DATException;
-import gr.uoa.di.ssg4e.query.IException;
 import gr.uoa.di.ssg4e.query.IMetadata;
 import gr.uoa.di.ssg4e.query.QueryRefactorer;
-import gr.uoa.di.ssg4e.query.excep.ParserException;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Properties;

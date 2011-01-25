@@ -33,6 +33,9 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.metadata.schema;
 
+import gr.uoa.di.ssg4e.dat.schema.DATMetadata;
+import gr.uoa.di.ssg4e.query.IExtentMetadata;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +43,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 
-public class ExtentMetadata {
+public class ExtentMetadata implements IExtentMetadata {
 	
 	private Logger logger = 
 		Logger.getLogger(ExtentMetadata.class.getName());
@@ -58,10 +61,17 @@ public class ExtentMetadata {
 	//XXX-Ixent moved this to here from SensorNetworkSourceMetadata, as this seems 
 	//to be a something considered during early steps of query optimization.
 	private int cardinality = 1;
-	
+
+	/** 
+	 * @author lebiathan
+	 * Whether an extent is intentional or extentional. Default value is false
+	 *  */
+	private DATMetadata _datMetadata = null;
+
 	public ExtentMetadata(String extentName, 
 			List<Attribute> attributes,
-			ExtentType extentType) {
+			ExtentType extentType,
+			DATMetadata datMetadata) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER ExtentMetadata() with extent " + 
 					extentName + " #attr=" + attributes.size() + 
@@ -69,6 +79,7 @@ public class ExtentMetadata {
 		_extentName = extentName;
 		_attributes = attributes;
 		_extentType = extentType;
+		_datMetadata = datMetadata;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN ExtentMetadata()");
 	}
@@ -210,6 +221,16 @@ public class ExtentMetadata {
 
 	public int getCardinality() {
 		return cardinality;
+	}
+
+	@Override
+	public DATMetadata getDATMetadata() {
+		return _datMetadata;
+	}
+
+	@Override
+	public boolean isIntensional() {
+		return (_datMetadata != null);
 	}
 	
 }

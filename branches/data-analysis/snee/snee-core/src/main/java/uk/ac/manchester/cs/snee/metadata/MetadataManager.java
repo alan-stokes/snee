@@ -33,6 +33,10 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.metadata;
 
+import gr.uoa.di.ssg4e.dat.excep.DATSchemaException;
+import gr.uoa.di.ssg4e.dat.schema.DATMetadata;
+import gr.uoa.di.ssg4e.query.IMetadata;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -79,7 +83,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderExceptio
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
-public class MetadataManager {
+public class MetadataManager implements IMetadata {
 
 	private Logger logger = 
 		Logger.getLogger(MetadataManager.class.getName());
@@ -243,6 +247,7 @@ public class MetadataManager {
 	 * @param element XML element for the source metadata 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
+	 * @throws DATSchemaException 
 	 */
 	private void addExtent(ExtentType extentType, Element element) 
 	throws TypeMappingException, SchemaMetadataException 
@@ -255,6 +260,16 @@ public class MetadataManager {
 		List<Attribute> attributes = 
 			parseAttributes(element.getElementsByTagName("column"),
 					extentName);
+
+		/* Get if the extent is intentional or not */
+		String isIntent = 
+			element.getAttribute("isIntensional").toLowerCase();
+		NodeList datParams = element.getElementsByTagName("datParams");
+
+		/* Parse the datMetadata */
+		DATMetadata datMeta = parseDATMetadata(
+				datParams, extentName, isIntent.equals("true") );	
+
 		if (extentType == ExtentType.SENSED) {
 			attributes.add(0, new IDAttribute(extentName, 
 					Constants.ACQUIRE_ID, idType));
@@ -262,7 +277,7 @@ public class MetadataManager {
 					Constants.ACQUIRE_TIME, timeType));
 		}
 		ExtentMetadata extent =
-			new ExtentMetadata(extentName, attributes, extentType);
+			new ExtentMetadata(extentName, attributes, extentType, datMeta);
 		_schema.put(extentName, extent);
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN addExtent() " + extentName);
@@ -474,5 +489,50 @@ public class MetadataManager {
 	{
 		_sources.addServiceSource(string, url, sourceType);
 	}
+
+	/**
+	 * @author lebiathan
+	 * 
+	 * Parses the datParams element that an element may have
+	 * If the metadata does not exist, an exception will be thrown
+	 * 
+	 *  */
+	private DATMetadata parseDATMetadata(NodeList datElement,
+			String extentName, boolean isIntentional)
+			throws SchemaMetadataException{
 	
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER parseDATMetadata() ");
+		
+		/* Parse the datParams element of the XML file. If the
+		* datParams is malformed, then an exception will be thrown */
+		DATMetadata datMeta = null;
+		try{
+			datMeta = DATMetadata.parse((Element)datElement.item(0));
+		}catch(DATSchemaException dse){
+			throw new SchemaMetadataException(dse.getMessage());
+		}
+		
+		/* If it is not intentional, the datParams should not exist */
+		if ( !isIntentional && (datMeta != null) ){
+			datMeta = null;
+			throw new SchemaMetadataException(
+					"Error in parsing extentional extent " + extentName +
+					" : Extent is extentional but DAT Parameters element " +
+					"was specified");
+		}
+		
+		/* If it is intentional but the datParams does not exist */
+		if ( isIntentional && (datMeta == null) ){
+			throw new SchemaMetadataException(
+					"Error in parsing extentional extent " + extentName +
+					" : Extent is intentional but DAT Parameters element " +
+					"was missing");
+		}
+		
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN parseDATMetadata()");
+		
+		return datMeta; /* Return the dat metadata object */
+	}
 }

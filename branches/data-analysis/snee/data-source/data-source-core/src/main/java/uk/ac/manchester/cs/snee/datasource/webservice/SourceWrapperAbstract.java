@@ -67,7 +67,7 @@ public abstract class SourceWrapperAbstract implements SourceWrapper {
 			List<Attribute> attributes = 
 				schemaParser.getColumns(extentName);
 			ExtentMetadata extentMetadata = 
-				new ExtentMetadata(extentName, attributes, extentType);
+				new ExtentMetadata(extentName, attributes, extentType, null);
 			extents.add(extentMetadata);
 		}
 		if (logger.isTraceEnabled())

@@ -42,9 +42,8 @@
 		<dependency>
 			<groupId>gr.uoa.di.ssg4e</groupId>
 			<artifactId>snee-dat</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 			<type>jar</type>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 

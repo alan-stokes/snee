@@ -9,4 +9,13 @@
 	<groupId>uk.ac.manchester.cs.snee</groupId>
 	<artifactId>snee-api</artifactId>
 	<name>snee-api</name>
+	<dependencies>
+		<dependency>
+			<groupId>gr.uoa.di.ssg4e</groupId>
+			<artifactId>snee-dat</artifactId>
+			<version>1.0.1</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
 </project>

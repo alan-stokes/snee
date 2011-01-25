@@ -13,6 +13,7 @@
 		<cxf.version>2.2.8</cxf.version>
 	</properties>
 	<modules>
+		<module>snee-dat</module>
 		<module>snee-api</module>
 		<module>data-source</module>
 		<module>snee-core</module>
