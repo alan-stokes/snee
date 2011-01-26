@@ -6,12 +6,12 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
-import uk.ac.manchester.cs.snee.compiler.metadata.CostParameters;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.evaluator.QueryEvaluator;
+import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.evaluator.DeliverOperatorImpl;
 import uk.ac.manchester.cs.snee.operators.evaluator.EvaluatorPhysicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;

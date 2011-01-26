@@ -40,7 +40,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.compiler.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
