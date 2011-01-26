@@ -43,6 +43,7 @@ import uk.ac.manchester.cs.snee.operators.logical.OperatorDataType;
 import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
+import uk.ac.manchester.cs.snee.operators.logical.ScanOperator;
 import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
@@ -647,7 +648,9 @@ public class Translator {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Translate TABLE");
 				}
-				//FIXME: Implement translate to scan operator!
+				output = new ScanOperator(extentMetadata, sources,
+						_boolType);
+				break;
 			default:
 				String msg = "Unprogrammed ExtentType:" + 
 					extentMetadata + " Type:" + 

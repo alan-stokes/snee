@@ -47,6 +47,7 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+import uk.ac.manchester.cs.snee.operators.logical.OperatorDataType;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
 import antlr.CommonAST;
 import antlr.RecognitionException;
@@ -163,6 +164,15 @@ public class TranslatorTest {
 	 * SELECT temperature, pressure, (temperature * 9 / 5) + 32 as Fahrenheit FROM InFlow;
 	 */
 	
+	private LogicalOperator testOperator(Iterator<LogicalOperator> iterator, 
+			String exOpName) {
+		LogicalOperator op = iterator.next();
+		String opName = op.getOperatorName();
+		assertTrue("Expected " + exOpName + " but instead " + opName, 
+				exOpName.equals(opName));
+		return op;
+	}
+
 	@Test(expected=ParserException.class)
 	public void testRubbish() 
 	throws ParserException, SourceDoesNotExistException, 
@@ -187,7 +197,11 @@ public class TranslatorTest {
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
-		testQuery("SELECT * FROM PushStream;");
+		LAF laf = testQuery("SELECT * FROM PushStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator operator = testOperator(iterator, "RECEIVE");
+		assertEquals(OperatorDataType.STREAM, operator.getOperatorDataType());
 	}
 	
 	@Test
@@ -196,17 +210,25 @@ public class TranslatorTest {
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
-		testQuery("SELECT * FROM PullStream;");
+		LAF laf = testQuery("SELECT * FROM PullStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator operator = testOperator(iterator, "ACQUIRE");
+		assertEquals(OperatorDataType.STREAM, operator.getOperatorDataType());
 	}
 	
-	@Test(expected=OptimizationException.class)
+	@Test
 	public void testSimpleQuery_table() 
 	throws SourceDoesNotExistException, ExtentDoesNotExistException,
 	RecognitionException, ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException
 	{
-		testQuery("SELECT * FROM TestTable;");
+		LAF laf = testQuery("SELECT * FROM TestTable;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator operator = testOperator(iterator, "SCAN");
+		assertEquals(OperatorDataType.RELATION, operator.getOperatorDataType());
 	}
 
 	@Test
@@ -215,7 +237,11 @@ public class TranslatorTest {
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
-		testQuery("(SELECT * FROM TestStream);");
+		LAF laf = testQuery("(SELECT * FROM TestStream);");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator operator = testOperator(iterator, "RECEIVE");
+		assertEquals(OperatorDataType.STREAM, operator.getOperatorDataType());
 	}
 	
 	@Test
@@ -224,7 +250,12 @@ public class TranslatorTest {
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
-		testQuery("SELECT timestamp FROM TestStream;");
+		LAF laf = testQuery("SELECT timestamp FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
 	}
 		
 	@Test
@@ -233,7 +264,12 @@ public class TranslatorTest {
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
-		testQuery("(SELECT timestamp FROM TestStream);");
+		LAF laf = testQuery("(SELECT timestamp FROM TestStream);");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
 	}
 	
 	@Test
