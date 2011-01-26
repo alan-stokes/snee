@@ -289,7 +289,7 @@ public class SNEEController implements SNEE {
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.SNEE#getExtents()
 	 */
-	public Collection<String> getExtents() {
+	public Collection<String> getExtentNames() {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getExtents()");
 		Collection<String> extentNames = _metadata.getExtentNames();

@@ -1,9 +1,12 @@
 package uk.ac.manchester.cs.snee.client;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
 
 import org.apache.log4j.PropertyConfigurator;
 
+import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator;
@@ -14,8 +17,10 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 
 	public SNEEClientUsingTupleGeneratorSource(String query, 
 			double duration) 
-	throws SNEEException, IOException, SNEEConfigurationException {
+	throws SNEEException, IOException, SNEEConfigurationException, 
+	MetadataException {
 		super(query, duration);
+		displayAllExtents();
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClietnUsingTupleGeneratorSource()");		
 		//Set sleep to 10 seconds

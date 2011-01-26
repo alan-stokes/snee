@@ -5,7 +5,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -20,6 +22,9 @@ import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEController;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 
 public abstract class SNEEClient implements Observer {
 
@@ -55,9 +60,44 @@ public abstract class SNEEClient implements Observer {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SNEEClient()");
 	}
-	
 
-	private static void printResults(List<ResultSet> results, 
+	protected void displayExtentNames() {
+		Collection<String> extentNames = controller.getExtentNames();
+		Iterator<String> it = extentNames.iterator();
+		System.out.println("Extents:");
+		while (it.hasNext()) {
+			System.out.print("\t" + it.next() + "\n");
+		}
+
+	}
+	
+	protected void displayAllExtents() throws MetadataException {
+		Collection<String> extents = controller.getExtentNames();
+		Iterator<String> it = extents.iterator();
+		while (it.hasNext()) {
+			String extentName = it.next();
+			displayExtentSchema(extentName);
+		}
+	}
+	
+	protected void displayExtentSchema(String extentName) 
+	throws MetadataException 
+	{
+		ExtentMetadata extent = 
+			controller.getExtentDetails(extentName);
+		List<Attribute> attributes = extent.getAttributes();
+		System.out.println("Attributes for " + extentName + " [" + 
+				extent.getExtentType() + "]" + ":");
+		for (Attribute attr : attributes) {
+			String attrName = attr.getAttributeDisplayName();
+			AttributeType attrType = attr.getType();
+			System.out.print("\t" + attrName + ": " + 
+					attrType.getName() + "\n");
+		}
+		System.out.println();
+	}
+	
+	private void printResults(List<ResultSet> results, 
 			int queryId) 
 	throws SQLException {
 		System.out.println("************ Results for query " + 
@@ -85,7 +125,7 @@ public abstract class SNEEClient implements Observer {
 		System.out.println("*********************************");
 	}
 
-	private static void printColumnHeadings(ResultSetMetaData metaData,
+	private void printColumnHeadings(ResultSetMetaData metaData,
 			int numCols) throws SQLException {
 		StringBuffer buffer = new StringBuffer();
 		for (int i = 1; i <= numCols; i++) {

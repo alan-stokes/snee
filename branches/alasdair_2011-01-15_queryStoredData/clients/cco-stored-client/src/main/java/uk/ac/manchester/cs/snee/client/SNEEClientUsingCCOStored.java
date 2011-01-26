@@ -49,22 +49,6 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN");
 	}
-
-	private void displayExtentSchema(String extentName) 
-	throws MetadataException 
-	{
-		ExtentMetadata extent = 
-			controller.getExtentDetails(extentName);
-		List<Attribute> attributes = extent.getAttributes();
-		System.out.println("Attributes for " + extentName + ":");
-		for (Attribute attr : attributes) {
-			String attrName = attr.getAttributeDisplayName();
-			AttributeType attrType = attr.getType();
-			System.out.print("\t" + attrName + ": " + 
-					attrType.getName() + "\n");
-		}
-		System.out.println();
-	}
 	
 	/**
 	 * The main entry point for the SNEE controller
