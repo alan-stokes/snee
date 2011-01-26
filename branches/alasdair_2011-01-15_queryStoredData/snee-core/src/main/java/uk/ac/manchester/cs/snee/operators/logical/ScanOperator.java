@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.operators.logical;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -41,91 +42,111 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 
-//STUB.
 public class ScanOperator extends LogicalOperatorImpl 
 implements LogicalOperator {
 
 	private Logger logger = 
 		Logger.getLogger(ScanOperator.class.getName());
 	
-	public ScanOperator(AttributeType boolType) 
+	/** List of attributes to be received. */
+	private List<Attribute> scannedAttributes;
+
+	private String extentName;
+
+	private List<SourceMetadataAbstract> sources;
+
+	private List<Attribute> outputAttributes;
+
+	private List<Expression> expressions;
+	
+	public ScanOperator(ExtentMetadata extentMetadata,
+			List<SourceMetadataAbstract> sources,
+			AttributeType boolType) 
 	{
 		super(boolType);
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER ScanOperator() with " +
+					extentMetadata + " #sources=" + sources.size());
+		}
+		this.setOperatorName("SCAN");
+		this.setOperatorDataType(OperatorDataType.RELATION);
+		this.extentName = extentMetadata.getExtentName();
+		this.sources = sources;
+		addMetadataInfo(extentMetadata);
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN ScanOperator()");
+		}
+	}
+	
+	/**
+	 * Sets up the attribute based on the schema.
+	 * @param extentMetaData DDL declaration for this extent.
+	 * @throws SchemaMetadataException 
+	 * @throws TypeMappingException 
+	 */
+	private void addMetadataInfo(ExtentMetadata extentMetaData) 
+	{
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER addMetaDataInfo() with " +
+					extentName);
+		}
+		scannedAttributes = extentMetaData.getAttributes();
+		outputAttributes = scannedAttributes;
+		copyExpressions(outputAttributes);
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN addMetaDataInfo()");
 	}
 
-	public LogicalOperatorImpl shallowClone() {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
+	/**
+	 * Copies attributes into the expressions.
+	 * @param attributes Values to set them to.
+	 */
+	protected void copyExpressions(
+			List<Attribute> attributes) {
+		expressions = new ArrayList<Expression>(); 
+		expressions.addAll(attributes);
 	}
 
 	@Override
 	public String toString() {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
+		return this.getText();
+	}
+	
+	/**
+	 * Return the name of the extent as it appears in the schema.
+	 * @return
+	 */
+	public String getExtentName() {
+		return extentName;
+	}
+	
+	/**
+	 * Return details of the data sources
+	 * @return
+	 */
+	public List<SourceMetadataAbstract> getSources() {
+		return sources;
 	}
 
 	public int getCardinality(CardinalityType card) {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
+		return scannedAttributes.size();
 	}
 
-//	/** {@inheritDoc} */
-//	public int getCardinality(CardinalityType card, 
-//			Site node, DAF daf) {
-//		return getInputCardinality(card, node, daf, 0);
-//	}
-
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getCardinality(CardinalityType card, 
-//			Site node, DAF daf, boolean round) {
-//		return null;
-//	}
-
-//	public int getPhysicalMaxCardinality(Site node, DAF daf) {
-//		throw new AssertionError("Stub Method called");
-//	}
-
-//	public double getTimeCost(CardinalityType card, Site node, DAF daf) {
-//		throw new AssertionError("Stub Method called");
-//	}
-
-//	/** {@inheritDoc} */
-//	public double getTimeCost(CardinalityType card, int numberOfInstances) {
-//		throw new AssertionError("Stub Method called");
-//	}
-
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getTimeExpression(
-//			CardinalityType card, Site node, 
-//			DAF daf, boolean round) {
-//		throw new AssertionError("Stub Method called");
-//	}
-
 	public boolean isAttributeSensitive() {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
+		return false;
 	}
 
 	public boolean isLocationSensitive() {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
+		return true;
 	}
 
 	public boolean isRecursive() {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
+		return false;
 	}
 
 	/** {@inheritDoc}
@@ -136,9 +157,7 @@ implements LogicalOperator {
 	}
 
 	public boolean isRemoveable() {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
+		return false;
 	}
 
 	/**
@@ -154,13 +173,12 @@ implements LogicalOperator {
 	 * {@inheritDoc}
 	 * 
 	 * @return False. As scan can not handle predicate.
-	 * @throws AssertionError 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
 	 */
 	public boolean pushSelectDown(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException {
-		return this.getInput(0).pushSelectDown(predicate);
+	throws SchemaMetadataException, TypeMappingException {
+		return false;
 	}
 
 	/** 
@@ -171,36 +189,15 @@ implements LogicalOperator {
 	public void pushLocalNameDown(String newLocalName) {
 		throw new AssertionError("Unexpected call to pushLocalNameDown()"); 
 	}
-	//Call to default methods in OperatorImplementation
-
-//	/** {@inheritDoc} */
-//	public int[] getSourceSites() {
-//		return super.defaultGetSourceSites();
-//	}
-
-//	/** {@inheritDoc} */    
-//	public int getOutputQueueCardinality(Site node, DAF daf) {
-//		return super.defaultGetOutputQueueCardinality(node, daf);
-//	}
-
-//	/** {@inheritDoc} */    
-//	public int getOutputQueueCardinality(int numberOfInstances) {
-//		return super.defaultGetOutputQueueCardinality(numberOfInstances);
-//	}
 
 	/** {@inheritDoc} */    
 	public List<Attribute> getAttributes() {
-		return super.defaultGetAttributes();
+		return scannedAttributes;
 	}
 
 	/** {@inheritDoc} */    
 	public List<Expression> getExpressions() {
 		return super.defaultGetExpressions();
 	}
-
-//	/** {@inheritDoc} */    
-//	public int getDataMemoryCost(Site node, DAF daf) {
-//		return super.defaultGetDataMemoryCost(node, daf);
-//	}
 
 }

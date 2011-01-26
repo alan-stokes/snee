@@ -243,8 +243,6 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 	 */
 	public boolean pushSelectDown(Expression predicate) {
 		return false;
-		//setPredicate(predicate);
-		//return true;
 	}
 
 	/** 
