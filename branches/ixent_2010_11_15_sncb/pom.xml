@@ -5,14 +5,19 @@
 	<artifactId>SNEE</artifactId>
 	<packaging>pom</packaging>
 	<name>SNEE</name>
-	<version>1.4.3-SNAPSHOT</version>
+	<version>1.5.1-SNAPSHOT</version>
 	<description>Continuous query processing engine for streaming and stored data.</description>
 
+	<properties>
+		<snee.version>1.5.1-SNAPSHOT</snee.version>
+		<cxf.version>2.2.8</cxf.version>
+	</properties>
 	<modules>
+		<module>snee-api</module>
+		<module>data-source</module>
 		<module>snee-core</module>
 		<module>sncb</module>
 		<module>compiler</module>
-		<!--<module>datasource</module>-->
 		<module>clients</module>
 	</modules>
 
@@ -77,6 +82,41 @@
 			<version>4.8.1</version>
 			<type>jar</type>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymockclassextension</artifactId>
+			<version>2.5.2</version>
+			<type>jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib-nodep</artifactId>
+			<version>2.2</version>
+			<type>jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.objenesis</groupId>
+			<artifactId>objenesis</artifactId>
+			<version>1.2</version>
+			<type>jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-frontend-jaxws</artifactId>
+			<version>${cxf.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-transports-http</artifactId>
+			<version>${cxf.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 
