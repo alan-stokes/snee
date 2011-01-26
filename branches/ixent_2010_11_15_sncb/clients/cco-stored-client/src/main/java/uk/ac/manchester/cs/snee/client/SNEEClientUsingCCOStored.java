@@ -17,33 +17,33 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
-public class SNEEClientUsingCCO extends SNEEClient {
+public class SNEEClientUsingCCOStored extends SNEEClient {
 	
 	private static Logger logger = 
-		Logger.getLogger(SNEEClientUsingCCO.class.getName());
+		Logger.getLogger(SNEEClientUsingCCOStored.class.getName());
 	
 	private String serviceUrl = 
-		"http://webgis1.geodata.soton.ac.uk:8080/CCO/services/PullStream?wsdl";
-	
+		"http://webgis1.geodata.soton.ac.uk:8080/dai/services/";
+//		"http://bowfell.cs.man.ac.uk:8080/dai/services/";
 
-	public SNEEClientUsingCCO(String query, double duration) 
+	public SNEEClientUsingCCOStored(String query, double duration) 
 	throws SNEEException, IOException, SNEEConfigurationException,
 	MetadataException, SNEEDataSourceException 
 	{
 		super(query, duration);
 		if (logger.isDebugEnabled()) 
-			logger.debug("ENTER SNEEClientUsingCCO()");
+			logger.debug("ENTER SNEEClientUsingCCOStored()");
 		//Set sleep to 10 minutes
 		_sleepDuration = 600000;
-		controller.addServiceSource("CCO-WS", serviceUrl, 
-				SourceType.PULL_STREAM_SERVICE);
+		controller.addServiceSource("CCO-Stored", serviceUrl, 
+				SourceType.WSDAIR);
 //		Collection<String> extents = controller.getExtents();
 //		Iterator<String> it = extents.iterator();
 //		System.out.println("Extents:");
 //		while (it.hasNext()) {
 //			System.out.print("\t" + it.next() + "\n");
 //		}
-//		displayExtentSchema("envdata_haylingisland");
+		displayExtentSchema("locations");
 //		displayExtentSchema("envdata_teignmouthpier_tide");
 //		displayExtentSchema("envdata_hernebay_met");
 		if (logger.isDebugEnabled())
@@ -75,7 +75,7 @@ public class SNEEClientUsingCCO extends SNEEClient {
 	public static void main(String[] args) {
 		// Configure logging
 		PropertyConfigurator.configure(
-				SNEEClientUsingCCO.class.getClassLoader().
+				SNEEClientUsingCCOStored.class.getClassLoader().
 				getResource("etc/log4j.properties"));
 		String query;
 		Long duration;
@@ -86,7 +86,8 @@ public class SNEEClientUsingCCO extends SNEEClient {
 					"\t\"query duration in seconds\"\n");
 //			System.exit(1);
 			//XXX: Use default settings
-			query = "SELECT * FROM envdata_hernebay_tide;";
+			query = "SELECT id, location, latitude, longitude, waves, tides, met " +
+					"FROM locations;";
 			duration = Long.valueOf("900");
 		} else {	
 			query = args[0];
@@ -95,8 +96,8 @@ public class SNEEClientUsingCCO extends SNEEClient {
 			
 			try {
 				/* Initialise and run SNEEClient */
-				SNEEClientUsingCCO client = 
-					new SNEEClientUsingCCO(query, duration);
+				SNEEClientUsingCCOStored client = 
+					new SNEEClientUsingCCOStored(query, duration);
 				client.run();
 				/* Stop the data source */
 			} catch (Exception e) {

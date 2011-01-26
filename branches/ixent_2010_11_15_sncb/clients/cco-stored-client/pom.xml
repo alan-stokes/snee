@@ -1,17 +1,16 @@
 <?xml version="1.0"?>
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<artifactId>clients</artifactId>
 		<groupId>uk.ac.manchester.cs.snee</groupId>
-		<version>1.5.1-SNAPSHOT</version>
+		<version>1.5.0</version>
 	</parent>
 	<groupId>uk.ac.manchester.cs.snee.client</groupId>
-	<artifactId>test-client</artifactId>
-	<name>Test Client</name>
-	<description>Command line single use client that uses a random tuple generator as a data source.</description>
+	<artifactId>cco-stored-client</artifactId>
+	<name>CCO-Stored Client</name>
+	<description>Test client for access a stored data source</description>
 	<dependencies>
 		<dependency>
 			<groupId>uk.ac.manchester.cs.snee.client</groupId>
@@ -23,7 +22,8 @@
 			<groupId>uk.ac.manchester.cs.snee</groupId>
 			<artifactId>snee-api</artifactId>
 			<version>${snee.version}</version>
-			<scope>compile</scope>
+			<type>jar</type>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

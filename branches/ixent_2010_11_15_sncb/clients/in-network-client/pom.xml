@@ -1,64 +1,27 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <artifactId>clients</artifactId>
-    <groupId>uk.ac.manchester.cs.snee</groupId>
-    <version>1.4.3-SNAPSHOT</version>
-  </parent>
-  <groupId>uk.ac.manchester.cs.snee</groupId>
-  <artifactId>in-network-client</artifactId>
-  <version>1.4.3-SNAPSHOT</version>
-  <name>In-network test client</name>
-  <description>Test client for In-Network SNEE.</description>
- 
-  <dependencies>
-  	<dependency>
-  		<groupId>uk.ac.manchester.cs.snee.client</groupId>
-  		<artifactId>client</artifactId>
-  		<version>1.4.3-SNAPSHOT</version>
-  		<scope>provided</scope>
-  	</dependency>
-  	<dependency>
-  		<groupId>uk.ac.manchester.cs.snee</groupId>
-  		<artifactId>snee-core</artifactId>
-  		<version>1.4.3-SNAPSHOT</version>
-  		<type>jar</type>
-  		<scope>provided</scope>
-  	</dependency>
-  	<dependency>
-  		<groupId>uk.ac.manchester.cs.snee</groupId>
-  		<artifactId>snee-sncb</artifactId>
-  		<version>1.4.3-SNAPSHOT</version>
-  		<type>jar</type>
-  		<scope>provided</scope>
-  	</dependency>
-  </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-	  <artifactId>exec-maven-plugin</artifactId>
-            <version>1.1</version>
-               <executions>
-                   <execution>
-                       <goals>
-                           <goal>java</goal>
-                       </goals>
-                   </execution>
-               </executions>
-               <configuration>
-                   <executable>java</executable>
-                   <arguments>
-                   <argument>-classpath</argument>
-                   <!-- automatically creates the classpath using all project dependencies,
-                   also adding the project build directory -->
-                   <classpath/>
-                   <mainClass>uk.ac.manchester.snee.client.SNEEClientUsingInNetworkSource</mainClass>
-                   </arguments>
-               </configuration>
-       </plugin>
-    </plugins>
-  </build>
-  
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>clients</artifactId>
+		<groupId>uk.ac.manchester.cs.snee</groupId>
+		<version>1.5.1-SNAPSHOT</version>
+	</parent>
+	<groupId>uk.ac.manchester.cs.snee</groupId>
+	<artifactId>in-network-client</artifactId>
+	<name>in-network test client</name>
+	<description>Test client for In-Network SNEE.</description>
+	<dependencies>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee.client</groupId>
+			<artifactId>client</artifactId>
+			<version>${snee.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-api</artifactId>
+			<version>${snee.version}</version>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
 </project>
