@@ -322,7 +322,7 @@ public class TranslatorTest {
 				"FROM TestStream[FROM NOW-10 MINUTES TO NOW SLIDE 30 SECONDS];");
 	}
 	
-	@Test@Ignore
+	@Test(expected=ExpressionException.class)
 	public void testTimeWindow_noSlide() throws ParserException, 
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
