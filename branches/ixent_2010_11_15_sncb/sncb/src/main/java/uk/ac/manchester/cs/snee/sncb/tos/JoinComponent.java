@@ -38,7 +38,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 
-import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
