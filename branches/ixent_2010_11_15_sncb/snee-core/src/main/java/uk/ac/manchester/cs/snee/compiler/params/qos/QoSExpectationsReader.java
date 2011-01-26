@@ -40,8 +40,8 @@ import javax.xml.xpath.XPathExpressionException;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.Utils;
-import uk.ac.manchester.cs.snee.compiler.metadata.units.Units;
-import uk.ac.manchester.cs.snee.compiler.metadata.units.UnrecognizedUnitException;
+import uk.ac.manchester.cs.snee.metadata.units.Units;
+import uk.ac.manchester.cs.snee.metadata.units.UnrecognizedUnitException;
 
 
 public class QoSExpectationsReader extends QoSExpectations {

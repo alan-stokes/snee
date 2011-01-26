@@ -20,7 +20,7 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
-import uk.ac.manchester.cs.snee.compiler.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class AgendaUtils {
 
