@@ -600,7 +600,7 @@ public class TranslatorTest {
 				"FROM TestStream[FROM NOW - 10 SECONDS TO NOW SLIDE 1 SECOND] ts;");
 	}
 
-	@Test
+	@Test(expected=ExpressionException.class)
 	public void testUnionQuery_problematicFromClause() 
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
