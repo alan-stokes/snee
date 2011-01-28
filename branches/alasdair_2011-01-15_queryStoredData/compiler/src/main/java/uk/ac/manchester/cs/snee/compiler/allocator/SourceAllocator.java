@@ -10,6 +10,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
@@ -52,7 +53,8 @@ public class SourceAllocator {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER retrieveSources() for " + laf.getID());
 		}
-		List<SourceMetadataAbstract> sources = new ArrayList<SourceMetadataAbstract>();
+		List<SourceMetadataAbstract> sources = 
+			new ArrayList<SourceMetadataAbstract>();
 		Iterator<LogicalOperator> opIter =
 			laf.operatorIterator(TraversalOrder.PRE_ORDER);
 		while (opIter.hasNext()) {
@@ -66,18 +68,15 @@ public class SourceAllocator {
 				List<SourceMetadataAbstract> recSources = receiveOp.getSources();
 				sources.addAll(recSources);
 			} else if (op instanceof ScanOperator) {
-				String msg = "Scan operator found in LAF; " +
-					"these are not currently supported by the " +
-					"source allocator ";
-				logger.warn(msg);
-				throw new SourceAllocatorException(msg);
+				ScanOperator scanOp = (ScanOperator) op;
+				List<SourceMetadataAbstract> scanSources = scanOp.getSources();
+				sources.addAll(scanSources);
 			}
 		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN retrieveSources() #sources=" + 
 					sources.size());
 		}
-
 		return sources;
 	}
 
@@ -93,18 +92,27 @@ public class SourceAllocator {
 			 * source to be used 
 			 */
 			for (SourceMetadataAbstract source : sources) {
-				switch (source.getSourceType()) {
+				SourceType sourceType = source.getSourceType();
+				switch (sourceType) {
 				case PULL_STREAM_SERVICE:
 				case PUSH_STREAM_SERVICE:
 				case UDP_SOURCE:
 					break;
-				default:
+				case RELATIONAL:
+				case WSDAIR:
+					break;
+				case SENSOR_NETWORK:
 					String msg = "More than " +
 						"one source in LAF; queries with more " +
 						"than one source are currently not " +
-						"supported by source allocator.";
+						"supported by source allocator for " +
+						"queries over a sensor network.";
 					logger.warn(msg);
-					throw new SourceAllocatorException(msg);				
+					throw new SourceAllocatorException(msg);
+				default:
+					msg = "Unsupported data source type " + sourceType;
+					logger.warn(msg);
+					throw new SourceAllocatorException(msg);
 				}
 			}
 		} else if (sources.size()==0) {
