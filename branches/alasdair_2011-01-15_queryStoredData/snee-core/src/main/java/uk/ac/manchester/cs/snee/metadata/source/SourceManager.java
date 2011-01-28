@@ -244,6 +244,8 @@ public class SourceManager {
 						interfaceType = SourceType.PULL_STREAM_SERVICE;
 					} else if (it.equals("push-stream")) {
 						interfaceType = SourceType.PUSH_STREAM_SERVICE;
+					} else if (it.equals("wsdair")) {
+						interfaceType = SourceType.WSDAIR;
 					} else {
 						String message = 
 							"Unsupported interface type " + it;
