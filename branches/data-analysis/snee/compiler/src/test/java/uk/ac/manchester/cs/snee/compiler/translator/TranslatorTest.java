@@ -566,4 +566,14 @@ public class TranslatorTest {
 				equalsIgnoreCase("timestamp"));
 	}
 
+	@Test
+	public void testUnionQuery_testTable() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT * FROM TestTable[FROM NOW - 10 SECONDS TO NOW SLIDE 1 SECOND];");
+	}
+
+
 }

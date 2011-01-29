@@ -648,8 +648,7 @@ public class RefactorerTest {
 	}
 
 	@Test
-	@Ignore
-	public void testRefactorLRF() 
+	public void testRefactoring_LRF() 
 	throws SourceDoesNotExistException,
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
