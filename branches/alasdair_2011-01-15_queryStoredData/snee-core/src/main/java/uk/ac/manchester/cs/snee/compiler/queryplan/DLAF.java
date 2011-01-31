@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
-import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 /**
@@ -50,7 +49,7 @@ public class DLAF extends SNEEAlgebraicForm {
 	public DLAF(final LAF laf, final String queryName) {
 		super(queryName);
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER DLAF()");
+			logger.debug("ENTER DLAF() with " + queryName);
 		this.laf = laf;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN DLAF()");
@@ -100,10 +99,10 @@ public class DLAF extends SNEEAlgebraicForm {
 	 * @return
 	 */
 	public LAF getLAF() {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER getLAF()");
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN getLAF()");		
+//		if (logger.isDebugEnabled())
+//			logger.debug("ENTER getLAF()");
+//		if (logger.isDebugEnabled())
+//			logger.debug("RETURN getLAF()");		
 		return this.laf;
 	}
 
@@ -114,9 +113,10 @@ public class DLAF extends SNEEAlgebraicForm {
 	public LogicalOperator getRootOperator() {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getRootOperator()");
+		LogicalOperator rootOperator = this.getLAF().getRootOperator();
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN getRootOperator()");		
-		return this.getLAF().getRootOperator();
+			logger.debug("RETURN getRootOperator() " + rootOperator);		
+		return rootOperator;
 	}
 
 	/**
@@ -124,10 +124,10 @@ public class DLAF extends SNEEAlgebraicForm {
 	 * @return
 	 */
 	public Tree getOperatorTree() {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER getOperatorTree()");
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN getOperatorTree()");		
+//		if (logger.isDebugEnabled())
+//			logger.debug("ENTER getOperatorTree()");
+//		if (logger.isDebugEnabled())
+//			logger.debug("RETURN getOperatorTree()");		
 		return this.getLAF().getOperatorTree();
 	}	
 }

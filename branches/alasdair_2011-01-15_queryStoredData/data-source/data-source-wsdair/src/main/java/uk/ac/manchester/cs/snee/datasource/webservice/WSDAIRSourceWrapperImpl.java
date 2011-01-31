@@ -31,6 +31,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 public class WSDAIRSourceWrapperImpl extends SourceWrapperAbstract 
 implements SourceWrapper {
@@ -52,6 +53,7 @@ implements SourceWrapper {
     	if (logger.isDebugEnabled())
     		logger.debug("ENTER WSDAIRSourceWrapper() with URL " + url);
     	_wsdairClient = createServiceClient(url);
+    	_sourceType = SourceType.WSDAIR;
         if (logger.isDebugEnabled())
         	logger.debug("RETURN WSDAIRSourceWrapper()");
     }

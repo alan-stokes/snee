@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 /**
  * Utility class for displaying DLAF.
@@ -29,7 +30,7 @@ public class DLAFUtils extends LAFUtils {
 	public DLAFUtils(DLAF dlaf) {		
 		super(dlaf.getLAF());
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER DLAFUtils()");		
+			logger.debug("ENTER DLAFUtils() " + dlaf);		
 		this.dlaf = dlaf;
 		this.name = dlaf.getID();
 		this.tree = dlaf.getOperatorTree();
