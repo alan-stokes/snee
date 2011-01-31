@@ -79,12 +79,14 @@ public class SourcePlanner {
 		SourceType dataSourceType = dlaf.getSources().get(0).getSourceType();
 		switch (dataSourceType) {
 		case SENSOR_NETWORK:
-			qep = doSensorNetworkSourcePlanning(dlaf, qos, costParams, "query"+queryID);
+			qep = doSensorNetworkSourcePlanning(dlaf, qos, costParams, 
+					"query"+queryID);
 			break;
 		case PULL_STREAM_SERVICE:
 		case PUSH_STREAM_SERVICE:
 		case QUERY_SERVICE:
 		case UDP_SOURCE:
+		case WSDAIR:
 			qep = doEvaluatorPlanning(dlaf, queryID);
 			break;
 		default:
@@ -230,4 +232,5 @@ public class SourcePlanner {
 			logger.trace("RETURN doEvaluatorPlanning()");
 		return qep;
 	}
+	
 }
