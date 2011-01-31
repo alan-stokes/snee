@@ -75,7 +75,10 @@ public class WebServiceSourceMetadata extends SourceMetadata {
 		_url = url;
 		_resources = resources;
 		_source = sourceWrapper;
-		setStreamRates();
+		if (_sourceType == SourceType.PULL_STREAM_SERVICE ||
+				_sourceType == SourceType.PUSH_STREAM_SERVICE) {
+			setStreamRates();
+		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN WebServiceSourceMetadata() " + this);
 		}

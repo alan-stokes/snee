@@ -28,13 +28,13 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 
-public class ScanOperatorTest extends EasyMockSupport {
+public class ReceiveOperatorTest extends EasyMockSupport {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
 		PropertyConfigurator.configure(
-				ScanOperatorTest.class.getClassLoader().getResource(
+				ReceiveOperatorTest.class.getClassLoader().getResource(
 						"etc/log4j.properties"));
 	}
 
@@ -76,10 +76,10 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
-		assertTrue(op.getOperatorName().equals("SCAN"));
+		assertTrue(op.getOperatorName().equals("RECEIVE"));
 		verifyAll();
 	}
 
@@ -92,10 +92,10 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
-		assertEquals(OperatorDataType.RELATION, op.getOperatorDataType());
+		assertEquals(OperatorDataType.STREAM, op.getOperatorDataType());
 		verifyAll();
 	}
 
@@ -108,7 +108,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		assertFalse(op.acceptsPredicates());
@@ -125,7 +125,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		assertFalse(op.pushProjectionDown(null, null));
@@ -141,7 +141,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		assertFalse(op.pushSelectDown(null));
@@ -157,13 +157,13 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		String extentMetadata = op.toString();
-//		System.out.println(extentMetadata);
+		System.out.println(extentMetadata);
 		assertTrue(extentMetadata.equals(
-				"TYPE: relation   OPERATOR: SCAN " +
+				"TYPE: stream   OPERATOR: RECEIVE " +
 		"(Name (cardinality=0 sources={} ) - cardinality: 0"));
 		verifyAll();
 	}
@@ -179,7 +179,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		assertTrue(op.getExtentName().equals("Name"));
@@ -195,7 +195,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		assertEquals(sources, op.getSources());
@@ -214,7 +214,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		List<Attribute> attrs = op.getAttributes();
@@ -234,7 +234,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		List<Expression> exprs = op.getExpressions();
@@ -254,7 +254,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		int cardinarlity = op.getCardinality(CardinalityType.MAX);
@@ -274,7 +274,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		List<Attribute> attrs = op.getInputAttributes();
@@ -294,7 +294,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		int size = op.getNumberInputAttributes();
@@ -316,7 +316,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		int attrNumber = op.getInputAttributeNumber(mockAttribute);
@@ -334,7 +334,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		assertFalse(op.isAttributeSensitive());
@@ -350,7 +350,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		assertTrue(op.isLocationSensitive());
@@ -366,7 +366,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		assertFalse(op.isRecursive());
@@ -382,7 +382,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		assertFalse(op.isRemoveable());
@@ -398,7 +398,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				sources, 
 				types.getType("boolean"));
 		op.pushLocalNameDown("newLocalName");

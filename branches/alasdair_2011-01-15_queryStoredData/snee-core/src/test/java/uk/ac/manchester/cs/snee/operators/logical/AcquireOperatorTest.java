@@ -1,7 +1,9 @@
 package uk.ac.manchester.cs.snee.operators.logical;
 
 import static org.easymock.EasyMock.expect;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +30,13 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 
-public class ScanOperatorTest extends EasyMockSupport {
+public class AcquireOperatorTest extends EasyMockSupport {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Configure logging
 		PropertyConfigurator.configure(
-				ScanOperatorTest.class.getClassLoader().getResource(
+				AcquireOperatorTest.class.getClassLoader().getResource(
 						"etc/log4j.properties"));
 	}
 
@@ -72,14 +74,15 @@ public class ScanOperatorTest extends EasyMockSupport {
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types, 
 				sources, 
 				types.getType("boolean"));
-		assertTrue(op.getOperatorName().equals("SCAN"));
+		assertTrue(op.getOperatorName().equals("ACQUIRE"));
 		verifyAll();
 	}
 
@@ -88,14 +91,38 @@ public class ScanOperatorTest extends EasyMockSupport {
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
-		assertEquals(OperatorDataType.RELATION, op.getOperatorDataType());
+		assertEquals(OperatorDataType.STREAM, op.getOperatorDataType());
+		verifyAll();
+	}
+
+	@Test
+	public void testGetCardinality() 
+	throws TypeMappingException, SchemaMetadataException {
+		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		List<Attribute> attributes = new ArrayList<Attribute>();
+		attributes.add(mockAttribute);
+		attributes.add(mockAttribute);
+		expect(mockExtent.getAttributes())
+			.andReturn(attributes).times(2);
+		expect(mockAttribute.getRequiredAttributes()).
+			andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
+		replayAll();
+		List<SourceMetadataAbstract> sources =
+			new ArrayList<SourceMetadataAbstract>();
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
+				sources, 
+				types.getType("boolean"));
+		int cardinarlity = op.getCardinality(CardinalityType.MAX);
+		assertEquals(1, cardinarlity);
 		verifyAll();
 	}
 
@@ -104,67 +131,96 @@ public class ScanOperatorTest extends EasyMockSupport {
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types, 
 				sources, 
 				types.getType("boolean"));
-		assertFalse(op.acceptsPredicates());
+		assertTrue(op.acceptsPredicates());
 		verifyAll();
 	}
 
 	@Test
-	public void testPushProjectionDown() 
+	public void testPushProjectionDown_EmptyAttributes() 
 	throws TypeMappingException, SchemaMetadataException,
 	OptimizationException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
-		assertFalse(op.pushProjectionDown(null, null));
+		assertFalse(op.pushProjectionDown(null, new ArrayList<Attribute>()));
 		verifyAll();
 	}
 
 	@Test
 	public void testPushSelectDown() 
 	throws TypeMappingException, SchemaMetadataException {
+		Expression mockExpression = createMock(Expression.class);
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
+		expect(mockExpression.getType()).andReturn(types.getType("boolean")).times(2);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
-		assertFalse(op.pushSelectDown(null));
+		assertTrue(op.pushSelectDown(mockExpression));
 		verifyAll();
 	}
 
+	@Test
+	public void testGetAcquiredAttributes() 
+	throws SchemaMetadataException, TypeMappingException {
+		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		List<Attribute> attributes = new ArrayList<Attribute>();
+		attributes.add(mockAttribute);
+		attributes.add(mockAttribute);
+		expect(mockExtent.getAttributes())
+			.andReturn(attributes).times(2);
+		expect(mockAttribute.getRequiredAttributes()).
+			andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
+		replayAll();
+		List<SourceMetadataAbstract> sources =
+			new ArrayList<SourceMetadataAbstract>();
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
+				sources, 
+				types.getType("boolean"));
+		List<Attribute> acAttr = op.getAcquiredAttributes();
+		assertEquals(attributes.size() + 3, acAttr.size());
+		verifyAll();
+	}
+	
 	@Test
 	public void testToString()
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
-		.andReturn(new ArrayList<Attribute>());
+		.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
 		String extentMetadata = op.toString();
 //		System.out.println(extentMetadata);
 		assertTrue(extentMetadata.equals(
-				"TYPE: relation   OPERATOR: SCAN " +
-		"(Name (cardinality=0 sources={} ) - cardinality: 0"));
+				"TYPE: stream   OPERATOR: ACQUIRE " +
+		"(Name (cardinality=0 sources={} ) - cardinality: 1"));
 		verifyAll();
 	}
 	
@@ -175,11 +231,12 @@ public class ScanOperatorTest extends EasyMockSupport {
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
 		assertTrue(op.getExtentName().equals("Name"));
@@ -191,11 +248,12 @@ public class ScanOperatorTest extends EasyMockSupport {
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
 		assertEquals(sources, op.getSources());
@@ -210,15 +268,18 @@ public class ScanOperatorTest extends EasyMockSupport {
 		attributes.add(mockAttribute);
 		attributes.add(mockAttribute);
 		expect(mockExtent.getAttributes())
-			.andReturn(attributes);
+			.andReturn(attributes).times(2);
+		expect(mockAttribute.getRequiredAttributes()).
+			andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
 		List<Attribute> attrs = op.getAttributes();
-		assertEquals(attributes.size(), attrs.size());
+		assertEquals(attributes.size() + 3, attrs.size());
 		verifyAll();
 	}
 
@@ -230,35 +291,18 @@ public class ScanOperatorTest extends EasyMockSupport {
 		attributes.add(mockAttribute);
 		attributes.add(mockAttribute);
 		expect(mockExtent.getAttributes())
-			.andReturn(attributes);
+			.andReturn(attributes).times(2);
+		expect(mockAttribute.getRequiredAttributes()).
+			andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
 		List<Expression> exprs = op.getExpressions();
-		assertEquals(attributes.size(), exprs.size());
-		verifyAll();
-	}
-
-	@Test
-	public void testGetCardinality() 
-	throws TypeMappingException, SchemaMetadataException {
-		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
-		List<Attribute> attributes = new ArrayList<Attribute>();
-		attributes.add(mockAttribute);
-		attributes.add(mockAttribute);
-		expect(mockExtent.getAttributes())
-			.andReturn(attributes);
-		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
-				types.getType("boolean"));
-		int cardinarlity = op.getCardinality(CardinalityType.MAX);
-		assertEquals(attributes.size(), cardinarlity);
+		assertEquals(attributes.size() + 3, exprs.size());
 		verifyAll();
 	}
 
@@ -270,11 +314,14 @@ public class ScanOperatorTest extends EasyMockSupport {
 		attributes.add(mockAttribute);
 		attributes.add(mockAttribute);
 		expect(mockExtent.getAttributes())
-			.andReturn(attributes);
+			.andReturn(attributes).times(2);
+		expect(mockAttribute.getRequiredAttributes()).
+			andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
 		List<Attribute> attrs = op.getInputAttributes();
@@ -290,11 +337,14 @@ public class ScanOperatorTest extends EasyMockSupport {
 		attributes.add(mockAttribute);
 		attributes.add(mockAttribute);
 		expect(mockExtent.getAttributes())
-			.andReturn(attributes);
+			.andReturn(attributes).times(2);
+		expect(mockAttribute.getRequiredAttributes()).
+			andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
 		int size = op.getNumberInputAttributes();
@@ -312,11 +362,16 @@ public class ScanOperatorTest extends EasyMockSupport {
 		Attribute mockAttr = createMock(DataAttribute.class);
 		attributes.add(mockAttr);
 		expect(mockExtent.getAttributes())
-			.andReturn(attributes);
+			.andReturn(attributes).times(2);
+		expect(mockAttribute.getRequiredAttributes()).
+			andReturn(new ArrayList<Attribute>());
+		expect(mockAttr.getRequiredAttributes()).
+			andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
 		int attrNumber = op.getInputAttributeNumber(mockAttribute);
@@ -327,14 +382,16 @@ public class ScanOperatorTest extends EasyMockSupport {
 	}
 
 	@Test
-	public void testIsAttributeSensitive() throws TypeMappingException, SchemaMetadataException {
+	public void testIsAttributeSensitive() 
+	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
 		assertFalse(op.isAttributeSensitive());
@@ -346,11 +403,12 @@ public class ScanOperatorTest extends EasyMockSupport {
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
 		assertTrue(op.isLocationSensitive());
@@ -362,11 +420,12 @@ public class ScanOperatorTest extends EasyMockSupport {
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
 		assertFalse(op.isRecursive());
@@ -378,11 +437,12 @@ public class ScanOperatorTest extends EasyMockSupport {
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
 		assertFalse(op.isRemoveable());
@@ -394,11 +454,12 @@ public class ScanOperatorTest extends EasyMockSupport {
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		List<SourceMetadataAbstract> sources =
 			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				sources, 
 				types.getType("boolean"));
 		op.pushLocalNameDown("newLocalName");

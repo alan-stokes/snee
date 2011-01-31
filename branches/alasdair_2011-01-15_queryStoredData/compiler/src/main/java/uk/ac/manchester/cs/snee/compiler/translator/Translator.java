@@ -529,7 +529,7 @@ public class Translator {
 						" referenced as " + extentReference);
 			}
 			extentNameMappings.put(extentReference, extentName);
-			operator.pushLocalNameDown(extentReference);
+//			operator.pushLocalNameDown(extentReference);
 		} else {
 			String msg = "Unprogrammed AST Type:" + ast.getType() +
 				" Text:"+ extentReference;

@@ -132,7 +132,7 @@ public class AcquireComponent extends NesCComponent implements
     private void doGetDataMethods(final Map<String, String> replacements) {
     	final List<Attribute> sensedAttribs = 
     		((AcquireOperator)op.getLogicalOperator()).
-    		getSensedAttributes();
+    		getInputAttributes();
     	final StringBuffer getDataBuff = new StringBuffer();
     	final StringBuffer declsBuff = new StringBuffer();
     	for (int i = sensedAttribs.size()-1; i >= 0; i--) {
@@ -206,7 +206,7 @@ public class AcquireComponent extends NesCComponent implements
      */
     private void doGetEmptyDataMethods(final Map<String, String> replacements) {
     	final List<Attribute> sensedAttribs = 
-    		((AcquireOperator)op.getLogicalOperator()).getSensedAttributes();
+    		((AcquireOperator)op.getLogicalOperator()).getInputAttributes();
     	final StringBuffer getDataBuff = new StringBuffer();
     	for (int i = sensedAttribs.size() - 1; i >= 0; i--) {
     	    getDataBuff.append("\tasync event result_t ADC" + i
@@ -281,7 +281,7 @@ public class AcquireComponent extends NesCComponent implements
 		if (expression instanceof DataAttribute) {
 			try {
 				return "reading" + ((AcquireOperator)op.
-				getLogicalOperator()).getSensedAttributeNumber(expression);
+				getLogicalOperator()).getInputAttributeNumber(expression);
 			} catch (OptimizationException e) {
 				throw new CodeGenerationException(e);
 			} 

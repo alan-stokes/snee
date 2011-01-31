@@ -46,6 +46,9 @@ public class DLAFUtils extends LAFUtils {
 			TreeMap<String, StringBuffer> edgeLabelBuff,
 			StringBuffer fragmentsBuff) 
 	throws SchemaMetadataException {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER exportAsDOTFile() " + fname + ", " +
+					label);
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("\\nSources:");
 		for (SourceMetadataAbstract source : dlaf.getSources()) {

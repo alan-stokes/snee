@@ -128,12 +128,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		// Instantiate this as a receive operator
 		receiveOp = (ReceiveOperator) op;
 		m_qid = qid;
-		try {
-			attributes = receiveOp.getAllReceivedAttributes();
-		} catch (TypeMappingException e) {
-			logger.error(e);
-			throw new SchemaMetadataException("", e);
-		}
+		attributes = receiveOp.getInputAttributes();
 		_streamName = receiveOp.getExtentName();
 	
 		if (logger.isTraceEnabled()) {

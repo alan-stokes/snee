@@ -35,6 +35,7 @@
 package uk.ac.manchester.cs.snee.common.graph;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Ixent Galpin
@@ -57,12 +58,12 @@ public class NodeImplementation implements Node {
 	/**
 	 * The neighbouring nodes on outgoing edges
 	 */
-	private ArrayList<Node> outputs = new ArrayList<Node>();
+	private List<Node> outputs = new ArrayList<Node>();
 
 	/**
 	 * The neighbouring nodes on incoming edges
 	 */
-	private ArrayList<Node> inputs = new ArrayList<Node>();
+	private List<Node> inputs = new ArrayList<Node>();
 
 	/**
 	 * Default constructor
@@ -112,7 +113,7 @@ public class NodeImplementation implements Node {
 	 * Get the incoming nodes
 	 * @return inouts
 	 */
-	public ArrayList<Node> getInputsList() {
+	public List<Node> getInputsList() {
 		return inputs;
 	}
 
@@ -159,7 +160,7 @@ public class NodeImplementation implements Node {
 	 * Get the output nodes
 	 * @return outouts
 	 */
-	public ArrayList<Node> getOutputsList() {
+	public List<Node> getOutputsList() {
 		return outputs;
 	}
 

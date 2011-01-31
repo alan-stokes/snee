@@ -33,7 +33,6 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.operators.logical;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -47,116 +46,32 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 
-public class ScanOperator extends LogicalOperatorImpl 
-implements LogicalOperator {
+public class ScanOperator extends InputOperator {
 
 	private Logger logger = 
 		Logger.getLogger(ScanOperator.class.getName());
-	
-	/** List of attributes to be received. */
-	private List<Attribute> scannedAttributes;
-
-	private String extentName;
-
-	private List<SourceMetadataAbstract> sources;
-
-	private List<Attribute> outputAttributes;
-
-	private List<Expression> expressions;
-	
+		
 	public ScanOperator(ExtentMetadata extentMetadata,
 			List<SourceMetadataAbstract> sources,
 			AttributeType boolType) 
+	throws SchemaMetadataException, TypeMappingException 
 	{
-		super(boolType);
+		super(extentMetadata, sources, boolType);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ScanOperator() with " +
 					extentMetadata + " #sources=" + sources.size());
 		}
 		this.setOperatorName("SCAN");
 		this.setOperatorDataType(OperatorDataType.RELATION);
-		this.extentName = extentMetadata.getExtentName();
-		this.sources = sources;
-		addMetadataInfo(extentMetadata);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN ScanOperator()");
 		}
-	}
-	
-	/**
-	 * Sets up the attribute based on the schema.
-	 * @param extentMetaData DDL declaration for this extent.
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
-	 */
-	private void addMetadataInfo(ExtentMetadata extentMetaData) 
-	{
-		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER addMetaDataInfo() with " +
-					extentName);
-		}
-		scannedAttributes = extentMetaData.getAttributes();
-		outputAttributes = scannedAttributes;
-		copyExpressions(outputAttributes);
-		if (logger.isTraceEnabled())
-			logger.trace("RETURN addMetaDataInfo()");
-	}
-
-	/**
-	 * Copies attributes into the expressions.
-	 * @param attributes Values to set them to.
-	 */
-	protected void copyExpressions(
-			List<Attribute> attributes) {
-		expressions = new ArrayList<Expression>(); 
-		expressions.addAll(attributes);
-	}
-
-	@Override
-	public String toString() {
-		return this.getText();
-	}
-	
-	/**
-	 * Return the name of the extent as it appears in the schema.
-	 * @return
-	 */
-	public String getExtentName() {
-		return extentName;
-	}
-	
-	/**
-	 * Return details of the data sources
-	 * @return
-	 */
-	public List<SourceMetadataAbstract> getSources() {
-		return sources;
-	}
-
-	public int getCardinality(CardinalityType card) {
-		return scannedAttributes.size();
-	}
-
-	public boolean isAttributeSensitive() {
-		return false;
-	}
-
-	public boolean isLocationSensitive() {
-		return true;
-	}
-
-	public boolean isRecursive() {
-		return false;
 	}
 
 	/** {@inheritDoc}
 	 * @return false;
 	 */
 	public boolean acceptsPredicates() {
-		return false;
-	}
-
-	public boolean isRemoveable() {
 		return false;
 	}
 
@@ -179,25 +94,6 @@ implements LogicalOperator {
 	public boolean pushSelectDown(Expression predicate) 
 	throws SchemaMetadataException, TypeMappingException {
 		return false;
-	}
-
-	/** 
-	 * {@inheritDoc}
-	 * Should never be called as there is always a project or aggregation 
-	 * between this operator and the rename operator.
-	 */   
-	public void pushLocalNameDown(String newLocalName) {
-		throw new AssertionError("Unexpected call to pushLocalNameDown()"); 
-	}
-
-	/** {@inheritDoc} */    
-	public List<Attribute> getAttributes() {
-		return scannedAttributes;
-	}
-
-	/** {@inheritDoc} */    
-	public List<Expression> getExpressions() {
-		return super.defaultGetExpressions();
 	}
 
 }

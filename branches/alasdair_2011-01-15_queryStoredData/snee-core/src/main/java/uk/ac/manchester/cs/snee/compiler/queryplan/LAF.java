@@ -33,16 +33,10 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
-import uk.ac.manchester.cs.snee.common.graph.Graph;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
@@ -72,7 +66,7 @@ public class LAF extends SNEEAlgebraicForm {
 	public LAF(LogicalOperator rootOp, String queryName) {
 		super(queryName);
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER LAF()");
+			logger.debug("ENTER LAF() " + queryName);
 		this.logicalOperatorTree = new Tree(rootOp);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN LAF()");
@@ -103,18 +97,21 @@ public class LAF extends SNEEAlgebraicForm {
 	public LogicalOperator getRootOperator() {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getRootOperator()");
+		LogicalOperator rootOp = 
+			(LogicalOperator) this.logicalOperatorTree.getRoot();
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN getRootOperator()");
-		return (LogicalOperator) this.logicalOperatorTree.getRoot();
+			logger.debug("RETURN getRootOperator() with " + rootOp);
+		return rootOp;
 	}
 
 	 /** {@inheritDoc} */
 	public String getDescendantsString() {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getDescendantsString()");
+		String id = this.getID();
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN getDescendantsString()");
-		return this.getID();
+			logger.debug("RETURN getDescendantsString() id=" + id);
+		return id;
 	}
 
 	/**
@@ -122,7 +119,8 @@ public class LAF extends SNEEAlgebraicForm {
 	 * @param op
 	 * @throws OptimizationException
 	 */
-	public void removeOperator(LogicalOperator op) throws OptimizationException {
+	public void removeOperator(LogicalOperator op) 
+	throws OptimizationException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER removeOperator()");
 		this.logicalOperatorTree.removeNode(op);
@@ -136,10 +134,10 @@ public class LAF extends SNEEAlgebraicForm {
 	 * @return
 	 */
 	public Iterator<LogicalOperator> operatorIterator(TraversalOrder order) {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER operatorIterator()");
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN operatorIterator()");		
+//		if (logger.isDebugEnabled())
+//			logger.debug("ENTER operatorIterator()");
+//		if (logger.isDebugEnabled())
+//			logger.debug("RETURN operatorIterator()");		
 		return this.logicalOperatorTree.nodeIterator(order);
 	}
 
@@ -148,10 +146,10 @@ public class LAF extends SNEEAlgebraicForm {
 	 * @return
 	 */
 	public Tree getOperatorTree() {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER getOperatorTree()");
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN getOperatorTree()");	
+//		if (logger.isDebugEnabled())
+//			logger.debug("ENTER getOperatorTree()");
+//		if (logger.isDebugEnabled())
+//			logger.debug("RETURN getOperatorTree()");	
 		return this.logicalOperatorTree;
 	}
 	
