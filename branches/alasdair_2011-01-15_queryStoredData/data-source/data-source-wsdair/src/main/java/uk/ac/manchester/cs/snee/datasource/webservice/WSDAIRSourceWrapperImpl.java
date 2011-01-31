@@ -115,7 +115,6 @@ implements SourceWrapper {
     TypeMappingException {
     	if (logger.isDebugEnabled())
     		logger.debug("ENTER getSchema() with " + resourceName);
-    	//XXX: Assumes that a source only provides a single extent
     	List<ExtentMetadata> extents = new ArrayList<ExtentMetadata>();
 		try {
 	    	GetDataResourcePropertyDocumentRequest request = 
