@@ -37,6 +37,7 @@ public abstract class SchemaParserAbstract implements SchemaParser {
 			break;
 		case java.sql.Types.CHAR:
 		case java.sql.Types.VARCHAR:
+		case java.sql.Types.LONGVARCHAR:
 			type = _types.getType("string");
 			break;
 		case java.sql.Types.DECIMAL:
@@ -46,10 +47,16 @@ public abstract class SchemaParserAbstract implements SchemaParser {
 			type = _types.getType("float");
 			break;
 		case java.sql.Types.INTEGER:
+		case java.sql.Types.SMALLINT:
 		case java.sql.Types.BIGINT:
 			type = _types.getType("integer");			
 			break;
+		case java.sql.Types.BIT:
+			//FIXME: Really should introduce the bit type again!
+			type = _types.getType("integer");
+			break;
 		case java.sql.Types.TIMESTAMP:
+		case java.sql.Types.TIME:
 		case java.sql.Types.DATE:
 			//FIXME: Do we really want date to be a timestamp?
 			type = _types.getType("timestamp");
