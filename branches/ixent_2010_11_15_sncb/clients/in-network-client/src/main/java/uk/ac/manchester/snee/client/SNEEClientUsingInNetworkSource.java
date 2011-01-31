@@ -7,6 +7,7 @@ import org.apache.log4j.PropertyConfigurator;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.client.SNEEClient;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator;
 
@@ -56,7 +57,7 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 			duration = Long.valueOf(args[1]);
 			queryParams = args[2];
 		}
-			
+				
 			try {
 				/* Initialise SNEEClient */
 				SNEEClientUsingInNetworkSource client = 
