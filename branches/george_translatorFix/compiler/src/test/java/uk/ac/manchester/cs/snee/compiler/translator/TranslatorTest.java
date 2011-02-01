@@ -541,14 +541,7 @@ public class TranslatorTest {
 				"(SELECT timestamp, floatColumn FROM PullStream);");
 	}
 
-	/**
-	 * This is a query that demonstrates the fact that we
-	 * allow a window on a nested query!
-	 * 
-	 * FIXME: There should be a renaming of the nested query. This query
-	 * *should* fail (will fail when the translator bug is fixed).
-	 * */
-	@Test
+	@Test(expected=ExpressionException.class)
 	public void testQuery_windowOnNestedQuery() 
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
@@ -600,13 +593,510 @@ public class TranslatorTest {
 				"FROM TestStream[FROM NOW - 10 SECONDS TO NOW SLIDE 1 SECOND] ts;");
 	}
 
-	@Test(expected=ExpressionException.class)
+	@Test
 	public void testUnionQuery_problematicFromClause() 
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT ts.timestamp FROM (SELECT timestamp FROM TestStream) ts;");
+	}
+
+	
+	/********************************************************************************
+	 * 			NEWLY ADDED JUNIT TESTS AFTER CHANGING THE TRANSLATOR				*
+	 ********************************************************************************/
+
+	@Test
+	public void testQuery_simplestQuery_fetchAll() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT * FROM PushStream;");
+	}
+
+	@Test
+	public void testQuery_simplestQuery_fetchOneColumn() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT integetColumn FROM PushStream;");
+	}
+
+	@Test
+	public void testWindowedQuery_OneColumn() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT integetColumn FROM PushStream[NOW];");
+	}
+	
+	@Test
+	public void testQuery_OneColumn_Paren() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("(SELECT integetColumn FROM PushStream);");
+	}
+
+	@Test
+	public void testQuery_TwoColumns() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT integetColumn, floatColumn FROM PushStream;");
+	}
+	
+	@Test
+	public void testQuery_TwoColumns_Paren() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("(SELECT integetColumn, floatColumn FROM PushStream);");
+	}
+
+	@Test
+	public void testNamedExtentQuery_DuplicateAttributes() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("(SELECT integetColumn, integetColumn FROM PushStream ps);");
+	}
+	
+
+
+	@Test
+	public void testNamedExtentQuery_UnnamedAttribute() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT integetColumn FROM PushStream ps;");
+	}
+	
+	@Test
+	public void testNamedExtentQuery_AliasingUnnamedDuplicateAttributes() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT integetColumn AS int1, integetColumn AS int2 FROM PushStream ps;");
+	}
+
+	/* You can not have a named attribute without providing a name for the extent */
+	@Test(expected=ExpressionException.class)
+	public void testUnnamedExtentQuery_NamedAttribute() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn FROM PushStream;");
+	}
+
+	/* Same reason as above */
+	@Test(expected=ExpressionException.class)
+	public void testUnnamedExtentQuery_NamedAttribute_Paren() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("(SELECT ps.integetColumn FROM PushStream);");
+	}
+
+
+	/* Same reason as above */
+	@Test(expected=ExpressionException.class)
+	public void testUnnamedExtentQuery_NamedAttribute_Window() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn FROM PushStream[NOW];");
+	}
+
+	/* Same reason as above, only that we have 2 columns now */
+	@Test(expected=ExpressionException.class)
+	public void testUnnamedExtentQuery_NamedAttribute_TwoColumns() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn, ps.floatColumn FROM PushStream[NOW];");
+	}
+
+	/* This is the correct form of the query */
+	@Test
+	public void testNamedExtentQuery_NamedAttribute() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn FROM PushStream ps;");
+	}
+
+	/* This is the correct form of the query. Also here we demonstrate
+	 * that we can alias two columns, which are in fact the same attribute! */
+	@Test
+	public void testNamedExtentQuery_NamedAttribute_AliasingDuplicateColumns() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn AS int1, ps.integetColumn AS int2 FROM PushStream ps;");
+	}
+
+	/* This is the correct form of the query. Also here we demonstrate
+	 * that we can alias two columns, which are in fact the same attribute! */
+	@Test
+	public void testNamedExtentQuery_NamedAttribute_TwoColumns() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn, ps.floatColumn FROM PushStream ps;");
+	}
+
+
+	@Test(expected=ExpressionException.class)
+	public void testUnnamedSubQuery() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn FROM ( SELECT integetColumn FROM PushStream ps);");
+	}
+
+	@Test(expected=ExpressionException.class)
+	public void testUnnamedSubQuery_Paren() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("(SELECT ps.integetColumn FROM ( SELECT integetColumn FROM PushStream ps));");
+	}
+
+
+	@Test(expected=ExpressionException.class)
+	public void testUnnamedSubQuery_WindowAndNameInNestedQuery() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn FROM (SELECT ps.integetColumn FROM PushStream[NOW] ps);");
+	}
+
+	@Test(expected=ExpressionException.class)
+	public void testUnnamedSubQuery_TwoColumnsInNestedQuery() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn, ps.floatColumn FROM ( SELECT integetColumn, floatColumn FROM PushStream ps);");
+	}
+
+
+	/* This is the correct form of the query. Also here we demonstrate
+	 * that we can alias two columns, which are in fact the same attribute! */
+	@Test
+	public void testNamedSubQuery_NamedExternalAttribute() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn FROM (SELECT * FROM PushStream) ps;");
+	}
+
+	@Test
+	public void testNamedSubQuery_FetchAll_ProjectSingle_NameExternalAttribute() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn FROM (SELECT * FROM PushStream) ps;");
+	}
+
+	@Test
+	public void testNamedSubQuery_FetchSingle_NameExternalAttribute() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn FROM (SELECT integetColumn FROM PushStream) ps;");
+	}
+
+	@Test
+	public void testWindowedNamedSubQuery_FetchSingle_NameExternalAttribute() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn FROM (SELECT integetColumn FROM PushStream[NOW]) ps;");
+	}
+
+
+	@Test
+	public void testSubQuery_WindowAndNameInNested_FetchSingle_NameExternalAttribute() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn FROM (SELECT ps.integetColumn FROM PushStream[NOW] ps) ps;");
+	}
+
+	@Test
+	public void testSubQuery_FetchTwoColumns_NameExternalAttribute() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn, ps.floatColumn FROM (SELECT integetColumn, floatColumn FROM PushStream) ps;");
+	}
+
+	@Test
+	public void testSubQuery_InternalExternalNames_RenameOnExternal_FetchAll() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ts.integetColumn FROM (SELECT * FROM PushStream ps) ts;");
+	}
+
+	@Test
+	public void testSubQuery_InternalExternalNames_RenameOnExternal_FetchSingle() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ts.integetColumn FROM (SELECT integetColumn FROM PushStream ps) ts;");
+	}
+
+	@Test
+	public void testSubQuery_InternalExternalNames_RenameOnExternal_FetchWindowed() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ts.integetColumn FROM (SELECT integetColumn FROM PushStream[NOW]) ts;");
+	}
+
+	@Test
+	public void testSubQuery_InternalExternalSameNames() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn FROM (SELECT ps.integetColumn FROM PushStream ps) ps;");
+	}
+
+	
+	@Test
+	public void testAliasing_SingleAttribute_UnnamedExtents() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT integetColumn AS intValue FROM PushStream;");
+	}
+
+	@Test
+	public void testAliasing_TwoAttributes_UnnamedExtents() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT integetColumn AS intValue, floatColumn AS floatValue FROM PushStream;");
+	}
+
+	@Test
+	public void testAliasingInNestedQuery_NamedExtents_WithWindow() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ts.intvalue FROM (SELECT ps.integetColumn as intvalue FROM PushStream[NOW] ps) ts;");
+	}
+
+	@Test
+	public void testAliasing_NamedExtent_UnnamedAttribute() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT integetColumn AS intValue FROM PushStream ps;");
+	}
+
+	@Test
+	public void testAliasingInSubquery_UnnamedExternalAttribute_NamedInternalAttribute() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT integetColumn AS intvalue FROM (SELECT ps.integetColumn FROM PushStream[NOW] ps) ts;");
+	}
+
+	@Test
+	public void testAliasing_ReferencedAttributes() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn AS intValue FROM PushStream ps;");
+	}
+
+	@Test
+	public void testAliasing_ReferencedAttributes_SubQuery() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ts.integetColumn AS intvalue FROM (SELECT ps.integetColumn FROM PushStream[NOW] ps) ts;");
+	}
+
+	/* The sub-query in the FROM clause does not have a reference name */
+	@Test(expected=ExpressionException.class)
+	public void testNestedQuery_UnreferencedNestedQuery() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.intvalue FROM (SELECT integetColumn AS intValue FROM PushStream ps);");
+	}
+
+	/* Similar to the previous one */
+	@Test(expected=ExpressionException.class)
+	public void testNestedQuery_UnreferencedNestedQuery_FetchAll() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.intvalue AS intValue, ps.floatColumn AS floatValue " +
+				"FROM (SELECT * FROM PushStream ps);");
+	}
+
+	
+	/* The sub-query in the FROM clause aliases integetColumn to intValue. However,
+	 * the external query requests integetColumn! */
+	@Test(expected=ExpressionException.class)
+	public void testNestedQuery_MistakenAliasingFromInternal() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn FROM (SELECT integetColumn AS intValue FROM PushStream) ps;");
+	}
+
+	
+	/* No aliasing, but we are requesting the wrong names, as we have requested to fetch all.
+	 * Notice that the reference name of the nested query is correctly applied */
+	@Test(expected=ExpressionException.class)
+	public void testNestedQuery_WrongAliasing_FetchAll() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ts.intvalue AS intValue, ts.floatColumn AS floatValue " + 
+				"FROM (SELECT * FROM PushStream) ts;");
+	}
+
+	
+	@Test
+	public void testNestedQuery_CorrectAliasingInNestedQuery() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.intvalue FROM (SELECT integetColumn AS intValue FROM PushStream) ps;");
+	}
+
+	@Test
+	public void testNestedQuery_InternalExternalAliasing() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.int1 AS intval, ps.int2 AS newVal FROM " +
+				"	(SELECT integetColumn AS int1, integetColumn as int2 FROM PushStream) ps;");
+	}
+
+	/* Notice that the reference renaming is correctly applied. Moreover, in the
+	 * subquery we also have a ps reference, which is ignored! */
+	@Test
+	public void testNestedQuery_ExternalAliasingOnFetchAll() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ts.integetColumn AS intValue, ts.floatColumn AS floatValue " +
+				"FROM (SELECT * FROM PushStream ps) ts;");
+	}
+
+	/* Similar to the above, but the reference is mistaken! */
+	@Test(expected=ExpressionException.class)
+	public void testNestedQuery_WrongExternalAliasingOnFetchAll() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ps.integetColumn AS intValue, ps.floatColumn AS floatValue " +
+				"FROM (SELECT * FROM PushStream ps) ts;");
+	}
+
+
+	@Test
+	public void testNestedQuery_ChangeFetchSequence_WithAliasing() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT ts.floatColumn AS floatValue, ts.intvalue AS intValue " +
+				"FROM (SELECT ps.integetColumn AS intvalue, ps.floatColumn FROM PushStream ps) ts;");
+	}
+
+	@Test
+	public void testNestedQuery_WindowedNestinng() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT t1.integetColumn FROM " +
+				"(SELECT integetColumn FROM PushStream[NOW]) t1;");
+	}
+
+	@Test
+	public void testNestedQuery_DoubleExternalAliasing_SameAttribute() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT t1.integetColumn AS t1, t1.integetColumn AS t2 FROM " +
+				"(SELECT integetColumn FROM PushStream[NOW]) t1;");
+	}
+
+	@Test
+	public void testNestedQuery_StrangeRenaming_WindowOnInternal() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT t1.t1 AS int1, t1.t2 AS int2 FROM " +
+				"(SELECT integetColumn AS t1, integetColumn AS t2 FROM PushStream[NOW]) t1;");
+	}
+
+	@Test
+	public void testNestedJoin_WithAliasing() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT t1.integetColumn AS int1, t2.floatColumn AS float FROM " +
+				"(SELECT integetColumn FROM PushStream[NOW]) t1, PushStream[NOW] t2;");
 	}
 
 }

@@ -43,7 +43,14 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 					"\t\"query statement\"\n" +
 					"\t\"query duration in seconds\"\n");
 			//XXX: Use default query
+
 			query = "SELECT * FROM PushStream;";
+
+//			query = "SELECT ps.intattr, ts.floatattr " +
+//					"FROM ( SELECT ps.intattr AS myint FROM PushStream) ps;";
+//			query = "SELECT avg(*) FROM ( SELECT ps.intattr AS myint FROM PushStream ps);";
+//			query = "SELECT COUNT(intattr) FROM PushStream GROUP BY intattr;";
+//			query = "SELECT * FROM ( SELECT * FROM PushStream ps);";
 			duration = Long.valueOf("20");
 //			System.exit(1);
 		} else {	

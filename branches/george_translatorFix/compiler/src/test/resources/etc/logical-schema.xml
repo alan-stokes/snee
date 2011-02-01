@@ -8,7 +8,7 @@
     	<column name="timestamp">
         	<type class ="integer"/>
          </column>
-         <column name="integetColumn">
+         <column name="integerColumn">
           	<type class ="integer"/>
          </column>
          <column name="floatColumn">
@@ -26,7 +26,7 @@
     	<column name="timestamp">
         	<type class ="integer"/>
          </column>
-         <column name="integetColumn">
+         <column name="integerColumn">
           	<type class ="integer"/>
          </column>
          <column name="floatColumn">
@@ -44,7 +44,7 @@
     	<column name="timestamp">
         	<type class ="integer"/>
          </column>
-         <column name="integetColumn">
+         <column name="integerColumn">
           	<type class ="integer"/>
          </column>
          <column name="floatColumn">
@@ -80,7 +80,7 @@
     	<column name="timestamp">
         	<type class ="integer"/>
          </column>
-         <column name="integetColumn">
+         <column name="integerColumn">
           	<type class ="integer"/>
          </column>
          <column name="floatColumn">
