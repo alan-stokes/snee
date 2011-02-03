@@ -546,7 +546,7 @@ public class Translator {
 				String attrName = attribute.getAttributeDisplayName();
 				String[] parts = attrName.split("[.]");
 
-				assert ( parts.length == 2 );
+				assert ( parts.length > 0 && parts.length <= 2 );
 
 				/* There is not extent name, so this is a sub-query */
 				if ( extentName.isEmpty() ){
