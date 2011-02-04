@@ -112,6 +112,7 @@ sources  : source (COMMA! source)*;
 //source   : extent^ (window)?; 
 
 source   : i:Identifier^ (window)? (Identifier)? {#i.setType(SOURCE);}
+		 // RESCAN in window as otherwise we get non-deterministic behaviour
          | subQuery RPAREN^ (window)? (Identifier)?
          ;                   
 
@@ -126,8 +127,12 @@ window   : ( LSQUARE NOW RSQUARE ) =>
 		 //winFrom includes the LSQUARE
          | LSQUARE! UNBOUNDED^ (winSlide)? RSQUARE!
          | LSQUARE! winAt (winSlide)? RSQUARE!
-         | LSQUARE! winRange (winSlide)? RSQUARE! 
-         | winOpen (winSlide)? RSQUARE!;
+         | LSQUARE! winRange (winSlide)? RSQUARE!
+         // RESCAN in window as otherwise we get non-deterministic behaviour
+         | LSQUARE! RESCAN^ expr unit RSQUARE! 
+         ;
+// Commented out winOpen rule as Christian did not know what it was doing         
+//         | winOpen (winSlide)? RSQUARE!;
          //winOpen includes the LSQUARE 
          //omitting slide causes an input window
          //   window slide set to acquisition rate
@@ -221,6 +226,7 @@ NOT         = "not";
 NOW         = "now";
 OR          = "or";
 RANGE       = "range";
+RESCAN      = "rescan";
 RSTREAM     = "rstream";
 //SEC         = "sec";
 //SECOND      = "second";

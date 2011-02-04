@@ -1,11 +1,15 @@
 package uk.ac.manchester.cs.snee.operators.logical;
 
 import static org.easymock.EasyMock.expect;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.easymock.classextension.EasyMockSupport;
@@ -27,6 +31,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.types.Duration;
 
 public class ScanOperatorTest extends EasyMockSupport {
 
@@ -402,6 +407,41 @@ public class ScanOperatorTest extends EasyMockSupport {
 				sources, 
 				types.getType("boolean"));
 		op.pushLocalNameDown("newLocalName");
+		verifyAll();
+	}
+
+	@Test
+	public void testGetRescan_rescanIntervalNotSet() 
+	throws SchemaMetadataException, TypeMappingException
+	{
+		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		expect(mockExtent.getAttributes())
+			.andReturn(new ArrayList<Attribute>());
+		replayAll();
+		List<SourceMetadataAbstract> sources =
+			new ArrayList<SourceMetadataAbstract>();
+		ScanOperator op = new ScanOperator(mockExtent, 
+				sources, 
+				types.getType("boolean"));
+		assertNull(op.getRescanInterval());
+		verifyAll();
+	}
+
+	@Test
+	public void testGetRescan_rescanIntervalSet() 
+	throws SchemaMetadataException, TypeMappingException
+	{
+		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		expect(mockExtent.getAttributes())
+			.andReturn(new ArrayList<Attribute>());
+		replayAll();
+		List<SourceMetadataAbstract> sources =
+			new ArrayList<SourceMetadataAbstract>();
+		ScanOperator op = new ScanOperator(mockExtent, 
+				sources, 
+				types.getType("boolean"));
+		op.setRescanInterval(new Duration(2, TimeUnit.HOURS));
+		assertEquals(new Duration(2, TimeUnit.HOURS), op.getRescanInterval());
 		verifyAll();
 	}
 

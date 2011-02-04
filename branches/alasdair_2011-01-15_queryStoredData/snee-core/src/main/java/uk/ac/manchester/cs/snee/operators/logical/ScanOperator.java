@@ -45,11 +45,13 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.types.Duration;
 
 public class ScanOperator extends InputOperator {
 
 	private Logger logger = 
 		Logger.getLogger(ScanOperator.class.getName());
+	private Duration rescanInterval;
 		
 	public ScanOperator(ExtentMetadata extentMetadata,
 			List<SourceMetadataAbstract> sources,
@@ -94,6 +96,14 @@ public class ScanOperator extends InputOperator {
 	public boolean pushSelectDown(Expression predicate) 
 	throws SchemaMetadataException, TypeMappingException {
 		return false;
+	}
+	
+	public void setRescanInterval(Duration rescanInterval) {
+		this.rescanInterval = rescanInterval;
+	}
+	
+	public Duration getRescanInterval() {
+		return rescanInterval;
 	}
 
 }

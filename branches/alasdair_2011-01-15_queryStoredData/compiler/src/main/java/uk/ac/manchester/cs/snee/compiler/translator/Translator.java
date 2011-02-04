@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
@@ -47,6 +48,7 @@ import uk.ac.manchester.cs.snee.operators.logical.ScanOperator;
 import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
+import uk.ac.manchester.cs.snee.types.Duration;
 import antlr.RecognitionException;
 import antlr.collections.AST;
 
@@ -232,6 +234,14 @@ public class Translator {
 			operator = createWindow(1-range, rangeUnit, 0, rangeUnit, 
 					slide, slideUnit, operator);
 			break;
+		case SNEEqlParserTokenTypes.RESCAN:
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate RESCAN window");
+			}
+			Duration rescanInterval = translateRescanWindow(ast);
+			((ScanOperator)operator).setRescanInterval(rescanInterval);
+			ast = ast.getNextSibling();
+			break;
 		default:
 			String message = "Unprogrammed AST Type:" + 
 					ast.getType() +" Text:"+ ast.getText();
@@ -244,6 +254,49 @@ public class Translator {
 					"operator " + operator);
 		}
 		return operator;
+	}
+	
+	private Duration translateRescanWindow(AST ast) 
+	throws RecognitionException, ParserException, ExpressionException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER translateRescanWindow() with " + ast + 
+					" (" + ast.getFirstChild() + ", " + 
+					ast.getFirstChild().getNextSibling() + ")");
+		}
+		AST expression = ast.getFirstChild();
+		SNEEqlTreeWalker walker = new SNEEqlTreeWalker();
+		double value = walker.expr(expression);
+		AST unit = expression.getNextSibling();
+		Duration duration = null;
+		if (unit.getType() != SNEEqlParserTokenTypes.UNIT_NAME) {
+			String msg = "No Unit found with window declaration " +
+				ast.getText();
+			logger.warn(msg);
+			throw new ExpressionException(msg);
+		} else if (unit.getText().equalsIgnoreCase("millisecond") || 
+				unit.getText().equalsIgnoreCase("milliseconds")) {
+			duration  = new Duration((long) value, TimeUnit.MILLISECONDS);
+		} else if (unit.getText().equalsIgnoreCase("second") || 
+				unit.getText().equalsIgnoreCase("seconds")) {
+			duration  = new Duration((long) value, TimeUnit.SECONDS);
+		} else if (unit.getText().equalsIgnoreCase("minute") || 
+				unit.getText().equalsIgnoreCase("minutes")) {
+			duration  = new Duration((long) value, TimeUnit.MINUTES);
+		} else if (unit.getText().equalsIgnoreCase("hour") || 
+				unit.getText().equalsIgnoreCase("hours")) {
+			duration  = new Duration((long) value, TimeUnit.HOURS);
+		} else if (unit.getText().equalsIgnoreCase("day") || 
+				unit.getText().equalsIgnoreCase("days")) {
+			duration  = new Duration((long) value, TimeUnit.DAYS);
+		} else {
+			String msg = "Unsupported time unit " + unit.getText();
+			logger.warn(msg);
+			throw new ExpressionException(msg);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN translateRescanWindow() with " + duration);
+		}
+		return duration;
 	}
 
 	private ASTPair findAST(AST ast, int type) {
@@ -298,7 +351,7 @@ public class Translator {
 					throw new ExpressionException(message);
 				}
 			} else if (!timeScope) {
-				String message = "Can not mike a Window " +
+				String message = "Can not make a Window " +
 						"to unit of: " + toUnit.getText() + 
 						" with a from " +
 						"unit of " + fromUnit.getText();
@@ -513,7 +566,7 @@ public class Translator {
 			String extentName) 
 	throws OptimizationException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER translateLocalName() with op=" + 
+			logger.trace("ENTER translateLocalName() with alias=" + ast + " op=" + 
 					operator);
 		}
 		if (ast == null) {

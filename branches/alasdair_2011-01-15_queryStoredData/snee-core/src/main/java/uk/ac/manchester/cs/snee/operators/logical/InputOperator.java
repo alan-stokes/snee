@@ -190,7 +190,6 @@ implements LogicalOperator {
 	 */
 	public int getInputAttributeNumber(Expression attribute)
 	throws OptimizationException {
-		System.out.println("Here: " + attribute.getClass());
 		assert (attribute instanceof DataAttribute);
 		for (int i = 0; i < inputAttributes.size(); i++) {
 			if (attribute.equals(inputAttributes.get(i))) {

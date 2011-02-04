@@ -29,8 +29,6 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlLexer;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
-import uk.ac.manchester.cs.snee.sncb.SNCBException;
-
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -49,6 +47,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderExceptio
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.OperatorDataType;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import antlr.CommonAST;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -202,6 +201,8 @@ public class TranslatorTest {
 			laf.operatorIterator(TraversalOrder.POST_ORDER);
 		LogicalOperator operator = testOperator(iterator, "RECEIVE");
 		assertEquals(OperatorDataType.STREAM, operator.getOperatorDataType());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
 	}
 	
 	@Test
@@ -215,6 +216,8 @@ public class TranslatorTest {
 			laf.operatorIterator(TraversalOrder.POST_ORDER);
 		LogicalOperator operator = testOperator(iterator, "ACQUIRE");
 		assertEquals(OperatorDataType.STREAM, operator.getOperatorDataType());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
 	}
 	
 	@Test
@@ -229,6 +232,59 @@ public class TranslatorTest {
 			laf.operatorIterator(TraversalOrder.POST_ORDER);
 		LogicalOperator operator = testOperator(iterator, "SCAN");
 		assertEquals(OperatorDataType.RELATION, operator.getOperatorDataType());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
+	}
+	
+	/**
+	 * Exception expected since SCAN is not part of the language
+	 */
+	@Test(expected=ParserException.class)
+	public void testSimpleQuery_tableScan() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException,
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		LAF laf = testQuery("SELECT * FROM TestTable[SCAN 24 hours];");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator operator = testOperator(iterator, "SCAN");
+		assertEquals(OperatorDataType.RELATION, operator.getOperatorDataType());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
+	}
+	
+	@Test
+	public void testSimpleQuery_tableRescan() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException,
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		LAF laf = testQuery("SELECT * FROM TestTable[RESCAN 24 hours];");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator operator = testOperator(iterator, "SCAN");
+		assertEquals(OperatorDataType.RELATION, operator.getOperatorDataType());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
+	}
+	
+	@Test
+	public void testSimpleQuery_tableRescanAlias() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException,
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		LAF laf = testQuery("SELECT * FROM TestTable[RESCAN 24 hours] t;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator operator = testOperator(iterator, "SCAN");
+		assertEquals(OperatorDataType.RELATION, operator.getOperatorDataType());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
 	}
 
 	@Test
@@ -242,6 +298,8 @@ public class TranslatorTest {
 			laf.operatorIterator(TraversalOrder.POST_ORDER);
 		LogicalOperator operator = testOperator(iterator, "RECEIVE");
 		assertEquals(OperatorDataType.STREAM, operator.getOperatorDataType());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
 	}
 	
 	@Test
