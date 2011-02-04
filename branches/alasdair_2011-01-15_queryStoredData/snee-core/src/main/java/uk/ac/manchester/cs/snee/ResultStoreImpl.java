@@ -324,39 +324,41 @@ extends Observable implements ResultStore {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER createResultSets()");
 		}
-		Output output = outputs.get(0);
 		List<ResultSet> resultSets = new ArrayList<ResultSet>();
 		try {
-			if (output instanceof TaggedTuple) {
-				if (logger.isTraceEnabled()) {
-					logger.trace("Processing stream of tuples");
+			if (!outputs.isEmpty()) {
+				Output output = outputs.get(0);
+				if (output instanceof TaggedTuple) {
+					if (logger.isTraceEnabled()) {
+						logger.trace("Processing stream of tuples");
+					}
+					List<Tuple> results = new ArrayList<Tuple>();
+					for (Output result : outputs) {
+						TaggedTuple tt = (TaggedTuple) result; 
+						Tuple tuple = tt.getTuple();
+						results.add(tuple);
+					}
+					//XXX: Need to decide if we will use the override method
+					ResultSet resultSet = 
+						new StreamResultSet(metadata, results);
+					resultSets.add(resultSet);
+				} else if (output instanceof Window) {
+					if (logger.isTraceEnabled()) {
+						logger.trace("Processing stream of windows");
+					}
+					for (Output result : outputs) {
+						Window win = (Window) result;
+						logger.trace("Window: " + win);
+						//XXX: ResultSet creation overridden for tests!
+						ResultSet rs = createRS(win.getTuples());
+						resultSets.add(rs);
+					}
+				} else {
+					String message = output.getClass() + 
+					" Unsupported output type at this time.";
+					logger.warn(message);
+					throw new SNEEException(message);
 				}
-				List<Tuple> results = new ArrayList<Tuple>();
-				for (Output result : outputs) {
-					TaggedTuple tt = (TaggedTuple) result; 
-					Tuple tuple = tt.getTuple();
-					results.add(tuple);
-				}
-				//XXX: Need to decide if we will use the override method
-				ResultSet resultSet = 
-					new StreamResultSet(metadata, results);
-				resultSets.add(resultSet);
-			} else if (output instanceof Window) {
-				if (logger.isTraceEnabled()) {
-					logger.trace("Processing stream of windows");
-				}
-				for (Output result : outputs) {
-					Window win = (Window) result;
-					logger.trace("Window: " + win);
-					//XXX: ResultSet creation overridden for tests!
-					ResultSet rs = createRS(win.getTuples());
-					resultSets.add(rs);
-				}
-			} else {
-				String message = output.getClass() + 
-				" Unsupported output type at this time.";
-				logger.warn(message);
-				throw new SNEEException(message);
 			}
 		} catch (SQLException e) {
 			String message = "Problem creating ResultSet object.";
