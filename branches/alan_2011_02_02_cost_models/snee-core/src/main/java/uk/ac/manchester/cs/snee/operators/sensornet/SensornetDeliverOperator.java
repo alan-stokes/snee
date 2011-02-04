@@ -108,4 +108,16 @@ public class SensornetDeliverOperator extends SensornetOperatorImpl {
 		}
 		return attr.getAttributeDisplayName(); 
 	}
+
+	/** {@inheritDoc} 
+	 * @throws OptimizationException */ 
+	public float getInstanceCardinality(final Site node, final DAF daf, long beta) 
+	throws OptimizationException 
+	{
+	  if(this.isNodeDead())
+	    return 0;
+	  else
+		return getInstanceInputCardinality(node, daf, 0, beta);
+	}
+	
 }

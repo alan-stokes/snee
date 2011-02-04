@@ -218,5 +218,19 @@ public class SensornetExchangeOperator extends SensornetOperatorImpl {
      public final double getTimeCost(final CardinalityType card, 
     		 final Site node, final DAF daf) {
      	throw new AssertionError("Unexpected method call");
-    } 
+    }
+
+	@Override
+	/** {@inheritDoc} */
+	public float getInstanceCardinality(Site node, DAF daf, long beta)
+	throws OptimizationException 
+	{
+	  if(this.isNodeDead())
+	    return 0;
+	  else
+	  {
+	    /*needs to iterate over child operators for as mnay times the bufferering factor*/
+	    return getInstanceInputCardinality(node, daf, 0, beta);
+	  }
+	} 
 }

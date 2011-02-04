@@ -1,11 +1,13 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
@@ -20,6 +22,7 @@ import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperatorImpl;
 
 public abstract class SensornetIncrementalAggregationOperator extends SensornetOperatorImpl {
 
@@ -104,4 +107,19 @@ public abstract class SensornetIncrementalAggregationOperator extends SensornetO
 		return this.aggrOp.getAggregates();
 	}
 	
+	/** {@inheritDoc} */
+	public float getInstanceCardinality(Site node, DAF daf, long beta) 
+	throws OptimizationException
+	{
+	  if(this.isNodeDead())
+	    return 0;
+	  else
+	  {
+	    float childrenCardinality = this.getInstanceInputCardinality(node, daf, 0, beta);
+	    if(childrenCardinality == 0)
+	      return 0;
+	    else
+	      return 1;
+	  }
+	}
 }

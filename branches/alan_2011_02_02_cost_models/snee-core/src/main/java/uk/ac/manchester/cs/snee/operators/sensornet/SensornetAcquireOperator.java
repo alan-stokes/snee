@@ -1,23 +1,18 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class SensornetAcquireOperator extends SensornetOperatorImpl {
@@ -130,5 +125,14 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 //		return new AlphaBetaExpression(getTimeCost(card, node, daf),0);
 //	}
 
+	
+  /** {@inheritDoc} */ 
+  public float getInstanceCardinality(Site node, DAF daf, long beta)
+  {
+	if(this.isNodeDead())
+	  return 0;
+	else
+      return 1 * selectivity();
+  }
 
 }

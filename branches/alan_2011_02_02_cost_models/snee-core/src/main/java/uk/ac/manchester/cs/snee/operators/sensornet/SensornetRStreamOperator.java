@@ -69,5 +69,16 @@ public class SensornetRStreamOperator extends SensornetOperatorImpl {
 		   final Site node, final DAF daf) {
 		return this.getOverheadTimeCost();
     }
+
+	@Override
+	/** {@inheritDoc} */
+	public float getInstanceCardinality(Site node, DAF daf, long beta)
+	throws OptimizationException
+	{
+	  if(this.isNodeDead())
+	    return 0;
+	  else
+		return getInstanceInputCardinality(node, daf, 0, beta);
+	}
 	
 }

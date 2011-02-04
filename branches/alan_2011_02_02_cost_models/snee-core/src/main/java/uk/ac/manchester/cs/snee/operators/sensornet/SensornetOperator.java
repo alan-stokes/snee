@@ -352,4 +352,13 @@ public interface SensornetOperator extends Node {
 	//delegate
 	boolean isRecursive();
 	
+	/**
+	 * all operators now must have an instance cardinality to calculate cardinality cost
+	 * models for an agenda
+	 * @return float value reflecting how many tuples are produced for this operator per agenda
+	 * @throws OptimizationException 
+	 */
+	abstract float getInstanceCardinality(Site node, DAF daf, long beta) 
+	throws OptimizationException;
+	
 }

@@ -72,4 +72,19 @@ public class SensornetSingleStepAggregationOperator extends SensornetOperatorImp
 				+ costParams.getCopyTuple() 
 				+ costParams.getDoCalculation() * tuples;
 	}
+
+	@Override
+	/** {@inheritDoc} 
+     * @throws OptimizationException */
+	public float getInstanceCardinality(Site node, DAF daf, long beta)
+	throws OptimizationException 
+	{
+	  if(this.isNodeDead())
+	    return 0;
+	  else
+	    if(this.getInstanceInputCardinality(node, daf, 0, beta) == 0)
+	      return 0;
+	    else
+	      return 1;
+	}
 }
