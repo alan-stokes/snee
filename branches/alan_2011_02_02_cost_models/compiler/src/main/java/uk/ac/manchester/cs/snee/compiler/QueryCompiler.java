@@ -39,6 +39,7 @@ import java.io.StringReader;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.compiler.costmodels.CostModel;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
@@ -57,6 +58,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.DLAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.rewriter.LogicalRewriter;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
@@ -282,6 +284,16 @@ public class QueryCompiler {
 
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN: " + qep.getID());
+		
+		/**
+		 * AREA TO STEAL THE QEP which contains all aspects of the query needed for cost model analysis
+		 * QEP contains agenda, DAF, routing tree. 
+		 */
+		if (qep instanceof SensorNetworkQueryPlan) 
+		{
+		  CostModel model = new CostModel((SensorNetworkQueryPlan) qep);
+		}
+		
 		return qep;
 	}
 
