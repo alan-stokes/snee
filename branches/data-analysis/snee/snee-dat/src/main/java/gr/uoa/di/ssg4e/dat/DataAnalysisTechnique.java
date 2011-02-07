@@ -7,6 +7,8 @@
  */
 package gr.uoa.di.ssg4e.dat;
 
+import java.util.List;
+
 import gr.uoa.di.ssg4e.dat.classification.AbstractClassifier;
 import gr.uoa.di.ssg4e.dat.excep.DATException;
 import gr.uoa.di.ssg4e.dat.outlierdetection.AbstractOutlierDetection;
@@ -46,8 +48,16 @@ public abstract class DataAnalysisTechnique  {
 	protected String datSource;
 //	protected SNEEqlQuery datSource;
 
+	/**
+	 * For our approach to work, there must be some bound values in the where clause.
+	 * These values are found in the where clause and are discovered from the 
+	 * getBindingsMethod.
+	 * */
+	protected String[] bindings = null;
 
-	
+	protected List<Integer> bindingIndexes = null;
+
+
 	/************************************************************************************************
 	 *	 					METHODS THAT ARE COMMON IN ORDER TO MANIPULATE A DAT 					* 
 	 ************************************************************************************************/

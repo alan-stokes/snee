@@ -110,50 +110,17 @@ class LinearRegression extends AbstractClassifier {
 
 	private String getABComputationString(String inp_x, String inp_y){
 
-		/**
-		 * TODO XXX FIXME: Change this when we fix the translator bug 
-		 * */
-		String innerTupleName = null;
-		try {
-			SNEEqlQuery snqlQuery = new SNEEqlQuery(datSource);
-			innerTupleName = snqlQuery.getTupleIterators()[0];
-		} catch (ParserException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		if ( innerTupleName == null || innerTupleName.isEmpty() )
-			innerTupleName = "S";
-
-//		return 
-//			"SELECT	( S.n*S.sum_xy - S.sum_y * S.sum_x ) / ( S.n * S.sum_sqr_x - S.sum_x * S.sumx_x ) as a," +
-//			"		( S.sum_y * S.sum_sqr_x - S.sum_x * S.sum_xy ) / ( S.n * S.sum_sqr_x - S.sum_x * S.sum_x ) as b " +
-//			"FROM (" +
-//			"	SELECT	COUNT(*) as n," +
-//			"			SUM( S." + inp_x + " * S." + inp_y + " ) as sum_xy," +
-//			"			SUM( S." + inp_x + " ) as sum_x," +
-//			"			SUM( S." + inp_y + " ) as sum_y," +
-//			"			SUM( S." + inp_x + " * S." + inp_x + " ) as sum_sqr_x" +
-//			"	FROM ( " + super.datSource.toString() + " ) S " +
-//			") S ";
-
-		return "SELECT	( " + innerTupleName + ".n*" + innerTupleName + ".sum_xy - " + 
-		innerTupleName + ".sum_y * " + innerTupleName + ".sum_x ) / ( " + 
-		innerTupleName + ".n * " + innerTupleName + ".sum_sqr_x - " + 
-		innerTupleName + ".sum_x * " + innerTupleName + ".sumx_x ) as a," +
-		"		( " + innerTupleName + ".sum_y * " + innerTupleName + ".sum_sqr_x - " + 
-		innerTupleName + ".sum_x * " + innerTupleName + ".sum_xy ) / ( " + 
-		innerTupleName + ".n * " + innerTupleName + ".sum_sqr_x - " + 
-		innerTupleName + ".sum_x * " + innerTupleName + ".sum_x ) as b " +
-		"FROM (" +
-		"	SELECT	COUNT(*) as n," +
-		"			SUM( " + innerTupleName + "." + inp_x + " * " + innerTupleName + "." + inp_y + " ) as sum_xy," +
-		"			SUM( " + innerTupleName + "." + inp_x + " ) as sum_x," +
-		"			SUM( " + innerTupleName + "." + inp_y + " ) as sum_y," +
-		"			SUM( " + innerTupleName + "." + inp_x + " * " + innerTupleName + "." + inp_x + " ) as sum_sqr_x" +
-		"	FROM ( " + super.datSource.toString() + " " + innerTupleName + " ) " + innerTupleName + " " +
-		") " + innerTupleName + " ";
-
+		return 
+			"SELECT	( S.n*S.sum_xy - S.sum_y * S.sum_x ) / ( S.n * S.sum_sqr_x - S.sum_x * S.sumx_x ) as a," +
+			"		( S.sum_y * S.sum_sqr_x - S.sum_x * S.sum_xy ) / ( S.n * S.sum_sqr_x - S.sum_x * S.sum_x ) as b " +
+			"FROM (" +
+			"	SELECT	COUNT(*) as n," +
+			"			SUM( S." + inp_x + " * S." + inp_y + " ) as sum_xy," +
+			"			SUM( S." + inp_x + " ) as sum_x," +
+			"			SUM( S." + inp_y + " ) as sum_y," +
+			"			SUM( S." + inp_x + " * S." + inp_x + " ) as sum_sqr_x" +
+			"	FROM ( " + super.datSource.toString() + " ) S " +
+			") S ";
 	}
 
 	/** 
@@ -171,17 +138,6 @@ class LinearRegression extends AbstractClassifier {
 		 * we get its bindings as a result */
 		validateQuery(query, datIndex);
 
-		/* 
-		 * TODO / FIXME / XXX Reinstate this code, once the translator bug has been fixed
-		 * 
-		 * Change the following lines back to what they were:
-		 *
-		 * 			
-		 sb.append(' ').append(args[i].replaceAll("\\b" + derAtt + "\\b",
-					datItr + ".a * " + bindings[0].replaceAll("[() ]", "") + 
-					" + " + datItr + ".b") ).append(",");
-		 *  */
-
 		/* Check if the derived attribute is in the SELECT clause of the query */
 		String datItr = query.getTupleIterators()[datIndex];
 		String derAtt = datItr + "." + this.derivedAttributeName; 
@@ -191,37 +147,25 @@ class LinearRegression extends AbstractClassifier {
 		StringBuilder sb = new StringBuilder(query.getPrefix());
 		sb.append(SNEEqlQuery.selectStr);
 		for ( int i = 0; i < args.length; i++ )
-			sb.append(' ').append(args[i].replaceAll("\\b" + derAtt + "\\b",
-					"S.a * " + bindings[0].replaceAll("[() ]", "") + 
-					" + S.b") ).append(",");
+			 sb.append(' ').append(args[i].replaceAll("\\b" + derAtt + "\\b",
+						datItr + ".a * " + bindings[0].replaceAll("[() ]", "") + 
+						" + " + datItr + ".b") ).append(",");
 
 		sb.setCharAt(sb.length() - 1, ' ');
 		sb.append(SNEEqlQuery.fromStr);
 
-		/* Create the FROM-clause
-		 * 
-		 * TODO / FIXME / XXX: Remove the wrong code when the translator bug has been fixed
-		 *  */
+		/* Create the FROM-clause */
 		args = query.getFromArgs();
 		for ( int i = 0; i < args.length; i++ ){
 
 			sb.append(' ');
 
-			if ( i != datIndex ){
+			if ( i != datIndex )
 				sb.append(args[i]);
-				sb.append(' ').append(query.getTupleIterators()[i]).append(',');
-			}else{
+			else
 				sb.append('(').append(abCompStr).append(')');
-				sb.append(" S,");
-			}
 
-
-//			if ( i != datIndex )
-//				sb.append(args[i]);
-//			else
-//				sb.append('(').append(abCompStr).append(')');
-//
-//			sb.append(' ').append(query.getTupleIterators()[i]).append(',');
+			sb.append(' ').append(query.getTupleIterators()[i]).append(',');
 		}
 
 		sb.deleteCharAt(sb.length() - 1);
