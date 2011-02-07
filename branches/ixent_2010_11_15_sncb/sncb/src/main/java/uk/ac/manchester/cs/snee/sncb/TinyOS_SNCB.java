@@ -38,7 +38,7 @@ public class TinyOS_SNCB implements SNCB {
 
 	private boolean demoMode = false;
 
-	private boolean useNodeController = false;
+	private boolean useNodeController = true;
 
 	// Is the network running?
 	private static boolean isStarted = false;
@@ -48,33 +48,35 @@ public class TinyOS_SNCB implements SNCB {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER TinyOS_SNCB()");
 		try {
-
-			// Check if we are using the node controller
-			try {
-				useNodeController = SNEEProperties
-						.getBoolSetting(SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
-			} catch (SNEEConfigurationException e) {
-				// Using the default setting...
-				e.printStackTrace();
-			}
-
 			// TinyOS environment variables
 			this.tinyOSEnvVars = new HashMap<String, String>();
 			workingDir = Utils.getResourcePath("etc/sncb/tools/python");
 			String currentPath = System.getenv("PATH");
 			this.tinyOSEnvVars.put("PATH", currentPath + ":" + workingDir + ":"
 					+ workingDir + "/utils");
-
-			this.combinedImage = SNEEProperties
-					.getBoolSetting(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE);
-
+			
+			//Check if a mote is plugged in.  If no mote is plugged in, this is null.
 			this.serialPort = this.getBaseStation();
-			this.tinyOSEnvVars.put("MOTECOM", "=serial@" + serialPort);
-			this.tinyOSEnvVars.put("SERIAL_PORT", serialPort);
-
+			
+			// Check if we are using the node controller
+			if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER)) {
+				useNodeController = SNEEProperties
+				.getBoolSetting(SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);				
+			}
+			// Check whether to generate combined image or individual image
+			if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE)) {
+				this.combinedImage = SNEEProperties
+					.getBoolSetting(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE);
+			}
+			
+			//More TinyOS environment variables
+			if (serialPort != null) {
+				this.tinyOSEnvVars.put("MOTECOM", "=serial@" + serialPort);
+				this.tinyOSEnvVars.put("SERIAL_PORT", serialPort);
+			}
 		} catch (Exception e) {
-			logger.warn(e.getLocalizedMessage(), e);
-			throw new SNCBException(e.getLocalizedMessage(), e);
+			//If an error occurs (e.g., TinyOS is not installed so motelist command fails) serialPort is null.
+			this.serialPort = null;
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN TinyOS_SNCB()");
@@ -84,10 +86,8 @@ public class TinyOS_SNCB implements SNCB {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER getBaseStation()");
 		if (!this.useNodeController) {
-			return "XXXXXXX"; // We don't need to worry about this if doing
-								// things manually
+			return null;
 		}
-
 		String serialPort;
 		try {
 			String pythonScript = Utils
@@ -97,7 +97,8 @@ public class TinyOS_SNCB implements SNCB {
 					this.tinyOSEnvVars, workingDir);
 			String outputList[] = outputLines.split("\n");
 			if (outputList.length < 2) {
-				throw new SNCBException("Base station mote not plugged in.");
+				System.out.println("No basestation found.\n\n");
+				return null;
 			} else if (outputList.length > 2) { // FIXME: This doesn't work.
 				throw new SNCBException(
 						"Unable to determine base station mote, as more than one mote is plugged in.");
@@ -107,7 +108,6 @@ public class TinyOS_SNCB implements SNCB {
 			logger.warn(e.getLocalizedMessage(), e);
 			throw new SNCBException(e.getLocalizedMessage(), e);
 		}
-
 		if (logger.isTraceEnabled())
 			logger.debug("RETURN getBaseStation()");
 		return serialPort;
@@ -166,9 +166,9 @@ public class TinyOS_SNCB implements SNCB {
 				System.in.read();
 			}
 
-			if (!this.useNodeController) {
+			if (!this.useNodeController || this.serialPort==null) {
 				System.out
-						.println("Not using node controller so unable to disseminate query plan; ");
+						.println("Not using node controller, or no mote plugged in, so unable to disseminate query plan; ");
 				System.out.println("Please proceed manually.  ");
 				System.exit(0);
 			}

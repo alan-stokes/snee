@@ -158,8 +158,6 @@ public final class SNEEPropertyNames {
 	public static String INPUTS_UNITS_FILE =
 		"units_file";
 	
-	public static String SNCB_ENABLE = "sncb.enable";
-	
 	public static String RESULTS_HISTORY_SIZE_TUPLES =
 		"results.history_size.tuples";
 
