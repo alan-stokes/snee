@@ -103,11 +103,8 @@ public class Agenda extends SNEEAlgebraicForm {
      */
     private long nonLeafStart = Integer.MAX_VALUE;
 
-	private boolean useNetworkController;
-
     public Agenda(final long acquisitionInterval, final long bfactor,
-	final DAF daf, CostParameters costParams, final String queryName,
-	boolean useNetworkController) 
+	final DAF daf, CostParameters costParams, final String queryName) 
     throws AgendaException, AgendaLengthException, OptimizationException, 
     SchemaMetadataException, TypeMappingException {
     	super(queryName);
@@ -118,17 +115,12 @@ public class Agenda extends SNEEAlgebraicForm {
 			this.name = generateID(queryName);
 		}
 		this.costParams=costParams;
-		this.useNetworkController = useNetworkController;
 		
 		logger.trace("Scheduling leaf fragments alpha=" + this.alpha + " bms beta=" + this.beta);
 		scheduleLeafFragments();
 		logger.trace("Scheduling the non-leaf fragments");
 		scheduleNonLeafFragments();
 		logger.trace("Scheduling network management section");
-		if (this.useNetworkController) {
-			scheduleNetworkManagementSection();
-			scheduleEndNetworkManagementSection();
-		}
 		logger.trace("Scheduled final sleep task");
 		scheduleFinalSleepTask();
 		
