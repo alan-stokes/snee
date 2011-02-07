@@ -198,28 +198,16 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		Attribute attr = attributes.get(0);
 		String extentName = attr.getExtentName();
 		String attributeName = attr.getAttributeSchemaName();
-
-		/*
-		 * In-network SNEE adds the following attributes which 
-		 * should just be ignored
-		 */
-		if (attributeName.equalsIgnoreCase("evalTime") ||
-				attributeName.equalsIgnoreCase("time") ||
-				attributeName.equalsIgnoreCase("id")) {
-			logger.trace("Ignoring in-network SNEE assumed attribute " + 
-					attributeName);
-		} else {
-			try {
-				logger.trace("getting attribute " + attributeName +
-						" from extent " + extentName);
-				returnField = 
-					t.getAttribute(extentName, attributeName);
-			} catch (SNEEException e) {
-				logger.warn("Attribute " + attributeName + 
-						" does not exist.", e);
-				throw e;
-			}
-		}					
+		try {
+			logger.trace("getting attribute " + attributeName +
+					" from extent " + extentName);
+			returnField = 
+				t.getAttribute(extentName, attributeName);
+		} catch (SNEEException e) {
+			logger.warn("Attribute " + attributeName + 
+					" does not exist.", e);
+			throw e;
+		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN evaluateSingleExpression() with " + 
 					returnField);

@@ -53,7 +53,7 @@ extends Observable implements ResultStore {
 		} catch (SQLException e) {
 			String message = "Problems generating metadata.";
 			logger.warn(message, e);
-			throw new SNEEException(message);
+			throw new SNEEException(message, e);
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN ResultStoreImpl()");
@@ -338,7 +338,6 @@ extends Observable implements ResultStore {
 						Tuple tuple = tt.getTuple();
 						results.add(tuple);
 					}
-					//XXX: Need to decide if we will use the override method
 					ResultSet resultSet = 
 						new StreamResultSet(metadata, results);
 					resultSets.add(resultSet);
@@ -363,7 +362,7 @@ extends Observable implements ResultStore {
 		} catch (SQLException e) {
 			String message = "Problem creating ResultSet object.";
 			logger.warn(message, e);
-			throw new SNEEException(message);
+			throw new SNEEException(message, e);
 		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN createResultSets() #resultSets=" +
@@ -375,11 +374,11 @@ extends Observable implements ResultStore {
 	protected ResultSet createRS(List<Tuple> tuples) 
 	throws SQLException, SNEEException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER createRS()");
+			logger.trace("ENTER createRS() with #tuples=" + tuples.size());
 		}
 		ResultSet rs = new StreamResultSet(metadata, tuples);
 		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN createRS()");
+			logger.trace("RETURN createRS() with " + rs);
 		}
 		return rs;
 	}

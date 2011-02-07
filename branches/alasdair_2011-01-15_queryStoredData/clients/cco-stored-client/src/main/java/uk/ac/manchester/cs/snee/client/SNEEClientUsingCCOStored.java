@@ -25,7 +25,21 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 	private String serviceUrl = 
 		"http://webgis1.geodata.soton.ac.uk:8080/dai/services/";
 //		"http://bowfell.cs.man.ac.uk:8080/dai/services/";
+	
+	private static String extent = 
+		"locations";
+//		"metadata";
 
+	private static String query = 
+		"SELECT id, location, latitude, longitude, waves, tides, met " +
+		"FROM " + extent + ";";
+//		"SELECT * FROM " + extent + ";";
+		
+	private static Long duration = Long.valueOf(
+			"30"
+//			"900"
+			);
+	
 	public SNEEClientUsingCCOStored(String query, double duration) 
 	throws SNEEException, IOException, SNEEConfigurationException,
 	MetadataException, SNEEDataSourceException 
@@ -33,8 +47,10 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 		super(query, duration);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClientUsingCCOStored()");
-		//Set sleep to 10 minutes
-		_sleepDuration = 600000;
+		_sleepDuration = 
+			//Set sleep to 10 minutes
+//			600000;
+			10000;
 		controller.addServiceSource("CCO-Stored", serviceUrl, 
 				SourceType.WSDAIR);
 //		Collection<String> extents = controller.getExtents();
@@ -43,7 +59,7 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 //		while (it.hasNext()) {
 //			System.out.print("\t" + it.next() + "\n");
 //		}
-		displayExtentSchema("locations");
+		displayExtentSchema(extent);
 //		displayExtentSchema("envdata_teignmouthpier_tide");
 //		displayExtentSchema("envdata_hernebay_met");
 		if (logger.isDebugEnabled())
@@ -61,18 +77,12 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 		PropertyConfigurator.configure(
 				SNEEClientUsingCCOStored.class.getClassLoader().
 				getResource("etc/log4j.properties"));
-		String query;
-		Long duration;
 		//This method represents the web server wrapper
 		if (args.length != 2) {
 			System.out.println("Usage: \n" +
 					"\t\"query statement\"\n" +
 					"\t\"query duration in seconds\"\n");
-//			System.exit(1);
 			//XXX: Use default settings
-			query = "SELECT id, location, latitude, longitude, waves, tides, met " +
-					"FROM locations;";
-			duration = Long.valueOf("900");
 		} else {	
 			query = args[0];
 			duration = Long.valueOf(args[1]);
@@ -85,7 +95,8 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 				client.run();
 				/* Stop the data source */
 			} catch (Exception e) {
-				System.out.println("Execution failed. See logs for detail.");
+				System.out.println("Execution failed. See logs for detail. " + 
+						e.getLocalizedMessage());
 				logger.fatal(e);
 				System.exit(1);
 			}

@@ -56,6 +56,7 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
+import uk.ac.manchester.cs.snee.operators.logical.ScanOperator;
 import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
@@ -106,8 +107,8 @@ implements Observer
 			logger.debug("ENTER open()");
 		}
 		child.setSchema(getSchema());
-		child.open();
 		child.addObserver(this);
+		child.open();
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN open()");
 		}
@@ -158,6 +159,8 @@ implements Observer
 		EvaluatorPhysicalOperator phyOp = null;
 		if (op instanceof ReceiveOperator) {
 			phyOp = new ReceiveOperatorImpl(op, m_qid);
+		} else if (op instanceof ScanOperator) {
+			phyOp = new ScanOperatorImpl(op, m_qid);
 		} else if (op instanceof DeliverOperator) {
 			phyOp = new DeliverOperatorImpl(op, m_qid);
 		} else if (op instanceof ProjectOperator) {
