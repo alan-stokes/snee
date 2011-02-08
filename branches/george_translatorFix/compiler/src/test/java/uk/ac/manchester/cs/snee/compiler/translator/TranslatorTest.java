@@ -1074,4 +1074,87 @@ public class TranslatorTest {
 				"(SELECT integerColumn FROM PushStream[NOW]) t1, PushStream[NOW] t2;");
 	}
 
+	/**********************************************************************************
+	 * 					The following queries SHOULD not fail but they do
+	 * 
+	 * FIX the translator to support the following queries
+	 **********************************************************************************/
+
+	@Test
+	public void testSimpleQuery_FuncSUMStar() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT SUM(*) FROM PushStream;");
+	}
+
+
+	@Test
+	public void testSimpleQuery_FuncAVGStar() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT AVG(*) FROM PushStream;");
+	}
+
+
+	@Test
+	public void testSimpleQuery_FuncCOUNTStar() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT COUNT(*) FROM PushStream;");
+	}
+
+	@Test
+	public void testSimpleQuery_FuncSUM() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT SUM(integerColumn) FROM PushStream;");
+	}
+
+
+	@Test
+	public void testSimpleQuery_FuncAVG() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT AVG(integerColumn) FROM PushStream;");
+	}
+
+
+	@Test
+	public void testSimpleQuery_FuncCOUNT() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT COUNT(integerColumn) FROM PushStream;");
+	}
+
+
+	/* The exception states that it may not find p.integerColumn.
+	 * This, of course, may not be true, as the naming conventions have been
+	 * followed properly. This has to do internally with the translator and
+	 * how references to extents are kept in memory.
+	 * 
+	 * FIXME: Fix due: 9/2/2011 morning */
+	@Test
+	public void testQuery_MultipleNestedLevels() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT p.integerColumn, s.integerColumn, s.floatColumn " +
+				"FROM PushStream[NOW] p, " +
+				"	(SELECT integerColumn, floatColumn FROM PushStream[NOW]) s;");
+	}
+	
+
 }
