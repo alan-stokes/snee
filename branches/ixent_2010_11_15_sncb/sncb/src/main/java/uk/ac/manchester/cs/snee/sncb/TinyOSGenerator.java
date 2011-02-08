@@ -2455,6 +2455,15 @@ public class TinyOSGenerator {
 		}
     }
 
+    public void copySerialStarterFiles(String dir) throws IOException, URISyntaxException {
+    	Template.instantiate(NESC_MISC_FILES_DIR + "/SerialStarterC.nc",
+    			dir +"/SerialStarterC.nc");
+    	Template.instantiate(NESC_MISC_FILES_DIR + "/AutoStarterC.nc",
+    			dir +"/AutoStarterC.nc");
+    	Template.instantiate(NESC_MISC_FILES_DIR + "/AutoStarterP.nc",
+    			dir +"/AutoStarterP.nc"); 	
+    }
+    
 
     /**
      * Generates Miscellaneous files for individual image QEPs.
@@ -2493,12 +2502,7 @@ public class TinyOSGenerator {
 					    nescOutputDir + nodeDir +"/volumes-at45db.xml");
 		    }
 		    if (!this.useNodeController && isSink) {
-		    	Template.instantiate(NESC_MISC_FILES_DIR + "/SerialStarterC.nc",
-		    			nescOutputDir + nodeDir +"/SerialStarterC.nc");
-		    	Template.instantiate(NESC_MISC_FILES_DIR + "/AutoStarterC.nc",
-		    			nescOutputDir + nodeDir +"/AutoStarterC.nc");
-		    	Template.instantiate(NESC_MISC_FILES_DIR + "/AutoStarterP.nc",
-		    			nescOutputDir + nodeDir +"/AutoStarterP.nc");
+		    	copySerialStarterFiles(nescOutputDir + nodeDir);
 		    }
 		}
 	}
@@ -2521,6 +2525,8 @@ public class TinyOSGenerator {
 					    NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
 					    nescOutputDir + targetName +"/volumes-stm25p.xml");		    	
 		    }
+		    
+	    	copySerialStarterFiles(nescOutputDir + targetName);
 		}
 	
 
@@ -2562,6 +2568,8 @@ public class TinyOSGenerator {
 			Template.instantiate(
 				    NESC_MISC_FILES_DIR + "/RandomSensorC.nc",
 				    nescOutputDir + targetName +"/RandomSensorC.nc");
+			
+	    	copySerialStarterFiles(nescOutputDir + targetName);
 		}
 	}
 
