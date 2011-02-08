@@ -96,7 +96,7 @@ public final class Constants {
 	/**
 	 * String representation of attribute used for the eval time attribute.
 	 */
-	public static final String EVAL_TIME = "evalTime";
+	public static final String EVAL_TIME = "evalEpoch";
 
 	/**
 	 * String representation of attribute used for the acquire time attribute.

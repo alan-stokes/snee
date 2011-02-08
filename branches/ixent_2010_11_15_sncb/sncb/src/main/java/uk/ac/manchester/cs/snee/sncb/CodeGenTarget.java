@@ -40,7 +40,7 @@ public enum CodeGenTarget {
 
 	public static CodeGenTarget parseCodeTarget(String s) {
 
-		if (s.equalsIgnoreCase("tossim")) {
+		if (s.equalsIgnoreCase("tmotesky_t2")) {
 			return TMOTESKY_T2;
 		}
 		if (s.equalsIgnoreCase("avrora_mica2_t2")) {
