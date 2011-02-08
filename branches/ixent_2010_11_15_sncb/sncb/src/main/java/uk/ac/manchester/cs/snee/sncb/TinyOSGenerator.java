@@ -1,6 +1,5 @@
 /****************************************************************************\ 
 *                                                                            *
-*  SNEE (Sensor NEtwork Engine)                                              *
 *  http://code.google.com/p/snee                                             *
 *  Release 1.0, 24 May 2009, under New BSD License.                          *
 *                                                                            *
@@ -235,7 +234,8 @@ public class TinyOSGenerator {
 
     public static String TYPE_READ;
 
-    
+
+    private CodeGenTarget target;
     
     private SensorNetworkQueryPlan plan;
     
@@ -273,18 +273,43 @@ public class TinyOSGenerator {
 	
 	private boolean useNodeController;
     
-    public TinyOSGenerator(int tosVersion, boolean tossimFlag, 
-    String targetName,
+    public TinyOSGenerator(CodeGenTarget codeGenTarget,
     boolean combinedImage, String nescOutputDir, CostParameters costParams, boolean controlRadioOff,
     boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
     boolean usePowerManagement, boolean deliverLast, boolean adjustRadioPower,
     boolean includeDeluge, boolean debugLeds, boolean showLocalTime,
     boolean useNodeController)
     throws IOException, SchemaMetadataException, TypeMappingException {
-    	this.tosVersion = tosVersion;
-    	this.tossimFlag = tossimFlag;
-    	this.targetName = targetName;
-    	this.combinedImage = combinedImage;
+		this.target = codeGenTarget;
+    	if (target==CodeGenTarget.TMOTESKY_T2) {
+        	this.tosVersion = 2;
+        	this.tossimFlag = false;
+        	this.targetName = "tmotesky_t2";    	
+    		this.useNodeController = useNodeController;
+        	this.combinedImage = combinedImage;
+    	}
+    	if (target==CodeGenTarget.AVRORA_MICA2_T2) {
+        	this.tosVersion = 2;
+        	this.tossimFlag = false;
+        	this.targetName = "avrora_mica2_t2";    	
+    		this.useNodeController = false; // incompatible
+        	this.combinedImage = combinedImage;
+    	}
+    	if (target==CodeGenTarget.AVRORA_MICAZ_T2) {
+        	this.tosVersion = 2;
+        	this.tossimFlag = false;
+        	this.targetName = "avrora_micaz_t2";
+    		this.useNodeController = false; // incompatible
+        	this.combinedImage = combinedImage;
+    	}    	
+    	if (target==CodeGenTarget.TOSSIM_T2) {
+        	this.tosVersion = 2;
+        	this.tossimFlag = true;
+        	this.targetName = "tossim_t2";
+    		this.useNodeController = false; // incompatible
+        	this.combinedImage = true; // doesn't work otherwise
+    	}    	
+    	
     	this.nescOutputDir = nescOutputDir;
 		this.costParams = costParams;
 
@@ -298,9 +323,8 @@ public class TinyOSGenerator {
 		this.includeDeluge = includeDeluge;
 		this.debugLeds = debugLeds;
 		this.showLocalTime = showLocalTime;
-		this.useNodeController = useNodeController;
 		
-    	initConstants(tosVersion, tossimFlag, targetName);
+    	initConstants();
 
     	if (tosVersion == 1) {
     		NESC_TEMPLATES_DIR = "etc/sncb/templates/tos1/"; 
@@ -320,7 +344,7 @@ public class TinyOSGenerator {
      * @param tossimFlag	Specifies whether Tossim code is being generated.
      * @param targetName 
      */
-    private static void initConstants(int tosVersion, boolean tossimFlag, String targetName) {
+    private void initConstants() {
 		if (tosVersion == 1) {
 		    COMPONENT_RADIO = "GenericComm";
 		    COMPONENT_MAIN = "Main";
@@ -358,10 +382,12 @@ public class TinyOSGenerator {
 		    COMPONENT_RADIO = "ActiveMessageC";
 		    COMPONENT_RADIOTX = "AMSenderC";
 		    COMPONENT_RADIORX = "AMRecieverC";
-		    if (targetName.equals("tmotesky_t2")) {
-		    	COMPONENT_SENSOR = "VoltageC";
-//		    	COMPONENT_SENSOR = "HamamatsuS1087ParC";
-		    } else if (tossimFlag) {
+		    if (target == CodeGenTarget.TMOTESKY_T2) {
+//		    	COMPONENT_SENSOR = "VoltageC";
+		    	COMPONENT_SENSOR = "HamamatsuS1087ParC";
+		    } else if (target == CodeGenTarget.AVRORA_MICA2_T2) {	
+		    	COMPONENT_SENSOR = "DemoSensorC"; //PhotoTemp
+		    } else if (target == CodeGenTarget.TOSSIM_T2) {
 		    	COMPONENT_SENSOR  = "RandomSensorC";
 		    } else {
 		    	COMPONENT_SENSOR = "DemoSensorC";

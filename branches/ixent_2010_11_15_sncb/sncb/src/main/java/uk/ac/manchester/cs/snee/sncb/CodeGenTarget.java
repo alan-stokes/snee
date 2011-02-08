@@ -33,53 +33,26 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb;
 
-import java.util.HashSet;
 
 public enum CodeGenTarget {
 
-	TOSSIM, AVRORA, TOSSIM2, AVRORA2, INSENSE, TINYNODE, TMOTESKY, Z1;
+	TMOTESKY_T2, AVRORA_MICA2_T2, AVRORA_MICAZ_T2, TOSSIM_T2;
 
-	public static HashSet<CodeGenTarget> parseCodeTargets(String s) {
-		HashSet<CodeGenTarget> targets = new HashSet<CodeGenTarget>();
-		
-		String[] targetStrings = s.split(",");
-		for (int i=0; i < targetStrings.length; i++) {
-			if (targetStrings[i].equalsIgnoreCase("tossim") || 
-					targetStrings[i].equalsIgnoreCase("tossim1")) {
-				targets.add(CodeGenTarget.TOSSIM);
-				continue;
-			}
-			if (targetStrings[i].equalsIgnoreCase("avrora") || 
-					targetStrings[i].equalsIgnoreCase("avrora1")) {
-				targets.add(CodeGenTarget.AVRORA);
-				continue;
-			}
-			if (targetStrings[i].equalsIgnoreCase("tossim2")) {
-				targets.add(CodeGenTarget.TOSSIM2);
-				continue;
-			}
-			if (targetStrings[i].equalsIgnoreCase("avrora2")) { //not yet tested
-				targets.add(CodeGenTarget.AVRORA2);
-				continue;
-			}
-			if (targetStrings[i].equalsIgnoreCase("insense")) { //not implemented in this branch
-				targets.add(CodeGenTarget.INSENSE);
-				continue;
-			}
-			if (targetStrings[i].equalsIgnoreCase("tinynode")) {
-				targets.add(CodeGenTarget.TINYNODE);
-				continue;
-			}
-			if (targetStrings[i].equalsIgnoreCase("tmotesky")) {
-				targets.add(CodeGenTarget.TMOTESKY);
-				continue;
-			}
-			if (targetStrings[i].equalsIgnoreCase("z1")) {
-				targets.add(CodeGenTarget.Z1);
-				continue;
-			}
+	public static CodeGenTarget parseCodeTarget(String s) {
+
+		if (s.equalsIgnoreCase("tossim")) {
+			return TMOTESKY_T2;
 		}
-		return targets;
+		if (s.equalsIgnoreCase("avrora_mica2_t2")) {
+			return AVRORA_MICA2_T2;
+		}
+		if (s.equalsIgnoreCase("avrora_micaz_t2")) {
+			return AVRORA_MICAZ_T2;
+		}
+		if (s.equalsIgnoreCase("tossim_t2")) {
+			return TOSSIM_T2;
+		}
+		return null;
 	}
 
 }

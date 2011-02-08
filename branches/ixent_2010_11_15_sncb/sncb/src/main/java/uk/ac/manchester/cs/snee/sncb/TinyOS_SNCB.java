@@ -40,6 +40,8 @@ public class TinyOS_SNCB implements SNCB {
 
 	private boolean useNodeController = true;
 
+	private CodeGenTarget target = CodeGenTarget.TMOTESKY_T2;
+	
 	// Is the network running?
 	private static boolean isStarted = false;
 	private SerialPortMessageReceiver mr;
@@ -68,6 +70,17 @@ public class TinyOS_SNCB implements SNCB {
 				this.combinedImage = SNEEProperties
 					.getBoolSetting(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE);
 			}
+			// Parse the code generation target
+			if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET)) {
+				this.target = CodeGenTarget.parseCodeTarget(SNEEProperties
+					.getSetting(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET));
+			}
+			// Node controller is only compatible with Tmote Sky/Tiny OS2
+			if (this.target != CodeGenTarget.TMOTESKY_T2 && useNodeController) {
+				logger.warn("Node controller is only compatible with Tmote Sky/Tiny OS2. " +
+						"Excluding controller from generated code.");
+				useNodeController = false;
+			}
 			
 			//More TinyOS environment variables
 			if (serialPort != null) {
@@ -77,6 +90,7 @@ public class TinyOS_SNCB implements SNCB {
 		} catch (Exception e) {
 			//If an error occurs (e.g., TinyOS is not installed so motelist command fails) serialPort is null.
 			this.serialPort = null;
+			this.target = CodeGenTarget.TMOTESKY_T2;
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN TinyOS_SNCB()");
@@ -206,9 +220,6 @@ public class TinyOS_SNCB implements SNCB {
 			throws IOException, SchemaMetadataException, TypeMappingException,
 			OptimizationException, CodeGenerationException {
 		// TODO: move some of these to an sncb .properties file
-		int tosVersion = 2;
-		boolean tossimFlag = false;
-		String targetName = "tmotesky_t2";
 		boolean controlRadioOff = false;
 		boolean enablePrintf = false;
 		boolean useStartUpProtocol = false;
@@ -220,8 +231,7 @@ public class TinyOS_SNCB implements SNCB {
 		boolean debugLeds = true;
 		boolean showLocalTime = false;
 
-		TinyOSGenerator codeGenerator = new TinyOSGenerator(tosVersion,
-				tossimFlag, targetName, combinedImage, queryOutputDir,
+		TinyOSGenerator codeGenerator = new TinyOSGenerator(target, combinedImage, queryOutputDir,
 				costParams, controlRadioOff, enablePrintf, useStartUpProtocol,
 				enableLeds, usePowerManagement, deliverLast, adjustRadioPower,
 				includeDeluge, debugLeds, showLocalTime, useNodeController);
