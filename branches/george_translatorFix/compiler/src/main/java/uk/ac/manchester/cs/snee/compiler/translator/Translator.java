@@ -60,6 +60,9 @@ public class Translator {
 
 	private AttributeType _boolType;
 
+	/** Mappings from the different levels */
+	private List< Map<String, String> > allLevelMappings;
+
 	private Map<String, String> extentNameMappings;
 
 	public Translator (MetadataManager metadata) 
@@ -663,6 +666,13 @@ public class Translator {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate RPAREN");
 			}
+
+			/* BUG FIX: 9/2/2011
+			 * Given that we encountered a subquery, we should begin
+			 * with a new map of the extents */
+			extentNameMappings = new HashMap<String, String>();
+			allLevelMappings.add(extentNameMappings);
+
 			AST subQueryAST = ast.getFirstChild();
 			output = translateQuery(subQueryAST);
 			windowAST = subQueryAST.getNextSibling();
@@ -671,6 +681,8 @@ public class Translator {
 			/* Remove extent mappings that were due to
 			 * nested queries */
 			extentNameMappings.clear();
+			allLevelMappings.remove(allLevelMappings.size() - 1);
+			extentNameMappings = allLevelMappings.get(allLevelMappings.size() - 1);
 
 			break;
 		case SNEEqlParserTokenTypes.SOURCE: 
@@ -894,10 +906,19 @@ public class Translator {
 					ast.toStringTree() +
 					" #children=" + ast.getNumberOfChildren());
 		}
+
 		// Create new empty map for extent name mappings
+		allLevelMappings = new ArrayList<Map<String,String>>(5);
 		extentNameMappings = new HashMap<String, String>();
+
+		allLevelMappings.add(extentNameMappings);
+
 		DeliverOperator operator;
 		if (ast==null) {
+
+			allLevelMappings = null;
+			extentNameMappings = null;
+
 			String msg = "No parse tree available.";
 			logger.warn(msg);
 			throw new ParserException(msg);
