@@ -44,7 +44,7 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 					"\t\"query duration in seconds\"\n");
 			//XXX: Use default query
 
-//			query = "SELECT * FROM PushStream;";
+			query = "SELECT * FROM PushStream;";
 
 			/* The following query is successfully executed */
 //			query = 
