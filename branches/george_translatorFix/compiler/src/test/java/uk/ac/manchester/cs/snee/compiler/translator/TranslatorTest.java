@@ -1074,6 +1074,18 @@ public class TranslatorTest {
 				"(SELECT integerColumn FROM PushStream[NOW]) t1, PushStream[NOW] t2;");
 	}
 
+	@Test
+	public void testQuery_MultipleNestedLevels() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT p.integerColumn, s.integerColumn, s.floatColumn " +
+				"FROM PushStream[NOW] p, " +
+				"	(SELECT integerColumn, floatColumn FROM PushStream[NOW]) s;");
+	}
+
+
 	/**********************************************************************************
 	 * 					The following queries SHOULD not fail but they do
 	 * 
@@ -1145,16 +1157,6 @@ public class TranslatorTest {
 	}
 
 
-	@Test
-	public void testQuery_MultipleNestedLevels() 
-	throws SourceDoesNotExistException, ParserException, 
-	SchemaMetadataException, ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
-		testQuery("SELECT p.integerColumn, s.integerColumn, s.floatColumn " +
-				"FROM PushStream[NOW] p, " +
-				"	(SELECT integerColumn, floatColumn FROM PushStream[NOW]) s;");
-	}
 	
 
 }
