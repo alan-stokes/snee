@@ -1,6 +1,4 @@
-#summary One-sentence summary of this page.
-
-Description of the mechanism for creating a release bundle of the code.
+#summary Description of the mechanism for creating a release bundle of the code.
 
 = Creating a Release =
 
