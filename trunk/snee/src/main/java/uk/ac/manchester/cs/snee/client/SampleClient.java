@@ -31,27 +31,33 @@ public class SampleClient implements Observer {
 	private static Logger logger = 
 		Logger.getLogger(SampleClient.class.getName());
 	
-	private String _query;
-	private double _duration;
-	private String _queryParams;
-
 	private SNEEController controller;
 	
-	public SampleClient(String propertiesFile, String query, double duration, 
-						String queryParams) 
+	/**
+	 * Configures the SNEE query engine according to the properties
+	 * specified in the properties file.
+	 * 
+	 * @param propertiesFile location of the snee configuration file
+	 * @throws SNEEException
+	 * @throws IOException
+	 * @throws SNEEConfigurationException
+	 * @throws MetadataException
+	 * @throws SNEEDataSourceException 
+	 */
+	public SampleClient(String propertiesFile)
 	throws SNEEException, IOException, SNEEConfigurationException,
 	MetadataException, SNEEDataSourceException 
 	{
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SampleClient()");
-		_query = query;
-		_duration = duration;
-		_queryParams = queryParams;
 		controller = new SNEEController(propertiesFile);		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN");
 	}
-
+	
+	/**
+	 * Displays the extents available for querying
+	 */
 	public void displayExtents()
 	throws MetadataException
 	{
@@ -116,6 +122,12 @@ public class SampleClient implements Observer {
 		System.out.println(buffer.toString());
 	}
 	
+	/**
+	 * Callback mechanism for reacting to new query results
+	 * 
+	 * @param observation 
+	 * @param arg the new query result 
+	 */
 	public void update (Observable observation, Object arg) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER update() with " + observation + " " + 
@@ -135,27 +147,39 @@ public class SampleClient implements Observer {
 		}
 	}
 	
-	public void run() 
+	/**
+	 * Execute a SNEEql query using the configured SNEE query execution
+	 * engine.
+	 * 
+	 * @param query SNEEql query string to be executed
+	 * @param duration length in seconds to execute the query 
+	 * @param queryParams location of the parameters file associated with the query
+	 */
+	public void executeQuery(String query, String queryParameters, 
+			double duration) 
 	throws SNEECompilerException, MetadataException, EvaluatorException,
 	SNEEException, SQLException, SNEEConfigurationException {
 		if (logger.isDebugEnabled()) 
-			logger.debug("ENTER");
-		System.out.println("Query: " + this._query);
+			logger.debug("ENTER executeQuery() with query " + query +
+					" parameters " + queryParameters + 
+					" duration " + duration);
 		
-		int queryId1 = controller.addQuery(_query, _queryParams);
+		System.out.println("Query: " + query);
+		
+		int queryId = controller.addQuery(query, queryParameters);
 		
 		long startTime = System.currentTimeMillis();
-		long endTime = (long) (startTime + (_duration * 1000));
+		long endTime = (long) (startTime + (duration * 1000));
 		
-		System.out.println("Running query for " + _duration + 
+		System.out.println("Running query for " + duration + 
 						   " seconds. Scheduled end time " + new Date(endTime));
 		
 		ResultStoreImpl resultStore = 
-		(ResultStoreImpl) controller.getResultStore(queryId1);
+		(ResultStoreImpl) controller.getResultStore(queryId);
 		resultStore.addObserver(this);
 		
 		try {			
-			Thread.currentThread().sleep((long)_duration * 1000);
+			Thread.currentThread().sleep((long)duration * 1000);
 		} catch (InterruptedException e) {
 		}
 		
@@ -163,14 +187,14 @@ public class SampleClient implements Observer {
 			Thread.currentThread().yield();
 		}
 		
-		List<ResultSet> results1 = resultStore.getResults();
-		System.out.println("Stopping query " + queryId1 + ".");
-		controller.removeQuery(queryId1);
+		List<ResultSet> results = resultStore.getResults();
+		System.out.println("Stopping query " + queryId + ".");
+		controller.removeQuery(queryId);
 		
 		controller.close();
-		printResults(results1, queryId1);
+		printResults(results, queryId);
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN");
+			logger.debug("RETURN executeQuery()");
 	}
 	
 	/**
@@ -208,11 +232,11 @@ public class SampleClient implements Observer {
 		try {
 			/* Initialise the Client */
 			SampleClient client = 
-				new SampleClient(propertiesFile, query, duration, params);
+				new SampleClient(propertiesFile);
 			/* Print the available extents */
 			client.displayExtents();
-			/* Run the client */
-			client.run();
+			/* Execute the query */
+			client.executeQuery(query, params, duration);
 		} catch (Exception e) {
 			System.out.println("Execution failed. See logs for detail.");
 			logger.fatal(e);
