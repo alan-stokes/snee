@@ -441,17 +441,15 @@ public class MetadataManager {
 				if (sm.getSourceType()==SourceType.SENSOR_NETWORK) {
 					SensorNetworkSourceMetadata snsm = 
 						(SensorNetworkSourceMetadata)sm;
-					int[] sites = snsm.getSourceSites();
-					cardinality += sites.length;
+					int[] sites = snsm.getSourceSites(extentName);
+					cardinality = sites.length;
 					em.setCardinality(cardinality);
 				} else {
 					//TODO: Cardinality estimates for non-sensor network sources
 					//should be reviewed, if they matter.
-					cardinality++;
+					em.setCardinality(1);
 				}
 			}
-		//This causes test testPullStreamServiceSource to fail. ask alasdair about this.
-		//			em.setCardinality(cardinality);
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doCardinalityEstimations()");

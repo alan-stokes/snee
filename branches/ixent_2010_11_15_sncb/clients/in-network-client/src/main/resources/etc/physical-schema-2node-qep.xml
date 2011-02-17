@@ -11,12 +11,12 @@
 			<extent name="SeaDefence">
 				<sites>2</sites>
 			</extent>
- 			<extent name="SeaDefenceEast">
+  			<extent name="SeaDefenceEast">
 				<sites>2</sites>
 			</extent>
 			<extent name="SeaDefenceWest">
 				<sites>2</sites>
-			</extent>
+			</extent>  
 		</extents>
 	</sensor_network>
 

@@ -50,7 +50,7 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 
 	@Override
 	public int[] getSourceSites() {
-		return this.sourceMetadata.getSourceSites();
+		return this.sourceMetadata.getSourceSites(acqOp.getExtentName());
 	}
 
 	/** {@inheritDoc} */
