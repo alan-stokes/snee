@@ -80,7 +80,7 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 		// Instantiate the child operator(s)
 		int numChildren = op.getInDegree();
 		for (int i=0; i<numChildren; i++) {
-			LogicalOperator logicalChild = op.getInput(0);
+			LogicalOperator logicalChild = op.getInput(i);
 			//TODO: Would we want this to be integrated with evaluator method?
 			SensornetOperatorImpl phyChild = (SensornetOperatorImpl) 
 				getSensornetOperator(logicalChild, costParams);
