@@ -68,7 +68,7 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 					EvaluatorAttribute evalAttr = getAttribute(attr, message, i);
 					newTuple.addAttribute(evalAttr);
 					//Find the first evaltime attribute
-					if ((evalAttr.getAttributeDisplayName().endsWith("evaltime")) &&
+					if ((evalAttr.getAttributeDisplayName().endsWith("evalEpoch")) &&
 							(evalTimeAttrDisplayName==null)) {
 						evalTimeAttrDisplayName = evalAttr.getAttributeDisplayName();
 					}

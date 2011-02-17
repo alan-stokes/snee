@@ -635,9 +635,9 @@ public final class CodeGenUtils {
 		if (attr instanceof EvalTimeAttribute) {
 			return "evalEpoch";
 		}
-		if (attr instanceof TimeAttribute) {
-			return attr.getAttributeSchemaName() + ("_epoch");
-		}
+//		if (attr instanceof TimeAttribute) {
+//			return attr.getAttributeSchemaName() + ("_epoch");
+//		}
 //TODO: Localtime
 //		if (attr instanceof LocalTimeAttribute) {
 //			return Constants.LOCAL_TIME;

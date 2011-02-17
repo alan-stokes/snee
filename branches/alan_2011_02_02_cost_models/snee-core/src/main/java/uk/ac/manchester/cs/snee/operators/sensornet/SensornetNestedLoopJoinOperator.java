@@ -23,7 +23,7 @@ public class SensornetNestedLoopJoinOperator extends SensornetOperatorImpl {
 	
 	Logger logger = Logger.getLogger(SensornetNestedLoopJoinOperator.class.getName());
 	
-	JoinOperator delOp;
+	JoinOperator joinOp;
 	
 	public SensornetNestedLoopJoinOperator(LogicalOperator op, CostParameters costParams) 
 	throws SNEEException, SchemaMetadataException {
@@ -33,7 +33,7 @@ public class SensornetNestedLoopJoinOperator extends SensornetOperatorImpl {
 			logger.debug("Attribute List: " + op.getAttributes());
 			logger.debug("Expression List: " + op.getExpressions());
 		}
-		delOp = (JoinOperator) op;
+		joinOp = (JoinOperator) op;
 		this.setNesCTemplateName("join");
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetNestedLoopJoinOperator()");

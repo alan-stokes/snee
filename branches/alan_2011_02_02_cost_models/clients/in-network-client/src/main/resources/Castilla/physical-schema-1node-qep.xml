@@ -9,14 +9,14 @@
 		<gateways>1</gateways>
 		<extents>
 			<extent name="Castilla">
-				<sites>9,10</sites>
+				<sites>1</sites>
 			</extent>
- 			<extent name="Meadow">
+			<extent name="Meadow">
 				<sites>2</sites>
 			</extent>
 			<extent name="Forest">
-				<sites>3</sites>
-			</extent>		
+				<sites>2</sites>
+			</extent>  
 		</extents>
 	</sensor_network>
 

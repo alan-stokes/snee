@@ -172,34 +172,34 @@ public class AcquireOperator extends LogicalOperatorImpl {
 
 	/**
 	 * Sets up the attribute based on the schema.
-	 * @param extentMetaData DDL declaration for this extent.
+	 * @param extentMetadata DDL declaration for this extent.
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
 	 */
-	private void addMetadataInfo(ExtentMetadata extentMetaData) 
+	private void addMetadataInfo(ExtentMetadata extentMetadata) 
 	throws SchemaMetadataException, TypeMappingException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER addMetaDataInfo() with " +
-					extentMetaData);
+					extentMetadata);
 		}
 		outputAttributes = new ArrayList<Attribute>();
-		outputAttributes.add(new EvalTimeAttribute(extentName, 
-				Constants.EVAL_TIME,
-				_types.getType(Constants.TIME_TYPE))); 
-		outputAttributes.add(new TimeAttribute(extentName,
-				Constants.ACQUIRE_TIME, 
-				_types.getType(Constants.TIME_TYPE)));
-		outputAttributes.add(new IDAttribute(extentName, 
-				Constants.ACQUIRE_ID,
-				_types.getType("integer")));
+//		outputAttributes.add(new EvalTimeAttribute(extentName, 
+//				Constants.EVAL_TIME,
+//				_types.getType(Constants.TIME_TYPE))); 
+//		outputAttributes.add(new TimeAttribute(extentName,
+//				Constants.ACQUIRE_TIME, 
+//				_types.getType(Constants.TIME_TYPE)));
+//		outputAttributes.add(new IDAttribute(extentName, 
+//				Constants.ACQUIRE_ID,
+//				_types.getType("integer")));
 //TODO: Localtime
 //		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
 //			outputAttributes.add(new LocalTimeAttribute()); //Ixent added this
 //		}		
-		sensedAttributes = extentMetaData.getAttributes();
+		sensedAttributes = extentMetadata.getAttributes();
 		outputAttributes.addAll(sensedAttributes);
 //		sites =  sourceMetaData.getSourceNodes();
-		this.cardinality = extentMetaData.getCardinality();
+		this.cardinality = extentMetadata.getCardinality();
 		copyExpressions(outputAttributes);
 		acquiredAttributes = (ArrayList<Attribute>) outputAttributes;
 		if (logger.isTraceEnabled())

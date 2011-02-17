@@ -124,7 +124,7 @@ public final class SNEEPropertyNames {
      */
     public static final String WHEN_SCHED_DECREASE_BETA_FOR_VALID_ALPHA =
     	"compiler.when_sched.decrease_beta_for_valid_alpha";
-    
+
     /**
 	 * The name of the file with the logical schema.
 	 * Optional
@@ -158,8 +158,6 @@ public final class SNEEPropertyNames {
 	public static String INPUTS_UNITS_FILE =
 		"units_file";
 	
-	public static String SNCB_ENABLE = "sncb.enable";
-	
 	public static String RESULTS_HISTORY_SIZE_TUPLES =
 		"results.history_size.tuples";
 
@@ -183,6 +181,14 @@ public final class SNEEPropertyNames {
 	 */
 	public static String SNCB_GENERATE_COMBINED_IMAGE = 
 		"sncb.generate_combined_image";
+
+	/** 
+	 * Code generation target for code generator
+	 */
+	public static final String SNCB_CODE_GENERATION_TARGET = 
+		"sncb.code_generation_target";
+    
+
 }
 
 

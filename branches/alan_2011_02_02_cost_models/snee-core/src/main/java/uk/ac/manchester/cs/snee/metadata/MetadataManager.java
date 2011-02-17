@@ -60,6 +60,7 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
@@ -256,10 +257,13 @@ public class MetadataManager {
 			parseAttributes(element.getElementsByTagName("column"),
 					extentName);
 		if (extentType == ExtentType.SENSED) {
-			attributes.add(0, new IDAttribute(extentName, 
-					Constants.ACQUIRE_ID, idType));
+			attributes.add(0, new EvalTimeAttribute(extentName, 
+					Constants.EVAL_TIME, timeType));
 			attributes.add(1, new TimeAttribute(extentName, 
-					Constants.ACQUIRE_TIME, timeType));
+					Constants.ACQUIRE_TIME, timeType));			
+			attributes.add(2, new IDAttribute(extentName, 
+					Constants.ACQUIRE_ID, idType));
+
 		}
 		ExtentMetadata extent =
 			new ExtentMetadata(extentName, attributes, extentType);
@@ -437,17 +441,15 @@ public class MetadataManager {
 				if (sm.getSourceType()==SourceType.SENSOR_NETWORK) {
 					SensorNetworkSourceMetadata snsm = 
 						(SensorNetworkSourceMetadata)sm;
-					int[] sites = snsm.getSourceSites();
-					cardinality += sites.length;
+					int[] sites = snsm.getSourceSites(extentName);
+					cardinality = sites.length;
 					em.setCardinality(cardinality);
 				} else {
 					//TODO: Cardinality estimates for non-sensor network sources
 					//should be reviewed, if they matter.
-					cardinality++;
+					em.setCardinality(1);
 				}
 			}
-		//This causes test testPullStreamServiceSource to fail. ask alasdair about this.
-		//			em.setCardinality(cardinality);
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doCardinalityEstimations()");
