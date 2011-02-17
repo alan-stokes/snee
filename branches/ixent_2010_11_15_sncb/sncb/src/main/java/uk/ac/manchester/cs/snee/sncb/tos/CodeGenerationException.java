@@ -44,8 +44,12 @@ public class CodeGenerationException extends Exception {
 	super(msg);
     }
 
-	public CodeGenerationException(Exception e) {
-		super(e);
+	public CodeGenerationException(String msg, Exception e) {
+		super(msg, e);
 	}
 
+	
+	public CodeGenerationException(Exception e) {
+		super(e.getLocalizedMessage(), e);
+	}
 }
