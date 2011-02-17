@@ -442,6 +442,10 @@ public class MetadataManager {
 					SensorNetworkSourceMetadata snsm = 
 						(SensorNetworkSourceMetadata)sm;
 					int[] sites = snsm.getSourceSites(extentName);
+					if (sites==null)
+						continue; 
+					//i.e., extent metadata does not specify any sites
+					//this code will need to be reviewed if we support more than one WSN per extent
 					cardinality = sites.length;
 					em.setCardinality(cardinality);
 				} else {

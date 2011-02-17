@@ -46,6 +46,7 @@ import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 import uk.ac.manchester.cs.snee.sncb.SerialPortMessageReceiver;
 
+
 public class InNetworkQueryEvaluator extends QueryEvaluator {//Runnable {
 
 	private Logger logger = 

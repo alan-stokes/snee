@@ -68,7 +68,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderExceptio
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB;
-import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
+
 
 /**
  * Controller class for SNEEql query compilation and evaluation
