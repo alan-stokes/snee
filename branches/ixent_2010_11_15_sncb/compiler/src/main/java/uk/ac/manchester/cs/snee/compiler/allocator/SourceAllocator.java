@@ -60,7 +60,20 @@ public class SourceAllocator {
 			if (op instanceof AcquireOperator) {
 				AcquireOperator acquireOp = (AcquireOperator) op;
 				List<SourceMetadataAbstract> acqSources = acquireOp.getSources();
-				sources.addAll(acqSources);
+
+				//ugly bit of code to ensure that no duplicate sources are added.
+				for (SourceMetadataAbstract s: acqSources) {
+					boolean found = false;
+					for (SourceMetadataAbstract t: sources) {
+						if (s.getSourceName().equals(t.getSourceName())) {
+							found = true;
+						}
+					}
+					if (!found) {
+						sources.add(s);
+					}					
+				}
+
 			} else if (op instanceof ReceiveOperator) {
 				ReceiveOperator receiveOp = (ReceiveOperator) op;
 				List<SourceMetadataAbstract> recSources = receiveOp.getSources();
@@ -77,7 +90,6 @@ public class SourceAllocator {
 			logger.trace("RETURN retrieveSources() #sources=" + 
 					sources.size());
 		}
-
 		return sources;
 	}
 
