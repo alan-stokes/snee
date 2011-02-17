@@ -1,10 +1,13 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceDAF;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
@@ -187,20 +190,16 @@ public class SensornetWindowOperator extends SensornetOperatorImpl {
 	}
 
 	@Override
-	public float getInstanceCardinality(Site node, DAF daf, long beta)
+	public float getInstanceCardinality(Site node, InstanceDAF daf, long beta)
 	throws OptimizationException 
-	{
-	  if(this.isNodeDead())
-	    return 0;
-	  else
-	  {   
-        float cardinality;
-    	//find out if a time window, or row window
+	{System.out.println("within a window object");
+    float cardinality;
+    //find out if a time window, or row window
     	if(winOp.getTimeScope())//time window (no ticks)
     	{
-          //get to and from eval time slots
+        //get to and from eval time slots
     	  int fromEval = (int) Math.ceil((-this.winOp.getFrom() + 1) / 
-    			         this.winOp.getAcquisitionInterval());
+    			     this.winOp.getAcquisitionInterval());
     	  int toEval = (int) Math.ceil(-this.winOp.getTo() / 
     				   this.winOp.getAcquisitionInterval()); 
     			
@@ -217,6 +216,5 @@ public class SensornetWindowOperator extends SensornetOperatorImpl {
     	}
       return cardinality;
 	  }
-    }
 	
 }

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) The University of Edinburgh,  2007.   -->
+<!--
+ LICENCE-START
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software 
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ LICENCE-END
+-->
+<wsdl:definitions name="WS-DAI" 
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+    targetNamespace="http://www.ggf.org/namespaces/2005/12/WS-DAI/bindings"
+    xmlns:wsdai="http://www.ggf.org/namespaces/2005/12/WS-DAI">
+
+  <wsdl:import namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI"
+               location="./wsdai_core_porttypes.wsdl"/>
+
+  <wsdl:binding name="CoreDataAccessSOAP" type="wsdai:CoreDataAccessPT">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="GetDataResourcePropertyDocument">
+      <soap:operation soapAction="http://www.ggf.org/namespaces/2005/12/WS-DAI#GetDataResourcePropertyDocument"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidResourceNameFault">
+        <soap:fault name="InvalidResourceNameFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="NotAuthorizedFault">
+        <soap:fault name="NotAuthorizedFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="ServiceBusyFault">
+        <soap:fault name="ServiceBusyFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataResourceUnavailableFault">
+        <soap:fault name="DataResourceUnavailableFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="DestroyDataResource">
+      <soap:operation soapAction="http://www.ggf.org/namespaces/2005/12/WS-DAI#DestroyDataResource"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidResourceNameFault">
+        <soap:fault name="InvalidResourceNameFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="NotAuthorizedFault">
+        <soap:fault name="NotAuthorizedFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="ServiceBusyFault">
+        <soap:fault name="ServiceBusyFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataResourceUnavailableFault">
+        <soap:fault name="DataResourceUnavailableFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="GenericQuery">
+      <soap:operation soapAction="http://www.ggf.org/namespaces/2005/12/WS-DAI#GenericQuery"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidResourceNameFault">
+        <soap:fault name="InvalidResourceNameFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="NotAuthorizedFault">
+        <soap:fault name="NotAuthorizedFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="ServiceBusyFault">
+        <soap:fault name="ServiceBusyFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataResourceUnavailableFault">
+        <soap:fault name="DataResourceUnavailableFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidExpressionFault"> 
+        <soap:fault name="InvalidExpressionFault" use="literal"/>
+      </wsdl:fault>
+       <wsdl:fault name="InvalidLanguageFault">
+        <soap:fault name="InvalidLanguageFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidDatasetFormatFault" >
+        <soap:fault name="InvalidDatasetFormatFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:binding name="CoreResourceListSOAP" type="wsdai:CoreResourceListPT">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="GetResourceList">
+      <soap:operation soapAction="http://www.ggf.org/namespaces/2005/12/WS-DAI#GetDataResourceList"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="NotAuthorizedFault">
+        <soap:fault name="NotAuthorizedFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="ServiceBusyFault">
+        <soap:fault name="ServiceBusyFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="Resolve">
+      <soap:operation soapAction="http://www.ggf.org/namespaces/2005/12/WS-DAI#Resolve"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidResourceNameFault">
+        <soap:fault name="InvalidResourceNameFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="NotAuthorizedFault">
+        <soap:fault name="NotAuthorizedFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="ServiceBusyFault">
+        <soap:fault name="ServiceBusyFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+</wsdl:definitions>

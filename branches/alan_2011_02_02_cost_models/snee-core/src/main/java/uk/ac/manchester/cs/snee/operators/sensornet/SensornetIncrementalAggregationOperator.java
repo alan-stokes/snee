@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceDAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -46,7 +47,7 @@ public abstract class SensornetIncrementalAggregationOperator extends SensornetO
 		}		
 	}
 
-	/** {@inheritDoc} */
+  /** {@inheritDoc} */
 	public int getCardinality(CardinalityType card, 
 			Site node, DAF daf) {
 		return 1;
@@ -108,18 +109,13 @@ public abstract class SensornetIncrementalAggregationOperator extends SensornetO
 	}
 	
 	/** {@inheritDoc} */
-	public float getInstanceCardinality(Site node, DAF daf, long beta) 
+	public float getInstanceCardinality(Site node, InstanceDAF daf, long beta) 
 	throws OptimizationException
-	{
-	  if(this.isNodeDead())
-	    return 0;
-	  else
-	  {
-	    float childrenCardinality = this.getInstanceInputCardinality(node, daf, 0, beta);
-	    if(childrenCardinality == 0)
-	      return 0;
-	    else
-	      return 1;
-	  }
+	{System.out.println("within a aggrInc object");
+    float childrenCardinality = this.getInstanceInputCardinality(node, daf, 0, beta);
+    if(childrenCardinality == 0)
+      return 0;
+    else
+      return 1;
 	}
 }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<wsdl:definitions name="StreamingDataQueryAccess"
+	targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query"
+	xmlns:sdsQuery="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<!-- ##################### IMPORTS #########################  -->
+			
+	<wsdl:import namespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query"
+		location="query_interface_bindings.wsdl"/>
+
+	<!-- ################### END OF IMPORTS ####################### -->
+
+	
+	<!-- ####################################################### -->
+	<!-- ####################### SERVICE ####################### -->
+	<!-- ####################################################### -->		
+	<wsdl:service name="StreamingQueryService">
+		<wsdl:port name="QueryInterface" 
+			binding="sdsQuery:DirectAccessBinding">
+			<soap:address location="http://localhost:8080/SDS/services/QueryInterface"/>
+		</wsdl:port>
+	</wsdl:service>
+	
+</wsdl:definitions>
+	

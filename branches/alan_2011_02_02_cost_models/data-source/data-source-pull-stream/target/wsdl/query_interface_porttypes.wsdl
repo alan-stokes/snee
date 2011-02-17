@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="sdsQuery" 
+	targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query" 
+	xmlns:wsdai="http://www.ggf.org/namespaces/2005/12/WS-DAI" 
+	xmlns:sdsQuery="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query"
+	xmlns:sds="http://www.semsorgrid4env.eu/namespace/2009/10/SDS" 
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+<!-- WSDL IMPORTS ###################################################### -->
+
+	<wsdl:import location="wsdai/wsdai_core_porttypes.wsdl"
+		namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI" />
+
+<!-- WSDL TYPES ######################################################## -->
+	
+	<wsdl:types>
+		<xsd:schema elementFormDefault="qualified"
+			targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query">
+
+			<xsd:import namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI"
+				schemaLocation="wsdai/wsdai_core_types.xsd" />
+			
+			<xsd:import namespace="http://www.w3.org/2005/08/addressing" 
+				schemaLocation="types/ws-addressing-0805.xsd" />
+
+			<xsd:include schemaLocation="query_interface_types.xsd" />
+
+      <!-- ############################ -->
+      <!-- ### Common Message Types ### -->
+	  <!-- ############################ -->
+
+	
+		<!-- ######################################### -->
+		<!-- ### GenericQueryFactory Message Types ### -->
+		<!-- ######################################### -->
+	
+		<!-- Copied directly from ws-dai core (it is not exposed as a type) -->
+		<!--
+		<xsd:element name="GenericExpression">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="wsdai:ExpressionType">
+              <xsd:sequence>
+                <xsd:any namespace="##any"/>
+              </xsd:sequence>
+            </xsd:extension>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element> -->
+      
+	<xsd:element name="GenericQueryFactoryRequest">
+			<xsd:complexType>
+				<xsd:complexContent>
+					<xsd:extension base="wsdai:FactoryRequestType">
+						<xsd:sequence>
+		<!-- This may be causing a problem. GenericExpression is defined in 
+			wsdai_core_porttypes.wsdl which means that we cannot reference it -->
+							<xsd:element ref="wsdai:Expression" />
+						</xsd:sequence>
+					</xsd:extension>
+				</xsd:complexContent>
+			</xsd:complexType>
+		</xsd:element>
+	
+		<xsd:element name="GenericQueryFactoryResponse" type="wsdai:DataResourceAddressListType" />
+	      
+		</xsd:schema>
+	</wsdl:types>
+	
+	<!-- WSDL MESSAGES ################################################# -->
+	
+
+  <!-- #################################### -->
+  <!-- ### GenericQueryFactory Messages ### -->
+  <!-- #################################### -->
+
+  <wsdl:message name="GenericQueryFactoryRequest">
+    <wsdl:part element="sdsQuery:GenericQueryFactoryRequest" name="GenericQueryFactoryRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="GenericQueryFactoryResponse">
+    <wsdl:part element="sdsQuery:GenericQueryFactoryResponse" name="GenericQueryFactoryResponse"/>
+  </wsdl:message>
+
+
+  <!-- WSDL PORT TYPES ############################################### -->
+
+	<wsdl:portType name="QueryInterface">
+
+		<!-- Core Resource List Operations  -->
+		<wsdl:operation name="GetResourceList">
+			<wsdl:input name="GetResourceListRequest" message="wsdai:GetResourceListRequest"/>
+			<wsdl:output name="GetResourceListResponse" message="wsdai:GetResourceListResponse"/>
+			<wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+			<wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="Resolve">
+			<wsdl:input message="wsdai:ResolveRequest"/>
+			<wsdl:output message="wsdai:ResolveResponse"/>
+			<wsdl:fault name="InvalidResourceNameFault" message="wsdai:InvalidResourceNameFault"/>
+			<wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+			<wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+		</wsdl:operation>
+		
+		<!-- Core Data Access Operations -->
+		<wsdl:operation name="GetDataResourcePropertyDocument">
+			<wsdl:input name="GetDataResourcePropertyDocumentRequest" message="wsdai:GetDataResourcePropertyDocumentRequest"/>
+			<wsdl:output name="GetDataResourcePropertyDocumentResponse" message="wsdai:GetDataResourcePropertyDocumentResponse"/>
+			<wsdl:fault name="InvalidResourceNameFault" message="wsdai:InvalidResourceNameFault"/>
+			<wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+			<wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+			<wsdl:fault name="DataResourceUnavailableFault" message="wsdai:DataResourceUnavailableFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="DestroyDataResource">
+			<wsdl:input message="wsdai:DestroyDataResourceRequest"/>
+			<wsdl:output message="wsdai:DestroyDataResourceResponse"/>
+			<wsdl:fault name="InvalidResourceNameFault" message="wsdai:InvalidResourceNameFault"/>
+			<wsdl:fault name="DataResourceUnavailableFault" message="wsdai:DataResourceUnavailableFault"/>
+			<wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+			<wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="GenericQuery">
+			<wsdl:input message="wsdai:GenericQueryRequest"/>
+			<wsdl:output message="wsdai:GenericQueryResponse"/>
+			<wsdl:fault name="InvalidResourceNameFault" message="wsdai:InvalidResourceNameFault"/>
+			<wsdl:fault name="InvalidExpressionFault" message="wsdai:InvalidExpressionFault"/>
+			<wsdl:fault name="InvalidLanguageFault" message="wsdai:InvalidLanguageFault"/>
+			<wsdl:fault name="InvalidDatasetFormatFault" message="wsdai:InvalidDatasetFormatFault"/>
+			<wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+			<wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+			<wsdl:fault name="DataResourceUnavailableFault" message="wsdai:DataResourceUnavailableFault"/>
+		</wsdl:operation>
+
+		<!-- Data Access Factory Operation -->
+		<wsdl:operation name="GenericQueryFactory">
+			<wsdl:input message="sdsQuery:GenericQueryFactoryRequest" />
+			<wsdl:output message="sdsQuery:GenericQueryFactoryResponse" />
+			<wsdl:fault message="wsdai:InvalidResourceNameFault" name="InvalidResourceNameFault" />
+			<wsdl:fault message="wsdai:InvalidExpressionFault" name="InvalidExpressionFault" />
+			<wsdl:fault message="wsdai:InvalidLanguageFault" name="InvalidLanguageFault" />
+			<wsdl:fault message="wsdai:InvalidPortTypeQNameFault" name="InvalidPortTypeQNameFault" />
+			<wsdl:fault message="wsdai:InvalidConfigurationDocumentFault" name="InvalidConfigurationDocumentFault" />
+			<wsdl:fault message="wsdai:NotAuthorizedFault" name="NotAuthorizedFault" />
+			<wsdl:fault message="wsdai:ServiceBusyFault" name="ServiceBusyFault" />
+			<wsdl:fault message="wsdai:DataResourceUnavailableFault" name="DataResourceUnavailableFault" />
+		</wsdl:operation>
+	</wsdl:portType>
+	
+</wsdl:definitions>

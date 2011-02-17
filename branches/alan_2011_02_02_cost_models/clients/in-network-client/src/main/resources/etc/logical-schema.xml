@@ -10,7 +10,7 @@
          </column>
      </stream>
 
-<!--       <stream name="Forest" type="pull">
+       <stream name="Forest" type="pull">
          <column name="light">
           	<type class ="integer"/>
          </column>
@@ -20,6 +20,6 @@
          <column name="light">
           	<type class ="integer"/>
          </column>
-     </stream> -->
+     </stream> 
      
 </schema>

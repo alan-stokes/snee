@@ -176,6 +176,16 @@ public class RT extends SNEEAlgebraicForm {
 			logger.debug("RETURN siteIterator()");
     	return this.siteTree.nodeIterator(traversalOrder);
     }
+    
+    public final Iterator<Site> siteIterator(
+        Site rootSite,
+        final TraversalOrder traversalOrder) {
+      if (logger.isDebugEnabled())
+      logger.debug("ENTER siteIterator()");
+      if (logger.isDebugEnabled())
+      logger.debug("RETURN siteIterator()");
+      return this.siteTree.nodeIterator(rootSite, traversalOrder);
+    }
 
     /**
      * Gets a list of sites.

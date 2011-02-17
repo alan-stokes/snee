@@ -1,11 +1,14 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceDAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
@@ -39,7 +42,7 @@ public class SensornetDeliverOperator extends SensornetOperatorImpl {
 		}		
 	}
 
-	/** {@inheritDoc} 
+  /** {@inheritDoc} 
 	 * @throws OptimizationException */
 	public final int getCardinality(final CardinalityType card, 
 			final Site node, final DAF daf) throws OptimizationException {
@@ -111,12 +114,9 @@ public class SensornetDeliverOperator extends SensornetOperatorImpl {
 
 	/** {@inheritDoc} 
 	 * @throws OptimizationException */ 
-	public float getInstanceCardinality(final Site node, final DAF daf, long beta) 
+	public float getInstanceCardinality(final Site node, final InstanceDAF daf, long beta) 
 	throws OptimizationException 
-	{
-	  if(this.isNodeDead())
-	    return 0;
-	  else
+	{System.out.println("within a deliver object");
 		return getInstanceInputCardinality(node, daf, 0, beta);
 	}
 	

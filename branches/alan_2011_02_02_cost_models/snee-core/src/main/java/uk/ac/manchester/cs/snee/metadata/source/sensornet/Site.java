@@ -246,6 +246,16 @@ public class Site extends NodeImplementation {
     	return this.numSources;
     }
 
+    boolean isDead; 
+    public boolean isDead()
+    {
+      return isDead;
+    }
+    public void setisDead(boolean isDead)
+    {
+      this.isDead = isDead;
+    }
+
 //    /**
 //     * Remove the given exchange components for this site.
 //     * @param exchOp The exchange operator whose exchange components are to be removed.

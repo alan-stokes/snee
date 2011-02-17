@@ -1,8 +1,11 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
@@ -45,6 +48,14 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 		return getOverheadTimeCost()
 			+ costParams.getDoCalculation() * tuples
 			+ costParams.getCopyTuple();
+    }
+    
+    public boolean isAttributeSensitive() {
+      return false;
+    }
+    
+    public boolean isRecursive() {
+      return false;
     }
 	
 }

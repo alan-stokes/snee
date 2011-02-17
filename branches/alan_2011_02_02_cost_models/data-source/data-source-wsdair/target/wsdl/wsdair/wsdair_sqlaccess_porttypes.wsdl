@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SQLAccess WSDL
+
+Web Services Data Access and Integration - The Relational
+Realisation (WS-DAIR) Specification, Version 1.0, 20 July 2006
+
+Copyright (C) Open Grid Forum (2006). All Rights Reserved.
+
+This document and translations of it may be copied and furnished to
+others, and derivative works that comment on or otherwise explain it
+or assist in its implementation may be prepared, copied, published and
+distributed, in whole or in part, without restriction of any kind,
+provided that the above copyright notice and this paragraph are
+included on all such copies and derivative works. However, this
+document itself may not be modified in any way, such as by removing
+the copyright notice or references to the OGF or other organizations,
+except as needed for the purpose of developing Grid Recommendations in
+which case the procedures for copyrights defined in the OGF Document
+process must be followed, or as required to translate it into
+languages other than English. 
+
+The limited permissions granted above are perpetual and will not be
+revoked by the OGF or its successors or assignees. 
+
+This document and the information contained herein is provided on an
+"As Is" basis and the OGF disclaims all warranties, express or
+implied, including but not limited to any warranty that the use of the
+information herein will not infringe any rights or any implied
+warranties of merchantability or fitness for a particular purpose.
+-->
+<wsdl:definitions xmlns:wsdai="http://www.ggf.org/namespaces/2005/12/WS-DAI" xmlns:wsdair="http://www.ggf.org/namespaces/2005/12/WS-DAIR" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="wsdair" targetNamespace="http://www.ggf.org/namespaces/2005/12/WS-DAIR">
+
+  <!-- WSDL IMPORTS ################################################## -->
+
+  <wsdl:import location="../wsdai/wsdai_core_porttypes.wsdl" namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI"/>
+
+  <!-- WSDL TYPES #################################################### -->
+
+  <wsdl:types>
+
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.ggf.org/namespaces/2005/12/WS-DAIR">
+
+      <xsd:import namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI" schemaLocation="../wsdai/wsdai_core_types.xsd"/>
+
+      <xsd:include schemaLocation="wsdair_sqlaccess_types.xsd"/>
+      <xsd:include schemaLocation="wsdair_sqlresponse_types.xsd"/>
+      <xsd:include schemaLocation="wsdair_sqlrowset_types.xsd"/>
+
+      <!-- ############################ -->
+      <!-- ### Common Message Types ### -->
+      <!-- ############################ -->
+
+      <!-- general request types -->
+
+      <xsd:complexType name="SQLParameterType">
+        <xsd:sequence>
+          <xsd:element name="Value" type="xsd:string"/>
+          <xsd:element name="Type">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:token">
+                <xsd:enumeration value="BIT"/>
+                <xsd:enumeration value="TINYINT"/>
+                <xsd:enumeration value="SMALLINT"/>
+                <xsd:enumeration value="INTEGER"/>
+                <xsd:enumeration value="BIGINT"/>
+                <xsd:enumeration value="FLOAT"/>
+                <xsd:enumeration value="REAL"/>
+                <xsd:enumeration value="DOUBLE"/>
+                <xsd:enumeration value="NUMERIC"/>
+                <xsd:enumeration value="DECIMAL"/>
+                <xsd:enumeration value="CHAR"/>
+                <xsd:enumeration value="VARCHAR"/>
+                <xsd:enumeration value="LONGVARCHAR"/>
+                <xsd:enumeration value="DATE"/>
+                <xsd:enumeration value="TIME"/>
+                <xsd:enumeration value="TIMESTAMP"/>
+                <xsd:enumeration value="BINARY"/>
+                <xsd:enumeration value="VARBINARY"/>
+                <xsd:enumeration value="LONGVARBINARY"/>
+                <xsd:enumeration value="NULL"/>
+                <xsd:enumeration value="DISTINCT"/>
+                <xsd:enumeration value="STRUCT"/>
+                <xsd:enumeration value="ARRAY"/>
+                <xsd:enumeration value="BLOB"/>
+                <xsd:enumeration value="CLOB"/>
+                <xsd:enumeration value="REF"/>
+                <xsd:enumeration value="DATALINK"/>
+                <xsd:enumeration value="BOOLEAN"/>
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+          <xsd:element name="Mode">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:token">
+                <xsd:enumeration value="IN"/>
+                <xsd:enumeration value="OUT"/>
+                <xsd:enumeration value="INOUT"/>
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <xsd:complexType name="SQLExpressionType">
+        <xsd:complexContent>
+          <xsd:extension base="wsdai:ExpressionType">
+            <xsd:sequence>
+              <xsd:element name="Expression" type="xsd:string"/>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="SQLParameter" type="wsdair:SQLParameterType"/>
+            </xsd:sequence>
+          </xsd:extension>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:element abstract="true" name="SQLExpression" type="wsdair:SQLExpressionType"/>
+
+      <xsd:complexType name="InvalidSQLExpressionParameterFaultType"/>
+      <xsd:element name="InvalidSQLExpressionParameterFault" type="wsdair:InvalidSQLExpressionParameterFaultType"/>
+
+      <!-- ################################ -->
+      <!-- ### sqlExecute Message Types ### -->
+      <!-- ################################ -->
+
+      <xsd:element name="SQLExecuteRequest">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="wsdai:RequestType">
+              <xsd:sequence>
+                <xsd:element ref="wsdair:SQLExpression"/>
+              </xsd:sequence>
+            </xsd:extension>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="SQLExecuteResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element ref="wsdair:SQLDataset"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- ####################################### -->
+      <!-- ### sqlExecuteFactory Message Types ### -->
+      <!-- ####################################### -->
+
+      <xsd:element name="SQLExecuteFactoryRequest">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="wsdai:FactoryRequestType">
+              <xsd:sequence>
+                <xsd:element ref="wsdair:SQLExpression"/>
+              </xsd:sequence>
+            </xsd:extension>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- assumes that these messages result in a service/resource that contains all of -->
+      <!-- the possible responses from a SQL execute (rowset, count, value, parameter etc) -->
+      <xsd:element name="SQLExecuteFactoryResponse" type="wsdai:DataResourceAddressListType"/>
+
+    </xsd:schema>
+
+  </wsdl:types>
+
+  <!-- WSDL MESSAGES ################################################# -->
+
+  <wsdl:message name="InvalidSQLExpressionParameterFault">
+    <wsdl:part name="InvalidSQLExpressionParameterFault" element="wsdair:InvalidSQLExpressionParameterFault"/>
+  </wsdl:message>
+
+  <!-- ####################################### -->
+  <!-- ### GetSQLPropertyDocument Messages ### -->
+  <!-- ####################################### -->
+
+  <wsdl:message name="GetSQLPropertyDocumentRequest">
+    <wsdl:part element="wsdai:GetDataResourcePropertyDocumentRequest" name="GetSQLPropertyDocumentRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetSQLPropertyDocumentResponse">
+    <wsdl:part element="wsdair:SQLPropertyDocument" name="GetSQLPropertyDocumentResponse"/>
+  </wsdl:message>
+
+  <!-- ########################### -->
+  <!-- ### sqlExecute Messages ### -->
+  <!-- ########################### -->
+
+  <wsdl:message name="SQLExecuteRequest">
+    <wsdl:part element="wsdair:SQLExecuteRequest" name="SQLExecuteRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="SQLExecuteResponse">
+    <wsdl:part element="wsdair:SQLExecuteResponse" name="SQLExecuteResponse"/>
+  </wsdl:message>
+
+  <!-- ################################## -->
+  <!-- ### sqlExecuteFactory Messages ### -->
+  <!-- ################################## -->
+
+  <wsdl:message name="SQLExecuteFactoryRequest">
+    <wsdl:part element="wsdair:SQLExecuteFactoryRequest" name="SQLExecuteFactoryRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="SQLExecuteFactoryResponse">
+    <wsdl:part element="wsdair:SQLExecuteFactoryResponse" name="SQLExecuteFactoryResponse"/>
+  </wsdl:message>
+
+  <!-- WSDL PORT TYPES ############################################### -->
+
+  <wsdl:portType name="SQLAccessPT">
+    <wsdl:operation name="GetSQLPropertyDocument">
+      <wsdl:input message="wsdair:GetSQLPropertyDocumentRequest" name="GetSQLPropertyDocumentRequest"/>
+      <wsdl:output message="wsdair:GetSQLPropertyDocumentResponse" name="GetSQLPropertyDocumentResponse"/>
+      <wsdl:fault message="wsdai:InvalidResourceNameFault" name="InvalidResourceNameFault"/>
+      <wsdl:fault message="wsdai:ServiceBusyFault" name="ServiceBusyFault"/>
+      <wsdl:fault message="wsdai:DataResourceUnavailableFault" name="DataResourceUnavailableFault"/>
+      <wsdl:fault message="wsdai:NotAuthorizedFault" name="NotAuthorizedFault"/>
+    </wsdl:operation>
+    <wsdl:operation name="SQLExecute">
+      <wsdl:input message="wsdair:SQLExecuteRequest"/>
+      <wsdl:output message="wsdair:SQLExecuteResponse"/>
+      <wsdl:fault message="wsdai:InvalidResourceNameFault" name="InvalidResourceNameFault"/>
+      <wsdl:fault message="wsdai:InvalidExpressionFault" name="InvalidExpressionFault"/>
+      <wsdl:fault message="wsdai:InvalidLanguageFault" name="InvalidLanguageFault"/>
+      <wsdl:fault message="wsdai:InvalidDatasetFormatFault" name="InvalidDatasetFormatFault"/>
+      <wsdl:fault message="wsdai:NotAuthorizedFault" name="NotAuthorizedFault"/>
+      <wsdl:fault message="wsdai:ServiceBusyFault" name="ServiceBusyFault"/>
+      <wsdl:fault message="wsdair:InvalidSQLExpressionParameterFault" name="InvalidSQLExpressionParameterFault"/>
+      <wsdl:fault message="wsdai:DataResourceUnavailableFault" name="DataResourceUnavailableFault"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:portType name="SQLAccessFactoryPT">
+    <wsdl:operation name="SQLExecuteFactory">
+      <wsdl:input message="wsdair:SQLExecuteFactoryRequest"/>
+      <wsdl:output message="wsdair:SQLExecuteFactoryResponse"/>
+      <wsdl:fault message="wsdai:InvalidResourceNameFault" name="InvalidResourceNameFault"/>
+      <wsdl:fault message="wsdai:InvalidExpressionFault" name="InvalidExpressionFault"/>
+      <wsdl:fault message="wsdai:InvalidLanguageFault" name="InvalidLanguageFault"/>
+      <wsdl:fault message="wsdai:InvalidPortTypeQNameFault" name="InvalidPortTypeQNameFault"/>
+      <wsdl:fault message="wsdai:InvalidConfigurationDocumentFault" name="InvalidConfigurationDocumentFault"/>
+      <wsdl:fault message="wsdai:NotAuthorizedFault" name="NotAuthorizedFault"/>
+      <wsdl:fault message="wsdai:ServiceBusyFault" name="ServiceBusyFault"/>
+      <wsdl:fault message="wsdair:InvalidSQLExpressionParameterFault" name="InvalidSQLExpressionParameterFault"/>
+      <wsdl:fault message="wsdai:DataResourceUnavailableFault" name="DataResourceUnavailableFault"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+</wsdl:definitions>

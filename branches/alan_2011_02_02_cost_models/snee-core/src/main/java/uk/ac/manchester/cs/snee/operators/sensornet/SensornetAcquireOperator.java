@@ -1,10 +1,14 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
 
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceDAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -23,7 +27,7 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 	AcquireOperator acqOp;
 	
 	SensorNetworkSourceMetadata sourceMetadata;
-	
+  
 	public SensornetAcquireOperator(LogicalOperator op, CostParameters costParams) 
 	throws SNEEException,
 			SchemaMetadataException {
@@ -43,7 +47,7 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 		}		
 	}
 
-	@Override
+  @Override
 	public int[] getSourceSites() {
 		return this.sourceMetadata.getSourceSites();
 	}
@@ -125,14 +129,14 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 //		return new AlphaBetaExpression(getTimeCost(card, node, daf),0);
 //	}
 
-	
-  /** {@inheritDoc} */ 
-  public float getInstanceCardinality(Site node, DAF daf, long beta)
+
+
+  @Override/** {@inheritDoc} */ 
+  public float getInstanceCardinality(Site node, InstanceDAF instanceDAF,
+      long beta) throws OptimizationException
   {
-	if(this.isNodeDead())
-	  return 0;
-	else
-      return 1 * selectivity();
+    System.out.println("within a acquire object");
+    return 1 * selectivity();
   }
 
 }

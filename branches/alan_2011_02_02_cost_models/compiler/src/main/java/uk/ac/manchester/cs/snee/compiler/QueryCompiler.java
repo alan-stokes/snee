@@ -167,14 +167,14 @@ public class QueryCompiler {
 	}
 	
 	private QueryExecutionPlan doSourcePlanning(DLAF dlaf, QoSExpectations qos, 
-	int queryID) 
+	int queryID, CostModel model) 
 	throws SNEEException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException,
 	OptimizationException, WhenSchedulerException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSourcePlanning: " + dlaf);
 		SourcePlanner planner = new SourcePlanner(metadata);
 		QueryExecutionPlan qep = planner.doSourcePlanning(dlaf, qos,
-			metadata.getCostParameters(), queryID);
+			metadata.getCostParameters(), queryID, model);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doSourcePlanning");
 		return qep;
@@ -277,10 +277,11 @@ public class QueryCompiler {
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Source Allocation for query " + queryID);
 		DLAF dlaf = doSourceAllocation(lafPrime, queryID);
+		CostModel costModel = new CostModel();
 		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Source Planner for query " + queryID);
-		QueryExecutionPlan qep = doSourcePlanning(dlaf, qos, queryID);
+		QueryExecutionPlan qep = doSourcePlanning(dlaf, qos, queryID, costModel);
 
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN: " + qep.getID());
@@ -291,7 +292,9 @@ public class QueryCompiler {
 		 */
 		if (qep instanceof SensorNetworkQueryPlan) 
 		{
-		  CostModel model = new CostModel((SensorNetworkQueryPlan) qep);
+		  costModel.addAgenda(((SensorNetworkQueryPlan) qep).getAgenda());
+		  float card = costModel.runCardinality();
+		  System.out.println("the cardinality of this query per agenda cycle is" + card); 
 		}
 		
 		return qep;

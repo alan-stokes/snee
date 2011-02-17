@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceDAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RoutingTableEntry;
@@ -33,7 +34,7 @@ public class SensornetExchangeOperator extends SensornetOperatorImpl {
 	 * other instances of the same fragment.
 	 */
 	private Fragment destFragment = null;
-	
+  
 	/**
 	 * The source fragment of the exchange operator.  Note that although a
 	 * fragment may have more than one child fragment (e.g., in the case of a 
@@ -62,6 +63,7 @@ public class SensornetExchangeOperator extends SensornetOperatorImpl {
 			logger.debug("RETURN SensornetExchangeOperator()");
 		}
 	}
+
 
     /**
      * Returns the destination fragments of this exchange operator.
@@ -222,15 +224,15 @@ public class SensornetExchangeOperator extends SensornetOperatorImpl {
 
 	@Override
 	/** {@inheritDoc} */
-	public float getInstanceCardinality(Site node, DAF daf, long beta)
+	public float getInstanceCardinality(Site node, InstanceDAF daf, long beta)
 	throws OptimizationException 
-	{
-	  if(this.isNodeDead())
-	    return 0;
-	  else
-	  {
-	    /*needs to iterate over child operators for as mnay times the bufferering factor*/
-	    return getInstanceInputCardinality(node, daf, 0, beta);
-	  }
-	} 
+	{System.out.println("within a exchange object");
+    /*needs to iterate over child operators for as mnay times the bufferering factor*/
+    float tuples = 0;
+    for(int iteration = 0; iteration < beta; iteration++)
+    {
+      tuples += getInstanceInputCardinality(node, daf, 0, beta);
+    }
+    return tuples;
+	}
 }

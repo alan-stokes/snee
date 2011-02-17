@@ -47,6 +47,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceDAF;
 
 public interface SensornetOperator extends Node {
 	
@@ -358,7 +359,7 @@ public interface SensornetOperator extends Node {
 	 * @return float value reflecting how many tuples are produced for this operator per agenda
 	 * @throws OptimizationException 
 	 */
-	abstract float getInstanceCardinality(Site node, DAF daf, long beta) 
+	abstract float getInstanceCardinality(Site node, InstanceDAF instanceDAF, long beta) 
 	throws OptimizationException;
 	
 }

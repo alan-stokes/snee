@@ -1,10 +1,13 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceDAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -38,7 +41,7 @@ public class SensornetRStreamOperator extends SensornetOperatorImpl {
 		}		
 	}
 
-	@Override
+  @Override
 	/** {@inheritDoc} */
 	public final int getCardinality(final CardinalityType card, 
 			final Site node, final DAF daf) throws OptimizationException {
@@ -72,12 +75,9 @@ public class SensornetRStreamOperator extends SensornetOperatorImpl {
 
 	@Override
 	/** {@inheritDoc} */
-	public float getInstanceCardinality(Site node, DAF daf, long beta)
+	public float getInstanceCardinality(Site node, InstanceDAF daf, long beta)
 	throws OptimizationException
-	{
-	  if(this.isNodeDead())
-	    return 0;
-	  else
+	{System.out.println("within a rstream object");
 		return getInstanceInputCardinality(node, daf, 0, beta);
 	}
 	

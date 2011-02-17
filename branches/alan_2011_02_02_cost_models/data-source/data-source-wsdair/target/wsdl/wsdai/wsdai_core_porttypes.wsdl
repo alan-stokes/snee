@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Core WSDL
+
+Web Services Data Access and Integration - The Core (WS-DAI)
+Specification, Version 1.0, 20 July 2006
+
+Copyright (C) Open Grid Forum (2006). All Rights Reserved.
+
+This document and translations of it may be copied and furnished to
+others, and derivative works that comment on or otherwise explain it
+or assist in its implementation may be prepared, copied, published and
+distributed, in whole or in part, without restriction of any kind,
+provided that the above copyright notice and this paragraph are
+included on all such copies and derivative works. However, this
+document itself may not be modified in any way, such as by removing
+the copyright notice or references to the OGF or other organizations,
+except as needed for the purpose of developing Grid Recommendations in
+which case the procedures for copyrights defined in the OGF Document
+process must be followed, or as required to translate it into
+languages other than English. 
+
+The limited permissions granted above are perpetual and will not be
+revoked by the OGF or its successors or assignees. 
+
+This document and the information contained herein is provided on an
+"As Is" basis and the OGF disclaims all warranties, express or
+implied, including but not limited to any warranty that the use of the
+information herein will not infringe any rights or any implied
+warranties of merchantability or fitness for a particular purpose.
+-->
+<wsdl:definitions name="wsdai" targetNamespace="http://www.ggf.org/namespaces/2005/12/WS-DAI" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdai="http://www.ggf.org/namespaces/2005/12/WS-DAI">
+
+  <!-- WSDL IMPORTS ################################################## -->
+
+  <!-- WSDL TYPES #################################################### -->
+
+  <wsdl:types>
+
+    <xsd:schema targetNamespace="http://www.ggf.org/namespaces/2005/12/WS-DAI" elementFormDefault="qualified">
+
+      <xsd:include schemaLocation="./wsdai_core_types.xsd"/>
+
+      <!-- ##################### -->
+      <!-- ### General Types ### -->
+      <!-- ##################### -->
+
+      <xsd:complexType name="DataResourceUnavailableFaultType"/>
+      <xsd:element name="DataResourceUnavailableFault" type="wsdai:DataResourceUnavailableFaultType"/>
+
+      <xsd:complexType name="ServiceBusyFaultType"/>
+      <xsd:element name="ServiceBusyFault" type="wsdai:ServiceBusyFaultType"/>
+
+      <xsd:complexType name="NotAuthorizedFaultType"/>
+      <xsd:element name="NotAuthorizedFault" type="wsdai:NotAuthorizedFaultType"/>
+
+      <xsd:complexType name="InvalidResourceNameFaultType"/>
+      <xsd:element name="InvalidResourceNameFault" type="wsdai:InvalidResourceNameFaultType"/>
+
+      <xsd:complexType name="InvalidExpressionFaultType"/>
+      <xsd:element name="InvalidExpressionFault" type="wsdai:InvalidExpressionFaultType"/>
+
+      <xsd:complexType name="InvalidLanguageFaultType"/>
+      <xsd:element name="InvalidLanguageFault" type="wsdai:InvalidLanguageFaultType"/>
+
+      <xsd:complexType name="InvalidDatasetFormatFaultType"/>
+      <xsd:element name="InvalidDatasetFormatFault" type="wsdai:InvalidDatasetFormatFaultType"/>
+
+      <xsd:complexType name="InvalidPortTypeQNameFaultType"/>
+      <xsd:element name="InvalidPortTypeQNameFault" type="wsdai:InvalidPortTypeQNameFaultType"/>
+
+      <xsd:complexType name="InvalidConfigurationDocumentFaultType"/>
+      <xsd:element name="InvalidConfigurationDocumentFault" type="wsdai:InvalidConfigurationDocumentFaultType"/>
+
+      <!-- ####################### -->
+      <!-- ### GetResourceList ### -->
+      <!-- ####################### -->
+
+      <xsd:element name="GetResourceListRequest">
+        <xsd:complexType/>
+      </xsd:element>
+
+      <xsd:element name="GetResourceListResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element ref="wsdai:DataResourceAddress" minOccurs="0" maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- ############### -->
+      <!-- ### Resolve ### -->
+      <!-- ############### -->
+
+      <xsd:element name="ResolveRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element ref="wsdai:DataResourceAbstractName"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="ResolveResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element ref="wsdai:DataResourceAddress" maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- ###################################### -->
+      <!-- ### GetDatResourcePropertyDocument ### -->
+      <!-- ###################################### -->
+
+      <xsd:element name="GetDataResourcePropertyDocumentRequest">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="wsdai:RequestType"/>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- ########################### -->
+      <!-- ### DestroyDataResource ### -->
+      <!-- ########################### -->
+
+      <xsd:element name="DestroyDataResourceRequest">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="wsdai:BaseRequestType"/>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="DestroyDataResourceResponse">
+        <xsd:complexType/>
+      </xsd:element>
+
+      <!-- ############################# -->
+      <!-- ### GenericQuery Messages ### -->
+      <!-- ############################# -->
+
+      <xsd:element name="GenericExpression">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="wsdai:ExpressionType">
+              <xsd:sequence>
+                <xsd:any namespace="##any"/>
+              </xsd:sequence>
+            </xsd:extension>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="GenericQueryRequest">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="wsdai:RequestType">
+              <xsd:sequence>
+                <xsd:element ref="wsdai:GenericExpression"/>
+              </xsd:sequence>
+            </xsd:extension>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="GenericQueryResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element ref="wsdai:Dataset"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+    </xsd:schema>
+
+  </wsdl:types>
+
+  <!-- WSDL MESSAGES ############################################# -->
+
+  <wsdl:message name="ServiceBusyFault">
+    <wsdl:part name="ServiceBusyFault" element="wsdai:ServiceBusyFault"/>
+  </wsdl:message>
+
+  <wsdl:message name="DataResourceUnavailableFault">
+    <wsdl:part name="DataResourceUnavailableFault" element="wsdai:DataResourceUnavailableFault"/>
+  </wsdl:message>
+
+  <wsdl:message name="NotAuthorizedFault">
+    <wsdl:part name="NotAuthorizedFault" element="wsdai:NotAuthorizedFault"/>
+  </wsdl:message>
+
+  <wsdl:message name="InvalidResourceNameFault">
+    <wsdl:part name="InvalidResourceNameFault" element="wsdai:InvalidResourceNameFault"/>
+  </wsdl:message>
+
+  <wsdl:message name="InvalidExpressionFault">
+    <wsdl:part name="InvalidExpressionFault" element="wsdai:InvalidExpressionFault"/>
+  </wsdl:message>
+
+  <wsdl:message name="InvalidLanguageFault">
+    <wsdl:part name="InvalidLanguageFault" element="wsdai:InvalidLanguageFault"/>
+  </wsdl:message>
+
+  <wsdl:message name="InvalidDatasetFormatFault">
+    <wsdl:part name="InvalidDatasetFormatFault" element="wsdai:InvalidDatasetFormatFault"/>
+  </wsdl:message>
+
+  <wsdl:message name="InvalidPortTypeQNameFault">
+    <wsdl:part name="InvalidPortTypeQNameFault" element="wsdai:InvalidPortTypeQNameFault"/>
+  </wsdl:message>
+
+  <wsdl:message name="InvalidConfigurationDocumentFault">
+    <wsdl:part name="InvalidConfigurationDocumentFault" element="wsdai:InvalidConfigurationDocumentFault"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetResourceListRequest">
+    <wsdl:part name="GetResourceListRequest" element="wsdai:GetResourceListRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetResourceListResponse">
+    <wsdl:part name="GetResourceListResponse" element="wsdai:GetResourceListResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="ResolveRequest">
+    <wsdl:part name="ResolveRequest" element="wsdai:ResolveRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="ResolveResponse">
+    <wsdl:part name="ResolveResponse" element="wsdai:ResolveResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetDataResourcePropertyDocumentRequest">
+    <wsdl:part name="GetDataResourcePropertyDocumentRequest" element="wsdai:GetDataResourcePropertyDocumentRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetDataResourcePropertyDocumentResponse">
+    <wsdl:part name="GetDataResourcePropertyDocumentResponse" element="wsdai:PropertyDocument"/>
+  </wsdl:message>
+
+  <wsdl:message name="DestroyDataResourceRequest">
+    <wsdl:part name="DestroyDataResourceRequest" element="wsdai:DestroyDataResourceRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="DestroyDataResourceResponse">
+    <wsdl:part name="DestroyDataResourceResponse" element="wsdai:DestroyDataResourceResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="GenericQueryRequest">
+    <wsdl:part name="GenericQueryRequest" element="wsdai:GenericQueryRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="GenericQueryResponse">
+    <wsdl:part name="GenericQueryResponse" element="wsdai:GenericQueryResponse"/>
+  </wsdl:message>
+
+  <!-- WSDL PORTTYPES ############################################# -->
+
+  <wsdl:portType name="CoreDataAccessPT">
+    <wsdl:operation name="GetDataResourcePropertyDocument">
+      <wsdl:input name="GetDataResourcePropertyDocumentRequest" message="wsdai:GetDataResourcePropertyDocumentRequest"/>
+      <wsdl:output name="GetDataResourcePropertyDocumentResponse" message="wsdai:GetDataResourcePropertyDocumentResponse"/>
+      <wsdl:fault name="InvalidResourceNameFault" message="wsdai:InvalidResourceNameFault"/>
+      <wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+      <wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+      <wsdl:fault name="DataResourceUnavailableFault" message="wsdai:DataResourceUnavailableFault"/>
+    </wsdl:operation>
+    <wsdl:operation name="DestroyDataResource">
+      <wsdl:input message="wsdai:DestroyDataResourceRequest"/>
+      <wsdl:output message="wsdai:DestroyDataResourceResponse"/>
+      <wsdl:fault name="InvalidResourceNameFault" message="wsdai:InvalidResourceNameFault"/>
+      <wsdl:fault name="DataResourceUnavailableFault" message="wsdai:DataResourceUnavailableFault"/>
+      <wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+      <wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+    </wsdl:operation>
+    <wsdl:operation name="GenericQuery">
+      <wsdl:input message="wsdai:GenericQueryRequest"/>
+      <wsdl:output message="wsdai:GenericQueryResponse"/>
+      <wsdl:fault name="InvalidResourceNameFault" message="wsdai:InvalidResourceNameFault"/>
+      <wsdl:fault name="InvalidExpressionFault" message="wsdai:InvalidExpressionFault"/>
+      <wsdl:fault name="InvalidLanguageFault" message="wsdai:InvalidLanguageFault"/>
+      <wsdl:fault name="InvalidDatasetFormatFault" message="wsdai:InvalidDatasetFormatFault"/>
+      <wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+      <wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+      <wsdl:fault name="DataResourceUnavailableFault" message="wsdai:DataResourceUnavailableFault"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:portType name="CoreResourceListPT">
+    <wsdl:operation name="GetResourceList">
+      <wsdl:input name="GetResourceListRequest" message="wsdai:GetResourceListRequest"/>
+      <wsdl:output name="GetResourceListResponse" message="wsdai:GetResourceListResponse"/>
+      <wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+      <wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+    </wsdl:operation>
+    <wsdl:operation name="Resolve">
+      <wsdl:input message="wsdai:ResolveRequest"/>
+      <wsdl:output message="wsdai:ResolveResponse"/>
+      <wsdl:fault name="InvalidResourceNameFault" message="wsdai:InvalidResourceNameFault"/>
+      <wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+      <wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+</wsdl:definitions>

@@ -1,10 +1,12 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -33,12 +35,20 @@ public class SensornetAggrEvalOperator extends SensornetIncrementalAggregationOp
 			logger.debug("RETURN SensornetAggrEvalOperator()");
 		}		
 	}
-	
-	/** {@inheritDoc} */
+
+  /** {@inheritDoc} */
     public final double getTimeCost(final CardinalityType card, 
     		final Site node, final DAF daf) {
 		return getOverheadTimeCost()
 			+ costParams.getDoCalculation()
 			+ costParams.getCopyTuple();
+    }
+    
+    public boolean isAttributeSensitive() {
+      return true;
+    }
+    
+    public boolean isRecursive() {
+      return false;
     }
 }

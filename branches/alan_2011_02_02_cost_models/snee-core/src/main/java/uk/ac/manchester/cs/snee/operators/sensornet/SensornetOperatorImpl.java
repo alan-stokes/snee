@@ -8,8 +8,10 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.NodeImplementation;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceDAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -32,7 +34,7 @@ import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
 public abstract class SensornetOperatorImpl extends NodeImplementation implements
 		SensornetOperator {
-
+  
 	/**
 	 * Logger for this class.
 	 */
@@ -64,7 +66,12 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 	 */
 	protected CostParameters costParams;
 	
-	public SensornetOperatorImpl(LogicalOperator op, CostParameters costParams) 
+	public CostParameters getCostParams()
+  {
+    return costParams;
+  }
+	
+  public SensornetOperatorImpl(LogicalOperator op, CostParameters costParams) 
 	throws SNEEException, SchemaMetadataException {
 		super(op.getID());
 		if (logger.isDebugEnabled()) {
@@ -92,6 +99,8 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 		}
 	}
 
+  
+  
 	//Exchange operators only
 	public SensornetOperatorImpl(CostParameters costParams) {
 		if (logger.isDebugEnabled()) {
@@ -104,7 +113,12 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 		}
 	}
 
-	public SensornetOperatorImpl getSensornetOperator(LogicalOperator op,
+  public SensornetOperatorImpl(LogicalOperator logicalOperator)
+  {
+    this.logicalOp = logicalOperator;
+  }
+
+  public SensornetOperatorImpl getSensornetOperator(LogicalOperator op,
 	CostParameters costParams)
 	throws SNEEException, SchemaMetadataException {
 		SensornetOperatorImpl phyOp = null;
@@ -666,34 +680,18 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 		return 1;
 	}
 	
-  public float getInstanceInputCardinality(Site node, DAF daf, int index, long beta) 
+  public float getInstanceInputCardinality(Site node, InstanceDAF daf, int index, long beta) 
   throws OptimizationException 
   {
     float total = 0;
-	SensornetOperator inputOp = (SensornetOperator)this.getInput(index);
-	Iterator<Site> inputs;
-	inputs = daf.getInputOperatorInstanceSites(this, node, index);
-	while (inputs.hasNext()) 
-	{
-  	  total = total + inputOp.getInstanceCardinality(node, daf, beta);
-	}
-	return total;
+	  SensornetOperator inputOp = (SensornetOperator)this.getInput(index);
+	  Iterator<Site> inputs;
+	  inputs = daf.getInputOperatorInstanceSites(this, node, index);
+	
+	  while (inputs.hasNext()) 
+  	{
+	    total = total + inputOp.getInstanceCardinality(inputs.next(), daf, beta);
+	  }
+	  return total;
   }
-  
-  
-  /**
-   * code used to kill/resurrect a  operator/node
-   */
-  public void setDead( boolean dead)
-  {
-    this.isDead = dead;
-  }
-  /**
-   * code used to find if a node is dead
-   */
-  public boolean isNodeDead()
-  {
-    return isDead;
-  }
-  private boolean isDead;
 }

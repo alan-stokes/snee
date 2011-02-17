@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema 
+	targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:wsdai="http://www.ggf.org/namespaces/2005/12/WS-DAI" 
+	xmlns:wsn="http://docs.oasis-open.org/wsn/b-2"
+	xmlns:sds="http://www.semsorgrid4env.eu/namespace/2009/10/SDS"
+	xmlns:sdsPush="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push"> 
+	
+	<xsd:import schemaLocation="wsdai/wsdai_core_types.xsd" 
+		namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI" />
+	
+	<xsd:import schemaLocation="wsrf/notification/b-2.xsd" 
+		namespace="http://docs.oasis-open.org/wsn/b-2"/>
+
+	<xsd:import schemaLocation="streaming_service_types.xsd"
+		namespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS"/>
+	
+	<!-- General types -->
+	
+	<!-- Publication Policy -->
+	<xsd:element name="MaximumNumberItems" type="xsd:int" default="1"/>
+	
+	<xsd:element name="SupportRawMessages" type="xsd:boolean" default="false"/>
+
+	<xsd:complexType name="PublicationPolicyType">
+		<xsd:sequence>
+			<xsd:element ref="sdsPush:MaximumNumberItems" minOccurs="0" maxOccurs="1"/>
+			<xsd:element ref="sdsPush:SupportRawMessages" />
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="PublicationPolicy" type="sdsPush:PublicationPolicyType"/>
+	
+	<!-- Subscription Policy -->
+	<xsd:element name="MaximumSubscriptionPeriod" type="xsd:duration"/>
+	
+	<xsd:element name="FilterLanguageURI" type="xsd:anyURI"/>
+	
+	<xsd:element name="MessageContentExpressionLanguageURI" type="xsd:anyURI"/>
+	
+	<xsd:complexType name="SubscriptionPolicyType">
+		<xsd:sequence>
+			<xsd:element ref="sdsPush:MaximumSubscriptionPeriod" minOccurs="0" maxOccurs="1"/>
+			<xsd:element ref="sdsPush:FilterLanguageURI" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="sdsPush:MessageContentExpressionLanguageURI" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="SubscriptionPolicy" type="sdsPush:SubscriptionPolicyType"/>
+	
+	<!-- Property Document -->
+    <xsd:complexType name="PushStreamPropertyDocumentType">
+    	<xsd:complexContent>
+    		<xsd:extension base="sds:StreamPropertyDocumentType">
+    			<xsd:sequence>
+    				<xsd:element ref="wsn:NotificationProducerRP"/>
+    				<xsd:element ref="sdsPush:PublicationPolicy" minOccurs="0" maxOccurs="1"/>
+    				<xsd:element ref="sdsPush:SubscriptionPolicy" minOccurs="0" maxOccurs="1"/>
+    			</xsd:sequence>
+    		</xsd:extension>
+    	</xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="PushStreamPropertyDocument" 
+    	substitutionGroup="wsdai:PropertyDocument" 
+    	type="sdsPush:PushStreamPropertyDocumentType"/>
+
+</xsd:schema>

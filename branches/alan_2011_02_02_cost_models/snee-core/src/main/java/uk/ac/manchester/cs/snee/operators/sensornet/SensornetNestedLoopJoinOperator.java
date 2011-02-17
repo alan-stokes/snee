@@ -1,29 +1,29 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceDAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
-import uk.ac.manchester.cs.snee.operators.logical.IStreamOperator;
+import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class SensornetNestedLoopJoinOperator extends SensornetOperatorImpl {
 	
 	Logger logger = Logger.getLogger(SensornetNestedLoopJoinOperator.class.getName());
 	
-	IStreamOperator delOp;
+	JoinOperator delOp;
 	
 	public SensornetNestedLoopJoinOperator(LogicalOperator op, CostParameters costParams) 
 	throws SNEEException, SchemaMetadataException {
@@ -33,7 +33,7 @@ public class SensornetNestedLoopJoinOperator extends SensornetOperatorImpl {
 			logger.debug("Attribute List: " + op.getAttributes());
 			logger.debug("Expression List: " + op.getExpressions());
 		}
-		delOp = (IStreamOperator) op;
+		delOp = (JoinOperator) op;
 		this.setNesCTemplateName("join");
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetNestedLoopJoinOperator()");
@@ -99,16 +99,11 @@ public class SensornetNestedLoopJoinOperator extends SensornetOperatorImpl {
         }
 
 	@Override
-	public float getInstanceCardinality(Site node, DAF daf, long beta)
+	public float getInstanceCardinality(Site node, InstanceDAF daf, long beta)
 	throws OptimizationException 
-	{
-	  if(this.isNodeDead())
-	    return 0;
-	  else
-	  {
-        float left = getInstanceInputCardinality(node, daf, 0, beta);
-    	float right = getInstanceInputCardinality(node, daf, 1, beta);
-    	return left * right * selectivity();
-	  }
+	{System.out.println("within a loop object");
+    float left = getInstanceInputCardinality(node, daf, 0, beta);
+  	float right = getInstanceInputCardinality(node, daf, 1, beta);
+  	return left * right * selectivity();
 	}
 }

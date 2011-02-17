@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceDAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -76,15 +77,12 @@ public class SensornetSingleStepAggregationOperator extends SensornetOperatorImp
 	@Override
 	/** {@inheritDoc} 
      * @throws OptimizationException */
-	public float getInstanceCardinality(Site node, DAF daf, long beta)
+	public float getInstanceCardinality(Site node, InstanceDAF daf, long beta)
 	throws OptimizationException 
-	{
-	  if(this.isNodeDead())
-	    return 0;
-	  else
-	    if(this.getInstanceInputCardinality(node, daf, 0, beta) == 0)
-	      return 0;
-	    else
-	      return 1;
+	{System.out.println("within a aggrSingle object");
+    if(this.getInstanceInputCardinality(node, daf, 0, beta) == 0)
+      return 0;
+    else
+      return 1;
 	}
 }

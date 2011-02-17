@@ -121,4 +121,19 @@ public class Tree extends Graph {
 		return nodeList.iterator();
 	}
 
+  public <N extends Node> Iterator<N> nodeIterator(
+      Site rootSite,
+      TraversalOrder traversalOrder)
+  {
+    if (logger.isDebugEnabled())
+      logger.debug("ENTER nodeIterator()");
+    ArrayList<N> nodeList = 
+      new ArrayList<N>();
+    this.doNodeIterator((N)rootSite, nodeList, 
+        traversalOrder);
+    if (logger.isDebugEnabled())
+      logger.debug("RETURN nodeIterator()");
+    return nodeList.iterator();
+  }
+
 }
