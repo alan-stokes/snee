@@ -4,20 +4,20 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/logical-schema ../schema/logical-schema.xsd">
 
-      <stream name="Castilla" type="pull">
-         <column name="light">
+      <stream name="SeaDefence" type="pull">
+         <column name="seaLevel">
           	<type class ="integer"/>
          </column>
      </stream>
 
-<!--       <stream name="Forest" type="pull">
-         <column name="light">
+     <stream name="SeaDefenceEast" type="pull">
+         <column name="seaLevel">
           	<type class ="integer"/>
          </column>
      </stream>
 
-      <stream name="Meadow" type="pull">
-         <column name="light">
+      <stream name="SeaDefenceWest" type="pull">
+         <column name="seaLevel">
           	<type class ="integer"/>
          </column>
      </stream> -->

@@ -48,7 +48,7 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 					"\t\"query duration in seconds\"\n" +
 					"\t\"query parameters file\"\n");
 			//XXX: Use default query
-			query = "SELECT * FROM Castilla;";
+			query = "SELECT * FROM SeaDefence;";
 			duration = Long.valueOf("120");
 			queryParams= "etc/query-parameters.xml";
 //			System.exit(1);
