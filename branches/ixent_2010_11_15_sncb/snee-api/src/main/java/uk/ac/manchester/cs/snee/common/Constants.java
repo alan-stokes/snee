@@ -101,7 +101,7 @@ public final class Constants {
 	/**
 	 * String representation of attribute used for the acquire time attribute.
 	 */
-	public static final String ACQUIRE_TIME = "time";
+	public static final String ACQUIRE_TIME = "epoch";
 
 	/**
 	 * String representation of attribute used for the acquire time attribute.
