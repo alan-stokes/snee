@@ -79,44 +79,36 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 	/**
 	 * Contains details of the data sources that contribute data
 	 */
-	private List<SourceMetadataAbstract> _sources;
+	private SourceMetadataAbstract _source;
 	
 	/**
 	 * Constructs a new Receive operator.
 	 * 
 	 * @param extentMetaData Schema data about the extent
-	 * @param sources Metadata about data sources for the receive extent
+	 * @param source Metadata about data sources for the receive extent
 	 * @param boolType type used for booleans
 	 * @throws SchemaMetadataException
 	 * @throws TypeMappingException
 	 */
 	public ReceiveOperator(ExtentMetadata extentMetaData, 
-			List<SourceMetadataAbstract> sources, 
+			SourceMetadataAbstract source, 
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException {
 		super(boolType);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ReceiveOperator() with " +
-					extentMetaData + " #sources=" + sources.size());
+					extentMetaData + " source=" + source.getSourceName());
 					}
 		this.setOperatorName("RECEIVE");
 		//        this.setNesCTemplateName("receive");
 		this.setOperatorDataType(OperatorDataType.STREAM);
 
 		this.extentName = extentMetaData.getExtentName();
-		this._sources = sources;
+		this._source = source;
 		addMetadataInfo(extentMetaData);
 		
-		StringBuffer sourcesStr = new StringBuffer(" sources={");
-		boolean first = true;
-		for (SourceMetadataAbstract sm : _sources) {
-			if (first) {
-				first=false;
-			} else {
-				sourcesStr.append(",");
-			}
-			sourcesStr.append(sm.getSourceName());
-		}
+		StringBuffer sourcesStr = new StringBuffer(" source={");
+		sourcesStr.append(_source.getSourceName());
 		sourcesStr.append("}");
 		this.setParamStr(this.extentName + sourcesStr);
 			
@@ -136,8 +128,8 @@ public class ReceiveOperator extends LogicalOperatorImpl {
 	 * Return details of the data sources
 	 * @return
 	 */
-	public List<SourceMetadataAbstract> getSources() {
-		return _sources;
+	public SourceMetadataAbstract getSource() {
+		return _source;
 	}
 	
 	/**

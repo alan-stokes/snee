@@ -467,8 +467,8 @@ public class MetadataManager {
 	 * @param extentName name of the extent to discover sources for
 	 * @return the list of sources for the given extent
 	 */
-	public List<SourceMetadataAbstract> getSources(String extentName) {
-		return _sources.getSources(extentName);
+	public SourceMetadataAbstract getSource(String extentName) {
+		return _sources.getSource(extentName);
 	}
 
 	public void addDataSource(String string, String url,

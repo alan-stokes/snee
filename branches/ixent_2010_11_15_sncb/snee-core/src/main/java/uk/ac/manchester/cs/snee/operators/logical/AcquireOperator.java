@@ -36,16 +36,14 @@ package uk.ac.manchester.cs.snee.operators.logical;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.cglib.core.CodeGenerationException;
+
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -95,7 +93,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * Contains metadata information about which sources contribute
 	 * data via an acquire mechanism
 	 */
-	private List<SourceMetadataAbstract> _sources;
+	private SourceMetadataAbstract _source;
 	
 	/**
 	 * Number of source sites in the sensor network providing data for this extent.
@@ -118,33 +116,25 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 */
 	public AcquireOperator(ExtentMetadata extentMetadata, 
 			Types types, 
-			List<SourceMetadataAbstract> sources,
+			SourceMetadataAbstract source,
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException {
 		super(boolType);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER AcquireOperator() with " + 
-					extentMetadata + " #sources=" + sources.size());
+					extentMetadata + " #source=" + source.getSourceName());
 		}
 		this.setOperatorName("ACQUIRE");
 		this.setOperatorDataType(OperatorDataType.STREAM);
 		this._types=types;
 		this.extentName = extentMetadata.getExtentName();
-		this._sources = sources;		
+		this._source = source;		
 		
 		addMetadataInfo(extentMetadata);
 		updateSensedAttributes(); 
 		
-		StringBuffer sourcesStr = new StringBuffer(" sources={");
-		boolean first = true;
-		for (SourceMetadataAbstract sm : _sources) {
-			if (first) {
-				first=false;
-			} else {
-				sourcesStr.append(",");
-			}
-			sourcesStr.append(sm.getSourceName());
-		}
+		StringBuffer sourcesStr = new StringBuffer(" source={");
+		sourcesStr.append(_source.getSourceName());
 		sourcesStr.append("}");
 		this.setParamStr(this.extentName + 
 				" (cardinality=" + this.cardinality +
@@ -166,8 +156,8 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * Return details of the data sources
 	 * @return
 	 */
-	public List<SourceMetadataAbstract> getSources() {
-		return _sources;
+	public SourceMetadataAbstract getSource() {
+		return _source;
 	}
 
 	/**

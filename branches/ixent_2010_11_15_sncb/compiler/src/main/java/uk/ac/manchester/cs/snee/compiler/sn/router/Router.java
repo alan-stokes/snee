@@ -62,7 +62,7 @@ public class Router {
 		//XXX: There is potentially one routing tree for each Sensor Network Source
 		//For now, assume only one source
 		SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) 
-			paf.getDLAF().getSources().get(0);
+			paf.getDLAF().getSource();
 		Topology network = sm.getTopology();
 		int sink = sm.getGateway(); 
 		int[] sources = sm.getSourceSites();
