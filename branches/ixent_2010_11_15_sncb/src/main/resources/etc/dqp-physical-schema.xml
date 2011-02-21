@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<source xmlns="http://snee.cs.man.ac.uk/namespace/physical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../../schema/physical-schema.xsd">
+
+	<service_source name="CCO-WS">
+        <interface-type>pull-stream</interface-type>
+        <endpoint-reference>http://webgis1.geodata.soton.ac.uk:8080/CCO/services/PullStream?wsdl</endpoint-reference>
+	</service_source>
+    
+    <!--
+	<service_source name="CCO-WS">
+        <interface-type>wsdair</interface-type>
+        <endpoint-reference>http://webgis1.geodata.soton.ac.uk:8080/dai/services/</endpoint-reference>
+	</service_source>    
+    -->
+
+</source>

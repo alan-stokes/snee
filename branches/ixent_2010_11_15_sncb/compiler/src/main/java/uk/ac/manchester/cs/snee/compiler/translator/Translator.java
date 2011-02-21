@@ -16,6 +16,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
@@ -58,6 +59,9 @@ public class Translator {
 	private Types _types;
 
 	private AttributeType _boolType;
+
+	/** Mappings from the different levels */
+	private List< Map<String, String> > allLevelMappings;
 
 	private Map<String, String> extentNameMappings;
 
@@ -204,6 +208,8 @@ public class Translator {
 				logger.trace("Identifier, do nothing");
 			}
 			//No Window just a local name.
+			//FIXME: In this case, rename the attributes label, to
+			//that of the local name that is presented here
 			break;
 		case SNEEqlParserTokenTypes.NOW: 
 			if (logger.isTraceEnabled()) {
@@ -528,6 +534,52 @@ public class Translator {
 						" referenced as " + extentReference);
 			}
 			extentNameMappings.put(extentReference, extentName);
+
+			/* BUG FIX: If the extentName is empty but the extentReference
+			 * is not, then (most likely) we are in a sub-query. In this case
+			 * we need to rename the attributes with the extent reference.
+			 * We do this by applying the name to the attribute label */
+			ArrayList<Attribute> attributes = 
+				(ArrayList<Attribute>) operator.getAttributes();
+
+			/* For every attribute, apply a rename on the display name */
+			for ( Attribute attribute : attributes ){
+
+				String newAttrName = null;
+				String attrName = attribute.getAttributeDisplayName();
+				String[] parts = attrName.split("[.]");
+
+				assert ( parts.length > 0 && parts.length <= 2 );
+
+				/* There is not extent name, so this is a sub-query */
+				if ( extentName.isEmpty() ){
+
+					if ( parts.length == 1 ){
+						/* There is only the name of the attribute */
+						newAttrName = extentReference + "." + parts[0];
+	
+					} else {
+	
+						/* There are both a name and another extent
+						 * reference */
+						newAttrName = extentReference + "." + parts[1];
+					}
+					
+				}else{
+
+					/* This is not a sub-query and the first part of the
+					 * display name is that of the extent name */
+					if ( parts[0].equalsIgnoreCase(extentName) ){
+
+						/* Rename according to the extentReference */
+						newAttrName = attrName.replace(parts[0], extentReference);
+
+					}
+				}
+
+				attribute.setAttributeDisplayName(newAttrName);
+			}
+
 			operator.pushLocalNameDown(extentReference);
 		} else {
 			String msg = "Unprogrammed AST Type:" + ast.getType() +
@@ -614,10 +666,24 @@ public class Translator {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate RPAREN");
 			}
+
+			/* BUG FIX: 9/2/2011
+			 * Given that we encountered a subquery, we should begin
+			 * with a new map of the extents */
+			extentNameMappings = new HashMap<String, String>();
+			allLevelMappings.add(extentNameMappings);
+
 			AST subQueryAST = ast.getFirstChild();
 			output = translateQuery(subQueryAST);
 			windowAST = subQueryAST.getNextSibling();
 			extentName = "";
+
+			/* Remove extent mappings that were due to
+			 * nested queries */
+			extentNameMappings.clear();
+			allLevelMappings.remove(allLevelMappings.size() - 1);
+			extentNameMappings = allLevelMappings.get(allLevelMappings.size() - 1);
+
 			break;
 		case SNEEqlParserTokenTypes.SOURCE: 
 			if (logger.isTraceEnabled()) {
@@ -840,10 +906,19 @@ public class Translator {
 					ast.toStringTree() +
 					" #children=" + ast.getNumberOfChildren());
 		}
+
 		// Create new empty map for extent name mappings
+		allLevelMappings = new ArrayList<Map<String,String>>(5);
 		extentNameMappings = new HashMap<String, String>();
+
+		allLevelMappings.add(extentNameMappings);
+
 		DeliverOperator operator;
 		if (ast==null) {
+
+			allLevelMappings = null;
+			extentNameMappings = null;
+
 			String msg = "No parse tree available.";
 			logger.warn(msg);
 			throw new ParserException(msg);
@@ -1052,36 +1127,63 @@ public class Translator {
 				logger.trace("Translate Attribute " + ast.getText() +
 						" attributes= " + input.getAttributes());
 			}
-			String[] parts = ast.getText().split("[.]");
+
+			/* This is the name we will be looking for */
+			String searchName = ast.getText();
+
+			String[] parts = searchName.split("[.]");
 			assert (parts.length==2);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Parts: " + parts[0] + " " + parts[1]);
 			}
+
 			String eName;
 			if (extentNameMappings.containsKey(parts[0])) {
+
 				eName = extentNameMappings.get(parts[0]);
+
+				/* The extent reference exists but there is
+				 * no extent name, because it refers to an
+				 * entire sub-query. In this case, the fix
+				 * is to use the display name */
+				if ( eName.isEmpty() ){
+					eName = parts[0];
+					searchName = eName + "." + parts[1];
+				}
+
 			} else {
-				eName = parts[0];
+
+				/* The provided extent name does not exist. This
+				 * should result in an error */
+				String msg = 
+					"Missing name in FROM-clause for extent \"" +
+					parts[0] + "\" found in " + ast.getText() + "||";
+				logger.warn(msg);
+				throw new ExpressionException(msg);
 			}
+
 			attributes = input.getAttributes();
 			boolean attrFound = false;
 			for (int i = 0; i< attributes.size(); i++) {
+
 				Attribute attribute = attributes.get(i);
 				if (logger.isTraceEnabled()) {
 					logger.trace("Attribute: " + attribute);
 				}
-				String attrExtentName =
-					attribute.getExtentName();
-				String attrSchemaName = 
-					attribute.getAttributeSchemaName();
-				if (attrExtentName.equalsIgnoreCase(eName) &&
-						attrSchemaName.equalsIgnoreCase(parts[1])) {
-					attribute.setAttributeDisplayName(parts[0] + 
-							"." + attrSchemaName);
-					expression = attribute;
+
+				/* The name of the attribute I'm going to check against */
+				String attrName = attribute.getAttributeDisplayName();
+
+				/* Now, check if the requested item has been found */
+				if ( attrName.equalsIgnoreCase(searchName) ) {
+
+					Attribute newAttribute = new DataAttribute(attribute);
+					newAttribute.setAttributeDisplayName(searchName);
+					expression = newAttribute;
 					attrFound = true;
 					break;
 				}
+
 			}
 			if (!attrFound) {
 				String msg = "Unable to find Attribute " + 
@@ -1094,6 +1196,7 @@ public class Translator {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate Identifier: " + ast.getText());
 			}
+
 			attributes = input.getAttributes();
 			int found = -1;
 			for (int i = 0; i< attributes.size(); i++) {
@@ -1112,7 +1215,15 @@ public class Translator {
 				}
 			}
 			if (found != -1) {
-				expression = attributes.get(found);
+
+				/* Do not store the actual attribute but rather
+				 * copy it and assign that one. Otherwise, there
+				 * will be problems */
+				Attribute attribute = attributes.get(found);
+
+				Attribute newAttribute = new DataAttribute(attribute);
+				newAttribute.setAttributeDisplayName(ast.getText());
+				expression = newAttribute;
 				break;
 			} else {
 				String msg = "Unable to find unqualified " +
