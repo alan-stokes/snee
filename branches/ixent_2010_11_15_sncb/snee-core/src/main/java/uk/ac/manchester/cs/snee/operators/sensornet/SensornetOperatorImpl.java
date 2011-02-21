@@ -43,6 +43,11 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 	 */
 	private String operatorName;
 	
+	/**
+	 * Id to be given to the next Operator to be created.
+	 */
+	private static int opCount = 0;
+	
 	//XXX: Do we need this if we are inheriting?
 	/**
 	 * The logical operator associated with this physical operator.
@@ -66,7 +71,15 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 	
 	public SensornetOperatorImpl(LogicalOperator op, CostParameters costParams) 
 	throws SNEEException, SchemaMetadataException {
-		super(op.getID());
+		this(op, costParams, true);
+	}
+
+	public SensornetOperatorImpl(LogicalOperator op, CostParameters costParams, boolean instantiateChildren) 
+	throws SNEEException, SchemaMetadataException
+	{
+		super(new Integer(opCount).toString());
+		opCount++;
+		
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SensornetOperatorImpl() " + op);
 		}
@@ -77,27 +90,32 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 			logger.warn("Physical operator "+op.getID()+"instead of logical "+
 					"operator passed to physical operator constructor.");
 		}
-		// Instantiate the child operator(s)
-		int numChildren = op.getInDegree();
-		for (int i=0; i<numChildren; i++) {
-			LogicalOperator logicalChild = op.getInput(i);
-			//TODO: Would we want this to be integrated with evaluator method?
-			SensornetOperatorImpl phyChild = (SensornetOperatorImpl) 
-				getSensornetOperator(logicalChild, costParams);
-			this.setInput(phyChild, i);
-			phyChild.setOutput(this, 0);			
+		
+		if (instantiateChildren) {
+			// Instantiate the child operator(s)
+			int numChildren = op.getInDegree();
+			for (int i=0; i<numChildren; i++) {
+				LogicalOperator logicalChild = op.getInput(i);
+				SensornetOperatorImpl phyChild = (SensornetOperatorImpl) 
+					getSensornetOperator(logicalChild, costParams);
+				this.setInput(phyChild, i);
+				phyChild.setOutput(this, 0);			
+			}						
 		}
+		
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetOperatorImpl() " + op);			
-		}
+		}		
 	}
-
+	
 	//Exchange operators only
 	public SensornetOperatorImpl(CostParameters costParams) {
+		super(new Integer(opCount).toString());
+		opCount++;
+		
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SensornetOperatorImpl() ");
 		}
-		this.id = LogicalOperatorImpl.getNextID();
 		this.costParams=costParams;
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetOperatorImpl() ");

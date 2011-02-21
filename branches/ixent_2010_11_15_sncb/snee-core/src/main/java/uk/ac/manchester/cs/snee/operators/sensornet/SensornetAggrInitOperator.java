@@ -28,6 +28,7 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 			logger.debug("Expression List: " + op.getExpressions());
 		}	
 		this.setNesCTemplateName("aggrinit");
+		this.setOperatorName("SensornetAGGRInit");
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetAggrInitOperator()");
 		}		
