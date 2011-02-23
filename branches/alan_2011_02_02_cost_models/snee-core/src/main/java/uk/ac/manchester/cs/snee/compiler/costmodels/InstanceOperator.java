@@ -149,6 +149,16 @@ public class InstanceOperator extends NodeImplementation implements Node
     return site.isDead();
   }
   
+  /**
+   * used to calculate if an instance oeprator is on the same site as given instance operator
+   */
+  public boolean isRemote(InstanceOperator instance)
+  {
+    if(this.site == instance.getSite())
+      return true;
+    else
+      return false;    
+  }
   
   
 }

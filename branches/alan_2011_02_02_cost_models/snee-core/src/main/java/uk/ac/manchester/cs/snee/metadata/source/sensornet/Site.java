@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.NodeImplementation;
+import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 
@@ -68,6 +69,12 @@ public class Site extends NodeImplementation {
      * The exchange components which have been placed on a node
      */
     HashSet<ExchangePart> exchangeComponents = new HashSet<ExchangePart>();
+
+    /**
+     * The instance exchange components which have been placed on a node
+     * used within cost model calculations
+     */
+    HashSet<InstanceExchangePart> instanceExchangeComponents = new HashSet<InstanceExchangePart>();
 
     /**
      * Flag which tracks whether the node is a source node (i.e., acquires sensor readings)
@@ -254,6 +261,11 @@ public class Site extends NodeImplementation {
     public void setisDead(boolean isDead)
     {
       this.isDead = isDead;
+    }
+    
+    public boolean addInstanceExchangePart(InstanceExchangePart exchangePart)
+    {
+      return instanceExchangeComponents.add(exchangePart);
     }
 
 //    /**

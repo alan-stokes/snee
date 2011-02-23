@@ -8,6 +8,7 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.CostModel;
+import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceWhereSchedular;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaUtils;
@@ -125,14 +126,21 @@ public class SourcePlanner {
 		logger.info("Starting Routing for query " + queryID);		
 		RT rt = doSNRouting(paf, queryID);
 		logger.info("Starting Where-Scheduling for query " + queryID);
-		costModel.buildInstance(paf, rt);
-		DAF daf = doSNWhereScheduling(rt, paf, costParams, queryID);
+		InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, rt, costParams);
+		DAF daf = instanceWhere.getDAF();
+		//DAF daf = doSNWhereScheduling(rt, paf, costParams, queryID);
 		logger.info("Starting When-Scheduling for query " + queryID);
 		Agenda agenda = doSNWhenScheduling(daf, qos, queryID);
 		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, rt, daf,
 				agenda, queryID); //agenda		
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doSensorNetworkSourcePlanning()");
+		
+    costModel.addInstanceDAF(instanceWhere.getInstanceDAF());
+    costModel.addRoutingTree(rt);
+    costModel.addAgenda(agenda);
+    float card = costModel.runCardinality();
+    System.out.println("the cardinality of this query per agenda cycle is" + card); 
 		return qep;
 	}
 	
@@ -184,6 +192,7 @@ public class SourcePlanner {
 		WhereScheduler whereSched = new WhereScheduler();
 		DAF daf = whereSched.doWhereScheduling(paf, rt, costParams, queryID);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
+		  logger.error("running daf generator ");
 			new DAFUtils(daf).generateGraphImage();
 		}		
 		if (logger.isTraceEnabled())

@@ -48,9 +48,13 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 					"\t\"query duration in seconds\"\n" +
 					"\t\"query parameters file\"\n");
 			//XXX: Use default query
-			query = "SELECT RSTREAM avg(c.light) " +
-			//query = "SELECT * " +
-					"FROM Castilla[now] c;";
+			
+			//query = "SELECT RSTREAM avg(c.light) " +
+			query = "SELECT * " +
+			//query = "SELECT RSTREAM c.light, f.light " +
+			
+					//"FROM Castilla[now] c, Forest[now] f WHERE c.light < f.light;";
+			    "FROM Castilla[now] c;";
 			duration = Long.valueOf("120");
 			queryParams= "etc/query-parameters.xml";
 //			System.exit(1);

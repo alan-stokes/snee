@@ -11,10 +11,13 @@ import java.util.Iterator;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
-import uk.ac.manchester.cs.snee.common.graph.Graph;
+import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SNEEAlgebraicForm;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -23,31 +26,85 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperatorImpl;
 
 
-public class InstanceDAF extends Graph
+public class InstanceDAF extends SNEEAlgebraicForm
 {
   private HashMapList<Site,InstanceOperator> siteToOpInstMap 
       = new HashMapList<Site,InstanceOperator>();
   private HashMapList<String,InstanceOperator> opInstMapping 
       = new HashMapList<String,InstanceOperator>();
-  
+  private final HashSet<InstanceFragment> fragments 
+      = new HashSet<InstanceFragment>();  
+  private InstanceFragment rootFragment;
+  private Tree instanceOperatorTree = new Tree();
   private InstanceOperator rootOp;
   private RT rt;
+  private PAF paf;
+  protected boolean showTupleTypes = false;
+  protected static int candidateCount = 0;
   
-
-  public InstanceDAF(final RT rt, final String queryName) 
+  
+  public InstanceDAF(final PAF paf, final RT rt, final String queryName) 
   throws SNEEException, SchemaMetadataException
   {
+    super(queryName);
+    this.paf = paf;
     this.rt=rt;
+  }
+
+  
+  
+  public final Iterator<InstanceFragment> fragmentIterator(final 
+      TraversalOrder traversalOrder) 
+  {
+    if (logger.isDebugEnabled())
+      logger.debug("ENTER fragmentIterator()"); 
+    final ArrayList<InstanceFragment> fragList = new ArrayList<InstanceFragment>();
+    this.doFragmentIterator(this.rootFragment, fragList,
+          traversalOrder);
+    if (logger.isDebugEnabled())
+     logger.debug("RETURN fragmentIterator()");
+    return fragList.iterator();
+   }
+  
+  
+  
+  
+  private void doFragmentIterator(InstanceFragment frag,
+      ArrayList<InstanceFragment> fragList, TraversalOrder traversalOrder)
+  {
+    if (logger.isTraceEnabled())
+      logger.trace("ENTER doFragmentIterator()"); 
+      if (traversalOrder == TraversalOrder.PRE_ORDER) {
+          fragList.add(frag);
+      }
+
+      for (int n = 0; n < frag.getChildFragments().size(); n++) {
+
+          this.doFragmentIterator(frag.getChildFragments().get(n), 
+              fragList, traversalOrder);
+      }
+
+      if (traversalOrder == TraversalOrder.POST_ORDER) {
+          fragList.add(frag);
+      }
+      if (logger.isTraceEnabled())
+      logger.trace("RETURN doFragmentIterator()"); 
   }
 
   public void setRoot(InstanceOperator rootOp)
   {
-    this.rootOp = rootOp;   
+    this.rootOp = rootOp;
+    instanceOperatorTree.setRoot(rootOp);
   }
   
   public InstanceOperator getRoot() 
   {
     return this.rootOp;
+  }
+  
+  public void addFragment(InstanceFragment frag)
+  {
+    fragments.add(frag);
   }
   
   public ArrayList<InstanceOperator> getOpInstances(Site site) 
@@ -57,7 +114,7 @@ public class InstanceDAF extends Graph
   
   public void addOpInst(SensornetOperator op, InstanceOperator opInst) 
   {
-    super.addNode(opInst);
+    instanceOperatorTree.addNode(opInst);
     this.opInstMapping.add(op.getID(), opInst);
   }
   
@@ -96,12 +153,13 @@ public class InstanceDAF extends Graph
   
   
   public void exportAsDOTFile(final String fname, final String label) 
+  throws SchemaMetadataException
   {
     try
     {   
-        PrintWriter out = new PrintWriter(new BufferedWriter(
+      PrintWriter out = new PrintWriter(new BufferedWriter(
             new FileWriter(fname)));
-        out.println("digraph \"" + (String) this.getName() + "\" {");
+        out.println("digraph \"" + (String) instanceOperatorTree.getName() + "\" {");
         String edgeSymbol = "->";
         
         out.println("label = \"" + label + "\";");
@@ -137,21 +195,48 @@ public class InstanceDAF extends Graph
             out.println("}\n");
           }
         }
+/*
+        //draw edges
+        Iterator<Node> opIterator = instanceOperatorTree.nodeIterator(TraversalOrder.POST_ORDER);
+        while (opIterator.hasNext()) {
+          InstanceOperator instanceOp = (InstanceOperator) opIterator.next();
+          LogicalOperator op = instanceOp.getInstanceOperator().getLogicalOperator();
+          Iterator<LogicalOperator> childOpIter = op.childOperatorIterator();
+          while (childOpIter.hasNext()) {
+            LogicalOperator childOp = childOpIter.next();
+            out.print("\"" + childOp.getID() + "\"" + edgeSymbol + "\""
+                + op.getID() + "\" ");        
+            out.print("[fontsize=9 label = \" ");
+            try {
+              if (showTupleTypes) {
+                out.print("type: " + 
+                  childOp.getTupleAttributesStr(3) + " \\n");
+              }
+            } catch (TypeMappingException e1) {
+              String msg = "Problem getting tuple attributes. " + e1;
+              logger.warn(msg);
+            }
+            out.print("\"];\n");
+          }
+        }
+        out.println("}");
+        out.close();*/
         
-        //traverse the edges now
-        Iterator<String> i = edges.keySet().iterator();
-        while (i.hasNext()) 
-        {
-          Edge e = edges.get((String) i.next());
-          out.println("\"" + this.nodes.get(e.getSourceID()).getID()
-            + "\"" + edgeSymbol + "\""
-            + this.nodes.get(e.getDestID()).getID() + "\" ");
+      //traverse the edges now
+        Iterator<String> i = instanceOperatorTree.getEdges().keySet().iterator();
+        while (i.hasNext()) {
+      Edge e = instanceOperatorTree.getEdges().get((String) i.next());
+      out.println("\"" + instanceOperatorTree.getAllNodes().get(e.getSourceID()).getID()
+        + "\"" + edgeSymbol + "\""
+        + instanceOperatorTree.getAllNodes().get(e.getDestID()).getID() + "\" ");
         }
         out.println("}");
         out.close();
+
     } 
     catch (IOException e) 
     {
+      System.out.println("Export failed: " + e.toString());
         System.err.println("Export failed: " + e.toString());
     }
   }
@@ -201,14 +286,14 @@ public class InstanceDAF extends Graph
     //replace the outputs input with the ops first child.
     outputs[0].replaceInput(childOpInst, inputs[0]);
     //update graph
-    addEdge(inputs[0], outputs[0]);
+    instanceOperatorTree.addEdge(inputs[0], outputs[0]);
     
     for (int i=1; i<inputs.length; i++) {
       outputs[0].addInput(inputs[i]);
-      addEdge(inputs[i], outputs[0]);
+      instanceOperatorTree.addEdge(inputs[i], outputs[0]);
     }
     //remove operator instance from both graph and instanceDAF data structure
-    removeNode(childOpInst.getID());
+    instanceOperatorTree.removeNode(childOpInst.getID());
     siteToOpInstMap.remove(childOpInst.getSite(), childOpInst);
     
   }
@@ -252,9 +337,9 @@ public class InstanceDAF extends Graph
         InstanceOperator siblingChild = (InstanceOperator)currentSibling.getInput(j); 
         firstSibling.addInput(siblingChild);
         siblingChild.addOutput(firstSibling);
-        this.addEdge(siblingChild, firstSibling);
+        instanceOperatorTree.addEdge(siblingChild, firstSibling);
       }
-      removeNode(currentSibling.getID());
+      instanceOperatorTree.removeNode(currentSibling.getID());
       siteToOpInstMap.remove(currentSibling.getSite(), currentSibling); 
     }
   }
@@ -271,6 +356,34 @@ public class InstanceDAF extends Graph
     }
   
     return results.iterator();
+  }
+
+  @Override
+  protected String generateID(String queryName)
+  {
+    candidateCount++;
+    return queryName + "-DAF-" + candidateCount;  
+  }
+
+  @Override
+  public String getDescendantsString()
+  {
+    return this.getID()+"-"+this.paf.getDescendantsString();
   } 
   
+  public EdgeImplementation addEdge(Node source, Node dest)
+  {
+    return instanceOperatorTree.addEdge(source, dest);
+  }
+  
+  public InstanceFragment getRootFragment()
+  {
+    return rootFragment;
+  }
+  
+  public void setRootFragment(InstanceFragment rootFragment)
+  {
+    this.rootFragment = rootFragment;
+  }
+
 }

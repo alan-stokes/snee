@@ -246,17 +246,6 @@ public class QueryCompiler {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN: " + qep.getID());
 		
-		/**
-		 * AREA TO STEAL THE QEP which contains all aspects of the query needed for cost model analysis
-		 * QEP contains agenda, DAF, routing tree. 
-		 */
-		if (qep instanceof SensorNetworkQueryPlan) 
-		{
-		  costModel.addAgenda(((SensorNetworkQueryPlan) qep).getAgenda());
-		  float card = costModel.runCardinality();
-		  System.out.println("the cardinality of this query per agenda cycle is" + card); 
-		}
-		
 		return qep;
 	}
 

@@ -1,14 +1,12 @@
 package uk.ac.manchester.cs.snee.common.graph;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class Tree extends Graph {
 
@@ -22,10 +20,14 @@ public class Tree extends Graph {
 	 * The root of the tree.
 	 */
 	private Node root;
-	
 //	private HashSet<Node> leaves;
 
-	/**
+	public void setRoot(Node root)
+  {
+    this.root = root;
+  }
+
+  /**
 	 * Tree constructor
 	 */
 	public Tree(Node root) {
@@ -37,7 +39,12 @@ public class Tree extends Graph {
 			logger.debug("RETURN Tree()");
 	}
 
-	/**
+	public Tree()
+  {
+    super();
+  }
+
+  /**
 	 * Updates the nodes and edges collections according to the tree 
 	 * passed to it.  Call this if you've updated the tree by adding nodes
 	 * directly to other nodes.
@@ -83,7 +90,8 @@ public class Tree extends Graph {
 	 * @param nodeList the operator list being created
 	 * @param traversalOrder the traversal order desired 
 	 */
-	private <N extends Node> void doNodeIterator(N node,
+	@SuppressWarnings("unchecked")
+  private <N extends Node> void doNodeIterator(N node,
 			ArrayList<N> nodeList, 
 			TraversalOrder traversalOrder) {
 		if (logger.isDebugEnabled())
@@ -108,7 +116,8 @@ public class Tree extends Graph {
 	 * @param traversalOrder the order to traverse the operator tree
 	 * @return an iterator for the operator tree
 	 */
-	public <N extends Node> Iterator<N> nodeIterator(
+	@SuppressWarnings("unchecked")
+  public <N extends Node> Iterator<N> nodeIterator(
 			TraversalOrder traversalOrder) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER nodeIterator()");
@@ -121,6 +130,7 @@ public class Tree extends Graph {
 		return nodeList.iterator();
 	}
 
+  @SuppressWarnings("unchecked")
   public <N extends Node> Iterator<N> nodeIterator(
       Site rootSite,
       TraversalOrder traversalOrder)

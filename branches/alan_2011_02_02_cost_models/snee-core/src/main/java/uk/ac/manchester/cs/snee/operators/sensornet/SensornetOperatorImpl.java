@@ -8,7 +8,6 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.NodeImplementation;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceDAF;
@@ -212,7 +211,8 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 		}
 	}
 
-	public int getCardinality(CardinalityType cardType) {
+	public int getCardinality(CardinalityType cardType) 
+	{
 		return this.getLogicalOperator().getCardinality(cardType);
 	}
 	

@@ -91,7 +91,12 @@ public class Graph implements Cloneable {
 	 */
 	protected TreeMap<String, Node> nodes = new TreeMap<String, Node>();
 
-	/**
+	public TreeMap<String, Edge> getEdges()
+  {
+    return edges;
+  }
+
+  /**
 	 * The edges of the graph.
 	 */
 	protected TreeMap<String, Edge> edges = new TreeMap<String, Edge>();
@@ -401,6 +406,10 @@ public class Graph implements Cloneable {
 	public Collection<Node> getNodes() {
 		return nodes.values();
 	}
+	
+	 public  TreeMap<String, Node> getAllNodes() {
+	    return nodes;
+	  }
 
 	/**
 	 * Removes node from the graph
