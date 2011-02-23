@@ -39,6 +39,8 @@ public class QueryRefactorer {
 	public String refactorQuery( String query ) 
 	throws ParserException, DATException, IException{
 
+		//FIXME: The semicolon is removed from the query in some occasions!
+
 		/*
 		 * FIXME: Known Limitations: UNION can only be top level.
 		 * According to the test cases, it is not supported any other way than being top-level 

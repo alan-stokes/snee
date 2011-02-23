@@ -260,7 +260,7 @@ public class TranslatorTest {
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT Timestamp " +
 				"FROM TestStream " +
-				"WHERE Timestamp < integetColumn;");
+				"WHERE Timestamp < integerColumn;");
 	}
 	
 	@Test
@@ -518,7 +518,7 @@ public class TranslatorTest {
 	RecognitionException, TokenStreamException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) " +
 				"UNION " +
-				"(SELECT integetColumn FROM PullStream);");
+				"(SELECT integerColumn FROM PullStream);");
 		verifyUnionQuery(laf, 1, 2);
 	}
 	
@@ -552,9 +552,9 @@ public class TranslatorTest {
 	ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException 
 	{
-		LAF laf = testQuery( "SELECT RSTREAM F.temperature, RF.pressure " +
-				"FROM forestTemp[NOW] F, forestLRF RF " +
-				"WHERE F.temperature=RF.temperature;");
+		LAF laf = testQuery( "SELECT RSTREAM F.moisture, RF.temperature " +
+				"FROM forestMoisture[NOW] F, forestLRF RF " +
+				"WHERE F.moisture=RF.moisture;");
 		LogicalOperator rootOperator = laf.getRootOperator();
 		List<Attribute> attributes = 
 			rootOperator.getAttributes();
@@ -566,7 +566,9 @@ public class TranslatorTest {
 				equalsIgnoreCase("timestamp"));
 	}
 
+	/** TODO: This test is problematic! Table operators are not currently supported */
 	@Test
+	@Ignore
 	public void testUnionQuery_testTable() 
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 

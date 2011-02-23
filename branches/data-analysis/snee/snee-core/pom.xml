@@ -1,13 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<parent>
-		<artifactId>SNEE</artifactId>
+		<artifactId>SNEE-DAT</artifactId>
 		<groupId>uk.ac.manchester.cs.snee</groupId>
 		<version>1.5.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.ac.manchester.cs.snee</groupId>
-	<artifactId>snee-core</artifactId>
+	<artifactId>snee-core-DAT</artifactId>
 	<name>SNEE Core</name>
 	<description>Compiles a SNEEql query into a query plan</description>
 	

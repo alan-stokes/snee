@@ -8,7 +8,7 @@
     	<column name="timestamp">
         	<type class ="integer"/>
          </column>
-         <column name="integetColumn">
+         <column name="integerColumn">
           	<type class ="integer"/>
          </column>
          <column name="floatColumn">
@@ -26,7 +26,7 @@
     	<column name="timestamp">
         	<type class ="integer"/>
          </column>
-         <column name="integetColumn">
+         <column name="integerColumn">
           	<type class ="integer"/>
          </column>
          <column name="floatColumn">
@@ -44,7 +44,7 @@
     	<column name="timestamp">
         	<type class ="integer"/>
          </column>
-         <column name="integetColumn">
+         <column name="integerColumn">
           	<type class ="integer"/>
          </column>
          <column name="floatColumn">
@@ -80,7 +80,7 @@
     	<column name="timestamp">
         	<type class ="integer"/>
          </column>
-         <column name="integetColumn">
+         <column name="integerColumn">
           	<type class ="integer"/>
          </column>
          <column name="floatColumn">
@@ -94,30 +94,57 @@
          </column>
      </table>
 
-      <stream name="ForestTemp" type="pull">
+      <stream name="SimpleStream" type="pull">
     	<column name="timestamp">
         	<type class ="integer"/>
          </column>
          <column name="temperature">
           	<type class ="integer"/>
          </column>
+         <column name="pressure">
+          	<type class ="integer"/>
+         </column>
+     </stream>
+
+     <table name="Forest" type="push">
+     	<!--column name="ts">
+     		<type class="timestamp"/>
+     	</column-->
+         <column name="moisture">
+          	<type class ="float"/>
+         </column>
+         <column name="temperature">
+          	<type class ="float"/>
+         </column>
+     </table>
+
+
+      <stream name="forestMoisture" type="push">
+         <column name="timestamp">
+        	<type class ="float"/>
+         </column>
+         <column name="moisture">
+          	<type class ="float"/>
+         </column>
      </stream>
 
 	<!-- Testing for the newly created schema, that takes DATs into account. This is a testing
 	table for the Linear Regression, so we only have 2 columns. -->
-      <table name="forestlrf" isIntensional="true">
-    	<column name="temperature">
-        	<type class ="integer"/>
+      <table name="forestLRF" isIntensional="true" type="push">
+     	<column name="ts">
+     		<type class="timestamp"/>
+     	</column>
+         <column name="temperature">
+          	<type class ="float"/>
          </column>
-         <column name="pressure">
-          	<type class ="integer"/>
+         <column name="moisture">
+          	<type class ="float"/>
          </column>
          <datParams type="CLASSIFIER" subtype="LinearRegressionFunction">
-			<derivedAttribute name="pressure"/>
-			<source>SELECT temperature, pressure FROM TestStream</source>
-			<!-- <source>SELECT ts.pressure, ts.temperature FROM TestStream ts</source> -->
+			<derivedAttribute name="temperature"/>
+			<source>SELECT moisture, temperature FROM Forest[FROM NOW-1 HOUR TO NOW]</source>
          </datParams>
-     </table>
+     </table>     
 
 
       <stream name="flood" type="pull">
@@ -143,10 +170,11 @@
 			<parameters>
 				<parameter value="5"/>
 			</parameters>
-			<source>SELECT s.temperature, s.pressure FROM flood[FROM NOW-20 MIN TO NOW] s</source>
+			<source>SELECT s.temperature FROM flood[FROM NOW - 20 MIN TO NOW] s</source>
 			<!-- <source>SELECT ts.pressure, ts.temperature FROM TestStream ts</source> -->
          </datParams>
      </table>
+
 
 
 </schema>

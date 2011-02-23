@@ -65,5 +65,44 @@
           	<type class ="decimal"/>
          </column>
      </stream>
-     
+
+     <stream name="Forest" type="push">
+     	<!--column name="ts">
+     		<type class="timestamp"/>
+     	</column-->
+         <column name="moisture">
+          	<type class ="float"/>
+         </column>
+         <column name="temperature">
+          	<type class ="float"/>
+         </column>
+     </stream>
+
+
+    	<!--column name="timestamp">
+        	<type class ="float"/>
+         </column-->
+      <stream name="forestMoisture" type="push">
+         <column name="moisture">
+          	<type class ="float"/>
+         </column>
+     </stream>
+
+	<!-- Testing for the newly created schema, that takes DATs into account. This is a testing
+	table for the Linear Regression, so we only have 2 columns. -->
+     	<!--column name="ts">
+     		<type class="timestamp"/>
+     	</column-->
+      <stream name="forestLRF" isIntensional="true" type="push">
+         <column name="temperature">
+          	<type class ="float"/>
+         </column>
+         <column name="moisture">
+          	<type class ="float"/>
+         </column>
+         <datParams type="CLASSIFIER" subtype="LinearRegressionFunction">
+			<derivedAttribute name="temperature"/>
+			<source>SELECT moisture, temperature FROM Forest[FROM NOW-1 HOUR TO NOW]</source>
+         </datParams>
+     </stream>     
 </schema>

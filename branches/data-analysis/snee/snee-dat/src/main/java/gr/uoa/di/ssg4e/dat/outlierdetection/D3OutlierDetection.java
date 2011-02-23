@@ -256,7 +256,7 @@ class D3OutlierDetection extends AbstractOutlierDetection {
 
 		/* Linear Regression requires at least 2 sources: one DAT, one classic */
 		if ( q.getFromArgs().length < 2 )
-			throw new DATException("Linear Regression requires at least two sources in the FROM clause");
+			throw new DATException("D3 requires at least two sources in the FROM clause");
 
 		/* 1) There must be a WHERE clause, because there must be a binding of
 		 * the values */

@@ -4,12 +4,12 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>clients</artifactId>
+		<artifactId>clients-DAT</artifactId>
 		<groupId>uk.ac.manchester.cs.snee</groupId>
 		<version>1.5.0</version>
 	</parent>
 	<groupId>uk.ac.manchester.cs.snee.client</groupId>
-	<artifactId>client</artifactId>
+	<artifactId>client-DAT</artifactId>
 	<name>Client</name>
 	<description>Common code for command line clients.</description>
 	<dependencies>

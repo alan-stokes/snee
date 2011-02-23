@@ -2,12 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>data-source</artifactId>
+		<artifactId>data-source-DAT</artifactId>
 		<groupId>uk.ac.manchester.cs.snee</groupId>
 		<version>1.5.0</version>
 	</parent>
 	<groupId>uk.ac.manchester.cs.snee</groupId>
-	<artifactId>data-source-wsdair</artifactId>
+	<artifactId>data-source-wsdair-DAT</artifactId>
 	<name>data-source-wsdair</name>
 	<description>Classes for interacting with a wsdair data source</description>
 

@@ -3,12 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>clients</artifactId>
+		<artifactId>clients-DAT</artifactId>
 		<groupId>uk.ac.manchester.cs.snee</groupId>
 		<version>1.5.0</version>
 	</parent>
 	<groupId>uk.ac.manchester.cs.snee.client</groupId>
-	<artifactId>cco-stored-client</artifactId>
+	<artifactId>cco-stored-client-DAT</artifactId>
 	<name>CCO-Stored Client</name>
 	<description>Test client for access a stored data source</description>
 	<dependencies>

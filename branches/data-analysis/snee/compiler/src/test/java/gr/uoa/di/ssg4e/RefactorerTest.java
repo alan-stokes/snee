@@ -127,6 +127,9 @@ public class RefactorerTest {
 		query = refactor.refactorQuery(query);
 		System.out.println("Refactored Query: " + query);
 
+		if ( query.charAt(query.length() - 1) != ';' )
+			query = query + ';';
+
 		SNEEqlLexer lexer = new SNEEqlLexer(new StringReader(query));
 		SNEEqlParser parser = new SNEEqlParser(lexer);
 		try {
@@ -299,7 +302,7 @@ public class RefactorerTest {
 	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		testQuery("SELECT Timestamp " +
 				"FROM TestStream " +
-				"WHERE Timestamp < integetColumn;");
+				"WHERE Timestamp < integerColumn;");
 	}
 	
 	@Test
@@ -590,7 +593,7 @@ public class RefactorerTest {
 	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) " +
 				"UNION " +
-				"(SELECT integetColumn FROM PullStream);");
+				"(SELECT integerColumn FROM PullStream);");
 		verifyUnionQuery(laf, 1, 2);
 	}
 	
@@ -620,7 +623,8 @@ public class RefactorerTest {
 				"(SELECT timestamp, floatColumn FROM PullStream);");
 	}
 
-	@Test
+	/* The test must fail because the query in the FROM clause is anonymous */
+	@Test (expected=ExpressionException.class)
 	public void testNestedSelect() 
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
@@ -648,6 +652,33 @@ public class RefactorerTest {
 	}
 
 	@Test
+	public void testQueries_FuncSUM() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
+		testQuery( "SELECT SUM(temperature) FROM SimpleStream[NOW];");
+	}
+
+	@Test
+	@Ignore
+	public void testQueries_FuncStarSUM() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
+		testQuery( "SELECT SUM(*) FROM SimpleStream;");
+	}
+
+
+	@Test
+	@Ignore
 	public void testRefactoring_LRF() 
 	throws SourceDoesNotExistException,
 	ExtentDoesNotExistException, RecognitionException, 
@@ -656,8 +687,49 @@ public class RefactorerTest {
 	OptimizationException, TypeMappingException,
 	DATSchemaException, DATException,
 	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
-		testQuery( "SELECT RSTREAM F.temperature, RF.pressure " +
-				"FROM forestTemp[NOW] F, forestLRF RF " +
-				"WHERE F.temperature=RF.temperature;");
+		testQuery( "SELECT RSTREAM F.moisture, RF.temperature " +
+				"FROM forestMoisture[NOW] F, forestLRF RF " +
+				"WHERE F.moisture=RF.moisture;");
 	}
+
+	/* FIXME: Remember to alias the predicted attribute!!!! */
+	@Test
+	@Ignore
+	public void testRefactoring_LRF_Nested() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
+		testQuery( "SELECT t.pressure " +
+				"FROM ( " +
+				"	SELECT RSTREAM F.temperature, RF.pressure " +
+				"	FROM forestMoisture[NOW] F, forestLRF RF " +
+				"	WHERE F.temperature=RF.temperature" +
+				") t;");
+	}
+
+
+	/** FIXME: The translator results in an error with:
+	 * 
+	 *  "No Unit found with window declaration TO"
+	 *  The internal query is: SELECT s.temperature FROM flood[FROM NOW - 20 MIN TO NOW] s
+	 *  */
+	@Test
+	@Ignore
+	public void testRefactoring_D3() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException,
+	DATSchemaException, DATException,
+	gr.uoa.di.ssg4e.query.excep.ParserException, IException {
+		testQuery( "SELECT RSTREAM f.* " +
+				"FROM flood[NOW] f, d3e od " +
+				"WHERE f.temperature=od.temperature AND od.probability < 0.15 ;");
+	}
+
 }

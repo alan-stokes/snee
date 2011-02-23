@@ -275,6 +275,9 @@ public class QueryCompiler {
 			logger.info("Starting refactoring for queryID " + queryID);
 		try{
 			query = refactor.refactorQuery(query);
+			if ( !query.endsWith(";") )
+				query = query + ";";
+			System.out.println("Refactored Query: " + query);
 		}catch(IException ie){
 			throw new SchemaMetadataException(ie.getMessage());
 		}
