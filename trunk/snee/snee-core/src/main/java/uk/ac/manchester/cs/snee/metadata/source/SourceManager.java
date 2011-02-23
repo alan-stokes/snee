@@ -460,20 +460,20 @@ public class SourceManager {
 	 * @param extentName the name of the extent to find the sources for
 	 * @return details of the sources
 	 */
-	public List<SourceMetadataAbstract> getSources(String extentName) {
+	public SourceMetadataAbstract getSource(String extentName) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getSources() for " + extentName);
-		List<SourceMetadataAbstract> extentSources = 
-			new ArrayList<SourceMetadataAbstract>();
+
 		for (SourceMetadataAbstract source : _sources) {
 			logger.trace(source.getExtentNames());
 			if (source.getExtentNames().contains(extentName))
-				extentSources.add(source);
+				if (logger.isDebugEnabled())
+					logger.debug("RETURN getSources() source=" + 
+							source.getSourceName());
+				return source;
 		}
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN getSources() #sources=" + 
-					extentSources.size());
-		return extentSources;
+
+		return null;
 	}
 	
 }

@@ -69,7 +69,6 @@ public class AggregationOperator extends PredicateOperator {
 	throws OptimizationException {
     	super(expressions, attributes, inputOperator, boolType);
         this.setOperatorName("AGGREGATION");
-//        this.setNesCTemplateName("aggregation");
         setAggregates();
         if (this.getOperatorDataType() == OperatorDataType.STREAM) {
 			String message = "Illegal attempt to place an " +
@@ -89,7 +88,7 @@ public class AggregationOperator extends PredicateOperator {
 		boolean needsCount = false;
     	aggregates = new ArrayList<AggregationExpression>();
     	//Place an evalTime
-    	aggregates.add(null);
+    	//aggregates.add(null);
     	for (int i = 0; i < getExpressions().size(); i++) {
     		List<AggregationExpression> newAggs 
     			=  getExpressions().get(i).getAggregates();

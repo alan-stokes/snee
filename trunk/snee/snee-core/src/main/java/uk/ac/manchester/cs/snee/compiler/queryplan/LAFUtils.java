@@ -71,6 +71,16 @@ public class LAFUtils extends GraphUtils {
 		this.laf = laf;
 		this.name = laf.getID();
 		this.tree = laf.getOperatorTree();
+		
+		if (SNEEProperties.isSet(SNEEPropertyNames.SHOW_OPERATOR_TUPLE_TYPE)) {
+			try {
+				this.showTupleTypes = SNEEProperties.getBoolSetting(
+						SNEEPropertyNames.SHOW_OPERATOR_TUPLE_TYPE);
+			} catch (SNEEConfigurationException e) {
+				e.printStackTrace();
+			}
+		}
+		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN LAFUtils()");
 	}
