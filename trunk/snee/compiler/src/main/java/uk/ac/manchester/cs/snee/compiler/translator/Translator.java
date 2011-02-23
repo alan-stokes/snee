@@ -692,21 +692,21 @@ public class Translator {
 			extentName = ast.getText();
 			ExtentMetadata extentMetadata = 
 				_metadata.getExtentMetadata(extentName);
-			List<SourceMetadataAbstract> sources = 
-				_metadata.getSources(extentName);
+			SourceMetadataAbstract source = 
+				_metadata.getSource(extentName);
 			switch (extentMetadata.getExtentType()) {
 			case SENSED:
 				if (logger.isTraceEnabled()) {
 					logger.trace("Translate SENSED stream");
 				}
 				output = new AcquireOperator(extentMetadata, 
-						_metadata.getTypes(), sources, _boolType);
+						_metadata.getTypes(), source, _boolType);
 				break;
 			case PUSHED: 
 				if (logger.isTraceEnabled()) {
 					logger.trace("Translate PUSHED stream");
 				}
-				output = new ReceiveOperator(extentMetadata, sources, 
+				output = new ReceiveOperator(extentMetadata, source, 
 						_boolType);
 				break;
 			case TABLE:
