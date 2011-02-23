@@ -129,8 +129,7 @@ public abstract class SNEEClient implements Observer {
 		long startTime = System.currentTimeMillis();
 		long endTime = (long) (startTime + (_duration * 1000));
 
-		System.out.println("Running query for " + _duration + 
-			" seconds. Scheduled end time " + new Date(endTime));
+		System.out.println("Running query for " + _duration + " seconds. Scheduled end time " + new Date(endTime));
 
 		ResultStoreImpl resultStore = 
 			(ResultStoreImpl) controller.getResultStore(queryId1);
