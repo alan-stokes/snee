@@ -44,7 +44,10 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 					"\t\"query duration in seconds\"\n");
 			//XXX: Use default query
 //			query = "SELECT * FROM PushStream;";
-			query = "SELECT RSTREAM fm.moisture, fr.temperature FROM forestMoisture[NOW] fm, forestLRF fr WHERE fm.moisture = fr.moisture;";
+			query = "SELECT RSTREAM COUNT(moisture) AS count FROM forestMoisture[NOW];";
+
+//			query = "SELECT RSTREAM fm.moisture, fr.temperature " +
+//					"FROM forestMoisture[NOW] fm, forestLRF fr WHERE fm.moisture=fr.moisture;";
 			duration = Long.valueOf("20");
 //			System.exit(1);
 		} else {	

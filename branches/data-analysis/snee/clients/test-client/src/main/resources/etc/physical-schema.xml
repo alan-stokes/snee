@@ -17,19 +17,19 @@
 					<port>6701</port>
 				</push_source>
 			</extent>
-            <!--  >extent name="PushStream">
-                <push_source>
-                    <port>6702</port>
-                </push_source>
-            </extent-->
-			<extent name="Forest">
+			<extent name="PushStream">
 				<push_source>
 					<port>6702</port>
 				</push_source>
 			</extent>
-			<extent name="ForestMoisture">
+			<extent name="Forest">
 				<push_source>
 					<port>6703</port>
+				</push_source>
+			</extent>
+			<extent name="ForestMoisture">
+				<push_source>
+					<port>6704</port>
 				</push_source>
 			</extent>
 		</extents>

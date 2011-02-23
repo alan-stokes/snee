@@ -136,14 +136,18 @@ public class ConstantRatePushStreamGenerator {
 		_tasks = new ArrayList<BroadcastTask>();
 		
 		// Create a tuple generator and a socket for each stream
+		// FIXME: Only *extensional* extents require a socket
 		for (ExtentMetadata stream : _streams) {
-			String streamName = stream.getExtentName().toLowerCase();
-			TupleGenerator tupleGeneator = 
-				new TupleGenerator(stream);
-			generators.put(streamName, tupleGeneator);
-			SourceMetadataAbstract source = 
-				schema.getSource(streamName);
-			initialiseSource(stream, streamName, source);
+
+			if ( !stream.isIntensional() ){
+				String streamName = stream.getExtentName().toLowerCase();
+				TupleGenerator tupleGeneator = 
+					new TupleGenerator(stream);
+				generators.put(streamName, tupleGeneator);
+				SourceMetadataAbstract source = 
+					schema.getSource(streamName);
+				initialiseSource(stream, streamName, source);
+			}
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN ConstantRatePushStreamGenerator() " +
@@ -157,7 +161,7 @@ public class ConstantRatePushStreamGenerator {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseSource() for " + streamName +
 					" source=" + source.getSourceName());
-		if (source.getSourceType() == SourceType.UDP_SOURCE) {
+		if ( source.getSourceType() == SourceType.UDP_SOURCE) {
 			UDPSourceMetadata udpSource = 
 				(UDPSourceMetadata) source;
 			instantiateUDPSource(udpSource, streamName);

@@ -102,7 +102,7 @@
          </column>
          <datParams type="CLASSIFIER" subtype="LinearRegressionFunction">
 			<derivedAttribute name="temperature"/>
-			<source>SELECT moisture, temperature FROM Forest[FROM NOW-1 HOUR TO NOW]</source>
+			<source>SELECT moisture, temperature FROM Forest[FROM NOW-10 MINUTES TO NOW SLIDE 1 MINUTE]</source>
          </datParams>
      </stream>     
 </schema>
