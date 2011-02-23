@@ -2075,8 +2075,10 @@ public class TinyOSGenerator {
 				tupleTypeBuff.append("typedef nx_struct ");
 			}
 			tupleTypeBuff.append(CodeGenUtils.generateOutputTupleType(op) + " {\n");
-		}
 
+			tupleTypeBuff.append("\tnx_uint16_t evalEpoch; //current epoch being evaluated\n");
+		}
+		
 		final List <Attribute> attributes = op.getAttributes();
 		for (int i = 0; i < attributes.size(); i++) {
 		    String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));

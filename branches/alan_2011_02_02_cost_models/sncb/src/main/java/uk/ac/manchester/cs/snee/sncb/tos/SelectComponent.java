@@ -87,7 +87,7 @@ public class SelectComponent extends NesCComponent implements TinyOS1Component,
 			replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
 				.generateOutputTuplePtrType(this.op.getLeftChild()));
 		    replacements.put("__SELECT_PREDICATES__", CodeGenUtils.getNescText(
-		    		((PredicateOperator)op.getLogicalOperator()).getPredicate(),
+		    		((SelectOperator)op.getLogicalOperator()).getPredicate(),
 		    		"inQueue[inHead].", null, op.getAttributes(), null));
 		    
 			final StringBuffer tupleConstructionBuff 

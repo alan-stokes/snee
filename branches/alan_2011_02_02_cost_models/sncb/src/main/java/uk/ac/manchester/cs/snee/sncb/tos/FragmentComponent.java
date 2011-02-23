@@ -88,7 +88,7 @@ public class FragmentComponent extends NesCComponent implements
 			//TODO: Take the configuration of inner component and create a wiring code
 			this.innerConfig.instantiateComponents(outputDir);
     	} catch (Exception e) {
-    		throw new CodeGenerationException(e);
+    		throw new CodeGenerationException(e.getLocalizedMessage(),e);
     	}
     }
 

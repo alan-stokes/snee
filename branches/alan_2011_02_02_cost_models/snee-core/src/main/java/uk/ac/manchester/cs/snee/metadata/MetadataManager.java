@@ -257,11 +257,9 @@ public class MetadataManager {
 			parseAttributes(element.getElementsByTagName("column"),
 					extentName);
 		if (extentType == ExtentType.SENSED) {
-			attributes.add(0, new EvalTimeAttribute(extentName, 
-					Constants.EVAL_TIME, timeType));
-			attributes.add(1, new TimeAttribute(extentName, 
+			attributes.add(0, new TimeAttribute(extentName, 
 					Constants.ACQUIRE_TIME, timeType));			
-			attributes.add(2, new IDAttribute(extentName, 
+			attributes.add(1, new IDAttribute(extentName, 
 					Constants.ACQUIRE_ID, idType));
 
 		}
@@ -442,6 +440,10 @@ public class MetadataManager {
 					SensorNetworkSourceMetadata snsm = 
 						(SensorNetworkSourceMetadata)sm;
 					int[] sites = snsm.getSourceSites(extentName);
+					if (sites==null)
+						continue; 
+					//i.e., extent metadata does not specify any sites
+					//this code will need to be reviewed if we support more than one WSN per extent
 					cardinality = sites.length;
 					em.setCardinality(cardinality);
 				} else {
@@ -465,8 +467,8 @@ public class MetadataManager {
 	 * @param extentName name of the extent to discover sources for
 	 * @return the list of sources for the given extent
 	 */
-	public List<SourceMetadataAbstract> getSources(String extentName) {
-		return _sources.getSources(extentName);
+	public SourceMetadataAbstract getSource(String extentName) {
+		return _sources.getSource(extentName);
 	}
 
 	public void addDataSource(String string, String url,

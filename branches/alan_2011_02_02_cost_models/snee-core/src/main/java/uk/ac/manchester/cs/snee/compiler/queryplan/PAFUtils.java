@@ -128,7 +128,7 @@ public class PAFUtils extends DLAFUtils {
 							+ op.getID() + "\" ");				
 					out.print("[fontsize=9 label = \" ");
 					try {
-						if (showTupleTypes) {
+						if (showTupleTypes && (!(childOp instanceof SensornetExchangeOperator))) {
 							out.print("type: " + 
 								childOp.getLogicalOperator().getTupleAttributesStr(3) + " \\n");
 						}

@@ -35,7 +35,7 @@ public abstract class SensornetIncrementalAggregationOperator extends SensornetO
 	public SensornetIncrementalAggregationOperator(LogicalOperator op,
 	CostParameters costParams) throws SNEEException,
 			SchemaMetadataException {
-		super(op, costParams);
+		super(op, costParams, false);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SensornetIncrementalAggregationOperator() " + op);
 			logger.debug("Attribute List: " + op.getAttributes());

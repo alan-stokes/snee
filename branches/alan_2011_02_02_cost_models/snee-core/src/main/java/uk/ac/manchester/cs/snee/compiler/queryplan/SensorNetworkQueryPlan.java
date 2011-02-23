@@ -95,7 +95,7 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 	public SNCB getSNCB() {
 		//XXX: This works only because there is one sensor network assumed.
 		SensorNetworkSourceMetadata metadata = 
-			(SensorNetworkSourceMetadata)this.dlaf.getSources().get(0);
+			(SensorNetworkSourceMetadata)this.dlaf.getSource();
 		return metadata.getSNCB();
 	}
 
