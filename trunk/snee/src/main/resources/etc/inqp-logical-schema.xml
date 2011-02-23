@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<schema xmlns="http://snee.cs.man.ac.uk/namespace/logical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/logical-schema ../schema/logical-schema.xsd">
+
+      <stream name="SeaDefence" type="pull">
+         <column name="seaLevel">
+          	<type class ="integer"/>
+         </column>
+     </stream>
+
+     <stream name="SeaDefenceEast" type="pull">
+         <column name="seaLevel">
+          	<type class ="integer"/>
+         </column>
+     </stream>
+
+      <stream name="SeaDefenceWest" type="pull">
+         <column name="seaLevel">
+          	<type class ="integer"/>
+         </column>
+     </stream> -->
+     
+</schema>
