@@ -51,7 +51,7 @@
 configuration CommandServerAppC {
   provides {
     interface SplitControl;
-    interface StateChanged;
+    interface NetworkState;
   }
 }
 implementation {
@@ -79,12 +79,12 @@ implementation {
   components NetProgC;
   CommandServerC.NetProg -> NetProgC;
 
+  SplitControl = CommandServerC;
+  NetworkState = CommandServerC;	
+
 #ifdef COMMAND_SERVER_BASESTATION
   components new SerialAMReceiverC(SNEE_OTA_MANAGER);
   CommandServerC.Receive -> SerialAMReceiverC;
 #endif
-
-  SplitControl = CommandServerC;
-  StateChanged = CommandServerC;
 }
 

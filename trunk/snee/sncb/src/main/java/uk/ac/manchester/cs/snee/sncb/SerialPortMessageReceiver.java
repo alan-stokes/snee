@@ -37,9 +37,13 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 	
 	private Message _msg;
 	
+	private String _source;
+	
 	public SerialPortMessageReceiver(String source, DeliverOperator delOp) throws Exception {
-		if (source != null) {
-			moteIF = new MoteIF(BuildSource.makePhoenix(source, PrintStreamMessenger.err));
+		_source = source;
+		
+		if (_source != null) {
+			moteIF = new MoteIF(BuildSource.makePhoenix(_source, PrintStreamMessenger.err));
 	    }
 	    else {
 	    	moteIF = new MoteIF(BuildSource.makePhoenix(PrintStreamMessenger.err));
@@ -64,7 +68,7 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 					EvaluatorAttribute evalAttr = getAttribute(attr, message, i);
 					newTuple.addAttribute(evalAttr);
 					//Find the first evaltime attribute
-					if ((evalAttr.getAttributeDisplayName().endsWith("evaltime")) &&
+					if ((evalAttr.getAttributeDisplayName().endsWith("evalEpoch")) &&
 							(evalTimeAttrDisplayName==null)) {
 						evalTimeAttrDisplayName = evalAttr.getAttributeDisplayName();
 					}
@@ -153,7 +157,23 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 	public void close() {
 		this.moteIF.deregisterListener(_msg, this);
 		this.moteIF.getSource().shutdown();
+		super.deleteObservers();		
+	}
+	
+	public void pause() {
+		this.moteIF.deregisterListener(_msg, this);
+		this.moteIF.getSource().shutdown();
 		super.deleteObservers();
+	}
+	
+	public void resume() {
+		if (_source != null) {
+			moteIF = new MoteIF(BuildSource.makePhoenix(_source, PrintStreamMessenger.err));
+	    }
+	    else {
+	    	moteIF = new MoteIF(BuildSource.makePhoenix(PrintStreamMessenger.err));
+	    }
+		this.moteIF.registerListener(_msg, this);
 	}
 
 }

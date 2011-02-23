@@ -61,6 +61,7 @@ __CONSTRUCT_TUPLE__
 						{
 						   outTail = 0;
 						}
+					}
 				}
 			} while(inHead != inTail);
 		}

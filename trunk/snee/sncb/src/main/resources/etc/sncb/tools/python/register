@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-# First thing, append the utils directory to the search path.
-import sys, os, subprocess
+import sys, os, subprocess, time
 
+# First thing, append the utils directory to the search path.
 utils_dir = os.path.dirname(__file__) + '/utils'
 sys.path.append(utils_dir)
 
@@ -34,4 +34,23 @@ if sys.argv[2] == sys.argv[3]:
 else:
 # If not call tos-ota
     print "Installing query fragment on mote " + str(sys.argv[2])
-    subprocess.call(['python', utils_dir+'/tos-ota', source, sys.argv[2], '--inject', '2', sys.argv[1]])
+    retcode = subprocess.call(['python', utils_dir+'/tos-ota', source, sys.argv[2], '--inject', '2', sys.argv[1]])
+    
+    retry_count = 0
+    if retcode != 0: # If the tos-ota call didn't complete successfully
+        while retry_count < 4 and retcode != 0:
+            retry_count = retry_count + 1
+                
+            print
+            print "Install failed. Waiting for a moment before retrying..."
+            time.sleep(5)
+
+            print "Retrying (" + str(retry_count) + ") ..."
+            retcode = subprocess.call(['python', utils_dir+'/tos-ota', source, sys.argv[2], '--inject', '2', sys.argv[1]])
+
+    # Check that everything is in order
+    if retcode != 0:
+        print
+        print "E_FAIL: Couldn\'t install OTA server on mote"
+        sys.exit(1)
+

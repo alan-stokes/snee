@@ -49,9 +49,18 @@ FM_CMD_ADDR      = 4
 FM_CMD_SYNC      = 5
 FM_CMD_IDENT     = 6
 
-ERROR_SUCCESS  = 0   # T2-compatible
-ERROR_NO_ROUTE = 1
+# Commands for DelugeManager
+DM_CMD_STOP             = 1
+DM_CMD_LOCAL_STOP       = 2
+DM_CMD_ONLY_DISSEMINATE = 3
+DM_CMD_DISSEMINATE_AND_REPROGRAM = 4
+#DM_CMD_REPROGRAM        = 5
+DM_CMD_REPROGRAM        = 7
+DM_CMD_BOOT             = 6
 
+ERROR_SUCCESS  = 0   # T2-compatible
+ERROR_NO_ROUTE = 1  # Mirrored from OtaBasestation.h
+ERROR_NO_REPLY = 2  # Mirrored from OtaBasestation.h
 
 # Deluge parameters
 DELUGE_MAX_PAGES    = 128
@@ -67,6 +76,14 @@ class FMReqPacket(tos.Packet):
                              ('offset', 'int',  4),
                              ('length', 'int',  2),
                              ('data',   'blob', None)],
+                            packet)
+
+class DMReqPacket(tos.Packet):
+    def __init__(self, packet = None):
+        tos.Packet.__init__(self,
+                            [('id',    'int',  2),
+                             ('cmd',    'int',  1),
+                             ('imgNum', 'int',  1)],
                             packet)
 
 class SerialReplyPacket(tos.Packet):
@@ -116,6 +133,23 @@ def crc16(data):
 
     return crc
 
+def handleErrorCode(error):
+    if error == ERROR_NO_ROUTE:
+        print "ERROR: No route to destination mote."
+    elif error == ERROR_NO_REPLY:
+        print "ERROR: No reply from destination mote."
+    else:
+        print "ERROR: Unable to communicate with destination mote."
+
+    print "Possible reasons are:"
+    print "-- Broken hardware"
+    print "-- Destination mote has not enough power"
+    print "-- OtaServer isn't installed on the destination mote"
+    print "-- OtaBasestation isn't installed on the basestation"
+    print "-- No route can be found to the destination mote"
+
+    sys.exit(error)
+
 def handleResponse(success, msg):
     if success == True:
         packet = am.read(timeout=2)
@@ -125,14 +159,12 @@ def handleResponse(success, msg):
             packet = am.read()
 
         if not packet:
-            print "No response"
-            return False
+            handleErrorCode(-1)            
         reply = SerialReplyPacket(packet.data)
         if reply.error == ERROR_SUCCESS:
             return True
         else:
-            print msg, reply
-            return False
+            handleErrorCode(reply.error)
 
     print "ERROR: Unable to send the command"
     return False
@@ -147,14 +179,8 @@ def ident(destId, timeout=None):
 
         if reply.error == ERROR_SUCCESS:
             return ShortIdent(reply.data)
-        if reply.error == ERROR_NO_ROUTE:
-            print "ERROR: Unable to communicate with destination mote."
-            print "Possible reasons are:"
-            print "-- Broken hardware"
-            print "-- Destination mote has not enough power"
-            print "-- OtaServer isn't installed on the destination mote"
-            print "-- OtaBasestation isn't installed on the basestation"
-            print "-- No route can be found to the destination mote"
+        else:            
+            handleErrorCode(reply.error)
     return 0
 
 def read(destId, imgNum, offset, length):
@@ -173,7 +199,7 @@ def read(destId, imgNum, offset, length):
             if reply.error == ERROR_SUCCESS:
                 r.extend(reply.data)
             else:
-                r = None
+                handleErrorCode(reply.error)
                 break
         else:
             r = None
@@ -187,24 +213,13 @@ def read(destId, imgNum, offset, length):
     return r
 
 def erase(destId, imgNum):
-    # Note: the normal erase doesn't work properly on AT45DB. A
-    # workaround is to do the normal erase (to make happy STM25P)
-    # and then overwrite the metadata (to make happy AT45DB).
-
     sreqpkt = FMReqPacket((destId, FM_CMD_ERASE, imgNum, 0, 0, []))
 
     success = am.write(sreqpkt, FM_AMID)
     result = handleResponse(success, "ERROR: Unable to erase the flash volume")
     if result: return True;
 
-    print 'Attempt the workaround for AT45DB...'
-    sreqpkt = FMReqPacket((destId, FM_CMD_WRITE, imgNum, 0, 0, []))
-    sreqpkt.data = [0xFF] * DELUGE_IDENT_SIZE
-    sreqpkt.length = DELUGE_IDENT_SIZE
-    success = am.write(sreqpkt, FM_AMID)
-    result = handleResponse(success, "ERROR: Unable to erase the flash volume")
-    if not result: return False;
-    return sync(destId, imgNum)
+    # Note: Removed support for AT45DB.
 
 def sync(destId, imgNum):
     sreqpkt = FMReqPacket((destId, FM_CMD_SYNC, imgNum, 0, 0, []))
@@ -239,17 +254,17 @@ def write(destId, imgNum, data):
         if not am.write(sreqpkt, FM_AMID):
             print
             print "ERROR: Unable to send the last serial packet (file offset: %d)" % sreqpkt.offset
-            return False
+            sys.exit(-1)
 
         # Waiting for confirmation
         packet = am.read()
 
         if packet != None:
             reply = SerialReplyPacket(packet.data)
-            if reply.error == ERROR_NO_ROUTE:
-                print 
-                print "ERROR: Unable to write to the flash volume (file offset: %d)" % sreqpkt.offset
-                return False
+#            if reply.error != ERROR_SUCCESS:
+#                print 
+#                print "ERROR: Unable to write to the flash volume (file offset: %d)" % sreqpkt.offset
+#                handleErrorCode(reply.error)
 
             length -= sreqpkt.length
             sreqpkt.offset += sreqpkt.length
@@ -269,6 +284,7 @@ def verifyIdent(i):
     return False
 
 def getIdent(destId, imgNum):
+#    print("getIdent")		
     r = read(destId, imgNum, DELUGE_IDENT_OFFSET, DELUGE_IDENT_SIZE)
     if r:
         return Ident(r)
@@ -357,12 +373,44 @@ def ping(destId, imgNum):
     print "--------------------------------------------------"
     return False
 
+def boot():
+    sreqpkt = DMReqPacket((DM_CMD_BOOT, 0))
+#    success = am.write(sreqpkt, DM_AMID)
+    success = am.write(sreqpkt, FM_AMID)
+    return handleResponse(success, "ERROR: Unable to boot the mote")
+
+def reprogram(destId, imgNum):
+    sreqpkt = DMReqPacket((destId, DM_CMD_REPROGRAM, imgNum))
+#    success = am.write(sreqpkt, DM_AMID)
+    success = am.write(sreqpkt, FM_AMID)
+    return handleResponse(success, "ERROR: Unable to reprogram the mote")
+
+def disseminate(imgNum):
+    sreqpkt = DMReqPacket((DM_CMD_ONLY_DISSEMINATE, imgNum))
+    success = am.write(sreqpkt, DM_AMID)
+    return handleResponse(success, "ERROR: Unable to disseminate")
+
+def disseminateAndReboot(imgNum):
+    sreqpkt = DMReqPacket((DM_CMD_DISSEMINATE_AND_REPROGRAM, imgNum))
+    success = am.write(sreqpkt, DM_AMID)
+    return handleResponse(success, "ERROR: Unable to disseminate-and-reboot")
+
+def stop():
+    sreqpkt = DMReqPacket((DM_CMD_STOP, 0))
+    success = am.write(sreqpkt, DM_AMID)
+    return handleResponse(success, "ERROR: Unable to initiate the stop")
+
+def localstop():
+    sreqpkt = DMReqPacket((DM_CMD_LOCAL_STOP, 0))
+    success = am.write(sreqpkt, DM_AMID)
+    return handleResponse(success, "ERROR: Unable to initiate the local stop")
+
 def print_usage():
-    print "Usage: %s <source> <destination> <-p|-i|-r|-e> image_number [options]" % sys.argv[0]
-    print "  <destination>    The AM ID of the destination mote."
+    print "Usage: %s <source> <destination> <-p|-i|-e> image_number [options]" % sys.argv[0]
     print "  <source> can be:"
     print "     serial@PORT:SPEED   Serial ports"
     print "     network@HOST:PORT   MIB600"
+    print "  <destination>    The AM ID of the destination mote."
     print "  -p --ping        Provide status of the image in the external flash"
     print "  -i --inject      Inject a compiled TinyOS application"
     print "                   [options]: tos_image.xml file path"
@@ -396,7 +444,7 @@ if len(sys.argv) >= 5:
     checkDestinationId()
 
     print "Checking if node is a Deluge T2 base station ..."
-    result = ident(destId, timeout=4)
+    result = ident(destId)
     if result == 0:
         sys.exit(-1)   
 
