@@ -38,14 +38,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -95,7 +91,7 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * Contains metadata information about which sources contribute
 	 * data via an acquire mechanism
 	 */
-	private List<SourceMetadataAbstract> _sources;
+	private SourceMetadataAbstract _source;
 	
 	/**
 	 * Number of source sites in the sensor network providing data for this extent.
@@ -118,33 +114,25 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 */
 	public AcquireOperator(ExtentMetadata extentMetadata, 
 			Types types, 
-			List<SourceMetadataAbstract> sources,
+			SourceMetadataAbstract source,
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException {
 		super(boolType);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER AcquireOperator() with " + 
-					extentMetadata + " #sources=" + sources.size());
+					extentMetadata + " #source=" + source.getSourceName());
 		}
 		this.setOperatorName("ACQUIRE");
 		this.setOperatorDataType(OperatorDataType.STREAM);
 		this._types=types;
 		this.extentName = extentMetadata.getExtentName();
-		this._sources = sources;		
+		this._source = source;		
 		
 		addMetadataInfo(extentMetadata);
 		updateSensedAttributes(); 
 		
-		StringBuffer sourcesStr = new StringBuffer(" sources={");
-		boolean first = true;
-		for (SourceMetadataAbstract sm : _sources) {
-			if (first) {
-				first=false;
-			} else {
-				sourcesStr.append(",");
-			}
-			sourcesStr.append(sm.getSourceName());
-		}
+		StringBuffer sourcesStr = new StringBuffer(" source={");
+		sourcesStr.append(_source.getSourceName());
 		sourcesStr.append("}");
 		this.setParamStr(this.extentName + 
 				" (cardinality=" + this.cardinality +
@@ -166,40 +154,40 @@ public class AcquireOperator extends LogicalOperatorImpl {
 	 * Return details of the data sources
 	 * @return
 	 */
-	public List<SourceMetadataAbstract> getSources() {
-		return _sources;
+	public SourceMetadataAbstract getSource() {
+		return _source;
 	}
 
 	/**
 	 * Sets up the attribute based on the schema.
-	 * @param extentMetaData DDL declaration for this extent.
+	 * @param extentMetadata DDL declaration for this extent.
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
 	 */
-	private void addMetadataInfo(ExtentMetadata extentMetaData) 
+	private void addMetadataInfo(ExtentMetadata extentMetadata) 
 	throws SchemaMetadataException, TypeMappingException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER addMetaDataInfo() with " +
-					extentMetaData);
+					extentMetadata);
 		}
 		outputAttributes = new ArrayList<Attribute>();
-		outputAttributes.add(new EvalTimeAttribute(extentName, 
-				Constants.EVAL_TIME,
-				_types.getType(Constants.TIME_TYPE))); 
-		outputAttributes.add(new TimeAttribute(extentName,
-				Constants.ACQUIRE_TIME, 
-				_types.getType(Constants.TIME_TYPE)));
-		outputAttributes.add(new IDAttribute(extentName, 
-				Constants.ACQUIRE_ID,
-				_types.getType("integer")));
+//		outputAttributes.add(new EvalTimeAttribute(extentName, 
+//				Constants.EVAL_TIME,
+//				_types.getType(Constants.TIME_TYPE))); 
+//		outputAttributes.add(new TimeAttribute(extentName,
+//				Constants.ACQUIRE_TIME, 
+//				_types.getType(Constants.TIME_TYPE)));
+//		outputAttributes.add(new IDAttribute(extentName, 
+//				Constants.ACQUIRE_ID,
+//				_types.getType("integer")));
 //TODO: Localtime
 //		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
 //			outputAttributes.add(new LocalTimeAttribute()); //Ixent added this
 //		}		
-		sensedAttributes = extentMetaData.getAttributes();
+		sensedAttributes = extentMetadata.getAttributes();
 		outputAttributes.addAll(sensedAttributes);
 //		sites =  sourceMetaData.getSourceNodes();
-		this.cardinality = extentMetaData.getCardinality();
+		this.cardinality = extentMetadata.getCardinality();
 		copyExpressions(outputAttributes);
 		acquiredAttributes = (ArrayList<Attribute>) outputAttributes;
 		if (logger.isTraceEnabled())

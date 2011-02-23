@@ -4,12 +4,12 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>clients-DAT</artifactId>
+		<artifactId>clients</artifactId>
 		<groupId>uk.ac.manchester.cs.snee</groupId>
-		<version>1.5.0</version>
+		<version>1.5.3</version>
 	</parent>
 	<groupId>uk.ac.manchester.cs.snee.client</groupId>
-	<artifactId>cco-client-DAT</artifactId>
+	<artifactId>cco-client</artifactId>
 	<name>CCO Client</name>
 	<description>Command line single use client that uses the CCO Pull-stream service as a data source.</description>
 	<dependencies>

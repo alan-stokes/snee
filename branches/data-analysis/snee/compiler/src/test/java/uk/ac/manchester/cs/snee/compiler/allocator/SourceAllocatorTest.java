@@ -57,6 +57,8 @@ public class SourceAllocatorTest extends EasyMockSupport {
 		createMock(List.class);
 	final SourceMetadataAbstract mockSourceMetadata =
 		createMock(SourceMetadataAbstract.class);
+	final SourceMetadataAbstract mockSourceMetadata2 =
+		createMock(SourceMetadataAbstract.class);
 	
 	@Test(expected=SourceAllocatorException.class)
 	public void testAllocateSources_noOperators() 
@@ -81,9 +83,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(mockIterator);
 		expect(mockIterator.hasNext()).andReturn(true).andReturn(false);
 		expect(mockIterator.next()).andReturn(mockAcquireOperator);
-		expect(mockAcquireOperator.getSources()).andReturn(mockList);
-		Object[] mockObjArray = {mockSourceMetadata};
-		expect(mockList.toArray()).andReturn(mockObjArray);
+		expect(mockAcquireOperator.getSource()).andReturn(mockSourceMetadata);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
 		allocator.allocateSources(mockLaf);
@@ -101,12 +101,10 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(true).times(2).andReturn(false);
 		expect(mockIterator.next()).
 			andReturn(mockAcquireOperator).times(2);
-		expect(mockAcquireOperator.getSources()).
-			andReturn(mockList).times(2);
-		Object[] mockObjArray = {mockSourceMetadata};
-		expect(mockList.toArray()).andReturn(mockObjArray).times(2);
-		expect(mockSourceMetadata.getSourceType()).
-			andReturn(SourceType.SENSOR_NETWORK).times(2);
+		expect(mockAcquireOperator.getSource()).
+			andReturn(mockSourceMetadata);
+		expect(mockAcquireOperator.getSource()).
+		andReturn(mockSourceMetadata2);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
 		allocator.allocateSources(mockLaf);
@@ -122,9 +120,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(mockIterator);
 		expect(mockIterator.hasNext()).andReturn(true).andReturn(false);
 		expect(mockIterator.next()).andReturn(mockReceiveOperator);
-		expect(mockReceiveOperator.getSources()).andReturn(mockList);
-		Object[] mockObjArray = {mockSourceMetadata};
-		expect(mockList.toArray()).andReturn(mockObjArray);
+		expect(mockReceiveOperator.getSource()).andReturn(mockSourceMetadata);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
 		allocator.allocateSources(mockLaf);
@@ -142,12 +138,8 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(true).times(2).andReturn(false);
 		expect(mockIterator.next()).
 			andReturn(mockAcquireOperator).times(2);
-		expect(mockAcquireOperator.getSources()).
-			andReturn(mockList).times(2);
-		Object[] mockObjArray = {mockSourceMetadata};
-		expect(mockList.toArray()).andReturn(mockObjArray).times(2);
-		expect(mockSourceMetadata.getSourceType()).
-			andReturn(SourceType.PULL_STREAM_SERVICE).times(2);
+		expect(mockAcquireOperator.getSource()).
+			andReturn(mockSourceMetadata).times(2);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
 		allocator.allocateSources(mockLaf);
@@ -163,9 +155,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(mockIterator);
 		expect(mockIterator.hasNext()).andReturn(true).andReturn(false);
 		expect(mockIterator.next()).andReturn(mockReceiveOperator);
-		expect(mockReceiveOperator.getSources()).andReturn(mockList);
-		Object[] mockObjArray = {mockSourceMetadata};
-		expect(mockList.toArray()).andReturn(mockObjArray);
+		expect(mockReceiveOperator.getSource()).andReturn(mockSourceMetadata);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
 		allocator.allocateSources(mockLaf);
@@ -183,12 +173,8 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(true).times(2).andReturn(false);
 		expect(mockIterator.next()).
 			andReturn(mockAcquireOperator).times(2);
-		expect(mockAcquireOperator.getSources()).
-			andReturn(mockList).times(2);
-		Object[] mockObjArray = {mockSourceMetadata};
-		expect(mockList.toArray()).andReturn(mockObjArray).times(2);
-		expect(mockSourceMetadata.getSourceType()).
-			andReturn(SourceType.UDP_SOURCE).times(2);
+		expect(mockAcquireOperator.getSource()).
+			andReturn(mockSourceMetadata).times(2);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
 		allocator.allocateSources(mockLaf);
@@ -221,10 +207,9 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(true).times(2).andReturn(false);
 		expect(mockIterator.next()).
 			andReturn(mockAcquireOperator).times(2);
-		expect(mockAcquireOperator.getSources()).
-			andReturn(mockList).times(2);
-		Object[] mockObjArray = {mockSourceMetadata};
-		expect(mockList.toArray()).andReturn(mockObjArray).times(2);
+		expect(mockAcquireOperator.getSource()).
+			andReturn(mockSourceMetadata).
+			andReturn(mockSourceMetadata2);
 		expect(mockSourceMetadata.getSourceType()).
 			andReturn(SourceType.SENSOR_NETWORK).
 			andReturn(SourceType.PUSH_STREAM_SERVICE);

@@ -177,22 +177,20 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		if(logger.isTraceEnabled()) {
 			logger.trace("ENTER initializeStreamReceiver()");
 		}
-		List<SourceMetadataAbstract> sources = receiveOp.getSources();
-		for (SourceMetadataAbstract source : sources) {
-			calculateSleepPeriods((SourceMetadata) source);
-			SourceType sourceType = source.getSourceType();
-			switch (sourceType) {
-			case UDP_SOURCE:
-				instantiateUdpDataSource(source);
-				break;
-			case PULL_STREAM_SERVICE:
-				instantiatePullServiceDataSource(source);
-				break;
-			default:
-				String msg = "Unknown data source type " + sourceType;
-				logger.warn(msg);
-				throw new SourceMetadataException(msg);
-			}
+		SourceMetadataAbstract source = receiveOp.getSource();
+		calculateSleepPeriods((SourceMetadata) source);
+		SourceType sourceType = source.getSourceType();
+		switch (sourceType) {
+		case UDP_SOURCE:
+			instantiateUdpDataSource(source);
+			break;
+		case PULL_STREAM_SERVICE:
+			instantiatePullServiceDataSource(source);
+			break;
+		default:
+			String msg = "Unknown data source type " + sourceType;
+			logger.warn(msg);
+			throw new SourceMetadataException(msg);
 		}
 		//XXX: Mechanism above allows for more than one source, but streamReceiver is singular!
 		_streamReceiver.open();

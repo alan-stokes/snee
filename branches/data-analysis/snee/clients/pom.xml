@@ -4,12 +4,12 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>SNEE-DAT</artifactId>
+		<artifactId>SNEE</artifactId>
 		<groupId>uk.ac.manchester.cs.snee</groupId>
-		<version>1.5.0</version>
+		<version>1.5.3</version>
 	</parent>
 	<groupId>uk.ac.manchester.cs.snee</groupId>
-	<artifactId>clients-DAT</artifactId>
+	<artifactId>clients</artifactId>
 	<packaging>pom</packaging>
 	<name>SNEE Clients</name>
 	<description>Command line single use clients that interact with SNEE through the API</description>

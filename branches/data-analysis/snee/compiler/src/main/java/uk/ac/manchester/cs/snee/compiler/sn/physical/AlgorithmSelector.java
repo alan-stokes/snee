@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
@@ -82,8 +83,18 @@ public class AlgorithmSelector {
 					new SensornetAggrMergeOperator(logAggr, costParams);
 				SensornetAggrEvalOperator aggrEval = 
 					new SensornetAggrEvalOperator(logAggr, costParams);
-				paf.replacePath(op, new SensornetOperator[] { aggrEval, aggrInit });
-				paf.insertOperator(aggrInit, aggrEval, aggrMerge);
+				
+				SensornetOperator childOp = agg.getLeftChild();
+				SensornetOperator parentOp = agg.getParent();
+				try {
+					paf.getOperatorTree().removeNode(agg);
+				} catch (OptimizationException e) {
+					// TODO Auto-generated catch block
+					System.exit(0);
+				}
+				paf.getOperatorTree().insertNode(childOp, parentOp, aggrInit);
+				paf.getOperatorTree().insertNode(aggrInit, parentOp, aggrMerge);
+				paf.getOperatorTree().insertNode(aggrMerge, parentOp, aggrEval);
 		    }
 		}
     }

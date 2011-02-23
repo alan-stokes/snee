@@ -42,7 +42,7 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 		this.setNesCTemplateName("acquire");
 		//TODO: Separate acquire operator will be need for each source?
 		this.sourceMetadata = (SensorNetworkSourceMetadata) 
-			this.acqOp.getSources().get(0);
+			this.acqOp.getSource();
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetAcquireOperator()");
 		}		
@@ -50,7 +50,7 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 
 	@Override
 	public int[] getSourceSites() {
-		return this.sourceMetadata.getSourceSites();
+		return this.sourceMetadata.getSourceSites(acqOp.getExtentName());
 	}
 
 	/** {@inheritDoc} */

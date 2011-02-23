@@ -31,8 +31,6 @@ public class WhenScheduler {
 	
 	private CostParameters costParams;
 	
-	private boolean useNetworkController;
-	
 	/**
 	 * Constructor for Sensor Network When-Scheduling Decision Maker.
 	 */
@@ -42,7 +40,6 @@ public class WhenScheduler {
 			logger.debug("ENTER WhenScheduler()");
 		this.decreaseBetaForValidAlpha=decreaseBetaForValidAlpha;
 		this.costParams = m.getCostParameters();
-		this.useNetworkController = useNetworkController;
 		if (logger.isDebugEnabled());
 			logger.debug("RETURN WhenScheduler()");
 	}
@@ -127,7 +124,7 @@ public class WhenScheduler {
 
 	    try {
 	    	final Agenda agenda = new Agenda(qos.getMaxAcquisitionInterval(), 
-	    			maxBFactorSoFar, daf, costParams, queryName, useNetworkController);
+	    			maxBFactorSoFar, daf, costParams, queryName);
 			if (logger.isDebugEnabled())
 				logger.debug("RETURN doWhenScheduling()");
 	    	return agenda;
@@ -262,7 +259,7 @@ public class WhenScheduler {
 	    
 		try {
 	    	agenda = new Agenda(qos.getMaxAcquisitionInterval(), beta, daf, 
-	    			costParams, "", useNetworkController);
+	    			costParams, "");
 		    logger.trace("Agenda constructed successfully length="
 				    + agenda.getLength_bms(Agenda.INCLUDE_SLEEP) + " met target length="
 				    + alpha_bms * beta + " with beta="
@@ -323,7 +320,7 @@ public class WhenScheduler {
 	    do {
 	    	try {
 	    		agenda = new Agenda(qos.getMaxAcquisitionInterval(), 
-	    				currentMaxBuffFactor, daf, costParams, "", useNetworkController);
+	    				currentMaxBuffFactor, daf, costParams, "");
 	    		//CB I don't think this is neseccary as new Agenda throw an error.
 	    		//CB :Left in for safety
 	    		if (agenda.getLength_bms(Agenda.IGNORE_SLEEP) > bmsDeliveryTime) {

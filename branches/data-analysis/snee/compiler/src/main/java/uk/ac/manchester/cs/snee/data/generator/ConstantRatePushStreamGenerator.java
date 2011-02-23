@@ -141,9 +141,9 @@ public class ConstantRatePushStreamGenerator {
 			TupleGenerator tupleGeneator = 
 				new TupleGenerator(stream);
 			generators.put(streamName, tupleGeneator);
-			List<SourceMetadataAbstract> sources = 
-				schema.getSources(streamName);
-			initialiseSources(stream, streamName, sources);
+			SourceMetadataAbstract source = 
+				schema.getSource(streamName);
+			initialiseSource(stream, streamName, source);
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN ConstantRatePushStreamGenerator() " +
@@ -151,22 +151,20 @@ public class ConstantRatePushStreamGenerator {
 		}
 	}
 
-	private void initialiseSources(ExtentMetadata stream, 
-			String streamName, List<SourceMetadataAbstract> sources) 
+	private void initialiseSource(ExtentMetadata stream, 
+			String streamName, SourceMetadataAbstract source) 
 	throws ExtentDoesNotExistException, SourceMetadataException {
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER initialiseSources() for " + streamName +
-					" #sources=" + sources.size());
-		for (SourceMetadataAbstract source : sources) {
-			if (source.getSourceType() == SourceType.UDP_SOURCE) {
-				UDPSourceMetadata udpSource = 
-					(UDPSourceMetadata) source;
-				instantiateUDPSource(udpSource, streamName);
-				_tasks.add(createBroadcastTask(stream, udpSource));
-			}
+			logger.trace("ENTER initialiseSource() for " + streamName +
+					" source=" + source.getSourceName());
+		if (source.getSourceType() == SourceType.UDP_SOURCE) {
+			UDPSourceMetadata udpSource = 
+				(UDPSourceMetadata) source;
+			instantiateUDPSource(udpSource, streamName);
+			_tasks.add(createBroadcastTask(stream, udpSource));
 		}
 		if (logger.isTraceEnabled())
-			logger.trace("RETURN initialiseSources() " +
+			logger.trace("RETURN initialiseSource() " +
 					"#tasks=" + _tasks.size());
 	}
 

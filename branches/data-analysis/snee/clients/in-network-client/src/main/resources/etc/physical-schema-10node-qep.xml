@@ -5,18 +5,18 @@
 
 	<sensor_network name="wsn1">
 		<topology>etc/wsn1-topology.xml</topology>
-		<site-resources>etc/tmotesky-site-resources.xml</site-resources>
+		<site-resources>etc/telosb.xml</site-resources>
 		<gateways>1</gateways>
 		<extents>
-			<extent name="Castilla">
+			<extent name="SeaDefence">
 				<sites>9,10</sites>
 			</extent>
-<!-- 			<extent name="Meadow">
-				<sites>2</sites>
+ 			<extent name="SeaDefenceEast">
+				<sites>9</sites>
 			</extent>
-			<extent name="Forest">
-				<sites>3</sites>
-			</extent>		-->	
+			<extent name="SeaDefenceWest">
+				<sites>10</sites>
+			</extent>
 		</extents>
 	</sensor_network>
 
