@@ -377,7 +377,7 @@ public final class CodeGenUtils {
     	final List <Attribute> attributes = 
     		op.getLogicalOperator().getAttributes();
     	final List <Attribute> input = 
-    		((SensornetOperator)op.getInput(0)).getLogicalOperator().getAttributes();
+    		((SensornetOperator)op.getInput(0)).getAttributes();
     	final List <Expression> expressions = 
     		op.getLogicalOperator().getExpressions();
 

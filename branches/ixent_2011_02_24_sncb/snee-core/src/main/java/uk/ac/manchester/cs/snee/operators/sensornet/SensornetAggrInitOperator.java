@@ -1,10 +1,13 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -31,7 +34,7 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 		this.setOperatorName("SensornetAGGRInit");
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetAggrInitOperator()");
-		}		
+		}
 	}
 
     /** {@inheritDoc} 
@@ -48,4 +51,9 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 			+ costParams.getCopyTuple();
     }
 	
+    //FIXME
+	public List<Attribute> getAttributes() {
+		return this.getLeftChild().getAttributes();
+	}
+    
 }
