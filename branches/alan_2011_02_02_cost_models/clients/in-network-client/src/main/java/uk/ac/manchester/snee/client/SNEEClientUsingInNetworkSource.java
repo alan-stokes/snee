@@ -38,7 +38,7 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 		// Configure logging
 		PropertyConfigurator.configure(
 				SNEEClientUsingInNetworkSource.class.
-				getClassLoader().getResource("etc/log4j.properties"));
+				getClassLoader().getResource("etc/common/log4j.properties"));
 		String query;
 		Long duration;
 		String queryParams;
@@ -49,14 +49,19 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 					"\t\"query parameters file\"\n");
 			//XXX: Use default query
 			
-			//query = "SELECT RSTREAM avg(c.light) " +
-			query = "SELECT * " +
-			//query = "SELECT RSTREAM c.light, f.light " +
+			query = "SELECT RSTREAM avg(c.light) " +
+			//query = "SELECT * " +
+			//query = "SELECT RSTREAM c.light, m.light " +
+		  //query = "SELECT c.light, m.light " +
+		  //query = "SELECT c.light, m.light, f.light " +
 			
-					//"FROM Castilla[now] c, Forest[now] f WHERE c.light < f.light;";
+		      //"FROM Castilla[now] c, Meadow[now] m, Forest[now] f WHERE c.light < m.light AND m.light > f.light;";
+					//"FROM Castilla[now] c, Meadow[now] m WHERE c.light < m.light;";
+		    	//"FROM Castilla[now] c, Forest[now] f WHERE c.light < f.light;";
+			    //"FROM Castilla[RANGE 10 ROWS SLIDE 10 ROWS] c;";
 			    "FROM Castilla[now] c;";
 			duration = Long.valueOf("120");
-			queryParams= "etc/query-parameters.xml";
+			queryParams= "etc/common/query-parameters.xml";
 //			System.exit(1);
 		} else {	
 			query = args[0];

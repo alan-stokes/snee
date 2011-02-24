@@ -11,7 +11,6 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
@@ -24,6 +23,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
@@ -33,7 +33,6 @@ public class InstanceWhereSchedular
 {
   private RT routingTree;
   private InstanceDAF instanceDAF;
-
   private DAF cDAF;
   private CostParameters costs;
   private PAF paf;
@@ -53,6 +52,7 @@ public class InstanceWhereSchedular
   {
     //make directory withoutput folder to place cost model images
     String fileDirectory = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + "/costModelImages";
+    //String fileDirectory = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + "/costModelImages";
     boolean success = new File(fileDirectory).mkdir();
     if(success)
     {
@@ -63,6 +63,9 @@ public class InstanceWhereSchedular
       //do heuristic placement
       doInstanceOperatorSiteAssignment();
       instanceDAF.exportAsDOTFile(fileDirectory + "/siteAssignment.dot", "");
+      //move duplicate aggerates upwards
+      moveDuplicatesToSameSite();
+      instanceDAF.exportAsDOTFile(fileDirectory + "/movedInitsUpwards.dot", "");
       //remove instances which are redundant
       removeRedundantOpInstances();
       instanceDAF.exportAsDOTFile(fileDirectory + "/cleanedSiteAssignment.dot", "");
@@ -77,7 +80,49 @@ public class InstanceWhereSchedular
       System.out.println("directory not makable");
     }
   }
-  
+  //XXX not tested currently
+  private void moveDuplicatesToSameSite()//aggerate inits
+  {
+    //go though routing tree from top to bottom
+    Iterator<Site> siteIter = routingTree.siteIterator(TraversalOrder.PRE_ORDER);
+    while(siteIter.hasNext())
+    {
+      Site currentSite = siteIter.next();//get site
+      //get operators on site 
+      ArrayList<InstanceOperator> currentSitesOperators = instanceDAF.getOpInstances(currentSite);
+      Iterator<InstanceOperator> currentSiteOperatorIterator = currentSitesOperators.iterator();
+      boolean found = false;
+      InstanceOperator mergeInstance = null;
+      //look though operators looking for a merge
+      while(currentSiteOperatorIterator.hasNext() && !found)
+      {
+        InstanceOperator instance = currentSiteOperatorIterator.next();
+        if(instance.getInstanceOperator() instanceof SensornetAggrMergeOperator)
+        {
+          found = true;
+          mergeInstance = instance;
+        }
+      }
+      //found an merge, look at children seeing if on same site, if not move to
+      if(found)
+      {
+        
+        for(int childrenOperatorIndex = 0; childrenOperatorIndex< mergeInstance.getInDegree(); childrenOperatorIndex++ )
+        {
+          //get child op
+          InstanceOperator child = (InstanceOperator) mergeInstance.getInput(childrenOperatorIndex);
+          if(child.getInstanceOperator() instanceof SensornetAggrInitOperator)
+          {
+            if(!child.getSite().getID().equals(mergeInstance.getSite().getID()))
+            {
+              instanceDAF.reAssign(child, mergeInstance.getSite(), child.getSite());
+            }
+          }
+        }
+      }
+    }
+  }
+
   private void startFragmentation()
   {
     Iterator<InstanceOperator> InstanceOperatorIterator = instanceDAF.iterator(TraversalOrder.PRE_ORDER);
@@ -160,20 +205,22 @@ public class InstanceWhereSchedular
               part = new InstanceExchangePart(instance, instance.site, parent, parent.site, 
                                               currentPathSite, ExchangePartType.PRODUCER, false, 
                                               null);
+              lastPart = part;
             }
             if(currentPathSite == parent.getSite())
             {
               part = new InstanceExchangePart(instance, instance.site, parent, parent.site, 
                                               currentPathSite, ExchangePartType.CONSUMER, false, 
                                               lastPart);
+              lastPart = part;
             }
             else
             {
               part = new InstanceExchangePart(instance, instance.site, parent, parent.site, 
                                               currentPathSite, ExchangePartType.RELAY, false, 
                                               lastPart);
+              lastPart = part;
             }
-            lastPart = part;
           }
         }
         else//on same site, just add a consumer and producer to sort out fragment.
@@ -219,7 +266,7 @@ public class InstanceWhereSchedular
           //Other operators
           assignOtherOpTypeInstances(instance);
         }
-      } 
+      }
     }
   }
 
@@ -231,34 +278,72 @@ public class InstanceWhereSchedular
     instanceDAF.assign(instance, opSite);
   }
 
-  //XXX:  HAS NOT BEEN TESTED/IMPLEMENTED CURRENTLY
   private void assignRecursiveOpInstances(InstanceOperator instance) //agg merge
   {
-    ArrayList<InstanceOperator> operatorInstances = new ArrayList<InstanceOperator>();
+    boolean assigned = false;
+    ArrayList<InstanceOperator> childOperatorInstances = new ArrayList<InstanceOperator>();
     //build list of child instances
     for(int i = 0; i < instance.getInDegree(); i++)
     {
-      SensornetOperator childOp =(SensornetOperator)instance.getInput(i);
-      ArrayList<InstanceOperator> children = instanceDAF.getOpInstances(((InstanceOperator) childOp).getInstanceOperator());
-      operatorInstances.addAll(children);
+      InstanceOperator childOp =(InstanceOperator)instance.getInput(i);
+      childOperatorInstances.add(childOp);     
     }
-    /**
-     * Iterate though routing tree, looking for one of 3 situations
-     * 1. 2 direct children operators below current site
-     * 2. 1 direct children and an instance of current operator
-     * 3. 2 instances of current operator
-     * then place operator on current site.
-     */  
+    
     Iterator<Site> siteIter = routingTree.siteIterator(TraversalOrder.POST_ORDER);
     while(siteIter.hasNext())
     {
       Site currentSite = siteIter.next();
-      //if site contains an acquire then bypass
-      //if(instanceDAF.getOpInstances(site))
-      //get child operaotrs to this site
+      ArrayList<InstanceOperator> currentSiteOperatorInstances = instanceDAF.getOpInstances(currentSite);
+     
+      if(!currentSite.isLeaf() && !assigned && !currentSiteOperatorInstances.contains(instance))
+      {
+        /**
+         * 1. not a leaf node, so no basic acquires, not assigned already, and currentsite doesnt hold a instance of the operator
+         * 2. iterate over inputs, checking if child operator is either an child or current
+         * 3. count the times it satisfies the search (2 = place instance here)
+         */
+        int satisifiedSearch = 0;
+        if(checkArray(currentSiteOperatorInstances, childOperatorInstances))
+          satisifiedSearch++;
+        
+        for(int currentInputIndex = 0; currentInputIndex < currentSite.getInDegree();
+            currentInputIndex++)
+        {
+          Site inputSite = (Site) currentSite.getInput(currentInputIndex);
+          //check if instance of current or child
+          ArrayList<InstanceOperator> operatorsOnSite = instanceDAF.getOpInstances(inputSite);
+          while(operatorsOnSite.size() == 0)
+          {
+            inputSite = (Site) inputSite.getInput(0);
+            operatorsOnSite = instanceDAF.getOpInstances(inputSite);
+          }
+          
+          if(checkArray(operatorsOnSite, childOperatorInstances))
+            satisifiedSearch++;
+        }
+        if(satisifiedSearch == 2)//found two instances which fit criteria
+        {
+          //assign instance to this site
+          instanceDAF.assign(instance, currentSite); 
+          assigned = true;
+        }
+      }
+    }
+    if(!assigned)
+    {
+      System.out.println("instance " + instance.getID() + " cant be placed for some reason");
     }
   }
   
+  private boolean checkArray(ArrayList<InstanceOperator> operatorInstances,
+      ArrayList<InstanceOperator> childOperatorInstances)
+  {
+    for(int childInstanceIndex = 0; childInstanceIndex < childOperatorInstances.size(); childInstanceIndex++)
+      if(operatorInstances.contains(childOperatorInstances.get(childInstanceIndex)))
+        return true;
+    return false;
+  }
+
   //XXX:  HAS NOT BEEN TESTED CURRENTLY BUT HOPEFULLY IMPLEMENTED
   private void assignAttributeSensitiveOpInstances(InstanceOperator instance)
   {
@@ -266,7 +351,7 @@ public class InstanceWhereSchedular
     //build list of child instances
     for(int i = 0; i < instance.getInDegree(); i++)
     {
-      SensornetOperator childOp =(SensornetOperator)instance.getInput(i);
+      InstanceOperator childOp =(InstanceOperator)instance.getInput(i);
       ArrayList<InstanceOperator> children = instanceDAF.getOpInstances(((InstanceOperator) childOp).getInstanceOperator());
       operatorInstances.addAll(children);
     }//locate the deepest site which has all instances below it, and then assign it to there
@@ -571,8 +656,7 @@ public class InstanceWhereSchedular
         ArrayList<InstanceOperator> opInstColl = siteOpInstMap.get(site);
         instanceDAF.mergeSiblings(opInstColl);
       }
-    }
-    
+    } 
   }
 
   private void removeRedundantAggrIterOpInstances() 
@@ -602,10 +686,8 @@ public class InstanceWhereSchedular
           }
         }
       }
-    }
-    
+    } 
   }
-
   
   private void createCDAF() 
   throws OptimizationException, SNEEException, SchemaMetadataException
@@ -617,7 +699,7 @@ public class InstanceWhereSchedular
     //cDAF.display(SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR),
     //    cDAF.getQueryName(),
     //    "cdaf");
-
+    
     removeRedundantAggrIterOp(cDAF);
     
   }
@@ -665,14 +747,14 @@ public class InstanceWhereSchedular
         }
       }
     }
-    
+
     faf.buildFragmentTree();
     return faf;
   }
   
   private static DAF linkFragments(DAF faf, RT rt, InstanceDAF daf,
       String queryName) throws SNEEException, SchemaMetadataException {
-    DAF cDAF = new DAF(faf.getPAF(), rt, queryName);
+    DAF cDAF = faf;
     
     Iterator<InstanceOperator> opInstIter = daf.iterator(TraversalOrder.POST_ORDER);
     while (opInstIter.hasNext()) {

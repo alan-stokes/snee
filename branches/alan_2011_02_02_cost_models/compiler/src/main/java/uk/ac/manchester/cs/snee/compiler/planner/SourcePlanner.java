@@ -128,6 +128,7 @@ public class SourcePlanner {
 		logger.info("Starting Where-Scheduling for query " + queryID);
 		InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, rt, costParams);
 		DAF daf = instanceWhere.getDAF();
+		new DAFUtils(daf).generateGraphImage();
 		//DAF daf = doSNWhereScheduling(rt, paf, costParams, queryID);
 		logger.info("Starting When-Scheduling for query " + queryID);
 		Agenda agenda = doSNWhenScheduling(daf, qos, queryID);
@@ -136,11 +137,11 @@ public class SourcePlanner {
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doSensorNetworkSourcePlanning()");
 		
-    costModel.addInstanceDAF(instanceWhere.getInstanceDAF());
-    costModel.addRoutingTree(rt);
-    costModel.addAgenda(agenda);
-    float card = costModel.runCardinality();
-    System.out.println("the cardinality of this query per agenda cycle is" + card); 
+    //costModel.addInstanceDAF(instanceWhere.getInstanceDAF());
+    //costModel.addRoutingTree(rt);
+    //costModel.addAgenda(agenda);
+    //float card = costModel.runCardinality();
+    //System.out.println("the cardinality of this query per agenda cycle is" + card); 
 		return qep;
 	}
 	

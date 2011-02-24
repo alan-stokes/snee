@@ -138,6 +138,13 @@ public class InstanceDAF extends SNEEAlgebraicForm
     opInst.setSite(site);
     this.siteToOpInstMap.add(site, opInst);
   }
+  
+  public void reAssign(InstanceOperator opInst, Site newSite, Site oldSite) 
+  {
+    opInst.setSite(newSite);
+    this.siteToOpInstMap.remove(oldSite, opInst);
+    this.siteToOpInstMap.add(newSite, opInst);
+  }
 
   public HashSet<Site> getSites(SensornetOperator op) 
   {
@@ -195,7 +202,30 @@ public class InstanceDAF extends SNEEAlgebraicForm
             out.println("}\n");
           }
         }
-/*
+        
+        //traverse the edges now
+        Iterator<String> i = instanceOperatorTree.getEdges().keySet().iterator();
+        while (i.hasNext()) 
+        {
+          Edge e = instanceOperatorTree.getEdges().get((String) i.next());
+          out.println("\"" + instanceOperatorTree.getAllNodes().get(e.getSourceID()).getID()
+          + "\"" + edgeSymbol + "\""
+          + instanceOperatorTree.getAllNodes().get(e.getDestID()).getID() + "\" ");
+        }
+        out.println("}");
+        out.close();
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        /* proper way to draw edges. but doesn't work here for some reason
         //draw edges
         Iterator<Node> opIterator = instanceOperatorTree.nodeIterator(TraversalOrder.POST_ORDER);
         while (opIterator.hasNext()) {
@@ -221,17 +251,6 @@ public class InstanceDAF extends SNEEAlgebraicForm
         }
         out.println("}");
         out.close();*/
-        
-      //traverse the edges now
-        Iterator<String> i = instanceOperatorTree.getEdges().keySet().iterator();
-        while (i.hasNext()) {
-      Edge e = instanceOperatorTree.getEdges().get((String) i.next());
-      out.println("\"" + instanceOperatorTree.getAllNodes().get(e.getSourceID()).getID()
-        + "\"" + edgeSymbol + "\""
-        + instanceOperatorTree.getAllNodes().get(e.getDestID()).getID() + "\" ");
-        }
-        out.println("}");
-        out.close();
 
     } 
     catch (IOException e) 
