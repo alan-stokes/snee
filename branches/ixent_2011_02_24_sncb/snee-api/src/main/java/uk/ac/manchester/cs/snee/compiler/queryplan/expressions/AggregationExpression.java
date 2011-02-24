@@ -47,13 +47,13 @@ public class AggregationExpression implements Expression {
 	/** 
 	 * Keeps track of the next aggregation numeration to assign.
 	 */
-	private int nextNumeration = 1;
+	private static int aggrCount = 1;
 	
 	/**
-	 * The numeration assigned to this aggregation.
+	 * The aggrID assigned to this aggregation.
 	 * Used to assign short unique local names. 
 	 */
-	private int numeration;
+	private int aggrID;
 	
 	/** The expression over which the aggregation will be done. */
 	private Expression expression;
@@ -68,7 +68,7 @@ public class AggregationExpression implements Expression {
         expression = inner;
         this.type = aggType;
         _returnType = returnType;
-        numeration = nextNumeration++;
+        aggrID = aggrCount++;
 	}
 
     /** {@inheritDoc}*/
@@ -91,7 +91,7 @@ public class AggregationExpression implements Expression {
 	
 	/** 
 	 * Checks if any of the aggregates need count.
-	 * For example Average and Count both need a count kept.
+	 * For example incremental Average and Count both need a count kept.
 	 * 
 	 * @return TRUE if one or more of the aggregates need a count kept.
 	 */
@@ -104,6 +104,33 @@ public class AggregationExpression implements Expression {
 		}
 		return false;
 	}
+
+	/** 
+	 * Checks if any of the aggregates need sum.
+	 * For example incremental Average and SUM both need a sum kept.
+	 * 
+	 * @return TRUE if one or more of the aggregates need a count kept.
+	 */
+	public boolean needsSum() {
+		if (type == AggregationType.AVG) {
+			return true;
+		} 
+		if (type == AggregationType.SUM) {
+			return true;
+		}
+		return false;
+	}
+	
+	/* Used to decide whether an aggregation operator can be split */
+	public boolean canBeDoneIncrementally() {
+		if ((type == AggregationType.AVG) || (type == AggregationType.COUNT) ||
+				(type == AggregationType.SUM) || (type == AggregationType.MIN) ||
+				(type == AggregationType.MAX)){
+			return true;
+		}
+		return false;
+	}
+	
 	
 	/** {@inheritDoc}*/
 	public String toString() {
@@ -119,7 +146,7 @@ public class AggregationExpression implements Expression {
 		if (type == AggregationType.COUNT) {
 			return "count";
 		}
-		return type.toString() + numeration;		
+		return type.toString() + aggrID;		
 	}
 
 	/** 
@@ -194,6 +221,7 @@ public class AggregationExpression implements Expression {
 		return false;
 	}
 
+
 	/**
 	 * Converts this Expression to an Attribute.
 	 * 
@@ -203,6 +231,6 @@ public class AggregationExpression implements Expression {
 	 */
 	public Attribute toAttribute() 
 	throws SchemaMetadataException, TypeMappingException{
-		return new DataAttribute("", type.toString(), this.getType()); 
+		return new DataAttribute("aggr", type.toString()+this.aggrID, this.getType()); 
 	}
 }

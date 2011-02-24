@@ -34,6 +34,7 @@
 package uk.ac.manchester.cs.snee.operators.logical;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -190,6 +191,19 @@ public class AggregationOperator extends PredicateOperator {
     public boolean isRecursive() {
         return false;
     }
+
+    /** Looks at all the aggregation functions used in the operator, 
+     * and considers whether they can be computed incrementally. **/
+	public boolean isSplittable() {
+		Iterator<AggregationExpression> aggrExprIter =
+			aggregates.iterator();
+		while (aggrExprIter.hasNext()) {
+			AggregationExpression aggrExpr = aggrExprIter.next();
+			if (aggrExpr.canBeDoneIncrementally()==false)
+				return false;
+		}
+		return true;
+	}
  
 
 

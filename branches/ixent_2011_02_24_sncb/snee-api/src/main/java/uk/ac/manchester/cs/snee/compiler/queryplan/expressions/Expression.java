@@ -41,7 +41,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 
 /**
  * Interface for any expression.
- * Includs arithmatic, aggeragation and boolean expressions.
+ * Includes arithmetic, aggregation and boolean expressions.
  * @author Christian
  */
 public interface Expression {
@@ -87,7 +87,7 @@ public interface Expression {
 	public double getMaxValue();
 	
 	/**
-	 * Finds the expected selectivity of this expression can return.
+	 * Finds the expected selectivity of this expression.
 	 * @return The expected selectivity
 	 * @throws AssertionError If Expression does not return a boolean.
 	 */
@@ -95,7 +95,7 @@ public interface Expression {
 	
 	/**
 	 * Checks if the Expression can be directly used in an Aggregation Operator.
-	 * Expressions such as attributes that can only be used inside a aggregation expression return false.
+	 * Expressions such as attributes that can only be used inside a project expression return false.
 	 * 
 	 * @return true if this expression can be directly used in a Aggregation Operator. 
 	 * @throws ParserValidationException 

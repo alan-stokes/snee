@@ -50,7 +50,7 @@ public class MultiExpression implements Expression {
 	/** List of the expression.*/
 	private Expression[] expressions;
 
-	/** The method of combining the expressions.*/
+	/** The operator used to combining the expressions.*/
 	private MultiType multiType;
 
 	private AttributeType _booleanType;
@@ -108,69 +108,6 @@ public class MultiExpression implements Expression {
 		combine[1] = second;
 		return new MultiExpression (combine, MultiType.AND, _booleanType);
 	}
-
-//	/**
-//	 * Converts an AST token into a multiType.
-//	 * @param token The AST token of how the expressions are combined.
-//	 */
-//	private void convertMultiType(AST token) {
-//		//FIXME: Method never used locally
-//        switch (token.getType()) {
-//        	case SNEEqlOperatorParserTokenTypes.ADD: 
-//        		multiType = MultiType.ADD;
-//        		assert (expressions.length >= 2);
-//        		return;
-//        	case SNEEqlOperatorParserTokenTypes.AND: 
-//    			multiType = MultiType.AND;
-//        		assert (expressions.length >= 2);
-//    			return;
-//        	case SNEEqlOperatorParserTokenTypes.OR: 
-//    			multiType = MultiType.OR;
-//        		assert (expressions.length >= 2);
-//    			return;
-//        	case SNEEqlOperatorParserTokenTypes.DIVIDE: 
-//				multiType = MultiType.DIVIDE;
-//        		assert (expressions.length == 2);
-//				return;
-//        	case SNEEqlOperatorParserTokenTypes.EQUALS:
-//    			multiType = MultiType.EQUALS;
-//        		assert (expressions.length == 2);
-//    			return;
-//        	case SNEEqlOperatorParserTokenTypes.GREATERTHAN:
-//        		assert (expressions.length == 2);
-//				multiType = MultiType.GREATERTHAN;
-//				return;
-//        	case SNEEqlOperatorParserTokenTypes.GREATERTHANOREQUALS: 
-//				multiType = MultiType.GREATERTHANEQUALS;
-//        		assert (expressions.length == 2);
-//				return;
-//        	case SNEEqlOperatorParserTokenTypes.LESSTHAN:
-//				multiType = MultiType.LESSTHAN;
-//        		assert (expressions.length == 2);
-//				return;
-//        	case SNEEqlOperatorParserTokenTypes.LESSTHANOREQUALS:
-//				multiType = MultiType.LESSTHANEQUALS;
-//        		assert (expressions.length == 2);
-//				return;
-//        	case SNEEqlOperatorParserTokenTypes.MULTIPLY:
-//				multiType = MultiType.MULTIPLY;
-//        		assert (expressions.length >= 2);
-//        		return;
-//        	case SNEEqlOperatorParserTokenTypes.MINUS:
-//				multiType = MultiType.MINUS;
-//        		assert (expressions.length >= 2);
-//        		return;
-//        	case SNEEqlOperatorParserTokenTypes.POWER:
-//				multiType = MultiType.POWER;
-//        		assert (expressions.length == 2);
-//        		return;
-//        	case SNEEqlOperatorParserTokenTypes.SQUAREROOT:
-//				multiType = MultiType.SQUAREROOT;
-//        		assert (expressions.length == 1);
-//        		return;
-//        	default: throw new AssertionError("Unexpected AST token " + token); 
-//        }
-//	}
 	
 	/** {@inheritDoc} */
 	public String toString() {

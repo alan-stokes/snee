@@ -75,26 +75,28 @@ public class AlgorithmSelector {
 				//Split into three
 		    	SensornetSingleStepAggregationOperator agg = 
 		    		(SensornetSingleStepAggregationOperator) op;
-		    	AggregationOperator logAggr = 
-		    		(AggregationOperator) agg.getLogicalOperator();
-				SensornetAggrInitOperator aggrInit = 
-					new SensornetAggrInitOperator(logAggr, costParams);
-				SensornetAggrMergeOperator aggrMerge = 
-					new SensornetAggrMergeOperator(logAggr, costParams);
-				SensornetAggrEvalOperator aggrEval = 
-					new SensornetAggrEvalOperator(logAggr, costParams);
-				
-				SensornetOperator childOp = agg.getLeftChild();
-				SensornetOperator parentOp = agg.getParent();
-				try {
-					paf.getOperatorTree().removeNode(agg);
-				} catch (OptimizationException e) {
-					// TODO Auto-generated catch block
-					System.exit(0);
-				}
-				paf.getOperatorTree().insertNode(childOp, parentOp, aggrInit);
-				paf.getOperatorTree().insertNode(aggrInit, parentOp, aggrMerge);
-				paf.getOperatorTree().insertNode(aggrMerge, parentOp, aggrEval);
+		    	if (agg.isSplittable()) {
+			    	AggregationOperator logAggr = 
+			    		(AggregationOperator) agg.getLogicalOperator();
+					SensornetAggrInitOperator aggrInit = 
+						new SensornetAggrInitOperator(logAggr, costParams);
+					SensornetAggrMergeOperator aggrMerge = 
+						new SensornetAggrMergeOperator(logAggr, costParams);
+					SensornetAggrEvalOperator aggrEval = 
+						new SensornetAggrEvalOperator(logAggr, costParams);
+					
+					SensornetOperator childOp = agg.getLeftChild();
+					SensornetOperator parentOp = agg.getParent();
+					try {
+						paf.getOperatorTree().removeNode(agg);
+					} catch (OptimizationException e) {
+						// TODO Auto-generated catch block
+						System.exit(0);
+					}
+					paf.getOperatorTree().insertNode(childOp, parentOp, aggrInit);
+					paf.getOperatorTree().insertNode(aggrInit, parentOp, aggrMerge);
+					paf.getOperatorTree().insertNode(aggrMerge, parentOp, aggrEval);		    		
+		    	}		    	
 		    }
 		}
     }

@@ -72,4 +72,8 @@ public class SensornetSingleStepAggregationOperator extends SensornetOperatorImp
 				+ costParams.getCopyTuple() 
 				+ costParams.getDoCalculation() * tuples;
 	}
+
+	public boolean isSplittable() {
+		return aggrOp.isSplittable();
+	}
 }
