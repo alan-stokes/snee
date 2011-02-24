@@ -44,13 +44,15 @@ public enum AggregationType {
 	/** Average of all values. */
 	AVG ("avg"),
 	/** Count of all values. */
-	COUNT ("count"),
-	/** mximumof all values. */
-	MAX ("maxt"),	
-	/** Count of all values. */
+	COUNT ("count"),	
+	/** Minimum of all values. */
 	MIN ("min"),
-	/** Count of all values. */
-	SUM ("sum");
+	/** Maximum of all values. */
+	MAX ("max"),
+	/** Sum of all values. */
+	SUM ("sum"),
+	/** Standard deviation */
+	STDEV ("stdev");
 
 	/** Hold the string representation of the selected value. */
 	private String strRep;

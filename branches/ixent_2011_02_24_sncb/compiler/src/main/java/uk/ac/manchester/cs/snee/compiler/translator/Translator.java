@@ -1310,6 +1310,14 @@ public class Translator {
 			expression = new AggregationExpression(inner, 
 					AggregationType.MIN,
 					_types.getType("integer"));
+		} else if (ast.getText().equalsIgnoreCase("stdev")) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate standard deviation");
+			}
+			//FIXME: Not all arithmetic expressions are integers
+			expression = new AggregationExpression(inner,
+					AggregationType.STDEV, 
+					_types.getType("integer"));
 		} else if ((ast.getText().equalsIgnoreCase("max")) ||
 				(ast.getText().equalsIgnoreCase("maximum"))) {
 			if (logger.isTraceEnabled()) {
