@@ -273,6 +273,7 @@ extends EvaluatorPhysicalOperator {
 					", " + attrDisplayName + ", " + dataType);
 		}
 		Number result;
+		//TODO: Add aggregate functions: SUM, MIN, MAX, STDEV
 		if (agType == AggregationType.AVG) {
 			logger.trace("Calculate average.");
 			if (tuples.isEmpty()) {

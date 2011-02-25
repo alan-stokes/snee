@@ -67,24 +67,6 @@ public abstract class PredicateOperator extends LogicalOperatorImpl {
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 	}
 
-	/**
-	 * Constructor that creates a new operator
-	 * based on a information from a model.
-	 *
-	 * @param newExpressions expressions from model.
-	 * @param newAttributes attributes from model.
-	 * @param operatorDataType data type from model.
-	 * @param paramStr parameter string from model.
-	 */
-	protected PredicateOperator(List<Expression> newExpressions, 
-			List<Attribute> newAttributes, 
-			OperatorDataType operatorDataType,
-			String paramStr, AttributeType boolType) {
-		super(boolType);
-		this.expressions = newExpressions;
-		this.attributes = newAttributes;
-	}
-
 	/** 
 	 * List of the attribute returned by this operator.
 	 * 
