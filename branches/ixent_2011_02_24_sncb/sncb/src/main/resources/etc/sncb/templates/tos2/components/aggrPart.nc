@@ -94,7 +94,7 @@ __CONSTRUCT_TUPLE__
 		post signalDoneTask();
 	}
 
-	void task aggegateTask()
+	void task aggregateTask()
 	{
 		if (inHead>-1)
 		{
@@ -125,7 +125,7 @@ __INCREMENT_AGGREGATES__
 			inQueueSize = _inQueueSize;
 		}
 
-		post aggegateTask();
+		post aggregateTask();
 
 	}
 

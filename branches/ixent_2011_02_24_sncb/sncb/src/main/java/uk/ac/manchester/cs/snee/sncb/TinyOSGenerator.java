@@ -68,6 +68,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOpera
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSelectOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSingleStepAggregationOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
 import uk.ac.manchester.cs.snee.sncb.tos.AMRecieveComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.AMSendComponent;
@@ -76,6 +77,7 @@ import uk.ac.manchester.cs.snee.sncb.tos.ActiveMessageIDGenerator;
 import uk.ac.manchester.cs.snee.sncb.tos.AggrEvalComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.AggrInitComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.AggrMergeComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.AggrSingleStepComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.CC1000ControlComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenUtils;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
@@ -1539,6 +1541,9 @@ public class TinyOSGenerator {
 
 		if (op instanceof SensornetAcquireOperator) {
 		    return new AcquireComponent((SensornetAcquireOperator) op, plan,
+		    		config, tosVersion, tossimFlag, debugLeds);
+		} else if (op instanceof SensornetSingleStepAggregationOperator) {    
+		    return new AggrSingleStepComponent((SensornetSingleStepAggregationOperator) op, plan,
 		    		config, tosVersion, tossimFlag, debugLeds);
 		} else if (op instanceof SensornetAggrEvalOperator) {
 		    return new AggrEvalComponent((SensornetAggrEvalOperator) op, plan,

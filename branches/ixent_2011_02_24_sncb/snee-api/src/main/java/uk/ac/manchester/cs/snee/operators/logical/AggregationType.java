@@ -41,16 +41,16 @@ package uk.ac.manchester.cs.snee.operators.logical;
  *
  */
 public enum AggregationType {
-	/** Average of all values. */
-	AVG ("avg"),
 	/** Count of all values. */
 	COUNT ("count"),	
+	/** Sum of all values. */
+	SUM ("sum"),
 	/** Minimum of all values. */
 	MIN ("min"),
 	/** Maximum of all values. */
 	MAX ("max"),
-	/** Sum of all values. */
-	SUM ("sum"),
+	/** Average of all values. */
+	AVG ("avg"),
 	/** Standard deviation */
 	STDEV ("stdev");
 
@@ -72,6 +72,22 @@ public enum AggregationType {
 	 */ 
 	public String toString() {
 		return this.strRep;
+	}
+	
+	/**
+	 * Returns true if this is a primitive aggregation function, i.e., it cannot 
+	 * be computed in terms of other aggregation functions.  Examples of this
+	 * type include SUM. COUNT, MIN and MAX.
+	 * Returns false if this is a derived aggregation function, i.e., it may 
+	 * be computed in terms of other aggregation functions.  Examples of this
+	 * type include AVG and STDEV.
+	 * @return
+	 */
+	public boolean isPrimitiveType(AggregationType aggrFn) {
+		if ((aggrFn==SUM) || (aggrFn==COUNT) || (aggrFn==MIN) || (aggrFn==MAX)) {
+		return true;
+		}
+		return false;
 	}
 	
 }

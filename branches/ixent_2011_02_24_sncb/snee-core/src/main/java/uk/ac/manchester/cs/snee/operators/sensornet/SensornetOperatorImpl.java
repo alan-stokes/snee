@@ -668,4 +668,9 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 		return this.getLogicalOperator().isRecursive();
 	}
 
+	//delegate
+	public String getTupleAttributesStr(int maxPerLine) throws SchemaMetadataException, TypeMappingException {
+		return this.getLogicalOperator().getTupleAttributesStr(maxPerLine);
+	}
+	
 }

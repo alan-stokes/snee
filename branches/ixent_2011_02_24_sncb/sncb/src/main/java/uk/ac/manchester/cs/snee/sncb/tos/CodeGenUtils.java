@@ -420,7 +420,7 @@ public final class CodeGenUtils {
 				String attrName 
 					= CodeGenUtils.getNescAttrName(attribute);
 				AggregationExpression aggr = aggregations.get(i);
-				AggregationType type = aggr.getAggregationType();
+				AggregationType type = aggr.getAggregationFunction();
 				Expression expression = aggr.getExpression();
 				if ((type == AggregationType.AVG) 
 						|| (type == AggregationType.SUM)) {
@@ -464,7 +464,7 @@ public final class CodeGenUtils {
 			String attrName 
 				= CodeGenUtils.getNescAttrName(attribute);
 			AggregationExpression aggr = aggregations.get(i);
-			AggregationType type = aggr.getAggregationType();
+			AggregationType type = aggr.getAggregationFunction();
 			if ((type == AggregationType.AVG) 
 					|| (type == AggregationType.COUNT)
 					|| (type == AggregationType.SUM)) {
@@ -511,7 +511,7 @@ public final class CodeGenUtils {
 			String attrName 
 				= CodeGenUtils.getNescAttrName(attribute);
 			AggregationExpression aggr = aggregations.get(i);
-			AggregationType type = aggr.getAggregationType();
+			AggregationType type = aggr.getAggregationFunction();
 			if ((type == AggregationType.AVG) 
 					|| (type == AggregationType.SUM)
 					|| (type == AggregationType.COUNT)) {
@@ -612,7 +612,7 @@ public final class CodeGenUtils {
 		if (expression instanceof AggregationExpression) {
 			AggregationExpression aggregate 
 				= (AggregationExpression) expression; 
-			if (aggregate.getAggregationType() 
+			if (aggregate.getAggregationFunction() 
 					== AggregationType.AVG) {
 				return "(" + Constants.PARTIAL_LOCALNAME + "_"
 					+ Constants.AVG_PARTIAL_HEAD 

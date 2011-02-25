@@ -251,8 +251,11 @@ implements LogicalOperator {
 	 * @throws TypeMappingException */    
 	public String getTupleAttributesStr(int maxPerLine) 
 	throws SchemaMetadataException, TypeMappingException {
-		List<Attribute> attributes = getAttributes();
+		List<Attribute> attributes = this.getAttributes();
+		return LogicalOperatorImpl.getTupleAttributesStr(attributes, maxPerLine);
+	}
 
+	public static String getTupleAttributesStr(List<Attribute> attributes, int maxPerLine) {
 		StringBuffer strBuff = new StringBuffer();
 		strBuff.append("(");
 		for (int i = 0; i < attributes.size(); i++) {
@@ -274,7 +277,6 @@ implements LogicalOperator {
 		strBuff.append(")");
 		return strBuff.toString();
 	}
-
 
 	/** 
 	 * List of the attribute returned by this operator.

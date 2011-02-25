@@ -184,7 +184,7 @@ extends EvaluatorPhysicalOperator {
 					// Extract operands from expression
 					AggregationExpression agEx = 
 						(AggregationExpression)exp;
-					AggregationType agType = agEx.getAggregationType();
+					AggregationType agType = agEx.getAggregationFunction();
 					DataAttribute da = 
 						(DataAttribute)agEx.getExpression();
 					String attrDisplayName = 

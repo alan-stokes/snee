@@ -352,4 +352,7 @@ public interface SensornetOperator extends Node {
 	//delegate
 	boolean isRecursive();
 	
+	//delegate
+	public String getTupleAttributesStr(int maxPerLine) throws SchemaMetadataException, TypeMappingException;
+	
 }

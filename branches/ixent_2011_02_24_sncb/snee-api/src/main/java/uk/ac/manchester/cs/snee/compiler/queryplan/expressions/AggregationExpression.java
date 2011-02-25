@@ -56,24 +56,24 @@ public class AggregationExpression implements Expression {
 	private int aggrID;
 	
 	/** The expression over which the aggregation will be done. */
-	private Expression expression;
+	private Expression inputExpression;
 	
 	/** The aggregation to be done. */
-	private AggregationType type;
+	private AggregationType aggrFunction;
 
 	private AttributeType _returnType;
 	
 	public AggregationExpression(Expression inner, 
-			AggregationType aggType, AttributeType returnType) {
-        expression = inner;
-        this.type = aggType;
+			AggregationType aggrFn, AttributeType returnType) {
+        inputExpression = inner;
+        this.aggrFunction = aggrFn;
         _returnType = returnType;
         aggrID = aggrCount++;
 	}
 
     /** {@inheritDoc}*/
 	public List<Attribute> getRequiredAttributes() {
-		return expression.getRequiredAttributes();
+		return inputExpression.getRequiredAttributes();
 	}
 	
 	/** {@inheritDoc} */
@@ -85,8 +85,8 @@ public class AggregationExpression implements Expression {
 	 * Gets the type of the aggregation.
 	 * @return The type of the aggregation.
 	 */
-	public AggregationType getAggregationType() {
-		return type;
+	public AggregationType getAggregationFunction() {
+		return aggrFunction;
 	}
 	
 	/** 
@@ -96,10 +96,10 @@ public class AggregationExpression implements Expression {
 	 * @return TRUE if one or more of the aggregates need a count kept.
 	 */
 	public boolean needsCount() {
-		if (type == AggregationType.AVG) {
+		if (aggrFunction == AggregationType.AVG) {
 			return true;
 		} 
-		if (type == AggregationType.COUNT) {
+		if (aggrFunction == AggregationType.COUNT) {
 			return true;
 		}
 		return false;
@@ -112,10 +112,10 @@ public class AggregationExpression implements Expression {
 	 * @return TRUE if one or more of the aggregates need a count kept.
 	 */
 	public boolean needsSum() {
-		if (type == AggregationType.AVG) {
+		if (aggrFunction == AggregationType.AVG) {
 			return true;
 		} 
-		if (type == AggregationType.SUM) {
+		if (aggrFunction == AggregationType.SUM) {
 			return true;
 		}
 		return false;
@@ -123,9 +123,9 @@ public class AggregationExpression implements Expression {
 	
 	/* Used to decide whether an aggregation operator can be split */
 	public boolean canBeDoneIncrementally() {
-		if ((type == AggregationType.AVG) || (type == AggregationType.COUNT) ||
-				(type == AggregationType.SUM) || (type == AggregationType.MIN) ||
-				(type == AggregationType.MAX)){
+		if ((aggrFunction == AggregationType.AVG) || (aggrFunction == AggregationType.COUNT) ||
+				(aggrFunction == AggregationType.SUM) || (aggrFunction == AggregationType.MIN) ||
+				(aggrFunction == AggregationType.MAX)){
 			return true;
 		}
 		return false;
@@ -134,7 +134,7 @@ public class AggregationExpression implements Expression {
 	
 	/** {@inheritDoc}*/
 	public String toString() {
-		return (type + "(" + expression + ")");
+		return (aggrFunction + "(" + inputExpression + ")");
 	}
 	
 	/**
@@ -143,10 +143,10 @@ public class AggregationExpression implements Expression {
 	 * @return A unique string name for this attribute.
 	 */
 	public String getShortName() {
-		if (type == AggregationType.COUNT) {
+		if (aggrFunction == AggregationType.COUNT) {
 			return "count";
 		}
-		return type.toString() + aggrID;		
+		return aggrFunction.toString() + aggrID;		
 	}
 
 	/** 
@@ -167,7 +167,7 @@ public class AggregationExpression implements Expression {
 	 * @return The input expression.
 	 */
 	public Expression getExpression() {
-		return expression;
+		return inputExpression;
 	}
 
 	/**
@@ -206,10 +206,10 @@ public class AggregationExpression implements Expression {
 	 * @throws ParserValidationException 
 	 */
 	public boolean allowedInAggregationOperator() throws ExpressionException {
-		if (expression.allowedInProjectOperator())
+		if (inputExpression.allowedInProjectOperator())
 			return true;
-		throw new ExpressionException("Aggregate: " + this.type +
-				" not allowed over Expression " + expression);
+		throw new ExpressionException("Aggregate: " + this.aggrFunction +
+				" not allowed over Expression " + inputExpression);
 	}
 
 	/**
@@ -231,6 +231,7 @@ public class AggregationExpression implements Expression {
 	 */
 	public Attribute toAttribute() 
 	throws SchemaMetadataException, TypeMappingException{
-		return new DataAttribute("aggr", type.toString()+this.aggrID, this.getType()); 
+		Attribute attr = inputExpression.getRequiredAttributes().get(0);
+		return new DataAttribute(attr.getExtentName(), attr.getAttributeSchemaName()+"_"+aggrFunction.toString(), this.getType()); 
 	}
 }

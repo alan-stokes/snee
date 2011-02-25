@@ -103,5 +103,4 @@ public abstract class SensornetIncrementalAggregationOperator extends SensornetO
 	public List<AggregationExpression> getAggregates() {
 		return this.aggrOp.getAggregates();
 	}
-	
 }
