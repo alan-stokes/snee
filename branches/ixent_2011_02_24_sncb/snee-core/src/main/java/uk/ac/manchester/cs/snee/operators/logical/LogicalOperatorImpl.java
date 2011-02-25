@@ -104,36 +104,6 @@ implements LogicalOperator {
 		return new Integer(opCount).toString();
 	}
 
-
-	//XXX: where do we actually use this constructor?
-//	/**
-//	 * Makes a clone of the operator without using a new opCount.
-//	 * @param model Operator to get internal data from.
-//	 */
-//	protected LogicalOperatorImpl(LogicalOperator model) {
-//		super(model);
-//		this.operatorDataType = model.getOperatorDataType();
-//		this.operatorName = model.getOperatorName();
-//		this.paramStr = model.getParamStr();
-//		this.predicate = model.getPredicate();
-//	}
-	
-	//XXX: where do we actually use this constructor?
-	/**
-	 * Makes a copy of the operator using a new opCount.
-	 * @param model Operator to get internal data from.
-	 * @param newID boolean flag expected to be true. 
-	 */
-	protected LogicalOperatorImpl(LogicalOperator model, boolean newID) {
-		super(new Integer(opCount).toString());
-		opCount++;        
-		assert (newID);
-		this.operatorDataType = model.getOperatorDataType();
-		this.operatorName = model.getOperatorName();
-		this.paramStr = model.getParamStr();
-		this.predicate = model.getPredicate();
-	}
-
 	/**
 	 * @return The output operator at index 0.
 	 */

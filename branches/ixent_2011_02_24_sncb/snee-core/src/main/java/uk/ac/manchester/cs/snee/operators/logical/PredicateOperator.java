@@ -68,18 +68,6 @@ public abstract class PredicateOperator extends LogicalOperatorImpl {
 	}
 
 	/**
-	 * Makes a copy of the operator using a new opCount.
-	 * @param model Operator to get internal data from.
-	 * @param newID boolean flag expected to be true. 
-	 */
-	protected PredicateOperator(PredicateOperator model, 
-			boolean newID) {
-		super(model, newID);
-		this.expressions = model.expressions;
-		this.attributes = model.attributes;
-	}
-
-	/**
 	 * Constructor that creates a new operator
 	 * based on a information from a model.
 	 *
