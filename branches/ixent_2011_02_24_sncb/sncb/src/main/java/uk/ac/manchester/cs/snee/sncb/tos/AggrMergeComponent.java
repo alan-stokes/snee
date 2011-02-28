@@ -95,6 +95,8 @@ public class AggrMergeComponent extends NesCComponent implements
 					AggrUtils.generateVarsInit(attributes).toString());
 			replacements.put("__AGGREGATE_VAR_INCREMENT__",
 					AggrUtils.generateIncrementAggregates(attributes, false).toString());
+			replacements.put("__DERIVED_INCREMENTAL_AGGREGATES_DECLS__", "");
+			replacements.put("__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__", "");
 			replacements.put("__CONSTRUCT_TUPLE__",
 					AggrUtils.generateTuple(this.op).toString());
 		

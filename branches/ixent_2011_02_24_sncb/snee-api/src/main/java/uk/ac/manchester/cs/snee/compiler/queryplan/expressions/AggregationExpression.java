@@ -125,7 +125,7 @@ public class AggregationExpression implements Expression {
 	public boolean canBeDoneIncrementally() {
 		if ((aggrFunction == AggregationFunction.AVG) || (aggrFunction == AggregationFunction.COUNT) ||
 				(aggrFunction == AggregationFunction.SUM) || (aggrFunction == AggregationFunction.MIN) ||
-				(aggrFunction == AggregationFunction.MAX) || (aggrFunction == AggregationFunction.STDEV)){
+				(aggrFunction == AggregationFunction.MAX)){
 			return true;
 		}
 		return false;

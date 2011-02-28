@@ -69,6 +69,8 @@ __AGGREGATE_VAR_INITIALIZATION__
 	}
 
 
+__DERIVED_INCREMENTAL_AGGREGATES_DECLS__
+
 	void task outQueueAppendTask()
 	{
 		if (outHead==outTail)
@@ -85,6 +87,7 @@ __AGGREGATE_VAR_INITIALIZATION__
 			outTail=0;
 		}
 
+__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__
 __CONSTRUCT_TUPLE__
 		outQueue[outTail].evalEpoch=currentEvalEpoch;
 

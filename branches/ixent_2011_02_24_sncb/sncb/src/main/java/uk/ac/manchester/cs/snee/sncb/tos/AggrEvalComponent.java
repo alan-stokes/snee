@@ -33,16 +33,12 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 
-import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
@@ -99,9 +95,12 @@ public class AggrEvalComponent extends NesCComponent implements
 					AggrUtils.generateVarsInit(attributes).toString());
 			replacements.put("__AGGREGATE_VAR_INCREMENT__",
 					AggrUtils.generateIncrementAggregates(attributes, false).toString());
-			final StringBuffer tupleConstructionBuff 
-				= CodeGenUtils.generateTupleConstruction(op, false);
-			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff.toString());
+			replacements.put("__DERIVED_INCREMENTAL_AGGREGATES_DECLS__", 
+					AggrUtils.generateDerivedIncrAggregatesDecls(op).toString());
+			replacements.put("__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__", 
+					AggrUtils.computeDerivedIncrAggregates(op).toString());
+			replacements.put("__CONSTRUCT_TUPLE__", 
+					AggrUtils.generateTuple(op).toString());
 		
 			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/aggrPart.nc",

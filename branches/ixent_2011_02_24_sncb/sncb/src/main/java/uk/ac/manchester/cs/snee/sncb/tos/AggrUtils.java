@@ -4,12 +4,12 @@ import java.util.List;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IncrementalAggregationAttribute;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregationOperator;
 
 public class AggrUtils {
@@ -60,45 +60,6 @@ public class AggrUtils {
 		return incrementAggregatesBuff;
     } 
     
-    /**
-     * Generates the instructions to increment the aggregates partial results.
-     * Used by the first of the three stages of aggregation.  
-     * @param op The operator representing the first stage of aggregation.
-     * @return The Nesc code. 
-     * @throws CodeGenerationException 
-     */
-/*    public static StringBuffer generateVarsIncrement(
-    	final SensornetIncrementalAggregationOperator op) throws CodeGenerationException {
-    	final StringBuffer incrementAggregatesBuff = new StringBuffer();
-    	final List <Attribute> attributes = op.getAttributes();
-    	final List <Attribute> input = op.getLeftChild().getAttributes();
-    	final List <AggregationExpression> aggregations 
-    		= op.getAggregates();
-
-    	//skip Attribute 0 which is EvalTime
-			for (int i = 1; i < attributes.size(); i++) {
-				Attribute attribute = attributes.get(i);
-				String attrName 
-					= CodeGenUtils.getNescAttrName(attribute);
-				AggregationExpression aggr = aggregations.get(i);
-				AggregationType type = aggr.getAggregationFunction();
-				Expression expression = aggr.getExpression();
-				if ((type == AggregationType.AVG) 
-						|| (type == AggregationType.SUM)) {
-					String expressionText = CodeGenUtils.getNescText(
-							expression, "inQueue[inHead].", null, input, null);
-					incrementAggregatesBuff.append("\t\t\t\t\t" 
-							+ attrName + " += " + expressionText + ";\n");
-				} else if ((type == AggregationType.COUNT)) {
-					incrementAggregatesBuff.append("\t\t\t\t\t"
-							+ attrName + "++;\n");
-				} else {
-					//Min and max to do.
-					throw new AssertionError("Code not finished " + type);
-				}		
-			}		
-			return incrementAggregatesBuff;
-    } */
 
     /**
      * Generates the instructions to increment the aggregates partial results.
@@ -154,7 +115,53 @@ public class AggrUtils {
     } 
 
 
-
+    public static StringBuffer generateDerivedIncrAggregatesDecls(SensornetAggrEvalOperator op) {
+    	final StringBuffer derivedAggregatesDeclsBuff = new StringBuffer();
+    	
+		List<AggregationExpression> aggregates = op.getAggregates();
+		
+		for (AggregationExpression aggr : aggregates) {
+			List<Attribute> attributes = aggr.getRequiredAttributes();
+			for (Attribute attr : attributes) {
+				String extentName = attr.getExtentName();
+				String schemaName = attr.getAttributeSchemaName();
+				AttributeType attrType = attr.getType();
+				AggregationFunction aggrFn = aggr.getAggregationFunction();
+				if ((aggrFn == AggregationFunction.AVG)) {
+					String averageVar = extentName+"_"+schemaName+"_avg";
+					final String nesCType = attrType.getNesCName();
+					derivedAggregatesDeclsBuff.append("\t"+nesCType+" "+averageVar+";\n");
+				}
+			}
+		}
+		return derivedAggregatesDeclsBuff;
+    }
+    
+    public static StringBuffer computeDerivedIncrAggregates(SensornetAggrEvalOperator op) {
+    	final StringBuffer derivedAggregatesBuff = new StringBuffer();
+    	
+		List<AggregationExpression> aggregates = op.getAggregates();
+		
+		for (AggregationExpression aggr : aggregates) {
+			List<Attribute> attributes = aggr.getRequiredAttributes();
+			for (Attribute attr : attributes) {
+				String extentName = attr.getExtentName();
+				String schemaName = attr.getAttributeSchemaName();
+				AttributeType attrType = attr.getType();
+				AggregationFunction aggrFn = aggr.getAggregationFunction();
+				if ((aggrFn == AggregationFunction.AVG)) {
+					String countVar = extentName+"_"+schemaName+"_count";
+					String sumVar = extentName+"_"+schemaName+"_sum";
+					String averageVar = extentName+"_"+schemaName+"_avg";
+					final String nesCType = attrType.getNesCName();
+					derivedAggregatesBuff.append("\t\t"+averageVar+
+							" = "+sumVar+" / "+countVar+";\n");
+				}
+			}
+		}
+		return derivedAggregatesBuff;
+    }
+    
     /**
      * Generates the tuple construction for partial aggregation operators. 
      * Used by the first two stages.

@@ -33,7 +33,6 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
@@ -102,10 +101,10 @@ public class AggrInitComponent extends NesCComponent implements
 					AggrUtils.generateVarDecls(attributes).toString());
 			replacements.put("__AGGREGATE_VAR_INITIALIZATION__",
 					AggrUtils.generateVarsInit(attributes).toString());
-//			replacements.put("__AGGREGATE_VAR_INCREMENT__",
-//					AggrUtils.generateVarsIncrement(this.op).toString());
 			replacements.put("__AGGREGATE_VAR_INCREMENT__",
 					AggrUtils.generateIncrementAggregates(attributes, true).toString());
+			replacements.put("__DERIVED_INCREMENTAL_AGGREGATES_DECLS__", "");
+			replacements.put("__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__", "");
 			replacements.put("__CONSTRUCT_TUPLE__",
 					AggrUtils.generateTuple(this.op).toString());
 			
