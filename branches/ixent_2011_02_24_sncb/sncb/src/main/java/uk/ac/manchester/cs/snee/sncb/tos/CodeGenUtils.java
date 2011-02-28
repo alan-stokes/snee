@@ -51,7 +51,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
-import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregationOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
@@ -363,7 +363,7 @@ public final class CodeGenUtils {
 			AggregationExpression aggregate 
 				= (AggregationExpression) expression; 
 			if (aggregate.getAggregationFunction() 
-					== AggregationType.AVG) {
+					== AggregationFunction.AVG) {
 				return "(" + Constants.PARTIAL_LOCALNAME + "_"
 					+ Constants.AVG_PARTIAL_HEAD 
 					+ aggregate.getShortName() + "/ "

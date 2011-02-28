@@ -36,7 +36,7 @@ package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
 
 /**
  * Temporary attribute used for incremental aggregations, e.g., count/sum when computing an average.
@@ -53,7 +53,7 @@ public class IncrementalAggregationAttribute extends DataAttribute {
 	/**
 	 * The type of aggregation function represented by this attribute.
 	 */
-	private AggregationType aggrFunction;
+	private AggregationFunction aggrFunction;
 	
 	/**
 	 * Construct a IncrementalAggregationAttribute instance
@@ -64,7 +64,7 @@ public class IncrementalAggregationAttribute extends DataAttribute {
 	 * @throws SchemaMetadataException
 	 */
 	public IncrementalAggregationAttribute(String extentName, String attrName,
-			AttributeType attrType, DataAttribute baseAttribute, AggregationType aggrFunction) 
+			AttributeType attrType, DataAttribute baseAttribute, AggregationFunction aggrFunction) 
 	throws SchemaMetadataException {
 		super(extentName, attrName, attrType);
 		this.baseAttribute = baseAttribute;
@@ -81,14 +81,14 @@ public class IncrementalAggregationAttribute extends DataAttribute {
 	 * @throws SchemaMetadataException
 	 */
 	public IncrementalAggregationAttribute(String extentName, String attrName,
-			String attrLabel, AttributeType attrType, DataAttribute baseAttribute, AggregationType aggrFunction) 
+			String attrLabel, AttributeType attrType, DataAttribute baseAttribute, AggregationFunction aggrFunction) 
 	throws SchemaMetadataException {
 		super(extentName, attrName, attrLabel, attrType);
 		this.baseAttribute = baseAttribute;
 		this.aggrFunction = aggrFunction;
 	}
 
-	public IncrementalAggregationAttribute(Attribute attr, DataAttribute baseAttribute, AggregationType aggrFunction) 
+	public IncrementalAggregationAttribute(Attribute attr, DataAttribute baseAttribute, AggregationFunction aggrFunction) 
 	throws SchemaMetadataException {
 		super(attr);
 	}
@@ -97,7 +97,7 @@ public class IncrementalAggregationAttribute extends DataAttribute {
 		return baseAttribute;
 	}
 
-	public AggregationType getAggrFunction() {
+	public AggregationFunction getAggrFunction() {
 		return aggrFunction;
 	}
 

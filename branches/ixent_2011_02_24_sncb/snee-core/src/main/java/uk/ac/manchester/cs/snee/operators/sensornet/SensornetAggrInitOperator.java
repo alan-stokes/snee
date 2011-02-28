@@ -16,7 +16,7 @@ import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
@@ -53,12 +53,12 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 				String extentName = attr.getExtentName();
 				String schemaName = attr.getAttributeSchemaName();
 				AttributeType attrType = attr.getType();
-				AggregationType aggrFn = aggr.getAggregationFunction();
-				if ((aggrFn == AggregationType.AVG) || (aggrFn == AggregationType.STDEV)) {
-					String newAttrName = schemaName+"_"+AggregationType.COUNT;
-					addAttribute(extentName, newAttrName, attrType, attr, AggregationType.COUNT);
-					String newAttrName2 = schemaName+"_"+AggregationType.SUM;
-					addAttribute(extentName, newAttrName2, attrType, attr, AggregationType.SUM);
+				AggregationFunction aggrFn = aggr.getAggregationFunction();
+				if ((aggrFn == AggregationFunction.AVG) || (aggrFn == AggregationFunction.STDEV)) {
+					String newAttrName = schemaName+"_"+AggregationFunction.COUNT;
+					addAttribute(extentName, newAttrName, attrType, attr, AggregationFunction.COUNT);
+					String newAttrName2 = schemaName+"_"+AggregationFunction.SUM;
+					addAttribute(extentName, newAttrName2, attrType, attr, AggregationFunction.SUM);
 				} else {
 					String newAttrName = schemaName+"_"+aggrFn;
 					addAttribute(extentName, newAttrName, attrType, attr, aggrFn);
@@ -68,7 +68,7 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 	}
 
     private void addAttribute(String extentName, String schemaName, AttributeType type,
-    		Attribute baseAttribute, AggregationType aggrFunction)
+    		Attribute baseAttribute, AggregationFunction aggrFunction)
     throws SchemaMetadataException {
     	//check for dups
     	for (Attribute oa: this.outputAttributes) {

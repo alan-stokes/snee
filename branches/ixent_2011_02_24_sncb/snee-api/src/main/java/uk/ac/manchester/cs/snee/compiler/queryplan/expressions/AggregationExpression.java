@@ -39,7 +39,7 @@ import java.util.List;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
 
 /** Expression to hold an aggregation. */
 public class AggregationExpression implements Expression {
@@ -59,12 +59,12 @@ public class AggregationExpression implements Expression {
 	private Expression inputExpression;
 	
 	/** The aggregation to be done. */
-	private AggregationType aggrFunction;
+	private AggregationFunction aggrFunction;
 
 	private AttributeType _returnType;
 	
 	public AggregationExpression(Expression inner, 
-			AggregationType aggrFn, AttributeType returnType) {
+			AggregationFunction aggrFn, AttributeType returnType) {
         inputExpression = inner;
         this.aggrFunction = aggrFn;
         _returnType = returnType;
@@ -85,7 +85,7 @@ public class AggregationExpression implements Expression {
 	 * Gets the type of the aggregation.
 	 * @return The type of the aggregation.
 	 */
-	public AggregationType getAggregationFunction() {
+	public AggregationFunction getAggregationFunction() {
 		return aggrFunction;
 	}
 	
@@ -96,10 +96,10 @@ public class AggregationExpression implements Expression {
 	 * @return TRUE if one or more of the aggregates need a count kept.
 	 */
 	public boolean needsCount() {
-		if (aggrFunction == AggregationType.AVG) {
+		if (aggrFunction == AggregationFunction.AVG) {
 			return true;
 		} 
-		if (aggrFunction == AggregationType.COUNT) {
+		if (aggrFunction == AggregationFunction.COUNT) {
 			return true;
 		}
 		return false;
@@ -112,10 +112,10 @@ public class AggregationExpression implements Expression {
 	 * @return TRUE if one or more of the aggregates need a count kept.
 	 */
 	public boolean needsSum() {
-		if (aggrFunction == AggregationType.AVG) {
+		if (aggrFunction == AggregationFunction.AVG) {
 			return true;
 		} 
-		if (aggrFunction == AggregationType.SUM) {
+		if (aggrFunction == AggregationFunction.SUM) {
 			return true;
 		}
 		return false;
@@ -123,9 +123,9 @@ public class AggregationExpression implements Expression {
 	
 	/* Used to decide whether an aggregation operator can be split */
 	public boolean canBeDoneIncrementally() {
-		if ((aggrFunction == AggregationType.AVG) || (aggrFunction == AggregationType.COUNT) ||
-				(aggrFunction == AggregationType.SUM) || (aggrFunction == AggregationType.MIN) ||
-				(aggrFunction == AggregationType.MAX) || (aggrFunction == AggregationType.STDEV)){
+		if ((aggrFunction == AggregationFunction.AVG) || (aggrFunction == AggregationFunction.COUNT) ||
+				(aggrFunction == AggregationFunction.SUM) || (aggrFunction == AggregationFunction.MIN) ||
+				(aggrFunction == AggregationFunction.MAX) || (aggrFunction == AggregationFunction.STDEV)){
 			return true;
 		}
 		return false;
@@ -143,7 +143,7 @@ public class AggregationExpression implements Expression {
 	 * @return A unique string name for this attribute.
 	 */
 	public String getShortName() {
-		if (aggrFunction == AggregationType.COUNT) {
+		if (aggrFunction == AggregationFunction.COUNT) {
 			return "count";
 		}
 		return aggrFunction.toString() + aggrID;		

@@ -34,7 +34,7 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
-import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
 import uk.ac.manchester.cs.snee.operators.logical.DStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.IStreamOperator;
@@ -1292,14 +1292,14 @@ public class Translator {
 			}
 			//FIXME: Not all arithmetic expressions are integers
 			expression = new AggregationExpression(inner, 
-					AggregationType.AVG, 
+					AggregationFunction.AVG, 
 					_types.getType("integer"));
 		} else if (ast.getText().equalsIgnoreCase("count")) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate count");
 			}
 			expression = new AggregationExpression(inner, 
-					AggregationType.COUNT,
+					AggregationFunction.COUNT,
 					_types.getType("integer"));
 		} else if ((ast.getText().equalsIgnoreCase("minimum")) || 
 				(ast.getText().equalsIgnoreCase("min"))) {
@@ -1308,7 +1308,7 @@ public class Translator {
 			}
 			//FIXME: Not all arithmetic expressions are integers
 			expression = new AggregationExpression(inner, 
-					AggregationType.MIN,
+					AggregationFunction.MIN,
 					_types.getType("integer"));
 		} else if (ast.getText().equalsIgnoreCase("stdev")) {
 			if (logger.isTraceEnabled()) {
@@ -1316,7 +1316,7 @@ public class Translator {
 			}
 			//FIXME: Not all arithmetic expressions are integers
 			expression = new AggregationExpression(inner,
-					AggregationType.STDEV, 
+					AggregationFunction.STDEV, 
 					_types.getType("integer"));
 		} else if ((ast.getText().equalsIgnoreCase("max")) ||
 				(ast.getText().equalsIgnoreCase("maximum"))) {
@@ -1325,7 +1325,7 @@ public class Translator {
 			}
 			//FIXME: Not all arithmetic expressions are integers
 			expression = new AggregationExpression(inner,
-					AggregationType.MAX, 
+					AggregationFunction.MAX, 
 					_types.getType("integer"));
 		} else if ((ast.getText().equalsIgnoreCase("sqr")) ||
 				(ast.getText().equalsIgnoreCase("square"))) {
@@ -1353,7 +1353,7 @@ public class Translator {
 			}
 			//FIXME: Not all arithmetic expressions are integers
 			expression = new AggregationExpression(inner, 
-					AggregationType.SUM, 
+					AggregationFunction.SUM, 
 					_types.getType("integer"));
 		} else { 
 			String message = "Unprogrammed Function name " +

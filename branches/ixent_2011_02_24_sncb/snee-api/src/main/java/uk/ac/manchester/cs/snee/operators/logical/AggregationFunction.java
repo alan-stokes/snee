@@ -40,7 +40,7 @@ package uk.ac.manchester.cs.snee.operators.logical;
  * @author Christian
  *
  */
-public enum AggregationType {
+public enum AggregationFunction {
 	/** Count of all values. */
 	COUNT ("count"),	
 	/** Sum of all values. */
@@ -61,7 +61,7 @@ public enum AggregationType {
 	 * 
 	 * @param s One of the Enum Values
 	 */
-	private AggregationType(String s) {
+	private AggregationFunction(String s) {
 		this.strRep = s;
 	}	
 	
@@ -83,7 +83,7 @@ public enum AggregationType {
 	 * type include AVG and STDEV.
 	 * @return
 	 */
-	public boolean isPrimitiveType(AggregationType aggrFn) {
+	public boolean isPrimitiveType(AggregationFunction aggrFn) {
 		if ((aggrFn==SUM) || (aggrFn==COUNT) || (aggrFn==MIN) || (aggrFn==MAX)) {
 		return true;
 		}

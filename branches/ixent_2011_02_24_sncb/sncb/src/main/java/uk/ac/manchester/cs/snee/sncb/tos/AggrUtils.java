@@ -9,7 +9,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IncrementalAggreg
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregationOperator;
 
 public class AggrUtils {
@@ -116,7 +116,7 @@ public class AggrUtils {
        				(IncrementalAggregationAttribute)attr;		
 				String attrName 
 					= CodeGenUtils.getNescAttrName(incrAttr);
-				AggregationType aggrFn = incrAttr.getAggrFunction();
+				AggregationFunction aggrFn = incrAttr.getAggrFunction();
 				
 				//init uses base attr name as input (e.g., light)
 				//merge/eval use incremental attr name as input (e.g., light_sum)
@@ -126,19 +126,19 @@ public class AggrUtils {
 					inputAttrName = baseAttr.getExtentName()+"_"+baseAttr.getAttributeSchemaName();
 				}
 				
-				if ((aggrFn == AggregationType.COUNT)
-						|| (aggrFn == AggregationType.SUM)) {
+				if ((aggrFn == AggregationFunction.COUNT)
+						|| (aggrFn == AggregationFunction.SUM)) {
 					incrementAggregatesBuff.append("\t\t\t\t" 
 							+ attrName + " += inQueue[inHead]." 
 							+ inputAttrName + ";\n");
 				} 
 				
 				String comp = "<";
-				if (aggrFn==AggregationType.MAX) {
+				if (aggrFn==AggregationFunction.MAX) {
 					comp = ">";
 				}
-				if (aggrFn == AggregationType.MIN || aggrFn == 
-					AggregationType.MAX) {
+				if (aggrFn == AggregationFunction.MIN || aggrFn == 
+					AggregationFunction.MAX) {
 					incrementAggregatesBuff.append("\t\t\t\tif " +
 							"((tuplesReceived==FALSE) || (inQueue[inHead]."+
 							inputAttrName+" "+comp+" " + attrName + "))\n");
