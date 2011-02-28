@@ -14,7 +14,7 @@ __HEADER__
 	int8_t inHead;
 	int8_t inTail;
 	uint8_t inQueueSize;
-__INCREMENTAL_AGGREGATE_VARIABLE_DECLS__
+__AGGREGATE_VAR_DECLS__
 
 	inline void initialize()
 	{
@@ -22,7 +22,7 @@ __INCREMENTAL_AGGREGATE_VARIABLE_DECLS__
 		{
 			outHead=-1;
 			outTail=0;
-__SET_AGGREGATES_TO_ZERO__
+__AGGREGATE_VAR_INITIALIZATION__
 			currentEvalEpoch=0;
 		}
 	}
@@ -100,7 +100,7 @@ __CONSTRUCT_TUPLE__
 		{
 			do
 			{
-__INCREMENT_AGGREGATES__
+__AGGREGATE_VAR_INCREMENT__
 				inHead=(inHead+1)%inQueueSize;
 			}
 			while(inHead!=inTail);

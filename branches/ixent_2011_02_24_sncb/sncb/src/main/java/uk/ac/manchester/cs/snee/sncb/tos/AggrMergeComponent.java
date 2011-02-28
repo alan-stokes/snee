@@ -89,15 +89,15 @@ public class AggrMergeComponent extends NesCComponent implements
 					.generateOutputTuplePtrType(this.op.getLeftChild()));
 		
 			List <Attribute> attributes = op.getAttributes();
-			replacements.put("__VARIABLES_TO_BE_AGGREGATED__",
-					AggrUtils.getAggrVariablesDecls(attributes).toString());
-			replacements.put("__SET_AGGREGATES_TO_ZERO__",
-					AggrUtils.getAggregateVarsInitialization(attributes).toString());
-			replacements.put("__INCREMENT_AGGREGATES__",
+			replacements.put("__AGGREGATE_VAR_DECLS__",
+					AggrUtils.generateVarDecls(attributes).toString());
+			replacements.put("__AGGREGATE_VAR_INITIALIZATION__",
+					AggrUtils.generateVarsInit(attributes).toString());
+			replacements.put("__AGGREGATE_VAR_INCREMENT__",
 					AggrUtils.generateIncrementAggregates(attributes, 
 					this.op).toString());
 			replacements.put("__CONSTRUCT_TUPLE__",
-					AggrUtils.generateTupleFromAggregates(this.op).toString());
+					AggrUtils.generateTuple(this.op).toString());
 		
 			
 			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());

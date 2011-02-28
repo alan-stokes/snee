@@ -14,7 +14,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregat
 
 public class AggrUtils {
 
-    public static StringBuffer getAggrVariablesDecls(final List<Attribute> attributes) 
+    public static StringBuffer generateVarDecls(final List<Attribute> attributes) 
     throws SchemaMetadataException, TypeMappingException {
        	final StringBuffer aggrVariablesBuff = new StringBuffer();
        	for (Attribute attr: attributes) {
@@ -40,7 +40,7 @@ public class AggrUtils {
      * @param op The operator code is being generated for.
      * @return The NesC code.
      */
-    public static StringBuffer getAggregateVarsInitialization(
+    public static StringBuffer generateVarsInit(
     		final List<Attribute> attributes) {
     	final StringBuffer incrementAggregatesBuff = new StringBuffer();
 
@@ -66,7 +66,7 @@ public class AggrUtils {
      * @return The Nesc code. 
      * @throws CodeGenerationException 
      */
-    public static StringBuffer generateIncrementAggregates(
+    public static StringBuffer generateVarsIncrement(
     	final SensornetIncrementalAggregationOperator op) throws CodeGenerationException {
     	final StringBuffer incrementAggregatesBuff = new StringBuffer();
     	final List <Attribute> attributes = op.getAttributes();
@@ -163,7 +163,7 @@ public class AggrUtils {
      * 
      * @return NesC tuple construction code.
      */
-    public static StringBuffer generateTupleFromAggregates(
+    public static StringBuffer generateTuple(
     	final SensornetIncrementalAggregationOperator op) {
     	final StringBuffer incrementAggregatesBuff = new StringBuffer();
     	final List <Attribute> attributes = op.getAttributes();

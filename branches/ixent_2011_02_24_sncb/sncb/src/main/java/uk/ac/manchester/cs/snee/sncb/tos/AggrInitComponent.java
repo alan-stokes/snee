@@ -98,14 +98,14 @@ public class AggrInitComponent extends NesCComponent implements
 				.generateOutputTuplePtrType(this.op.getLeftChild()));
 		
 			List <Attribute> attributes = op.getAttributes();
-			replacements.put("__INCREMENTAL_AGGREGATE_VARIABLE_DECLS__",
-					AggrUtils.getAggrVariablesDecls(attributes).toString());
-			replacements.put("__SET_AGGREGATES_TO_ZERO__",
-					AggrUtils.getAggregateVarsInitialization(attributes).toString());
-			replacements.put("__INCREMENT_AGGREGATES__",
-					AggrUtils.generateIncrementAggregates(this.op).toString());
+			replacements.put("__AGGREGATE_VAR_DECLS__",
+					AggrUtils.generateVarDecls(attributes).toString());
+			replacements.put("__AGGREGATE_VAR_INITIALIZATION__",
+					AggrUtils.generateVarsInit(attributes).toString());
+			replacements.put("__AGGREGATE_VAR_INCREMENT__",
+					AggrUtils.generateVarsIncrement(this.op).toString());
 			replacements.put("__CONSTRUCT_TUPLE__",
-					AggrUtils.generateTupleFromAggregates(this.op).toString());
+					AggrUtils.generateTuple(this.op).toString());
 			
 			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/aggrPart.nc",

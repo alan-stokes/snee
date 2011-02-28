@@ -95,7 +95,7 @@ public class AggrSingleStepComponent extends NesCComponent implements
 			SensornetIncrementalAggregationOperator input = getIterate();
 			List <Attribute> attributes = input.getAttributes();
 			replacements.put("__VARIABLES_TO_BE_AGGREGATED__",
-					AggrUtils.getAggrVariablesDecls(attributes).toString());
+					AggrUtils.generateVarDecls(attributes).toString());
 //			replacements.put("__SET_AGGREGATES_TO_ZERO__",
 //					CodeGenUtils.generateSetAggregatesToZero(attributes, 
 //					(SensornetIncrementalAggregationOperator)this.op).toString());

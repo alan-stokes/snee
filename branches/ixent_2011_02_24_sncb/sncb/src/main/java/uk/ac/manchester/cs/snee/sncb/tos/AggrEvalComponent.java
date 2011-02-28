@@ -93,11 +93,11 @@ public class AggrEvalComponent extends NesCComponent implements
 		
 			SensornetIncrementalAggregationOperator input = getIterate();
 			List <Attribute> attributes = input.getAttributes();
-			replacements.put("__VARIABLES_TO_BE_AGGREGATED__",
-					AggrUtils.getAggrVariablesDecls(attributes).toString());
-			replacements.put("__SET_AGGREGATES_TO_ZERO__",
-					AggrUtils.getAggregateVarsInitialization(attributes).toString());
-			replacements.put("__INCREMENT_AGGREGATES__",
+			replacements.put("__AGGREGATE_VAR_DECLS__",
+					AggrUtils.generateVarDecls(attributes).toString());
+			replacements.put("__AGGREGATE_VAR_INITIALIZATION__",
+					AggrUtils.generateVarsInit(attributes).toString());
+			replacements.put("__AGGREGATE_VAR_INCREMENT__",
 					AggrUtils.generateIncrementAggregates(attributes, 
 							(SensornetIncrementalAggregationOperator)this.op).toString());
 			final StringBuffer tupleConstructionBuff 
