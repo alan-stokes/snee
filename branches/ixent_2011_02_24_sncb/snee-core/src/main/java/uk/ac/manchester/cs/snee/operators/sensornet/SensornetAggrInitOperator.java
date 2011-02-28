@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -22,6 +23,8 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 
 	private static Logger logger 
 	= Logger.getLogger(SensornetAggrInitOperator.class.getName());
+	
+	private ArrayList<Attribute> outputAttributes = new ArrayList<Attribute>();
 	
 	public SensornetAggrInitOperator(LogicalOperator op, CostParameters costParams) throws SNEEException,
 			SchemaMetadataException {
@@ -91,4 +94,8 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 			+ costParams.getCopyTuple();
     }
     
+	//not delegated in this case
+	public List<Attribute> getAttributes() {
+		return this.outputAttributes;
+	}
 }

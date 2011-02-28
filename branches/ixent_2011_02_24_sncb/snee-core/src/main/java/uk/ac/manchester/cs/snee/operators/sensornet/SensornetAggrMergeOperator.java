@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -32,6 +33,7 @@ public class SensornetAggrMergeOperator extends SensornetIncrementalAggregationO
 		}	
 		this.setNesCTemplateName("aggriter");
 		this.setOperatorName("SensornetAGGRIter");
+//		this.outputAttributes = (ArrayList<Attribute>) this.getLeftChild().getAttributes();
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetAggrMergeOperator()");
 		}		

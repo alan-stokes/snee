@@ -29,8 +29,6 @@ public abstract class SensornetIncrementalAggregationOperator extends SensornetO
 	
 	AggregationOperator aggrOp;
 	
-	ArrayList<Attribute> outputAttributes = new ArrayList<Attribute>();
-	
 	public SensornetIncrementalAggregationOperator(LogicalOperator op,
 	CostParameters costParams) throws SNEEException,
 			SchemaMetadataException {
@@ -107,14 +105,9 @@ public abstract class SensornetIncrementalAggregationOperator extends SensornetO
 		return this.aggrOp.getAggregates();
 	}
 	
-	//not delegated in this case
-	public List<Attribute> getAttributes() {
-		return this.outputAttributes;
-	}
-	
 	public String getTupleAttributesStr(int maxPerLine) 
 	throws SchemaMetadataException, TypeMappingException {
-		return LogicalOperatorImpl.getTupleAttributesStr(this.outputAttributes, maxPerLine);
+		return LogicalOperatorImpl.getTupleAttributesStr(this.getAttributes(), maxPerLine);
 	}
     
 }
