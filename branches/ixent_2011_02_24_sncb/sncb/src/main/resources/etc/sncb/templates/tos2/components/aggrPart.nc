@@ -14,7 +14,7 @@ __HEADER__
 	int8_t inHead;
 	int8_t inTail;
 	uint8_t inQueueSize;
-__VARIABLES_TO_BE_AGGREGATED__
+__INCREMENTAL_AGGREGATE_VARIABLE_DECLS__
 
 	inline void initialize()
 	{

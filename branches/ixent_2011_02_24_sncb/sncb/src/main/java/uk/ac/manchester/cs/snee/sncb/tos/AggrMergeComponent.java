@@ -90,15 +90,14 @@ public class AggrMergeComponent extends NesCComponent implements
 		
 			List <Attribute> attributes = op.getAttributes();
 			replacements.put("__VARIABLES_TO_BE_AGGREGATED__",
-					CodeGenUtils.getPartialAggrVariables(attributes).toString());
+					AggrUtils.getAggrVariablesDecls(attributes).toString());
 			replacements.put("__SET_AGGREGATES_TO_ZERO__",
-					CodeGenUtils.generateSetAggregatesToZero(attributes, 
-					this.op).toString());
+					AggrUtils.getAggregateVarsInitialization(attributes).toString());
 			replacements.put("__INCREMENT_AGGREGATES__",
-					CodeGenUtils.generateIncrementAggregates(attributes, 
+					AggrUtils.generateIncrementAggregates(attributes, 
 					this.op).toString());
 			replacements.put("__CONSTRUCT_TUPLE__",
-					CodeGenUtils.generateTupleFromAggregates(this.op).toString());
+					AggrUtils.generateTupleFromAggregates(this.op).toString());
 		
 			
 			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
