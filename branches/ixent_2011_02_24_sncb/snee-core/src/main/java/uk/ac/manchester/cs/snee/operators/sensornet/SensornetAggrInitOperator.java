@@ -11,6 +11,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IncrementalAggregationAttribute;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -55,18 +56,19 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 				AggregationType aggrFn = aggr.getAggregationFunction();
 				if ((aggrFn == AggregationType.AVG) || (aggrFn == AggregationType.STDEV)) {
 					String newAttrName = schemaName+"_"+AggregationType.COUNT;
-					addAttribute(extentName, newAttrName, attrType);
+					addAttribute(extentName, newAttrName, attrType, attr, aggrFn);
 					String newAttrName2 = schemaName+"_"+AggregationType.SUM;
-					addAttribute(extentName, newAttrName2, attrType);
+					addAttribute(extentName, newAttrName2, attrType, attr, aggrFn);
 				} else {
 					String newAttrName = schemaName+"_"+aggrFn;
-					addAttribute(extentName, newAttrName, attrType);
+					addAttribute(extentName, newAttrName, attrType, attr, aggrFn);
 				}
 			}			
 		}		
 	}
 
-    private void addAttribute(String extentName, String schemaName, AttributeType type)
+    private void addAttribute(String extentName, String schemaName, AttributeType type,
+    		Attribute baseAttribute, AggregationType aggrFunction)
     throws SchemaMetadataException {
     	//check for dups
     	for (Attribute oa: this.outputAttributes) {
@@ -76,7 +78,8 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
     		}
     	}
     	
-		Attribute newAttr = new DataAttribute(extentName, schemaName, type);
+		Attribute newAttr = new IncrementalAggregationAttribute(extentName, schemaName, 
+				type, (DataAttribute) baseAttribute, aggrFunction);
 		this.outputAttributes.add(newAttr); 
     }
     
