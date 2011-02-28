@@ -98,8 +98,7 @@ public class AggrEvalComponent extends NesCComponent implements
 			replacements.put("__AGGREGATE_VAR_INITIALIZATION__",
 					AggrUtils.generateVarsInit(attributes).toString());
 			replacements.put("__AGGREGATE_VAR_INCREMENT__",
-					AggrUtils.generateIncrementAggregates(attributes, 
-							(SensornetIncrementalAggregationOperator)this.op).toString());
+					AggrUtils.generateIncrementAggregates(attributes, false).toString());
 			final StringBuffer tupleConstructionBuff 
 				= CodeGenUtils.generateTupleConstruction(op, false);
 			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff.toString());

@@ -102,8 +102,10 @@ public class AggrInitComponent extends NesCComponent implements
 					AggrUtils.generateVarDecls(attributes).toString());
 			replacements.put("__AGGREGATE_VAR_INITIALIZATION__",
 					AggrUtils.generateVarsInit(attributes).toString());
+//			replacements.put("__AGGREGATE_VAR_INCREMENT__",
+//					AggrUtils.generateVarsIncrement(this.op).toString());
 			replacements.put("__AGGREGATE_VAR_INCREMENT__",
-					AggrUtils.generateVarsIncrement(this.op).toString());
+					AggrUtils.generateIncrementAggregates(attributes, true).toString());
 			replacements.put("__CONSTRUCT_TUPLE__",
 					AggrUtils.generateTuple(this.op).toString());
 			

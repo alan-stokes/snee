@@ -56,9 +56,9 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 				AggregationType aggrFn = aggr.getAggregationFunction();
 				if ((aggrFn == AggregationType.AVG) || (aggrFn == AggregationType.STDEV)) {
 					String newAttrName = schemaName+"_"+AggregationType.COUNT;
-					addAttribute(extentName, newAttrName, attrType, attr, aggrFn);
+					addAttribute(extentName, newAttrName, attrType, attr, AggregationType.COUNT);
 					String newAttrName2 = schemaName+"_"+AggregationType.SUM;
-					addAttribute(extentName, newAttrName2, attrType, attr, aggrFn);
+					addAttribute(extentName, newAttrName2, attrType, attr, AggregationType.SUM);
 				} else {
 					String newAttrName = schemaName+"_"+aggrFn;
 					addAttribute(extentName, newAttrName, attrType, attr, aggrFn);

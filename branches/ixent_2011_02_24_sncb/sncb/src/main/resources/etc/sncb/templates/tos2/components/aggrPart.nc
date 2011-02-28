@@ -22,6 +22,7 @@ __AGGREGATE_VAR_DECLS__
 		{
 			outHead=-1;
 			outTail=0;
+
 __AGGREGATE_VAR_INITIALIZATION__
 			currentEvalEpoch=0;
 		}
@@ -73,9 +74,10 @@ __AGGREGATE_VAR_INITIALIZATION__
 		if (outHead==outTail)
 		{
 			outHead= outHead+1;
-			if (outHead == OUT_QUEUE_CARD) {
+			if (outHead == OUT_QUEUE_CARD) 
+			{
 			   outHead = 0;
-		   }
+			}
 		}
 		if (outHead ==-1)
 		{
@@ -87,9 +89,10 @@ __CONSTRUCT_TUPLE__
 		outQueue[outTail].evalEpoch=currentEvalEpoch;
 
 		outTail= outTail+1;
-		if (outTail == OUT_QUEUE_CARD) {
-		   outTail = 0;
-        }
+		if (outTail == OUT_QUEUE_CARD) 
+		{
+			outTail = 0;
+        	}
 		dbg("DBG_USR1", "Performing aggregation\n");
 		post signalDoneTask();
 	}
