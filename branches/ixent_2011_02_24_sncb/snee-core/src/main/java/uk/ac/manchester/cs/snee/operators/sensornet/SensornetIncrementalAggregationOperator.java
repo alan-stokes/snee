@@ -20,6 +20,7 @@ import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperatorImpl;
 
 public abstract class SensornetIncrementalAggregationOperator extends SensornetOperatorImpl {
 
@@ -27,6 +28,8 @@ public abstract class SensornetIncrementalAggregationOperator extends SensornetO
 	= Logger.getLogger(SensornetIncrementalAggregationOperator.class.getName());
 	
 	AggregationOperator aggrOp;
+	
+	ArrayList<Attribute> outputAttributes = new ArrayList<Attribute>();
 	
 	public SensornetIncrementalAggregationOperator(LogicalOperator op,
 	CostParameters costParams) throws SNEEException,
@@ -103,4 +106,15 @@ public abstract class SensornetIncrementalAggregationOperator extends SensornetO
 	public List<AggregationExpression> getAggregates() {
 		return this.aggrOp.getAggregates();
 	}
+	
+	//not delegated in this case
+	public List<Attribute> getAttributes() {
+		return this.outputAttributes;
+	}
+	
+	public String getTupleAttributesStr(int maxPerLine) 
+	throws SchemaMetadataException, TypeMappingException {
+		return LogicalOperatorImpl.getTupleAttributesStr(this.outputAttributes, maxPerLine);
+	}
+    
 }

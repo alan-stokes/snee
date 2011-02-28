@@ -1,9 +1,6 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.jar.Attributes;
 
 import org.apache.log4j.Logger;
 
@@ -13,27 +10,18 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
-import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
-import uk.ac.manchester.cs.snee.operators.logical.LogicalOperatorImpl;
 
 public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOperator {
 
 	private static Logger logger 
 	= Logger.getLogger(SensornetAggrInitOperator.class.getName());
-	
-	ArrayList<Attribute> outputAttributes = new ArrayList<Attribute>();
 	
 	public SensornetAggrInitOperator(LogicalOperator op, CostParameters costParams) throws SNEEException,
 			SchemaMetadataException {
@@ -102,14 +90,5 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 			+ costParams.getDoCalculation() * tuples
 			+ costParams.getCopyTuple();
     }
-    
-	public List<Attribute> getAttributes() {
-		return this.outputAttributes;
-	}
-	
-	public String getTupleAttributesStr(int maxPerLine) 
-	throws SchemaMetadataException, TypeMappingException {
-		return LogicalOperatorImpl.getTupleAttributesStr(this.outputAttributes, maxPerLine);
-	}
     
 }
