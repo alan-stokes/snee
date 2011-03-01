@@ -718,8 +718,26 @@ public class InstanceWhereSchedular
   {
     removeRedundantAggrIterOpInstances();
     removeRedundantSiblingOpInstances();  
+    removeRedundantAggrIterOpAfterInitMergeInstances();
   }
    
+  private void removeRedundantAggrIterOpAfterInitMergeInstances() 
+  throws OptimizationException
+  {
+    Iterator<InstanceOperator> opInstIter = instanceDAF.iterator(TraversalOrder.POST_ORDER);
+    while (opInstIter.hasNext()) 
+    {
+      InstanceOperator operator = opInstIter.next();
+      if(operator.getInstanceOperator() instanceof SensornetAggrMergeOperator)
+      {
+        if(operator.getInDegree() == 1)
+        {
+          instanceDAF.removeOpInst(operator);
+        }
+      }
+    }
+  }
+
   private void removeRedundantSiblingOpInstances() 
   throws OptimizationException
   {
