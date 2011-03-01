@@ -379,7 +379,7 @@ public class InstanceWhereSchedular
           if(checkArray(operatorsOnSite, childOperatorInstances))
             satisifiedSearch++;
         }
-        if(satisifiedSearch == 2)//found two instances which fit criteria
+        if(satisifiedSearch >= 2)//found two instances which fit criteria
         {
           //assign instance to this site
           instanceDAF.assign(instance, currentSite); 
