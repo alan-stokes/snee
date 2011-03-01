@@ -41,13 +41,13 @@ public class InstanceFragment
   /**
    * The output exchange operator of this fragment (currently, there can only be one).
    */
-  protected ExchangePart parentExchange;
+  protected InstanceExchangePart parentExchange;
 
   /**
    * The input exchange operators of this fragment.
    */
-  protected  ArrayList<ExchangePart> childExchanges = 
-    new ArrayList<ExchangePart>();
+  protected  ArrayList<InstanceExchangePart> childExchanges = 
+    new ArrayList<InstanceExchangePart>();
 
   /**
    * The root operator of the fragment
@@ -71,7 +71,9 @@ public class InstanceFragment
   
   public boolean isRemote(InstanceFragment other)
   {
-    return this.site.getID().equals(other.site.getID());
+	Integer thisSiteID = Integer.parseInt(this.site.getID());
+	Integer otherSiteID = Integer.parseInt(other.site.getID());
+    return !thisSiteID.equals(otherSiteID);
   }
   
   
@@ -176,7 +178,7 @@ public class InstanceFragment
   /**
    * @return  the child exchange operators of the fragment
    */
-  public final ArrayList<ExchangePart> getChildExchangeOperators() {
+  public final ArrayList<InstanceExchangePart> getChildExchangeOperators() {
     return this.childExchanges;
   }
 
@@ -205,7 +207,7 @@ public class InstanceFragment
   /**
    * @return  the parent exchange operators of the fragment
    */
-  public final ExchangePart getParentExchangeOperator() {
+  public final InstanceExchangePart getParentExchangeOperator() {
     return this.parentExchange;
   }
 
@@ -214,7 +216,7 @@ public class InstanceFragment
    * @param i   the positition of the child exchange operator
    * @return    the exchange operator
    */
-  public final ExchangePart getChildExchangeOperator(final int i) {
+  public final InstanceExchangePart getChildExchangeOperator(final int i) {
     return this.childExchanges.get(i);
   }
 
@@ -307,7 +309,7 @@ return found;
   }
 
   for (int n = 0; n < op.getInDegree(); n++) {
-      if (!(op.getInput(n) instanceof SensornetExchangeOperator)) {
+      if (this.operators.contains(op.getInput(n))) {
         this.doOperatorIterator((InstanceOperator)op.getInput(n), 
             opList, traversalOrder);
       }
@@ -334,6 +336,13 @@ return found;
   return opList.iterator();
   }
 
+  //get lowest operator
+  public InstanceOperator getLowestOperator()
+  {
+	  Iterator<InstanceOperator> iterator = this.operatorIterator(TraversalOrder.POST_ORDER);
+	  return iterator.next();
+  }
+ 
   /** 
    * Calculates the physical size of the state of the operators in this 
    * fragment.  Does not include the size of the exchange components 
@@ -400,11 +409,11 @@ return total;
   return total;
   }
 
-  public final void setParentExchange(final ExchangePart p) {
+  public final void setParentExchange(final InstanceExchangePart p) {
 this.parentExchange = p;
   }
 
-  public final void addChildExchange(final ExchangePart c) {
+  public final void addChildExchange(final InstanceExchangePart c) {
 if (!this.childExchanges.contains(c)) {
     this.childExchanges.add(c);
 }

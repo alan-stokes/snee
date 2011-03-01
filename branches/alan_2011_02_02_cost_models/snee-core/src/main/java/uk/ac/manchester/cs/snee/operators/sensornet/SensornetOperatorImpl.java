@@ -684,32 +684,4 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 	public boolean isRecursive() {
 		return this.getLogicalOperator().isRecursive();
 	}
-	
-	/**
-	 * selectivity calculation which determines how many tuples would pass a given run
-	 * @return selectivity value ranging between 0 and 1 where 0 is no tuples pass and 1 is all
-	 */
-	public float selectivity()
-	{
-		/**
-		 * requires use of expression based predicate at some point, but currently maximum 
-		 * selectivity is assumed
-		 */
-		return 1;
-	}
-	
-  public float getInstanceInputCardinality(Site node, InstanceDAF daf, int index, long beta) 
-  throws OptimizationException 
-  {
-    float total = 0;
-	  SensornetOperator inputOp = (SensornetOperator)this.getInput(index);
-	  Iterator<Site> inputs;
-	  inputs = daf.getInputOperatorInstanceSites(this, node, index);
-	
-	  while (inputs.hasNext()) 
-  	{
-	    total = total + inputOp.getInstanceCardinality(inputs.next(), daf, beta);
-	  }
-	  return total;
-  }
 }

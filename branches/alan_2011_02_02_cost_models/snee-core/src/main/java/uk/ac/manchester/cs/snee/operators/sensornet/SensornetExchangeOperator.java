@@ -221,18 +221,4 @@ public class SensornetExchangeOperator extends SensornetOperatorImpl {
     		 final Site node, final DAF daf) {
      	throw new AssertionError("Unexpected method call");
     }
-
-	@Override
-	/** {@inheritDoc} */
-	public float getInstanceCardinality(Site node, InstanceDAF daf, long beta)
-	throws OptimizationException 
-	{System.out.println("within a exchange object");
-    /*needs to iterate over child operators for as mnay times the bufferering factor*/
-    float tuples = 0;
-    for(int iteration = 0; iteration < beta; iteration++)
-    {
-      tuples += getInstanceInputCardinality(node, daf, 0, beta);
-    }
-    return tuples;
-	}
 }

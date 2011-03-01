@@ -137,11 +137,10 @@ public class SourcePlanner {
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doSensorNetworkSourcePlanning()");
 		
-    //costModel.addInstanceDAF(instanceWhere.getInstanceDAF());
-    //costModel.addRoutingTree(rt);
-    //costModel.addAgenda(agenda);
-    //float card = costModel.runCardinality();
-    //System.out.println("the cardinality of this query per agenda cycle is" + card); 
+    costModel.addInstanceDAF(instanceWhere.getInstanceDAF());
+    costModel.addRoutingTree(rt);
+    costModel.addAgenda(agenda);
+    costModel.runCardinality();
 		return qep;
 	}
 	

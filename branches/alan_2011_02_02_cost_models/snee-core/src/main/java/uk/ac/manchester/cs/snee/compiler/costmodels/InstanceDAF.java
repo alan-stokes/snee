@@ -5,7 +5,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -15,6 +17,7 @@ import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SNEEAlgebraicForm;
@@ -65,10 +68,7 @@ public class InstanceDAF extends SNEEAlgebraicForm
      logger.debug("RETURN fragmentIterator()");
     return fragList.iterator();
    }
-  
-  
-  
-  
+
   private void doFragmentIterator(InstanceFragment frag,
       ArrayList<InstanceFragment> fragList, TraversalOrder traversalOrder)
   {
@@ -214,43 +214,6 @@ public class InstanceDAF extends SNEEAlgebraicForm
         }
         out.println("}");
         out.close();
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        /* proper way to draw edges. but doesn't work here for some reason
-        //draw edges
-        Iterator<Node> opIterator = instanceOperatorTree.nodeIterator(TraversalOrder.POST_ORDER);
-        while (opIterator.hasNext()) {
-          InstanceOperator instanceOp = (InstanceOperator) opIterator.next();
-          LogicalOperator op = instanceOp.getInstanceOperator().getLogicalOperator();
-          Iterator<LogicalOperator> childOpIter = op.childOperatorIterator();
-          while (childOpIter.hasNext()) {
-            LogicalOperator childOp = childOpIter.next();
-            out.print("\"" + childOp.getID() + "\"" + edgeSymbol + "\""
-                + op.getID() + "\" ");        
-            out.print("[fontsize=9 label = \" ");
-            try {
-              if (showTupleTypes) {
-                out.print("type: " + 
-                  childOp.getTupleAttributesStr(3) + " \\n");
-              }
-            } catch (TypeMappingException e1) {
-              String msg = "Problem getting tuple attributes. " + e1;
-              logger.warn(msg);
-            }
-            out.print("\"];\n");
-          }
-        }
-        out.println("}");
-        out.close();*/
 
     } 
     catch (IOException e) 
@@ -259,6 +222,92 @@ public class InstanceDAF extends SNEEAlgebraicForm
         System.err.println("Export failed: " + e.toString());
     }
   }
+  
+  public void exportAsDotFileWithFrags(final String fname, final String label, boolean exchangesOnSites)
+  {
+	  try
+	  {
+	    //create writer
+	    PrintWriter out = new PrintWriter(new BufferedWriter( new FileWriter(fname)));
+	    //create blurb
+	    out.println("digraph \"" + (String) instanceOperatorTree.getName() + "\" {");
+      out.println("label = \"" + label + "\";");
+      out.println("rankdir=\"BT\";");
+      out.println("compound=\"true\";");
+      //itterate though sites in routing tree (depth to shallow)
+      Iterator<Site> siteIterator = rt.siteIterator(TraversalOrder.POST_ORDER);
+      while(siteIterator.hasNext())
+      {//for each site do blurb and then go though fragments
+    	  Site currentSite = siteIterator.next();
+    	  out.println("subgraph cluster_s" + currentSite.getID() + " {");
+    	  out.println("style=\"rounded,dotted\"");
+    	  out.println("color=blue;");
+    	  //get fragments within site
+    	  Iterator<InstanceFragment> fragmentIterator = fragments.iterator();
+    	  while(fragmentIterator.hasNext())
+    	  {
+    		  InstanceFragment currentFrag = fragmentIterator.next();
+    		  if(currentFrag.getSite().getID().equals(currentSite.getID()))
+    		  { //produce blurb
+      		  out.println("subgraph cluster_f" + currentFrag.getID() + " {");
+      		  out.println("style=\"rounded,dashed\"");
+      	    out.println("color=red;");
+      	    //go though operators printing ids
+      	    Iterator<InstanceOperator> operatorIterator = currentFrag.operatorIterator(TraversalOrder.POST_ORDER);
+      	    while(operatorIterator.hasNext())
+      	    {
+      	      InstanceOperator currentOperator = operatorIterator.next();
+      	      out.println("\"" + currentOperator.getID() + "\" ;");
+      	    }
+      	    //output bottom blurb of a cluster
+      	    out.println("fontsize=9;");
+      	    out.println("fontcolor=red");
+      	    out.println("labelloc=t;");
+      	    out.println("labeljust=r;");
+      	    out.println("label =\"frag " + currentFrag.getID() + "\"");
+      	    out.println("}"); 
+      		}
+      	}
+      	//add exchanges if needed
+      	if(exchangesOnSites)
+      	{
+      	  HashSet<InstanceExchangePart> exchangeParts = currentSite.getInstanceExchangeComponents();
+      	  Iterator<InstanceExchangePart> exchangePartsIterator = exchangeParts.iterator();
+      	  while(exchangePartsIterator.hasNext())
+      	  {
+      		  InstanceExchangePart exchangePart = exchangePartsIterator.next();
+      	    out.println("\"" + exchangePart.getID() + "\" ;");
+      	  }
+      	}
+    	
+      	//output bottom blurb of a site
+      	out.println("fontsize=9;");
+      	out.println("fontcolor=red");
+      	out.println("labelloc=t;");
+      	out.println("labeljust=r;");
+      	out.println("label =\"site " + currentSite.getID() + "\"");
+      	out.println("}");  
+      }
+      //get operator edges
+      String edgeSymbol = "->";
+      Iterator<String> i = instanceOperatorTree.getEdges().keySet().iterator();
+      while (i.hasNext()) 
+      {
+        Edge e = instanceOperatorTree.getEdges().get((String) i.next());
+        out.println("\"" + instanceOperatorTree.getAllNodes().get(e.getSourceID()).getID()
+        + "\"" + edgeSymbol + "\""
+        + instanceOperatorTree.getAllNodes().get(e.getDestID()).getID() + "\" ");
+      }
+      out.println("}");
+      out.close();
+    }
+	  catch(IOException e)
+	  {
+	    System.out.println("Export failed: " + e.toString());
+	    System.err.println("Export failed: " + e.toString());
+	  }
+  }
+  
 
   public Iterator<InstanceOperator> iterator(TraversalOrder Order)
   {
@@ -360,6 +409,7 @@ public class InstanceDAF extends SNEEAlgebraicForm
       }
       instanceOperatorTree.removeNode(currentSibling.getID());
       siteToOpInstMap.remove(currentSibling.getSite(), currentSibling); 
+      firstParent.removeInput(currentSibling);
     }
   }
 
@@ -394,6 +444,11 @@ public class InstanceDAF extends SNEEAlgebraicForm
   {
     return instanceOperatorTree.addEdge(source, dest);
   }
+  
+  public void removeEdge(Node source, Node dest)
+  {
+    instanceOperatorTree.removeEdge(source, dest);
+  } 
   
   public InstanceFragment getRootFragment()
   {

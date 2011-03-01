@@ -44,10 +44,10 @@ public class InstanceWhereSchedular
     this.paf = paf;
     this.routingTree = routingTree;
     this.costs = costs;
-    buildInstance();
+    buildInstanceDAF();
   }
   
-  public void buildInstance() 
+  public void buildInstanceDAF() 
   throws SNEEException, SchemaMetadataException, OptimizationException, SNEEConfigurationException
   {
     //make directory withoutput folder to place cost model images
@@ -64,24 +64,66 @@ public class InstanceWhereSchedular
       doInstanceOperatorSiteAssignment();
       instanceDAF.exportAsDOTFile(fileDirectory + "/siteAssignment.dot", "");
       //move duplicate aggerates upwards
-      moveDuplicatesToSameSite();
+      moveAggeratesInitsUpwards();
       instanceDAF.exportAsDOTFile(fileDirectory + "/movedInitsUpwards.dot", "");
       //remove instances which are redundant
       removeRedundantOpInstances();
       instanceDAF.exportAsDOTFile(fileDirectory + "/cleanedSiteAssignment.dot", "");
       startFragmentation();
-      instanceDAF.exportAsDOTFile(fileDirectory + "/fragmentedInstanceDAF.dot", "");
+      instanceDAF.exportAsDotFileWithFrags(fileDirectory + "/fragmentedInstanceDAF.dot", "", false);
       addExchangeParts();
-      instanceDAF.exportAsDOTFile(fileDirectory + "/completeInstanceDAF.dot", "");
       createCDAF();
+      updateOperatorLinksToIncludeExchangeParts();
+      instanceDAF.exportAsDotFileWithFrags(fileDirectory + "/InstanceDAFWithExchangeLinksBuiltIN.dot", "", true);
     }    
     else
     {
       System.out.println("directory not makable");
     }
   }
-  //XXX not tested currently
-  private void moveDuplicatesToSameSite()//aggerate inits
+  
+  //XXX works, but doesnt link the exchanges to sites
+  private void updateOperatorLinksToIncludeExchangeParts() 
+  {
+	// TODO Auto-generated method stub
+    Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
+    while(siteIterator.hasNext())
+    {//for each site do blurb and then go though fragments
+      Site currentSite = siteIterator.next();
+      Iterator<InstanceFragment> fragmentIterator = instanceDAF.fragmentIterator(TraversalOrder.POST_ORDER);
+      //go though fragments
+  	  while(fragmentIterator.hasNext())
+  	  {
+  		InstanceFragment currentFrag = fragmentIterator.next();//if frag on site
+  		if(currentFrag.getSite().getID().equals(currentSite.getID()))
+  		{
+  		  //get root operator
+  		  InstanceOperator rootOp = currentFrag.rootOperator;
+  		  if(!(rootOp.getInstanceOperator() instanceof SensornetDeliverOperator))
+  		  {
+  		    InstanceExchangePart exchange = currentFrag.getParentExchangeOperator();
+  		    //always have 1 output
+  		    rootOp.replaceOutput(rootOp.getOutput(0), exchange);
+  		    instanceDAF.addEdge(rootOp, exchange);
+  		    while(exchange.getNext() != null)
+		      {
+	          InstanceExchangePart nextExchange = exchange.getNext(); 
+	          instanceDAF.addEdge(exchange, nextExchange);
+		        exchange = nextExchange;  
+	        }
+	        //get root operator of higher frag frag
+	        InstanceOperator lowestOperator = exchange.getDestFrag().getLowestOperator();
+          lowestOperator.replaceInput(rootOp, exchange);   
+	        instanceDAF.addEdge(exchange, lowestOperator);
+	        instanceDAF.removeEdge(rootOp, lowestOperator);
+  		  }
+  		}
+  	  }
+    }
+  }
+
+  //tested and works 
+  private void moveAggeratesInitsUpwards()//aggerate inits
   {
     //go though routing tree from top to bottom
     Iterator<Site> siteIter = routingTree.siteIterator(TraversalOrder.PRE_ORDER);
@@ -137,13 +179,20 @@ public class InstanceWhereSchedular
   {
     if(InstanceOperatorIterator.hasNext())
     {
-      InstanceOperator instance = InstanceOperatorIterator.next();  
+      InstanceOperator instance = InstanceOperatorIterator.next();
+      InstanceOperator inputOp;
+      if(!(instance.getInstanceOperator() instanceof SensornetAcquireOperator))
+        inputOp = (InstanceOperator) instance.getInput(0);
+      else
+        inputOp = instance;
+      
       if(    instance.getInDegree() > 1 
-          || instance.getInstanceOperator() instanceof SensornetAcquireOperator )
+          || instance.getInstanceOperator() instanceof SensornetAcquireOperator
+          || !instance.isRemote(inputOp))
       {
         currentFragment.addOperator(instance);
         checkRoot(currentFragment, instance);
-        
+          
         for(int input = 0; input < instance.getInDegree(); input++ )
         {
           InstanceFragment newFrag = new InstanceFragment();
@@ -187,8 +236,9 @@ public class InstanceWhereSchedular
     {
       InstanceFragment instance = InstanceFragmentIterator.next();  
       InstanceFragment parent = instance.getNextHigherFragment();
+      
       if(!(instance.getRootOperator().getInstanceOperator() instanceof SensornetDeliverOperator))
-      {
+      {       
         if (instance.isRemote(parent))//may be many jumps and require relays
         {
           Path routeBetweenNodes = routingTree.getPath(instance.getSite().getID(), 
@@ -206,20 +256,26 @@ public class InstanceWhereSchedular
                                               currentPathSite, ExchangePartType.PRODUCER, false, 
                                               null);
               lastPart = part;
-            }
-            if(currentPathSite == parent.getSite())
-            {
-              part = new InstanceExchangePart(instance, instance.site, parent, parent.site, 
-                                              currentPathSite, ExchangePartType.CONSUMER, false, 
-                                              lastPart);
-              lastPart = part;
+              instance.setParentExchange(part);
             }
             else
             {
-              part = new InstanceExchangePart(instance, instance.site, parent, parent.site, 
-                                              currentPathSite, ExchangePartType.RELAY, false, 
-                                              lastPart);
-              lastPart = part;
+              if(currentPathSite == parent.getSite())
+              {
+                part = new InstanceExchangePart(instance, instance.site, parent, parent.site, 
+                                                currentPathSite, ExchangePartType.CONSUMER, false, 
+                                                lastPart);
+                lastPart = part;
+                parent.addChildExchange(part);
+                
+              }
+              else
+              {
+                part = new InstanceExchangePart(instance, instance.site, parent, parent.site, 
+                                                currentPathSite, ExchangePartType.RELAY, false, 
+                                                lastPart);
+                lastPart = part;
+              }
             }
           }
         }
@@ -235,6 +291,8 @@ public class InstanceWhereSchedular
           = new InstanceExchangePart(instance, instance.site, parent, parent.site, 
                                      parent.site, ExchangePartType.CONSUMER, false, 
                                      part);
+          instance.setParentExchange(part);
+          parent.addChildExchange(part2);
         }
       }
     }
@@ -344,43 +402,70 @@ public class InstanceWhereSchedular
     return false;
   }
 
-  //XXX:  HAS NOT BEEN TESTED CURRENTLY BUT HOPEFULLY IMPLEMENTED
+  //tested and works
   private void assignAttributeSensitiveOpInstances(InstanceOperator instance)
   {
+    boolean assigned = false;
     ArrayList<InstanceOperator> operatorInstances = new ArrayList<InstanceOperator>();
     //build list of child instances
     for(int i = 0; i < instance.getInDegree(); i++)
     {
       InstanceOperator childOp =(InstanceOperator)instance.getInput(i);
-      ArrayList<InstanceOperator> children = instanceDAF.getOpInstances(((InstanceOperator) childOp).getInstanceOperator());
-      operatorInstances.addAll(children);
+      operatorInstances.add(childOp);
     }//locate the deepest site which has all instances below it, and then assign it to there
-    Site locatedSite = findDeepestAssignSite(instance, operatorInstances); 
-    //assign instance to this site
-    instanceDAF.assign(instance, locatedSite); 
-  }
-
-  private Site findDeepestAssignSite(InstanceOperator instance,
-      ArrayList<InstanceOperator> opInstances)
-  {
-    //make new hash set
-    HashSet<InstanceOperator> opInstSet = new HashSet<InstanceOperator>();
-    //add all instances to hashset
-    opInstSet.addAll(opInstances);
-    //iterate though routingtree from deep to shallow
     Iterator<Site> siteIter = routingTree.siteIterator(TraversalOrder.POST_ORDER);
-    while (siteIter.hasNext()) 
+    while(siteIter.hasNext())
     {
-      Site site = siteIter.next();      
-      //locate instances which have a deepest confluence site as the current site (true = assigned)
-      HashSet<InstanceOperator> found = getConfluenceOpInstances(site, opInstSet, true);
-      //if the instances coincide with set we're looking for, return the site
-      if (found.equals(opInstSet)) 
+      Site currentSite = siteIter.next();
+      ArrayList<InstanceOperator> currentSiteOperatorInstances = instanceDAF.getOpInstances(currentSite);
+      int satisifiedSearch = 0;
+      if(!currentSite.isLeaf() && !assigned && !currentSiteOperatorInstances.contains(instance))
       {
-        return site;
-      } 
+        /**
+         * 1. not a leaf node, so no basic acquires, not assigned already, and currentsite doesnt hold a instance of the operator
+         * 2. iterate over inputs, checking if child operator is either an child or current
+         * 3. count the times it satisfies the search (2 = place instance here)
+         */
+        if(checkArray(currentSiteOperatorInstances, operatorInstances))
+          satisifiedSearch++;
+        
+        for(int currentInputIndex = 0; currentInputIndex < currentSite.getInDegree();
+            currentInputIndex++)
+        {
+          Site inputSite = (Site) currentSite.getInput(currentInputIndex);
+          //check if instance of current or child
+          ArrayList<InstanceOperator> operatorsOnSite = findNonEmptySiteBelowHere(inputSite);
+          
+         if(operatorsOnSite != null)
+          if(checkArray(operatorsOnSite, operatorInstances))
+            satisifiedSearch++;
+        }
+        if(satisifiedSearch == operatorInstances.size())//found all instances which fit criteria
+        {
+          //assign instance to this site
+          instanceDAF.assign(instance, currentSite); 
+          assigned = true;
+        }
+      }
     }
-    return null;  
+    if(!assigned)
+    {
+      System.out.println("instance " + instance.getID() + " cant be placed for some reason");
+    }
+  }
+  
+  private ArrayList<InstanceOperator> findNonEmptySiteBelowHere(Site input)
+  {
+    ArrayList<InstanceOperator> operatorsOnSite = instanceDAF.getOpInstances(input);
+    if(operatorsOnSite.size() == 0)
+    {
+      if(input.isLeaf())
+        return null;
+      input = (Site) input.getInput(0);
+      return findNonEmptySiteBelowHere(input);
+    }
+    else
+      return operatorsOnSite;   
   }
   
   private void generatePartialDaf() 

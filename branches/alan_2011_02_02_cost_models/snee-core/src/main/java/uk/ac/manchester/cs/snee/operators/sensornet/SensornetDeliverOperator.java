@@ -9,6 +9,7 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceDAF;
+import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
@@ -110,14 +111,6 @@ public class SensornetDeliverOperator extends SensornetOperatorImpl {
 			return attr.getAttributeDisplayName() + ("Epoch");
 		}
 		return attr.getAttributeDisplayName(); 
-	}
-
-	/** {@inheritDoc} 
-	 * @throws OptimizationException */ 
-	public float getInstanceCardinality(final Site node, final InstanceDAF daf, long beta) 
-	throws OptimizationException 
-	{System.out.println("within a deliver object");
-		return getInstanceInputCardinality(node, daf, 0, beta);
 	}
 	
 }

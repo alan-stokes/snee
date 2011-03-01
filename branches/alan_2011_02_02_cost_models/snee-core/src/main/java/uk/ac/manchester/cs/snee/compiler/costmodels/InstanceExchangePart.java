@@ -60,7 +60,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
  * If they are on different sites, a relay part is placed along each site along the
  * multi-hop path.
  */
-public class InstanceExchangePart {
+public class InstanceExchangePart extends InstanceOperator{
 
     static Logger logger = Logger.getLogger(InstanceExchangePart.class.getName());
 
@@ -85,11 +85,6 @@ public class InstanceExchangePart {
     private Site destSite;
 
     /**
-     * The current site of this exchange operator part.
-     */
-    private Site currentSite;
-
-    /**
      * The type of this exchange operator part.
      */
     private ExchangePartType partType;
@@ -111,6 +106,11 @@ public class InstanceExchangePart {
      */
     private InstanceExchangePart next;
 
+    /***
+     * used to represent the part in operator instance tree diagrams
+     */
+    private String id;
+    
     /**
      * Constructor for exchange part.
      * @param sourceFrag
@@ -131,9 +131,10 @@ public class InstanceExchangePart {
 		this.sourceSite = sourceSite;
 		this.destFrag = destFrag;
 		this.destSite = destSite;
-		this.currentSite = currentSite;
+		this.setSite(currentSite);
 		this.partType = partType;
 		this.isRemote = isRemote;
+		this.id = "F" + sourceFrag.getID() + "_S" + this.getSite().getID() + "_" + partType.toString().toLowerCase();
 	
 		//link components in a path
 		this.prev = prev;
@@ -145,9 +146,13 @@ public class InstanceExchangePart {
 	}
 
 	currentSite.addInstanceExchangePart(this);
-    }
+ }
+  
+    public String getID() {
+		return id;
+	}
 
-    public static int computeTuplesPerMessage(final int tupleSize, 
+	public static int computeTuplesPerMessage(final int tupleSize, 
     CostParameters costParams) throws OptimizationException {
     	Logger logger = Logger.getLogger(InstanceExchangePart.class.getName());
     	
@@ -180,7 +185,7 @@ public class InstanceExchangePart {
 		if (this.partType == ExchangePartType.PRODUCER) {
 		    s.append("P");
 		} else if (this.partType == ExchangePartType.RELAY) {
-		    s.append("R" + this.currentSite.getID());
+		    s.append("R" + this.getSite().getID());
 		} else if (this.partType == ExchangePartType.CONSUMER) {
 		    s.append("C");
 		}
@@ -206,7 +211,7 @@ public class InstanceExchangePart {
      * @return
      */
     public final Site getCurrentSite() {
-    	return this.currentSite;
+    	return this.getSite();
     }
 
     
@@ -285,7 +290,7 @@ public class InstanceExchangePart {
      * @return The current site id.
      */
     public final String getCurrentSiteID() {
-    	return this.currentSite.getID();
+    	return this.getSite().getID();
     }
 
     /**
@@ -325,7 +330,7 @@ public class InstanceExchangePart {
      * @throws SchemaMetadataException 
      * @throws OptimizationException 
      */
-    public final long getDataMemoryCost(final Site site, final DAF daf) throws OptimizationException, SchemaMetadataException, TypeMappingException {
+    public final int getDataMemoryCost(final Site site, final DAF daf) throws OptimizationException, SchemaMetadataException, TypeMappingException {
     	InstanceOperator root = this.sourceFrag.getRootOperator();
  		return root.getCardinality(CardinalityType.MAX, this.sourceSite, daf)
 			* root.getInstanceOperator().getPhysicalTupleSize();

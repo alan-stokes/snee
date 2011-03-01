@@ -72,12 +72,4 @@ public class SensornetProjectOperator extends SensornetOperatorImpl {
 		return getOverheadTimeCost()
 			+ costParams.getCopyTuple() * tuples;
     }
-
-	@Override
-	/** {@inheritDoc} */
-	public float getInstanceCardinality(Site node, InstanceDAF daf, long beta)
-	throws OptimizationException 
-	{System.out.println("within a project object");
-		return getInstanceInputCardinality(node, daf, 0, beta);
-	}
 }

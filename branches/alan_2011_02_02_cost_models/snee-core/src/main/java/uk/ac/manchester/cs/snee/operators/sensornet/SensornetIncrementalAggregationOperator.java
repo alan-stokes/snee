@@ -107,15 +107,4 @@ public abstract class SensornetIncrementalAggregationOperator extends SensornetO
 	public List<AggregationExpression> getAggregates() {
 		return this.aggrOp.getAggregates();
 	}
-	
-	/** {@inheritDoc} */
-	public float getInstanceCardinality(Site node, InstanceDAF daf, long beta) 
-	throws OptimizationException
-	{System.out.println("within a aggrInc object");
-    float childrenCardinality = this.getInstanceInputCardinality(node, daf, 0, beta);
-    if(childrenCardinality == 0)
-      return 0;
-    else
-      return 1;
-	}
 }

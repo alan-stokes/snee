@@ -97,13 +97,4 @@ public class SensornetNestedLoopJoinOperator extends SensornetOperatorImpl {
     		+ costParams.getCopyTuple() * tuples
     		+ costParams.getApplyPredicate() * tuples;
         }
-
-	@Override
-	public float getInstanceCardinality(Site node, InstanceDAF daf, long beta)
-	throws OptimizationException 
-	{System.out.println("within a loop object");
-    float left = getInstanceInputCardinality(node, daf, 0, beta);
-  	float right = getInstanceInputCardinality(node, daf, 1, beta);
-  	return left * right * selectivity();
-	}
 }

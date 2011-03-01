@@ -88,14 +88,5 @@ public class SensornetSelectOperator extends SensornetOperatorImpl {
 			+ (costParams.getCopyTuple() 
 			+ costParams.getApplyPredicate()) * tuples;
     }
-
-	@Override
-	/** {@inheritDoc} 
-     * @throws OptimizationException */
-	public float getInstanceCardinality(Site node, InstanceDAF daf, long beta)
-	throws OptimizationException 
-	{System.out.println("within a select object");
-		return getInstanceInputCardinality(node, daf, 0, beta) * selectivity();	
-	}
 	
 }

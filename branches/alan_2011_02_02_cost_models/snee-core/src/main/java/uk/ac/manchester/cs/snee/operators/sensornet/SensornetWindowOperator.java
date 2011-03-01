@@ -189,32 +189,4 @@ public class SensornetWindowOperator extends SensornetOperatorImpl {
 		return this.winOp.getRowSlide();
 	}
 
-	@Override
-	public float getInstanceCardinality(Site node, InstanceDAF daf, long beta)
-	throws OptimizationException 
-	{System.out.println("within a window object");
-    float cardinality;
-    //find out if a time window, or row window
-    	if(winOp.getTimeScope())//time window (no ticks)
-    	{
-        //get to and from eval time slots
-    	  int fromEval = (int) Math.ceil((-this.winOp.getFrom() + 1) / 
-    			     this.winOp.getAcquisitionInterval());
-    	  int toEval = (int) Math.ceil(-this.winOp.getTo() / 
-    				   this.winOp.getAcquisitionInterval()); 
-    			
-    	  //calculate cardinality for instance
-    	  int evaluationsPerWindow = fromEval - toEval;
-    	  float inputCardinality = getInstanceInputCardinality(node, daf, 0, beta);
-    	  cardinality = inputCardinality * evaluationsPerWindow;
-    	}
-    	else // row window
-    	{
-    	  //get cardianlity
-    	  cardinality = -this.winOp.getFrom() + this.winOp.getTo() + 1;
-    	  //check not broken cardinality
-    	}
-      return cardinality;
-	  }
-	
 }

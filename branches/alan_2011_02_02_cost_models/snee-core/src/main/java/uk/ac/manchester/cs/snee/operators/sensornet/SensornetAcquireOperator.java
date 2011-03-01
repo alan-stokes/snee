@@ -74,8 +74,7 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 	 * @param daf Ignored
 	 * @return 1
 	 */
-	public int getCardinality(CardinalityType card, 
-			Site node, DAF daf) {
+	public int getCardinality(CardinalityType card, Site node, DAF daf) {
 		return 1;
 	}
 
@@ -128,15 +127,4 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 //			DAF daf, boolean round) {
 //		return new AlphaBetaExpression(getTimeCost(card, node, daf),0);
 //	}
-
-
-
-  @Override/** {@inheritDoc} */ 
-  public float getInstanceCardinality(Site node, InstanceDAF instanceDAF,
-      long beta) throws OptimizationException
-  {
-    System.out.println("within a acquire object");
-    return 1 * selectivity();
-  }
-
 }

@@ -76,7 +76,7 @@ public class Site extends NodeImplementation {
      */
     HashSet<InstanceExchangePart> instanceExchangeComponents = new HashSet<InstanceExchangePart>();
 
-    /**
+	/**
      * Flag which tracks whether the node is a source node (i.e., acquires sensor readings)
      */
     boolean source = false;
@@ -267,6 +267,9 @@ public class Site extends NodeImplementation {
     {
       return instanceExchangeComponents.add(exchangePart);
     }
+    public HashSet<InstanceExchangePart> getInstanceExchangeComponents() {
+		return instanceExchangeComponents;
+	}
 
 //    /**
 //     * Remove the given exchange components for this site.
