@@ -257,9 +257,11 @@ public class MetadataManager {
 			parseAttributes(element.getElementsByTagName("column"),
 					extentName);
 		if (extentType == ExtentType.SENSED) {
-			attributes.add(0, new TimeAttribute(extentName, 
+			attributes.add(0, new EvalTimeAttribute( 
+					Constants.EVAL_TIME, timeType));
+			attributes.add(1, new TimeAttribute(extentName, 
 					Constants.ACQUIRE_TIME, timeType));			
-			attributes.add(1, new IDAttribute(extentName, 
+			attributes.add(2, new IDAttribute(extentName, 
 					Constants.ACQUIRE_ID, idType));
 
 		}

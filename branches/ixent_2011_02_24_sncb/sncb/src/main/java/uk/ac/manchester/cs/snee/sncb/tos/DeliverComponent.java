@@ -117,9 +117,9 @@ public class DeliverComponent extends NesCComponent implements
 		
 			final List<Attribute> attributes = this.op.getAttributes();
 		    String comma = "";
-			for (int i = 0; i < attributes.size(); i++) {
-				String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
-				String deliverName = CodeGenUtils.getDeliverName(attributes.get(i));
+			for (Attribute attr : attributes) {
+				String attrName = CodeGenUtils.getNescAttrName(attr);
+				String deliverName = attr.getAttributeDisplayName();
 		
 			    displayTupleBuff3.append(comma+deliverName+"=%d");
 			    displayTupleBuff4.append(comma+"inQueue[inHead]."+attrName);

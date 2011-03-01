@@ -46,10 +46,10 @@ public class EvalTimeAttribute extends Attribute {
 	 * @throws SchemaMetadataException The type could not be determined
 	 *    from the metaData.
 	 */
-	public EvalTimeAttribute(String extentName, String attrName, 
+	public EvalTimeAttribute(String attrName, 
 			AttributeType attrType) 
 	throws SchemaMetadataException {
-		super(extentName, attrName, attrType);
+		super("system", attrName, attrType);
 	}
 
 	/**

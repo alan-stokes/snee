@@ -382,21 +382,10 @@ public final class CodeGenUtils {
 	 * @return The String to use in nesc records.
 	 */
 	public static String getNescAttrName(final Attribute attr) {
-		return attr.getAttributeDisplayName().replace('.','_'); 
-	}
-
-	/**
-	 * Generates the name Deliver should use for this attribute. 
-	 * @param attr The Attribute a name should be generated for.
-	 * @return The String to used by deliver.
-	 */
-	public static String getDeliverName(final Attribute attr) {
 		if (attr instanceof EvalTimeAttribute) {
 			return "evalEpoch";
 		}
-		if (attr instanceof TimeAttribute) {
-			return attr.getAttributeSchemaName() + ("Epoch");
-		}
-		return attr.getAttributeDisplayName(); 
+		
+		return attr.getAttributeDisplayName().replace('.','_'); 
 	}
 }
