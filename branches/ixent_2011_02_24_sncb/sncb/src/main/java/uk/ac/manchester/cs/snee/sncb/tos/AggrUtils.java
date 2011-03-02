@@ -177,15 +177,15 @@ public class AggrUtils {
     	final List <Attribute> attributes = op.getAttributes();
     	
 		for (Attribute attr : attributes) {
-			String attrName 
-				= CodeGenUtils.getNescAttrName(attr);
-			
+	
 			if (attr instanceof EvalTimeAttribute) {
 				incrementAggregatesBuff.append("\t\toutQueue[outTail]." 
 						+ "evalEpoch = currentEvalEpoch;\n");
 			}
 			else
 			{
+				String attrName 
+				= CodeGenUtils.getNescAttrName(attr);
 				incrementAggregatesBuff.append("\t\toutQueue[outTail]." 
 						+ attrName + " = " + attrName + ";\n");					
 			}
