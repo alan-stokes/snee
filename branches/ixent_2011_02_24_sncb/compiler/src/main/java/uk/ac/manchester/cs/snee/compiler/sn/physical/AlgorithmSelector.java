@@ -24,6 +24,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSingleStepAggregationOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
 
 public class AlgorithmSelector {
 
@@ -49,10 +50,30 @@ public class AlgorithmSelector {
 		}
 		PAF paf = new PAF(deliverPhyOp, dlaf, costParams, queryName);
 		splitAggregationOperators(paf, costParams);
+		removeNOWwindows(paf);
 		return paf;
 	}
 	
-    /**
+    private void removeNOWwindows(PAF paf) {
+		final Iterator<SensornetOperator> opIter = paf
+		.operatorIterator(TraversalOrder.POST_ORDER);
+		while (opIter.hasNext()) {
+		    final SensornetOperator op = (SensornetOperator) opIter.next();
+		    if (op instanceof SensornetWindowOperator) {
+		    	SensornetWindowOperator winOp = (SensornetWindowOperator)op;
+		    	if (winOp.getFrom()==0 && winOp.getTo()==0 && winOp.isTimeScope()) {
+		    		try {
+						paf.getOperatorTree().removeNode(winOp);
+					} catch (OptimizationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+		    	}
+		    }
+		}		
+	}
+
+	/**
      * Splits Aggregation operators into two operators, 
      * to allow incremental aggregation.
      * @param paf the physical algebra format.
