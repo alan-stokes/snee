@@ -2266,7 +2266,7 @@ public class TinyOSGenerator {
 			}
 		}
 		
-		out.println("enum {NULL_EVAL_EPOCH = -1};\n");
+		out.println("enum {NULL_EVAL_EPOCH = 65535};\n");
 
 		out.println(activeIDDeclsBuff.toString()+"\n");
 		
