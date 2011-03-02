@@ -33,25 +33,37 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
+import uk.ac.manchester.cs.snee.common.Constants;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.Types;
 
 /** Extension of the Attribute for the special case 
  * 		when the Attribute is the EvalTime. 
  */
 public class EvalTimeAttribute extends Attribute {
 
+	//This is bad but we need to get rid of the AttributeType class
+	static AttributeType timeType = null;
+	
 	/** 
 	 * Creates a new EvalTime.
 	 * @throws SchemaMetadataException The type could not be determined
 	 *    from the metaData.
 	 */
-	public EvalTimeAttribute(String attrName, 
-			AttributeType attrType) 
+	public EvalTimeAttribute(AttributeType attrType) 
 	throws SchemaMetadataException {
-		super("system", attrName, attrType);
+		super("system", Constants.EVAL_TIME, attrType);
+		timeType = attrType;
 	}
 
+	public EvalTimeAttribute() 
+	throws SchemaMetadataException {
+		super("system", Constants.EVAL_TIME, timeType);
+	}
+	
 	/**
 	 * All evalTime objects are equals.
 	 * @param other Object to compare with.

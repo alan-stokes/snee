@@ -89,7 +89,6 @@ __DERIVED_INCREMENTAL_AGGREGATES_DECLS__
 
 __COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__
 __CONSTRUCT_TUPLE__
-		outQueue[outTail].evalEpoch=currentEvalEpoch;
 
 		outTail= outTail+1;
 		if (outTail == OUT_QUEUE_CARD) 

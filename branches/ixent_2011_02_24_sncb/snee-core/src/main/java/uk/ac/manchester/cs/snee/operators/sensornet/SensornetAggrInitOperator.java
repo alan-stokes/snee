@@ -11,6 +11,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IncrementalAggregationAttribute;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
@@ -46,6 +47,9 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 
     private void updateOutputAttributes() throws SchemaMetadataException {
 		List<AggregationExpression> aggregates = super.getAggregates();
+		
+		Attribute evalTimeAttr = new EvalTimeAttribute();
+		this.outputAttributes.add(evalTimeAttr); 
 		
 		for (AggregationExpression aggr : aggregates) {
 			List<Attribute> attributes = aggr.getRequiredAttributes();

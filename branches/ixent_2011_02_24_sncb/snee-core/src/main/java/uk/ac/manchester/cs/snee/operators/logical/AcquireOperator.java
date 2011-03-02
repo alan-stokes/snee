@@ -41,6 +41,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
@@ -310,7 +311,8 @@ public class AcquireOperator extends LogicalOperatorImpl {
 		if (projectExpressions.size() == 0) {
 			//remove unrequired attributes. No expressions to accept
 			for (int i = 0; i < outputAttributes.size(); ) {
-				if (projectAttributes.contains(outputAttributes.get(i)))
+				if (projectAttributes.contains(outputAttributes.get(i)) ||
+						(outputAttributes.get(i) instanceof EvalTimeAttribute))
 					i++;
 				else {
 					outputAttributes.remove(i);

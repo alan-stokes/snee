@@ -4,6 +4,7 @@ import java.util.List;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IncrementalAggregationAttribute;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -178,8 +179,18 @@ public class AggrUtils {
 		for (Attribute attr : attributes) {
 			String attrName 
 				= CodeGenUtils.getNescAttrName(attr);
-			incrementAggregatesBuff.append("\t\toutQueue[outTail]." 
-					+ attrName + " = " + attrName + ";\n");
+			
+			if (attr instanceof EvalTimeAttribute) {
+				incrementAggregatesBuff.append("\t\toutQueue[outTail]." 
+						+ "evalEpoch = currentEvalEpoch;\n");
+			}
+			else
+			{
+				incrementAggregatesBuff.append("\t\toutQueue[outTail]." 
+						+ attrName + " = " + attrName + ";\n");					
+			}
+			
+
 		}		
 		return incrementAggregatesBuff;
     } 

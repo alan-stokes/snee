@@ -38,6 +38,7 @@ import java.util.List;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 
@@ -135,7 +136,8 @@ public abstract class PredicateOperator extends LogicalOperatorImpl {
 
 		//remove unrequired attributes. No expressions to accept
 		for (int i = 0; i < attributes.size(); ) {
-			if (projectAttributes.contains(attributes.get(i)))
+			if ((projectAttributes.contains(attributes.get(i))) || 
+					(attributes.get(i) instanceof EvalTimeAttribute))
 				i++;
 			else {
 				attributes.remove(i);

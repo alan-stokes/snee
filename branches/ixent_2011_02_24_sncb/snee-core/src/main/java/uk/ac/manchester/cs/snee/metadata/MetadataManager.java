@@ -257,8 +257,7 @@ public class MetadataManager {
 			parseAttributes(element.getElementsByTagName("column"),
 					extentName);
 		if (extentType == ExtentType.SENSED) {
-			attributes.add(0, new EvalTimeAttribute( 
-					Constants.EVAL_TIME, timeType));
+			attributes.add(0, new EvalTimeAttribute(timeType));
 			attributes.add(1, new TimeAttribute(extentName, 
 					Constants.ACQUIRE_TIME, timeType));			
 			attributes.add(2, new IDAttribute(extentName, 
