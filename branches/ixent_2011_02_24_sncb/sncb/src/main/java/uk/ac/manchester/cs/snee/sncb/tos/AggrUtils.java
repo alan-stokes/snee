@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.sncb.tos;
 
+import java.util.HashSet;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
@@ -18,6 +19,8 @@ public class AggrUtils {
     public static StringBuffer generateVarDecls(final List<Attribute> attributes) 
     throws SchemaMetadataException, TypeMappingException {
        	final StringBuffer aggrVariablesBuff = new StringBuffer();
+       	HashSet<String> baseAttributes = new HashSet<String>();
+       	
        	for (Attribute attr: attributes) {
        		
        		if (attr instanceof IncrementalAggregationAttribute) {
@@ -28,9 +31,16 @@ public class AggrUtils {
 	  		   	final AttributeType attrType = incrAttr.getType();
 	  		   	final String nesCType = attrType.getNesCName();
 	  		   	aggrVariablesBuff.append("\t" + nesCType + " " + attrName + ";\n");       			
+
+	  		   	String baseAttr = incrAttr.getBaseAttribute().getAttributeSchemaName();
+	       		baseAttributes.add(baseAttr);
        		}
 		}	
-       	aggrVariablesBuff.append("\tbool tuplesReceived;\n");
+       	
+       	for (String baseAttr: baseAttributes) {
+          	aggrVariablesBuff.append("\tbool "+baseAttr+"_tuplesReceived;\n");      		
+       	}
+ 
 	    return aggrVariablesBuff;
     } 
     	    
@@ -45,6 +55,7 @@ public class AggrUtils {
     public static StringBuffer generateVarsInit(
     		final List<Attribute> attributes) {
     	final StringBuffer incrementAggregatesBuff = new StringBuffer();
+       	HashSet<String> baseAttributes = new HashSet<String>();
 
 		for (Attribute attr : attributes) {
 			
@@ -55,10 +66,17 @@ public class AggrUtils {
 					= CodeGenUtils.getNescAttrName(incrAttr);
 				incrementAggregatesBuff.append("\t\t\t"
 						+ attrName + " = 0;\n");
+				
+	  		   	String baseAttr = incrAttr.getBaseAttribute().getAttributeSchemaName();
+	       		baseAttributes.add(baseAttr);
 			}		
 		}
-		incrementAggregatesBuff.append("\t\t\ttuplesReceived = FALSE;\n");
-		return incrementAggregatesBuff;
+		
+       	for (String baseAttr: baseAttributes) {
+       		incrementAggregatesBuff.append("\t\t\t"+baseAttr+"_tuplesReceived = FALSE;\n");
+       	}
+       	
+       	return incrementAggregatesBuff;
     } 
     
 
@@ -82,32 +100,41 @@ public class AggrUtils {
 				
 				//init uses base attr name as input (e.g., light)
 				//merge/eval use incremental attr name as input (e.g., light_sum)
+				Attribute baseAttr = incrAttr.getBaseAttribute();
 				String inputAttrName = attrName;
 				if (initFlag) {
-					Attribute baseAttr = incrAttr.getBaseAttribute();
 					inputAttrName = baseAttr.getExtentName()+"_"+baseAttr.getAttributeSchemaName();
 				}
-				
-				if ((aggrFn == AggregationFunction.COUNT)
-						|| (aggrFn == AggregationFunction.SUM)) {
+				if (aggrFn == AggregationFunction.SUM) {
 					incrementAggregatesBuff.append("\t\t\t\t" 
-							+ attrName + " += inQueue[inHead]." 
-							+ inputAttrName + ";\n");
+							+ attrName + " = ("+attrName+" + inQueue[inHead]." 
+							+ inputAttrName + ");\n");
 				} 
-				
+				if (aggrFn == AggregationFunction.COUNT) {
+					if (initFlag) {
+						incrementAggregatesBuff.append("\t\t\t\t" 
+								+ attrName + "++;\n");		
+					} else {
+						incrementAggregatesBuff.append("\t\t\t\t" 
+								+ attrName + " += inQueue[inHead]." 
+								+ inputAttrName + ";\n");
+					}
+				}
+
 				String comp = "<";
 				if (aggrFn==AggregationFunction.MAX) {
 					comp = ">";
 				}
 				if (aggrFn == AggregationFunction.MIN || aggrFn == 
 					AggregationFunction.MAX) {
+					String baseAttrName = baseAttr.getAttributeSchemaName();
 					incrementAggregatesBuff.append("\t\t\t\tif " +
-							"((tuplesReceived==FALSE) || (inQueue[inHead]."+
+							"(("+baseAttrName+"_tuplesReceived==FALSE) || (inQueue[inHead]."+
 							inputAttrName+" "+comp+" " + attrName + "))\n");
 					incrementAggregatesBuff.append("\t\t\t\t{\n\t\t\t\t\t");
 					incrementAggregatesBuff.append(attrName + " = inQueue[inHead]." 
 							+ inputAttrName + ";\n");
-					incrementAggregatesBuff.append("\t\t\t\t\ttuplesReceived=TRUE;\n");
+					incrementAggregatesBuff.append("\t\t\t\t\t"+baseAttrName+"_tuplesReceived=TRUE;\n");
 					incrementAggregatesBuff.append("\t\t\t\t}\n");
 				}		
 			}

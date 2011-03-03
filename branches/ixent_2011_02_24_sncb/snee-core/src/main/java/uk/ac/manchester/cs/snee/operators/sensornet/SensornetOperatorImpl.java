@@ -655,7 +655,7 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 	
 	//delegate except for exchange operators or incremental aggregates
 	public List<Attribute> getAttributes() {
-		return this.getLogicalOperator().getAttributes();
+		return this.getLeftChild().getAttributes();
 	}
 
 	//delegate

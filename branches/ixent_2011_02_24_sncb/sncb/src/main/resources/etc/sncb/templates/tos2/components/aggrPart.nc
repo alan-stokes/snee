@@ -48,23 +48,7 @@ __AGGREGATE_VAR_INITIALIZATION__
 
 	void task signalDoneTask()
 	{
-		#ifdef PLATFORM_PC
-			int8_t outputTupleCount;
-			if (outHead==-1)
-			{
-				outputTupleCount = 0;
-			}
-			else if (outHead < outTail)
-			{
-				outputTupleCount = outTail - outHead;
-			}
-			else
-			{
-				outputTupleCount = OUT_QUEUE_CARD - outHead + outTail;
-			}
-			dbg("DBG_USR2","__OPERATOR_DESCRIPTION__: output cardinality %d tuple(s) for evalEpoch %d\n",outputTupleCount,currentEvalEpoch);
-		#endif
-
+		dbg("__DBG_CHANNEL__","outHead=%d, outTail=%d, OUT_QUEUE_CARD=%d\n",outHead, outTail, OUT_QUEUE_CARD);
 		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
 	}
 

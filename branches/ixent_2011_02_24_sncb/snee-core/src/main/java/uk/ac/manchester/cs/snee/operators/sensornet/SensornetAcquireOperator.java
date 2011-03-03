@@ -117,6 +117,11 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 		return getTimeCost();
 	}
 
+	//delegate except for exchange operators or incremental aggregates
+	public List<Attribute> getAttributes() {
+		return this.getLogicalOperator().getAttributes();
+	}
+	
 //	/** {@inheritDoc} */
 //	public double getTimeCost(CardinalityType card, int numberOfInstances){
 //		assert(numberOfInstances == sites.length);
