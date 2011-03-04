@@ -19,6 +19,17 @@ __HEADER__
 	int8_t rightInTail;
 	uint16_t rightInQueueSize;
 
+	void task rightRequestDataTask();
+	void task performJoinTask();
+	void task signalDoneTask();
+
+	command error_t Parent.open()
+	{
+		call LeftChild.open();
+		call RightChild.open();
+		return SUCCESS;
+	}	
+
 	command error_t Parent.requestData(nx_int32_t evalEpoch)
   	{
 		dbg("__DBG_CHANNEL__","__MODULE_NAME__ __OPERATOR_DESCRIPTION__ requestData() entered, now calling left child\n");
@@ -28,21 +39,63 @@ __HEADER__
 	   	return SUCCESS;
   	}
 
-	command error_t Parent.open()
+	event void LeftChild.requestDataDone(__LEFT_CHILD_TUPLE_PTR_TYPE__ _leftInQueue, int8_t _leftInHead, int8_t _leftInTail, uint8_t _leftInQueueSize)
 	{
-		call LeftChild.open();
-		call RightChild.open();
-		return SUCCESS;
-	}	
-
-	void task signalDoneTask()
-	{
-		dbg("__DBG_CHANNEL__","outHead=%d, outTail=%d, outQueueCard=%d\n", outHead, outTail, OUT_QUEUE_CARD);
-		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
+		if (_leftInHead>-1)
+		{
+			dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled from left child, now request data from right child\n");
+			atomic
+			{
+				leftInQueue = _leftInQueue;
+				leftInHead = _leftInHead;
+				leftInTail = _leftInTail;
+				leftInQueueSize = _leftInQueueSize;
+			}
+			post rightRequestDataTask();
+		}
+		else
+		{
+			dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled from left child, no data\n");
+			atomic
+			{
+				outHead=-1;
+				outTail=-1;
+			}
+			post signalDoneTask();
+		}	
 	}
 
 
-	void task performJoin()
+	void task rightRequestDataTask()
+	{
+		call RightChild.requestData(currentEvalEpoch);
+	}
+
+
+	event void RightChild.requestDataDone(__RIGHT_CHILD_TUPLE_PTR_TYPE__ _rightInQueue, int8_t _rightInHead, int8_t _rightInTail, uint8_t _rightInQueueSize)
+	{
+		if (_rightInHead>-1)
+		{
+			dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled from right child, start doing join\n");
+			rightInQueue=_rightInQueue;
+			rightInHead=_rightInHead;
+			rightInTail=_rightInTail;
+			rightInQueueSize=_rightInQueueSize;
+
+			post performJoinTask();
+		}
+		else
+		{
+			dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled from right child, No Data\n");
+			outHead=-1;
+			outTail=-1;
+			dbg("DBG_USR1", "Performing join\n");
+			post signalDoneTask();
+		}
+	
+	}
+
+	void task performJoinTask()
 	{
 		int8_t tmpRightInHead=rightInHead;
 		dbg("__DBG_CHANNEL__","leftInHead=%d, leftInTail=%d, rightInHead=%d\n", leftInHead, leftInTail, rightInHead);
@@ -100,59 +153,9 @@ __CONSTRUCT_TUPLE__
 		post signalDoneTask();
 	}
 
-	event void RightChild.requestDataDone(__RIGHT_CHILD_TUPLE_PTR_TYPE__ _rightInQueue, int8_t _rightInHead, int8_t _rightInTail, uint8_t _rightInQueueSize)
+	void task signalDoneTask()
 	{
-		if (_rightInHead>-1)
-		{
-			dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled from right child, start doing join\n");
-			rightInQueue=_rightInQueue;
-			rightInHead=_rightInHead;
-			rightInTail=_rightInTail;
-			rightInQueueSize=_rightInQueueSize;
-
-			post performJoin();
-		}
-		else
-		{
-			dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled from right child, No Data\n");
-			outHead=-1;
-			outTail=-1;
-			dbg("DBG_USR1", "Performing join\n");
-			post signalDoneTask();
-		}
-	
-	}
-
-
-	void task rightRequestData()
-	{
-		call RightChild.requestData(currentEvalEpoch);
-	}
-
-
-	event void LeftChild.requestDataDone(__LEFT_CHILD_TUPLE_PTR_TYPE__ _leftInQueue, int8_t _leftInHead, int8_t _leftInTail, uint8_t _leftInQueueSize)
-	{
-		if (_leftInHead>-1)
-		{
-			dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled from left child, now request data from right child\n");
-			atomic
-			{
-				leftInQueue = _leftInQueue;
-				leftInHead = _leftInHead;
-				leftInTail = _leftInTail;
-				leftInQueueSize = _leftInQueueSize;
-			}
-			post rightRequestData();
-		}
-		else
-		{
-			dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled from left child, no data\n");
-			atomic
-			{
-				outHead=-1;
-				outTail=-1;
-			}
-			post signalDoneTask();
-		}	
+		dbg("__DBG_CHANNEL__","outHead=%d, outTail=%d, outQueueCard=%d\n", outHead, outTail, OUT_QUEUE_CARD);
+		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
 	}
 }

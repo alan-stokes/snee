@@ -28,6 +28,11 @@ __HEADER__
 	int8_t inTail;
 	uint16_t inQueueSize;
 
+	void task removeExpiredTuplesTask();
+	void task outQueueAppendTask();
+	void task refreshWindowTask();
+	void task signalDoneTask();
+
 	inline void initialize()
 	{
 		atomic
@@ -42,6 +47,14 @@ __HEADER__
 			initialized = TRUE;
 		}
 	}
+
+
+	command error_t Parent.open()
+	{
+		call Child.open();
+		return SUCCESS;
+	}	
+
 
 	command error_t Parent.requestData(nx_int32_t evalEpoch)
   	{
@@ -59,11 +72,90 @@ __HEADER__
 	   	return SUCCESS;
   	}
 
-	command error_t Parent.open()
+
+	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
 	{
-		call Child.open();
-		return SUCCESS;
-	}	
+		dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled  child\n");
+
+		atomic
+		{
+			inQueue = _inQueue;
+			inHead = _inHead;
+			inTail = _inTail;
+			inQueueSize = _inQueueSize;
+
+			slideAdjust=currentEvalTime % SLIDE;
+		}
+		post removeExpiredTuplesTask();
+	}
+
+
+	void task removeExpiredTuplesTask()
+	{
+		if (currentEvalTime >= slideAdjust + WINDOW_FROM)
+		{
+			while ((outHead >-1)&& (originalEvalTimes[outHead]<currentEvalTime - WINDOW_FROM -slideAdjust) )
+			{
+				outHead= outHead+1;
+				if (outHead == OUT_QUEUE_CARD) {
+				   outHead = 0;
+			    }
+				if (outHead==outTail)
+				{
+					outHead=-1;
+				}
+			}
+		}
+		dbg("__DBG_CHANNEL__","__MODULE_NAME__  after remove currentEvalEpoch=%d, windowHead=%d, windowTail=%d, outHead=%d, outTail=%d, slideAdjust=%d\n",currentEvalEpoch, windowHead, windowTail, outHead, outTail,slideAdjust);
+
+		post outQueueAppendTask();
+	}
+
+
+	void task outQueueAppendTask()
+	{
+		if (inHead>-1)
+		{
+			do
+				{
+				atomic
+				{
+					// security Code
+					if (outTail==outHead)
+					{
+						outHead=0 % OUT_QUEUE_CARD;
+						dbg("__DBG_CHANNEL__","**** Overflow in __MODULE_NAME__ putTuple *****\n");
+					}
+				}
+
+				atomic
+				{
+					if(outHead == -1)
+					{
+						outHead=0;
+						outTail=0;
+					}
+
+__CONSTRUCT_TUPLE__
+
+					originalEvalTimes[outTail]=inQueue[inHead].evalEpoch * EVALUATION_INTERVAL;
+					outTail= outTail+1;
+					if (outTail == OUT_QUEUE_CARD) {
+						outTail = 0;
+					}
+					inHead= inHead+1;
+					if (inHead == inQueueSize) {
+					   inHead = 0;
+				    }
+				}
+
+			} while(inHead != inTail);
+		}
+
+		dbg("__DBG_CHANNEL__","__MODULE_NAME__  after append currentEvalEpoch=%d, windowHead=%d, windowTail=%d, outHead=%d, outTail=%d\n",currentEvalEpoch, windowHead, windowTail, outHead, outTail);
+		post refreshWindowTask();
+	}
+
 
 	inline void setEvalTimes()
 	{
@@ -83,11 +175,6 @@ __HEADER__
 		}
 	}
 
-	void task signalDoneTask()
-	{
-		dbg("__DBG_CHANNEL__","__MODULE_NAME__  done with currentEvalEpoch=%d, windowHead=%d, windowTail=%d, outHead=%d, outTail=%d\n",currentEvalEpoch, windowHead, windowTail, outHead, outTail);
-		signal Parent.requestDataDone(outQueue, windowHead, windowTail, OUT_QUEUE_CARD);
-	}
 
 	void task refreshWindowTask() {
 		int32_t windowEvalTime=0;
@@ -141,87 +228,10 @@ __HEADER__
 		post signalDoneTask();
 	}
 
-	void task outQueueAppendTask()
+
+	void task signalDoneTask()
 	{
-		if (inHead>-1)
-		{
-			do
-				{
-				atomic
-				{
-					// security Code
-					if (outTail==outHead)
-					{
-						outHead=0 % OUT_QUEUE_CARD;
-						dbg("__DBG_CHANNEL__","**** Overflow in __MODULE_NAME__ putTuple *****\n");
-					}
-				}
-
-				atomic
-				{
-					if(outHead == -1)
-					{
-						outHead=0;
-						outTail=0;
-					}
-
-__CONSTRUCT_TUPLE__
-
-					originalEvalTimes[outTail]=inQueue[inHead].evalEpoch * EVALUATION_INTERVAL;
-					outTail= outTail+1;
-					if (outTail == OUT_QUEUE_CARD) {
-						outTail = 0;
-					}
-					inHead= inHead+1;
-					if (inHead == inQueueSize) {
-					   inHead = 0;
-				    }
-				}
-
-			} while(inHead != inTail);
-		}
-
-		dbg("__DBG_CHANNEL__","__MODULE_NAME__  after append currentEvalEpoch=%d, windowHead=%d, windowTail=%d, outHead=%d, outTail=%d\n",currentEvalEpoch, windowHead, windowTail, outHead, outTail);
-		post refreshWindowTask();
+		dbg("__DBG_CHANNEL__","__MODULE_NAME__  done with currentEvalEpoch=%d, windowHead=%d, windowTail=%d, outHead=%d, outTail=%d\n",currentEvalEpoch, windowHead, windowTail, outHead, outTail);
+		signal Parent.requestDataDone(outQueue, windowHead, windowTail, OUT_QUEUE_CARD);
 	}
-
-	void task removeExpiredTuplesTask()
-	{
-		if (currentEvalTime >= slideAdjust + WINDOW_FROM)
-		{
-			while ((outHead >-1)&& (originalEvalTimes[outHead]<currentEvalTime - WINDOW_FROM -slideAdjust) )
-			{
-				outHead= outHead+1;
-				if (outHead == OUT_QUEUE_CARD) {
-				   outHead = 0;
-			    }
-				if (outHead==outTail)
-				{
-					outHead=-1;
-				}
-			}
-		}
-		dbg("__DBG_CHANNEL__","__MODULE_NAME__  after remove currentEvalEpoch=%d, windowHead=%d, windowTail=%d, outHead=%d, outTail=%d, slideAdjust=%d\n",currentEvalEpoch, windowHead, windowTail, outHead, outTail,slideAdjust);
-
-		post outQueueAppendTask();
-	}
-
-	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
-	{
-		dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled  child\n");
-
-		atomic
-		{
-			inQueue = _inQueue;
-			inHead = _inHead;
-			inTail = _inTail;
-			inQueueSize = _inQueueSize;
-
-			slideAdjust=currentEvalTime % SLIDE;
-		}
-		post removeExpiredTuplesTask();
-	}
-
-
-
 }

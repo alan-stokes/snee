@@ -24,6 +24,17 @@ __HEADER__
 	int8_t inTail;
 	uint16_t inQueueSize;
 
+	void task outQueueAppendTask();
+	void task refreshWindowTask();
+	void task signalDoneTask();
+
+
+	command error_t Parent.open()
+	{
+		call Child.open();
+		return SUCCESS;
+	}	
+
 
 	command error_t Parent.requestData(nx_int32_t evalEpoch)
   	{
@@ -39,11 +50,22 @@ __HEADER__
 	   	return SUCCESS;
   	}
 
-	command error_t Parent.open()
+
+	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
 	{
-		call Child.open();
-		return SUCCESS;
-	}	
+		dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled from child\n");
+
+		atomic
+		{
+			inQueue = _inQueue;
+			inHead = _inHead;
+			inTail = _inTail;
+			inQueueSize = _inQueueSize;
+		}
+
+		post outQueueAppendTask();
+	}
+
 
 	inline void setEvalEpochs()
 	{
@@ -61,10 +83,39 @@ __HEADER__
 		}
 	}
 
-	void task signalDoneTask()
+
+	void task outQueueAppendTask()
 	{
-		signal Parent.requestDataDone(outQueue, windowHead, windowTail, OUT_QUEUE_CARD);
+		dbg("__DBG_CHANNEL__","__MODULE_NAME__  starting append inHead=%d, outhead=%d\n",inHead,outHead);
+		if (inHead>-1)
+		{
+			do
+				{
+				// security Code
+				atomic
+				{
+					dbg("__DBG_CHANNEL__", "__MODULE_NAME__  appending inHead=%d, outhead=%d\n",inHead,outHead);
+					if (outTail==outHead) {
+						outHead=(outHead+1) % OUT_QUEUE_CARD;
+					}
+					if (outHead == -1)
+					{
+						outHead=0;
+						outTail=0;
+					}
+
+__CONSTRUCT_TUPLE__
+
+					outTail=(outTail+1)% OUT_QUEUE_CARD;
+					count=count+1;
+					inHead=((inHead+1)%inQueueSize);
+				}
+			} while(inHead != inTail);
+		}
+		dbg("__DBG_CHANNEL__","__MODULE_NAME__  append done inHead=%d, outhead=%d\n",inHead,outHead);
+		post refreshWindowTask();
 	}
+
 
 	void task refreshWindowTask() {
 		dbg("__DBG_CHANNEL__"__MODULE_NAME__  refreshWindowTask count = %d\n",count);
@@ -105,51 +156,11 @@ __HEADER__
 		}
 	}
 
-	void task outQueueAppendTask()
+
+	void task signalDoneTask()
 	{
-		dbg("__DBG_CHANNEL__","__MODULE_NAME__  starting append inHead=%d, outhead=%d\n",inHead,outHead);
-		if (inHead>-1)
-		{
-			do
-				{
-				// security Code
-				atomic
-				{
-					dbg("__DBG_CHANNEL__", "__MODULE_NAME__  appending inHead=%d, outhead=%d\n",inHead,outHead);
-					if (outTail==outHead) {
-						outHead=(outHead+1) % OUT_QUEUE_CARD;
-					}
-					if (outHead == -1)
-					{
-						outHead=0;
-						outTail=0;
-					}
-
-__CONSTRUCT_TUPLE__
-
-					outTail=(outTail+1)% OUT_QUEUE_CARD;
-					count=count+1;
-					inHead=((inHead+1)%inQueueSize);
-				}
-			} while(inHead != inTail);
-		}
-		dbg("__DBG_CHANNEL__","__MODULE_NAME__  append done inHead=%d, outhead=%d\n",inHead,outHead);
-		post refreshWindowTask();
+		signal Parent.requestDataDone(outQueue, windowHead, windowTail, OUT_QUEUE_CARD);
 	}
 
-	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
-	{
-		dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled from child\n");
-
-		atomic
-		{
-			inQueue = _inQueue;
-			inHead = _inHead;
-			inTail = _inTail;
-			inQueueSize = _inQueueSize;
-		}
-
-		post outQueueAppendTask();
-	}
 
 }
