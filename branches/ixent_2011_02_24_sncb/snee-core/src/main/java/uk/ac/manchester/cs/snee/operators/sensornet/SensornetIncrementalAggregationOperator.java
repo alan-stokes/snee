@@ -27,7 +27,7 @@ public abstract class SensornetIncrementalAggregationOperator extends SensornetO
 	private static Logger logger 
 	= Logger.getLogger(SensornetIncrementalAggregationOperator.class.getName());
 	
-	AggregationOperator aggrOp;
+	protected AggregationOperator aggrOp;
 	
 	public SensornetIncrementalAggregationOperator(LogicalOperator op,
 	CostParameters costParams) throws SNEEException,

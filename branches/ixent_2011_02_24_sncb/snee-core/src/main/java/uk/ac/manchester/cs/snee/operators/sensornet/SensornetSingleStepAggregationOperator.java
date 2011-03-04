@@ -27,6 +27,8 @@ public class SensornetSingleStepAggregationOperator extends SensornetOperatorImp
 	
 	AggregationOperator aggrOp;
 	
+	ArrayList<Attribute> incrAggrAttributes;
+
 	public SensornetSingleStepAggregationOperator(LogicalOperator op, CostParameters costParams) 
 	throws SNEEException, SchemaMetadataException {
 		super(op, costParams);
@@ -37,6 +39,7 @@ public class SensornetSingleStepAggregationOperator extends SensornetOperatorImp
 		}
 		aggrOp = (AggregationOperator) op;
 		this.setNesCTemplateName("aggregation");
+		incrAggrAttributes = SensornetAggrInitOperator.getIncrementalAggregationAttributes(aggrOp);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetSingleStepAggregationOperator()");
 		}		
@@ -82,7 +85,7 @@ public class SensornetSingleStepAggregationOperator extends SensornetOperatorImp
 		return aggrOp.isSplittable();
 	}
 	
-	//delegate except for exchange operators or incremental aggregates
+	//delegate except for exchange operators or aggregates
 	public List<Attribute> getAttributes() {
 		ArrayList<Attribute> outputAttributes = new ArrayList<Attribute>();
 		
@@ -97,5 +100,10 @@ public class SensornetSingleStepAggregationOperator extends SensornetOperatorImp
 			outputAttributes.add(attr);
 		}
 		return outputAttributes;
+	}
+	
+	
+	public ArrayList<Attribute> getIncrAggrAttributes() {
+		return incrAggrAttributes;
 	}
 }

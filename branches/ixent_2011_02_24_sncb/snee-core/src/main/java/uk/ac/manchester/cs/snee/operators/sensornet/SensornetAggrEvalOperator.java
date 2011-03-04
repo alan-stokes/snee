@@ -47,7 +47,7 @@ public class SensornetAggrEvalOperator extends SensornetIncrementalAggregationOp
 			+ costParams.getCopyTuple();
     }
     
-	//delegate except for exchange operators or incremental aggregates
+	//delegate except for exchange operators or aggregates
 	public List<Attribute> getAttributes() {
 		ArrayList<Attribute> outputAttributes = new ArrayList<Attribute>();
 		
@@ -68,7 +68,7 @@ public class SensornetAggrEvalOperator extends SensornetIncrementalAggregationOp
 	public boolean isAttributeSensitive() {
 		return true;
 	}
-	
+		
 	//delegate
 	public boolean isRecursive() {
 		return false;

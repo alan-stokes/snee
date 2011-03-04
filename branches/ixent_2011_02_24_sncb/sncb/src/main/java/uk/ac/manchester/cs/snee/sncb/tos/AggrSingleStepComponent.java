@@ -42,7 +42,9 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
@@ -92,48 +94,32 @@ public class AggrSingleStepComponent extends NesCComponent implements
 			replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
 				.generateOutputTuplePtrType((SensornetOperator)this.op.getInput(0)));
 		
-			SensornetIncrementalAggregationOperator input = getIterate();
-			List <Attribute> attributes = input.getAttributes();
-			replacements.put("__VARIABLES_TO_BE_AGGREGATED__",
-					AggrUtils.generateVarDecls(attributes).toString());
-//			replacements.put("__SET_AGGREGATES_TO_ZERO__",
-//					CodeGenUtils.generateSetAggregatesToZero(attributes, 
-//					(SensornetIncrementalAggregationOperator)this.op).toString());
-//			replacements.put("__INCREMENT_AGGREGATES__",
-//					CodeGenUtils.generateIncrementAggregates(attributes, 
-//							(SensornetIncrementalAggregationOperator)this.op).toString());
-			final StringBuffer tupleConstructionBuff 
-				= CodeGenUtils.generateTupleConstruction(op, false);
-			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff.toString());
+			SensornetOperator input = op.getLeftChild();
+			List <Attribute> inputAttributes = input.getAttributes();
+			List <Attribute> incrAggrAttributes = op.getIncrAggrAttributes();
+			List <Attribute> outputAttributes = op.getAttributes();
+			
+			List <AggregationExpression> aggregates = 
+				((AggregationOperator)op.getLogicalOperator()).getAggregates();
+			replacements.put("__AGGREGATE_VAR_DECLS__",
+					AggrUtils.generateVarDecls(incrAggrAttributes).toString());
+			replacements.put("__AGGREGATE_VAR_INITIALIZATION__",
+					AggrUtils.generateVarsInit(incrAggrAttributes).toString());
+			replacements.put("__AGGREGATE_VAR_INCREMENT__",
+					AggrUtils.generateIncrementAggregates(incrAggrAttributes, true).toString());
+			replacements.put("__DERIVED_INCREMENTAL_AGGREGATES_DECLS__", 
+					AggrUtils.generateDerivedIncrAggregatesDecls(aggregates).toString());
+			replacements.put("__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__", 
+					AggrUtils.computeDerivedIncrAggregates(aggregates).toString());
+			replacements.put("__CONSTRUCT_TUPLE__", 
+					AggrUtils.generateTuple(outputAttributes).toString());			
+			
 		
 			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/aggrPart.nc",
 				outputFileName, replacements);
     	} catch (Exception e) {
     		throw new CodeGenerationException(e);
-    	}
-    }
-
-    /** 
-     * Retrieves the middle aggregate operator 
-     * even if there is an exchange in between. 
-     * @return The child operator ignoring any exchanges.
-     * @throws CodeGenerationException 
-     */
-    private SensornetIncrementalAggregationOperator getIterate() throws CodeGenerationException {
-    	SensornetOperator input =  op.getLeftChild();
-    	while (input instanceof SensornetExchangeOperator) {
-    		input = input.getLeftChild();
-    	}
-    	try {
-    		if (input instanceof SensornetAggrMergeOperator) {
-    			return (SensornetAggrMergeOperator) input;
-    		} else {
-    			return (SensornetAggrInitOperator) input;
-    		}
-    		 
-    	} catch (Exception e) {
-    		throw new CodeGenerationException(e); 
     	}
     }
 }

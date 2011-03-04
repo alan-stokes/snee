@@ -106,7 +106,7 @@ public class AggrInitComponent extends NesCComponent implements
 			replacements.put("__DERIVED_INCREMENTAL_AGGREGATES_DECLS__", "");
 			replacements.put("__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__", "");
 			replacements.put("__CONSTRUCT_TUPLE__",
-					AggrUtils.generateTuple(this.op).toString());
+					AggrUtils.generateTuple(attributes).toString());
 			
 			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/aggrPart.nc",

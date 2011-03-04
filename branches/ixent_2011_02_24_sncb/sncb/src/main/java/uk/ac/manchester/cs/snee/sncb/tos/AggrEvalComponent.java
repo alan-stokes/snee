@@ -96,11 +96,11 @@ public class AggrEvalComponent extends NesCComponent implements
 			replacements.put("__AGGREGATE_VAR_INCREMENT__",
 					AggrUtils.generateIncrementAggregates(attributes, false).toString());
 			replacements.put("__DERIVED_INCREMENTAL_AGGREGATES_DECLS__", 
-					AggrUtils.generateDerivedIncrAggregatesDecls(op).toString());
+					AggrUtils.generateDerivedIncrAggregatesDecls(op.getAggregates()).toString());
 			replacements.put("__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__", 
-					AggrUtils.computeDerivedIncrAggregates(op).toString());
+					AggrUtils.computeDerivedIncrAggregates(op.getAggregates()).toString());
 			replacements.put("__CONSTRUCT_TUPLE__", 
-					AggrUtils.generateTuple(op).toString());
+					AggrUtils.generateTuple(attributes).toString());
 		
 			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/aggrPart.nc",

@@ -18,6 +18,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
@@ -38,18 +39,20 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 		}	
 		this.setNesCTemplateName("aggrinit");
 		this.setOperatorName("SensornetAGGRInit");
-		updateOutputAttributes();
+		this.outputAttributes = getIncrementalAggregationAttributes(this.aggrOp);
 		
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetAggrInitOperator()");
 		}
 	}
 
-    private void updateOutputAttributes() throws SchemaMetadataException {
-		List<AggregationExpression> aggregates = super.getAggregates();
+    public static ArrayList<Attribute> getIncrementalAggregationAttributes(AggregationOperator aggrOp) 
+    throws SchemaMetadataException {
+		ArrayList<Attribute> result = new ArrayList<Attribute>();
+    	List<AggregationExpression> aggregates = aggrOp.getAggregates();
 		
 		Attribute evalTimeAttr = new EvalTimeAttribute();
-		this.outputAttributes.add(evalTimeAttr); 
+		result.add(evalTimeAttr); 
 		
 		for (AggregationExpression aggr : aggregates) {
 			List<Attribute> attributes = aggr.getRequiredAttributes();
@@ -60,31 +63,32 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 				AggregationFunction aggrFn = aggr.getAggregationFunction();
 				if ((aggrFn == AggregationFunction.AVG) || (aggrFn == AggregationFunction.STDEV)) {
 					String newAttrName = schemaName+"_"+AggregationFunction.COUNT;
-					addAttribute(extentName, newAttrName, attrType, attr, AggregationFunction.COUNT);
+					addAttribute(extentName, newAttrName, attrType, attr, AggregationFunction.COUNT, result);
 					String newAttrName2 = schemaName+"_"+AggregationFunction.SUM;
-					addAttribute(extentName, newAttrName2, attrType, attr, AggregationFunction.SUM);
+					addAttribute(extentName, newAttrName2, attrType, attr, AggregationFunction.SUM, result);
 				} else {
 					String newAttrName = schemaName+"_"+aggrFn;
-					addAttribute(extentName, newAttrName, attrType, attr, aggrFn);
+					addAttribute(extentName, newAttrName, attrType, attr, aggrFn, result);
 				}
 			}			
-		}		
+		}
+		return result;
 	}
 
-    private void addAttribute(String extentName, String schemaName, AttributeType type,
-    		Attribute baseAttribute, AggregationFunction aggrFunction)
+    private static void addAttribute(String extentName, String schemaName, AttributeType type,
+    		Attribute baseAttribute, AggregationFunction aggrFunction, List<Attribute> result)
     throws SchemaMetadataException {
     	//check for dups
-    	for (Attribute oa: this.outputAttributes) {
-    		if ((oa.getExtentName().equals(extentName)) && 
-    			(oa.getAttributeSchemaName().equals(schemaName))) {
+    	for (Attribute a: result) {
+    		if ((a.getExtentName().equals(extentName)) && 
+    			(a.getAttributeSchemaName().equals(schemaName))) {
     			return; //duplicate, do not add
     		}
     	}
     	
 		Attribute newAttr = new IncrementalAggregationAttribute(extentName, schemaName, 
 				type, (DataAttribute) baseAttribute, aggrFunction);
-		this.outputAttributes.add(newAttr); 
+		result.add(newAttr); 
     }
     
 	/** {@inheritDoc} 

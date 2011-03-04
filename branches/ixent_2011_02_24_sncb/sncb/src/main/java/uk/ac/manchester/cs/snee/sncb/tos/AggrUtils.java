@@ -13,6 +13,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregationOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
 public class AggrUtils {
 
@@ -143,11 +144,9 @@ public class AggrUtils {
     } 
 
 
-    public static StringBuffer generateDerivedIncrAggregatesDecls(SensornetAggrEvalOperator op) {
+    public static StringBuffer generateDerivedIncrAggregatesDecls(List<AggregationExpression> aggregates) {
     	final StringBuffer derivedAggregatesDeclsBuff = new StringBuffer();
     	
-		List<AggregationExpression> aggregates = op.getAggregates();
-		
 		for (AggregationExpression aggr : aggregates) {
 			List<Attribute> attributes = aggr.getRequiredAttributes();
 			for (Attribute attr : attributes) {
@@ -165,11 +164,9 @@ public class AggrUtils {
 		return derivedAggregatesDeclsBuff;
     }
     
-    public static StringBuffer computeDerivedIncrAggregates(SensornetAggrEvalOperator op) {
+    public static StringBuffer computeDerivedIncrAggregates(List<AggregationExpression> aggregates) {
     	final StringBuffer derivedAggregatesBuff = new StringBuffer();
     	
-		List<AggregationExpression> aggregates = op.getAggregates();
-		
 		for (AggregationExpression aggr : aggregates) {
 			List<Attribute> attributes = aggr.getRequiredAttributes();
 			for (Attribute attr : attributes) {
@@ -199,9 +196,8 @@ public class AggrUtils {
      * @return NesC tuple construction code.
      */
     public static StringBuffer generateTuple(
-    	final SensornetIncrementalAggregationOperator op) {
+    		List <Attribute> attributes) {
     	final StringBuffer incrementAggregatesBuff = new StringBuffer();
-    	final List <Attribute> attributes = op.getAttributes();
     	
 		for (Attribute attr : attributes) {
 	
