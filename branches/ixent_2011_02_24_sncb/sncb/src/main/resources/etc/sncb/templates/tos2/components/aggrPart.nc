@@ -13,6 +13,8 @@ __HEADER__
   	__CHILD_TUPLE_PTR_TYPE__ inQueue;
 	int8_t inHead;
 	int8_t inTail;
+	int8_t inHead2;
+	int8_t inTail2;
 	uint8_t inQueueSize;
 __AGGREGATE_VAR_DECLS__
 
@@ -67,6 +69,8 @@ __AGGREGATE_VAR_INITIALIZATION__
 
 	void task aggregateIncrementTask()
 	{
+		inHead2 = inHead;
+		inTail2 = inTail;
 		if (inHead>-1)
 		{
 			do
@@ -89,8 +93,9 @@ __DERIVED_INCREMENTAL_AGGREGATES_DECLS__
 
 	void task computeFinalAggregatesTask()
 	{
-__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__
 
+__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__
+		
 		post outQueueAppendTask();
 	}
 

@@ -159,6 +159,15 @@ public class AggrUtils {
 					final String nesCType = attrType.getNesCName();
 					derivedAggregatesDeclsBuff.append("\t"+nesCType+" "+averageVar+";\n");
 				}
+				if ((aggrFn == AggregationFunction.STDEV)) {
+					String stdevVar = extentName+"_"+schemaName+"_stdev";
+					String avgForStdevVar = extentName+"_"+schemaName+"_avg_for_stdev";
+					final String nesCType = attrType.getNesCName();
+					derivedAggregatesDeclsBuff.append("\t"+nesCType+" "+stdevVar+";\n");
+					derivedAggregatesDeclsBuff.append("\t"+nesCType+" "+avgForStdevVar+";\n");
+					derivedAggregatesDeclsBuff.append("\t"+nesCType+" tmpDiff;\n");
+					derivedAggregatesDeclsBuff.append("\t"+nesCType+" tmpSum;\n");
+				}
 			}
 		}
 		return derivedAggregatesDeclsBuff;
@@ -180,7 +189,26 @@ public class AggrUtils {
 					String averageVar = extentName+"_"+schemaName+"_avg";
 					final String nesCType = attrType.getNesCName();
 					derivedAggregatesBuff.append("\t\t"+averageVar+
-							" = "+sumVar+" / "+countVar+";\n");
+							" = ("+sumVar+" / "+countVar+");\n");
+				}
+				if ((aggrFn == AggregationFunction.STDEV)) {
+					String countVar = extentName+"_"+schemaName+"_count";
+					String sumVar = extentName+"_"+schemaName+"_sum";
+					String avgForStdevVar = extentName+"_"+schemaName+"_avg_for_stdev";
+					String stdevVar = extentName+"_"+schemaName+"_stdev";
+					
+					derivedAggregatesBuff.append("\t\t" + avgForStdevVar +
+							" = ("+sumVar+" / "+countVar+");\n");
+					derivedAggregatesBuff.append("\t\tinHead = inHead2;\n");
+					derivedAggregatesBuff.append("\t\tinTail = inTail2;\n");	
+					derivedAggregatesBuff.append("\t\ttmpSum = 0;\n");
+					derivedAggregatesBuff.append("\t\tdo\n\t\t{\n");
+					derivedAggregatesBuff.append("\t\t\ttmpDiff = (inQueue[inHead]."+
+							extentName+"_"+schemaName+" - "+avgForStdevVar+");\n");
+					derivedAggregatesBuff.append("\t\t\ttmpSum += (tmpDiff * tmpDiff);\n\n");
+					derivedAggregatesBuff.append("\t\t\tinHead=(inHead+1) % inQueueSize;\n\t\t}\n");
+					derivedAggregatesBuff.append("\t\twhile(inHead!=inTail);\n");
+					derivedAggregatesBuff.append("\t\t"+stdevVar+" = sqrt(tmpSum / "+countVar+");\n");
 				}
 			}
 		}
