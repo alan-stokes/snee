@@ -670,7 +670,7 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 	
 	//delegate
 	public boolean isRecursive() {
-		return this.getLogicalOperator().isRecursive();
+		return false;
 	}
 
 	//delegate

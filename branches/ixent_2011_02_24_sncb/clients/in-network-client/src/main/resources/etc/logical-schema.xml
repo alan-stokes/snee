@@ -8,6 +8,9 @@
          <column name="seaLevel">
           	<type class ="integer"/>
          </column>
+         <column name="seaTemp">
+          	<type class ="integer"/>
+         </column>
      </stream>
 
      <stream name="SeaDefenceEast" type="pull">

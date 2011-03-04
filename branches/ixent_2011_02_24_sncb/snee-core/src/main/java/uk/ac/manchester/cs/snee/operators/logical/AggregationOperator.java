@@ -174,11 +174,6 @@ public class AggregationOperator extends PredicateOperator {
 		return false;
 	}
 
-    /** {@inheritDoc} */
-    public boolean isRecursive() {
-        return false;
-    }
-
     /** Looks at all the aggregation functions used in the operator, 
      * and considers whether they could be computed incrementally. **/
 	public boolean isSplittable() {

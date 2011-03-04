@@ -122,12 +122,6 @@ implements LogicalOperator {
 		throw new AssertionError(message);
 	}
 
-	public boolean isRecursive() {
-		String message = "Stub Method called";
-		logger.warn(message);
-		throw new AssertionError(message);
-	}
-
 	/** {@inheritDoc}
 	 * @return false;
 	 */

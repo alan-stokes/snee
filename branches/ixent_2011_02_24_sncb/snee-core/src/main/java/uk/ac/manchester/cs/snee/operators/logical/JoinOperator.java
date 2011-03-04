@@ -298,10 +298,6 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 		return false;
 	}
 
-	/** {@inheritDoc} */
-	public boolean isRecursive() {
-		return false;
-	}
 
 	/** {@inheritDoc} */
 	public String toString() {

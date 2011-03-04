@@ -236,11 +236,6 @@ public class AcquireOperator extends LogicalOperatorImpl {
 		return true;
 	}
 
-	/** {@inheritDoc} */
-	public boolean isRecursive() {
-		return false;
-	}
-
 	/** 
 	 * List of the attribute returned by this operator.
 	 * 

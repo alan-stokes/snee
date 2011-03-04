@@ -292,10 +292,6 @@ public class SelectOperator extends LogicalOperatorImpl {
 		return false;
 	}
 
-    /** {@inheritDoc} */
-	public boolean isRecursive() {
-		return false;
-	}
 	
     /** {@inheritDoc} */
     public boolean acceptsPredicates() {

@@ -2065,7 +2065,7 @@ public class TinyOSGenerator {
 	final SensornetOperator op) 
 	throws SchemaMetadataException, TypeMappingException {
 
-		if (!(op instanceof SensornetExchangeOperator) && (!op.getLogicalOperator().isRecursive())) {
+		if (!(op instanceof SensornetExchangeOperator) && (!op.isRecursive())) {
 			tupleTypeBuff.append("// Tuple output type for operator "
 				+ op.getID() + "\n");
 			tupleTypeBuff.append("// " + op.toString() + "\n");
