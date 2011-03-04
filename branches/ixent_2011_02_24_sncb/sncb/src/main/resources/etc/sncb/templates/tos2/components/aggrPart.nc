@@ -16,6 +16,12 @@ __HEADER__
 	uint8_t inQueueSize;
 __AGGREGATE_VAR_DECLS__
 
+
+	void task aggregateIncrementTask();
+	void task computeFinalAggregatesTask();
+	void task signalDoneTask();
+	void task outQueueAppendTask();
+
 	inline void initialize()
 	{
 		atomic
@@ -46,14 +52,48 @@ __AGGREGATE_VAR_INITIALIZATION__
 		return SUCCESS;
 	}
 
-	void task signalDoneTask()
+	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
 	{
-		dbg("__DBG_CHANNEL__","outHead=%d, outTail=%d, OUT_QUEUE_CARD=%d\n",outHead, outTail, OUT_QUEUE_CARD);
-		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
+		atomic
+		{
+			inQueue = _inQueue;
+			inHead = _inHead;
+			inTail = _inTail;
+			inQueueSize = _inQueueSize;
+		}
+
+		post aggregateIncrementTask();
 	}
 
+	void task aggregateIncrementTask()
+	{
+		if (inHead>-1)
+		{
+			do
+			{
+__AGGREGATE_VAR_INCREMENT__
+				inHead=(inHead+1)%inQueueSize;
+			}
+			while(inHead!=inTail);
+			post computeFinalAggregatesTask();
+		}
+		else
+		{
+			outHead=-1;
+			outTail=-1;
+			post signalDoneTask();
+		}
+	}
 
 __DERIVED_INCREMENTAL_AGGREGATES_DECLS__
+
+	void task computeFinalAggregatesTask()
+	{
+__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__
+
+		post outQueueAppendTask();
+	}
+
 
 	void task outQueueAppendTask()
 	{
@@ -71,7 +111,6 @@ __DERIVED_INCREMENTAL_AGGREGATES_DECLS__
 			outTail=0;
 		}
 
-__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__
 __CONSTRUCT_TUPLE__
 
 		outTail= outTail+1;
@@ -83,39 +122,13 @@ __CONSTRUCT_TUPLE__
 		post signalDoneTask();
 	}
 
-	void task aggregateTask()
+
+
+	void task signalDoneTask()
 	{
-		if (inHead>-1)
-		{
-			do
-			{
-__AGGREGATE_VAR_INCREMENT__
-				inHead=(inHead+1)%inQueueSize;
-			}
-			while(inHead!=inTail);
-			post outQueueAppendTask();
-		}
-		else
-		{
-			outHead=-1;
-			outTail=-1;
-			post signalDoneTask();
-		}
+		dbg("__DBG_CHANNEL__","outHead=%d, outTail=%d, OUT_QUEUE_CARD=%d\n",outHead, outTail, OUT_QUEUE_CARD);
+		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
 	}
 
-
-	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
-	{
-		atomic
-		{
-			inQueue = _inQueue;
-			inHead = _inHead;
-			inTail = _inTail;
-			inQueueSize = _inQueueSize;
-		}
-
-		post aggregateTask();
-
-	}
 
 }
