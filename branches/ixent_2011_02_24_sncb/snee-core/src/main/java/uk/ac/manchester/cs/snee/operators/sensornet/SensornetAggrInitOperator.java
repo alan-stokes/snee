@@ -105,4 +105,9 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 	public List<Attribute> getAttributes() {
 		return this.outputAttributes;
 	}
+	
+	//delegate
+	public boolean isAttributeSensitive() {
+		return false;
+	}
 }

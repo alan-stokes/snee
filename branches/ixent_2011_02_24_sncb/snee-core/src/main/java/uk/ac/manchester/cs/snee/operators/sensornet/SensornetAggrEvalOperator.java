@@ -63,4 +63,14 @@ public class SensornetAggrEvalOperator extends SensornetIncrementalAggregationOp
 		}
 		return outputAttributes;
 	}
+	
+	//delegate
+	public boolean isAttributeSensitive() {
+		return true;
+	}
+	
+	//delegate
+	public boolean isRecursive() {
+		return false;
+	}
 }

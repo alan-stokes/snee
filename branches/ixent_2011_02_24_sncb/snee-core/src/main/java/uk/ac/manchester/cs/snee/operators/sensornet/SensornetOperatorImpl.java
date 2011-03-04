@@ -662,6 +662,11 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 	public List<Expression> getExpressions() {
 		return this.getLogicalOperator().getExpressions();	
 	}
+
+	//delegate
+	public boolean isLocationSensitive() {
+		return this.getLogicalOperator().isLocationSensitive();
+	}
 	
 	//delegate
 	public boolean isRecursive() {

@@ -230,7 +230,7 @@ public class Fragment {
 		final Iterator<SensornetOperator> ops = this
 			.operatorIterator(TraversalOrder.PRE_ORDER);
 		while (ops.hasNext()) {
-		    if (ops.next().getLogicalOperator().isLocationSensitive()) {
+		    if (ops.next().isLocationSensitive()) {
 			found = true;
 			break;
 		    }
@@ -242,7 +242,7 @@ public class Fragment {
 		boolean found = false;
 		final Iterator<SensornetOperator> ops = this.operators.iterator();
 		while (ops.hasNext()) {
-		    if (ops.next().getLogicalOperator().isRecursive()) {
+		    if (ops.next().isRecursive()) {
 			found = true;
 			break;
 		    }
@@ -255,7 +255,7 @@ public class Fragment {
 	final Iterator<SensornetOperator> ops = this
 		.operatorIterator(TraversalOrder.PRE_ORDER);
 	while (ops.hasNext()) {
-	    if (ops.next().getLogicalOperator().isAttributeSensitive()) {
+	    if (ops.next().isAttributeSensitive()) {
 		found = true;
 		break;
 	    }

@@ -55,4 +55,13 @@ public class SensornetAggrMergeOperator extends SensornetIncrementalAggregationO
 		return this.getLeftChild().getAttributes();
 	}
 	
+	//delegate
+	public boolean isAttributeSensitive() {
+		return false;
+	}
+	
+	//delegate
+	public boolean isRecursive() {
+		return true;
+	}
 }
