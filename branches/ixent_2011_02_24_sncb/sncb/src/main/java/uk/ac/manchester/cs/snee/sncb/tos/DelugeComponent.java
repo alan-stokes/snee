@@ -39,7 +39,7 @@ public class DelugeComponent extends NesCComponent implements TinyOS2Component {
 
     public DelugeComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {
-	super(config, 2, tossimFlag);
+	super(config, tossimFlag);
 	this.instanceOfGeneric = false;
 	this.id = name;
 	this.systemComponent = true;

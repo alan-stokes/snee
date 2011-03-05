@@ -56,7 +56,7 @@ public class AMRecieveComponent extends GenericNesCComponent implements
 	    final NesCConfiguration config, final String activeMessageID,
 	    boolean tossimFlag) {
     	
-		super(config, TYPE_NAME, activeMessageID, 2, tossimFlag);
+		super(config, TYPE_NAME, activeMessageID, tossimFlag);
 		this.sourceFrag = sourceFrag;
 		this.destSite = destSite;
 		this.destFrag = destFrag;
@@ -68,7 +68,7 @@ public class AMRecieveComponent extends GenericNesCComponent implements
     public AMRecieveComponent(final NesCConfiguration config, final String activeMessageID,
     	    boolean tossimFlag) {
         	
-        	super(config, TYPE_NAME, activeMessageID, 2, tossimFlag);
+        	super(config, TYPE_NAME, activeMessageID, tossimFlag);
         	this.id = "AMBeaconReceiver";
         	this.systemComponent = true;
     }

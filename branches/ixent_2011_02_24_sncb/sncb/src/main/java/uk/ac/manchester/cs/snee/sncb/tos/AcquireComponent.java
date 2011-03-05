@@ -63,7 +63,7 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
  *
  */
 public class AcquireComponent extends NesCComponent implements
-	TinyOS1Component, TinyOS2Component {
+	TinyOS2Component {
 
 	/** Operator class code is being build for. */
     private SensornetAcquireOperator op;
@@ -73,11 +73,11 @@ public class AcquireComponent extends NesCComponent implements
 
     public AcquireComponent(final SensornetAcquireOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    int tosVersion, boolean tossimFlag, boolean debugLeds) {
-		super(fragConfig, tosVersion, tossimFlag, debugLeds);
+	    boolean tossimFlag, boolean debugLeds) {
+		super(fragConfig, tossimFlag, debugLeds);
 		this.op = op;
 		this.plan = plan;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
     }
 
     @Override
@@ -146,22 +146,13 @@ public class AcquireComponent extends NesCComponent implements
     			getDataBuff.append("\t\t\tacquiring" + i 
     					+ " = TRUE;\n");    		
     			getDataBuff.append("\t\t\t}\n");
-    			if (tosVersion==1) {
-    				getDataBuff.append("\t\tcall ADC" + i + ".getData();\n");	
-    			} else {
-    				getDataBuff.append("\t\tcall Read"+ i + ".read();\n");
-    			}
+    			getDataBuff.append("\t\tcall Read"+ i + ".read();\n");
     			
     			getDataBuff.append("\t}\n\n");
     		}
     		
-    		if (tosVersion==1) {
-	    	    getDataBuff.append("\tasync event result_t ADC" + i
-	    		    + ".dataReady(uint16_t data)\n");
-    		} else {
-	    	    getDataBuff.append("\tevent void Read" + i + 
+    	    getDataBuff.append("\tevent void Read" + i + 
 	    	    	".readDone(error_t result, uint16_t data)\n");
-	    	}
     	    getDataBuff.append("\t{\n");
     	    getDataBuff.append("\t\tif (acquiring" + i + ") {\n");
     	    getDataBuff.append("\t\t\tatomic\n");
@@ -177,11 +168,6 @@ public class AcquireComponent extends NesCComponent implements
     	    	padding = Utils.pad(" ", 16 - attribName.length());
     	    }
 
-    	    if (tosVersion==1) {
-	    	    getDataBuff.append("\t\t\t\tdbg(DBG_USR1,\"ACQUIRE: " + attribName
-	    		    + padding + "  %d at epoch %d\\n\",reading" + i
-	    		    + ",currentEvalEpoch);\n");
-    	    }
     	    getDataBuff.append("\t\t\t}\n");
 
     	    if (i + 1 < sensedAttribs.size()) {
@@ -190,9 +176,7 @@ public class AcquireComponent extends NesCComponent implements
     	    	getDataBuff.append("\t\t\tpost constructTupleTask();\n");
     	    }
     	    getDataBuff.append("\t\t}\n");
-    	    if (tosVersion==1) {
-    	    	getDataBuff.append("\t\treturn SUCCESS;\n");
-    	    }
+    	    
     	    getDataBuff.append("\t}\n\n");
     	}
     	replacements.put("__GET_DATA_METHODS__", getDataBuff.toString());
@@ -212,7 +196,6 @@ public class AcquireComponent extends NesCComponent implements
     	    getDataBuff.append("\tasync event result_t ADC" + i
     		    + ".dataReady(uint16_t data)\n");
     	    getDataBuff.append("\t{\n");
-    	    getDataBuff.append("\t\treturn SUCCESS;\n");
     	    getDataBuff.append("\t}\n\n");
     	}
     	replacements.put("__GET_DATA_METHODS__", getDataBuff.toString());
@@ -268,11 +251,7 @@ public class AcquireComponent extends NesCComponent implements
 	    	return "currentEvalEpoch";
 	    }
 	    if (expression instanceof IDAttribute) {
-	    	if (tosVersion == 1) {
-	    		return "TOS_LOCAL_ADDRESS";
-	    	} else {
-	    		return "TOS_NODE_ID";
-	    	}
+	    	return "TOS_NODE_ID";
 	    }
 //TOOD: Add LocalTime attribute back in at some point
 //	    if (expression instanceof LocalTimeAttribute) {

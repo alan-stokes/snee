@@ -39,9 +39,9 @@ public class NodeControllerComponent extends NesCComponent implements
 	TinyOS2Component {
 
     public NodeControllerComponent(final String name, final NesCConfiguration config,
-    		int tosVersion, boolean tossimFlag) {
+    		boolean tossimFlag) {
 	    
-    	super(config, tosVersion, tossimFlag);
+    	super(config, tossimFlag);
     	this.id = name;
     	this.systemComponent = true;
     }

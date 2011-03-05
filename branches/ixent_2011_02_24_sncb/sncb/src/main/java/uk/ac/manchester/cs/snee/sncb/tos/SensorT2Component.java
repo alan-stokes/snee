@@ -51,7 +51,7 @@ public class SensorT2Component extends GenericNesCComponent implements
 	    final String name, final NesCConfiguration config,
 	    final String packetType,
 	    boolean tossimFlag) {
-	super(config, TYPE_NAME, packetType, 2, tossimFlag);
+	super(config, TYPE_NAME, packetType, tossimFlag);
 	this.sourceSite = sourceSite;
 	this.sensorId = sensorId;
 	//this.id = name;

@@ -81,7 +81,7 @@ public class RXT2Component extends NesCComponent implements TinyOS2Component {
     	    final Site txSite, final NesCConfiguration config, 
     	    final SensorNetworkQueryPlan plan,
     	    boolean tossimFlag, boolean debugLeds) {
-		super(config, 2, tossimFlag, debugLeds);
+		super(config, tossimFlag, debugLeds);
 		this.instanceOfGeneric = true;
 		this.sourceFrag = sourceFrag;
 		this.destSite = destSite;

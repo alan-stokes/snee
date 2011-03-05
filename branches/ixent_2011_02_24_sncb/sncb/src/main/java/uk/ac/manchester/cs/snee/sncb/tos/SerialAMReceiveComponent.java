@@ -44,7 +44,7 @@ public class SerialAMReceiveComponent extends GenericNesCComponent implements
 	    final NesCConfiguration config, final String activeMessageID,
 	    boolean tossimFlag) {
 	    	
-		super(config, TYPE_NAME, activeMessageID, 2, tossimFlag);
+		super(config, TYPE_NAME, activeMessageID, tossimFlag);
 		this.instanceOfGeneric = true;
 		this.id = name;
 		this.systemComponent = true;

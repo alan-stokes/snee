@@ -50,8 +50,6 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 public abstract class NesCComponent extends NodeImplementation implements Node {
 
     String description;
-
-    int tosVersion;
     
     boolean tossimFlag;
 
@@ -64,22 +62,18 @@ public abstract class NesCComponent extends NodeImplementation implements Node {
 	this.configuration = null;
     }
 
-    protected NesCComponent(final NesCConfiguration config, int tosVersion,
-    		boolean tossimFlag, boolean debugLeds) {
+    protected NesCComponent(final NesCConfiguration config, boolean tossimFlag, boolean debugLeds) {
 		super();
 		this.configuration = config;
 		this.site = config.getSite();
-		this.tosVersion = tosVersion;
 		this.tossimFlag = tossimFlag;
 		this.debugLeds = debugLeds;
     }
 
-    public NesCComponent(final NesCConfiguration config, int tosVersion,
-    		boolean tossimFlag) {
+    public NesCComponent(final NesCConfiguration config, boolean tossimFlag) {
     	super();
 		this.configuration = config;
 		this.site = config.getSite();
-		this.tosVersion = tosVersion;
 		this.tossimFlag = tossimFlag;
 		this.debugLeds = false;
 	}

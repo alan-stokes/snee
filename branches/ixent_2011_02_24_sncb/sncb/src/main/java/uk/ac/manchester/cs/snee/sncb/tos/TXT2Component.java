@@ -87,7 +87,7 @@ public class TXT2Component extends NesCComponent implements TinyOS2Component {
 	    final SensorNetworkQueryPlan plan,
 	    boolean tossimFlag, CostParameters costParams, boolean ledsDebug) {
 	
-    	super(config, 2, tossimFlag, ledsDebug);
+    	super(config, tossimFlag, ledsDebug);
 		this.instanceOfGeneric = true;
 		this.sourceFrag = sourceFrag;
 		this.destSite = destSite;

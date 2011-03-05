@@ -45,7 +45,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class ProjectComponent extends NesCComponent implements
-	TinyOS1Component, TinyOS2Component {
+	TinyOS2Component {
 
     SensornetProjectOperator op;
 
@@ -53,11 +53,11 @@ public class ProjectComponent extends NesCComponent implements
 
     public ProjectComponent(final SensornetProjectOperator op, final SensorNetworkQueryPlan plan,
     final NesCConfiguration fragConfig, 
-    int tosVersion, boolean tossimFlag, boolean debugLeds) {
-		super(fragConfig, tosVersion, tossimFlag, debugLeds);
+    boolean tossimFlag, boolean debugLeds) {
+		super(fragConfig, tossimFlag, debugLeds);
 		this.op = op;
 		this.plan = plan;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
     }
 
     @Override

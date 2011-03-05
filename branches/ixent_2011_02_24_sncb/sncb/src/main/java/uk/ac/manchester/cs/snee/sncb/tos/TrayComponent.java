@@ -69,13 +69,13 @@ public class TrayComponent extends NesCComponent {
     public TrayComponent(final Fragment sourceFrag, final Fragment destFrag,
     final String destSiteID, final Site currentSite, 
     final NesCConfiguration config, final SensorNetworkQueryPlan plan,
-    int tosVersion, boolean tossimFlag, CostParameters costParams, boolean ledsDebug) {
-		super(config, tosVersion, tossimFlag, ledsDebug);
+    boolean tossimFlag, CostParameters costParams, boolean ledsDebug) {
+		super(config, tossimFlag, ledsDebug);
 		this.sourceFrag = sourceFrag;
 		this.destFrag = destFrag;
 		this.destSiteID = destSiteID;
 		this.currentSite = currentSite;
-		this.id = generateName(sourceFrag, destFrag, this.site.getID(), destSiteID, tosVersion);
+		this.id = generateName(sourceFrag, destFrag, this.site.getID(), destSiteID);
 		this.plan = plan;
 		this.costParams = costParams;
     }
@@ -95,25 +95,14 @@ public class TrayComponent extends NesCComponent {
      */
     public static String generateName(final Fragment sourceFrag,
 	    final Fragment destFrag, final String currentSiteID,
-	    final String destSiteID, int tosVersion) {
+	    final String destSiteID) {
 	if (sourceFrag.isRecursive()) {
-	    if (tosVersion == 1) {
-		return "trayF" + sourceFrag.getChildFragments().get(0).getID()
-			+ "_F" + destFrag.getID() + "n" + destSiteID + "_n"
-			+ currentSiteID + "M";
-	    } else {
 		return "trayF" + sourceFrag.getChildFragments().get(0).getID()
 			+ "_F" + destFrag.getID() + "n" + destSiteID + "_n"
 			+ currentSiteID + "P";
-	    }
 	} else {
-	    if (tosVersion == 1) {
-		return "trayF" + sourceFrag.getID() + "_F" + destFrag.getID()
-			+ "n" + destSiteID + "_n" + currentSiteID + "M";
-	    } else {
 		return "trayF" + sourceFrag.getID() + "_F" + destFrag.getID()
 			+ "n" + destSiteID + "_n" + currentSiteID + "P";
-	    }
 	}
     }
 

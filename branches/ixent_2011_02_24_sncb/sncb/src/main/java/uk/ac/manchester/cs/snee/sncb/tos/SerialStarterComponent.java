@@ -33,13 +33,12 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
 
 public class SerialStarterComponent extends NesCComponent implements TinyOS2Component {
 
     public SerialStarterComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {
-	super(config, 2, tossimFlag);
+	super(config, tossimFlag);
 	this.instanceOfGeneric = false;
 	this.id = name;
 	this.systemComponent = true;

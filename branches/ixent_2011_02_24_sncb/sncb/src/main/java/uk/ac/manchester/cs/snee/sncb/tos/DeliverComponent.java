@@ -48,7 +48,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class DeliverComponent extends NesCComponent implements
-	TinyOS1Component, TinyOS2Component {
+	TinyOS2Component {
 
 	SensornetDeliverOperator op;
 
@@ -57,12 +57,12 @@ public class DeliverComponent extends NesCComponent implements
     CostParameters costParams;
 
     public DeliverComponent(final SensornetDeliverOperator op, final SensorNetworkQueryPlan plan, 
-    final NesCConfiguration fragConfig, int tosVersion, boolean tossimFlag, boolean debugLeds, CostParameters costParams) {
+    final NesCConfiguration fragConfig, boolean tossimFlag, boolean debugLeds, CostParameters costParams) {
 
-		super(fragConfig, tosVersion, tossimFlag, debugLeds);
+		super(fragConfig, tossimFlag, debugLeds);
 		this.op = op;
 		this.plan = plan;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
 		this.costParams = costParams;
     }
 
@@ -78,9 +78,6 @@ public class DeliverComponent extends NesCComponent implements
     	try {
 			final HashMap<String, String> replacements = new HashMap<String, String>();
 		
-			if (tosVersion==1) {
-				replacements.put("__ITOA_DECL__", "#include \"itoa.h\"");
-			}
 			replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
 				.replace("\"", ""));
 			replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils

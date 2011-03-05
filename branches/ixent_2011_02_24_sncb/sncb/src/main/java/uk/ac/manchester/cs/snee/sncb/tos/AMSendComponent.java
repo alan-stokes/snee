@@ -56,7 +56,7 @@ public class AMSendComponent extends GenericNesCComponent implements
 	    final NesCConfiguration config, final String activeMessageID,
 	    boolean tossimFlag) {
 	    	
-		super(config, TYPE_NAME, activeMessageID, 2, tossimFlag);
+		super(config, TYPE_NAME, activeMessageID, tossimFlag);
 		this.sourceSite = sourceSite;
 		this.sourceFrag = sourceFrag;
 		this.destSite = destSite;
@@ -69,7 +69,7 @@ public class AMSendComponent extends GenericNesCComponent implements
     public AMSendComponent(final NesCConfiguration config, final String activeMessageID,
 	    boolean tossimFlag) {
     	
-    	super(config, TYPE_NAME, activeMessageID, 2, tossimFlag);
+    	super(config, TYPE_NAME, activeMessageID, tossimFlag);
     	this.id = "AMBeaconSender";
     	this.systemComponent = true;
     }

@@ -48,7 +48,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class AggrMergeComponent extends NesCComponent implements
-	TinyOS1Component, TinyOS2Component {
+	TinyOS2Component {
 
     SensornetAggrMergeOperator op;
 
@@ -56,12 +56,12 @@ public class AggrMergeComponent extends NesCComponent implements
 
     public AggrMergeComponent(final SensornetAggrMergeOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    int tosVersion, boolean tossimFlag, boolean debugLeds) {
+	    boolean tossimFlag, boolean debugLeds) {
 	    	
-    	super(fragConfig, tosVersion, tossimFlag, debugLeds);
+    	super(fragConfig, tossimFlag, debugLeds);
 		this.op = op;
 		this.plan = plan;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
     }
 
     @Override

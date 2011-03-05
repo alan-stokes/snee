@@ -46,16 +46,16 @@ public abstract class GenericNesCComponent extends NesCComponent implements
 
     public GenericNesCComponent(final NesCConfiguration config,
 	    final String type, final String activeMessageID,
-	    int tosVersion, boolean tossimFlag) {
-		super(config, tosVersion, tossimFlag);
+	    boolean tossimFlag) {
+		super(config, tossimFlag);
 		this.instanceOfGeneric = true;
 		this.type = type;
 		this.activeMessageID = activeMessageID;
     }
 
     public GenericNesCComponent(final NesCConfiguration config,
-	    final String type, int tosVersion, boolean tossimFlag) {
-    	this(config, type, "", tosVersion, tossimFlag);
+	    final String type, boolean tossimFlag) {
+    	this(config, type, "", tossimFlag);
     }
 
     @Override

@@ -39,7 +39,7 @@ public class RadioComponent extends NesCComponent implements TinyOS2Component {
 
     public RadioComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {
-	super(config, 2, tossimFlag);
+	super(config, tossimFlag);
 	this.instanceOfGeneric = false;
 	this.id = name;
 	this.systemComponent = true;

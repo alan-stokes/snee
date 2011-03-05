@@ -82,17 +82,12 @@ public final class CodeGenUtils {
      * @return
      */
     public static String generateOperatorInstanceName(SensornetOperator op,
-	final Site site, int tosVersion) {
+	final Site site) {
     	Fragment frag = op.getContainingFragment();
     	if (frag==null)
     		frag = op.getLeftChild().getContainingFragment();
-		if (tosVersion == 1) {
-		    return op.getNesCTemplateName() + "Op" + op.getID() + "Frag"
-			    + frag.getID() + "Site" + site.getID() + "M";
-		} else {
-		    return op.getNesCTemplateName() + "Op" + op.getID() + "Frag"
+	    return op.getNesCTemplateName() + "Op" + op.getID() + "Frag"
 			    + frag.getID() + "Site" + site.getID() + "P";
-		}
     }
 
     /**

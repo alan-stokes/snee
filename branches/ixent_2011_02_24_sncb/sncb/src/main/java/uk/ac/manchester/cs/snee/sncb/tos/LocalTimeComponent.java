@@ -40,7 +40,7 @@ public class LocalTimeComponent extends NesCComponent implements
 
    public LocalTimeComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {
-	super(config, 2, tossimFlag);
+	super(config, tossimFlag);
 	this.id = name;
 	this.systemComponent = true;
     }

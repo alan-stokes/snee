@@ -48,7 +48,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class AggrEvalComponent extends NesCComponent implements
-	TinyOS1Component, TinyOS2Component {
+	TinyOS2Component {
 
     SensornetAggrEvalOperator op;
 
@@ -56,12 +56,12 @@ public class AggrEvalComponent extends NesCComponent implements
 
     public AggrEvalComponent(final SensornetAggrEvalOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    int tosVersion, boolean tossimFlag, boolean debugLeds) {
+	    boolean tossimFlag, boolean debugLeds) {
     	
-		super(fragConfig, tosVersion, tossimFlag, debugLeds);
+		super(fragConfig, tossimFlag, debugLeds);
 		this.op = op;
 		this.plan = plan;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
     }
 
     @Override

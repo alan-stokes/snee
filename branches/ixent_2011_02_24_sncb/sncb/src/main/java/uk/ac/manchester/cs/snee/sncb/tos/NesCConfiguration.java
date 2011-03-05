@@ -60,23 +60,20 @@ public class NesCConfiguration extends Graph {
      * 
      * */
     private Site site = null;
-
-    int tosVersion;
     
     boolean tossimFlag;
     
     public NesCConfiguration(final String name, final SensorNetworkQueryPlan qp, 
-    		int tosVersion, boolean tossimFlag) {
-    	this(name, qp, null, tosVersion, tossimFlag);
+    		boolean tossimFlag) {
+    	this(name, qp, null, tossimFlag);
     }
 
     public NesCConfiguration(final String name, final SensorNetworkQueryPlan qp,
-	    final Site site, int tosVersion, boolean tossimFlag) {
+	    final Site site, boolean tossimFlag) {
 
     	super(name, true, true);
-		this.addComponent(new OutsideWorldComponent(this, tosVersion, tossimFlag)); //use for wiring components to the outside world
+		this.addComponent(new OutsideWorldComponent(this, tossimFlag)); //use for wiring components to the outside world
 		this.site = site;
-		this.tosVersion = tosVersion;
 		this.tossimFlag = tossimFlag;
 
     }
@@ -426,13 +423,8 @@ public class NesCConfiguration extends Graph {
 
 	    //start dumping to file
 
-	    if (tosVersion==1) {
-	    	//necessary otherwise you get an obscure syntax error
-	    	out.println("includes QueryPlan;\n");
-	    } else {
-	    	out.println("#include \"QueryPlan.h\"");
-	    	out.println("#include <hardware.h>\n");	    	
-	    }
+    	out.println("#include \"QueryPlan.h\"");
+    	out.println("#include <hardware.h>\n");	    	
 	    
 	    out.println("\n\nconfiguration " + configComponentName + " {");
 

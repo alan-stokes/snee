@@ -42,7 +42,7 @@ public class TimerT2Component extends GenericNesCComponent implements
 
     public TimerT2Component(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {
-	super(config, TYPE_NAME, 2, tossimFlag);
+	super(config, TYPE_NAME, tossimFlag);
 	this.id = name;
 	this.systemComponent = true;
     }
