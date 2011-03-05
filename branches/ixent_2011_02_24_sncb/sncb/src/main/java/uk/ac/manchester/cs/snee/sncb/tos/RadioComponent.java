@@ -35,7 +35,7 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 
-public class RadioComponent extends NesCComponent implements TinyOS2Component {
+public class RadioComponent extends NesCComponent {
 
     public RadioComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {

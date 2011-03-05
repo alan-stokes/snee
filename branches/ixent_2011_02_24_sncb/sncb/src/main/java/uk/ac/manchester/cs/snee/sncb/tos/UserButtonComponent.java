@@ -35,8 +35,7 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 
-public class UserButtonComponent extends NesCComponent implements
-	TinyOS2Component {
+public class UserButtonComponent extends NesCComponent {
 
     public UserButtonComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {

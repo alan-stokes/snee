@@ -47,8 +47,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregat
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class AggrEvalComponent extends NesCComponent implements
-	TinyOS2Component {
+public class AggrEvalComponent extends NesCComponent {
 
     SensornetAggrEvalOperator op;
 

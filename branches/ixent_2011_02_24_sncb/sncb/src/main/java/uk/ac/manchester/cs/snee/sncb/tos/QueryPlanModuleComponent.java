@@ -735,13 +735,13 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    	continue;
 	    }
 
-	    if ((mode == CommunicationTask.TRANSMIT) && (comp instanceof TXT2Component)) {
+	    if ((mode == CommunicationTask.TRANSMIT) && (comp instanceof TXComponent)) {
 	    	txrxUserAsNames.add(userAsName);
 	    	continue;
 	    }
 	    
-	    if ((mode == CommunicationTask.RECEIVE) && (comp instanceof RXT2Component)) {
-	    	if (((RXT2Component)comp).getTxSite()==((CommunicationTask)task).getSourceNode()) {
+	    if ((mode == CommunicationTask.RECEIVE) && (comp instanceof RXComponent)) {
+	    	if (((RXComponent)comp).getTxSite()==((CommunicationTask)task).getSourceNode()) {
 		    	txrxUserAsNames.add(userAsName);
 		    	continue;	    		
 	    	}

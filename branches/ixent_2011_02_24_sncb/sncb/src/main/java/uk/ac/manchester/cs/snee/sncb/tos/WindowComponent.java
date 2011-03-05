@@ -43,8 +43,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class WindowComponent extends NesCComponent implements
-	TinyOS2Component {
+public class WindowComponent extends NesCComponent {
 
     SensornetWindowOperator op;
 

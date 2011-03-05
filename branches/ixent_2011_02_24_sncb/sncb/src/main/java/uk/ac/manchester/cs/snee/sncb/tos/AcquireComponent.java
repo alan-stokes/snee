@@ -62,8 +62,7 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
  * @author Ixent, Christian
  *
  */
-public class AcquireComponent extends NesCComponent implements
-	TinyOS2Component {
+public class AcquireComponent extends NesCComponent {
 
 	/** Operator class code is being build for. */
     private SensornetAcquireOperator op;

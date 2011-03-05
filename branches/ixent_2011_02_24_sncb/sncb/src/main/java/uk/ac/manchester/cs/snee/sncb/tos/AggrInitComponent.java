@@ -46,8 +46,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class AggrInitComponent extends NesCComponent implements
-	TinyOS2Component {
+public class AggrInitComponent extends NesCComponent {
 
     /**
      * The aggr_init operator in the DAF.

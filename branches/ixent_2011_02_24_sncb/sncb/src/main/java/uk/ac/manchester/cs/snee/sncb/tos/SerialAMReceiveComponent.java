@@ -35,8 +35,7 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 
-public class SerialAMReceiveComponent extends GenericNesCComponent implements
-	TinyOS2Component {
+public class SerialAMReceiveComponent extends GenericNesCComponent {
 
     public static String TYPE_NAME = "SerialAMReceiverC";
 

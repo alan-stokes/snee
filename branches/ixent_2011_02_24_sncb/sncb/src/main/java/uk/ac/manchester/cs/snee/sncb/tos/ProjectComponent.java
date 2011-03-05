@@ -44,8 +44,7 @@ import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class ProjectComponent extends NesCComponent implements
-	TinyOS2Component {
+public class ProjectComponent extends NesCComponent {
 
     SensornetProjectOperator op;
 

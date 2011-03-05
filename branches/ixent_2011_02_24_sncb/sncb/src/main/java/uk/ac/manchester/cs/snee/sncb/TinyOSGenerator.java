@@ -94,16 +94,16 @@ import uk.ac.manchester.cs.snee.sncb.tos.NodeControllerComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.PowerManagementComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.ProjectComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.QueryPlanModuleComponent;
-import uk.ac.manchester.cs.snee.sncb.tos.RXT2Component;
+import uk.ac.manchester.cs.snee.sncb.tos.RXComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.RadioComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SelectComponent;
-import uk.ac.manchester.cs.snee.sncb.tos.SensorT2Component;
+import uk.ac.manchester.cs.snee.sncb.tos.SensorComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialAMReceiveComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialAMSendComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialStarterComponent;
-import uk.ac.manchester.cs.snee.sncb.tos.TXT2Component;
+import uk.ac.manchester.cs.snee.sncb.tos.TXComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.Template;
-import uk.ac.manchester.cs.snee.sncb.tos.TimerT2Component;
+import uk.ac.manchester.cs.snee.sncb.tos.TimerComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.TrayComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.WindowComponent;
 
@@ -535,7 +535,7 @@ public class TinyOSGenerator {
 			INTERFACE_GET_TUPLES);
 
 
-		t2AddRXComponent(config, exchPart,
+		addRXComponent(config, exchPart,
 					sourceFrag, destFrag, destSiteID, trayName);
 	}
 
@@ -571,7 +571,7 @@ public class TinyOSGenerator {
 				.generatePutTuplesInterfaceInstanceName(sourceFrag),
 			INTERFACE_PUT_TUPLES);
 
-			t2AddTXComponent(config, exchPart, sourceFrag,
+			addTXComponent(config, exchPart, sourceFrag,
 					destFrag, destSiteID, trayName);
 	}
 
@@ -594,9 +594,9 @@ public class TinyOSGenerator {
 			final Fragment destFrag, final String destSiteID,
 			final String trayName) throws CodeGenerationException {
 		
-		t2AddRXComponent(config, exchPart, sourceFrag, destFrag, 
+		addRXComponent(config, exchPart, sourceFrag, destFrag, 
 				destSiteID, trayName);
-		t2AddTXComponent(config, exchPart, sourceFrag, destFrag, 
+		addTXComponent(config, exchPart, sourceFrag, destFrag, 
 				destSiteID, trayName);
 	}
 
@@ -687,7 +687,7 @@ public class TinyOSGenerator {
 				plan, currentSite, tossimFlag);
 
 			/* Add the components which are always needed */
-			t2AddMainSiteComponents(config);
+			addMainSiteComponents(config);
 
 			/* Optional components for Led debugging not implemented yet for TOS2 */
 
@@ -696,7 +696,7 @@ public class TinyOSGenerator {
 			/* Functionality for changing radio transmit power not implemented yet for TOS2*/
 
 			/* Add the fragments which have been placed onto this site */
-			t2AddSiteFragments(currentSite, config);
+			addSiteFragments(currentSite, config);
 
 			/* Wire the fragments with trays, radio receive and transmit */
 			wireSiteFragments(currentSite, currentSiteID, config);
@@ -718,7 +718,7 @@ public class TinyOSGenerator {
      * @param config The nesC configuration which components/wirings are being added to.
      * @throws CodeGenerationException
      */
-	private void t2AddMainSiteComponents(final NesCConfiguration config) throws CodeGenerationException {
+	private void addMainSiteComponents(final NesCConfiguration config) throws CodeGenerationException {
 		MainComponent mainComp = new MainComponent(COMPONENT_MAIN, config,
 			tossimFlag);
 		config.addComponent(mainComp);
@@ -732,7 +732,7 @@ public class TinyOSGenerator {
 			useNodeController);
 		config.addComponent(queryPlanModuleComp);
 
-		TimerT2Component timerComp = new TimerT2Component(		//$
+		TimerComponent timerComp = new TimerComponent(		//$
 			COMPONENT_AGENDA_TIMER, config, tossimFlag);
 		config.addComponent(timerComp);
 
@@ -765,14 +765,14 @@ public class TinyOSGenerator {
 			config.addComponent(delugeComp);
 		}
 		if (this.useStartUpProtocol) {
-			t2AddStartupProtocolComponents(config);
+			addStartupProtocolComponents(config);
 		}
 		if (this.useNodeController) {
-			t2AddNodeControllerComponents(config);
+			addNodeControllerComponents(config);
 		}
 	}
 
-	private void t2AddStartupProtocolComponents(final NesCConfiguration config)
+	private void addStartupProtocolComponents(final NesCConfiguration config)
 			throws CodeGenerationException {
 		String aid = ActiveMessageIDGenerator.getActiveMessageID("AM_SERIAL_STARTUP_MESSAGE");
 		SerialAMReceiveComponent serialRxComp = 
@@ -800,7 +800,7 @@ public class TinyOSGenerator {
 	}
 
 
-	private void t2AddNodeControllerComponents(NesCConfiguration config)
+	private void addNodeControllerComponents(NesCConfiguration config)
 	throws CodeGenerationException {
 		NodeControllerComponent nodeControllerComp = 
 			new NodeControllerComponent(COMPONENT_NODE_CONTROLLER, config, 
@@ -824,7 +824,7 @@ public class TinyOSGenerator {
      * @param config The nesC configuration which components/wirings are being added to.
      * @throws CodeGenerationException
      */
-	private void t2AddSiteFragments(final Site currentSite, final NesCConfiguration config)
+	private void addSiteFragments(final Site currentSite, final NesCConfiguration config)
 			throws CodeGenerationException {
 		final Iterator<Fragment> fragIter = currentSite.getFragments()
 			.iterator();
@@ -843,7 +843,7 @@ public class TinyOSGenerator {
 				INTERFACE_DO_TASK);
 
 			/* Wire fragment to hardware devices as required */
-			t2WireFragToDevices(currentSite, config, frag, fragComp);
+			wireFragToDevices(currentSite, config, frag, fragComp);
 		}
 	}
 
@@ -857,7 +857,7 @@ public class TinyOSGenerator {
 	 * @param fragComp
 	 * @throws CodeGenerationException
 	 */
-	private void t2WireFragToDevices(final Site currentSite, 
+	private void wireFragToDevices(final Site currentSite, 
 	final NesCConfiguration config, final Fragment frag, final FragmentComponent fragComp)
 	throws CodeGenerationException {
 		final Iterator<SensornetOperator> opIter = frag
@@ -867,10 +867,10 @@ public class TinyOSGenerator {
 			if (op instanceof SensornetAcquireOperator) {
 
 				/* Wire fragment component to the sensor component */
-				t2wireFragToSensors(currentSite, config, fragComp, op);
+				wireFragToSensors(currentSite, config, fragComp, op);
 				
 				if (this.showLocalTime) {
-					t2wireFragToLocalTime(currentSite, config, fragComp, op);
+					wireFragToLocalTime(currentSite, config, fragComp, op);
 				}
 				
 			} else if (op instanceof SensornetDeliverOperator) {
@@ -903,7 +903,7 @@ public class TinyOSGenerator {
 	 * @param op
 	 * @throws CodeGenerationException
 	 */
-	private void t2wireFragToSensors(final Site currentSite, 
+	private void wireFragToSensors(final Site currentSite, 
 	final NesCConfiguration config, final FragmentComponent fragComp, final SensornetOperator op)
 	throws CodeGenerationException {
 		final int numSensedAttr
@@ -911,7 +911,7 @@ public class TinyOSGenerator {
 		for (int i = 0; i < numSensedAttr; i++) {
 			//TODO: look up sensorID in metadata
 			String sensorId = new Integer(i).toString();
-			final SensorT2Component sensorComp = new SensorT2Component(
+			final SensorComponent sensorComp = new SensorComponent(
 					currentSite, sensorId, COMPONENT_SENSOR, config, "",
 					tossimFlag);
 			config.addComponent(sensorComp);
@@ -923,7 +923,7 @@ public class TinyOSGenerator {
 		}
 	}
 
-	private void t2wireFragToLocalTime(final Site currentSite, 
+	private void wireFragToLocalTime(final Site currentSite, 
 	final NesCConfiguration config, final FragmentComponent fragComp, final SensornetOperator op)
 	throws CodeGenerationException {
 
@@ -935,7 +935,7 @@ public class TinyOSGenerator {
 					INTERFACE_LOCAL_TIME, TYPE_TMILLI, INTERFACE_LOCAL_TIME, INTERFACE_LOCAL_TIME);
 	}
 
-	private void t2AddTXComponent(final NesCConfiguration config, final ExchangePart exchPart,
+	private void addTXComponent(final NesCConfiguration config, final ExchangePart exchPart,
 			final Fragment sourceFrag, final Fragment destFrag,
 			final String destSiteID, final String trayName)
 			throws CodeGenerationException {
@@ -947,7 +947,7 @@ public class TinyOSGenerator {
 					destSiteID,
 					exchPart.getCurrentSite().getID());
 
-		final TXT2Component txComp = new TXT2Component(
+		final TXComponent txComp = new TXComponent(
 				sourceFrag, destFrag,
 				exchPart.getDestSite(),
 				exchPart.getNext().getCurrentSite(),
@@ -983,13 +983,13 @@ public class TinyOSGenerator {
 	}
 
 	
-	private void t2AddRXComponent(final NesCConfiguration config, 
+	private void addRXComponent(final NesCConfiguration config, 
 			final ExchangePart exchPart,
 			final Fragment sourceFrag, final Fragment destFrag,
 			final String destSiteID, final String trayName)
 			throws CodeGenerationException {
 
-		final RXT2Component rxComp = new RXT2Component(
+		final RXComponent rxComp = new RXComponent(
 			sourceFrag, destFrag,
 			exchPart.getDestSite(),
 			exchPart.getPrevious().getCurrentSite(),
@@ -1545,7 +1545,7 @@ public class TinyOSGenerator {
 		}
 
 		StringBuffer deliverMsgBuff;
-		deliverMsgBuff = t2AddDeliverMessageStruct(plan.getDAF().getRootOperator());
+		deliverMsgBuff = addDeliverMessageStruct(plan.getDAF().getRootOperator());
 
 		/* Generate combined (e.g., for Tossim or Deluge) header file */
 		doGenerateCombinedHeaderFile(activeIDDeclsBuff, tupleTypeBuff, messageTypeBuff, deliverMsgBuff);
@@ -1681,7 +1681,7 @@ public class TinyOSGenerator {
 	 * @return
 	 * @throws OptimizationException 
 	 */
-	private StringBuffer t2AddDeliverMessageStruct(SensornetOperator op) throws OptimizationException {
+	private StringBuffer addDeliverMessageStruct(SensornetOperator op) throws OptimizationException {
 		final int tupleSize = CodeGenUtils.outputTypeSize.get(
 				CodeGenUtils.generateOutputTupleType(op)).intValue();
 		final int numTuplesPerMessage = ExchangePart

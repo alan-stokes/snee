@@ -33,6 +33,45 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-public interface TinyOS2Component {
+import java.io.IOException;
+
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
+
+public class SensorComponent extends GenericNesCComponent {
+
+    public static String TYPE_NAME = TinyOSGenerator.COMPONENT_SENSOR;
+
+    Site sourceSite;
+
+    String sensorId;
+
+    public SensorComponent(final Site sourceSite, final String sensorId,
+	    final String name, final NesCConfiguration config,
+	    final String packetType,
+	    boolean tossimFlag) {
+	super(config, TYPE_NAME, packetType, tossimFlag);
+	this.sourceSite = sourceSite;
+	this.sensorId = sensorId;
+	//this.id = name;
+	this.id = this.generateName();
+	this.systemComponent = true;
+    }
+
+    @Override
+    public String toString() {
+	return this.getID();
+    }
+
+    private String generateName() {
+	return "Sensor" + this.sensorId + "site"
+		+ this.sourceSite.getID();
+    }
+
+    @Override
+    public void writeNesCFile(final String outputDir)
+	    throws CodeGenerationException {
+	//Do nothing!!
+    }
 
 }

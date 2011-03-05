@@ -38,8 +38,7 @@ import java.io.IOException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 
-public class AMSendComponent extends GenericNesCComponent implements
-	TinyOS2Component {
+public class AMSendComponent extends GenericNesCComponent {
 
     public static String TYPE_NAME = "AMSenderC";
 

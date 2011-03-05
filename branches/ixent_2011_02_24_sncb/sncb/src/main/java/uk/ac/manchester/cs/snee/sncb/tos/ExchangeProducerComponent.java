@@ -43,8 +43,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class ExchangeProducerComponent extends NesCComponent implements
-	TinyOS2Component {
+public class ExchangeProducerComponent extends NesCComponent {
 
     SensornetExchangeOperator op;
 

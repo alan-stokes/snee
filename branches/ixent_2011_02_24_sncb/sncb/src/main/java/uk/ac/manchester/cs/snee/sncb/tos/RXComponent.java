@@ -37,65 +37,58 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class TXT2Component extends NesCComponent implements TinyOS2Component {
+public class RXComponent extends NesCComponent {
 
 	/**
 	 * The fragment that tuples originate from (i.e., the tuple type)
 	 */
     Fragment sourceFrag;
-	
+
 	/**
 	 * The fragment that tuples are being sent to
 	 */
-    Fragment destFrag;
+    Site destSite;
 
     /**
      * The site when the instance of the destination fragment is located.  
      * This is required as there may be more than one instance of the destination fragment.
      */
-    Site destSite;
+    Fragment destFrag;
 
     /**
-     * The site that this component's tuples are being transmitted to, i.e., the next hop
-     * towards the final destination site. This is the same as the parent site in the routing
+     * The site that this component's tuples are being received from, i.e., the previous hop
+     * towards the final destination site. This is the same as the child site in the routing
      * tree.
      */
-    Site rxSite;
-    
+    Site txSite;
+
     /**
      * The query plan for which code is being generated.
      */
     SensorNetworkQueryPlan plan;
-    
-    CostParameters costParams;
+
 
     private final String templateFileName = TinyOSGenerator.NESC_COMPONENTS_DIR
-	    + "/tx.nc";
+	    + "/rx.nc";
 
-    
-    public TXT2Component(final Fragment sourceFrag,
-	    final Fragment destFrag, final Site destSite,
-	    final Site rxSite, final NesCConfiguration config, 
-	    final SensorNetworkQueryPlan plan,
-	    boolean tossimFlag, CostParameters costParams, boolean ledsDebug) {
-	
-    	super(config, tossimFlag, ledsDebug);
+    public RXComponent(final Fragment sourceFrag,
+    	    final Fragment destFrag, final Site destSite,
+    	    final Site txSite, final NesCConfiguration config, 
+    	    final SensorNetworkQueryPlan plan,
+    	    boolean tossimFlag, boolean debugLeds) {
+		super(config, tossimFlag, debugLeds);
 		this.instanceOfGeneric = true;
 		this.sourceFrag = sourceFrag;
 		this.destSite = destSite;
 		this.destFrag = destFrag;
-		this.rxSite = rxSite;
+		this.txSite = txSite;
 		this.id = this.generateName();
 		this.plan = plan;
-		this.costParams = costParams;
     }
 
     @Override
@@ -104,56 +97,30 @@ public class TXT2Component extends NesCComponent implements TinyOS2Component {
     }
 
     private String generateName() {
-	return "tx_" + "frag" + this.sourceFrag.getID() + "frag"
+	return "rx_" + "frag" + this.sourceFrag.getID() + "frag"
 		+ this.destFrag.getID() + "n" + this.destSite.getID() + "_tx"
-		+ this.site.getID() + "rx" + this.rxSite.getID() 
+		+ this.txSite.getID() + "rx" + this.site.getID() 
 		+ "_Site" + this.site.getID()+ "P";
     }
 
     @Override
     public void writeNesCFile(final String outputDir)
 	    throws CodeGenerationException {
-    	
+
     	try {
-		final String currentSiteID = this.site.getID();
-		final String parentSiteID = this.rxSite.getID();
-	
 		final HashMap<String, String> replacements = new HashMap<String, String>();
 	
-		replacements.put("__CURRENT_SITE_ID__", currentSiteID);
-		replacements.put("__PARENT_ID__", parentSiteID);
-		replacements.put("__BUFFERING_FACTOR__", new Long(this.plan
-				.getBufferingFactor()).toString());
-		replacements.put("__CHILD_TUPLE_PTR_TYPE__", 
-				CodeGenUtils.generateOutputTuplePtrType(this.sourceFrag));
-		replacements.put("__MESSAGE_TYPE__", CodeGenUtils
-			.generateMessageType(this.sourceFrag));
 		replacements.put("__MESSAGE_PTR_TYPE__", CodeGenUtils
-				.generateMessagePtrType(this.sourceFrag));
+			.generateMessagePtrType(this.sourceFrag));
+		replacements.put("__MESSAGE_TYPE__", CodeGenUtils
+				.generateMessageType(this.sourceFrag));
 		
 		if (this.debugLeds) {
-			replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led2Toggle();");		
+			replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led1Toggle();");		
 		} else {
 			replacements.put("__NESC_DEBUG_LEDS__", "");
 		}
 		
-		//int tuplesPerPacket= Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE/((new Integer(CodeGenUtils.outputTypeSize.get(CodeGenUtils.generateOutputTupleType(sourceFrag)).toString()))+ Settings.NESC_PAYLOAD_OVERHEAD);
-		final int tupleSize = new Integer(CodeGenUtils.outputTypeSize
-			.get(CodeGenUtils.generateOutputTupleType(this.sourceFrag)));
-		//	int tuplesPerPacket =(int)Math.floor((Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE - (Settings.NESC_PAYLOAD_OVERHEAD+2)) / (tupleSize+2));
-		final int numTuplesPerMessage = ExchangePart
-			.computeTuplesPerMessage(tupleSize, costParams);
-		assert (numTuplesPerMessage > 0);
-	
-		replacements.put("__TUPLES_PER_PACKET__", new Integer(
-			numTuplesPerMessage).toString());
-	
-		replacements.put("__TUPLE_PTR_TYPE__", CodeGenUtils
-			.generateOutputTuplePtrType(this.sourceFrag));
-		replacements.put("__HEADER__", this.configuration
-			.generateModuleHeader(this.getID()));
-		replacements.put("__MODULE_NAME__", this.getID());
-	
 		final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 	
 		super
@@ -163,4 +130,9 @@ public class TXT2Component extends NesCComponent implements TinyOS2Component {
     		throw new CodeGenerationException(e);
     	}
     }
+
+	public Site getTxSite() {
+		return this.txSite;
+	}
+
 }

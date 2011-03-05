@@ -42,8 +42,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 
-public class FragmentComponent extends NesCComponent implements
-	TinyOS2Component {
+public class FragmentComponent extends NesCComponent {
 
     Fragment frag;
 

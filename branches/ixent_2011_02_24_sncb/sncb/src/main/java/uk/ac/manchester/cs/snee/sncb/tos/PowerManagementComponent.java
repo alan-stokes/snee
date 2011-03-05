@@ -35,8 +35,7 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 
-public class PowerManagementComponent extends NesCComponent implements
-	TinyOS2Component {
+public class PowerManagementComponent extends NesCComponent {
 
     public PowerManagementComponent(final String name,
 	    final NesCConfiguration config, int tosVersion, boolean tossimFlag) {

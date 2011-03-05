@@ -47,8 +47,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class DeliverComponent extends NesCComponent implements
-	TinyOS2Component {
+public class DeliverComponent extends NesCComponent {
 
 	SensornetDeliverOperator op;
 

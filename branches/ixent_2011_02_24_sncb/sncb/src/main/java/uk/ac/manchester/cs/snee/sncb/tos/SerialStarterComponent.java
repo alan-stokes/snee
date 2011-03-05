@@ -34,7 +34,7 @@
 package uk.ac.manchester.cs.snee.sncb.tos;
 
 
-public class SerialStarterComponent extends NesCComponent implements TinyOS2Component {
+public class SerialStarterComponent extends NesCComponent {
 
     public SerialStarterComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {

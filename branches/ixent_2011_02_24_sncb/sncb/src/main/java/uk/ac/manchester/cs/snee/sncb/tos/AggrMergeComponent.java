@@ -47,8 +47,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class AggrMergeComponent extends NesCComponent implements
-	TinyOS2Component {
+public class AggrMergeComponent extends NesCComponent {
 
     SensornetAggrMergeOperator op;
 

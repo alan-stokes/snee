@@ -35,38 +35,20 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
+public class TimerComponent extends GenericNesCComponent {
 
-public class SensorT2Component extends GenericNesCComponent implements
-	TinyOS2Component {
+    public static String TYPE_NAME = "TimerMilliC";
 
-    public static String TYPE_NAME = TinyOSGenerator.COMPONENT_SENSOR;
-
-    Site sourceSite;
-
-    String sensorId;
-
-    public SensorT2Component(final Site sourceSite, final String sensorId,
-	    final String name, final NesCConfiguration config,
-	    final String packetType,
-	    boolean tossimFlag) {
-	super(config, TYPE_NAME, packetType, tossimFlag);
-	this.sourceSite = sourceSite;
-	this.sensorId = sensorId;
-	//this.id = name;
-	this.id = this.generateName();
+    public TimerComponent(final String name, final NesCConfiguration config,
+    		boolean tossimFlag) {
+	super(config, TYPE_NAME, tossimFlag);
+	this.id = name;
 	this.systemComponent = true;
     }
 
     @Override
     public String toString() {
 	return this.getID();
-    }
-
-    private String generateName() {
-	return "Sensor" + this.sensorId + "site"
-		+ this.sourceSite.getID();
     }
 
     @Override

@@ -44,7 +44,7 @@ import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class JoinComponent extends NesCComponent implements TinyOS2Component {
+public class JoinComponent extends NesCComponent {
 
     SensornetNestedLoopJoinOperator op;
 

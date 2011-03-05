@@ -42,8 +42,7 @@ import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSelectOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class SelectComponent extends NesCComponent implements 
-	TinyOS2Component {
+public class SelectComponent extends NesCComponent {
 
     SensornetSelectOperator op;
 

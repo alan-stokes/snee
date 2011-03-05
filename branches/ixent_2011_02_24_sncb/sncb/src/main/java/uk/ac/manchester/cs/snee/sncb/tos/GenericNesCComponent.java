@@ -33,8 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-public abstract class GenericNesCComponent extends NesCComponent implements
-	TinyOS2Component {
+public abstract class GenericNesCComponent extends NesCComponent {
 
     String type;
 

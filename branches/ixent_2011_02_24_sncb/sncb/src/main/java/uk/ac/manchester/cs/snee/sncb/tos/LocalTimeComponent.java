@@ -35,8 +35,7 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 
-public class LocalTimeComponent extends NesCComponent implements
-	TinyOS2Component {
+public class LocalTimeComponent extends NesCComponent {
 
    public LocalTimeComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {
