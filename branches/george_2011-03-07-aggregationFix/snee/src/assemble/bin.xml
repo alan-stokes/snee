@@ -1,0 +1,55 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+  <id>bin</id>
+  <formats>
+    <format>tar.gz</format>
+    <format>tar.bz2</format>
+    <format>zip</format>
+  </formats>
+  
+ <fileSets>
+    <fileSet>
+      <directory>${basedir}/src/main/resources/etc</directory>
+      <outputDirectory>etc</outputDirectory>
+      <includes>
+        <include>*</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>${basedir}/src/main/java/uk/ac/manchester/cs/snee/client</directory>
+      <outputDirectory>uk/ac/manchester/cs/snee/client</outputDirectory>
+      <includes>
+        <include>*.java</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+
+  <moduleSets>
+    <moduleSet>
+      <!-- Enable access to all projects in the current multimodule build! -->
+      <useAllReactorProjects>true</useAllReactorProjects>
+      <includes>
+        <include>uk.ac.manchester.cs.snee:snee-api</include>
+        <include>uk.ac.manchester.cs.snee:data-source-core</include>
+        <include>uk.ac.manchester.cs.snee:data-source-pull-stream</include>
+        <include>uk.ac.manchester.cs.snee:data-source-wsdair</include>
+        <include>uk.ac.manchester.cs.snee:snee-core</include>
+        <include>uk.ac.manchester.cs.snee:snee-sncb</include>
+        <include>uk.ac.manchester.cs.snee:snee-compiler</include>
+      </includes>
+      
+      <binaries>
+        <outputDirectory>lib</outputDirectory>
+        <unpack>false</unpack>
+        <dependencySets>
+          <dependencySet>
+            <outputDirectory>lib</outputDirectory>
+            <unpack>false</unpack>
+            <scope>runtime</scope>
+          </dependencySet>
+        </dependencySets>
+      </binaries>
+    </moduleSet>
+  </moduleSets>
+</assembly>
