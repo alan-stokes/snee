@@ -293,8 +293,8 @@ public class SourceManager {
 		if (logger.isInfoEnabled())
 			logger.info("Web service successfully added from " + 
 					url + ". Number of extents=" + _schema.size());
-		if (logger.isTraceEnabled()) {
-			logger.trace("Available extents:\n\t" + _schema.keySet());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Available extents:\n\t" + _schema.keySet());
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN addServiceSource() #extents=" +
@@ -384,12 +384,17 @@ public class SourceManager {
 				sourceWrapper.getSchema(resource);
 			for (ExtentMetadata extent : extents) {
 				String extentName = extent.getExtentName();
-				_schema.put(extentName, extent);
-				extentNames.add(extentName);
-				resourcesByExtent.put(extentName, resource);
-				if (logger.isTraceEnabled()) {
-					logger.trace("Added extent " + extentName + 
-							" of extent type " + extent.getExtentType());
+				if (_schema.containsKey(extentName)) {
+					logger.warn("Extent " + extentName + 
+							" already exists in logical schema.");
+				} else {
+					_schema.put(extentName, extent);
+					extentNames.add(extentName);
+					resourcesByExtent.put(extentName, resource);
+					if (logger.isTraceEnabled()) {
+						logger.trace("Added extent " + extentName + 
+								" of extent type " + extent.getExtentType());
+					}
 				}
 			}
 		}

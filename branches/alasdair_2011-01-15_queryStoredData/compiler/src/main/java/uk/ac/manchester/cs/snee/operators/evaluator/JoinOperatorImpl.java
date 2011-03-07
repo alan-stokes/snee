@@ -94,8 +94,8 @@ public class JoinOperatorImpl extends EvaluationOperator {
 					op.toString());
 		}
 		op.setSchema(getSchema());
-		op.open();
 		op.addObserver(this);
+		op.open();
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN startChildReceiver()");
 		}
