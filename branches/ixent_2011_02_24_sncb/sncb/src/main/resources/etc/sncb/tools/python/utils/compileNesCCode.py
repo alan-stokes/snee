@@ -5,11 +5,11 @@ optDataPath = None
 logger = None
 
 optNescDir = os.getcwd()
-optCompileTarget = "telosb"
+optCompileTarget = "telosb_t2"
 optSensorBoard = None
 
 def usage():
-	print 'usage: python compileNesCCode.py --nesc-dir=[dir] --compile-target=[tmote] --sensor-board=[micasb|mts300]'
+	print 'usage: python compileNesCCode.py --nesc-dir=[dir] --compile-target=[telosb_t2] --sensor-board=[micasb|mts300]'
 	sys.exit(2)
 
 def parseArgs(args):
@@ -60,13 +60,13 @@ def reportError(message):
  		logger.error(message)
  	print message
 
-def parseMemoryValues(logfile, target = "tmote"):
+def parseMemoryValues(logfile, targetParameter = "telosb"):
 	inFile =  open(logfile)
 	while 1:
 		line = inFile.readline()
 		if not line:
 			return None;
-		m = re.search("    compiled QueryPlan(\d+) to build/"+target+"/main.exe", line)
+		m = re.search("    compiled QueryPlan(\d+) to build/"+targetParameter+"/main.exe", line)
 		if (m != None):
 			mote = int(m.group(1))			
 			report("Compiled mote "+str(mote))
@@ -81,55 +81,63 @@ def parseMemoryValues(logfile, target = "tmote"):
 			return (mote, ram, rom)
 		
 #reads the logfile from the current directory and reports the main details
-def readMakeLog(logfile, sizeFile, target = "tmote"):
+def readMakeLog(logfile, sizeFile, targetParameter = "telosb"):
 	global ram, rom
 	sizeStr = ""
-	(mote, ram, rom) = parseMemoryValues(logfile, target)
+	(mote, ram, rom) = parseMemoryValues(logfile, targetParameter)
 	if sizeFile!=None:
 		sizeFile.write(str(mote)+","+str(rom)+","+str(ram)+","+str(rom+ram)+"\n")
 	if (ram > 4096):
 		reportError ("RAM = "+str(ram)+" in file "+str(sizeFile))
-	return ram
-			
+		return ram
+	return 0
+
+def doCompileNesCCode(dir, targetParameter = "telosb", sensorBoard = None):
+	os.chdir(dir)
+	exitVal = 0
+	
+	if sensorBoard!=None:
+		commandStr = "SENSORBOARD="+sensorBoard+" "
+	else:
+		commandStr = ""
+
+	commandStr += "make "+targetParameter+" >make.log"
+	report(commandStr)
+	exitVal = os.system(commandStr)
+
+	if (exitVal != 0):
+		reportError("Failed with "+dir+" compilation")
+		return exitVal
+
+	if (targetParameter=="telosb"):
+		exitVal = readMakeLog("make.log", None, targetParameter)
+		if (exitVal != 0):
+			reportError("RAM overflow with "+dir+" compilation")
+
+	return exitVal	
+
+
 #Given a nesC root directory, compiles the nesC code to an executable for given target
-def compileNesCCode(nescRootDir, target = "tmote", sensorBoard = None):
+def compileNesCCode(nescRootDir, target = "telosb_t2", sensorBoard = None):
 	exitVal = 0
 	os.chdir(nescRootDir)
 
+	targetParameter = "telosb"
+	if (target == "tossim_t2"):
+		targetParameter = "micaz sim"
+
 	#TODO: check case when a combined image is used.
-	for dir in os.listdir(nescRootDir):
-		if (dir.startswith("mote") and os.path.isdir(dir)):
-			os.chdir(dir)
-			
-			if sensorBoard!=None:
-				commandStr = "SENSORBOARD="+sensorBoard+" "
-			else:
-				commandStr = ""
+	if (target == "telosb_t2"):
+		for dir in os.listdir(nescRootDir):
+			if (dir.startswith("mote") and os.path.isdir(dir)):
+				exitVal = doCompileNesCCode(dir, targetParameter, sensorBoard)
+				os.chdir(nescRootDir)
+	elif (target == "tossim_t2"):
+		exitVal = doCompileNesCCode(nescRootDir, targetParameter, sensorBoard)
+	else:
+		reportError("Unknown target: "+target)
+		exitVal = -1
 
-			commandStr += "make "+target+" >make.log"
-			report(commandStr)
-			exitVal = os.system(commandStr)
-
-			if (exitVal != 0):
-				reportError("Failed with "+dir+" compilation")
-				return exitVal
-			exitVal = readMakeLog("make.log", None, target)
-			exitVal = 0
-			if (exitVal != 0):
-				reportError("RAM overflow with "+dir+" compilation")
-				return exitVal
-
-			# sleep for 10 seconds
-#			time.sleep(10)
-
-#			commandStr = "make telosb reinstall.1 bsl,/dev/tty.usbserial-M4A7J5HX"
-#			report(commandStr)
-#			exitVal = os.system(commandStr)
-
-			# sleep for 10 seconds
-#			time.sleep(10)
-
-		os.chdir(nescRootDir)
 	return exitVal
 	
 def main():

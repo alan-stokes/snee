@@ -225,7 +225,7 @@ public class TinyOSGenerator {
     
     private boolean tossimFlag = true;
     
-    private String targetName;
+    private String targetDirName;
     
     private boolean combinedImage = false;
     
@@ -263,27 +263,25 @@ public class TinyOSGenerator {
     boolean useNodeController)
     throws IOException, SchemaMetadataException, TypeMappingException {
 		this.target = codeGenTarget;
-    	if (target==CodeGenTarget.TMOTESKY_T2) {
+		this.targetDirName = codeGenTarget.toString().toLowerCase();
+		
+    	if (target==CodeGenTarget.TELOSB_T2) {
         	this.tossimFlag = false;
-        	this.targetName = "tmotesky_t2";    	
     		this.useNodeController = useNodeController;
         	this.combinedImage = combinedImage;
     	}
     	if (target==CodeGenTarget.AVRORA_MICA2_T2) {
         	this.tossimFlag = false;
-        	this.targetName = "avrora_mica2_t2";    	
     		this.useNodeController = false; // incompatible
         	this.combinedImage = combinedImage;
     	}
     	if (target==CodeGenTarget.AVRORA_MICAZ_T2) {
         	this.tossimFlag = false;
-        	this.targetName = "avrora_micaz_t2";
     		this.useNodeController = false; // incompatible
         	this.combinedImage = combinedImage;
     	}    	
     	if (target==CodeGenTarget.TOSSIM_T2) {
         	this.tossimFlag = true;
-        	this.targetName = "tossim_t2";
     		this.useNodeController = false; // incompatible
         	this.combinedImage = true; // doesn't work otherwise
     	}    	
@@ -315,8 +313,6 @@ public class TinyOSGenerator {
      * depending on whether we are generating TinyOS1/TinyOS2 nesC code, and
      * whether it is for the Tossim simulator or not.
      *
-     * @param tossimFlag	Specifies whether Tossim code is being generated.
-     * @param targetName 
      */
     private void initConstants() {
 	    COMPONENT_AGENDA_TIMER = "AgendaTimer";
@@ -329,7 +325,7 @@ public class TinyOSGenerator {
 	    COMPONENT_RADIO = "ActiveMessageC";
 	    COMPONENT_RADIOTX = "AMSenderC";
 	    COMPONENT_RADIORX = "AMRecieverC";
-	    if (target == CodeGenTarget.TMOTESKY_T2) {
+	    if (target == CodeGenTarget.TELOSB_T2) {
 //		    	COMPONENT_SENSOR = "VoltageC";
 	    	COMPONENT_SENSOR = "HamamatsuS1087ParC";
 	    } else if (target == CodeGenTarget.AVRORA_MICA2_T2) {	
@@ -726,7 +722,7 @@ public class TinyOSGenerator {
 		int sink = plan.getGateway();
 		QueryPlanModuleComponent queryPlanModuleComp =
 			new QueryPlanModuleComponent(COMPONENT_QUERY_PLAN, config,
-			plan, sink, (tossimFlag || combinedImage), targetName,
+			plan, sink, (tossimFlag || combinedImage), targetDirName,
 			costParams, controlRadioOff, enablePrintf, useStartUpProtocol, enableLeds,
 			debugLeds, usePowerManagement, deliverLast, adjustRadioPower,
 			useNodeController);
@@ -1471,7 +1467,7 @@ public class TinyOSGenerator {
     		throws IOException, CodeGenerationException, 
     		SchemaMetadataException, TypeMappingException, OptimizationException, URISyntaxException{
 
-		String outputDir = nescOutputDir + targetName+"/";
+		String outputDir = nescOutputDir + targetDirName+"/";
 	    tossimConfig.instantiateComponents(outputDir);
 	    //TODO: NesC configuration display
 	    //tossimConfig.display(outputDir, tossimConfig.getName());
@@ -1502,7 +1498,7 @@ public class TinyOSGenerator {
 			final Site currentSite = siteIter.next();
 			final NesCConfiguration siteConfig = siteConfigs
 				.get(currentSite);
-			String outputDir = nescOutputDir + targetName+"/mote" + currentSite.getID() + "/";
+			String outputDir = nescOutputDir + targetDirName+"/mote" + currentSite.getID() + "/";
 			siteConfig.instantiateComponents(outputDir);
 			//TODO: NesC configuration display
 		    //siteConfig.display(outputDir, siteConfig.getName());
@@ -1720,7 +1716,7 @@ public class TinyOSGenerator {
 		    final Iterator<Site> siteIter = configs.keySet().iterator();
 		    while (siteIter.hasNext()) {
 				final String siteID = siteIter.next().getID();
-				final String fname = nescOutputDir + targetName +"/mote"
+				final String fname = nescOutputDir + targetDirName +"/mote"
 					+ siteID + "/QueryPlan.h";
 				doGenerateHeaderFile(activeIDDeclsBuff, tupleTypeBuff, messageTypeBuff,
 						deliverMsgBuff, fname);
@@ -1746,7 +1742,7 @@ public class TinyOSGenerator {
 
 		if (this.tossimFlag || this.combinedImage) {
 		    final String fname = nescOutputDir
-			    + targetName +"/QueryPlan.h";
+			    + targetDirName +"/QueryPlan.h";
 			doGenerateHeaderFile(activeIDDeclsBuff, tupleTypeBuff, messageTypeBuff,
 					deliverMsgBuff, fname);
 		}
@@ -1771,9 +1767,9 @@ public class TinyOSGenerator {
 		out.println("#define __QUERY_PLAN_H__\n");
 		
 		if (this.enablePrintf) {
-			if (targetName.equals("tmotesky_t2")) {
+			if (targetDirName.equals("tmotesky_t2")) {
 				out.println("#include \"printf.h\"\n");
-			} else if (targetName.equals("z1")) {
+			} else if (targetDirName.equals("z1")) {
 				out.println("#include \"printfZ1.h\"\n");
 			}
 		}
@@ -1924,7 +1920,7 @@ public class TinyOSGenerator {
 
 				Template.instantiate(NESC_INTERFACES_DIR +
 						"/" + interfaceName + ".nc",
-						nescOutputDir + targetName +"/mote" +
+						nescOutputDir + targetDirName +"/mote" +
 						site.getID() + "/" +
 						interfaceInstanceName, replacements);
 		    }
@@ -1932,7 +1928,7 @@ public class TinyOSGenerator {
 		if (tossimFlag || combinedImage) {
 		    Template.instantiate(NESC_INTERFACES_DIR +
 		    		"/" + interfaceName + ".nc",
-				    nescOutputDir + targetName +"/" +
+				    nescOutputDir + targetDirName +"/" +
 				    interfaceInstanceName, replacements);
 		}
 	}
@@ -2000,7 +1996,7 @@ public class TinyOSGenerator {
 				isSink = true;
 			}
 		    final String siteID = site.getID();
-			final String nodeDir = targetName+"/mote" + siteID;
+			final String nodeDir = targetDirName+"/mote" + siteID;
 			copyInterfaceFile(INTERFACE_DO_TASK, nodeDir);
 
 			generateMakefiles(nescOutputDir + nodeDir,
@@ -2024,22 +2020,22 @@ public class TinyOSGenerator {
 
 	private void generateCombinedMiscFiles() throws IOException, URISyntaxException {
 
-			copyInterfaceFile(INTERFACE_DO_TASK, targetName +"/");
+			copyInterfaceFile(INTERFACE_DO_TASK, targetDirName +"/");
 
-		    generateMakefiles(nescOutputDir+ targetName, "QueryPlan", false); 
+		    generateMakefiles(nescOutputDir+ targetDirName, "QueryPlan", false); 
 		    	//! ok to hardcode to false?
 
 	    	Template.instantiate(NESC_MISC_FILES_DIR + "/itoa.h",
-					    nescOutputDir + targetName +"/itoa.h");
+					    nescOutputDir + targetDirName +"/itoa.h");
 
 		    
 		    if (this.includeDeluge) {
 		    	Template.instantiate(
 					    NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
-					    nescOutputDir + targetName +"/volumes-stm25p.xml");		    	
+					    nescOutputDir + targetDirName +"/volumes-stm25p.xml");		    	
 		    }
 		    
-	    	copySerialStarterFiles(nescOutputDir + targetName);
+	    	copySerialStarterFiles(nescOutputDir + targetDirName);
 		}
 	
 
@@ -2055,13 +2051,13 @@ public class TinyOSGenerator {
 	 */
 	private void generateTossimMiscFiles(int numNodes) throws IOException, URISyntaxException {
 
-		copyInterfaceFile(INTERFACE_DO_TASK, targetName +"/");
+		copyInterfaceFile(INTERFACE_DO_TASK, targetDirName +"/");
 
-	    generateMakefiles(nescOutputDir+ targetName, "QueryPlan", false);
+	    generateMakefiles(nescOutputDir+ targetDirName, "QueryPlan", false);
 
     	Template.instantiate(
 			    NESC_MISC_FILES_DIR + "/itoa.h",
-			    nescOutputDir + targetName +"/itoa.h");
+			    nescOutputDir + targetDirName +"/itoa.h");
 
 	    HashMap<String, String> replacements = new HashMap<String, String>();
 	    //TODO: Get Query Duration from QoS?
@@ -2071,17 +2067,17 @@ public class TinyOSGenerator {
 		replacements.put("__NUM_NODES__", new Integer(numNodes).toString());
 		Template.instantiate(
 	    		NESC_MISC_FILES_DIR + "/runTossim.py",
-	    		nescOutputDir + targetName +"/runTossim.py", replacements);
+	    		nescOutputDir + targetDirName +"/runTossim.py", replacements);
 
 		Template.instantiate(
 			    NESC_MISC_FILES_DIR + "/meyer-light.txt",
-			    nescOutputDir + targetName +"/meyer-light.txt");
+			    nescOutputDir + targetDirName +"/meyer-light.txt");
 		
 		Template.instantiate(
 			    NESC_MISC_FILES_DIR + "/RandomSensorC.nc",
-			    nescOutputDir + targetName +"/RandomSensorC.nc");
+			    nescOutputDir + targetDirName +"/RandomSensorC.nc");
 		
-    	copySerialStarterFiles(nescOutputDir + targetName);
+    	copySerialStarterFiles(nescOutputDir + targetDirName);
 	}
 
 
@@ -2104,9 +2100,9 @@ public class TinyOSGenerator {
 			replacements.put("__DELUGE__","");
 		}
 		
-		if (this.enablePrintf && targetName.equals("tmotesky_t2")) {
+		if (this.enablePrintf && targetDirName.equals("tmotesky_t2")) {
 			replacements.put("__PRINTF__", "CFLAGS += -I$(TOSDIR)/lib/printf");
-		} else if (this.enablePrintf && targetName.equals("z1")) {
+		} else if (this.enablePrintf && targetDirName.equals("z1")) {
 			replacements.put("__PRINTF__", "CFLAGS += -DPRINTFUART_ENABLED");
 		} else {
 			replacements.put("__PRINTF__","");			
