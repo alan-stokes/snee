@@ -33,7 +33,6 @@ public abstract class SNEEClient implements Observer {
 	protected SNEE controller;
 	protected String _query;
 	protected double _duration;
-	protected long _sleepDuration;
 	protected String _queryParams;
 
 	public SNEEClient(String query, double duration, String queryParams) 

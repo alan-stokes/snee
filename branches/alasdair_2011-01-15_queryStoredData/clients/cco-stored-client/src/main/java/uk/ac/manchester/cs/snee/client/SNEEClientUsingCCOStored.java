@@ -24,6 +24,7 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 	
 	private String serviceUrl = 
 		"http://webgis1.geodata.soton.ac.uk:8080/dai/services/";
+		//XXX Bowfell only accessibly within the cs.man network (not VPN)
 //		"http://bowfell.cs.man.ac.uk:8080/dai/services/";
 	
 	private static String extent = 
@@ -31,8 +32,13 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 //		"metadata";
 
 	private static String query = 
-		"SELECT id, location, latitude, longitude, waves, tides, met " +
-		"FROM " + extent + ";";
+		"SELECT " +
+		//"* " +
+		//id, location, latitude, longitude, waves, tides, met, storm_threshold " +
+		"location, wave_spectra " +
+		"FROM " + extent +
+		"[RESCAN 20 SECONDS]" +
+		";";
 //		"SELECT * FROM " + extent + ";";
 		
 	private static Long duration = Long.valueOf(
@@ -47,10 +53,6 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 		super(query, duration);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClientUsingCCOStored()");
-		_sleepDuration = 
-			//Set sleep to 10 minutes
-//			600000;
-			10000;
 		controller.addServiceSource("CCO-Stored", serviceUrl, 
 				SourceType.WSDAIR);
 //		Collection<String> extents = controller.getExtents();

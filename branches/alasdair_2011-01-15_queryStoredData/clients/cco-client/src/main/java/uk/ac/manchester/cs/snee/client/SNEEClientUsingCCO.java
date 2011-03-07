@@ -27,8 +27,6 @@ public class SNEEClientUsingCCO extends SNEEClient {
 		super(query, duration);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClientUsingCCO()");
-		//Set sleep to 10 minutes
-		_sleepDuration = 600000;
 		controller.addServiceSource("CCO-WS", serviceUrl, 
 				SourceType.PULL_STREAM_SERVICE);
 //		displayExtentNames();
