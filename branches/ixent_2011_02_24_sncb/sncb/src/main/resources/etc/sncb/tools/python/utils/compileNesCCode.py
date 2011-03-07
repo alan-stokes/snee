@@ -107,12 +107,13 @@ def doCompileNesCCode(dir, targetParameter = "telosb", sensorBoard = None):
 
 	if (exitVal != 0):
 		reportError("Failed with "+dir+" compilation")
-		return exitVal
+		sys.exit(exitVal)
 
 	if (targetParameter=="telosb"):
 		exitVal = readMakeLog("make.log", None, targetParameter)
 		if (exitVal != 0):
 			reportError("RAM overflow with "+dir+" compilation")
+			sys.exit(exitVal)
 
 	return exitVal	
 
@@ -142,7 +143,8 @@ def compileNesCCode(nescRootDir, target = "telosb_t2", sensorBoard = None):
 	
 def main():
 	parseArgs(sys.argv[1:])
-	compileNesCCode(optNescDir, optCompileTarget, optSensorBoard)
+	exitVal = compileNesCCode(optNescDir, optCompileTarget, optSensorBoard)
+	return exitVal
 
 if __name__ == "__main__":
 	main()
