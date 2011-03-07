@@ -8,7 +8,7 @@
          <column name="seaLevel">
           	<type class ="integer"/>
          </column>
-         <column name="seaTemp">
+         <column name="airTemperature">
           	<type class ="integer"/>
          </column>
      </stream>
@@ -17,12 +17,18 @@
          <column name="seaLevel">
           	<type class ="integer"/>
          </column>
+         <column name="airTemperature">
+          	<type class ="integer"/>
+         </column>         
      </stream>
 
       <stream name="SeaDefenceWest" type="pull">
          <column name="seaLevel">
           	<type class ="integer"/>
          </column>
+         <column name="airTemperature">
+          	<type class ="integer"/>
+         </column>         
      </stream> -->
      
 </schema>
