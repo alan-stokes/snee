@@ -382,6 +382,7 @@ public class SourceManager {
 				logger.trace("Retrieving schema for " + resource);
 			List<ExtentMetadata> extents = 
 				sourceWrapper.getSchema(resource);
+			//TODO: Should really qualify extent names with the source!
 			for (ExtentMetadata extent : extents) {
 				String extentName = extent.getExtentName();
 				if (_schema.containsKey(extentName)) {
