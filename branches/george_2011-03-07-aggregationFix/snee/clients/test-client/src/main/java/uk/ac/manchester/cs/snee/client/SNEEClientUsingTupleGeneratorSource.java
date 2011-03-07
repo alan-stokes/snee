@@ -44,7 +44,13 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 					"\t\"query duration in seconds\"\n");
 			//XXX: Use default query
 
-			query = "SELECT * FROM PushStream;";
+			/* Changing default query to use the COUNT, which we want to fix */
+//			query = "SELECT COUNT(intAttr) FROM PushStream[FROM NOW-10 MINUTES TO NOW SLIDE 1 MINUTE];";
+//			query = "SELECT SUM(intAttr), COUNT(intAttr) " +
+//					"FROM PushStream[FROM NOW-10 MINUTES TO NOW SLIDE 1 MINUTE];";
+
+			query = "SELECT max(intAttr) " +
+				"FROM PushStream[FROM NOW-5 SECONDS TO NOW SLIDE 1 SECOND];";
 
 			/* The following query is successfully executed */
 //			query = 

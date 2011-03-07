@@ -1009,7 +1009,8 @@ public class Translator {
 		boolean allowedInProjectOperator = true;
 		boolean allowedInAggregationOperator = true;
 		do {
-			if (expressionAST.getType() == SNEEqlParserTokenTypes.STAR) {
+			if (expressionAST.getType() == SNEEqlParserTokenTypes.STAR ) {
+
 				if (logger.isTraceEnabled()) {
 					logger.trace("project to all attribtues");
 				}
@@ -1054,7 +1055,7 @@ public class Translator {
 			if (input.getOperatorDataType() != OperatorDataType.STREAM) {
 				AggregationOperator aggregationOperator = 
 					new AggregationOperator(expressions, attributes, 
-							input, _boolType);
+							input, _boolType, _types.getType("integer"));
 				if (logger.isTraceEnabled()) {
 					logger.trace("RETURN translateSelect() " + 
 							aggregationOperator);
@@ -1207,8 +1208,7 @@ public class Translator {
 						found = i;
 					} else {
 						String msg = "Ambigious reference to " +
-								"unqualifeied attribute " +
-								ast.getText();
+								"unqualified attribute " + ast.getText();
 						logger.warn(msg);
 						throw new ExpressionException(msg);
 					}
@@ -1291,22 +1291,24 @@ public class Translator {
 				logger.trace("Translate average");
 			}
 			//FIXME: Not all arithmetic expressions are integers
+			//FIXME: Average in particular should be a float!
 			expression = new AggregationExpression(inner, 
 					AggregationType.AVG, 
-					_types.getType("integer"));
+					_types.getType("decimal"));
 		} else if (ast.getText().equalsIgnoreCase("count")) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate count");
 			}
+			/* Count is DEFINITELY integer */
 			expression = new AggregationExpression(inner, 
-					AggregationType.COUNT,
-					_types.getType("integer"));
+					AggregationType.COUNT, _types.getType("integer"));
 		} else if ((ast.getText().equalsIgnoreCase("minimum")) || 
 				(ast.getText().equalsIgnoreCase("min"))) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate minimum");
 			}
 			//FIXME: Not all arithmetic expressions are integers
+			//FIXME: Minimum should be of the attribute that that it operates on
 			expression = new AggregationExpression(inner, 
 					AggregationType.MIN,
 					_types.getType("integer"));
@@ -1316,6 +1318,7 @@ public class Translator {
 				logger.trace("Translate maximum");
 			}
 			//FIXME: Not all arithmetic expressions are integers
+			//FIXME: Maximum should be of the attribute that that it operates on
 			expression = new AggregationExpression(inner,
 					AggregationType.MAX, 
 					_types.getType("integer"));
@@ -1344,9 +1347,9 @@ public class Translator {
 				logger.trace("Translate sum");
 			}
 			//FIXME: Not all arithmetic expressions are integers
+			// The SUM should be consistent with the type of the inner e
 			expression = new AggregationExpression(inner, 
-					AggregationType.SUM, 
-					_types.getType("integer"));
+					AggregationType.SUM, inner.getType() );
 		} else { 
 			String message = "Unprogrammed Function name " +
 					"AST Text:" + ast.getText();

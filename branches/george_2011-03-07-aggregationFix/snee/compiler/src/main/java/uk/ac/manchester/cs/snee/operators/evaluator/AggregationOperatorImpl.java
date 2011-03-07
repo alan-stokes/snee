@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 
@@ -18,6 +19,7 @@ import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
+import uk.ac.manchester.cs.snee.metadata.schema.SQLTypes;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
@@ -293,6 +295,15 @@ extends EvaluatorPhysicalOperator {
 		} else if (agType == AggregationType.COUNT) {
 			logger.trace("Calculate count.");
 			result = tuples.size();
+		} else if (agType == AggregationType.SUM) {
+			logger.trace("Calculate sum.");
+			result = computeSum( attrDisplayName, tuples );
+		} else if (agType == AggregationType.MIN) {
+			logger.trace("Calculate min.");
+			result = computeMin( attrDisplayName, tuples );
+		} else if (agType == AggregationType.MAX) {
+			logger.trace("Calculate max.");
+			result = computeMax( attrDisplayName, tuples );
 		} else {
 			//FIXME: Implement aggregate calculation
 			logger.warn("Unsupported aggregation operator " + agType);
@@ -326,6 +337,559 @@ extends EvaluatorPhysicalOperator {
 					average);
 		}
 		return average;
+	}
+
+
+	/** 
+	 * Computes the sum of the tuples contained in the tuples list
+	 * 
+	 * @author lebiathan
+	 * @param attributeName The name of the attribute which holds the
+	 * data that will be summed
+	 * @param tuples The set of tuples over which we want to compute
+	 * the sum
+	 *  */
+	private Number computeSum( String attributeName,
+			List<Tuple> tuples )
+	throws SNEEException {
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeSum() with " +
+					attributeName);
+		}
+
+		/* Go through all of the tuples and compute their sum. The SUM is initially 0.
+		 * If there are no items in the tuples list, the result will also be 0. */
+		Number result = 0;
+		if ( !tuples.isEmpty() ){
+
+			/* Simply get the first tuple (there is definitely one) */
+			Tuple tuple = tuples.get(0);
+			List<String> attributeNames = tuple.getAttributeNames();
+			int attrIndex = attributeNames.indexOf(attributeName);
+
+			EvaluatorAttribute evalAttr = tuple.getAttribute(attrIndex);
+			int attrType = evalAttr.getAttributeType();
+
+			if ( attrType == SQLTypes.INTEGER.getSQLType() )
+				result = computeIntegerSum(attrIndex, tuples);
+			else if ( attrType == SQLTypes.FLOAT.getSQLType() )
+				result = computeFloatSum(attrIndex, tuples);
+			else if ( attrType == SQLTypes.DECIMAL.getSQLType() )
+				result = computeDecimalSum(attrIndex, tuples);
+			else{
+				/* The attribute is not a number. Throw an exception! */
+				logger.warn("Non-numerical attribute type " + evalAttr.getAttributeType());
+				throw new SNEEException("Non-numerical attribute type " + 
+						evalAttr.getAttributeType());
+			}
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN computeSum() with " + 
+					result);
+		}
+		return result;
+	}
+
+	/**
+	 * Computes the sum over a set of tuples, for which we already know
+	 * that they are of integer type. This saves time in what we are
+	 * computing.
+	 * 
+	 * @author lebiathan
+	 * 
+	 * @param attrIndex The index of the attribute that holds the values
+	 * we want to sum over the tuples 
+	 * */
+	private Number computeIntegerSum( int attrIndex, List<Tuple> tuples )
+	throws SNEEException{
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeIntegerSum()");
+		}
+
+		int returnValue = 0;
+
+		/* Create an iterator for the tuples */
+		Iterator<Tuple> tplItr = tuples.iterator();
+		while ( tplItr.hasNext() ){
+			Tuple t = tplItr.next();
+			Number n = (Number)t.getAttributeValue(attrIndex);
+			returnValue += n.intValue();
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN FROM computeIntegerSum() with " + 
+					returnValue);
+		}
+		return (Number)returnValue;
+	}
+
+	/**
+	 * Computes the sum over a set of tuples, for which we already know
+	 * that they are of integer type. This saves time in what we are
+	 * computing.
+	 * 
+	 * @author lebiathan
+	 * 
+	 * @param attrIndex The index of the attribute that holds the values
+	 * we want to sum over the tuples 
+	 * */
+	private Number computeFloatSum( int attrIndex, List<Tuple> tuples )
+	throws SNEEException{
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeFloatSum()");
+		}
+
+		int returnValue = 0;
+
+		/* Create an iterator for the tuples */
+		Iterator<Tuple> tplItr = tuples.iterator();
+		while ( tplItr.hasNext() ){
+			Tuple t = tplItr.next();
+			Number n = (Number)t.getAttributeValue(attrIndex);
+			returnValue += n.floatValue();
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN FROM computeFloatSum() with " + 
+					returnValue);
+		}
+		return (Number)returnValue;
+	}
+
+
+	/**
+	 * Computes the sum over a set of tuples, for which we already know
+	 * that they are of integer type. This saves time in what we are
+	 * computing.
+	 * 
+	 * @author lebiathan
+	 * 
+	 * @param attrIndex The index of the attribute that holds the values
+	 * we want to sum over the tuples 
+	 * */
+	private Number computeDecimalSum( int attrIndex, List<Tuple> tuples )
+	throws SNEEException{
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeDecimalSum()");
+		}
+
+		int returnValue = 0;
+
+		/* Create an iterator for the tuples */
+		Iterator<Tuple> tplItr = tuples.iterator();
+		while ( tplItr.hasNext() ){
+			Tuple t = tplItr.next();
+			Number n = (Number)t.getAttributeValue(attrIndex);
+			returnValue += n.doubleValue();
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN FROM computeDecimalSum() with " + 
+					returnValue);
+		}
+		return (Number)returnValue;
+	}
+
+	/** 
+	 * Computes the minimum value over the set of tuples contained
+	 * in the provided <i>tuples</i> list. In case the list is
+	 * empty, 0 is returned
+	 * 
+	 * @author lebiathan
+	 * @param attributeName The name of the attribute which holds the
+	 * data that will be searched for the minimum value
+	 * @param tuples The set of tuples over which we want to compute
+	 * the minimum
+	 * 
+	 * @return The minimum number for attribute with attributeName over
+	 * the set of <i>tuples</i>. If the tuples list is empty, 0 is
+	 * returned.
+	 *  */
+	private Number computeMin( String attributeName,
+			List<Tuple> tuples )
+	throws SNEEException {
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeMin() with " +
+					attributeName);
+		}
+
+		/* Go through all of the tuples and compute their sum. The SUM is initially 0.
+		 * If there are no items in the tuples list, the result will also be 0. */
+		Number result = 0;
+		if ( !tuples.isEmpty() ){
+
+			/* Simply get the first tuple (there is definitely one) */
+			Tuple tuple = tuples.get(0);
+			List<String> attributeNames = tuple.getAttributeNames();
+			int attrIndex = attributeNames.indexOf(attributeName);
+
+			EvaluatorAttribute evalAttr = tuple.getAttribute(attrIndex);
+			int attrType = evalAttr.getAttributeType();
+
+			if ( attrType == SQLTypes.INTEGER.getSQLType() )
+				result = computeIntegerMin(attrIndex, tuples);
+			else if ( attrType == SQLTypes.FLOAT.getSQLType() )
+				result = computeFloatMin(attrIndex, tuples);
+			else if ( attrType == SQLTypes.DECIMAL.getSQLType() )
+				result = computeDecimalMin(attrIndex, tuples);
+			else{
+				/* The attribute is not a number. Throw an exception! */
+				logger.warn("Non-numerical attribute type " + evalAttr.getAttributeType());
+				throw new SNEEException("Non-numerical attribute type " + 
+						evalAttr.getAttributeType());
+			}
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN computeMin() with " + 
+					result);
+		}
+		return result;
+	}
+
+	/** 
+	 * Computes the minimum value over the set of tuples contained
+	 * in the provided <i>tuples</i> list, for which we know they
+	 * are of INTEGER value. In case the list is empty, 0 is returned.
+	 * 
+	 * @author lebiathan
+	 * @param attributeName The name of the attribute which holds the
+	 * data that will be searched for the minimum value
+	 * @param tuples The set of tuples over which we want to compute
+	 * the minimum
+	 * 
+	 * @return The minimum number for attribute with attributeName over
+	 * the set of <i>tuples</i>. If the tuples list is empty, 0 is
+	 * returned.
+	 *  */
+	private Number computeIntegerMin( int attrIndex, List<Tuple> tuples )
+	throws SNEEException {
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeIntegerMin() with " + attrIndex);
+		}
+
+		int returnValue = 0;
+
+		/* Create an iterator for the tuples */
+		Iterator<Tuple> tplItr = tuples.iterator();
+		Tuple t = tplItr.next();
+		Number n = (Number)t.getAttributeValue(attrIndex);
+
+		returnValue = n.intValue();
+
+		while ( tplItr.hasNext() ){
+
+			t = tplItr.next();
+			n = (Number)t.getAttributeValue(attrIndex);
+
+			if ( n.intValue() < returnValue )
+				returnValue = n.intValue();
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN FROM computeIntegerMin() with " + 
+					returnValue);
+		}
+		return (Number)returnValue;
+	}
+
+	
+	/** 
+	 * Computes the minimum value over the set of tuples contained
+	 * in the provided <i>tuples</i> list, for which we know they
+	 * are of INTEGER value. In case the list is empty, 0 is returned.
+	 * 
+	 * @author lebiathan
+	 * @param attributeName The name of the attribute which holds the
+	 * data that will be searched for the minimum value
+	 * @param tuples The set of tuples over which we want to compute
+	 * the minimum
+	 * 
+	 * @return The minimum number for attribute with attributeName over
+	 * the set of <i>tuples</i>. If the tuples list is empty, 0 is
+	 * returned.
+	 *  */
+	private Number computeFloatMin( int attrIndex, List<Tuple> tuples )
+	throws SNEEException {
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeFloatMin() with " + attrIndex);
+		}
+
+		float returnValue = 0.0f;
+
+		/* Create an iterator for the tuples */
+		Iterator<Tuple> tplItr = tuples.iterator();
+		Tuple t = tplItr.next();
+		Number n = (Number)t.getAttributeValue(attrIndex);
+
+		returnValue = n.floatValue();
+
+		while ( tplItr.hasNext() ){
+
+			t = tplItr.next();
+			n = (Number)t.getAttributeValue(attrIndex);
+
+			if ( n.floatValue() < returnValue )
+				returnValue = n.floatValue();
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN FROM computeFloatMin() with " + 
+					returnValue);
+		}
+		return (Number)returnValue;
+	}
+
+	/** 
+	 * Computes the minimum value over the set of tuples contained
+	 * in the provided <i>tuples</i> list, for which we know they
+	 * are of INTEGER value. In case the list is empty, 0 is returned.
+	 * 
+	 * @author lebiathan
+	 * @param attributeName The name of the attribute which holds the
+	 * data that will be searched for the minimum value
+	 * @param tuples The set of tuples over which we want to compute
+	 * the minimum
+	 * 
+	 * @return The minimum number for attribute with attributeName over
+	 * the set of <i>tuples</i>. If the tuples list is empty, 0 is
+	 * returned.
+	 *  */
+	private Number computeDecimalMin( int attrIndex, List<Tuple> tuples )
+	throws SNEEException {
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeDecimalMin() with " + attrIndex);
+		}
+
+		double returnValue = 0.0f;
+
+		/* Create an iterator for the tuples */
+		Iterator<Tuple> tplItr = tuples.iterator();
+		Tuple t = tplItr.next();
+		Number n = (Number)t.getAttributeValue(attrIndex);
+
+		returnValue = n.doubleValue();
+
+		while ( tplItr.hasNext() ){
+
+			t = tplItr.next();
+			n = (Number)t.getAttributeValue(attrIndex);
+
+			if ( n.doubleValue() < returnValue )
+				returnValue = n.doubleValue();
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN FROM computeDecimalMin() with " + 
+					returnValue);
+		}
+		return (Number)returnValue;
+	}
+
+	/** 
+	 * Computes the minimum value over the set of tuples contained
+	 * in the provided <i>tuples</i> list. In case the list is
+	 * empty, 0 is returned
+	 * 
+	 * @author lebiathan
+	 * @param attributeName The name of the attribute which holds the
+	 * data that will be searched for the minimum value
+	 * @param tuples The set of tuples over which we want to compute
+	 * the minimum
+	 * 
+	 * @return The minimum number for attribute with attributeName over
+	 * the set of <i>tuples</i>. If the tuples list is empty, 0 is
+	 * returned.
+	 *  */
+	private Number computeMax( String attributeName,
+			List<Tuple> tuples )
+	throws SNEEException {
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeMax() with " +
+					attributeName);
+		}
+
+		/* Go through all of the tuples and compute their sum. The SUM is initially 0.
+		 * If there are no items in the tuples list, the result will also be 0. */
+		Number result = 0;
+		if ( !tuples.isEmpty() ){
+
+			/* Simply get the first tuple (there is definitely one) */
+			Tuple tuple = tuples.get(0);
+			List<String> attributeNames = tuple.getAttributeNames();
+			int attrIndex = attributeNames.indexOf(attributeName);
+
+			EvaluatorAttribute evalAttr = tuple.getAttribute(attrIndex);
+			int attrType = evalAttr.getAttributeType();
+
+			if ( attrType == SQLTypes.INTEGER.getSQLType() )
+				result = computeIntegerMax(attrIndex, tuples);
+			else if ( attrType == SQLTypes.FLOAT.getSQLType() )
+				result = computeFloatMax(attrIndex, tuples);
+			else if ( attrType == SQLTypes.DECIMAL.getSQLType() )
+				result = computeDecimalMax(attrIndex, tuples);
+			else{
+				/* The attribute is not a number. Throw an exception! */
+				logger.warn("Non-numerical attribute type " + evalAttr.getAttributeType());
+				throw new SNEEException("Non-numerical attribute type " + 
+						evalAttr.getAttributeType());
+			}
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN computeMax() with " + 
+					result);
+		}
+		return result;
+	}
+
+	/** 
+	 * Computes the minimum value over the set of tuples contained
+	 * in the provided <i>tuples</i> list, for which we know they
+	 * are of INTEGER value. In case the list is empty, 0 is returned.
+	 * 
+	 * @author lebiathan
+	 * @param attributeName The name of the attribute which holds the
+	 * data that will be searched for the minimum value
+	 * @param tuples The set of tuples over which we want to compute
+	 * the minimum
+	 * 
+	 * @return The minimum number for attribute with attributeName over
+	 * the set of <i>tuples</i>. If the tuples list is empty, 0 is
+	 * returned.
+	 *  */
+	private Number computeIntegerMax( int attrIndex, List<Tuple> tuples )
+	throws SNEEException {
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeIntegerMax() with " + attrIndex);
+		}
+
+		int returnValue = 0;
+
+		/* Create an iterator for the tuples */
+		Iterator<Tuple> tplItr = tuples.iterator();
+		Tuple t = tplItr.next();
+		Number n = (Number)t.getAttributeValue(attrIndex);
+
+		returnValue = n.intValue();
+
+		while ( tplItr.hasNext() ){
+
+			t = tplItr.next();
+			n = (Number)t.getAttributeValue(attrIndex);
+
+			if ( n.intValue() > returnValue )
+				returnValue = n.intValue();
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN FROM computeIntegerMax() with " + 
+					returnValue);
+		}
+		return (Number)returnValue;
+	}
+
+	
+	/** 
+	 * Computes the minimum value over the set of tuples contained
+	 * in the provided <i>tuples</i> list, for which we know they
+	 * are of INTEGER value. In case the list is empty, 0 is returned.
+	 * 
+	 * @author lebiathan
+	 * @param attributeName The name of the attribute which holds the
+	 * data that will be searched for the minimum value
+	 * @param tuples The set of tuples over which we want to compute
+	 * the minimum
+	 * 
+	 * @return The minimum number for attribute with attributeName over
+	 * the set of <i>tuples</i>. If the tuples list is empty, 0 is
+	 * returned.
+	 *  */
+	private Number computeFloatMax( int attrIndex, List<Tuple> tuples )
+	throws SNEEException {
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeFloatMax() with " + attrIndex);
+		}
+
+		float returnValue = 0.0f;
+
+		/* Create an iterator for the tuples */
+		Iterator<Tuple> tplItr = tuples.iterator();
+		Tuple t = tplItr.next();
+		Number n = (Number)t.getAttributeValue(attrIndex);
+
+		returnValue = n.floatValue();
+
+		while ( tplItr.hasNext() ){
+
+			t = tplItr.next();
+			n = (Number)t.getAttributeValue(attrIndex);
+
+			if ( n.floatValue() > returnValue )
+				returnValue = n.floatValue();
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN FROM computeFloatMax() with " + 
+					returnValue);
+		}
+		return (Number)returnValue;
+	}
+
+	/** 
+	 * Computes the minimum value over the set of tuples contained
+	 * in the provided <i>tuples</i> list, for which we know they
+	 * are of INTEGER value. In case the list is empty, 0 is returned.
+	 * 
+	 * @author lebiathan
+	 * @param attributeName The name of the attribute which holds the
+	 * data that will be searched for the minimum value
+	 * @param tuples The set of tuples over which we want to compute
+	 * the minimum
+	 * 
+	 * @return The minimum number for attribute with attributeName over
+	 * the set of <i>tuples</i>. If the tuples list is empty, 0 is
+	 * returned.
+	 *  */
+	private Number computeDecimalMax( int attrIndex, List<Tuple> tuples )
+	throws SNEEException {
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeDecimalMax() with " + attrIndex);
+		}
+
+		double returnValue = 0.0f;
+
+		/* Create an iterator for the tuples */
+		Iterator<Tuple> tplItr = tuples.iterator();
+		Tuple t = tplItr.next();
+		Number n = (Number)t.getAttributeValue(attrIndex);
+
+		returnValue = n.doubleValue();
+
+		while ( tplItr.hasNext() ){
+
+			t = tplItr.next();
+			n = (Number)t.getAttributeValue(attrIndex);
+
+			if ( n.doubleValue() > returnValue )
+				returnValue = n.doubleValue();
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN FROM computeDecimalMax() with " + 
+					returnValue);
+		}
+		return (Number)returnValue;
 	}
 
 }

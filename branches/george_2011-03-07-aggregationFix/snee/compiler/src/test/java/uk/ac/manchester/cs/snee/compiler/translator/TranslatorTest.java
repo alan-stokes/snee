@@ -1085,6 +1085,26 @@ public class TranslatorTest {
 				"	(SELECT integerColumn, floatColumn FROM PushStream[NOW]) s;");
 	}
 
+	@Test
+	public void testSimpleQuery_FuncSUM() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT SUM(integerColumn) " +
+				"FROM PushStream[FROM NOW-10 SECONDS TO NOW SLIDE 1 SECOND];");
+	}
+
+	@Test
+	public void testSimpleQuery_FuncCOUNT() 
+	throws SourceDoesNotExistException, ParserException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT COUNT(integerColumn) " +
+				"FROM PushStream[FROM NOW-10 SECONDS TO NOW SLIDE 1 SECOND];");
+	}
+
 
 	/**********************************************************************************
 	 * 					The following queries SHOULD not fail but they do
@@ -1105,6 +1125,8 @@ public class TranslatorTest {
 
 	@Test
 	@Ignore
+	/** This query SHOULD fail. We can not define an AVG over all attributes,
+	 * unless they are all numerics! */
 	public void testSimpleQuery_FuncAVGStar() 
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
@@ -1116,6 +1138,8 @@ public class TranslatorTest {
 
 	@Test
 	@Ignore
+	/** The translator does NOT know how to go about when seeing a START (*)
+	 * inside an aggregation. COUNT is a special case. */
 	public void testSimpleQuery_FuncCOUNTStar() 
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
@@ -1123,17 +1147,6 @@ public class TranslatorTest {
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT COUNT(*) FROM PushStream;");
 	}
-
-	@Test
-	@Ignore
-	public void testSimpleQuery_FuncSUM() 
-	throws SourceDoesNotExistException, ParserException, 
-	SchemaMetadataException, ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
-		testQuery("SELECT SUM(integerColumn) FROM PushStream;");
-	}
-
 
 	@Test
 	@Ignore
@@ -1145,16 +1158,6 @@ public class TranslatorTest {
 		testQuery("SELECT AVG(integerColumn) FROM PushStream;");
 	}
 
-
-	@Test
-	@Ignore
-	public void testSimpleQuery_FuncCOUNT() 
-	throws SourceDoesNotExistException, ParserException, 
-	SchemaMetadataException, ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
-		testQuery("SELECT COUNT(integerColumn) FROM PushStream;");
-	}
 
 
 	

@@ -92,6 +92,10 @@ aggrExpr : ( Identifier LPAREN ) =>
              m:MIN^ LPAREN! expr RPAREN! {#m.setType(FUNCTION_NAME); }
          | atom;
 
+//( Identifier LPAREN MUL ) => 
+//             i2:Identifier^ LPAREN! m2:MUL RPAREN! {#i2.setType(FUNCTION_NAME); #m2.setType(STAR); }
+//        | 
+
 atom     : ( PLUS Int ) => 
              PLUS! Int
          | ( PLUS Flt ) => 

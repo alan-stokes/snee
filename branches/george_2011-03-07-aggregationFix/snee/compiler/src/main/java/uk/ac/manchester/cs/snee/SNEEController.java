@@ -392,8 +392,7 @@ public class SNEEController implements SNEE {
 		QueryExecutionPlan queryPlan = _queryPlans.get(queryId);
 		ResultStore resultSet = createStreamResultSet(query, queryPlan);
 		
-		_dispatcher.startQuery(queryId, resultSet, 
-				queryPlan);
+		_dispatcher.startQuery(queryId, resultSet, queryPlan);
 		_queryResults.put(queryId, resultSet);
 		
 		if (logger.isTraceEnabled()) {

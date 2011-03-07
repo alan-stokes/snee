@@ -44,7 +44,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 
-
 /**
  * Aggregation operator.
  * Either for before the Aggreagtion is split in three 
@@ -61,15 +60,18 @@ public class AggregationOperator extends PredicateOperator {
 	private List<AggregationExpression> aggregates;
 	
 	/**
+	 * @param countType Used to know what is the type of a Count Aggregation Operator,
+	 * in case it is required
+	 * 
 	 * @throws OptimizationException 
 	 */
 	public AggregationOperator(List <Expression> expressions, 
 			List <Attribute> attributes, LogicalOperator inputOperator, 
-			AttributeType boolType) 
+			AttributeType boolType, AttributeType countType) 
 	throws OptimizationException {
     	super(expressions, attributes, inputOperator, boolType);
         this.setOperatorName("AGGREGATION");
-        setAggregates();
+        setAggregates(countType);
         if (this.getOperatorDataType() == OperatorDataType.STREAM) {
 			String message = "Illegal attempt to place an " +
 					"AggregationOperator on a Stream of Tuples.";
@@ -84,17 +86,18 @@ public class AggregationOperator extends PredicateOperator {
      * For example an expression could be max(temp) - avg(temp)
      * Which contains two aggregates. 
      */
-    private void setAggregates() {
-		boolean needsCount = false;
-    	aggregates = new ArrayList<AggregationExpression>();
+    private void setAggregates(AttributeType countType) {
+
+    	/* This is an existing count expression. We only need  */
+    	boolean needsCount = false;
+
+		aggregates = new ArrayList<AggregationExpression>();
     	//Place an evalTime
     	//aggregates.add(null);
     	for (int i = 0; i < getExpressions().size(); i++) {
-    		List<AggregationExpression> newAggs 
-    			=  getExpressions().get(i).getAggregates();
+    		List<AggregationExpression> newAggs = getExpressions().get(i).getAggregates();
     		for (int j = 0; j < newAggs.size(); j++) {
-    			if (newAggs.get(j).getAggregationType() 
-    					== AggregationType.COUNT) {
+    			if (newAggs.get(j).getAggregationType() == AggregationType.COUNT) {
     				needsCount = true;
     			} else {
         			if (newAggs.get(j).needsCount()) {
@@ -106,11 +109,10 @@ public class AggregationOperator extends PredicateOperator {
     			}
     		}
     	}
-    	if (needsCount) {
+    	if ( needsCount ) {
     		//FIXME: The typing here is a bit iffy
     		AggregationExpression count 
-    			= new AggregationExpression(null, AggregationType.COUNT, 
-    					aggregates.get(0).getType()); 
+    			= new AggregationExpression(null, AggregationType.COUNT, countType); 
     		aggregates.add(count);
     	}
     }

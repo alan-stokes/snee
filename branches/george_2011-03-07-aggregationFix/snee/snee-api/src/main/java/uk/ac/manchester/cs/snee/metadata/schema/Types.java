@@ -83,7 +83,7 @@ public class Types {
 	private Logger logger = Logger.getLogger(Types.class.getName());
 
 	private Map<String, AttributeType> _types = 
-		new Hashtable<String, AttributeType>();;
+		new Hashtable<String, AttributeType>();
 
 	//XXX-AG: Changed from private to public.
 	public Types(String typesFilename) throws TypeMappingException {

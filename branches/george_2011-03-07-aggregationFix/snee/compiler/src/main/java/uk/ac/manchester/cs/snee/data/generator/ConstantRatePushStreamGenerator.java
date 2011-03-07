@@ -54,6 +54,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
+import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
@@ -293,7 +294,16 @@ public class ConstantRatePushStreamGenerator {
 				// Generate next tuple for the stream
 				Tuple tuple = tupleGenerator.generateTuple(curIndex);
 				String tupleCSV = convertTupleToCSV(tuple);
-				
+
+				try{
+					if ( tuple.getAttributeDisplayNames().get(2).startsWith("pushstream") )
+						System.out.println("Tuple " + 
+								tuple.getAttributeDisplayNames().get(2) + " " + 
+								tuple.getAttributeValue(2) );
+				}catch(SNEEException sne){
+					//do nothing
+				}
+
 				if (logger.isTraceEnabled())
 					logger.trace("Creating byte stream for tuple " +
 							tupleCSV);
