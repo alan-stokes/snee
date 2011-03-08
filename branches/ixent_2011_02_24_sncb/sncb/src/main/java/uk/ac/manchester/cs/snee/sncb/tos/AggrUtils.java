@@ -29,8 +29,12 @@ public class AggrUtils {
        				(IncrementalAggregationAttribute)attr;
        			String attrName = 
        				CodeGenUtils.getNescAttrName(incrAttr);
-	  		   	final AttributeType attrType = incrAttr.getType();
-	  		   	final String nesCType = attrType.getNesCName();
+	  		   	final AttributeType attrType = incrAttr.getType();	  		   	
+	  		   	
+	  		   	String nesCType = attrType.getNesCName();
+	  		   	if (incrAttr.getAggrFunction() == AggregationFunction.SUM) {
+	  		   		nesCType = "uint64_t";
+	  		   	}
 	  		   	aggrVariablesBuff.append("\t" + nesCType + " " + attrName + ";\n");       			
 
 	  		   	String baseAttr = incrAttr.getBaseAttribute().getAttributeSchemaName();
@@ -156,17 +160,17 @@ public class AggrUtils {
 				AggregationFunction aggrFn = aggr.getAggregationFunction();
 				if ((aggrFn == AggregationFunction.AVG)) {
 					String averageVar = extentName+"_"+schemaName+"_avg";
-					final String nesCType = attrType.getNesCName();
+					final String nesCType = "float";
 					derivedAggregatesDeclsBuff.append("\t"+nesCType+" "+averageVar+";\n");
 				}
 				if ((aggrFn == AggregationFunction.STDEV)) {
 					String stdevVar = extentName+"_"+schemaName+"_stdev";
 					String avgForStdevVar = extentName+"_"+schemaName+"_avg_for_stdev";
 					final String nesCType = attrType.getNesCName();
-					derivedAggregatesDeclsBuff.append("\t"+nesCType+" "+stdevVar+";\n");
-					derivedAggregatesDeclsBuff.append("\t"+nesCType+" "+avgForStdevVar+";\n");
+					derivedAggregatesDeclsBuff.append("\tfloat "+stdevVar+";\n");
+					derivedAggregatesDeclsBuff.append("\tfloat "+avgForStdevVar+";\n");
 					derivedAggregatesDeclsBuff.append("\t"+nesCType+" tmpDiff;\n");
-					derivedAggregatesDeclsBuff.append("\t"+nesCType+" tmpSum;\n");
+					derivedAggregatesDeclsBuff.append("\tuint64_t tmpSum;\n");
 				}
 			}
 		}
