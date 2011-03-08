@@ -1292,7 +1292,7 @@ public class Translator {
 			}
 			expression = new AggregationExpression(inner, 
 					AggregationFunction.AVG, 
-					inner.getType());
+					_types.getType("float"));
 		} else if (ast.getText().equalsIgnoreCase("count")) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate count");
@@ -1315,7 +1315,7 @@ public class Translator {
 			}
 			expression = new AggregationExpression(inner,
 					AggregationFunction.STDEV, 
-					inner.getType());
+					_types.getType("float"));
 		} else if ((ast.getText().equalsIgnoreCase("max")) ||
 				(ast.getText().equalsIgnoreCase("maximum"))) {
 			if (logger.isTraceEnabled()) {
@@ -1341,7 +1341,7 @@ public class Translator {
 			expression = new MultiExpression(
 					new Expression[] {inner}, 
 					MultiType.SQUAREROOT, 
-					inner.getType());
+					_types.getType("float"));
 		} else if (ast.getText().equalsIgnoreCase("sum")) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate sum");
