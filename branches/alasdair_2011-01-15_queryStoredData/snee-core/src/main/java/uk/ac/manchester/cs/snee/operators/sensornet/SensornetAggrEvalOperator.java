@@ -29,6 +29,7 @@ public class SensornetAggrEvalOperator extends SensornetIncrementalAggregationOp
 			logger.debug("Expression List: " + op.getExpressions());
 		}	
 		this.setNesCTemplateName("aggreval");
+		this.setOperatorName("SensornetAGGREval");
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetAggrEvalOperator()");
 		}		

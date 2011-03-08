@@ -373,14 +373,15 @@ public class WindowOperator extends LogicalOperatorImpl {
 		return this.getInput(0).pushSelectDown(predicate);
 	}
 
-	/** 
-	 * {@inheritDoc}
-	 * Should never be called as there is always a project or aggregation 
-	 * between this operator and the rename operator.
-	 */   
-	public void pushLocalNameDown(String newLocalName) {
-		this.getInput(0).pushLocalNameDown(newLocalName);
-	}
+	//XXX: Removed by AG as metadata now handled in metadata object
+//	/** 
+//	 * {@inheritDoc}
+//	 * Should never be called as there is always a project or aggregation 
+//	 * between this operator and the rename operator.
+//	 */   
+//	public void pushLocalNameDown(String newLocalName) {
+//		this.getInput(0).pushLocalNameDown(newLocalName);
+//	}
 
 	/**
 	 * Used to determine if the operator is Attribute sensitive.

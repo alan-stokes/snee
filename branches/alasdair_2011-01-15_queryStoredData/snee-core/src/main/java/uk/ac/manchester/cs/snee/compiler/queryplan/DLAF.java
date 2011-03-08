@@ -1,7 +1,6 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -32,8 +31,7 @@ public class DLAF extends SNEEAlgebraicForm {
 	/**
 	 * The sources that are used in this query operator tree.
 	 */
-	private List<SourceMetadataAbstract> sources = 
-		new ArrayList<SourceMetadataAbstract>();
+	private Set<SourceMetadataAbstract> sources;
 	
     /**
      * Counter to assign unique id to different candidates.
@@ -71,11 +69,6 @@ public class DLAF extends SNEEAlgebraicForm {
 //			logger.trace("ENTER generateName()");       	
     	return queryName + "-DLAF-" + candidateCount;
     }
-    
-//
-//	public void setSourceType(SourceType sourceType) {
-//		this.sourceType = sourceType;
-//	}
 
     /** {@inheritDoc} */
 	public String getDescendantsString() {
@@ -86,11 +79,11 @@ public class DLAF extends SNEEAlgebraicForm {
 		return this.getID()+"-"+this.laf.getDescendantsString();
 	}
 
-	public void setSources(List<SourceMetadataAbstract> sources) {
-		this.sources.addAll(sources);
+	public void setSource(Set<SourceMetadataAbstract> sources) {
+		this.sources = sources;
 	}
 
-	public List<SourceMetadataAbstract> getSources() {
+	public Set<SourceMetadataAbstract> getSources() {
 		return sources;
 	}
 

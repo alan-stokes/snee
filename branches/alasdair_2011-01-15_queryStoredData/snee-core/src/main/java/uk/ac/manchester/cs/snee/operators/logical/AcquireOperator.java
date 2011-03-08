@@ -38,14 +38,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -86,20 +82,20 @@ public class AcquireOperator extends InputOperator {
 	 * 
 	 * @param extentMetaData Schema data about the extent
 	 * @param types type information as read in from the types file
-	 * @param sources Metadata about data sources for the acquire extent
+	 * @param source Metadata about data sources for the acquire extent
 	 * @param boolType type used for booleans
 	 * @throws SchemaMetadataException
 	 * @throws TypeMappingException
 	 */
 	public AcquireOperator(ExtentMetadata extentMetadata, 
 			Types types, 
-			List<SourceMetadataAbstract> sources,
+			SourceMetadataAbstract source,
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException {
-		super(extentMetadata, sources, boolType);
+		super(extentMetadata, source, boolType);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER AcquireOperator() with " + 
-					extentMetadata + " #sources=" + sources.size());
+					extentMetadata + " source=" + source.getSourceName());
 		}
 		this.setOperatorName("ACQUIRE");
 		this.setOperatorDataType(OperatorDataType.STREAM);
@@ -112,7 +108,7 @@ public class AcquireOperator extends InputOperator {
 
 	/**
 	 * Sets up the attribute based on the schema.
-	 * @param extentMetaData DDL declaration for this extent.
+	 * @param extentMetadata DDL declaration for this extent.
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
 	 */
@@ -123,15 +119,6 @@ public class AcquireOperator extends InputOperator {
 					extentMetaData);
 		}
 		outputAttributes = new ArrayList<Attribute>();
-		outputAttributes.add(new EvalTimeAttribute(extentName, 
-				Constants.EVAL_TIME,
-				_types.getType(Constants.TIME_TYPE))); 
-		outputAttributes.add(new TimeAttribute(extentName,
-				Constants.ACQUIRE_TIME, 
-				_types.getType(Constants.TIME_TYPE)));
-		outputAttributes.add(new IDAttribute(extentName, 
-				Constants.ACQUIRE_ID,
-				_types.getType("integer")));
 //TODO: Localtime
 //		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
 //			outputAttributes.add(new LocalTimeAttribute()); //Ixent added this

@@ -1,6 +1,5 @@
 /****************************************************************************\ 
 *                                                                            *
-*  SNEE (Sensor NEtwork Engine)                                              *
 *  http://code.google.com/p/snee                                             *
 *  Release 1.0, 24 May 2009, under New BSD License.                          *
 *                                                                            *
@@ -102,7 +101,6 @@ import uk.ac.manchester.cs.snee.sncb.tos.SensorT1Component;
 import uk.ac.manchester.cs.snee.sncb.tos.SensorT2Component;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialAMReceiveComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialAMSendComponent;
-import uk.ac.manchester.cs.snee.sncb.tos.SerialComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialStarterComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.TXT1Component;
 import uk.ac.manchester.cs.snee.sncb.tos.TXT2Component;
@@ -207,8 +205,6 @@ public class TinyOSGenerator {
     private static String COMPONENT_RADIOTX;
 
     private static String COMPONENT_RADIORX;
-
-    public static String COMPONENT_SERIAL_DEVICE;
     
     public static String COMPONENT_SERIALTX;
     
@@ -232,13 +228,14 @@ public class TinyOSGenerator {
 
     public static String INTERFACE_SPLITCONTROL;
     
-    public static String INTERFACE_STATECHANGED;
+    public static String INTERFACE_NETWORKSTATE;
     
     public static String TYPE_TMILLI;
 
     public static String TYPE_READ;
 
-    
+
+    private CodeGenTarget target;
     
     private SensorNetworkQueryPlan plan;
     
@@ -276,18 +273,43 @@ public class TinyOSGenerator {
 	
 	private boolean useNodeController;
     
-    public TinyOSGenerator(int tosVersion, boolean tossimFlag, 
-    String targetName,
+    public TinyOSGenerator(CodeGenTarget codeGenTarget,
     boolean combinedImage, String nescOutputDir, CostParameters costParams, boolean controlRadioOff,
     boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
     boolean usePowerManagement, boolean deliverLast, boolean adjustRadioPower,
     boolean includeDeluge, boolean debugLeds, boolean showLocalTime,
     boolean useNodeController)
     throws IOException, SchemaMetadataException, TypeMappingException {
-    	this.tosVersion = tosVersion;
-    	this.tossimFlag = tossimFlag;
-    	this.targetName = targetName;
-    	this.combinedImage = combinedImage;
+		this.target = codeGenTarget;
+    	if (target==CodeGenTarget.TMOTESKY_T2) {
+        	this.tosVersion = 2;
+        	this.tossimFlag = false;
+        	this.targetName = "tmotesky_t2";    	
+    		this.useNodeController = useNodeController;
+        	this.combinedImage = combinedImage;
+    	}
+    	if (target==CodeGenTarget.AVRORA_MICA2_T2) {
+        	this.tosVersion = 2;
+        	this.tossimFlag = false;
+        	this.targetName = "avrora_mica2_t2";    	
+    		this.useNodeController = false; // incompatible
+        	this.combinedImage = combinedImage;
+    	}
+    	if (target==CodeGenTarget.AVRORA_MICAZ_T2) {
+        	this.tosVersion = 2;
+        	this.tossimFlag = false;
+        	this.targetName = "avrora_micaz_t2";
+    		this.useNodeController = false; // incompatible
+        	this.combinedImage = combinedImage;
+    	}    	
+    	if (target==CodeGenTarget.TOSSIM_T2) {
+        	this.tosVersion = 2;
+        	this.tossimFlag = true;
+        	this.targetName = "tossim_t2";
+    		this.useNodeController = false; // incompatible
+        	this.combinedImage = true; // doesn't work otherwise
+    	}    	
+    	
     	this.nescOutputDir = nescOutputDir;
 		this.costParams = costParams;
 
@@ -301,9 +323,8 @@ public class TinyOSGenerator {
 		this.includeDeluge = includeDeluge;
 		this.debugLeds = debugLeds;
 		this.showLocalTime = showLocalTime;
-		this.useNodeController = useNodeController;
 		
-    	initConstants(tosVersion, tossimFlag, targetName);
+    	initConstants();
 
     	if (tosVersion == 1) {
     		NESC_TEMPLATES_DIR = "etc/sncb/templates/tos1/"; 
@@ -323,7 +344,7 @@ public class TinyOSGenerator {
      * @param tossimFlag	Specifies whether Tossim code is being generated.
      * @param targetName 
      */
-    private static void initConstants(int tosVersion, boolean tossimFlag, String targetName) {
+    private void initConstants() {
 		if (tosVersion == 1) {
 		    COMPONENT_RADIO = "GenericComm";
 		    COMPONENT_MAIN = "Main";
@@ -361,16 +382,18 @@ public class TinyOSGenerator {
 		    COMPONENT_RADIO = "ActiveMessageC";
 		    COMPONENT_RADIOTX = "AMSenderC";
 		    COMPONENT_RADIORX = "AMRecieverC";
-		    if (targetName.equals("tmotesky_t2")) {
+		    if (target == CodeGenTarget.TMOTESKY_T2) {
+//		    	COMPONENT_SENSOR = "VoltageC";
 		    	COMPONENT_SENSOR = "HamamatsuS1087ParC";
-		    } else if (tossimFlag) {
+		    } else if (target == CodeGenTarget.AVRORA_MICA2_T2) {	
+		    	COMPONENT_SENSOR = "DemoSensorC"; //PhotoTemp
+		    } else if (target == CodeGenTarget.TOSSIM_T2) {
 		    	COMPONENT_SENSOR  = "RandomSensorC";
 		    } else {
 		    	COMPONENT_SENSOR = "DemoSensorC";
 		    }
 		    	
 		    COMPONENT_LEDS = "LedsC";
-		    COMPONENT_SERIAL_DEVICE = "SerialActiveMessageC";
 		    COMPONENT_SERIALTX = "SerialAMSenderC";
 		    COMPONENT_SERIALRX = "SerialAMReceiverC";
 		    COMPONENT_SERIAL_STARTER = "SerialStarterC";
@@ -388,7 +411,7 @@ public class TinyOSGenerator {
 		    INTERFACE_SNOOZE = "Snooze";
 		    INTERFACE_LEDS = "Leds";
 		    INTERFACE_SPLITCONTROL = "SplitControl";
-		    INTERFACE_STATECHANGED = "StateChanged";
+		    INTERFACE_NETWORKSTATE = "NetworkState";
 		    TYPE_TMILLI = "TMilli";
 		    TYPE_READ = "uint16_t";
 		}
@@ -1201,10 +1224,6 @@ public class TinyOSGenerator {
 
 	private void t2AddStartupProtocolComponents(final NesCConfiguration config)
 			throws CodeGenerationException {
-		SerialComponent serialComp = new SerialComponent(COMPONENT_SERIAL_DEVICE, config, tossimFlag);
-		config.addComponent(serialComp);
-		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_SERIAL_DEVICE, INTERFACE_SPLITCONTROL, "SerialControl", INTERFACE_SPLITCONTROL);
-		
 		String aid = ActiveMessageIDGenerator.getActiveMessageID("AM_SERIAL_STARTUP_MESSAGE");
 		SerialAMReceiveComponent serialRxComp = 
 			new SerialAMReceiveComponent(COMPONENT_SERIALRX+"StartUp", config, aid, tossimFlag);
@@ -1243,8 +1262,8 @@ public class TinyOSGenerator {
 				INTERFACE_SPLITCONTROL);
 		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_NODE_CONTROLLER, 
 		
-				INTERFACE_STATECHANGED, "CommandServerUpdate", 
-				INTERFACE_STATECHANGED);
+				INTERFACE_NETWORKSTATE, "CommandServerUpdate", 
+				INTERFACE_NETWORKSTATE);
 	}
 
     /**
@@ -1306,17 +1325,9 @@ public class TinyOSGenerator {
 				
 			} else if (op instanceof SensornetDeliverOperator) {
 				
-				if (this.useNodeController) {
-					SerialStarterComponent serialStartComp = new SerialStarterComponent (
+				SerialStarterComponent serialStartComp = new SerialStarterComponent (
 							COMPONENT_SERIAL_STARTER, config, tossimFlag);
-					config.addComponent(serialStartComp);					
-				} else {
-					/* Wire fragment component to serial device */
-					SerialComponent serialComp = new SerialComponent(COMPONENT_SERIAL_DEVICE, config, tossimFlag);
-					config.addComponent(serialComp);
-					config.addWiring(fragComp.getID(), serialComp.getID(), INTERFACE_SPLITCONTROL, 
-							"SerialAMControl", INTERFACE_SPLITCONTROL);
-				}
+				config.addComponent(serialStartComp);					
 
 				SerialAMSendComponent serialSendComp = new SerialAMSendComponent(currentSite,frag,null,null,
 						COMPONENT_SERIALTX, config, "AM_DELIVERMESSAGE", tossimFlag);
@@ -1837,10 +1848,6 @@ public class TinyOSGenerator {
 			"SendDeliver", "SendDeliver");
 		
 		if (tosVersion==2){
-			if (!this.useNodeController) {
-				fragConfig.linkToExternalProvider(rootOpName, INTERFACE_SPLITCONTROL, 
-					"SerialAMControl", "SerialAMControl");
-			}
 			fragConfig.linkToExternalProvider(rootOpName, INTERFACE_PACKET,
 					"Packet", "Packet");
 		}
@@ -2068,8 +2075,10 @@ public class TinyOSGenerator {
 				tupleTypeBuff.append("typedef nx_struct ");
 			}
 			tupleTypeBuff.append(CodeGenUtils.generateOutputTupleType(op) + " {\n");
-		}
 
+			tupleTypeBuff.append("\tnx_uint16_t evalEpoch; //current epoch being evaluated\n");
+		}
+		
 		final List <Attribute> attributes = op.getAttributes();
 		for (int i = 0; i < attributes.size(); i++) {
 		    String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
@@ -2448,6 +2457,15 @@ public class TinyOSGenerator {
 		}
     }
 
+    public void copySerialStarterFiles(String dir) throws IOException, URISyntaxException {
+    	Template.instantiate(NESC_MISC_FILES_DIR + "/SerialStarterC.nc",
+    			dir +"/SerialStarterC.nc");
+    	Template.instantiate(NESC_MISC_FILES_DIR + "/AutoStarterC.nc",
+    			dir +"/AutoStarterC.nc");
+    	Template.instantiate(NESC_MISC_FILES_DIR + "/AutoStarterP.nc",
+    			dir +"/AutoStarterP.nc"); 	
+    }
+    
 
     /**
      * Generates Miscellaneous files for individual image QEPs.
@@ -2474,21 +2492,20 @@ public class TinyOSGenerator {
 				"QueryPlan" + siteID, isSink);
 
 		    if (tosVersion==2) {
-		    	Template.instantiate(
-					    NESC_MISC_FILES_DIR + "/itoa.h",
-					    nescOutputDir + nodeDir
-						    + "/itoa.h");
+		    	Template.instantiate(NESC_MISC_FILES_DIR + "/itoa.h",
+					    nescOutputDir + nodeDir + "/itoa.h");
 		    }
 		    
 		    if (this.includeDeluge || this.useNodeController) {
-		    	Template.instantiate(
-					    NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
+		    	Template.instantiate(NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
 					    nescOutputDir + nodeDir +"/volumes-stm25p.xml");	
 		    	
-		    	Template.instantiate(
-					    NESC_MISC_FILES_DIR + "/volumes-at45db.xml",
+		    	Template.instantiate(NESC_MISC_FILES_DIR + "/volumes-at45db.xml",
 					    nescOutputDir + nodeDir +"/volumes-at45db.xml");
-		    }		    
+		    }
+		    if (!this.useNodeController && isSink) {
+		    	copySerialStarterFiles(nescOutputDir + nodeDir);
+		    }
 		}
 	}
 
@@ -2510,6 +2527,8 @@ public class TinyOSGenerator {
 					    NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
 					    nescOutputDir + targetName +"/volumes-stm25p.xml");		    	
 		    }
+		    
+	    	copySerialStarterFiles(nescOutputDir + targetName);
 		}
 	
 
@@ -2551,6 +2570,8 @@ public class TinyOSGenerator {
 			Template.instantiate(
 				    NESC_MISC_FILES_DIR + "/RandomSensorC.nc",
 				    nescOutputDir + targetName +"/RandomSensorC.nc");
+			
+	    	copySerialStarterFiles(nescOutputDir + targetName);
 		}
 	}
 

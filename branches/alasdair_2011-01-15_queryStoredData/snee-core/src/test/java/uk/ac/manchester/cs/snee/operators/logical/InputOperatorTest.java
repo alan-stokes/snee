@@ -28,7 +28,9 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.WebServiceSourceMetadata;
 
 public class InputOperatorTest extends EasyMockSupport {
 
@@ -47,6 +49,7 @@ public class InputOperatorTest extends EasyMockSupport {
 	private Types types;
 	private ExtentMetadata mockExtent;
 	private Attribute mockAttribute;
+	private SourceMetadataAbstract mockSource;
 
 	@Before
 	public void setUp() throws Exception {
@@ -63,6 +66,8 @@ public class InputOperatorTest extends EasyMockSupport {
 		types = new Types(typesFileLoc);
 		mockExtent = createMock(ExtentMetadata.class);
 		mockAttribute = createMock(DataAttribute.class);
+		mockSource = createMock(WebServiceSourceMetadata.class);
+		expect(mockSource.getSourceName()).andReturn("extentName").anyTimes();
 	}
 
 	@After
@@ -76,16 +81,14 @@ public class InputOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getAttributes())
 		.andReturn(new ArrayList<Attribute>());
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		String extentMetadata = op.toString();
 //		System.out.println(extentMetadata);
 		assertTrue(extentMetadata.equals(
 				"TYPE: relation   OPERATOR: SCAN " +
-		"(Name (cardinality=0 sources={} ) - cardinality: 0"));
+		"(Name (cardinality=0 source=extentName ) - cardinality: 0"));
 		verifyAll();
 	}
 
@@ -96,10 +99,8 @@ public class InputOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertTrue(op.getExtentName().equals("Name"));
 		verifyAll();
@@ -112,12 +113,10 @@ public class InputOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
-		assertEquals(sources, op.getSources());
+		assertEquals(mockSource, op.getSource());
 		verifyAll();
 	}
 
@@ -131,10 +130,8 @@ public class InputOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getAttributes())
 			.andReturn(attributes);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		List<Attribute> attrs = op.getAttributes();
 		assertEquals(attributes.size(), attrs.size());
@@ -151,10 +148,8 @@ public class InputOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getAttributes())
 			.andReturn(attributes);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		List<Expression> exprs = op.getExpressions();
 		assertEquals(attributes.size(), exprs.size());
@@ -171,10 +166,8 @@ public class InputOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getAttributes())
 			.andReturn(attributes);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		int cardinarlity = op.getCardinality(CardinalityType.MAX);
 		assertEquals(attributes.size(), cardinarlity);
@@ -191,10 +184,8 @@ public class InputOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getAttributes())
 			.andReturn(attributes);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		List<Attribute> attrs = op.getInputAttributes();
 		assertEquals(attributes.size(), attrs.size());
@@ -211,10 +202,8 @@ public class InputOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getAttributes())
 			.andReturn(attributes);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		int size = op.getNumberInputAttributes();
 		assertEquals(attributes.size(), size);
@@ -233,10 +222,8 @@ public class InputOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getAttributes())
 			.andReturn(attributes);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		int attrNumber = op.getInputAttributeNumber(mockAttribute);
 		assertEquals(0, attrNumber);
@@ -246,15 +233,14 @@ public class InputOperatorTest extends EasyMockSupport {
 	}
 
 	@Test
-	public void testIsAttributeSensitive() throws TypeMappingException, SchemaMetadataException {
+	public void testIsAttributeSensitive() 
+	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertFalse(op.isAttributeSensitive());
 		verifyAll();
@@ -267,10 +253,8 @@ public class InputOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertTrue(op.isLocationSensitive());
 		verifyAll();
@@ -283,10 +267,8 @@ public class InputOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertFalse(op.isRecursive());
 		verifyAll();
@@ -299,29 +281,26 @@ public class InputOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getAttributes())
 		.andReturn(new ArrayList<Attribute>());
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertFalse(op.isRemoveable());
 		verifyAll();
 	}
 
-	@Test(expected=AssertionError.class)
-	public void testPushLocalNameDown() 
-	throws TypeMappingException, SchemaMetadataException {
-		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
-		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
-		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
-		ScanOperator op = new ScanOperator(mockExtent, 
-				sources, 
-				types.getType("boolean"));
-		op.pushLocalNameDown("newLocalName");
-		verifyAll();
-	}
+	//XXX: Removed by AG as metadata now handled in metadata object
+//	@Test(expected=AssertionError.class)
+//	public void testPushLocalNameDown() 
+//	throws TypeMappingException, SchemaMetadataException {
+//		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+//		expect(mockExtent.getAttributes())
+//			.andReturn(new ArrayList<Attribute>());
+//		replayAll();
+//		ScanOperator op = new ScanOperator(mockExtent, 
+//				mockSource, 
+//				types.getType("boolean"));
+//		op.pushLocalNameDown("newLocalName");
+//		verifyAll();
+//	}
 
 }

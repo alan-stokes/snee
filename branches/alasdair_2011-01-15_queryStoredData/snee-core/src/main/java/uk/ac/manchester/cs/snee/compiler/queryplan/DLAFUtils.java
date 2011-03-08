@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
-import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 /**
  * Utility class for displaying DLAF.

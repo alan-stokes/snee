@@ -1,8 +1,8 @@
 package uk.ac.manchester.cs.snee.compiler.allocator;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -37,40 +37,39 @@ public class SourceAllocator {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER allocateSources() laf="+laf.getID());
 		DLAF dlaf = new DLAF(laf, laf.getQueryName());
-		List<SourceMetadataAbstract> sources = retrieveSources(laf);
+		Set<SourceMetadataAbstract> sources = retrieveSources(laf);
+		//currently one source is supported
 		validateSources(sources);
-		dlaf.setSources(sources);
-//		SourceType sourceType = onlySource.getSourceType();
-//		dlaf.setSourceType(sourceType);
+		dlaf.setSource(sources);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN allocateSources()");
 		}
 		return dlaf;
 	}
 
-	private List<SourceMetadataAbstract> retrieveSources(LAF laf)
+	private Set<SourceMetadataAbstract> retrieveSources(LAF laf)
 			throws SourceAllocatorException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER retrieveSources() for " + laf.getID());
 		}
-		List<SourceMetadataAbstract> sources = 
-			new ArrayList<SourceMetadataAbstract>();
+		Set<SourceMetadataAbstract> sources = 
+			new HashSet<SourceMetadataAbstract>();
 		Iterator<LogicalOperator> opIter =
 			laf.operatorIterator(TraversalOrder.PRE_ORDER);
 		while (opIter.hasNext()) {
 			LogicalOperator op = opIter.next();
 			if (op instanceof AcquireOperator) {
 				AcquireOperator acquireOp = (AcquireOperator) op;
-				List<SourceMetadataAbstract> acqSources = acquireOp.getSources();
-				sources.addAll(acqSources);
+				SourceMetadataAbstract acqSource = acquireOp.getSource();
+				sources.add(acqSource);
 			} else if (op instanceof ReceiveOperator) {
 				ReceiveOperator receiveOp = (ReceiveOperator) op;
-				List<SourceMetadataAbstract> recSources = receiveOp.getSources();
-				sources.addAll(recSources);
+				SourceMetadataAbstract recSource = receiveOp.getSource();
+				sources.add(recSource);
 			} else if (op instanceof ScanOperator) {
 				ScanOperator scanOp = (ScanOperator) op;
-				List<SourceMetadataAbstract> scanSources = scanOp.getSources();
-				sources.addAll(scanSources);
+				SourceMetadataAbstract scanSource = scanOp.getSource();
+				sources.add(scanSource);
 			}
 		}
 		if (logger.isTraceEnabled()) {
@@ -80,8 +79,9 @@ public class SourceAllocator {
 		return sources;
 	}
 
-	private void validateSources(List<SourceMetadataAbstract> sources)
-			throws SourceAllocatorException {
+	private SourceMetadataAbstract validateSources(
+			Set<SourceMetadataAbstract> sources)
+	throws SourceAllocatorException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER validateSources() #sources=" +
 					sources.size());
@@ -120,9 +120,13 @@ public class SourceAllocator {
 			logger.warn(msg);
 			throw new SourceAllocatorException(msg);	
 		}
-		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN validateSources()");
+		for (SourceMetadataAbstract source : sources) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("RETURN validateSources()");
+			}
+			return source;	
 		}
+		return null;
 	}
 
 }

@@ -42,6 +42,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
+import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.PredicateOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
@@ -89,7 +90,7 @@ public class JoinComponent extends NesCComponent implements TinyOS1Component,
 			replacements.put("__RIGHT_CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
 				.generateOutputTuplePtrType(this.op.getRightChild()));
 		    replacements.put("__JOIN_PREDICATES__", CodeGenUtils.getNescText(
-		    		((PredicateOperator)op.getLogicalOperator()).getPredicate(),
+		    		((JoinOperator)op.getLogicalOperator()).getPredicate(),
 		    		"leftInQueue[leftInHead].",
 		    		"rightInQueue[tmpRightInHead].", 
 		    		op.getLeftChild().getAttributes(), 
@@ -102,7 +103,7 @@ public class JoinComponent extends NesCComponent implements TinyOS1Component,
 			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/join.nc", outputFileName,
 				replacements);
     	} catch (Exception e) {
-    		throw new CodeGenerationException(e);
+    		throw new CodeGenerationException(e.getLocalizedMessage(), e);
     	}
     }
 

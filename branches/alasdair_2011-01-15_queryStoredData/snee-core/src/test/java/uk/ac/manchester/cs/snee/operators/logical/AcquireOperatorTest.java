@@ -28,6 +28,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 
 public class AcquireOperatorTest extends EasyMockSupport {
@@ -47,6 +48,7 @@ public class AcquireOperatorTest extends EasyMockSupport {
 	private Types types;
 	private ExtentMetadata mockExtent;
 	private Attribute mockAttribute;
+	private SourceMetadataAbstract mockSource;
 
 	@Before
 	public void setUp() throws Exception {
@@ -63,6 +65,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 		types = new Types(typesFileLoc);
 		mockExtent = createMock(ExtentMetadata.class);
 		mockAttribute = createMock(DataAttribute.class);
+		mockSource = createMock(SensorNetworkSourceMetadata.class);
+		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 	}
 
 	@After
@@ -77,10 +81,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			.andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertTrue(op.getOperatorName().equals("ACQUIRE"));
 		verifyAll();
@@ -94,10 +96,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			.andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertEquals(OperatorDataType.STREAM, op.getOperatorDataType());
 		verifyAll();
@@ -116,10 +116,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		int cardinarlity = op.getCardinality(CardinalityType.MAX);
 		assertEquals(1, cardinarlity);
@@ -134,10 +132,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			.andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types, 
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertTrue(op.acceptsPredicates());
 		verifyAll();
@@ -152,10 +148,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			.andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertFalse(op.pushProjectionDown(null, new ArrayList<Attribute>()));
 		verifyAll();
@@ -171,10 +165,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExpression.getType()).andReturn(types.getType("boolean")).times(2);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertTrue(op.pushSelectDown(mockExpression));
 		verifyAll();
@@ -193,13 +185,11 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		List<Attribute> acAttr = op.getAcquiredAttributes();
-		assertEquals(attributes.size() + 3, acAttr.size());
+		assertEquals(attributes.size(), acAttr.size());
 		verifyAll();
 	}
 	
@@ -211,16 +201,14 @@ public class AcquireOperatorTest extends EasyMockSupport {
 		.andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		String extentMetadata = op.toString();
 //		System.out.println(extentMetadata);
 		assertTrue(extentMetadata.equals(
 				"TYPE: stream   OPERATOR: ACQUIRE " +
-		"(Name (cardinality=0 sources={} ) - cardinality: 1"));
+		"(Name (cardinality=0 source=sourceName ) - cardinality: 1"));
 		verifyAll();
 	}
 	
@@ -234,29 +222,25 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			.andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertTrue(op.getExtentName().equals("Name"));
 		verifyAll();
 	}
 
 	@Test
-	public void testGetSources() 
+	public void testGetmockSource() 
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
-		assertEquals(sources, op.getSources());
+		assertEquals(mockSource, op.getSource());
 		verifyAll();
 	}
 
@@ -273,13 +257,11 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		List<Attribute> attrs = op.getAttributes();
-		assertEquals(attributes.size() + 3, attrs.size());
+		assertEquals(attributes.size(), attrs.size());
 		verifyAll();
 	}
 
@@ -296,13 +278,11 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		List<Expression> exprs = op.getExpressions();
-		assertEquals(attributes.size() + 3, exprs.size());
+		assertEquals(attributes.size(), exprs.size());
 		verifyAll();
 	}
 
@@ -319,10 +299,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		List<Attribute> attrs = op.getInputAttributes();
 		assertEquals(attributes.size(), attrs.size());
@@ -342,10 +320,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		int size = op.getNumberInputAttributes();
 		assertEquals(attributes.size(), size);
@@ -369,10 +345,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			andReturn(new ArrayList<Attribute>());
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		int attrNumber = op.getInputAttributeNumber(mockAttribute);
 		assertEquals(0, attrNumber);
@@ -389,10 +363,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			.andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertFalse(op.isAttributeSensitive());
 		verifyAll();
@@ -406,10 +378,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			.andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertTrue(op.isLocationSensitive());
 		verifyAll();
@@ -423,10 +393,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			.andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertFalse(op.isRecursive());
 		verifyAll();
@@ -440,30 +408,27 @@ public class AcquireOperatorTest extends EasyMockSupport {
 			.andReturn(new ArrayList<Attribute>()).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
+				mockSource, 
 				types.getType("boolean"));
 		assertFalse(op.isRemoveable());
 		verifyAll();
 	}
 
-	@Test(expected=AssertionError.class)
-	public void testPushLocalNameDown() 
-	throws TypeMappingException, SchemaMetadataException {
-		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
-		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>()).times(2);
-		expect(mockExtent.getCardinality()).andReturn(1);
-		replayAll();
-		List<SourceMetadataAbstract> sources =
-			new ArrayList<SourceMetadataAbstract>();
-		AcquireOperator op = new AcquireOperator(mockExtent, types,
-				sources, 
-				types.getType("boolean"));
-		op.pushLocalNameDown("newLocalName");
-		verifyAll();
-	}
+	//XXX: Removed by AG as metadata now handled in metadata object
+//	@Test(expected=AssertionError.class)
+//	public void testPushLocalNameDown() 
+//	throws TypeMappingException, SchemaMetadataException {
+//		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+//		expect(mockExtent.getAttributes())
+//			.andReturn(new ArrayList<Attribute>()).times(2);
+//		expect(mockExtent.getCardinality()).andReturn(1);
+//		replayAll();
+//		AcquireOperator op = new AcquireOperator(mockExtent, types,
+//				mockSource, 
+//				types.getType("boolean"));
+//		op.pushLocalNameDown("newLocalName");
+//		verifyAll();
+//	}
 
 }

@@ -188,7 +188,7 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 				logger.warn(message);
 				throw new SourceMetadataException(message);
 			}
-			_extentToSitesMapping.put(extentName, sites);
+			_extentToSitesMapping.put(extentName.toLowerCase(), sites);
 			logger.trace("Extent "+extentName+": added source sites "+
 					sites.toString());
 		}
@@ -221,7 +221,8 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 	 * @return an array of node identifiers
 	 */
 	public int[] getSourceSites(String extentName) {
-		return this._extentToSitesMapping.get(extentName);
+		int sites[] = this._extentToSitesMapping.get(extentName.toLowerCase());
+		return sites;
 	}
 
 	/**

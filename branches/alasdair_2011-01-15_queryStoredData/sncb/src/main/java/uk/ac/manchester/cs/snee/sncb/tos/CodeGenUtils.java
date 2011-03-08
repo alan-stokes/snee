@@ -632,16 +632,6 @@ public final class CodeGenUtils {
 	 * @return The String to use in nesc records.
 	 */
 	public static String getNescAttrName(final Attribute attr) {
-		if (attr instanceof EvalTimeAttribute) {
-			return "evalEpoch";
-		}
-		if (attr instanceof TimeAttribute) {
-			return attr.getAttributeSchemaName() + ("_epoch");
-		}
-//TODO: Localtime
-//		if (attr instanceof LocalTimeAttribute) {
-//			return Constants.LOCAL_TIME;
-//		}
 		return attr.getAttributeDisplayName().replace('.','_'); 
 	}
 

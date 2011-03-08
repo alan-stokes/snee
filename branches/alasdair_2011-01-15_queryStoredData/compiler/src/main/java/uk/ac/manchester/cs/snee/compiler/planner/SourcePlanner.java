@@ -76,7 +76,7 @@ public class SourcePlanner {
 			logger.debug("ENTER doSourcePlanning() for " + queryID);
 		QueryExecutionPlan qep = null;
 		//TODO: In the future, this will involve iterating over fragment identified by source allocator in turn.
-		SourceType dataSourceType = dlaf.getSources().get(0).getSourceType();
+		SourceType dataSourceType = dlaf.getSources().iterator().next().getSourceType();
 		switch (dataSourceType) {
 		case SENSOR_NETWORK:
 			qep = doSensorNetworkSourcePlanning(dlaf, qos, costParams, 

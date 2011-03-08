@@ -58,19 +58,19 @@ public class ReceiveOperator extends InputOperator {
 	 * Constructs a new Receive operator.
 	 * 
 	 * @param extentMetaData Schema data about the extent
-	 * @param sources Metadata about data sources for the receive extent
+	 * @param source Metadata about data sources for the receive extent
 	 * @param boolType type used for booleans
 	 * @throws SchemaMetadataException
 	 * @throws TypeMappingException
 	 */
 	public ReceiveOperator(ExtentMetadata extentMetaData, 
-			List<SourceMetadataAbstract> sources, 
+			SourceMetadataAbstract source, 
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException {
-		super(extentMetaData, sources, boolType);
+		super(extentMetaData, source, boolType);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ReceiveOperator() with " +
-					extentMetaData + " #sources=" + sources.size());
+					extentMetaData + " source=" + source.getSourceName());
 					}
 		this.setOperatorName("RECEIVE");
 		this.setOperatorDataType(OperatorDataType.STREAM);			

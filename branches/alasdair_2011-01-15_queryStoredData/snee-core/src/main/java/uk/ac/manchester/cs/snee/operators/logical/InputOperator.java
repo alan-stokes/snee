@@ -32,7 +32,7 @@ implements LogicalOperator {
 	/**
 	 * Contains details of the data sources that contribute data
 	 */
-	private List<SourceMetadataAbstract> sources;
+	private SourceMetadataAbstract source;
 	
 	/**
 	 *  List of attributes to be output. 
@@ -47,16 +47,16 @@ implements LogicalOperator {
 	protected List<Expression> expressions;
 	
 	public InputOperator(ExtentMetadata extentMetadata,
-			List<SourceMetadataAbstract> sources, 
+			SourceMetadataAbstract source, 
 			AttributeType boolType)
 	throws SchemaMetadataException, TypeMappingException {
 		super(boolType);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER InputOperator() with " +
-					extentMetadata + " #sources=" + sources.size());
+					extentMetadata + " source=" + source.getSourceName());
 		}
 		extentName = extentMetadata.getExtentName();
-		this.sources = sources;
+		this.source = source;
 		addMetadataInfo(extentMetadata);
 		generateAndSetParamStr();
 	}
@@ -95,20 +95,9 @@ implements LogicalOperator {
 	 * the query plan as a graph.
 	 */
 	private void generateAndSetParamStr() {
-		StringBuffer sourcesStr = new StringBuffer(" sources={");
-		boolean first = true;
-		for (SourceMetadataAbstract sm : sources) {
-			if (first) {
-				first=false;
-			} else {
-				sourcesStr.append(",");
-			}
-			sourcesStr.append(sm.getSourceName());
-		}
-		sourcesStr.append("}");
 		this.setParamStr(this.extentName + 
 				" (cardinality=" + getCardinality(null) +
-				sourcesStr);
+				" source=" + source.getSourceName());
 	} 
 
 	/* (non-Javadoc)
@@ -131,11 +120,13 @@ implements LogicalOperator {
 	}
 	
 	/**
-	 * Return details of the data sources
-	 * @return
+	 * Return details of the data source for the extent provided by 
+	 * this input operator.
+	 * 
+	 * @return SourceMetadata object representing the data source
 	 */
-	public List<SourceMetadataAbstract> getSources() {
-		return sources;
+	public SourceMetadataAbstract getSource() {
+		return source;
 	}
 
 	/** 
@@ -228,13 +219,14 @@ implements LogicalOperator {
 		return false;
 	}
 
-	/** 
-	 * {@inheritDoc}
-	 * Should never be called as there is always a project or aggregation 
-	 * between this operator and the rename operator.
-	 */   
-	public void pushLocalNameDown(String newLocalName) {
-		throw new AssertionError("Unexpected call to pushLocalNameDown()"); 
-	}
+	//XXX: Removed by AG as metadata now handled in metadata object
+//	/** 
+//	 * {@inheritDoc}
+//	 * Should never be called as there is always a project or aggregation 
+//	 * between this operator and the rename operator.
+//	 */   
+//	public void pushLocalNameDown(String newLocalName) {
+//		throw new AssertionError("Unexpected call to pushLocalNameDown()"); 
+//	}
 	
 }

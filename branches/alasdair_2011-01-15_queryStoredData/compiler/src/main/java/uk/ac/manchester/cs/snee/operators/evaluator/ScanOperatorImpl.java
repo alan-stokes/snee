@@ -199,24 +199,16 @@ public class ScanOperatorImpl extends EvaluatorPhysicalOperator {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER initialiseStoredSourceClient()");
 		}
-		List<SourceMetadataAbstract> sources = scanOp.getSources();
-		if (!sources.isEmpty()) {
-			//XXX: Assumption: only one data source for a stored extent
-			SourceMetadataAbstract source = sources.get(0);
-			SourceType sourceType = source.getSourceType();
-			switch (sourceType) {
-			case WSDAIR:
-				instantiateWSDAIRDataSource(source);
-				break;
+		SourceMetadataAbstract source = scanOp.getSource();
+		SourceType sourceType = source.getSourceType();
+		switch (sourceType) {
+		case WSDAIR:
+			instantiateWSDAIRDataSource(source);
+			break;
 
-			default:
-				String msg = "Data source type " + sourceType +
-					" unsupported by SCAN operator";
-				logger.error(msg);
-				throw new SourceMetadataException(msg);
-			}
-		} else {
-			String msg = "No data source declared for relation " + _extentName;
+		default:
+			String msg = "Data source type " + sourceType +
+			" unsupported by SCAN operator";
 			logger.error(msg);
 			throw new SourceMetadataException(msg);
 		}

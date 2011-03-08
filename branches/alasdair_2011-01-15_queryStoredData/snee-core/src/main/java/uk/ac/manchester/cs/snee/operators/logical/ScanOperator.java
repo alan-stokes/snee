@@ -54,14 +54,14 @@ public class ScanOperator extends InputOperator {
 	private Duration rescanInterval;
 		
 	public ScanOperator(ExtentMetadata extentMetadata,
-			List<SourceMetadataAbstract> sources,
+			SourceMetadataAbstract source,
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException 
 	{
-		super(extentMetadata, sources, boolType);
+		super(extentMetadata, source, boolType);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ScanOperator() with " +
-					extentMetadata + " #sources=" + sources.size());
+					extentMetadata + " source=" + source.getSourceName());
 		}
 		this.setOperatorName("SCAN");
 		this.setOperatorDataType(OperatorDataType.RELATION);
