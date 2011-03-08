@@ -1290,14 +1290,14 @@ public class Translator {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate average");
 			}
-			//FIXME: Not all arithmetic expressions are integers
 			expression = new AggregationExpression(inner, 
 					AggregationFunction.AVG, 
-					_types.getType("integer"));
+					inner.getType());
 		} else if (ast.getText().equalsIgnoreCase("count")) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate count");
 			}
+			/* Count is DEFINITELY integer */
 			expression = new AggregationExpression(inner, 
 					AggregationFunction.COUNT,
 					_types.getType("integer"));
@@ -1306,55 +1306,49 @@ public class Translator {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate minimum");
 			}
-			//FIXME: Not all arithmetic expressions are integers
 			expression = new AggregationExpression(inner, 
 					AggregationFunction.MIN,
-					_types.getType("integer"));
+					inner.getType());
 		} else if (ast.getText().equalsIgnoreCase("stdev")) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate standard deviation");
 			}
-			//FIXME: Not all arithmetic expressions are integers
 			expression = new AggregationExpression(inner,
 					AggregationFunction.STDEV, 
-					_types.getType("integer"));
+					inner.getType());
 		} else if ((ast.getText().equalsIgnoreCase("max")) ||
 				(ast.getText().equalsIgnoreCase("maximum"))) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate maximum");
 			}
-			//FIXME: Not all arithmetic expressions are integers
 			expression = new AggregationExpression(inner,
 					AggregationFunction.MAX, 
-					_types.getType("integer"));
+					inner.getType());
 		} else if ((ast.getText().equalsIgnoreCase("sqr")) ||
 				(ast.getText().equalsIgnoreCase("square"))) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate square");
 			}
-			//FIXME: Not all arithmetic expressions are integers
 			expression = new MultiExpression(
 					new Expression[] {inner,inner}, 
 					MultiType.MULTIPLY, 
-					_types.getType("integer"));
+					inner.getType());
 		} else if ((ast.getText().equalsIgnoreCase("sqrt")) || 
 				(ast.getText().equalsIgnoreCase("squareroot"))) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate square root");
 			}
-			//FIXME: Not all arithmetic expressions are integers			
 			expression = new MultiExpression(
 					new Expression[] {inner}, 
 					MultiType.SQUAREROOT, 
-					_types.getType("integer"));
+					inner.getType());
 		} else if (ast.getText().equalsIgnoreCase("sum")) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate sum");
 			}
-			//FIXME: Not all arithmetic expressions are integers
 			expression = new AggregationExpression(inner, 
 					AggregationFunction.SUM, 
-					_types.getType("integer"));
+					inner.getType());
 		} else { 
 			String message = "Unprogrammed Function name " +
 					"AST Text:" + ast.getText();
