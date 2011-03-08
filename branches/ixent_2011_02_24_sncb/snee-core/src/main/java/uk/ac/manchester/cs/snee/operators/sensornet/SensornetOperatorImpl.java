@@ -332,7 +332,7 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 				return this.getLeftChild().getPhysicalTupleSize();
 			}
 	    	
-	        final List<Attribute> attributes = this.logicalOp.getAttributes();
+	        final List<Attribute> attributes = this.getAttributes();
 	        int totalSize = 0;
 	        int blockSize = 0;
 	        for (int i = 0; i < attributes.size(); i++) {
