@@ -33,17 +33,14 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.metadata.CostParameters;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
@@ -117,7 +114,13 @@ public class DeliverComponent extends NesCComponent {
 				String attrName = CodeGenUtils.getNescAttrName(attr);
 				String deliverName = attr.getAttributeDisplayName();
 		
-			    displayTupleBuff3.append(comma+deliverName+"=%d");
+			    displayTupleBuff3.append(comma+deliverName);
+			    if (attr.getAttributeTypeName().equals("float")) {
+			    	displayTupleBuff3.append("=%g");
+			    } else {
+			    	displayTupleBuff3.append("=%d");
+			    }
+			    
 			    displayTupleBuff4.append(comma+"inQueue[inHead]."+attrName);
 		
 			    displayTupleBuff5.append("\t\t\t\tstrcat(deliverStr, \""
