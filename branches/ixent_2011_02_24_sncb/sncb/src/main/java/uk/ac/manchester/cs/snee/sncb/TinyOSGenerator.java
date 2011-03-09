@@ -254,7 +254,7 @@ public class TinyOSGenerator {
 	private boolean showLocalTime; //Not working
 	
 	private boolean useNodeController;
-    
+	    
     public TinyOSGenerator(CodeGenTarget codeGenTarget,
     boolean combinedImage, String nescOutputDir, CostParameters costParams, boolean controlRadioOff,
     boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
@@ -1603,8 +1603,12 @@ public class TinyOSGenerator {
 					CodeGenUtils.outputTypeSize.get(
 					CodeGenUtils.generateOutputTupleType(op))+ " bytes\n\n");
 
-			
-			tupleTypeBuff.append("typedef nx_struct ");
+			if (this.tossimFlag) {
+				tupleTypeBuff.append("typedef struct ");				
+			} else {
+				tupleTypeBuff.append("typedef nx_struct ");
+			}
+
 
 			tupleTypeBuff.append(CodeGenUtils.generateOutputTupleType(op) + " {\n");
 		}
@@ -1617,7 +1621,9 @@ public class TinyOSGenerator {
 
 			String nesCType = attrType.getNesCName();
 
-			nesCType = "nx_"+nesCType;
+			if (!this.tossimFlag) {
+				nesCType = "nx_"+nesCType;				
+			}
 
 			if (!(op instanceof SensornetExchangeOperator) && (!op.isRecursive())) {
 				tupleTypeBuff.append("\t" + nesCType + " " + attrName + ";\n");
@@ -1658,7 +1664,11 @@ public class TinyOSGenerator {
 			messageTypeBuff.append("// Message output type for Fragment "
 				+ fragID + " (operator " + op.getID() + ")\n");
 			
-			messageTypeBuff.append("typedef nx_struct ");
+			if (this.tossimFlag) {
+				messageTypeBuff.append("typedef struct ");
+			} else {
+				messageTypeBuff.append("typedef nx_struct ");	
+			}
 				
 			messageTypeBuff.append(CodeGenUtils.generateMessageType(op) + " {\n");
 			messageTypeBuff.append("\tTupleFrag" + fragID + " tuples["
@@ -1685,7 +1695,11 @@ public class TinyOSGenerator {
 		assert (numTuplesPerMessage > 0);
 		
 		StringBuffer deliverMsgBuff = new StringBuffer();
-		deliverMsgBuff.append("typedef nx_struct DeliverMessage {\n");
+		if (this.tossimFlag) {
+			deliverMsgBuff.append("typedef struct DeliverMessage {\n");
+		} else {
+			deliverMsgBuff.append("typedef nx_struct DeliverMessage {\n");			
+		}
 		deliverMsgBuff.append("\t" + CodeGenUtils.generateOutputTupleType(op.getLeftChild()) + " tuples["
 			+ numTuplesPerMessage + "];\n"); //use child type because deliver doesn't change tuple type
 		deliverMsgBuff.append("} DeliverMessage;\n\n");
@@ -1957,14 +1971,14 @@ public class TinyOSGenerator {
      * @throws URISyntaxException 
      * @throws UtilsException 
      */
-    private void copyMiscFiles(int numNodes) throws IOException, URISyntaxException, UtilsException {
+    private void copyMiscFiles() throws IOException, URISyntaxException, UtilsException {
 
 		if (!tossimFlag && !combinedImage) {
 				generateIndividualMiscFiles();
 		} else if (combinedImage && !tossimFlag) {
 			generateCombinedMiscFiles();
 		} else if (tossimFlag) {
-			generateTossimMiscFiles(numNodes);
+			generateTossimMiscFiles();
 		}
     }
 
@@ -2049,7 +2063,7 @@ public class TinyOSGenerator {
 	 * @throws IOException
 	 * @throws URISyntaxException 
 	 */
-	private void generateTossimMiscFiles(int numNodes) throws IOException, URISyntaxException {
+	private void generateTossimMiscFiles() throws IOException, URISyntaxException {
 
 		copyInterfaceFile(INTERFACE_DO_TASK, targetDirName +"/");
 
@@ -2059,12 +2073,24 @@ public class TinyOSGenerator {
 			    NESC_MISC_FILES_DIR + "/itoa.h",
 			    nescOutputDir + targetDirName +"/itoa.h");
 
+    	//Make sure that all nodes in QEP are run by Tossim
+    	int maxSiteID = 0;
+    	Iterator<Site> sites = this.plan.getRT().siteIterator(TraversalOrder.PRE_ORDER);
+    	while (sites.hasNext()) {
+    		Site site = sites.next();
+    		int siteID = new Integer(site.getID());
+    		if (siteID > maxSiteID) {
+    			maxSiteID = siteID;
+    		}
+    	}
+    	
+	    //By default run for one agenda evaluation
+	    long duration = (this.plan.getAcquisitionInterval_ms()/1000) 
+	    	* this.plan.getBufferingFactor();
+	    
 	    HashMap<String, String> replacements = new HashMap<String, String>();
-	    //TODO: Get Query Duration from QoS?
-	    //			long duration = qos.getQueryDuration();
-	    long duration = 100000; //hard-coded value for now...
-		replacements.put("__SIMULATION_DURATION__", new Long(duration).toString());
-		replacements.put("__NUM_NODES__", new Integer(numNodes).toString());
+		replacements.put("__SIMULATION_DURATION_SECS__", ""+duration);
+		replacements.put("__NUM_NODES__", ""+(maxSiteID+1));
 		Template.instantiate(
 	    		NESC_MISC_FILES_DIR + "/runTossim.py",
 	    		nescOutputDir + targetDirName +"/runTossim.py", replacements);
@@ -2183,7 +2209,7 @@ public class TinyOSGenerator {
 
 		    /* Copy interface files over from templates dir to nesC output
 		     * dirs */
-		    copyMiscFiles(siteConfigs.size());
+		    copyMiscFiles();
 
 		} catch (Exception e) {
 			logger.warn(e.getLocalizedMessage(), e);

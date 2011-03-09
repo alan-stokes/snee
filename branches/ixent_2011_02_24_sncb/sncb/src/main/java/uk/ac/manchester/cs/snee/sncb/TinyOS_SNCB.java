@@ -43,7 +43,7 @@ public class TinyOS_SNCB implements SNCB {
 	private CodeGenTarget target = CodeGenTarget.TELOSB_T2; //default
 	
 	private String targetDirName; 
-	
+
 	// Is the network running?
 	private static boolean isStarted = false;
 	private SerialPortMessageReceiver mr;
