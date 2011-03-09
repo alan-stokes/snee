@@ -11,9 +11,6 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregationOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
 public class AggrUtils {
 
@@ -156,7 +153,6 @@ public class AggrUtils {
 			for (Attribute attr : attributes) {
 				String extentName = attr.getExtentName();
 				String schemaName = attr.getAttributeSchemaName();
-				AttributeType attrType = attr.getType();
 				AggregationFunction aggrFn = aggr.getAggregationFunction();
 				if ((aggrFn == AggregationFunction.AVG)) {
 					String averageVar = extentName+"_"+schemaName+"_avg";
@@ -184,13 +180,11 @@ public class AggrUtils {
 			for (Attribute attr : attributes) {
 				String extentName = attr.getExtentName();
 				String schemaName = attr.getAttributeSchemaName();
-				AttributeType attrType = attr.getType();
 				AggregationFunction aggrFn = aggr.getAggregationFunction();
 				if ((aggrFn == AggregationFunction.AVG)) {
 					String countVar = extentName+"_"+schemaName+"_count";
 					String sumVar = extentName+"_"+schemaName+"_sum";
 					String averageVar = extentName+"_"+schemaName+"_avg";
-					final String nesCType = attrType.getNesCName();
 					derivedAggregatesBuff.append("\t\t"+averageVar+
 							" = ((float)"+sumVar+" / (float)"+countVar+");\n");
 				}
