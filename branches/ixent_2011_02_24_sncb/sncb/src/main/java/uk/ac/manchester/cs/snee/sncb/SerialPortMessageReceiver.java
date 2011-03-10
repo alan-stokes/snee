@@ -74,8 +74,8 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 					}
 				}
 				//TODO: Hack to get rid of bad tuples. Need to find a better way!
-				if (newTuple.getAttributeByDisplayName(evalTimeAttrDisplayName).getData().equals(65535))
-					continue;
+				//if (newTuple.getAttributeByDisplayName(evalTimeAttrDisplayName).getData().equals(65535))
+				//	continue;
 				//TODO: For now, In-Network only returns tagged tuples, no windows.
 			    logger.trace("Tuple received at time " + t + ": "+newTuple.toString());
 				TaggedTuple newTaggedTuple = new TaggedTuple(newTuple);
@@ -135,15 +135,15 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 		Method meth = msgClass.getMethod(methodName, paramTypes);
 		Object argList[] = new Object[1];
 		argList[0] = new Integer(index);
-		Object retObj = meth.invoke(message, argList);
-		Integer data = (Integer)retObj;
+		Object dataObj = meth.invoke(message, argList);
+//Integer data = (Integer)retObj;
 			
 		String extentName = attr.getExtentName();
 		//TODO: Had to change this after merging revs 269-271. Hopefully did right thing.
 		String attrName = attr.getAttributeDisplayName();
 		AttributeType attrType = attr.getType();
 			
-		EvaluatorAttribute evalAttr = new EvaluatorAttribute(extentName, attrName, attrType, data);
+		EvaluatorAttribute evalAttr = new EvaluatorAttribute(extentName, attrName, attrType, dataObj);
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER getAttribute()");
 		return evalAttr;
