@@ -193,6 +193,8 @@ public class AggrUtils {
 					String sumVar = extentName+"_"+schemaName+"_sum";
 					String avgForStdevVar = extentName+"_"+schemaName+"_avg_for_stdev";
 					String stdevVar = extentName+"_"+schemaName+"_stdev";
+					String sqrtfn = "sqrtf";
+					
 					
 					derivedAggregatesBuff.append("\t\t" + avgForStdevVar +
 							" = ((float)"+sumVar+" / (float)"+ countVar+");\n");
@@ -205,7 +207,7 @@ public class AggrUtils {
 					derivedAggregatesBuff.append("\t\t\ttmpSum += (tmpDiff * tmpDiff);\n\n");
 					derivedAggregatesBuff.append("\t\t\tinHead=(inHead+1) % inQueueSize;\n\t\t}\n");
 					derivedAggregatesBuff.append("\t\twhile(inHead!=inTail);\n");
-					derivedAggregatesBuff.append("\t\t"+stdevVar+" = sqrt((float)tmpSum / ((float)"+countVar+" - 1.0));\n");
+					derivedAggregatesBuff.append("\t\t"+stdevVar+" = "+sqrtfn+"((float)tmpSum / ((float)"+countVar+" - 1.0));\n");
 				}
 			}
 		}
