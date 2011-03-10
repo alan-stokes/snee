@@ -184,11 +184,12 @@ public class TinyOS_SNCB implements SNCB {
 			}
 
 			if (!this.useNodeController || this.serialPort==null) {
-				System.out
-						.println("Not using node controller, or no mote plugged in, so unable to disseminate query plan; ");
-				System.out.println("Please proceed manually.\n");
+				System.out.println("Not using node controller, or no mote "+
+						"plugged in, so unable to send query plan using" +
+						"Over-the-air Programmer. ");
+				System.out.println("Please proceed using manual commands.\n");
 				if (this.target == CodeGenTarget.TELOSB_T2) {
-					printTelosBCommands(queryOutputDir);
+					printTelosBCommands(queryOutputDir, qep);
 				} else if (this.target == CodeGenTarget.TOSSIM_T2) {
 					printTossimCommands(queryOutputDir);
 				} else if (this.target == CodeGenTarget.AVRORA_MICA2_T2) {
@@ -225,14 +226,36 @@ public class TinyOS_SNCB implements SNCB {
 		return mr;
 	}
 
-	private void printTelosBCommands(String queryOutputDir) {
+	private void printTelosBCommands(String queryOutputDir, SensorNetworkQueryPlan qep) {
 		String nescOutputDir = System.getProperty("user.dir") + "/"
 		+ queryOutputDir + targetDirName;
-		System.out.println("cd "+nescOutputDir+"/mote1");
-		System.out.println("make telosb install,1");
-		System.out.println("... repeat for each mote in the query plan...");
-		System.out.println("java net.tinyos.tools.Listen -comm serial@"+
-				this.serialPort+":telos");
+		System.out.println("(1) Upload executables to each mote via the USB " +
+			"cable. For example, for mote one this is done as follows:");
+		
+		Iterator<Site> siteIter = qep.getRT().siteIterator(TraversalOrder.POST_ORDER);
+		while (siteIter.hasNext()) {
+			Site s = siteIter.next();
+			String id = s.getID();
+			System.out.println("*** PLUG IN MOTE "+id+" ***");
+			System.out.println("    cd "+nescOutputDir+"/mote"+id);
+			System.out.println("    make telosb install,"+id+"\n");			
+		}
+
+		System.out.println("(2a) To view raw packets:");
+		System.out.println("    java net.tinyos.tools.Listen -comm serial@"+
+				this.serialPort+":telos\n");		
+		System.out.println("(2b) To view tuples:");
+		System.out.println("    mig java -target=null -java-classname="+
+				"DeliverMessage QueryPlan.h DeliverMessage " +
+				"-o DeliverMessage.java");
+		System.out.println("    javac DeliverMessage.java");
+		System.out.println("    java net.tinyos.tools.MsgReader -comm serial@"+
+				this.serialPort+":telos DeliverMessage\n");
+		
+		System.out.println("(3) Start the query plan by pressing reset button "+
+				"on all motes simultaneously.");
+		
+
 	}
 
 	private void printTossimCommands(String queryOutputDir) {
