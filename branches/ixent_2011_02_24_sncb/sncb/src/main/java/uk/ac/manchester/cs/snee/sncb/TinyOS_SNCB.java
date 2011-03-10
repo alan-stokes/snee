@@ -186,7 +186,14 @@ public class TinyOS_SNCB implements SNCB {
 			if (!this.useNodeController || this.serialPort==null) {
 				System.out
 						.println("Not using node controller, or no mote plugged in, so unable to disseminate query plan; ");
-				System.out.println("Please proceed manually.  ");
+				System.out.println("Please proceed manually.\n");
+				if (this.target == CodeGenTarget.TELOSB_T2) {
+					printTelosBCommands(queryOutputDir);
+				} else if (this.target == CodeGenTarget.TOSSIM_T2) {
+					printTossimCommands(queryOutputDir);
+				} else if (this.target == CodeGenTarget.AVRORA_MICA2_T2) {
+					printAvroraCommands(queryOutputDir);					
+				}
 				System.exit(0);
 			}
 
@@ -218,6 +225,30 @@ public class TinyOS_SNCB implements SNCB {
 		return mr;
 	}
 
+	private void printTelosBCommands(String queryOutputDir) {
+		String nescOutputDir = System.getProperty("user.dir") + "/"
+		+ queryOutputDir + targetDirName;
+		System.out.println("cd "+nescOutputDir+"/mote1");
+		System.out.println("make telosb install,1");
+		System.out.println("... repeat for each mote in the query plan...");
+		System.out.println("java net.tinyos.tools.Listen -comm serial@"+
+				this.serialPort+":telos");
+	}
+
+	private void printTossimCommands(String queryOutputDir) {
+		String nescOutputDir = System.getProperty("user.dir") + "/"
+		+ queryOutputDir + targetDirName;
+		System.out.println("cd "+nescOutputDir);
+		System.out.println("chmod a+rx *");
+		System.out.println("./runTossim.py");
+	}
+	
+	private void printAvroraCommands(String queryOutputDir) {
+		String nescOutputDir = System.getProperty("user.dir") + "/"
+		+ queryOutputDir + targetDirName;
+//TODO: do the Avrora commands		
+	}
+	
 	private void generateNesCCode(SensorNetworkQueryPlan qep,
 			String queryOutputDir, CostParameters costParams)
 			throws IOException, SchemaMetadataException, TypeMappingException,
