@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<wsdl:definitions name="StreamingDataService" 
+    targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query"
+    xmlns:sds="http://www.semsorgrid4env.eu/namespace/2009/10/SDS"
+    xmlns:sdsQuery="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+    xmlns:wsdai="http://www.ggf.org/namespaces/2005/12/WS-DAI"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+>
+
+    <wsdl:import namespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query"
+		location="query_interface_porttypes.wsdl"/>
+
+	<wsdl:binding name="DirectAccessBinding" type="sdsQuery:QueryInterface">
+    	<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    	
+    	<!-- Core Data Access Binding -->
+		<wsdl:operation name="GetDataResourcePropertyDocument">
+			<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Query/GetDataResourcePropertyDocument"/>
+			<wsdl:input name="GetDataResourcePropertyDocumentRequest">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="GetDataResourcePropertyDocumentResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="InvalidResourceNameFault">
+				<soap:fault name="InvalidResourceNameFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="DataResourceUnavailableFault">
+				<soap:fault name="DataResourceUnavailableFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="DestroyDataResource">
+			<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Query/DestroyDataResource"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="InvalidResourceNameFault">
+				<soap:fault name="InvalidResourceNameFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="DataResourceUnavailableFault">
+				<soap:fault name="DataResourceUnavailableFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="GenericQuery">
+			<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Query/GenericQuery"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="InvalidResourceNameFault">
+				<soap:fault name="InvalidResourceNameFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="DataResourceUnavailableFault">
+				<soap:fault name="DataResourceUnavailableFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidExpressionFault"> 
+				<soap:fault name="InvalidExpressionFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidLanguageFault">
+				<soap:fault name="InvalidLanguageFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidDatasetFormatFault" >
+				<soap:fault name="InvalidDatasetFormatFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		
+	   	<wsdl:operation name="GenericQueryFactory">    	
+      		<soap:operation soapAction="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query/GenericQueryFactory"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="InvalidResourceNameFault">
+				<soap:fault name="InvalidResourceNameFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="DataResourceUnavailableFault">
+				<soap:fault name="DataResourceUnavailableFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidExpressionFault"> 
+				<soap:fault name="InvalidExpressionFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidLanguageFault">
+				<soap:fault name="InvalidLanguageFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidPortTypeQNameFault">
+				<soap:fault name="InvalidPortTypeQNameFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidConfigurationDocumentFault">
+				<soap:fault name="InvalidConfigurationDocumentFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>    	
+
+    	 <!-- Core Resource List Binding --> 
+		<wsdl:operation name="GetResourceList">
+			<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Query/GetDataResourceList"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="Resolve">
+			<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Query/Resolve"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="InvalidResourceNameFault">
+				<soap:fault name="InvalidResourceNameFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+  
+</wsdl:definitions>

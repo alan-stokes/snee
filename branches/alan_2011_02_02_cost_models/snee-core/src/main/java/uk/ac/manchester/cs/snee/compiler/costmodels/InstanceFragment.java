@@ -128,7 +128,7 @@ public class InstanceFragment
     final Iterator<InstanceOperator> ops = this.operators.iterator();
     while (ops.hasNext()) 
     {
-      if (ops.next().getInstanceOperator().getLogicalOperator().isRecursive()) 
+      if (ops.next().getInstanceOperator().isRecursive()) 
       {
         found = true;
         break;

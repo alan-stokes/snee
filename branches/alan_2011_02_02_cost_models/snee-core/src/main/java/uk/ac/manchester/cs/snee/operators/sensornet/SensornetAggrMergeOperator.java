@@ -1,13 +1,14 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -32,12 +33,13 @@ public class SensornetAggrMergeOperator extends SensornetIncrementalAggregationO
 		}	
 		this.setNesCTemplateName("aggriter");
 		this.setOperatorName("SensornetAGGRIter");
+//		this.outputAttributes = (ArrayList<Attribute>) this.getLeftChild().getAttributes();
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetAggrMergeOperator()");
 		}		
 	}
 
-  /** {@inheritDoc} 
+	/** {@inheritDoc} 
 	 * @throws OptimizationException */
     public final double getTimeCost(final CardinalityType card, 
     		final Site node, final DAF daf) throws OptimizationException {
@@ -47,12 +49,19 @@ public class SensornetAggrMergeOperator extends SensornetIncrementalAggregationO
 			+ costParams.getDoCalculation() * tuples
 			+ costParams.getCopyTuple();
     }
-    
-    public boolean isAttributeSensitive() {
-      return false;
-    }
-    
-    public boolean isRecursive() {
-      return true;
-    }
+        
+    //FIXME
+	public List<Attribute> getAttributes() {
+		return this.getLeftChild().getAttributes();
+	}
+	
+	//delegate
+	public boolean isAttributeSensitive() {
+		return false;
+	}
+	
+	//delegate
+	public boolean isRecursive() {
+		return true;
+	}
 }

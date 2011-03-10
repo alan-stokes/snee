@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.operators.sensornet;
 
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -10,6 +11,7 @@ import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceDAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -57,12 +59,6 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 		return this.getCardinality(CardinalityType.PHYSICAL_MAX, node, daf);
 	}
 
-//	/** {@inheritDoc} */
-//	public int getOutputQueueCardinality(int numberOfInstances) {
-//		assert(numberOfInstances == sites.length);
-//		return this.getCardinality(CardinalityType.PHYSICAL_MAX);
-//	}
-
 	/**
 	 * The physical maximum size of the output.
 	 * 
@@ -86,18 +82,6 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 	throws SchemaMetadataException, TypeMappingException, OptimizationException {
 		return super.defaultGetDataMemoryCost(node, daf);
 	}
-	
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getCardinality(CardinalityType card, 
-//			Site node, DAF daf, boolean round) {
-//		AlphaBetaExpression result = new AlphaBetaExpression();
-//		if (Settings.MEASUREMENTS_MULTI_ACQUIRE >= 0) {
-//			result.addBetaTerm(Settings.MEASUREMENTS_MULTI_ACQUIRE);
-//		} else {
-//			result.addBetaTerm(1);
-//		}
-//		return result;
-//	}
 
 	/** {@inheritDoc} */
 	private double getTimeCost() {
@@ -115,16 +99,10 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 		return getTimeCost();
 	}
 
-//	/** {@inheritDoc} */
-//	public double getTimeCost(CardinalityType card, int numberOfInstances){
-//		assert(numberOfInstances == sites.length);
-//		return getTimeCost();		
-//	}
+	//delegate except for exchange operators or incremental aggregates
+	public List<Attribute> getAttributes() {
+		return this.getLogicalOperator().getAttributes();
+	}
+	
 
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getTimeExpression(
-//			CardinalityType card, Site node, 
-//			DAF daf, boolean round) {
-//		return new AlphaBetaExpression(getTimeCost(card, node, daf),0);
-//	}
 }

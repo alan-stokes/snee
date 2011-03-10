@@ -401,11 +401,6 @@ public class WindowOperator extends LogicalOperatorImpl {
 		return false;
 	}
 
-	/** {@inheritDoc} */
-	public boolean isRecursive() {
-		return false;
-	}
-
 	/** {@inheritDoc}
 	 * @return false;
 	 */

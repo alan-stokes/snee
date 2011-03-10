@@ -3,8 +3,8 @@ from TOSSIM import *
 import sys, os, getopt
 
 
-optSimDuration = 60
-optNumNodes = 10
+optSimDuration = __SIMULATION_DURATION_SECS__
+optNumNodes = __NUM_NODES__
 optLowRadioFidelity = True
 
 ONE_SECOND = 10000000000

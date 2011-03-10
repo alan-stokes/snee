@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="sdsPush" 
+	targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push"
+	xmlns:sdsPush="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push" 
+	xmlns:sds="http://www.semsorgrid4env.eu/namespace/2009/10/SDS" 
+	xmlns:wsdai="http://www.ggf.org/namespaces/2005/12/WS-DAI"
+	xmlns:wsntw="http://docs.oasis-open.org/wsn/bw-2"
+	xmlns:wsrf-rw="http://docs.oasis-open.org/wsrf/rw-2"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	>
+
+<!-- WSDL IMPORTS ###################################################### -->
+
+	<wsdl:import location="wsdai/wsdai_core_porttypes.wsdl"
+		namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI" />
+		
+	<wsdl:import location="wsrf/notification/bw-2.wsdl"
+		namespace="http://docs.oasis-open.org/wsn/bw-2"/>
+	
+	<wsdl:import location="wsrf/resource/rw-2.wsdl"
+       namespace="http://docs.oasis-open.org/wsrf/rw-2" />
+
+<!-- WSDL TYPES ######################################################## -->
+	
+	<wsdl:types>
+		<xsd:schema elementFormDefault="qualified"
+			targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push">
+
+			<xsd:import namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI"
+				schemaLocation="wsdai/wsdai_core_types.xsd" />
+
+			<xsd:import schemaLocation="streaming_service_types.xsd" 
+				namespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS"/>
+				
+			<xsd:include schemaLocation="push_stream_types.xsd"/>
+	      
+		</xsd:schema>
+	</wsdl:types>
+	
+<!-- WSDL MESSAGES ################################################# -->
+	
+
+
+<!-- WSDL PORT TYPES ############################################### -->
+
+	<wsdl:portType name="PushStreamInterface">
+		<!-- Core Resource List Operations  -->
+		<wsdl:operation name="GetResourceList">
+			<wsdl:input name="GetResourceListRequest" message="wsdai:GetResourceListRequest"/>
+			<wsdl:output name="GetResourceListResponse" message="wsdai:GetResourceListResponse"/>
+			<wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+			<wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="Resolve">
+			<wsdl:input message="wsdai:ResolveRequest"/>
+			<wsdl:output message="wsdai:ResolveResponse"/>
+			<wsdl:fault name="InvalidResourceNameFault" message="wsdai:InvalidResourceNameFault"/>
+			<wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+			<wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+		</wsdl:operation>
+		
+		<!-- Core Data Access Operations -->
+		<wsdl:operation name="GetDataResourcePropertyDocument">
+			<wsdl:input name="GetDataResourcePropertyDocumentRequest" message="wsdai:GetDataResourcePropertyDocumentRequest"/>
+			<wsdl:output name="GetDataResourcePropertyDocumentResponse" message="wsdai:GetDataResourcePropertyDocumentResponse"/>
+			<wsdl:fault name="InvalidResourceNameFault" message="wsdai:InvalidResourceNameFault"/>
+			<wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+			<wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+			<wsdl:fault name="DataResourceUnavailableFault" message="wsdai:DataResourceUnavailableFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="DestroyDataResource">
+			<wsdl:input message="wsdai:DestroyDataResourceRequest"/>
+			<wsdl:output message="wsdai:DestroyDataResourceResponse"/>
+			<wsdl:fault name="InvalidResourceNameFault" message="wsdai:InvalidResourceNameFault"/>
+			<wsdl:fault name="DataResourceUnavailableFault" message="wsdai:DataResourceUnavailableFault"/>
+			<wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+			<wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+		</wsdl:operation>
+
+		<!-- Notification Producer Operations -->
+      <wsdl:operation name="Subscribe">
+         <wsdl:input  message="wsntw:SubscribeRequest" />
+         <wsdl:output message="wsntw:SubscribeResponse" />
+         <wsdl:fault  name="ResourceUnknownFault" 
+                      message="wsrf-rw:ResourceUnknownFault" />
+         <wsdl:fault  name="InvalidFilterFault" 
+                   message="wsntw:InvalidFilterFault"/>
+         <wsdl:fault  name="TopicExpressionDialectUnknownFault" 
+                   message="wsntw:TopicExpressionDialectUnknownFault"/>
+         <wsdl:fault  name="InvalidTopicExpressionFault" 
+                      message="wsntw:InvalidTopicExpressionFault" />
+         <wsdl:fault  name="TopicNotSupportedFault" 
+                      message="wsntw:TopicNotSupportedFault" />
+         <wsdl:fault  name="InvalidProducerPropertiesExpressionFault" 
+             message="wsntw:InvalidProducerPropertiesExpressionFault"/>
+         <wsdl:fault  name="InvalidMessageContentExpressionFault" 
+             message="wsntw:InvalidMessageContentExpressionFault"/>
+         <wsdl:fault  name="UnacceptableInitialTerminationTimeFault" 
+             message="wsntw:UnacceptableInitialTerminationTimeFault"/>
+         <wsdl:fault  name="UnrecognizedPolicyRequestFault" 
+             message="wsntw:UnrecognizedPolicyRequestFault"/>
+         <wsdl:fault  name="UnsupportedPolicyRequestFault" 
+             message="wsntw:UnsupportedPolicyRequestFault"/>
+         <wsdl:fault  name="NotifyMessageNotSupportedFault" 
+             message="wsntw:NotifyMessageNotSupportedFault"/>
+         <wsdl:fault  name="SubscribeCreationFailedFault" 
+                      message="wsntw:SubscribeCreationFailedFault"/>
+      </wsdl:operation>
+
+      <wsdl:operation name="GetCurrentMessage">
+         <wsdl:input  message="wsntw:GetCurrentMessageRequest"/>
+         <wsdl:output message="wsntw:GetCurrentMessageResponse"/>
+         <wsdl:fault  name="ResourceUnknownFault" 
+                      message="wsrf-rw:ResourceUnknownFault" />
+         <wsdl:fault  name="TopicExpressionDialectUnknownFault" 
+                   message="wsntw:TopicExpressionDialectUnknownFault"/>
+         <wsdl:fault  name="InvalidTopicExpressionFault" 
+                      message="wsntw:InvalidTopicExpressionFault" />
+         <wsdl:fault  name="TopicNotSupportedFault" 
+                      message="wsntw:TopicNotSupportedFault" />
+         <wsdl:fault  name="NoCurrentMessageOnTopicFault" 
+                      message="wsntw:NoCurrentMessageOnTopicFault" />
+         <wsdl:fault  name="MultipleTopicsSpecifiedFault" 
+                      message="wsntw:MultipleTopicsSpecifiedFault" />
+      </wsdl:operation>
+			
+	</wsdl:portType>
+</wsdl:definitions>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<wsdl:definitions name="SubscriptionManager"
+	targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push"
+	xmlns:sdsSubMan="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push"
+	xmlns:sds="http://www.semsorgrid4env.eu/namespace/2009/10/SDS"
+	xmlns:wsn="http://docs.oasis-open.org/wsn/bw-2"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<!-- ##################### IMPORTS #########################  -->
+	<wsdl:import namespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push"
+               location="subscription_manager_bindings.wsdl"/>		
+
+	<!-- ################### END OF IMPORTS ####################### -->		
+		
+
+	<!-- ####################################################### -->
+	<!-- ####################### SERVICE ####################### -->
+	<!-- ####################################################### -->		
+	<wsdl:service name="SubscriptionManagerService">
+		<wsdl:port name="SubscriptionManagerService" 
+			binding="sdsSubMan:SubscriptionManagerSOAP">
+			<soap:address location="http://localhost:8080/SDS/services/SubscriptionManager"/>
+		</wsdl:port>
+	</wsdl:service>
+	
+</wsdl:definitions>
+	

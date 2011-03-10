@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) The University of Edinburgh,  2007.   -->
+<!--
+ LICENCE-START
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software 
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ LICENCE-END
+-->
+<wsdl:definitions name="WS-DAIR-SQL" 
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+    targetNamespace="http://www.ggf.org/namespaces/2005/12/WS-DAIR/bindings"
+    xmlns:wsdai="http://www.ggf.org/namespaces/2005/12/WS-DAI"
+    xmlns:wsdair="http://www.ggf.org/namespaces/2005/12/WS-DAIR">
+
+  <wsdl:import namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI" 
+               location="../wsdai/wsdai_core_porttypes.wsdl"/>
+  <wsdl:import namespace="http://www.ggf.org/namespaces/2005/12/WS-DAIR"
+               location="../wsdair/wsdair_sqlresponse_porttypes.wsdl"/>
+               
+<wsdl:binding name="SQLResponseSOAP" type="wsdair:SQLResponsePT">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="GetSQLResponsePropertyDocument">
+      <soap:operation soapAction="http://www.ggf.org/namespaces/2005/12/WS-DAIR#GetSQLResponsePropertyDocument"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidResourceNameFault">
+        <soap:fault name="InvalidResourceNameFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="NotAuthorizedFault">
+        <soap:fault name="NotAuthorizedFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="ServiceBusyFault">
+        <soap:fault name="ServiceBusyFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataResourceUnavailableFault">
+        <soap:fault name="DataResourceUnavailableFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="GetSQLResponseItem">
+      <soap:operation soapAction="http://www.ggf.org/namespaces/2005/12/WS-DAIR#GetSQLResponseItem"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidResourceNameFault">
+        <soap:fault name="InvalidResourceNameFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="NotAuthorizedFault">
+        <soap:fault name="NotAuthorizedFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="ServiceBusyFault">
+        <soap:fault name="ServiceBusyFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataResourceUnavailableFault">
+        <soap:fault name="DataResourceUnavailableFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidDatasetFormatFault">
+        <soap:fault name="InvalidDatasetFormatFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidPositionFault">
+        <soap:fault name="InvalidPositionFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidCountFault">
+        <soap:fault name="InvalidCountFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="GetSQLRowset">
+      <soap:operation soapAction="http://www.ggf.org/namespaces/2005/12/WS-DAIR#GetSQLRowset"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidResourceNameFault">
+        <soap:fault name="InvalidResourceNameFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="NotAuthorizedFault">
+        <soap:fault name="NotAuthorizedFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="ServiceBusyFault">
+        <soap:fault name="ServiceBusyFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataResourceUnavailableFault">
+        <soap:fault name="DataResourceUnavailableFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidDatasetFormatFault">
+        <soap:fault name="InvalidDatasetFormatFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidPositionFault">
+        <soap:fault name="InvalidPositionFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidCountFault">
+        <soap:fault name="InvalidCountFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="GetSQLUpdateCount">
+      <soap:operation soapAction="http://www.ggf.org/namespaces/2005/12/WS-DAIR#GetSQLRowsetFactory"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidResourceNameFault">
+        <soap:fault name="InvalidResourceNameFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="NotAuthorizedFault">
+        <soap:fault name="NotAuthorizedFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="ServiceBusyFault">
+        <soap:fault name="ServiceBusyFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataResourceUnavailableFault">
+        <soap:fault name="DataResourceUnavailableFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidPositionFault">
+        <soap:fault name="InvalidPositionFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidCountFault">
+        <soap:fault name="InvalidCountFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="GetSQLReturnValue">
+      <soap:operation soapAction="http://www.ggf.org/namespaces/2005/12/WS-DAIR#GetSQLRowsetFactory"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidResourceNameFault">
+        <soap:fault name="InvalidResourceNameFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="NotAuthorizedFault">
+        <soap:fault name="NotAuthorizedFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="ServiceBusyFault">
+        <soap:fault name="ServiceBusyFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataResourceUnavailableFault">
+        <soap:fault name="DataResourceUnavailableFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidPositionFault">
+        <soap:fault name="InvalidPositionFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidCountFault">
+        <soap:fault name="InvalidCountFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="GetSQLOutputParameter">
+      <soap:operation soapAction="http://www.ggf.org/namespaces/2005/12/WS-DAIR#GetSQLRowsetFactory"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidResourceNameFault">
+        <soap:fault name="InvalidResourceNameFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="NotAuthorizedFault">
+        <soap:fault name="NotAuthorizedFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="ServiceBusyFault">
+        <soap:fault name="ServiceBusyFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataResourceUnavailableFault">
+        <soap:fault name="DataResourceUnavailableFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidPositionFault">
+        <soap:fault name="InvalidPositionFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidCountFault">
+        <soap:fault name="InvalidCountFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="GetSQLCommunicationArea">
+      <soap:operation soapAction="http://www.ggf.org/namespaces/2005/12/WS-DAIR#GetSQLRowsetFactory"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidResourceNameFault">
+        <soap:fault name="InvalidResourceNameFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="NotAuthorizedFault">
+        <soap:fault name="NotAuthorizedFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="ServiceBusyFault">
+        <soap:fault name="ServiceBusyFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataResourceUnavailableFault">
+        <soap:fault name="DataResourceUnavailableFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidPositionFault">
+        <soap:fault name="InvalidPositionFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidCountFault">
+        <soap:fault name="InvalidCountFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:binding name="SQLResponseFactorySOAP" type="wsdair:SQLResponseFactoryPT">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="GetSQLRowsetFactory">
+      <soap:operation soapAction="http://www.ggf.org/namespaces/2005/12/WS-DAIR#GetSQLRowsetFactory"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="InvalidResourceNameFault">
+        <soap:fault name="InvalidResourceNameFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="NotAuthorizedFault">
+        <soap:fault name="NotAuthorizedFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="ServiceBusyFault">
+        <soap:fault name="ServiceBusyFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="DataResourceUnavailableFault">
+        <soap:fault name="DataResourceUnavailableFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidPositionFault">
+        <soap:fault name="InvalidPositionFault" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="InvalidCountFault">
+        <soap:fault name="InvalidCountFault" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+         
+</wsdl:definitions>  

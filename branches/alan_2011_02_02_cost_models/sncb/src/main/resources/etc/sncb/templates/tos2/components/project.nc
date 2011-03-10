@@ -15,6 +15,9 @@ __HEADER__
 	int8_t outHead;
 	int8_t outTail;
 
+	void task outQueueAppendTask();
+	void task signalDoneTask();
+
 	inline void initialize()
 	{
 		atomic
@@ -25,6 +28,13 @@ __HEADER__
 	}
 
 
+	command error_t Parent.open()
+	{
+		call Child.open();
+		return SUCCESS;
+	}	
+
+
 	command error_t Parent.requestData(nx_int32_t evalEpoch)
   	{
 		dbg("__DBG_CHANNEL__","__MODULE_NAME__ __OPERATOR_DESCRIPTION__ requestData() entered, now calling child\n");
@@ -32,17 +42,6 @@ __HEADER__
 		call Child.requestData(evalEpoch);
 	   	return SUCCESS;
   	}
-
-	command error_t Parent.open()
-	{
-		call Child.open();
-		return SUCCESS;
-	}	
-
-	void task signalDoneTask()
-	{
-		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
-	}
 
 
 	void task outQueueAppendTask()
@@ -95,4 +94,16 @@ __CONSTRUCT_TUPLE__
 
 		post outQueueAppendTask();
 	}
+
+
+	void task signalDoneTask()
+	{
+		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
+	}
+
+
+
+
+
+
  }

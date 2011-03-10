@@ -134,16 +134,11 @@ public interface LogicalOperator extends Node {
 	boolean isLocationSensitive();
 
 	/**
-	 * Detects if operator can call itself.
-	 * @return True if and only if operator is recursive.
-	 */
-	boolean isRecursive();
-
-	/**
 	 * Detects if operator allows predicates pushed into it.
 	 * Allows the pushing of select into previous operator.
 	 * @return True if both the operator and the settings allow it.
 	 */
+
 	boolean acceptsPredicates();
 
 	/**

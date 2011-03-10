@@ -30,7 +30,7 @@ public abstract class SensornetIncrementalAggregationOperator extends SensornetO
 	private static Logger logger 
 	= Logger.getLogger(SensornetIncrementalAggregationOperator.class.getName());
 	
-	AggregationOperator aggrOp;
+	protected AggregationOperator aggrOp;
 	
 	public SensornetIncrementalAggregationOperator(LogicalOperator op,
 	CostParameters costParams) throws SNEEException,
@@ -107,4 +107,9 @@ public abstract class SensornetIncrementalAggregationOperator extends SensornetO
 	public List<AggregationExpression> getAggregates() {
 		return this.aggrOp.getAggregates();
 	}
+	public String getTupleAttributesStr(int maxPerLine) 
+	throws SchemaMetadataException, TypeMappingException {
+		return LogicalOperatorImpl.getTupleAttributesStr(this.getAttributes(), maxPerLine);
+	}
+    
 }

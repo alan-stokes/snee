@@ -43,8 +43,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class ExchangeProducerComponent extends NesCComponent implements
-	TinyOS1Component, TinyOS2Component {
+public class ExchangeProducerComponent extends NesCComponent {
 
     SensornetExchangeOperator op;
 
@@ -53,11 +52,11 @@ public class ExchangeProducerComponent extends NesCComponent implements
     public ExchangeProducerComponent(final SensornetExchangeOperator op,
 	    final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    int tosVersion, boolean tossimFlag, boolean debugLeds) {
-		super(fragConfig, tosVersion, tossimFlag, debugLeds);
+	    boolean tossimFlag, boolean debugLeds) {
+		super(fragConfig, tossimFlag, debugLeds);
 		this.op = op;
 		this.plan = plan;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
     }
 
     @Override

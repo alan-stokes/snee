@@ -20,6 +20,13 @@ __HEADER__
 	int8_t tuplePacketPos;
 	uint8_t pending=FALSE;
 
+	void task sendPacketTask();
+	void task signalTaskDoneTask();
+	void task loopControlTask();
+	void task sendPacketTask();
+	void task sendPacketDoneTask();
+	void task signalTaskDoneTask();
+
 	command error_t DoTask.open()
 	{
 		call Child.open();
@@ -43,8 +50,6 @@ __HEADER__
 	   	return SUCCESS;
   	}
 
-	void task loopControlTask();
-
 	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
 	{
 		dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled from child, delivering data\n" );
@@ -60,10 +65,6 @@ __HEADER__
 
 		post loopControlTask();
 	}
-
-
-	void task sendPacketTask();
-	void task signalTaskDoneTask();
 
 	void task loopControlTask()
 	{
@@ -128,8 +129,6 @@ __HEADER__
 		}
 	}
 
-	void task sendPacketDoneTask();
-
 	void task sendPacketTask()
 	{
 		if (pending)
@@ -164,9 +163,7 @@ __HEADER__
 			}
 		}
 
-	}	
-
-	void task sendPacketDoneTask();	
+	}		
 
 	event void SendDeliver.sendDone(message_t* msg, error_t err)
 	{

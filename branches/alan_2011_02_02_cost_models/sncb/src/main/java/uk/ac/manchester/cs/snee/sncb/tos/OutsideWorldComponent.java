@@ -45,8 +45,8 @@ public class OutsideWorldComponent extends NesCComponent {
 
     public static String OUTSIDE_WORLD = "OutsideWorld";
 
-    public OutsideWorldComponent(final NesCConfiguration config, int tosVersion, boolean tossimFlag) {
-	super(config, tosVersion, tossimFlag);
+    public OutsideWorldComponent(final NesCConfiguration config, boolean tossimFlag) {
+	super(config, tossimFlag);
 	this.id = OUTSIDE_WORLD;
 	systemComponent = true;
     }

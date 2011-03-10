@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<wsdl:definitions name="StreamingDataPullStream"
+	targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Pull"
+	xmlns:sdsPull="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Pull"
+	xmlns:sds="http://www.semsorgrid4env.eu/namespace/2009/10/SDS"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<!-- ##################### IMPORTS #########################  -->
+	<wsdl:import namespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Pull"
+               location="pull_stream_porttypes.wsdl"/>		
+
+	<!-- ################### END OF IMPORTS ####################### -->		
+
+	<wsdl:binding name="PullStreamBinding" type="sdsPull:PullStreamInterface">
+    	<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    	<!-- Core Resource List Binding -->
+		<wsdl:operation name="GetResourceList">
+			<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Pull/GetDataResourceList"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="Resolve">
+			<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Pull/Resolve"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="InvalidResourceNameFault">
+				<soap:fault name="InvalidResourceNameFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+    	
+    	<!-- Core Data Access Binding -->
+		<wsdl:operation name="GetDataResourcePropertyDocument">
+			<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Pull/GetDataResourcePropertyDocument"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="InvalidResourceNameFault">
+				<soap:fault name="InvalidResourceNameFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="DataResourceUnavailableFault">
+				<soap:fault name="DataResourceUnavailableFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="DestroyDataResource">
+			<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Pull/DestroyDataResource"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="InvalidResourceNameFault">
+				<soap:fault name="InvalidResourceNameFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="DataResourceUnavailableFault">
+				<soap:fault name="DataResourceUnavailableFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+
+		<!-- Pull Stream Interface Operations -->
+    	<wsdl:operation name="GetStreamItem">   	
+      		<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Pull/GetStreamItem"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="InvalidResourceNameFault">
+				<soap:fault name="InvalidResourceNameFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="DataResourceUnavailableFault">
+				<soap:fault name="DataResourceUnavailableFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidDatasetFormatFault"> 
+				<soap:fault name="InvalidDatasetFormatFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidPositionFault">
+				<soap:fault name="InvalidPositionFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidCountFault">
+				<soap:fault name="InvalidCountFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="MaximumTuplesExceededFault">
+				<soap:fault name="MaximumTuplesExceededFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		
+		<wsdl:operation name="GetStreamNewestItem">   	
+      		<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Pull/GetStreamNewestItem"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="InvalidResourceNameFault">
+				<soap:fault name="InvalidResourceNameFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="DataResourceUnavailableFault">
+				<soap:fault name="DataResourceUnavailableFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidDatasetFormatFault"> 
+				<soap:fault name="InvalidDatasetFormatFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidCountFault">
+				<soap:fault name="InvalidCountFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="MaximumTuplesExceededFault">
+				<soap:fault name="MaximumTuplesExceededFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+    	
+  	</wsdl:binding>
+		
+	<!-- ####################################################### -->
+	<!-- ####################### SERVICE ####################### -->
+	<!-- ####################################################### -->		
+	<wsdl:service name="PullStreamService">
+		<wsdl:port name="PullStreamInterface" 
+			binding="sdsPull:PullStreamBinding">
+			<soap:address location="http://localhost:8080/SDS/services/PullStream"/>
+		</wsdl:port>
+	</wsdl:service>
+	
+</wsdl:definitions>
+	

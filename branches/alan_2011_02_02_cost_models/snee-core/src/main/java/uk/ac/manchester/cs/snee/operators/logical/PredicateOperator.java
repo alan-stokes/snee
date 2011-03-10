@@ -38,6 +38,7 @@ import java.util.List;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 
@@ -65,36 +66,6 @@ public abstract class PredicateOperator extends LogicalOperatorImpl {
 		this.attributes = attributes2; 
 		setChildren(new LogicalOperator[] {inputOperator});
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
-	}
-
-	/**
-	 * Makes a copy of the operator using a new opCount.
-	 * @param model Operator to get internal data from.
-	 * @param newID boolean flag expected to be true. 
-	 */
-	protected PredicateOperator(PredicateOperator model, 
-			boolean newID) {
-		super(model, newID);
-		this.expressions = model.expressions;
-		this.attributes = model.attributes;
-	}
-
-	/**
-	 * Constructor that creates a new operator
-	 * based on a information from a model.
-	 *
-	 * @param newExpressions expressions from model.
-	 * @param newAttributes attributes from model.
-	 * @param operatorDataType data type from model.
-	 * @param paramStr parameter string from model.
-	 */
-	protected PredicateOperator(List<Expression> newExpressions, 
-			List<Attribute> newAttributes, 
-			OperatorDataType operatorDataType,
-			String paramStr, AttributeType boolType) {
-		super(boolType);
-		this.expressions = newExpressions;
-		this.attributes = newAttributes;
 	}
 
 	/** 
@@ -165,7 +136,8 @@ public abstract class PredicateOperator extends LogicalOperatorImpl {
 
 		//remove unrequired attributes. No expressions to accept
 		for (int i = 0; i < attributes.size(); ) {
-			if (projectAttributes.contains(attributes.get(i)))
+			if ((projectAttributes.contains(attributes.get(i))) || 
+					(attributes.get(i) instanceof EvalTimeAttribute))
 				i++;
 			else {
 				attributes.remove(i);

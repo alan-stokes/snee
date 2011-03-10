@@ -378,6 +378,19 @@ public class Utils {
 	    	System.out.println(line);
 	    	output.append(line + "\n");
 	    }
+	    
+
+	    try {
+			proc.waitFor();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    if (proc.exitValue()!=0) {
+	    	System.err.println("an error has occurred");
+	    	System.exit(-1);
+	    }
+	    
 	    if (logger.isDebugEnabled())
 			logger.debug("RETURN runExternalProgram()");
 	    return output.toString();
