@@ -81,37 +81,28 @@ public class WindowComponent extends NesCComponent {
 			replacements.put("__OUT_QUEUE_CARD__",outQueueCard); 		
 			replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
 					.generateOutputTuplePtrType(this.op.getLeftChild()));
-			//Window from and to are expressed as positive number is nesc.
-			//This allows for unsigned variables to be used.
-			replacements.put("__WINDOW_FROM__", new Integer(-this.op.getFrom())
-				.toString()); 
-			replacements.put("__WINDOW_TO__", new Integer(-this.op.getTo())
-				.toString()); 
-			replacements.put("__EVALUATION_INTERVAL__", new Integer((int) this.plan
-					.getAgenda().getAcquisitionInterval_ms()).toString());
+			
+			//Expressed as positive number is ms
+			Long alpha = this.plan.getAgenda().getAcquisitionInterval_ms();
+			Long fromInEpochs = (-this.op.getFrom()*1000)/alpha;
+			Long toInEpochs = (-this.op.getTo()*1000)/alpha;
+			Long slideInEpochs = (-this.op.getTimeSlide()*1000)/alpha;
+			
+			replacements.put("__WINDOW_FROM_IN_EPOCHS__", fromInEpochs.toString()); 
+			replacements.put("__WINDOW_TO_IN_EPOCHS__", toInEpochs.toString());
 			
 			if (op.isTimeScope()) {
-				int timeslide = this.op.getTimeSlide();
-				if (timeslide == 0) {
-					timeslide = 1;
+				if (slideInEpochs == 0) {
+					slideInEpochs = (long)1;
 				}
-				replacements.put("__SLIDE__", new Integer((int) timeslide)
-					.toString()); 
-				if (op.getRowSlide() > 0) {
-					throw new CodeGenerationException(
-						"Row slide in window with time scope not yet implemented");
-				}
+				replacements.put("__SLIDE_IN_EPOCHS__", slideInEpochs.toString()); 
 			} else {
-				replacements.put("__SLIDE__", 
-						new Integer((int) this.op.getRowSlide()).toString()); 
-				if (op.getTimeSlide() > 0) {
 					throw new CodeGenerationException(
 						"Time slide in window with row scope not yet implemented");
-				}
 			}
-		
+			
 			final StringBuffer tupleConstructionBuff 
-				= CodeGenUtils.generateTupleConstruction(op, false);
+				= CodeGenUtils.generateTupleConstruction(op, false, "windowTail");
 			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff
 					.toString());
 			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());

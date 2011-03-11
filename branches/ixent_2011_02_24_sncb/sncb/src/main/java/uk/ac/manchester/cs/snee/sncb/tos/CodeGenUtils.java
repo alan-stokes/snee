@@ -266,7 +266,7 @@ public final class CodeGenUtils {
      * @throws CodeGenerationException 
      */
     public static StringBuffer generateTupleConstruction(
-    	final SensornetOperator op, boolean ignore) throws CodeGenerationException {
+    	final SensornetOperator op, boolean ignore, String outTail) throws CodeGenerationException {
     	final StringBuffer tupleConstructionBuff = new StringBuffer();
     	final List <Attribute> attributes = 
     		op.getLogicalOperator().getAttributes();
@@ -285,13 +285,18 @@ public final class CodeGenUtils {
 					tupleConstructionBuff.append("\t\t\t\t\t//SKIPPING outQueue[outTail]."
 	    				+ attrName + "=" + expressionText + ";\n");
 				} else {	
-					tupleConstructionBuff.append("\t\t\t\t\toutQueue[outTail]."
+					tupleConstructionBuff.append("\t\t\t\t\toutQueue["+outTail+"]."
 		    				+ attrName + "=" + expressionText + ";\n");
 				}
 			}		
 			return tupleConstructionBuff;
     	}
 
+    public static StringBuffer generateTupleConstruction(
+        	final SensornetOperator op, boolean ignore) throws CodeGenerationException {
+    	return generateTupleConstruction(op, ignore, "outTail");
+    }
+    
     /**
      * Generates the nesc call for this expression.
      * 
