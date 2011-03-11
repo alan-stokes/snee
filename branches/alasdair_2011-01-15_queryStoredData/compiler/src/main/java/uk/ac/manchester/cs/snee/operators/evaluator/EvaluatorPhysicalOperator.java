@@ -173,13 +173,23 @@ implements Observer
 			} else {
 				phyOp = new TupleWindowOperatorImpl(op, m_qid);
 			}
-			
 		} else if (op instanceof RStreamOperator) {
 			phyOp = new RStreamOperatorImpl(op, m_qid);
 		} else if (op instanceof AggregationOperator) {
 			phyOp = new AggregationOperatorImpl(op, m_qid);
 		} else if (op instanceof JoinOperator) {
-			phyOp = new JoinOperatorImpl(op, m_qid);
+			JoinOperator joinOp = (JoinOperator) op;
+			if (joinOp.isRelationJoin()) {
+				String msg = "Relation join not implemented!";
+				logger.warn(msg);
+				throw new SNEEException(msg);
+			} else if (joinOp.isRightChildRelation()) {
+				String msg = "Relation to Stream/Window join not implemented!";
+				logger.warn(msg);
+				throw new SNEEException(msg);				
+			} else {
+				phyOp = new JoinOperatorImplWindows(op, m_qid);
+			}
 		} else if (op instanceof UnionOperator) {
 			phyOp = new UnionOperatorImpl(op, m_qid);
 		} else {

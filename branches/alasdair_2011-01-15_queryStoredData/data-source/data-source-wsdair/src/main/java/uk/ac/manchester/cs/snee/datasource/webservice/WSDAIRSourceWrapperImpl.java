@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.datasource.webservice;
 
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -296,9 +297,11 @@ implements SourceWrapper {
 				for (int i = 0; i < numCols; i++) {
 					Element colNode = (Element) rowColumns.get(i);
 					String colValue = colNode.getTextContent();
+					Object value = 
+						convertStringToType(colValue, dataTypes[i].getName());
 					EvaluatorAttribute attr = 
 						new EvaluatorAttribute(extentNames[i], attrNames[i], 
-							dataTypes[i], colValue);
+							dataTypes[i], value);
 //					if (logger.isTraceEnabled()) {
 //						logger.trace("Received attribute: " + attr);
 //					}
@@ -312,6 +315,40 @@ implements SourceWrapper {
 					"number of tuples " + tuples.size());
 		}
 		return tuples;
+	}
+
+	private Object convertStringToType(String colValue,
+			String typeName) {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER convertStringToType() with " +
+					colValue + " " + typeName);
+		}
+		Object obj;
+		if (typeName.equals("boolean")) {
+			obj = new Boolean(colValue);
+		} else if (typeName.equals("decimal")) {
+			if (colValue.equals("")) {
+				logger.debug("Empty string");
+				obj = null;
+			} else {
+				obj = new BigDecimal(colValue);
+			}
+		} else if (typeName.equals("float")) {
+			obj = new Float(colValue);
+		} else if (typeName.equals("integer")) {
+			obj = new Integer(colValue);
+		} else if (typeName.equals("string")) {
+			obj = colValue;
+		} else if (typeName.equals("timestamp")) {
+			obj = new Long(colValue);
+		} else {
+			obj = colValue;
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN convertStringToType() with " + obj);
+		}
+		return obj;
 	}
 
 	public List<Tuple> getData(String resourceName)

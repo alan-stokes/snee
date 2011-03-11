@@ -30,9 +30,9 @@ import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 
-public class JoinOperatorImpl extends EvaluationOperator {
+public class JoinOperatorImplWindows extends EvaluationOperator {
 
-	Logger logger = Logger.getLogger(JoinOperatorImpl.class.getName());
+	Logger logger = Logger.getLogger(JoinOperatorImplWindows.class.getName());
 
 	EvaluatorPhysicalOperator leftOperator, rightOperator;
 	JoinOperator join;
@@ -45,12 +45,12 @@ public class JoinOperatorImpl extends EvaluationOperator {
 
 	private List<Attribute> returnAttrs;
 
-	public JoinOperatorImpl(LogicalOperator op, int qid) 
+	public JoinOperatorImplWindows(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
 	SNEEConfigurationException {
 		super(op, qid);
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER JoinOperatorImpl() " + op);
+			logger.debug("ENTER JoinOperatorImplWindows() " + op);
 		}
 
 		// Create connections to child operators
@@ -71,7 +71,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		returnAttrs = join.getAttributes();
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN JoinOperatorImpl()");
+			logger.debug("RETURN JoinOperatorImplWindows()");
 		}
 	}
 

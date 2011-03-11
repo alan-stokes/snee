@@ -57,9 +57,11 @@ public class SQLUtils {
 			break;
 		case java.sql.Types.TIMESTAMP:
 		case java.sql.Types.TIME:
-		case java.sql.Types.DATE:
-			//FIXME: Do we really want date to be a timestamp?
 			type = _types.getType("timestamp");
+			break;
+		case java.sql.Types.DATE:
+			//XXX: Should we reenable all the types?
+			type = _types.getType("string");
 			break;
 		default:
 			if (sqlType == 7) {

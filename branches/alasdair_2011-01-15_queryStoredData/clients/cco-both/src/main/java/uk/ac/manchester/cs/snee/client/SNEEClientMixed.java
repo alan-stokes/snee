@@ -9,6 +9,7 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 public class SNEEClientMixed extends SNEEClient {
@@ -16,20 +17,30 @@ public class SNEEClientMixed extends SNEEClient {
 	private static Logger logger = 
 		Logger.getLogger(SNEEClientMixed.class.getName());
 	
+//	private static ConstantRatePushStreamGenerator _myDataSource;
+	
 	private String ccoWsUrl = 
 		"http://webgis1.geodata.soton.ac.uk:8080/CCO/services/PullStream?wsdl";
 	private String ccoStoredUrl = 
 		"http://webgis1.geodata.soton.ac.uk:8080/dai/services/";
 
 	private static String query =
-		"SELECT location, Hs, HMax " +
-		"FROM envdata_hernebay_tide[FROM NOW - 1 MINUTE TO NOW SLIDE 1 MINUTE], " +
-			"locations " +
+		"SELECT l.location, t.Hs, t.HMax " +
+		"FROM envdata_swanagepier_tide t, " +
+			"locations l " +
 		"WHERE  " +//w.location = l.locaction AND " + 
-		       "(Hs >= storm_threshold OR " +
-		        "HMax >= storm_threshold);";
+		       "(t.Hs <= l.storm_threshold OR " +
+		        "t.HMax <= l.storm_threshold);";
 
+//		"SELECT location, Hs, HMax " +
+//		"FROM envdata_hernebay_tide[FROM NOW - 1 MINUTE TO NOW SLIDE 1 MINUTE], " +
+//			"locations " +
+//		"WHERE  " +//w.location = l.locaction AND " + 
+//	       "(Hs >= storm_threshold OR " +
+//	        "HMax >= storm_threshold);";
+	
 	private static long duration = 900;
+//	private static long duration = 10;
 	
 	public SNEEClientMixed(String query, double duration) 
 	throws SNEEException, IOException, SNEEConfigurationException,
@@ -47,7 +58,7 @@ public class SNEEClientMixed extends SNEEClient {
 //		displayExtentNames();
 //		displayAllExtents();
 		displayExtentSchema("locations");
-		displayExtentSchema("envdata_hernebay_tide");
+		displayExtentSchema("envdata_swanagepier_tide");
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN");
 	}
@@ -74,11 +85,16 @@ public class SNEEClientMixed extends SNEEClient {
 			duration = Long.valueOf(args[1]);
 		}			
 		try {
-			/* Initialise and run SNEEClient */
+			/* Initialise SNEEClient */
 			SNEEClientMixed client = 
 				new SNEEClientMixed(query, duration);
+			/* Initialise and run data source */
+//			_myDataSource = new ConstantRatePushStreamGenerator();
+//			_myDataSource.startTransmission();
+			/* Run the client */
 			client.run();
 			/* Stop the data source */
+//			_myDataSource.stopTransmission();
 		} catch (Exception e) {
 			System.out.println("Execution failed. See logs for detail.");
 			logger.fatal(e);

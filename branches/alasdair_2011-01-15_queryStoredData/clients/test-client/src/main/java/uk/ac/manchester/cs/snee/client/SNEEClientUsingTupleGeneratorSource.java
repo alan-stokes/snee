@@ -11,7 +11,7 @@ import uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator;
 
 public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 	
-	private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;
+	private static ConstantRatePushStreamGenerator _myDataSource;
 
 	public SNEEClientUsingTupleGeneratorSource(String query, 
 			double duration) 
@@ -47,19 +47,26 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 
 			query = "SELECT * FROM PushStream;";
 
-			/* The following query is successfully executed */
+			/* The following queries should run */
+			//SELECT-PROJECT
 //			query = "SELECT intattr " +
 //				"FROM PushStream " +
 //				"WHERE intattr <= 5;";
 
+			//SELECT-PROJECT-ALIAS
 //			query = "SELECT p.intattr " +
 //				"FROM PushStream p " +
 //				"WHERE p.intattr <= 5;";
 
+			//SELECT-PROJECT-ALIAS-RENAME
 //			query = "SELECT p.intattr AS IntegerValue " +
 //				"FROM PushStream p " +
 //				"WHERE p.intattr <= 5;";
 
+			//JOIN
+//			query = "SELECT * " +
+//					"FROM PushStream[NOW] p, HerneBay_Tide[NOW] h " +
+//					"WHERE p.intattr <= h.Tz;";
 
 //			query = 
 //				"SELECT p.intattr, s.integerColumn, s.floatColumn " +
