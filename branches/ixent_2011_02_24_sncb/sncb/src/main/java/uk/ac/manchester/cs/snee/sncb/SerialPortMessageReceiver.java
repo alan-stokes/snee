@@ -130,7 +130,6 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 				logger.trace("ENTER getAttribute()");
 		String nesCAttrName = CodeGenUtils.getNescAttrName(attr);
 		String methodName = "getElement_tuples_"+nesCAttrName;
-		System.err.println("methodName="+methodName);
 		Class paramTypes[] = new Class[1];
 		paramTypes[0] = Integer.TYPE;
 		//This bit of code is based on http://java.sun.com/developer/technicalArticles/ALT/Reflection/
