@@ -22,6 +22,7 @@ import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenUtils;
 
 //Based on TinyOS MsgReader.java class
@@ -33,13 +34,13 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 	
 	private MoteIF moteIF;
 	  
-	private DeliverOperator delOp;
+	private SensornetDeliverOperator delOp;
 	
 	private Message _msg;
 	
 	private String _source;
 	
-	public SerialPortMessageReceiver(String source, DeliverOperator delOp) throws Exception {
+	public SerialPortMessageReceiver(String source, SensornetDeliverOperator delOp) throws Exception {
 		_source = source;
 		
 		if (_source != null) {
@@ -78,6 +79,7 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 				//	continue;
 				//TODO: For now, In-Network only returns tagged tuples, no windows.
 			    logger.trace("Tuple received at time " + t + ": "+newTuple.toString());
+			    System.err.println("Tuple received at time " + t + ": "+newTuple.toString());			    
 				TaggedTuple newTaggedTuple = new TaggedTuple(newTuple);
 				resultList.add(newTaggedTuple);
 			}
@@ -128,6 +130,7 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 				logger.trace("ENTER getAttribute()");
 		String nesCAttrName = CodeGenUtils.getNescAttrName(attr);
 		String methodName = "getElement_tuples_"+nesCAttrName;
+		System.err.println("methodName="+methodName);
 		Class paramTypes[] = new Class[1];
 		paramTypes[0] = Integer.TYPE;
 		//This bit of code is based on http://java.sun.com/developer/technicalArticles/ALT/Reflection/

@@ -22,6 +22,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 public class TinyOS_SNCB implements SNCB {
@@ -353,7 +354,7 @@ public class TinyOS_SNCB implements SNCB {
 		// Message msg = new DeliverMessage(); // needed for web service, for
 		// now.
 		Message msg = (Message) msgObj;
-		DeliverOperator delOp = (DeliverOperator) qep.getLAF()
+		SensornetDeliverOperator delOp = (SensornetDeliverOperator) qep.getDAF()
 				.getRootOperator();
 		mr = new SerialPortMessageReceiver("serial@"
 				+ this.serialPort + ":telos", delOp);
