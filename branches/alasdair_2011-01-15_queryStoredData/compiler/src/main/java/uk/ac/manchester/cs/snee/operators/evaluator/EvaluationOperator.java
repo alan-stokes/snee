@@ -84,12 +84,14 @@ extends EvaluatorPhysicalOperator {
 			Object daValue;
 			if (operand instanceof DataAttribute) {
 				DataAttribute da = (DataAttribute) operand;
-				String daDisplayName = da.getAttributeDisplayName();
+				String daExtentName = da.getExtentName();				
+				String daAttributeSchemaName = da.getAttributeSchemaName();
 				if (logger.isTraceEnabled()) {
-					logger.trace("Getting attribute " + daDisplayName);
+					logger.trace("Getting attribute: " +
+							daExtentName + ":" + daAttributeSchemaName);
 				}
 				daValue = 
-					tuple.getAttributeValueByDisplayName(daDisplayName);
+					tuple.getAttributeValue(daExtentName, daAttributeSchemaName);
 			} else if (operand instanceof IntLiteral){
 				IntLiteral il = (IntLiteral) operand;
 				daValue = new Integer(il.toString());

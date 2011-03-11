@@ -85,7 +85,7 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 				for (Output output : outputList) {
 					if (output instanceof Window) {
 						result.add(processWindow(output));
-					} else if (output instanceof Tuple) {
+					} else if (output instanceof TaggedTuple) {
 						result.add(processTuple(output));
 					}
 				}

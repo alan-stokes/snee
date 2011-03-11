@@ -48,6 +48,19 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 			query = "SELECT * FROM PushStream;";
 
 			/* The following query is successfully executed */
+//			query = "SELECT intattr " +
+//				"FROM PushStream " +
+//				"WHERE intattr <= 5;";
+
+//			query = "SELECT p.intattr " +
+//				"FROM PushStream p " +
+//				"WHERE p.intattr <= 5;";
+
+//			query = "SELECT p.intattr AS IntegerValue " +
+//				"FROM PushStream p " +
+//				"WHERE p.intattr <= 5;";
+
+
 //			query = 
 //				"SELECT p.intattr, s.integerColumn, s.floatColumn " +
 //				"FROM PushStream[NOW] p, " +
