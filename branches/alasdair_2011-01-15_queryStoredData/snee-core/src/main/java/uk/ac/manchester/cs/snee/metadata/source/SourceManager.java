@@ -271,7 +271,7 @@ public class SourceManager {
 	 * Adds a web service source. The schema of the source is read
 	 * and added to the logical schema. The source is added to the set
 	 * of data sources.
-	 * @param name TODO
+	 * @param name name used to refer to the source
 	 * @param url URL for the web service interface 
 	 * @param sourceType the service type of the interface
 	 * @throws MalformedURLException invalid url passed to method
@@ -289,7 +289,7 @@ public class SourceManager {
 			logger.debug("ENTER addServiceSource() with name=" +
 					name + " sourceType=" + sourceType + 
 					" epr= "+ url);
-		createServiceSource(sourceType, url, "");
+		createServiceSource(sourceType, url, name);
 		if (logger.isInfoEnabled())
 			logger.info("Web service successfully added from " + 
 					url + ". Number of extents=" + _schema.size());
@@ -467,21 +467,32 @@ public class SourceManager {
 	 * 
 	 * @param extentName the name of the extent to find the sources for
 	 * @return details of the sources
+	 * @throws SourceDoesNotExistException no data source found for the extent
 	 */
-	public SourceMetadataAbstract getSource(String extentName) {
+	public SourceMetadataAbstract getSource(String extentName) 
+	throws SourceDoesNotExistException {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER getSources() for " + extentName);
-
-		for (SourceMetadataAbstract source : _sources) {
-			logger.trace(source.getExtentNames());
-			if (source.getExtentNames().contains(extentName))
-				if (logger.isDebugEnabled())
-					logger.debug("RETURN getSources() source=" + 
-							source.getSourceName());
-				return source;
+			logger.debug("ENTER getSource() for " + extentName);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Number of sources: " + _sources.size());
 		}
-
-		return null;
+		for (SourceMetadataAbstract source : _sources) {
+			if (logger.isTraceEnabled()) {
+				logger.trace(source);
+//				logger.trace(source + ": " + source.getExtentNames());
+			}
+			if (source.getExtentNames().contains(extentName)) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("RETURN getSource() source=" + 
+							source.getSourceName());
+				}
+				return source;
+			}
+		}
+		
+		String msg = "No source found for extent " + extentName;
+		logger.warn(msg);
+		throw new SourceDoesNotExistException(msg);
 	}
 	
 }

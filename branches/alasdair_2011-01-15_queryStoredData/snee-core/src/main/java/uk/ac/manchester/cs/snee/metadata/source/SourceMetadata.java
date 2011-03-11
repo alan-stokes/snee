@@ -40,10 +40,10 @@ public abstract class SourceMetadata extends SourceMetadataAbstract {
 	
 	public String toString() {
 		StringBuffer s = new StringBuffer(super.toString());
-		for (String extent : _extentRates.keySet()) {
-			s.append("\tExtent " + extent + " rate: " + 
-					_extentRates.get(extent));
-		}
+//		for (String extent : _extentRates.keySet()) {
+//			s.append("\tExtent " + extent + " rate: " + 
+//					_extentRates.get(extent));
+//		}
 		return s.toString();
 	}
 

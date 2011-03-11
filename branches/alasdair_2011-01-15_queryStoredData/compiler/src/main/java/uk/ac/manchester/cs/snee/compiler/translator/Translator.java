@@ -72,10 +72,12 @@ public class Translator {
 	throws TypeMappingException, SchemaMetadataException 
 	{
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER Translator(), #extents=" + 
-					metadata.getExtentNames().size());
+			logger.debug("ENTER Translator()");
 		}
 		_metadata = metadata;
+		if (logger.isTraceEnabled()) {
+			logger.trace("#extents=" + metadata.getExtentNames().size());
+		}
 		_types = metadata.getTypes();
 		_boolType = _types.getType("boolean");
 		if (logger.isDebugEnabled()) {

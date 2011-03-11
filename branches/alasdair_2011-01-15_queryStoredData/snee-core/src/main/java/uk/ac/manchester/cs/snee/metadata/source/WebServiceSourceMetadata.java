@@ -67,10 +67,14 @@ public class WebServiceSourceMetadata extends SourceMetadata {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER WebServiceSourceMetadata() with " + url);
 		}
-		try {
-			_sourceName = (new URL(url)).getHost();
-		} catch (MalformedURLException e) {
-			_sourceName = "";
+		if (sourceName == null || sourceName.equals("")) {
+			try {
+				_sourceName = (new URL(url)).getHost();
+			} catch (MalformedURLException e) {
+				_sourceName = "";
+			}
+		} else {
+			_sourceName = sourceName;
 		}
 		_url = url;
 		_resources = resources;

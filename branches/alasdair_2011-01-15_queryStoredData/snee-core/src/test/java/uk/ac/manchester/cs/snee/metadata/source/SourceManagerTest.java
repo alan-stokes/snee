@@ -22,6 +22,7 @@ import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapper;
 import uk.ac.manchester.cs.snee.datasource.webservice.WSDAIRSourceWrapperImpl;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
@@ -71,6 +72,55 @@ public class SourceManagerTest extends EasyMockSupport {
 		SourceManager schema = new SourceManager(null, null);
 		schema.addServiceSource("bad url", "bad url", 
 				SourceType.PULL_STREAM_SERVICE);
+	}
+
+	@Test(expected=SourceDoesNotExistException.class)
+	public void testGetSource_extentNotExist() 
+	throws SNEEConfigurationException, TypeMappingException,
+	SourceDoesNotExistException {
+		SNEEProperties.initialise(props);
+
+		String typesFile = 
+			SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_TYPES_FILE);
+		Types types = new Types(typesFile);
+		Map<String,ExtentMetadata> schema = 
+			new HashMap<String, ExtentMetadata>(); 
+		schema.put("testExtent", null);
+
+		SourceManager sourceManager = new SourceManager(schema, types);
+		sourceManager.getSource("random");
+
+	}
+
+	@Test
+	public void testGetSource() 
+	throws SNEEConfigurationException, TypeMappingException,
+	SourceDoesNotExistException, MalformedURLException, MetadataException,
+	SourceMetadataException, TopologyReaderException, 
+	SchemaMetadataException, SNCBException, SNEEDataSourceException {
+		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, 
+			"etc/logical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, 
+			"etc/physical-schema.xml");
+		SNEEProperties.initialise(props);
+
+		String typesFile = 
+			SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_TYPES_FILE);
+		Types types = new Types(typesFile);
+		Map<String,ExtentMetadata> schema = 
+			new HashMap<String, ExtentMetadata>(); 
+		
+		ExtentMetadata pullStreamMD = new ExtentMetadata("pullstream", 
+				(List<Attribute>) new ArrayList<Attribute>(), ExtentType.SENSED);
+		schema.put("pullstream", pullStreamMD);
+		String physSchemaFile = 
+			SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE);
+		
+		SourceManager sourceManager = new SourceManager(schema, types);
+		sourceManager.processPhysicalSchema(physSchemaFile, null);
+		
+		sourceManager.getSource("pullstream");
+
 	}
 
 	/**

@@ -60,7 +60,6 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
@@ -72,6 +71,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceManager;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
@@ -462,12 +462,14 @@ public class MetadataManager {
 	}
 
 	/**
-	 * Retrieve the sources associated with the specified extent
+	 * Retrieve the source associated with the specified extent
 	 * 
 	 * @param extentName name of the extent to discover sources for
-	 * @return the list of sources for the given extent
+	 * @return the source metadata for the given extent
+	 * @throws SourceDoesNotExistException no source declared for the extent
 	 */
-	public SourceMetadataAbstract getSource(String extentName) {
+	public SourceMetadataAbstract getSource(String extentName) 
+	throws SourceDoesNotExistException {
 		return _sources.getSource(extentName);
 	}
 
