@@ -16,7 +16,9 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
@@ -63,23 +65,22 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 			List<Output> resultList = new ArrayList<Output>();
 			int tuplesPerMessage = getTuplesPerMessage(message);
 			for (int i=0; i<tuplesPerMessage; i++) {
-				String evalTimeAttrDisplayName = null;
 				Tuple newTuple = new Tuple();
+				boolean dummyTuple = false;
 				for (Attribute attr : this.delOp.getAttributes()) {
 					EvaluatorAttribute evalAttr = getAttribute(attr, message, i);
 					newTuple.addAttribute(evalAttr);
-					//Find the first evaltime attribute
-					if ((evalAttr.getAttributeDisplayName().endsWith("evalEpoch")) &&
-							(evalTimeAttrDisplayName==null)) {
-						evalTimeAttrDisplayName = evalAttr.getAttributeDisplayName();
+					if (attr instanceof EvalTimeAttribute) {
+						if (evalAttr.getData().equals(65535)) {
+							dummyTuple = true;
+							break;
+						}
 					}
+				} 
+				if (dummyTuple) {
+					continue; //do not add to result list
 				}
-				//TODO: Hack to get rid of bad tuples. Need to find a better way!
-				//if (newTuple.getAttributeByDisplayName(evalTimeAttrDisplayName).getData().equals(65535))
-				//	continue;
-				//TODO: For now, In-Network only returns tagged tuples, no windows.
-			    logger.trace("Tuple received at time " + t + ": "+newTuple.toString());
-			    System.err.println("Tuple received at time " + t + ": "+newTuple.toString());			    
+				logger.trace("Tuple received at time " + t + ": "+newTuple.toString());
 				TaggedTuple newTaggedTuple = new TaggedTuple(newTuple);
 				resultList.add(newTaggedTuple);
 			}
