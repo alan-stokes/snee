@@ -595,7 +595,7 @@ public class Translator {
 			 * is not, then (most likely) we are in a sub-query. In this case
 			 * we need to rename the attributes with the extent reference.
 			 * We do this by applying the name to the attribute label */
-			ArrayList<Attribute> attributes = 
+			List<Attribute> attributes = 
 				(ArrayList<Attribute>) operator.getAttributes();
 
 			/* For every attribute, apply a rename on the display name */
@@ -687,8 +687,15 @@ public class Translator {
 		}
 		temp = operators[operators.length-1];
 		for (int i = 0; i < operators.length-1; i++) {
-			if (operators[i].getOperatorDataType() == OperatorDataType.STREAM) {
+			if (operators[i].getOperatorDataType() == OperatorDataType.STREAM &&
+					temp.getOperatorDataType() == OperatorDataType.STREAM) {
 				String msg = "Unable to join two streams";
+				logger.warn(msg);
+				throw new ExpressionException(msg);
+			} else if (operators[i].getOperatorDataType() == OperatorDataType.STREAM &&
+					temp.getOperatorDataType() == OperatorDataType.WINDOWS) {
+				String msg = "Unable to join a stream and a window, " +
+						"both stream extents need to have a window declared.";
 				logger.warn(msg);
 				throw new ExpressionException(msg);
 			}
@@ -1245,7 +1252,7 @@ public class Translator {
 			}
 			if (!attrFound) {
 				String msg = "Unable to find Attribute " + 
-					ast.getText() + "||";
+					ast.getText();
 				logger.warn(msg);
 				throw new ExpressionException(msg);
 			}

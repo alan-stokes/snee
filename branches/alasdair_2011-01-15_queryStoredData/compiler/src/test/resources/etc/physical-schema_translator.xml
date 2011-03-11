@@ -48,6 +48,11 @@
 					<port>6704</port>
 				</push_source>
 			</extent>
+			<extent name="Relation">
+				<push_source>
+					<port>6704</port>
+				</push_source>
+			</extent>
 		</extents>
 	</udp_source>
 

@@ -501,6 +501,77 @@ public class TranslatorTest {
 		assertEquals(pullTimestampAttr, attributes.get(1));
 	}
 	
+	@Ignore //XXX: No support for self-join at present!
+	@Test
+	public void testStreamSelfJoin() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException 
+	{
+		testQuery("SELECT * " +
+				"FROM TestStream[NOW] t, TestStream[NOW] s " +
+				"WHERE t.integerColumn = s.integerColumn;");
+	}
+	
+	@Test
+	public void testMultiJoin() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException 
+	{
+		testQuery("SELECT * " +
+				"FROM TestStream[NOW] t, PushStream[NOW] s, PullStream[NOW] p " +
+				"WHERE t.integerColumn = s.integerColumn AND " +
+				"s.integerColumn = p.integerColumn;");
+	}
+	
+	@Test
+	public void testJoinStreamRelation() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		testQuery("SELECT * FROM TestStream s, TestTable r " +
+				"WHERE s.integerColumn <= r.integerColumn;");
+	}
+	
+	@Test
+	public void testJoinWindowRelation() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		testQuery("SELECT * FROM TestStream[NOW] s, TestTable r " +
+				"WHERE s.integerColumn <= r.integerColumn;");
+	}
+	
+	@Test
+	public void testJoinWindowWindowRelation() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		testQuery("SELECT * " +
+				"FROM TestStream[NOW] s, PullStream[NOW] p, TestTable r " +
+				"WHERE s.integerColumn <= r.integerColumn;");
+	}
+	
+	@Test
+	public void testJoinRelationRelation() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		testQuery("SELECT * FROM TestTable t, Relation r " +
+				"WHERE t.integerColumn <= r.integerColumn;");
+	}
+	
 	@Test
 	public void testSimpleRstreamSelectNOW() 
 	throws SourceDoesNotExistException, 
