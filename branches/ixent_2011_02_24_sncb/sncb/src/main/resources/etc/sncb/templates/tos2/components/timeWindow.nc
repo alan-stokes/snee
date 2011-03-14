@@ -6,7 +6,7 @@ __HEADER__
 	//Expressed as positive number in ms
 	#define WINDOW_FROM_IN_EPOCHS __WINDOW_FROM_IN_EPOCHS__
 	#define WINDOW_TO_IN_EPOCHS __WINDOW_TO_IN_EPOCHS__
-	#define SLIDE __SLIDE__
+	#define SLIDE __SLIDE_IN_EPOCHS__
 
 	__CHILD_TUPLE_PTR_TYPE__ inQueue;
 	int8_t inHead;
@@ -15,21 +15,23 @@ __HEADER__
 
 	#define OUT_QUEUE_CARD __OUT_QUEUE_CARD__
 
-	__OUTPUT_TUPLE_TYPE__ outQueue[OUT_QUEUE_CARD];
-	int8_t outHead=-1;
-	int8_t outTail=-1;
+	TupleFrag3 windowBuff[OUT_QUEUE_CARD];
 	int8_t windowHead=-1;
 	int8_t windowTail=-1;
 
-	uint16_t currentEvalEpoch = 0;
-	uint16_t fromEvalEpoch;
-	uint16_t toEvalEpoch;
+	TupleFrag3 outQueue[OUT_QUEUE_CARD];
+	int8_t outHead=-1;
+	int8_t outTail=-1;
+
+	int32_t currentEvalEpoch = 0;
+	float fromEvalEpoch;
+	float toEvalEpoch;
 
 	bool initialized = FALSE;
 
 	void task removeExpiredTuplesTask();
 	void task addNewTuplesTask();
-	void task setOutQueuePointersTask();
+	void task copyValidTuplesToOutQueueTask();
 	void task signalDoneTask();
 
 	inline void initialize()
@@ -39,6 +41,7 @@ __HEADER__
 			int i;
 			for (i = 0; i < OUT_QUEUE_CARD; i++)
 			{
+				windowBuff[i].evalEpoch = NULL_EVAL_EPOCH;
 				outQueue[i].evalEpoch = NULL_EVAL_EPOCH;
 			}
 
@@ -91,7 +94,7 @@ __HEADER__
 	{
 		if (windowHead > -1)
 		{
-			while (outQueue[windowHead].evalEpoch < fromEvalEpoch)
+			while (windowBuff[windowHead].evalEpoch < fromEvalEpoch)
 			{
 				windowHead = windowHead + 1;
 				if (windowHead == OUT_QUEUE_CARD) 
@@ -140,51 +143,64 @@ __CONSTRUCT_TUPLE__
 		}
 		dbg("__DBG_CHANNEL__","__MODULE_NAME__  After adding new tuples: currentEvalEpoch=%d, windowHead=%d, windowTail=%d, outHead=%d, outTail=%d\n",currentEvalEpoch, windowHead, windowTail, outHead, outTail);
 
-		post setOutQueuePointersTask();
+		post copyValidTuplesToOutQueueTask();
 	}
 
 
-int8_t tmpOutTail;
+int8_t tmpWindowHead;
 
-	void task setOutQueuePointersTask() 
+	void task copyValidTuplesToOutQueueTask() 
 	{
-
-	     if ((currentEvalEpoch % __SLIDE_IN_EPOCHS__) != 0)
+	     // check if tuples are to be produced for this evalEpoch
+	     if (((float)currentEvalEpoch / SLIDE) != (int)((float)currentEvalEpoch / SLIDE))
 	     {
-		dbg("__DBG_CHANNEL__","__MODULE_NAME__  No window produced for epoch %d\n", currentEvalEpoch);
+		dbg("DBG_USR1","windowOp6Frag3Site1P  No window produced for epoch %d\n", currentEvalEpoch);
 		outHead = -1;
 		post signalDoneTask();
+		return;
 	     }
-	     else
+
+	     if (windowHead == -1)
 	     {
-		outHead = windowHead;
-	     	outTail = windowTail;
-
-		do {
-			if (outTail == 0) 
-			{
-			   tmpOutTail = OUT_QUEUE_CARD - 1;
-		   	} 
-			else 
-			{
-		   	   tmpOutTail = outTail - 1;
-	   	   	}
-//			dbg("DBG_USR1","outQueue[tmpOutTail].evalEpoch=%d,toEvalEpoch=%d\n",outQueue[tmpOutTail].evalEpoch,toEvalEpoch);
-			if (outQueue[tmpOutTail].evalEpoch == toEvalEpoch) 
-			{
-			   break;
-			}
-			dbg("DBG_USR1", "going back");
-			outTail = tmpOutTail;
-		} while (outHead != outTail);
-
-		if (outHead==outTail)
-		{
-			outHead = -1;
-		}
-
+		dbg("DBG_USR1","windowOp6Frag3Site1P  Window buffer empty for epoch %d\n", currentEvalEpoch);
+		outHead = -1;
 		post signalDoneTask();
+		return;
 	     }
+
+	     outHead = -1;
+	     tmpWindowHead = windowHead;
+
+	     do {
+	     	if (windowBuff[tmpWindowHead].evalEpoch >= fromEvalEpoch && 
+		windowBuff[tmpWindowHead].evalEpoch <= toEvalEpoch)
+		{
+			if (outHead == -1)
+			{
+				outHead = 0;
+				outTail = 0;
+			}			
+
+			dbg("__DBG_CHANNEL__","adding tuple to current window - sealevel=%d\n",windowBuff[tmpWindowHead].seadefence_sealevel);
+//			outQueue[outTail].evalEpoch = currentEvalEpoch;
+//			outQueue[outTail].seadefence_sealevel = windowBuff[tmpWindowHead].seadefence_sealevel;
+__CONSTRUCT_TUPLE2__			
+
+			outTail = outTail + 1;
+		}
+		else
+		{
+			dbg("DBG_USR1", "Tuple with evalEpoch %d not valid at evalEpoch %d. fromEvalEpoch=%d, toEvalEpoch=%d\n", windowBuff[tmpWindowHead].evalEpoch,currentEvalEpoch);
+		}
+		tmpWindowHead = tmpWindowHead + 1;
+		
+		if (tmpWindowHead == OUT_QUEUE_CARD) 
+		{
+			tmpWindowHead = 0;
+		} 
+	     } while (tmpWindowHead != windowTail);
+
+	     post signalDoneTask();
 	}
 
 

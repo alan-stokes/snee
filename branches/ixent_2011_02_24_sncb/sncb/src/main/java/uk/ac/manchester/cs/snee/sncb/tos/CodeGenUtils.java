@@ -266,7 +266,9 @@ public final class CodeGenUtils {
      * @throws CodeGenerationException 
      */
     public static StringBuffer generateTupleConstruction(
-    	final SensornetOperator op, boolean ignore, String outTail) throws CodeGenerationException {
+    	final SensornetOperator op, boolean ignore, String inputArrayName,
+    	String inputPosVarName, String outputArrayName, String outputPosVarName) throws CodeGenerationException {
+    	
     	final StringBuffer tupleConstructionBuff = new StringBuffer();
     	final List <Attribute> attributes = 
     		op.getLogicalOperator().getAttributes();
@@ -280,12 +282,12 @@ public final class CodeGenUtils {
 					= CodeGenUtils.getNescAttrName(attributes.get(i));
 				String expressionText;
 				expressionText = CodeGenUtils.getNescText(expressions.get(i), 
-					"inQueue[inHead].", null, input, null);
+					inputArrayName+"["+inputPosVarName+"].", null, input, null);
 				if (ignore && attrName.contains("ignore")) {
 					tupleConstructionBuff.append("\t\t\t\t\t//SKIPPING outQueue[outTail]."
 	    				+ attrName + "=" + expressionText + ";\n");
 				} else {	
-					tupleConstructionBuff.append("\t\t\t\t\toutQueue["+outTail+"]."
+					tupleConstructionBuff.append("\t\t\t\t\t"+outputArrayName+"["+outputPosVarName+"]."
 		    				+ attrName + "=" + expressionText + ";\n");
 				}
 			}		
@@ -294,7 +296,7 @@ public final class CodeGenUtils {
 
     public static StringBuffer generateTupleConstruction(
         	final SensornetOperator op, boolean ignore) throws CodeGenerationException {
-    	return generateTupleConstruction(op, ignore, "outTail");
+    	return generateTupleConstruction(op, ignore, "inQueue", "inHead", "outQueue", "outTail");
     }
     
     /**

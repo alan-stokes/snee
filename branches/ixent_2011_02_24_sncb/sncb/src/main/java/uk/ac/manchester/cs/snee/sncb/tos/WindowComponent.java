@@ -84,16 +84,16 @@ public class WindowComponent extends NesCComponent {
 			
 			//Expressed as positive number is ms
 			Long alpha = this.plan.getAgenda().getAcquisitionInterval_ms();
-			Long fromInEpochs = (-this.op.getFrom()*1000)/alpha;
-			Long toInEpochs = (-this.op.getTo()*1000)/alpha;
-			Long slideInEpochs = (-this.op.getTimeSlide()*1000)/alpha;
+			Double fromInEpochs = ((double)-this.op.getFrom()*1000)/(double)alpha;
+			Double toInEpochs = ((double)-this.op.getTo()*1000)/(double)alpha;
+			Double slideInEpochs = ((double)(-this.op.getTimeSlide()*1000)/(double)alpha);
 			
 			replacements.put("__WINDOW_FROM_IN_EPOCHS__", fromInEpochs.toString()); 
 			replacements.put("__WINDOW_TO_IN_EPOCHS__", toInEpochs.toString());
 			
 			if (op.isTimeScope()) {
 				if (slideInEpochs == 0) {
-					slideInEpochs = (long)1;
+					slideInEpochs = 1.0;
 				}
 				replacements.put("__SLIDE_IN_EPOCHS__", slideInEpochs.toString()); 
 			} else {
@@ -102,9 +102,15 @@ public class WindowComponent extends NesCComponent {
 			}
 			
 			final StringBuffer tupleConstructionBuff 
-				= CodeGenUtils.generateTupleConstruction(op, false, "windowTail");
+				= CodeGenUtils.generateTupleConstruction(op, false, "inQueue", "inHead", "windowBuff", "windowTail");
 			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff
 					.toString());
+			final StringBuffer tupleConstructionBuff2 
+			= CodeGenUtils.generateTupleConstruction(op, false, "windowBuff", "tmpWindowHead", "outQueue", "outTail");
+		replacements.put("__CONSTRUCT_TUPLE2__", tupleConstructionBuff2
+				.toString());			
+			
+			
 			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 			if (op.isTimeScope()) {
 				writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/timeWindow.nc",
