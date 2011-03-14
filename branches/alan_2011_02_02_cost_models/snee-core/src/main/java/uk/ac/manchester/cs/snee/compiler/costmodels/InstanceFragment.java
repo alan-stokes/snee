@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
-import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
@@ -19,7 +18,6 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 
 public class InstanceFragment
 {
@@ -239,7 +237,7 @@ public class InstanceFragment
     return this.getRootOperator().getSourceSites();
   }
 
-  public final boolean containsOperatorType(final Class c) {
+  public final boolean containsOperatorType(@SuppressWarnings("rawtypes") final Class c) {
   final Iterator<InstanceOperator> i = this.operators.iterator();
   while (i.hasNext()) {
       final InstanceOperator op = i.next();

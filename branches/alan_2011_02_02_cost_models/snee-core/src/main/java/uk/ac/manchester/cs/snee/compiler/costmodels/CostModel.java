@@ -1,15 +1,9 @@
 package uk.ac.manchester.cs.snee.compiler.costmodels;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
-import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
@@ -21,13 +15,11 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetRStreamOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSelectOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 
 public class CostModel
 {
-  private Agenda agenda;
-  private RT routingTree;
   private InstanceDAF instanceDAF;
-  private long epochDuration = 0;
   
   public CostModel()
   {
@@ -36,7 +28,6 @@ public class CostModel
   public void runCardinality() throws OptimizationException 
   {
 	  InstanceOperator rootOperator = instanceDAF.getRoot();
-	  epochDuration = agenda.getLength_bms(false) / agenda.getBufferingFactor();
 	  
 	  CardinalityStruct result = cardinalities(rootOperator);
 	  float value = result.getCard();
@@ -69,8 +60,8 @@ public class CostModel
       }
       else if(operator.getInstanceOperator() instanceof SensornetDeliverOperator)
       {
-        InstanceOperator op = (InstanceOperator)(operator.getInput(0));
-        CardinalityStruct input = cardinalities(op);
+        InstanceOperator childOperator = (InstanceOperator)(operator.getInstanceInput(0));
+        CardinalityStruct input = cardinalities(childOperator);
         return input;
       }
       else if(operator.getInstanceOperator() instanceof SensornetNestedLoopJoinOperator)
@@ -79,7 +70,7 @@ public class CostModel
       }
       else if(operator.getInstanceOperator() instanceof SensornetProjectOperator)
       {
-        InstanceOperator op = (InstanceOperator)(operator.getInput(0));
+        InstanceOperator op = (InstanceOperator)(operator.getInstanceInput(0));
         return cardinalities(op);
       }
       else if(operator.getInstanceOperator() instanceof SensornetRStreamOperator)
@@ -107,88 +98,75 @@ public class CostModel
     }
   }
   
-  private CardinalityStruct selectCard(InstanceOperator operator) 
+  private CardinalityStruct selectCard(InstanceOperator inputOperator) 
   throws OptimizationException
   {
-    InstanceOperator op = (InstanceOperator)(operator.getInput(0));
-    CardinalityStruct input = cardinalities(op);
+    InstanceOperator childOperator = (InstanceOperator)(inputOperator.getInstanceInput(0));
+    CardinalityStruct input = cardinalities(childOperator);
     CardinalityStruct output;
     if(input.isStream())
     {
-      output = new CardinalityStruct(input.getCardOfStream() * operator.selectivity());
-      System.out.println(operator.getID() + " inputCard= " + input);
-      System.out.println(operator.getID() + " outputCard= " + output);
-    }
-    else if(input.isWindow())
-    {
-      output = new CardinalityStruct(input.getWindowCard() * operator.selectivity(), input.getWindowID());
-      System.out.println(operator.getID() + " inputCard= " + input);
-      System.out.println(operator.getID() + " outputCard= " + output);
+      output = new CardinalityStruct(input.getCardOfStream() * inputOperator.selectivity());
+      System.out.println(inputOperator.getID() + " inputCard= " + input);
+      System.out.println(inputOperator.getID() + " outputCard= " + output);
     }
     else
     {
-      output = new CardinalityStruct();
-      for(int windowIndex = 0; windowIndex < input.getNoWindows(); windowIndex++)
-      {
-        float winCard = input.get(windowIndex).getWindowCard();
-        output.addWindow(new CardinalityStruct(winCard * operator.selectivity(), input.get(windowIndex).getWindowID()));
-      }
-      System.out.println(operator.getID() + " inputCard= " + input);
-      System.out.println(operator.getID() + " outputCard= " + output);  
+      float windowStreamCard = input.getCardOfStream();
+      float windowCard = input.getWindowCard() * inputOperator.selectivity();
+      output = new CardinalityStruct(windowStreamCard, windowCard);
+      System.out.println(inputOperator.getID() + " inputCard= " + input.getCard());
+      System.out.println(inputOperator.getID() + " outputCard= " + output.getCard());  
     }
     return output;
   }
 
-  private CardinalityStruct RStreamCard(InstanceOperator operator) 
+  private CardinalityStruct RStreamCard(InstanceOperator inputOperator) 
   throws OptimizationException
   {
-    InstanceOperator inputOperator = (InstanceOperator)(operator.getInput(0));
-    CardinalityStruct input = cardinalities(inputOperator);
+    InstanceOperator childOperator = (InstanceOperator)(inputOperator.getInstanceInput(0));
+    CardinalityStruct input = cardinalities(childOperator);
     CardinalityStruct output;
-    if(input.isWindow())
-    {
-      output = new CardinalityStruct(input.getWindowCard());
-    }
-    else
-    {
-      output = new CardinalityStruct(input.getNoWindows() * input.get(0).getWindowCard());
-    }
+    output = new CardinalityStruct(input.getCardOfStream() * input.getWindowCard());
     
-    System.out.println(operator.getID() + " inputCard= " + input);
-    System.out.println(operator.getID() + " outputCard= " + output);
+    System.out.println(inputOperator.getID() + " inputCard= " + input);
+    System.out.println(inputOperator.getID() + " outputCard= " + output);
     return output; 
   }
 
-  private CardinalityStruct acquireCard(InstanceOperator operator)
+  private CardinalityStruct acquireCard(InstanceOperator inputOperator)
   {
-    float output = (epochDuration / agenda.getAcquisitionInterval_ms()) * operator.selectivity();
+    float output = 1 * inputOperator.selectivity();
     CardinalityStruct out = new CardinalityStruct(output);
-    System.out.println(operator.getID() + " outputCard= " + output);
+    System.out.println(inputOperator.getID() + " outputCard= " + output);
+    List<Attribute> attributes = inputOperator.getInstanceOperator().getLogicalOperator().getAttributes();
+    out.setExtentName(attributes.get(1).toString());
     return out;
   }
 
-  private CardinalityStruct exchangeCard(InstanceOperator operator)
+  private CardinalityStruct exchangeCard(InstanceOperator inputOperator)
   throws OptimizationException
   {
     CardinalityStruct input;
-    if(((InstanceExchangePart) operator).getPrevious() != null)//path
+    if(((InstanceExchangePart) inputOperator).getPrevious() != null)//path
     {
-      input =cardinalities(((InstanceExchangePart) operator).getPrevious());
+      input =cardinalities(((InstanceExchangePart) inputOperator).getPrevious());
     }
     else//hit new frag
     {
-      input = cardinalities(((InstanceExchangePart) operator).getSourceFrag().getRootOperator());
+      InstanceExchangePart producer = ((InstanceExchangePart)inputOperator);
+      input = cardinalities( (InstanceOperator) producer.getInstanceInput(0));
     } 
     
-    System.out.println(operator.getID() + " inputCard= " + input);
-    System.out.println(operator.getID() + " outputCard= " + input);
+    System.out.println(inputOperator.getID() + " inputCard= " + input);
+    System.out.println(inputOperator.getID() + " outputCard= " + input);
     return input;
   }
 
-  public CardinalityStruct windowCard(InstanceOperator op)
+  public CardinalityStruct windowCard(InstanceOperator inputOperator)
   throws OptimizationException
   {
-    WindowOperator logicalOp = (WindowOperator) op.getInstanceOperator().getLogicalOperator();
+    WindowOperator logicalOp = (WindowOperator) inputOperator.getInstanceOperator().getLogicalOperator();
     float to = logicalOp.getTo();
     float from = logicalOp.getFrom();
     float length = (to-from)+1;
@@ -199,8 +177,8 @@ public class CostModel
     else
       slide = logicalOp.getRowSlide();
        
-    InstanceOperator inputOperator = (InstanceOperator)(op.getInput(0));
-    CardinalityStruct input = cardinalities(inputOperator);
+    InstanceOperator childOperator = (InstanceOperator)(inputOperator.getInstanceInput(0));
+    CardinalityStruct input = cardinalities(childOperator);
       
     float noWindows;
     if(slide == 0)//now window, to stop infinity
@@ -209,109 +187,108 @@ public class CostModel
       noWindows = length / slide;
     
     float winCard = input.getCard();
-    CardinalityStruct output = new CardinalityStruct();
-    
-    for(int windowIndex = 0; windowIndex < noWindows; windowIndex++)
-    {
-      output.addWindow(new CardinalityStruct(winCard, from + (windowIndex * slide)));
-    }
+    CardinalityStruct output = new CardinalityStruct(noWindows, winCard);
+    output.setExtentName(input.getExtentName());
 
-    System.out.println(op.getID() + " inputCard= " + input);
-    System.out.println(op.getID() + " outputCard= " + output);
+    System.out.println(inputOperator.getID() + " inputCard= " + input);
+    System.out.println(inputOperator.getID() + " outputCard= " + output);
     return output;
   }
   
-  public CardinalityStruct aggerateCard(InstanceOperator operator)
+  public CardinalityStruct aggerateCard(InstanceOperator inputOperator)
   throws OptimizationException
   {
     CardinalityStruct output = null;
     ArrayList<CardinalityStruct> inputs = new ArrayList<CardinalityStruct>();
-    for(int inputOperatorIndex = 0; inputOperatorIndex < operator.getInDegree(); inputOperatorIndex++)
+    for(int inputOperatorIndex = 0; inputOperatorIndex < inputOperator.getInDegree(); inputOperatorIndex++)
     {
-      InstanceOperator inputOperator = (InstanceOperator)(operator.getInput(0));
-      inputs.add(cardinalities(inputOperator));
+      InstanceOperator childOperator = (InstanceOperator)(inputOperator.getInstanceInput(inputOperatorIndex));
+      inputs.add(cardinalities(childOperator));
     }
     
-    if(operator.getInDegree() == 1)
+    System.out.println("aggerate inputs size is " + inputs.size());
+    ArrayList<CardinalityStruct> reducedInputs = reduceInputs(inputs);
+    System.out.println("aggerate newinputs size is " + reducedInputs.size());
+    
+    if(reducedInputs.size() == 1)  //init
     {
-      if(inputs.get(0).isWindow())
-      {
-        output = new CardinalityStruct(1, inputs.get(0).getWindowID());
-      }
-      else
-      {
-        output = new CardinalityStruct();
-        for(int windowIndex = 0; windowIndex < inputs.get(0).getNoWindows(); windowIndex ++)
-        {
-          output.addWindow(new CardinalityStruct(1, inputs.get(0).getWindowID()));
-        }
-      }
+        output = new CardinalityStruct(reducedInputs.size(), 1);
     }
     else
     {
-      if(inputs.get(0).isWindow())
-      {
-        output = new CardinalityStruct(1, inputs.get(0).getWindowID());
-      }
-      else
-      {
-        output = new CardinalityStruct();
-        HashSet<Float> ids = new HashSet<Float>();
-        Iterator<CardinalityStruct> inputsIterator = inputs.iterator();
-        while(inputsIterator.hasNext())
-        {
-          CardinalityStruct input = inputsIterator.next();
-          Iterator<CardinalityStruct> windowIterator = input.windowIterator();
-          while(windowIterator.hasNext())
-          {
-            CardinalityStruct window = windowIterator.next();
-            ids.add(window.getWindowID());
-          }  
-        }
-        Iterator<Float> idIterator = ids.iterator();
-        while(idIterator.hasNext())
-        {
-          output.addWindow(new CardinalityStruct(1, idIterator.next()));
-        }
-      }
+    	output = new CardinalityStruct(reducedInputs.size(), 1);
     }
-    float size = inputs.size();
-    System.out.println(operator.getID() + " inputCard= " + size + " inputs each with "+ inputs.get(0).getCard());
-    System.out.println(operator.getID() + " outputCard= " + output);
+    output.setExtentName(inputs.get(0).getExtentName());
+    System.out.println(inputOperator.getID() + " inputCard= " + reducedInputs.size() + " inputs each with "+ inputs.get(0).getCard());
+    System.out.println(inputOperator.getID() + " outputCard= " + output);
     return output;
   }
   
-  public CardinalityStruct joinCard(InstanceOperator operator)
+  public CardinalityStruct joinCard(InstanceOperator inputOperator)
   throws OptimizationException
   {
-    HashMap<Float, Float> leftWindowsCard = new HashMap<Float, Float>();
-    HashMap<Float, Float> rightWindowsCard = new HashMap<Float, Float>();
+	  ArrayList<CardinalityStruct> inputs = new ArrayList<CardinalityStruct>();
+	
+	  for(int x = 0; x < inputOperator.getInDegree(); x ++)
+	  {
+      inputs.add(cardinalities((InstanceOperator) inputOperator.getInstanceInput(x)));
+	  }
+	  System.out.println("join input size is " + inputOperator.getInDegree());
+    ArrayList<CardinalityStruct> reducedInputs = reduceInputs(inputs);
+    System.out.println("join newInput size is " + reducedInputs.size());
+    CardinalityStruct inputR = reducedInputs.get(0);
+    CardinalityStruct inputL = reducedInputs.get(1);
+	
+    float windowStreamCard;
+    float windowCard;
     
-    
-    return null;
-    /*
-    ArrayList<Float> inputCards = new ArrayList<Float>();
-    for(int index = 0; index < operator.getInDegree(); index++)
+    if(inputL.isStream())
     {
-      float card;
-      InstanceOperator op = (InstanceOperator)(operator.getInput(index));
-      card = cardinalities(op);
-      inputCards.add(card);
+      windowStreamCard = 1;
+      windowCard = inputL.getCardOfStream() * inputR.getCardOfStream() * inputOperator.selectivity();
+      System.out.println(inputOperator.getID() + " inputCardL= " + 1 + " Stream with Card "+ inputL.getCardOfStream());
+      System.out.println(inputOperator.getID() + " inputCardR= " + 1 + " Stream with Card "+ inputL.getCardOfStream());
     }
-    float card = inputCards.get(0) * inputCards.get(1) * operator.selectivity();
-    System.out.println(operator.getID() + " inputCard= " + card);
-    System.out.println(operator.getID() + " outputCard= " + card);
-    return card;*/
+    else
+    {
+    	
+      windowStreamCard = inputL.getCardOfStream();
+      windowCard = inputL.getWindowCard() * inputR.getWindowCard() * inputOperator.selectivity();
+      System.out.println(inputOperator.getID() + " inputCardL= " + inputL.getCardOfStream() + " inputs each with "+ inputL.getWindowCard());
+      System.out.println(inputOperator.getID() + " inputCardR= " + inputR.getCardOfStream() + " inputs each with "+ inputR.getWindowCard());
+    }
+    CardinalityStruct output = new CardinalityStruct(windowStreamCard, windowCard);
+    System.out.println(inputOperator.getID() + " outputCard= " + output);
+    return output;
   }
  
-  public void addAgenda(Agenda agenda)
+  public ArrayList<CardinalityStruct> reduceInputs(ArrayList<CardinalityStruct> inputs)
   {
-    this.agenda = agenda;
-  }
-  
-  public void addRoutingTree(RT routingTree)
-  {
-    this.routingTree = routingTree;
+    ArrayList<CardinalityStruct> outputs = new ArrayList<CardinalityStruct>();
+    outputs.add(inputs.get(0));
+    
+    for(int inputsIndex = 1; inputsIndex < inputs.size(); inputsIndex++)
+    {
+      CardinalityStruct input = inputs.get(inputsIndex);
+      int testIndex = 0;
+      boolean stored = false;
+      while(testIndex < outputs.size() && !stored)
+      {
+        CardinalityStruct test = outputs.get(testIndex);
+        if(test.getExtentName().equals(input.getExtentName()))
+        {
+          test.setCardOfStream(test.getCardOfStream() + input.getDirectCard());
+          stored = true;
+        }
+        else
+        {
+          testIndex++;
+        }
+      }
+      if(!stored)
+        outputs.add(input);
+    }
+    return outputs;
   }
   
   public void addInstanceDAF(InstanceDAF daf)

@@ -13,28 +13,17 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetRStreamOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSelectOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
 
 public class InstanceOperator extends NodeImplementation implements Node
-//extends SensornetOperatorImpl
 {
   private SensornetOperator instanceOperator;
   private Site site = null;
   private Site getDeepestConfluenceSite;
   private static int counter = 0;
   private float selectivity = 1;
-  
   private ArrayList<InstanceOperator> childOps = new ArrayList<InstanceOperator>();
+
   
   public Iterator<InstanceOperator> iterator()
   {
@@ -138,10 +127,10 @@ public class InstanceOperator extends NodeImplementation implements Node
   {
     return instanceOperator.getTimeCost(card, node, daf);
   }
-
-  public InstanceOperator getIInput(int index)
+  
+  public InstanceOperator getInstanceInput(int index)
   {
-    return (InstanceOperator)instanceOperator.getInput(index);
+    return (InstanceOperator)this.getInput(index);
   }
   
   /**
@@ -153,7 +142,7 @@ public class InstanceOperator extends NodeImplementation implements Node
   }
   
   /**
-   * used to calculate if an instance oeprator is on the same site as given instance operator
+   * used to calculate if an instance operator is on the same site as given instance operator
    */
   public boolean isRemote(InstanceOperator instance)
   {

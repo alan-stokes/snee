@@ -35,7 +35,6 @@ package uk.ac.manchester.cs.snee.compiler.costmodels;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
@@ -44,7 +43,6 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
 /**
  * Class to represent exchange operator parts (namely: producer, relay, consumer).

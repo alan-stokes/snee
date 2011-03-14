@@ -1,22 +1,14 @@
 package uk.ac.manchester.cs.snee.compiler.costmodels;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
 public class CardinalityStruct
 {
-  //stream 
+  //streamCard
   private float cardOfStream = 0;
-  boolean stream = false;
-  //window
-  private float windowCard = 0;
-  private float windowID = 0;
-
-  boolean window = false;
+  private String extentName = "";
+  private boolean stream = false;
   //stream of window
-  private ArrayList<CardinalityStruct> windows = new ArrayList<CardinalityStruct>();
-
-  boolean streamOfWindows = false;
+  private float windowStreamCard = 0;
+  private float windowCard = 0;
 
   //stream/window constructor
   public CardinalityStruct(float card)
@@ -25,28 +17,12 @@ public class CardinalityStruct
     stream = true;
   }
   
-  public CardinalityStruct(float card, float windowID)
-  {
-    this.windowCard = card;
-    this.windowID = windowID;
-  }
-  
   //stream of windows constructor
-  public CardinalityStruct(ArrayList<CardinalityStruct> windows)
+  public CardinalityStruct(float windowStreamCard, float windowCard)
   {
-    this.windows = windows;
-    streamOfWindows = true;
-  }
-  //stream of windows constructor
-  public CardinalityStruct()
-  {
-    streamOfWindows = true;
-  }
-
-  
-  public float getNoWindows()
-  {
-    return windows.size();
+    this.windowCard = windowCard;
+    this.windowStreamCard = windowStreamCard;
+    stream = false;
   }
   
   public float getWindowCard()
@@ -65,64 +41,61 @@ public class CardinalityStruct
     String output = "";
     if(stream)
       output = "Stream Cardinality is: " + cardOfStream;
-    else if(window)
-      output = "window Cardinality is: " + windowCard;
     else
-      output = windows.size() + " windows, each with " + windows.get(0).windowCard + " tuples";
+      output = windowStreamCard + " windows, each with " + windowCard + " tuples";
 
     return output;
   }
   
   public float getCardOfStream()
   {
-    return cardOfStream;
-  }
-  
-  public CardinalityStruct get(int index)
-  {
-    return windows.get(index);
-  }
-
-  public void addWindow(CardinalityStruct e)
-  {
-     windows.add(e);
+    if(stream)
+      return cardOfStream;
+    else
+      return windowStreamCard;
   }
 
   public void setCardOfStream(float cardOfStream)
   {
-    this.cardOfStream = cardOfStream;
+    if(stream)
+	    this.cardOfStream = cardOfStream;
+    else
+      this.windowStreamCard = cardOfStream;
   }
   
   public boolean isStream()
   {
     return stream;
   }
-  public boolean isWindow()
-  {
-    return window;
-  }
+
   public boolean isStreamOfWindows()
   {
-    return streamOfWindows;
-  }
-  
-  public Iterator<CardinalityStruct> windowIterator()
-  {
-    return windows.iterator();
-  }
-  
-  public float getWindowID()
-  {
-    return windowID;
+    return !stream;
   }
   
   public float getCard()
   {
     if(stream)
       return this.cardOfStream;
-    else if(window)
-      return this.windowCard;
     else
-      return this.windows.size() * this.windows.get(0).windowCard;
+      return this.windowStreamCard * this.windowCard;
+  }
+
+  public void setExtentName(String extentName) 
+  {
+	  this.extentName = extentName;
+  }
+
+  public String getExtentName() 
+  {
+	  return extentName;
+  }
+
+  public float getDirectCard() 
+  {
+    if(stream)
+      return this.cardOfStream;
+    else
+      return this.windowStreamCard;
   }
 }

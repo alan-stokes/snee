@@ -5,9 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -17,7 +15,6 @@ import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SNEEAlgebraicForm;
@@ -317,6 +314,15 @@ public class InstanceDAF extends SNEEAlgebraicForm
 
     return nodeList.iterator();
   }
+  
+  public Iterator<InstanceOperator> subTreeIterator(TraversalOrder Order, InstanceOperator node)
+  {
+    final ArrayList<InstanceOperator> nodeList = 
+      new ArrayList<InstanceOperator>();
+    this.doIterator(node, nodeList, Order);
+
+    return nodeList.iterator();
+  } 
 
   private void doIterator(InstanceOperator node, 
       ArrayList<InstanceOperator> nodeList, TraversalOrder order)

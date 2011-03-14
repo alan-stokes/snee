@@ -85,41 +85,33 @@ public class InstanceWhereSchedular
   //XXX works, but doesnt link the exchanges to sites
   private void updateOperatorLinksToIncludeExchangeParts() 
   {
-	// TODO Auto-generated method stub
-    Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
-    while(siteIterator.hasNext())
-    {//for each site do blurb and then go though fragments
-      Site currentSite = siteIterator.next();
-      Iterator<InstanceFragment> fragmentIterator = instanceDAF.fragmentIterator(TraversalOrder.POST_ORDER);
-      //go though fragments
-  	  while(fragmentIterator.hasNext())
-  	  {
-  		InstanceFragment currentFrag = fragmentIterator.next();//if frag on site
-  		if(currentFrag.getSite().getID().equals(currentSite.getID()))
-  		{
-  		  //get root operator
-  		  InstanceOperator rootOp = currentFrag.rootOperator;
-  		  if(!(rootOp.getInstanceOperator() instanceof SensornetDeliverOperator))
-  		  {
-  		    InstanceExchangePart exchange = currentFrag.getParentExchangeOperator();
-  		    //always have 1 output
-  		    rootOp.replaceOutput(rootOp.getOutput(0), exchange);
-  		    instanceDAF.addEdge(rootOp, exchange);
-  		    while(exchange.getNext() != null)
-		      {
-	          InstanceExchangePart nextExchange = exchange.getNext(); 
-	          instanceDAF.addEdge(exchange, nextExchange);
-		        exchange = nextExchange;  
-	        }
-	        //get root operator of higher frag frag
-	        InstanceOperator lowestOperator = exchange.getDestFrag().getLowestOperator();
-          lowestOperator.replaceInput(rootOp, exchange);   
-	        instanceDAF.addEdge(exchange, lowestOperator);
-	        instanceDAF.removeEdge(rootOp, lowestOperator);
-  		  }
-  		}
-  	  }
-    }
+    Iterator<InstanceFragment> fragmentIterator = instanceDAF.fragmentIterator(TraversalOrder.POST_ORDER);
+    //go though fragments
+    while(fragmentIterator.hasNext())
+    {
+	  InstanceFragment currentFrag = fragmentIterator.next();//if frag on site
+	  //get root operator
+	  InstanceOperator rootOp = currentFrag.rootOperator;
+	  if(!(rootOp.getInstanceOperator() instanceof SensornetDeliverOperator))
+	  {
+	    InstanceExchangePart exchange = currentFrag.getParentExchangeOperator();
+	    exchange.addInput(rootOp);
+	    //always have 1 output
+	    rootOp.replaceOutput(rootOp.getOutput(0), exchange);
+	    instanceDAF.addEdge(rootOp, exchange);
+	    while(exchange.getNext() != null)
+	      {
+          InstanceExchangePart nextExchange = exchange.getNext(); 
+          instanceDAF.addEdge(exchange, nextExchange);
+	        exchange = nextExchange;  
+        }
+        //get root operator of higher frag frag
+        InstanceOperator lowestOperator = exchange.getDestFrag().getLowestOperator();
+        lowestOperator.replaceInput(rootOp, exchange);   
+        instanceDAF.addEdge(exchange, lowestOperator);
+        instanceDAF.removeEdge(rootOp, lowestOperator);
+	  }
+	}
   }
 
   //tested and works 
@@ -286,7 +278,6 @@ public class InstanceWhereSchedular
           = new InstanceExchangePart(instance, instance.site, parent, parent.site, 
                                      parent.site, ExchangePartType.PRODUCER, false, 
                                      null);
-          @SuppressWarnings("unused")
           InstanceExchangePart part2 
           = new InstanceExchangePart(instance, instance.site, parent, parent.site, 
                                      parent.site, ExchangePartType.CONSUMER, false, 
@@ -434,12 +425,15 @@ public class InstanceWhereSchedular
         {
           Site inputSite = (Site) currentSite.getInput(currentInputIndex);
           //check if instance of current or child
-          ArrayList<InstanceOperator> operatorsOnSite = findNonEmptySiteBelowHere(inputSite);
+          ArrayList<InstanceOperator> operatorsOnSite = instanceDAF.getOpInstances(inputSite);
           
-         if(operatorsOnSite != null)
           if(checkArray(operatorsOnSite, operatorInstances))
             satisifiedSearch++;
+          
+          satisifiedSearch = checkSubTree(inputSite, satisifiedSearch, operatorInstances);
+
         }
+      }
         if(satisifiedSearch == operatorInstances.size())//found all instances which fit criteria
         {
           //assign instance to this site
@@ -447,25 +441,23 @@ public class InstanceWhereSchedular
           assigned = true;
         }
       }
-    }
     if(!assigned)
     {
       System.out.println("instance " + instance.getID() + " cant be placed for some reason");
     }
   }
   
-  private ArrayList<InstanceOperator> findNonEmptySiteBelowHere(Site input)
+  private int checkSubTree(Site input, int satisifiedSearch, ArrayList<InstanceOperator> operatorInstances)
   {
-    ArrayList<InstanceOperator> operatorsOnSite = instanceDAF.getOpInstances(input);
-    if(operatorsOnSite.size() == 0)
+    for(int inputSiteIndex = 0; inputSiteIndex <  input.getInDegree(); inputSiteIndex ++)
     {
-      if(input.isLeaf())
-        return null;
-      input = (Site) input.getInput(0);
-      return findNonEmptySiteBelowHere(input);
+       Site newInput = (Site) input.getInput(inputSiteIndex);
+       ArrayList<InstanceOperator> operatorsOnSite = instanceDAF.getOpInstances(newInput);
+       if(checkArray(operatorsOnSite, operatorInstances))
+           satisifiedSearch++;
+       satisifiedSearch = checkSubTree(newInput, satisifiedSearch, operatorInstances);  
     }
-    else
-      return operatorsOnSite;   
+    return satisifiedSearch;
   }
   
   private void generatePartialDaf() 
