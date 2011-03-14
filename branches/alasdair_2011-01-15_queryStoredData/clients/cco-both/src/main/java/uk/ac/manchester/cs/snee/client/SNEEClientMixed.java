@@ -26,7 +26,9 @@ public class SNEEClientMixed extends SNEEClient {
 
 	private static String query =
 		"SELECT l.location, t.Hs, t.HMax " +
-		"FROM envdata_swanagepier_tide t, " +
+		"FROM envdata_swanagepier_tide" +
+		"[FROM NOW - 10 MINUTES TO NOW SLIDE 1 MINUTE]" +
+		" t, " +
 			"locations l " +
 		"WHERE  " +//w.location = l.locaction AND " + 
 		       "(t.Hs <= l.storm_threshold OR " +

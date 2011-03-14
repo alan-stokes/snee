@@ -324,15 +324,13 @@ implements SourceWrapper {
 					colValue + " " + typeName);
 		}
 		Object obj;
-		if (typeName.equals("boolean")) {
+		if (colValue == null || colValue.isEmpty() || colValue.equals("")) {
+			logger.debug("Found a NULL Value. Representing with java.sql.Types.NULL");
+			obj = java.sql.Types.NULL;
+		} else if (typeName.equals("boolean")) {
 			obj = new Boolean(colValue);
 		} else if (typeName.equals("decimal")) {
-			if (colValue.equals("")) {
-				logger.debug("Empty string");
-				obj = null;
-			} else {
 				obj = new BigDecimal(colValue);
-			}
 		} else if (typeName.equals("float")) {
 			obj = new Float(colValue);
 		} else if (typeName.equals("integer")) {

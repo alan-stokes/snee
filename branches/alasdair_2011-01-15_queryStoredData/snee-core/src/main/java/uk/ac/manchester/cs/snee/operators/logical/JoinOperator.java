@@ -100,6 +100,8 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 		this.setOperatorName("JOIN");
 //		this.setNesCTemplateName("join");
 
+		/* This is overridden when the 
+		 * child operators are a STREAM and RELATION */
 		setOperatorDataType(OperatorDataType.WINDOWS);
 		this.setParamStr("");
 
@@ -110,7 +112,7 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 	private void setChildren (LogicalOperator left, LogicalOperator right) 
 	throws OptimizationException {
 		String message = "Illegal attempt to Join Stream of tuples with " +
-		"anything but a Relation.";;
+			"anything but a Relation.";
 		if (left.getOperatorDataType() == OperatorDataType.STREAM) {
 			if (right.getOperatorDataType() == OperatorDataType.RELATION) {
 				setChildren(new LogicalOperator[] {left, right});
@@ -443,6 +445,16 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 	public boolean isRightChildRelation() {
 		return rightChildIsRelation;
 	}
+	
+	/**
+	 * 
+	 * This method states whether the left child is a relation
+	 * 
+	 * @return true if the left child is a relation
+	 */
+	public boolean isLeftChildRelation() {
+		return leftChildIsRelation;
+	}	
 	
 	/**
 	 * Test to see if this is a join between two relations.

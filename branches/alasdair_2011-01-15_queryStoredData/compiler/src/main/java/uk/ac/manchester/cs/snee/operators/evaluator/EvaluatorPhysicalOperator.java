@@ -179,17 +179,13 @@ implements Observer
 			phyOp = new AggregationOperatorImpl(op, m_qid);
 		} else if (op instanceof JoinOperator) {
 			JoinOperator joinOp = (JoinOperator) op;
-			if (joinOp.isRelationJoin()) {
-				String msg = "Relation join not implemented!";
-				logger.warn(msg);
-				throw new SNEEException(msg);
-			} else if (joinOp.isRightChildRelation()) {
-				String msg = "Relation to Stream/Window join not implemented!";
-				logger.warn(msg);
-				throw new SNEEException(msg);				
-			} else {
-				phyOp = new JoinOperatorImplWindows(op, m_qid);
-			}
+//			if (joinOp.isRelationJoin()) {
+//				String msg = "Relation join not implemented!";
+//				logger.warn(msg);
+//				throw new SNEEException(msg);
+//			} else {
+				phyOp = new JoinOperatorImpl(op, m_qid);
+//			}
 		} else if (op instanceof UnionOperator) {
 			phyOp = new UnionOperatorImpl(op, m_qid);
 		} else {

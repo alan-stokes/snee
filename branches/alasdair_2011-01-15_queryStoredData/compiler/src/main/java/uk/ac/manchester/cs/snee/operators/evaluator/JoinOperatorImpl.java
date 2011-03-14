@@ -30,9 +30,9 @@ import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 
-public class JoinOperatorImplWindows extends EvaluationOperator {
+public class JoinOperatorImpl extends EvaluationOperator {
 
-	Logger logger = Logger.getLogger(JoinOperatorImplWindows.class.getName());
+	Logger logger = Logger.getLogger(JoinOperatorImpl.class.getName());
 
 	EvaluatorPhysicalOperator leftOperator, rightOperator;
 	JoinOperator join;
@@ -45,12 +45,12 @@ public class JoinOperatorImplWindows extends EvaluationOperator {
 
 	private List<Attribute> returnAttrs;
 
-	public JoinOperatorImplWindows(LogicalOperator op, int qid) 
+	public JoinOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
 	SNEEConfigurationException {
 		super(op, qid);
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER JoinOperatorImplWindows() " + op);
+			logger.debug("ENTER JoinOperatorImpl() " + op);
 		}
 
 		// Create connections to child operators
@@ -71,7 +71,7 @@ public class JoinOperatorImplWindows extends EvaluationOperator {
 		returnAttrs = join.getAttributes();
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN JoinOperatorImplWindows()");
+			logger.debug("RETURN JoinOperatorImpl()");
 		}
 	}
 
@@ -79,8 +79,11 @@ public class JoinOperatorImplWindows extends EvaluationOperator {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER open()");
 		}
-		startChildReceiver(leftOperator);
+		/*
+		 *  Open right child first as it may be a relation!
+		 */
 		startChildReceiver(rightOperator);
+		startChildReceiver(leftOperator);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN open()");
 		}
@@ -362,6 +365,15 @@ public class JoinOperatorImplWindows extends EvaluationOperator {
 				Object daValue = evalAttr.getData();
 				if (logger.isTraceEnabled()) {
 					logger.trace("Stack push: " + daValue);
+				}
+				/* 
+				 * Check if the value is null 
+				 * Nulls are not considered in a join
+				 */
+				if (daValue instanceof java.sql.Types &&
+						(Integer)daValue == java.sql.Types.NULL) {
+					logger.warn("Join value is null. Ignore");
+					return false;
 				}
 				operands.add(daValue);
 			} else if (arrExpr[i] instanceof IntLiteral){
