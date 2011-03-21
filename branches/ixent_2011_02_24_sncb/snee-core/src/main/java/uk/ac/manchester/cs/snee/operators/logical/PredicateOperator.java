@@ -62,8 +62,24 @@ public abstract class PredicateOperator extends LogicalOperatorImpl {
 			List<Attribute> attributes2, LogicalOperator inputOperator,
 			AttributeType boolType) {
 		super(boolType);
-		this.expressions = expressions2;
-		this.attributes = attributes2; 
+		
+		//Make sure that the evalTimeAttribute is not projected out.
+		if (inputOperator.getAttributes().get(0) instanceof EvalTimeAttribute &&
+				(!(attributes2.get(0) instanceof EvalTimeAttribute))) {
+			attributes = new ArrayList<Attribute>();
+			attributes.add(inputOperator.getAttributes().get(0));
+			attributes.addAll(attributes2);
+			
+			expressions = new ArrayList<Expression>();
+			expressions.add(inputOperator.getExpressions().get(0));
+			expressions.addAll(expressions2);			
+		}
+		else
+		{
+			this.expressions = expressions2;
+			this.attributes = attributes2; 			
+		}
+
 		setChildren(new LogicalOperator[] {inputOperator});
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 	}
