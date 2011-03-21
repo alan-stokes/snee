@@ -84,9 +84,9 @@ public class WindowComponent extends NesCComponent {
 			
 			//Expressed as positive number is ms
 			Long alpha = this.plan.getAgenda().getAcquisitionInterval_ms();
-			Double fromInEpochs = ((double)-this.op.getFrom()*1000)/(double)alpha;
-			Double toInEpochs = ((double)-this.op.getTo()*1000)/(double)alpha;
-			Double slideInEpochs = ((double)(-this.op.getTimeSlide()*1000)/(double)alpha);
+			Double fromInEpochs = ((double)-this.op.getFrom())/(double)alpha;
+			Double toInEpochs = ((double)-this.op.getTo())/(double)alpha;
+			Double slideInEpochs = ((double)(-this.op.getTimeSlide())/(double)alpha);
 			
 			replacements.put("__WINDOW_FROM_IN_EPOCHS__", fromInEpochs.toString()); 
 			replacements.put("__WINDOW_TO_IN_EPOCHS__", toInEpochs.toString());
