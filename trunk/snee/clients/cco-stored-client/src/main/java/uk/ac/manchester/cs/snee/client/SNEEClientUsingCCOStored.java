@@ -24,8 +24,22 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 	
 	private String serviceUrl = 
 		"http://webgis1.geodata.soton.ac.uk:8080/dai/services/";
+		//XXX Bowfell only accessibly within the cs.man network (not VPN)
 //		"http://bowfell.cs.man.ac.uk:8080/dai/services/";
+	
+	private static String extent = 
+		"locations";
+//		"metadata";
+		
+	private static String query =
+		"SELECT * FROM locations;";
+//		"SELECT id, location, latitude, longitude, waves, tides, met, storm_threshold FROM locations;";
+//		"SELECT * FROM locations l WHERE l.id = 68;";
+//		"SELECT * FROM locations l WHERE l.location = \'Folkestone\';";
+//		"SELECT * FROM locations[RESCAN 20 SECONDS];";
 
+	private static Long duration = Long.valueOf("30");
+	
 	public SNEEClientUsingCCOStored(String query, double duration) 
 	throws SNEEException, IOException, SNEEConfigurationException,
 	MetadataException, SNEEDataSourceException 
@@ -33,8 +47,6 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 		super(query, duration);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClientUsingCCOStored()");
-		//Set sleep to 10 minutes
-		_sleepDuration = 600000;
 		controller.addServiceSource("CCO-Stored", serviceUrl, 
 				SourceType.WSDAIR);
 //		Collection<String> extents = controller.getExtents();
@@ -43,27 +55,12 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 //		while (it.hasNext()) {
 //			System.out.print("\t" + it.next() + "\n");
 //		}
-		displayExtentSchema("locations");
+		displayExtentSchema(extent);
+		displayExtentSchema("envdata_swanagepier_tide");
 //		displayExtentSchema("envdata_teignmouthpier_tide");
 //		displayExtentSchema("envdata_hernebay_met");
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN");
-	}
-
-	private void displayExtentSchema(String extentName) 
-	throws MetadataException 
-	{
-		ExtentMetadata extent = 
-			controller.getExtentDetails(extentName);
-		List<Attribute> attributes = extent.getAttributes();
-		System.out.println("Attributes for " + extentName + ":");
-		for (Attribute attr : attributes) {
-			String attrName = attr.getAttributeDisplayName();
-			AttributeType attrType = attr.getType();
-			System.out.print("\t" + attrName + ": " + 
-					attrType.getName() + "\n");
-		}
-		System.out.println();
 	}
 	
 	/**
@@ -77,18 +74,12 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 		PropertyConfigurator.configure(
 				SNEEClientUsingCCOStored.class.getClassLoader().
 				getResource("etc/log4j.properties"));
-		String query;
-		Long duration;
 		//This method represents the web server wrapper
 		if (args.length != 2) {
 			System.out.println("Usage: \n" +
 					"\t\"query statement\"\n" +
 					"\t\"query duration in seconds\"\n");
-//			System.exit(1);
 			//XXX: Use default settings
-			query = "SELECT id, location, latitude, longitude, waves, tides, met " +
-					"FROM locations;";
-			duration = Long.valueOf("900");
 		} else {	
 			query = args[0];
 			duration = Long.valueOf(args[1]);
@@ -101,7 +92,8 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 				client.run();
 				/* Stop the data source */
 			} catch (Exception e) {
-				System.out.println("Execution failed. See logs for detail.");
+				System.out.println("Execution failed. See logs for detail. " + 
+						e.getLocalizedMessage());
 				logger.fatal(e);
 				System.exit(1);
 			}

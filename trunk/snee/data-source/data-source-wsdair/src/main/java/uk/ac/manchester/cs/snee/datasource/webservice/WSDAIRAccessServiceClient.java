@@ -334,8 +334,8 @@ public class WSDAIRAccessServiceClient {
 			logger.warn(msg, e);
 			throw new SNEEDataSourceException(msg, e);
 		}
-		if (logger.isTraceEnabled())
-			logger.trace("RETURN sqlExecute() with " +
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN sqlExecute() with " +
 					"response: " + response);
 		return response;
 	}

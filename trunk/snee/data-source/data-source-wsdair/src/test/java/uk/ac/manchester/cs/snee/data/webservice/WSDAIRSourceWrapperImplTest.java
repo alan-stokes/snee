@@ -174,7 +174,17 @@ public class WSDAIRSourceWrapperImplTest extends EasyMockSupport {
             "length=\"19\" name=\"easting\" nullable=\"true \" position=\"2\"> " +
             "<sqlTypeName>BIGINT</sqlTypeName><sqlJavaTypeID>-5</sqlJavaTypeID>" +
             "</column><primaryKey><columnName>id</columnName></primaryKey>" +
-            "</table></logicalSchema></databaseSchema>";
+            "</table>" +
+			"<table catalog=\"cco\" name=\"locations\" schema=\"null\"> " +
+            "<column default=\"null\" fullName=\"site_locations_id\" " +
+            "length=\"10\" name=\"id\" nullable=\"false\" position=\"1\">" +
+            "<sqlTypeName>INT</sqlTypeName><sqlJavaTypeID>4</sqlJavaTypeID>" +
+            "</column><column default=\"null\" fullName=\"site_locations_easting\" " +
+            "length=\"19\" name=\"easting\" nullable=\"true \" position=\"2\"> " +
+            "<sqlTypeName>BIGINT</sqlTypeName><sqlJavaTypeID>-5</sqlJavaTypeID>" +
+            "</column><primaryKey><columnName>id</columnName></primaryKey>" +
+            "</table>" +
+            "</logicalSchema></databaseSchema>";
 		
 		Document document = createXMLDocument(newNode);
 		Node node = document.getFirstChild();
@@ -194,7 +204,9 @@ public class WSDAIRSourceWrapperImplTest extends EasyMockSupport {
 		List<ExtentMetadata> extentList = 
 			wsdairSource.getSchema(WSDAI_OGSA_ACCESS_CCO_DATA_RESOURCE);
 		// Verify result
-		assertEquals(1, extentList.size());
+		assertEquals(2, extentList.size());
+		ExtentMetadata extentMetadata = extentList.get(0);
+		assertEquals(2, extentMetadata.getAttributes().size());
 		verifyAll();
 	}
 

@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
 import java.util.Iterator;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -8,6 +9,7 @@ import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 
@@ -94,8 +96,9 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 
 	public SNCB getSNCB() {
 		//XXX: This works only because there is one sensor network assumed.
+		Set<SourceMetadataAbstract> sources = dlaf.getSources();
 		SensorNetworkSourceMetadata metadata = 
-			(SensorNetworkSourceMetadata)this.dlaf.getSource();
+			(SensorNetworkSourceMetadata) sources.iterator().next();
 		return metadata.getSNCB();
 	}
 

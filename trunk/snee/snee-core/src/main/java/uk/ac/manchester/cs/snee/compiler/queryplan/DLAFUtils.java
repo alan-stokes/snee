@@ -29,7 +29,7 @@ public class DLAFUtils extends LAFUtils {
 	public DLAFUtils(DLAF dlaf) {		
 		super(dlaf.getLAF());
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER DLAFUtils()");		
+			logger.debug("ENTER DLAFUtils() " + dlaf);		
 		this.dlaf = dlaf;
 		this.name = dlaf.getID();
 		this.tree = dlaf.getOperatorTree();
@@ -46,12 +46,18 @@ public class DLAFUtils extends LAFUtils {
 			TreeMap<String, StringBuffer> edgeLabelBuff,
 			StringBuffer fragmentsBuff) 
 	throws SchemaMetadataException {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER exportAsDOTFile() " + fname + ", " +
+					label);
 		StringBuffer buffer = new StringBuffer();
-		buffer.append("\\nSource:");
-		buffer.append(dlaf.getSource().getSourceName());
-		buffer.append("(");
-		buffer.append(dlaf.getSource().getSourceType().name().toLowerCase());
-		buffer.append(")");
+		buffer.append("\\nSources:");
+		for (SourceMetadataAbstract source : dlaf.getSources()) {
+			buffer.append("\\n\\t");
+			buffer.append(source.getSourceName());
+			buffer.append("(");
+			buffer.append(source.getSourceType().name().toLowerCase());
+			buffer.append(")");
+		}
 		String str = buffer.toString();
 		super.exportAsDOTFile(fname, str, new TreeMap<String, StringBuffer>(), 
 				new TreeMap<String, StringBuffer>(), new StringBuffer());

@@ -39,6 +39,7 @@ package uk.ac.manchester.cs.snee;
 import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.sql.ResultSet;
@@ -46,6 +47,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -58,6 +60,8 @@ import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.common.CircularArray;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
@@ -1162,6 +1166,31 @@ public class ResultStoreImplTest extends EasyMockSupport {
 					new Duration(5, TimeUnit.SECONDS));
 		assertEquals(5, results.size());
 		verifyAll();
+	}
+	
+	@Test
+	public void testGetResults_EmptyResultset() 
+	throws SNEEException, SNEEConfigurationException {
+		Properties props = new Properties();
+		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
+		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
+		props.setProperty(SNEEPropertyNames.RESULTS_HISTORY_SIZE_TUPLES, "10");
+		SNEEProperties.initialise(props);
+		_resultStore = new ResultStoreImpl(testQuery, mockQEP) {
+			protected ResultSetMetaData createMetaData(
+					QueryExecutionPlan queryPlan)
+			throws SQLException {
+				return mockMetaData;
+			}
+			
+			protected String setQueryId(QueryExecutionPlan queryPlan) {
+				return "1";
+			}
+			
+		};
+		List<ResultSet> results = _resultStore.getResults();
+		assertTrue(results.isEmpty());
 	}
 	
 }

@@ -94,4 +94,22 @@
          </column>
      </table>
 
+      <table name="Relation">
+    	<column name="timestamp">
+        	<type class ="integer"/>
+         </column>
+         <column name="integerColumn">
+          	<type class ="integer"/>
+         </column>
+         <column name="floatColumn">
+          	<type class ="float"/>
+         </column>
+         <column name="stringColumn">
+          	<type class ="string"/>
+         </column>
+         <column name="boolColumn">
+          	<type class ="boolean"/>
+         </column>
+     </table>
+
 </schema>

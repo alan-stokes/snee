@@ -12,6 +12,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
@@ -83,34 +84,61 @@ extends EvaluatorPhysicalOperator {
 		for (Object operand : arrExpr) {
 			Object daValue;
 			if (operand instanceof DataAttribute) {
+				/* 
+				 * Check if the value is null 
+				 * Nulls are not considered in a comparison
+				 */
+				if (operand instanceof java.sql.Types &&
+						(Integer)operand == java.sql.Types.NULL) {
+					logger.warn("Join value is null. Ignore");
+					return false;
+				}
 				DataAttribute da = (DataAttribute) operand;
-				String daDisplayName = da.getAttributeDisplayName();
+				String daExtentName = da.getExtentName();				
+				String daAttributeSchemaName = da.getAttributeSchemaName();
 				if (logger.isTraceEnabled()) {
-					logger.trace("Getting attribute " + daDisplayName);
+					logger.trace("Getting attribute: " +
+							daExtentName + ":" + daAttributeSchemaName);
 				}
 				daValue = 
-					tuple.getAttributeValueByDisplayName(daDisplayName);
+					tuple.getAttributeValue(daExtentName, daAttributeSchemaName);
 			} else if (operand instanceof IntLiteral){
 				IntLiteral il = (IntLiteral) operand;
-				daValue = new Integer(il.toString());
+				daValue = new Integer(il.getValue());
 			} else if (operand instanceof FloatLiteral){
 				FloatLiteral fl = (FloatLiteral) operand;
-				daValue = new Float(fl.toString());
+				daValue = new Float(fl.getValue());
+			} else if (operand instanceof StringLiteral) {
+				StringLiteral sl = (StringLiteral) operand;
+				daValue = sl.getValue();
 			} else {
 				logger.warn("Unknown operand type " + operand);
 				throw new SNEEException("Unknown operand type " +
 						operand);
 			}
 			if (logger.isTraceEnabled()) {
-				logger.trace("Stack push: " + daValue);
+				logger.trace("Stack push: " + daValue + ":" + 
+						daValue.getClass());
 			}
 			operands.add(daValue);
 		}
 
 		// Evaluate expression type over operands
 		while (operands.size() >= 2){
-			Object result = evaluate(operands.pop(), operands.pop(), 
-					type);
+			Object op1 = operands.pop();
+			Object op2 = operands.pop();
+			Object result;
+			if (logger.isTraceEnabled()) {
+				logger.trace("op1: " + op1.getClass() + 
+						" op2: " + op2.getClass());
+			}
+			if (op1 instanceof String && op2 instanceof String) {
+//				logger.trace("Two string literals");
+				result = evaluateString((String)op1, (String)op2, type);
+			} else {
+//				logger.trace("Two numeric literals");
+				result = evaluateNumeric((Number)op1, (Number)op2, type);
+			}
 			if (type.isBooleanDataType()){
 				retVal = ((Boolean)result).booleanValue();
 			} 
@@ -122,19 +150,13 @@ extends EvaluatorPhysicalOperator {
 		return retVal;
 	}
 	
-	public Object evaluate(Object obj2, Object obj1, MultiType type){
+	public Object evaluateNumeric(Number obj2, Number obj1, MultiType type){
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER evaluate() with " + obj2 + " " + 
+			logger.trace("ENTER evaluateNumeric() with " + obj2 + " " + 
 					obj1 + " type " + type);
 		}
-
 		double val1 = ((Number) obj1).doubleValue();
 		double val2 = ((Number) obj2).doubleValue();
-
-		if (logger.isTraceEnabled()) {
-			logger.trace("Obj1 type " + obj1.getClass() + 
-					"\tObj2 type " + obj2.getClass());
-		}
 		
 		Object returnValue = null;
 		if (type.compareTo(MultiType.EQUALS)== 0){
@@ -161,9 +183,34 @@ extends EvaluatorPhysicalOperator {
 			returnValue = Math.pow(val1, val2);
 		} else returnValue =  null;
 		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN evaluate() with " + returnValue);
+			logger.trace("RETURN evaluateNumeric() with " + returnValue);
 		}
 		return returnValue;
 	}
-	
+	public boolean evaluateString(String val2, String val1, MultiType type){
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER evaluateString() with " + val2 + " " + 
+					val1 + " type " + type);
+		}
+		
+		boolean returnValue = false;
+		if (type.compareTo(MultiType.EQUALS)== 0){
+			returnValue =  val1.equals(val2);	
+//		} else if (type.compareTo(MultiType.GREATERTHAN )== 0){
+//			returnValue = val1 > val2;
+//		} else if (type.compareTo(MultiType.LESSTHAN)== 0){
+//			returnValue = val1 < val2;
+//		} else if (type.compareTo(MultiType.GREATERTHANEQUALS)== 0){
+//			returnValue = val1 >= val2;
+//		} else if (type.compareTo(MultiType.LESSTHANEQUALS)== 0){
+//			returnValue = val1 <= val2;
+		} else if (type.compareTo(MultiType.NOTEQUALS)== 0){
+			returnValue = !(val1.equals(val2));
+		} else returnValue =  false;
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN evaluateString() with " + returnValue);
+		}
+		return returnValue;
+	}
+
 }

@@ -104,6 +104,7 @@ atom     : ( PLUS Int ) =>
          | Flt
          | Attribute 
          | Identifier
+         | QuotedString 
          | LPAREN! expr RPAREN!
          ;
          
@@ -112,6 +113,7 @@ sources  : source (COMMA! source)*;
 //source   : extent^ (window)?; 
 
 source   : i:Identifier^ (window)? (Identifier)? {#i.setType(SOURCE);}
+		 // RESCAN in window as otherwise we get non-deterministic behaviour
          | subQuery RPAREN^ (window)? (Identifier)?
          ;                   
 
@@ -126,8 +128,12 @@ window   : ( LSQUARE NOW RSQUARE ) =>
 		 //winFrom includes the LSQUARE
          | LSQUARE! UNBOUNDED^ (winSlide)? RSQUARE!
          | LSQUARE! winAt (winSlide)? RSQUARE!
-         | LSQUARE! winRange (winSlide)? RSQUARE! 
-         | winOpen (winSlide)? RSQUARE!;
+         | LSQUARE! winRange (winSlide)? RSQUARE!
+         // RESCAN in window as otherwise we get non-deterministic behaviour
+         | LSQUARE! RESCAN^ expr unit RSQUARE! 
+         ;
+// Commented out winOpen rule as Christian did not know what it was doing         
+//         | winOpen (winSlide)? RSQUARE!;
          //winOpen includes the LSQUARE 
          //omitting slide causes an input window
          //   window slide set to acquisition rate
@@ -221,6 +227,7 @@ NOT         = "not";
 NOW         = "now";
 OR          = "or";
 RANGE       = "range";
+RESCAN      = "rescan";
 RSTREAM     = "rstream";
 //SEC         = "sec";
 //SECOND      = "second";
@@ -274,6 +281,9 @@ Attribute
                => ('a' .. 'z' ( 'a' .. 'z' | '0' .. '9' | '_')* '.' 'a' .. 'z' ( 'a' .. 'z' | '0' .. '9' | '_')*)
             | ( 'a' .. 'z' ( 'a' .. 'z' | '0' .. '9' | '_')* )
                { $setType(Identifier); };
+               
+QuotedString
+            : '\'' ( ~'\'' )* '\'' { $setType(QuotedString); };
 
 {import java.lang.Math;}
 class SNEEqlTreeWalker extends TreeParser;
@@ -291,6 +301,7 @@ expr returns [double r] throws ParserException
   | f:Flt { r=(double)Float.parseFloat(f.getText()); } 
   | at:Attribute { r = ParserException.noDouble("Illegal evaluate of Attribute " + at.getText()); }
   | id:Identifier {  r = ParserException.noDouble("Illegal evaluate of Identifier " + id.getText()); }
+  | qs:QuotedString { r = ParserException.noDouble("Illegal evaluate of QuotedString " + qs.getText()); } 
   | fn:FUNCTION_NAME {  r = ParserException.noDouble("Illegal evaluate of FUNCTION_NAME " + fn.getText()); }
   ;
 

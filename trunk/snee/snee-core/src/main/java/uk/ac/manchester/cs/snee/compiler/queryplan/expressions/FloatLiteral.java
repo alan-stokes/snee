@@ -34,6 +34,7 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -77,7 +78,7 @@ public class FloatLiteral implements Expression {
 	}
 	
 	/** {@inheritDoc} */
-	public ArrayList<Attribute> getRequiredAttributes() {
+	public List<Attribute> getRequiredAttributes() {
     	return new ArrayList<Attribute>();
 	}
 
@@ -93,7 +94,7 @@ public class FloatLiteral implements Expression {
 	 * 
 	 * @return Empty list.
 	 */
-	public ArrayList<AggregationExpression> getAggregates()	{
+	public List<AggregationExpression> getAggregates()	{
 		return new ArrayList<AggregationExpression>(0);
 	}
 

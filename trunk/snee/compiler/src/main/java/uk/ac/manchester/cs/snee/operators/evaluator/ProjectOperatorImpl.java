@@ -15,6 +15,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
@@ -85,7 +87,7 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 				for (Output output : outputList) {
 					if (output instanceof Window) {
 						result.add(processWindow(output));
-					} else if (output instanceof Tuple) {
+					} else if (output instanceof TaggedTuple) {
 						result.add(processTuple(output));
 					}
 				}
@@ -198,28 +200,16 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		Attribute attr = attributes.get(0);
 		String extentName = attr.getExtentName();
 		String attributeName = attr.getAttributeSchemaName();
-
-		/*
-		 * In-network SNEE adds the following attributes which 
-		 * should just be ignored
-		 */
-		if (attributeName.equalsIgnoreCase("evalTime") ||
-				attributeName.equalsIgnoreCase("time") ||
-				attributeName.equalsIgnoreCase("id")) {
-			logger.trace("Ignoring in-network SNEE assumed attribute " + 
-					attributeName);
-		} else {
-			try {
-				logger.trace("getting attribute " + attributeName +
-						" from extent " + extentName);
-				returnField = 
-					t.getAttribute(extentName, attributeName);
-			} catch (SNEEException e) {
-				logger.warn("Attribute " + attributeName + 
-						" does not exist.", e);
-				throw e;
-			}
-		}					
+		try {
+			logger.trace("getting attribute " + attributeName +
+					" from extent " + extentName);
+			returnField = 
+				t.getAttribute(extentName, attributeName);
+		} catch (SNEEException e) {
+			logger.warn("Attribute " + attributeName + 
+					" does not exist.", e);
+			throw e;
+		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN evaluateSingleExpression() with " + 
 					returnField);
@@ -298,10 +288,18 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 				}
 			} else if (expr instanceof FloatLiteral){
 				FloatLiteral fl = (FloatLiteral) expr;
-				daValue = new Float(fl.toString());
+				daValue = new Float(fl.getValue());
 				if (logger.isTraceEnabled()) {
 					logger.trace("Stack push float: " +
-							fl.getMaxValue() + ", type " + 
+							fl.getValue() + ", type " + 
+							daValue.getClass());
+				}
+			} else if (expr instanceof StringLiteral){
+				StringLiteral sl = (StringLiteral) expr;
+				daValue = sl.getValue();
+				if (logger.isTraceEnabled()) {
+					logger.trace("Stack push string: " +
+							sl.getValue() + ", type " + 
 							daValue.getClass());
 				}
 			} else {
@@ -316,8 +314,16 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		}
 		while (operands.size() >= 2){
 			// Evaluate result
-			Object result = evaluate(operands.pop(), operands.pop(), 
-					((MultiExpression)exp).getMultiType());
+			Object op1 = operands.pop();
+			Object op2 = operands.pop();
+			Object result;
+			MultiType type = ((MultiExpression)exp).getMultiType();
+			if (op1 instanceof StringLiteral && op2 instanceof StringLiteral) {
+				result = evaluateString((String)op1, (String)op2, type);
+			} else {
+				result = evaluateNumeric((Number)op1, (Number)op2, type);
+			}
+			
 			if (logger.isTraceEnabled())
 				logger.trace("Creating new attribute: " +
 						extentName + "." + attrName + " AS " +

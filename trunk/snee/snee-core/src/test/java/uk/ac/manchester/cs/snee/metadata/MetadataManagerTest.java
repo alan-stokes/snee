@@ -31,6 +31,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
@@ -112,7 +113,7 @@ public class MetadataManagerTest extends EasyMockSupport {
 	}
 
 	@Test
-	public void testGetSourceMetaData_validExtentName() 
+	public void testGetExtentMetaData_validExtentName() 
 	throws TypeMappingException, SchemaMetadataException, 
 	MetadataException, UnsupportedAttributeTypeException, 
 	SNEEConfigurationException, SourceMetadataException,
@@ -131,7 +132,7 @@ public class MetadataManagerTest extends EasyMockSupport {
 	}
 
 	@Test(expected=ExtentDoesNotExistException.class)
-	public void testGetSourceMetaData_invalidExtentName() 
+	public void testGetExtentMetaData_invalidExtentName() 
 	throws SchemaMetadataException, MetadataException, 
 	TypeMappingException, UnsupportedAttributeTypeException,
 	SNEEConfigurationException, SourceMetadataException,
@@ -148,6 +149,41 @@ public class MetadataManagerTest extends EasyMockSupport {
 		schema.getExtentMetadata("Random");
 	}
 
+	@Test(expected=SourceDoesNotExistException.class)
+	public void testGetSourceMetaData_noSourceForExtent() 
+	throws SchemaMetadataException, MetadataException, 
+	TypeMappingException, UnsupportedAttributeTypeException,
+	SNEEConfigurationException, SourceMetadataException,
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException, CostParametersException, SNCBException 
+	{
+		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
+		SNEEProperties.initialise(props);
+
+		MetadataManager schema = new MetadataManager(null); 
+		
+		schema.getSource("PushStream");
+	}
+
+	public void testGetSourceMetaData() 
+	throws SchemaMetadataException, MetadataException, 
+	TypeMappingException, UnsupportedAttributeTypeException,
+	SNEEConfigurationException, SourceMetadataException,
+	TopologyReaderException, MalformedURLException,
+	SNEEDataSourceException, CostParametersException, SNCBException,
+	SourceDoesNotExistException
+	{
+		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
+		SNEEProperties.initialise(props);
+
+		MetadataManager schema = new MetadataManager(null); 
+		
+		schema.getSource("PushStream");
+	}
+	
 	@Test(expected=MalformedURLException.class)
 	public void testAddWebServiceSource_invalidURL() 
 	throws TypeMappingException, SchemaMetadataException, 

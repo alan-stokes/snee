@@ -85,6 +85,15 @@ public class Window implements Output {
 		output.append("Window Index: " + _index + "\n");
 		output.append("Window Evaluation Time: " + 
 				dateFormat.format(_evalTime) + "\n");
+		output.append("Number of tuples: " + _tuples.size() + "\n");
+//		for (Tuple t: _tuples){
+//			output.append(t.toString() + "\n");
+//		}
+		return output.toString();
+	}
+	
+	public String detailedToString() {
+		StringBuffer output = new StringBuffer(toString());
 		for (Tuple t: _tuples){
 			output.append(t.toString() + "\n");
 		}
