@@ -24,6 +24,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
+import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -174,7 +175,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER update() for query " + m_qid + " " +
-					" with " + observed);
+					" with " + observed + " (" + observed.getClass() + ")");
 		}
 		try {
 			List<Output> resultItems = new ArrayList<Output>();
@@ -194,8 +195,12 @@ public class JoinOperatorImpl extends EvaluationOperator {
 						if (output instanceof Window) {
 							processWindow((Window) output, 
 									resultItems, leftBuffer);
+						} else if (output instanceof TaggedTuple) {
+							processTuple((TaggedTuple) output, resultItems);
 						}
 					}
+				} else if (observed instanceof TaggedTuple) {
+					processTuple((TaggedTuple) observed, resultItems);
 				}
 			} else if (obj == rightOperator) {
 				if (logger.isTraceEnabled()) {
@@ -212,7 +217,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 									resultItems, rightBuffer);
 						}
 					}
-				}
+				} //No checks for tagged tuple on right child as relation always on right!
 			} else {
 				logger.warn("Notification received from " +
 						"unknown source");
@@ -230,11 +235,32 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		}
 	}
 
+	private void processTuple(TaggedTuple taggedTuple, List<Output> resultItems) 
+	throws SNEEException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER processTuple() " + taggedTuple);
+		}
+		Window relation = 
+			(Window) rightBuffer.get(rightBuffer.size()-1);
+		Tuple tuple = taggedTuple.getTuple();
+		for (Tuple relationTuple : relation.getTuples()) {
+			if (evaluate(joinPredicate, tuple, relationTuple)) {
+				Tuple joinTuple = 
+					generateJoinTuple(tuple, relationTuple);
+				resultItems.add(new TaggedTuple(joinTuple));
+			}
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN processTuple() #resultItems=" +
+					resultItems.size());
+		}
+	}
+
 	private void processWindow(Window window, 
 			List<Output> resultItems, CircularArray<Window> buffer)
 	throws SNEEException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER processWindow()");
+			logger.trace("ENTER processWindow() " + window);
 		}
 		buffer.add(window);
 		if (logger.isTraceEnabled()) {

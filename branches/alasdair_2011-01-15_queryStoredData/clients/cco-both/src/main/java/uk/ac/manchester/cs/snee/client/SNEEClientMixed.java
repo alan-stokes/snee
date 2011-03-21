@@ -25,37 +25,37 @@ public class SNEEClientMixed extends SNEEClient {
 
 	private static String query =
 		"SELECT l.location, l.storm_threshold, t.Hs, t.HMax " +
-		"FROM envdata_swanagepier_tide" +
-		"[FROM NOW - 10 MINUTES TO NOW SLIDE 1 MINUTE] t, " +
+		"FROM envdata_swanagepier_tide t, " +
 			"locations l " +
-		"WHERE  " + 
+		"WHERE l.location = \'Swanage Pier\' AND " + 
 		       "(t.Hs <= l.storm_threshold OR " +
 		        "t.HMax <= l.storm_threshold);";
 		
 //		"SELECT l.location, l.storm_threshold, t.Hs, t.HMax " +
-//		"FROM envdata_swanagepier_tide t, " +
+//		"FROM envdata_swanagepier_tide" +
+//		"[FROM NOW - 10 MINUTES TO NOW SLIDE 1 MINUTE] t, " +
 //			"locations l " +
-//		"WHERE  " + 
+//		"WHERE l.location = \'Swanage Pier\' AND " + 
 //		       "(t.Hs <= l.storm_threshold OR " +
 //		        "t.HMax <= l.storm_threshold);";
-		
+	
 //		"SELECT l.location, l.storm_threshold, t.Hs, t.HMax " +
 //		"FROM envdata_swanagepier_tide" +
 //		"[FROM NOW - 10 MINUTES TO NOW SLIDE 1 MINUTE] t, " +
 //			"locations[RESCAN 15 MINUTES] l " +
-//		"WHERE  " + 
+//		"WHERE l.location = \'Swanage Pier\' AND " + 
 //		       "(t.Hs <= l.storm_threshold OR " +
 //		        "t.HMax <= l.storm_threshold);";
 
 //		"SELECT location, Hs, HMax " +
 //		"FROM envdata_hernebay_tide[FROM NOW - 1 MINUTE TO NOW SLIDE 1 MINUTE], " +
 //			"locations " +
-//		"WHERE  " +//w.location = l.locaction AND " + 
+//		"WHERE l.location = \'Swanage Pier\' AND " + 
 //	       "(Hs >= storm_threshold OR " +
 //	        "HMax >= storm_threshold);";
 	
 	private static long duration = 900;
-//	private static long duration = 10;
+//	private static long duration = 30;
 	
 	public SNEEClientMixed(String query, double duration) 
 	throws SNEEException, IOException, SNEEConfigurationException,

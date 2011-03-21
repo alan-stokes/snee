@@ -133,10 +133,10 @@ extends EvaluatorPhysicalOperator {
 						" op2: " + op2.getClass());
 			}
 			if (op1 instanceof String && op2 instanceof String) {
-				logger.debug("Two string literals");
+//				logger.trace("Two string literals");
 				result = evaluateString((String)op1, (String)op2, type);
 			} else {
-				logger.debug("Two numeric literals");
+//				logger.trace("Two numeric literals");
 				result = evaluateNumeric((Number)op1, (Number)op2, type);
 			}
 			if (type.isBooleanDataType()){
