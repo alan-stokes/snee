@@ -104,6 +104,7 @@ atom     : ( PLUS Int ) =>
          | Flt
          | Attribute 
          | Identifier
+         | QuotedString 
          | LPAREN! expr RPAREN!
          ;
          
@@ -280,6 +281,9 @@ Attribute
                => ('a' .. 'z' ( 'a' .. 'z' | '0' .. '9' | '_')* '.' 'a' .. 'z' ( 'a' .. 'z' | '0' .. '9' | '_')*)
             | ( 'a' .. 'z' ( 'a' .. 'z' | '0' .. '9' | '_')* )
                { $setType(Identifier); };
+               
+QuotedString
+            : '\'' ( ~'\'' )* '\'' { $setType(QuotedString); };
 
 {import java.lang.Math;}
 class SNEEqlTreeWalker extends TreeParser;
@@ -297,6 +301,7 @@ expr returns [double r] throws ParserException
   | f:Flt { r=(double)Float.parseFloat(f.getText()); } 
   | at:Attribute { r = ParserException.noDouble("Illegal evaluate of Attribute " + at.getText()); }
   | id:Identifier {  r = ParserException.noDouble("Illegal evaluate of Identifier " + id.getText()); }
+  | qs:QuotedString { r = ParserException.noDouble("Illegal evaluate of QuotedString " + qs.getText()); } 
   | fn:FUNCTION_NAME {  r = ParserException.noDouble("Illegal evaluate of FUNCTION_NAME " + fn.getText()); }
   ;
 

@@ -352,7 +352,7 @@ public class TranslatorTest {
 	}
 	
 	@Test
-	public void testSimpleSelect() 
+	public void testSimpleSelect_integer() 
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
@@ -360,6 +360,17 @@ public class TranslatorTest {
 		testQuery("SELECT Timestamp " +
 				"FROM TestStream " +
 				"WHERE Timestamp < 42;");
+	}
+	
+	@Test
+	public void testSimpleSelect_string() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT Timestamp " +
+				"FROM TestStream " +
+				"WHERE StringColumn = \'Some text\';");
 	}
 	
 	@Test

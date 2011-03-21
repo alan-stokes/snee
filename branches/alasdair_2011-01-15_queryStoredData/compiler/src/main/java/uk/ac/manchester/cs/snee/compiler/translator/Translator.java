@@ -24,6 +24,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
@@ -1186,6 +1187,13 @@ public class Translator {
 			expression = 
 				new FloatLiteral(Float.parseFloat(ast.getText()), 
 						_types.getType("float"));
+			break;
+		case SNEEqlParserTokenTypes.QuotedString:
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate QuotedString");
+			}
+			expression = 
+				new StringLiteral(ast.getText(), _types.getType("string"));
 			break;
 		case SNEEqlParserTokenTypes.Attribute:
 			if (logger.isTraceEnabled()) {

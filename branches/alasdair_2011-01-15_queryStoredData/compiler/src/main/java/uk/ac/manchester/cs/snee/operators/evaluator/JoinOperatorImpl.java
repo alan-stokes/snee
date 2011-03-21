@@ -21,6 +21,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
@@ -380,22 +381,35 @@ public class JoinOperatorImpl extends EvaluationOperator {
 				IntLiteral il = (IntLiteral) arrExpr[i];
 				if (logger.isTraceEnabled()) {
 					logger.trace("Stack push integer: " + 
-							il.getMaxValue());
+							il.getValue());
 				}
-				operands.add(new Integer(il.toString()));
+				operands.add(new Integer(il.getValue()));
 			} else if (arrExpr[i] instanceof FloatLiteral){
 				FloatLiteral fl = (FloatLiteral) arrExpr[i];
 				if (logger.isTraceEnabled()) {
 					logger.trace("Stack push float: " + 
-							fl.getMaxValue());
+							fl.getValue());
 				}
-				operands.add(new Float(fl.toString()));
+				operands.add(new Float(fl.getValue()));
+			} else if (arrExpr[i] instanceof StringLiteral) {
+				StringLiteral sl = (StringLiteral) arrExpr[i];
+				if (logger.isTraceEnabled()) {
+					logger.trace("Stack push float: " + 
+							sl.getValue());
+				}
+				operands.add(sl.getValue());
 			}
 		}
 		boolean retVal = false;
 		while (operands.size() >= 2){
-			Object result = evaluate(operands.pop(), operands.pop(), 
-					type);
+			Object op1 = operands.pop();
+			Object op2 = operands.pop();
+			Object result;
+			if (op1 instanceof StringLiteral && op2 instanceof StringLiteral) {
+				result = evaluateString((String)op1, (String)op2, type);
+			} else {
+				result = evaluateNumeric((Number)op1, (Number)op2, type);
+			}
 			if (type.isBooleanDataType()){
 				retVal = ((Boolean)result).booleanValue();
 			} 

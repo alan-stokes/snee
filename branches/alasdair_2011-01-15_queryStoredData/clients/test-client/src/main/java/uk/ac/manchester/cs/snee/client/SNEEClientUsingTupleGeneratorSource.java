@@ -47,6 +47,8 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 
 			query = "SELECT * FROM PushStream;";
 
+//			query = "SELECT * FROM PushStream WHERE stream_name = \'pushstream\';";
+			
 			/* The following queries should run */
 			//SELECT-PROJECT
 //			query = "SELECT intattr " +

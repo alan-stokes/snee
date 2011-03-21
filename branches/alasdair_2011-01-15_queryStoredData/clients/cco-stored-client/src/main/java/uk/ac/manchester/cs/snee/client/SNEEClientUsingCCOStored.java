@@ -30,21 +30,15 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 	private static String extent = 
 		"locations";
 //		"metadata";
-
-	private static String query = 
-		"SELECT " +
-		//"* " +
-		//id, location, latitude, longitude, waves, tides, met, storm_threshold " +
-		"location, wave_spectra " +
-		"FROM " + extent +
-		"[RESCAN 20 SECONDS]" +
-		";";
-//		"SELECT * FROM " + extent + ";";
 		
-	private static Long duration = Long.valueOf(
-			"30"
-//			"900"
-			);
+	private static String query =
+		"SELECT * FROM locations;";
+//		"SELECT id, location, latitude, longitude, waves, tides, met, storm_threshold FROM locations;";
+//		"SELECT * FROM locations l WHERE l.id = 68;";
+//		"SELECT * FROM locations l WHERE l.location = \'Folkestone\';";
+//		"SELECT * FROM locations[RESCAN 20 SECONDS];";
+
+	private static Long duration = Long.valueOf("30");
 	
 	public SNEEClientUsingCCOStored(String query, double duration) 
 	throws SNEEException, IOException, SNEEConfigurationException,
@@ -62,6 +56,7 @@ public class SNEEClientUsingCCOStored extends SNEEClient {
 //			System.out.print("\t" + it.next() + "\n");
 //		}
 		displayExtentSchema(extent);
+		displayExtentSchema("envdata_swanagepier_tide");
 //		displayExtentSchema("envdata_teignmouthpier_tide");
 //		displayExtentSchema("envdata_hernebay_met");
 		if (logger.isDebugEnabled())

@@ -149,7 +149,7 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		replayAll();
 		ProjectOperatorImpl op = new ProjectOperatorImpl(mockProjOp);
 		Object answer = 
-			op.evaluate(new Float(5.28), 9, MultiType.MULTIPLY);
+			op.evaluateNumeric(new Float(5.28), 9, MultiType.MULTIPLY);
 		assertEquals(47.52, ((Number) answer).doubleValue(), 0.1);
 		verifyAll();
 	}
@@ -161,7 +161,7 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		replayAll();
 		ProjectOperatorImpl op = new ProjectOperatorImpl(mockProjOp);
 		Object answer = 
-			op.evaluate(new BigDecimal(0.0000), 9, MultiType.MULTIPLY);
+			op.evaluateNumeric(new BigDecimal(0.0000), 9, MultiType.MULTIPLY);
 		assertEquals(0.0000, ((Number) answer).doubleValue(), 0.1);
 		verifyAll();
 	}
@@ -173,7 +173,7 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		replayAll();
 		ProjectOperatorImpl op = new ProjectOperatorImpl(mockProjOp);
 		Object answer = 
-			op.evaluate(9, new Float(0.13), MultiType.MULTIPLY);
+			op.evaluateNumeric(9, new Float(0.13), MultiType.MULTIPLY);
 		assertEquals(1.17, ((Number) answer).doubleValue(), 0.1);
 		verifyAll();
 	}
