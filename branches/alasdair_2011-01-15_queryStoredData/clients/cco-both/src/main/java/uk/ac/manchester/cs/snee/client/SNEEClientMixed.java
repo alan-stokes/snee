@@ -9,7 +9,6 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 public class SNEEClientMixed extends SNEEClient {
@@ -25,14 +24,28 @@ public class SNEEClientMixed extends SNEEClient {
 		"http://webgis1.geodata.soton.ac.uk:8080/dai/services/";
 
 	private static String query =
-		"SELECT l.location, t.Hs, t.HMax " +
+		"SELECT l.location, l.storm_threshold, t.Hs, t.HMax " +
 		"FROM envdata_swanagepier_tide" +
-		"[FROM NOW - 10 MINUTES TO NOW SLIDE 1 MINUTE]" +
-		" t, " +
+		"[FROM NOW - 10 MINUTES TO NOW SLIDE 1 MINUTE] t, " +
 			"locations l " +
-		"WHERE  " +//w.location = l.locaction AND " + 
+		"WHERE  " + 
 		       "(t.Hs <= l.storm_threshold OR " +
 		        "t.HMax <= l.storm_threshold);";
+		
+//		"SELECT l.location, l.storm_threshold, t.Hs, t.HMax " +
+//		"FROM envdata_swanagepier_tide t, " +
+//			"locations l " +
+//		"WHERE  " + 
+//		       "(t.Hs <= l.storm_threshold OR " +
+//		        "t.HMax <= l.storm_threshold);";
+		
+//		"SELECT l.location, l.storm_threshold, t.Hs, t.HMax " +
+//		"FROM envdata_swanagepier_tide" +
+//		"[FROM NOW - 10 MINUTES TO NOW SLIDE 1 MINUTE] t, " +
+//			"locations[RESCAN 15 MINUTES] l " +
+//		"WHERE  " + 
+//		       "(t.Hs <= l.storm_threshold OR " +
+//		        "t.HMax <= l.storm_threshold);";
 
 //		"SELECT location, Hs, HMax " +
 //		"FROM envdata_hernebay_tide[FROM NOW - 1 MINUTE TO NOW SLIDE 1 MINUTE], " +

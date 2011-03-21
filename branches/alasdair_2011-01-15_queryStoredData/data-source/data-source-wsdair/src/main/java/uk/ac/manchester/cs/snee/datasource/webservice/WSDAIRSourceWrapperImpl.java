@@ -325,7 +325,7 @@ implements SourceWrapper {
 		}
 		Object obj;
 		if (colValue == null || colValue.isEmpty() || colValue.equals("")) {
-			logger.debug("Found a NULL Value. Representing with java.sql.Types.NULL");
+			logger.trace("Found a NULL Value. Representing with java.sql.Types.NULL");
 			obj = java.sql.Types.NULL;
 		} else if (typeName.equals("boolean")) {
 			obj = new Boolean(colValue);
