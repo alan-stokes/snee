@@ -15,11 +15,11 @@ __HEADER__
 
 	#define OUT_QUEUE_CARD __OUT_QUEUE_CARD__
 
-	TupleFrag3 windowBuff[OUT_QUEUE_CARD];
+	__OUTPUT_TUPLE_TYPE__ windowBuff[OUT_QUEUE_CARD];
 	int8_t windowHead=-1;
 	int8_t windowTail=-1;
 
-	TupleFrag3 outQueue[OUT_QUEUE_CARD];
+	__OUTPUT_TUPLE_TYPE__ outQueue[OUT_QUEUE_CARD];
 	int8_t outHead=-1;
 	int8_t outTail=-1;
 
