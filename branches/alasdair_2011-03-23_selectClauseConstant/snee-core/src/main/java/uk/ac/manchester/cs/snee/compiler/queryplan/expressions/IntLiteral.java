@@ -158,8 +158,9 @@ public class IntLiteral implements Expression {
 	 */
 	public Attribute toAttribute() 
 	throws SchemaMetadataException, TypeMappingException {
-		throw new SchemaMetadataException("Attempt to convert " +
-				"IntLiteral to a DataAttribute.");
+		String attrName = new Integer(this.getValue()).toString();
+		Attribute attribute = new DataAttribute("", attrName, attrName, _type);
+		return attribute;
 	}
 	
 }

@@ -1070,40 +1070,90 @@ public class Translator {
 					"" + ast.toStringList() + " " + input);
 		}
 		AST expressionAST = ast.getFirstChild();
+		if (expressionAST == null) {
+			String msg = "Invalid SELECT clause syntax";
+			logger.warn(msg);
+			throw new ExpressionException(msg);
+		}
 		List<Expression> expressions = new ArrayList<Expression>();
 		List<Attribute> attributes = new ArrayList<Attribute>();
 		boolean allowedInProjectOperator = true;
 		boolean allowedInAggregationOperator = true;
+		loop: //label to enable breaking out from inner case statement
 		do {
-			if (expressionAST.getType() == SNEEqlParserTokenTypes.STAR) {
+			int expType = expressionAST.getType();
+			Expression expression;
+			Attribute attribute;
+			switch (expType) {
+			case SNEEqlParserTokenTypes.STAR:
 				if (logger.isTraceEnabled()) {
 					logger.trace("project to all attribtues");
 				}
-				List<Attribute> incoming = input.getAttributes();
-				expressions.addAll(incoming);
-				attributes.addAll(incoming);
-				allowedInAggregationOperator = false;
-			} else {
+				/* STAR must be the only token in the select clause */
+				if (expressions.isEmpty() && 
+						expressionAST.getNextSibling() == null) {
+					List<Attribute> incoming = input.getAttributes();
+					expressions.addAll(incoming);
+					attributes.addAll(incoming);
+					allowedInAggregationOperator = false;
+				} else {
+					String msg = "Invalid SELECT Clause syntax. " +
+							"\'*\' must be only attribute";
+					logger.warn(msg);
+					throw new ExpressionException(msg);
+				}
+				// Break out of the while loop as we're done!
+				break loop;
+			case SNEEqlParserTokenTypes.QuotedString:
+				if (logger.isTraceEnabled()) {
+					logger.trace("project to string constant");
+				}
+				expression = translateExpression(expressionAST, input);
+				attribute = expression.toAttribute();				
+				break;
+			case SNEEqlParserTokenTypes.Int:
+				if (logger.isTraceEnabled()) {
+					logger.trace("project to integer constant");
+				}
+				expression = translateExpression(expressionAST, input);
+				attribute = expression.toAttribute();
+				break;
+			case SNEEqlParserTokenTypes.Flt:
+				if (logger.isTraceEnabled()) {
+					logger.trace("project to float constant");
+				}
+				expression = translateExpression(expressionAST, input);
+				attribute = expression.toAttribute();
+				break;
+			case SNEEqlParserTokenTypes.AS:
+				if (logger.isTraceEnabled()) {
+					logger.trace("rename in select clause, Translate AS " + 
+							expressionAST.getFirstChild());
+				}
+				expression = 
+					translateExpression(expressionAST.getFirstChild(), input);
+					attribute = expression.toAttribute();
+					attribute = translateAttributeRename(
+							expressionAST.getFirstChild().getNextSibling(), 
+							attribute);
+				break;
+			default:
 				if (logger.isTraceEnabled()) {
 					logger.trace("project to specified attributes");
 				}
-				Expression expression = 
+				expression = 
 					translateExpression(expressionAST, input);
-				expressions.add(expression);
-				Attribute attribute = expression.toAttribute();
-				if (expressionAST.getType() == SNEEqlParserTokenTypes.AS) {
-					attribute = translateAttributeRename(
-							expressionAST.getFirstChild().getNextSibling(),
-							attribute);
-				} 
-				attributes.add(attribute);
+				attribute = expression.toAttribute();
 				if (!expression.allowedInProjectOperator()) {
 					allowedInProjectOperator = false;
 				}
 				if (!expression.allowedInAggregationOperator()) {
 					allowedInAggregationOperator = false;
 				}
-			}	
+				break;
+			}
+			expressions.add(expression);
+			attributes.add(attribute);
 			expressionAST = expressionAST.getNextSibling();
 		} while(expressionAST != null);
 		if (allowedInProjectOperator) {
@@ -1165,13 +1215,13 @@ public class Translator {
 		AST child;
 		Expression expression = null;
 		switch (ast.getType()) {
-		case SNEEqlParserTokenTypes.AS:
-			if (logger.isTraceEnabled()) {
-				logger.trace("Translate AS " + ast.getFirstChild());
-			}
-			expression = 
-				translateExpression(ast.getFirstChild(), input);
-			break;
+//		case SNEEqlParserTokenTypes.AS:
+//			if (logger.isTraceEnabled()) {
+//				logger.trace("Translate AS " + ast.getFirstChild());
+//			}
+//			expression = 
+//				translateExpression(ast.getFirstChild(), input);
+//			break;
 		case SNEEqlParserTokenTypes.Int:
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate Int " + ast.getText());

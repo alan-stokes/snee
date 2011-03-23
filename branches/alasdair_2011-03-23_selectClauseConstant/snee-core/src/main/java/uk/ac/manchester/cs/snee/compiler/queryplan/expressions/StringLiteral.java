@@ -155,8 +155,11 @@ public class StringLiteral implements Expression {
 	 */
 	public Attribute toAttribute() 
 	throws SchemaMetadataException, TypeMappingException {
-		throw new SchemaMetadataException("Attempt to convert " +
-		"StringLiteral to a DataAttribute.");
+//		throw new SchemaMetadataException("Attempt to convert " +
+//		"StringLiteral to a DataAttribute.");
+		Attribute attribute = new DataAttribute("", this.getValue(), 
+				this.getValue(), _type);
+		return attribute;
 	}
 
 }

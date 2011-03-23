@@ -160,8 +160,9 @@ public class FloatLiteral implements Expression {
 	 */
 	public Attribute toAttribute() 
 	throws SchemaMetadataException, TypeMappingException {
-		throw new SchemaMetadataException("Attempt to convert " +
-			"FloatLiteral to a DataAttribute.");
+		String attrName = new Float(this.getValue()).toString();
+		Attribute attribute = new DataAttribute("", attrName, attrName, _type);
+		return attribute;
 	}
 
 }
