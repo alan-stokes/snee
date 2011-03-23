@@ -33,6 +33,12 @@ implements LogicalOperator {
 	 * Contains details of the data sources that contribute data
 	 */
 	private SourceMetadataAbstract source;
+
+	/**
+	 * For a sensor network, the cardinality is the number of source sites 
+	 * in the sensor network providing data for this extent.
+	 */
+	private int cardinality;
 	
 	/**
 	 *  List of attributes to be output. 
@@ -75,6 +81,7 @@ implements LogicalOperator {
 		}
 		inputAttributes = extentMetaData.getAttributes();
 		outputAttributes = inputAttributes;
+		this.cardinality = extentMetaData.getCardinality();
 		copyExpressions(outputAttributes);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN addMetaDataInfo()");
@@ -151,7 +158,7 @@ implements LogicalOperator {
 	 * @return The Cardinality calculated as requested.
 	 */
 	public int getCardinality(CardinalityType card) {
-		return inputAttributes.size();
+		return cardinality;
 	}
 
 	/**

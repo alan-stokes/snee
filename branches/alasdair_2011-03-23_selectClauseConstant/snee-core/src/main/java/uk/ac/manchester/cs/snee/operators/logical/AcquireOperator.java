@@ -68,11 +68,6 @@ public class AcquireOperator extends InputOperator {
     private List<Attribute> acquiredAttributes;
 	
 	/**
-	 * Number of source sites in the sensor network providing data for this extent.
-	 */
-	private int cardinality;
-
-	/**
 	 * Metadata about the types supported.
 	 */
 	Types _types;
@@ -126,22 +121,10 @@ public class AcquireOperator extends InputOperator {
 		inputAttributes = extentMetaData.getAttributes();
 		outputAttributes.addAll(inputAttributes);
 //		sites =  sourceMetaData.getSourceNodes();
-		this.cardinality = extentMetaData.getCardinality();
 		copyExpressions(outputAttributes);
 		acquiredAttributes = (ArrayList<Attribute>) outputAttributes;
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN addMetaDataInfo()");
-	}
-
-	/**
-	 * Calculated the cardinality based on the requested type. 
-	 * 
-	 * @param card Type of cardinality to be considered.
-	 * 
-	 * @return The Cardinality calculated as requested.
-	 */
-	public int getCardinality(CardinalityType card) {
-		return this.cardinality;
 	}
 
 	/** {@inheritDoc} */
