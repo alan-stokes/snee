@@ -21,6 +21,18 @@ __HEADER__
 	__MESSAGE_PTR_TYPE__ payload;
 
 
+	void task LoopControlTask();
+	void task sendPacketTask();
+	void task sendPacketDoneTask();
+
+
+	command error_t DoTask.open()
+	{
+		call GetTuples.open();
+		return SUCCESS;
+	}
+
+
 	command error_t DoTask.doTask()
   	{
 		dbg("__DBG_CHANNEL__","__MODULE_NAME__ doTask() entered as evalEpoch %d, now get tuples from trays and send them on\n",evalEpoch);
@@ -38,47 +50,23 @@ __HEADER__
 		return SUCCESS;
 	}
 
-	command error_t DoTask.open()
+
+	event void GetTuples.requestDataDone(__TUPLE_PTR_TYPE__  _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
 	{
-		call GetTuples.open();
-		return SUCCESS;
-	}
+		dbg("__DBG_CHANNEL__", "tx:GetTuples.requestDataDone inHead=%d, inTail=%d, inQueueSize=%d\n", _inHead, _inTail, _inQueueSize);
 
-	void task sendPacketDoneTask();
-
-	void task sendPacketTask()
-	{
-		if (pending)
+		atomic
 		{
-			dbg("__DBG_CHANNEL__", "Still pending");
-			post sendPacketTask();
-		}
-		else
-		{
-			atomic pending = TRUE;
-			dbg("__DBG_CHANNEL__","Attempting to send __MESSAGE_TYPE__ packet to __PARENT_ID__\n");
-
-			//Pad any unsed tuples
-			while (tuplePacketPos < __TUPLES_PER_PACKET__) // tuples per packet for source fragment type
-			{
-				payload->tuples[tuplePacketPos].evalEpoch = NULL_EVAL_EPOCH;
-				tuplePacketPos++;
-			}
-
-			if (call AMSend.send(__PARENT_ID__,&packet, sizeof(__MESSAGE_TYPE__) )!=SUCCESS)
-			{
-				dbg("__DBG_CHANNEL__","Error: Call to active message layer failed in __MODULE_NAME__\n");
-				atomic pending = FALSE;
-				//post sendPacketTask(); // retry sending packet (comment out accordingly)
-				post sendPacketDoneTask(); // do not retry sending packet (comment out accordingly)
-			}
-			else
-			{
-				dbg("__DBG_CHANNEL__", "Message accepted by active message layer in __MODULE_NAME__\n");
-			}
+			bFactorCount++;
+			inQueue = _inQueue;
+			inHead = _inHead;
+			inTail = _inTail;
+			inQueueSize = _inQueueSize;
 		}
 
+		post LoopControlTask();
 	}
+
 
 	void task LoopControlTask()
 	{
@@ -130,6 +118,42 @@ __HEADER__
 		}
 	}
 
+
+	void task sendPacketTask()
+	{
+		if (pending)
+		{
+			dbg("__DBG_CHANNEL__", "Still pending");
+			post sendPacketTask();
+		}
+		else
+		{
+			atomic pending = TRUE;
+			dbg("__DBG_CHANNEL__","Attempting to send __MESSAGE_TYPE__ packet to __PARENT_ID__\n");
+
+			//Pad any unsed tuples
+			while (tuplePacketPos < __TUPLES_PER_PACKET__) // tuples per packet for source fragment type
+			{
+				payload->tuples[tuplePacketPos].evalEpoch = NULL_EVAL_EPOCH;
+				tuplePacketPos++;
+			}
+
+			if (call AMSend.send(__PARENT_ID__,&packet, sizeof(__MESSAGE_TYPE__) )!=SUCCESS)
+			{
+				dbg("__DBG_CHANNEL__","Error: Call to active message layer failed in __MODULE_NAME__\n");
+				atomic pending = FALSE;
+				//post sendPacketTask(); // retry sending packet (comment out accordingly)
+				post sendPacketDoneTask(); // do not retry sending packet (comment out accordingly)
+			}
+			else
+			{
+				dbg("__DBG_CHANNEL__", "Message accepted by active message layer in __MODULE_NAME__\n");
+			}
+		}
+
+	}
+
+
 	void task sendPacketDoneTask()
 	{
 		atomic pending = FALSE;
@@ -139,8 +163,8 @@ __HEADER__
 
 		//more to send from this tray
 		post LoopControlTask();
-
 	}
+
 
 	event void AMSend.sendDone(message_t* msg, error_t err)
 	{
@@ -155,22 +179,5 @@ __HEADER__
 			dbg("__DBG_CHANNEL__","Packet sent successfully\n");
 			post sendPacketDoneTask();
 		}
-	}
-
-
-	event void GetTuples.requestDataDone(__TUPLE_PTR_TYPE__  _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
-	{
-		dbg("__DBG_CHANNEL__", "tx:GetTuples.requestDataDone inHead=%d, inTail=%d, inQueueSize=%d\n", _inHead, _inTail, _inQueueSize);
-
-		atomic
-		{
-			bFactorCount++;
-			inQueue = _inQueue;
-			inHead = _inHead;
-			inTail = _inTail;
-			inQueueSize = _inQueueSize;
-		}
-
-		post LoopControlTask();
 	}
 }

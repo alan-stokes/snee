@@ -14,6 +14,15 @@ __HEADER__
 	int8_t inTail;
 	uint16_t inQueueSize;
 
+	void task trayPutTask();
+
+	command error_t DoTask.open()
+	{
+		call Child.open();
+		call PutTuples.open();
+		return SUCCESS;
+	}	
+
 	command error_t DoTask.doTask()
 	{
 		dbg("__DBG_CHANNEL__","__MODULE_NAME__ __OPERATOR_DESCRIPTION__ doTask() entered as evalEpoch %d, now call child\n",evalEpoch);
@@ -27,12 +36,19 @@ __HEADER__
 		return SUCCESS;
 	}
 
-	command error_t DoTask.open()
+	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
 	{
-		call Child.open();
-		call PutTuples.open();
-		return SUCCESS;
-	}	
+		dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled from child, put results in tray\n");
+		atomic
+		{
+			inQueue=_inQueue;
+			inHead=_inHead;
+			inTail=_inTail;
+			inQueueSize=_inQueueSize;
+		}
+		post trayPutTask();
+
+	}
 
 	void task trayPutTask()
 	{
@@ -59,17 +75,5 @@ __HEADER__
 
 	}
 
-	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
-	{
-		dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled from child, put results in tray\n");
-		atomic
-		{
-			inQueue=_inQueue;
-			inHead=_inHead;
-			inTail=_inTail;
-			inQueueSize=_inQueueSize;
-		}
-		post trayPutTask();
 
-	}
 }

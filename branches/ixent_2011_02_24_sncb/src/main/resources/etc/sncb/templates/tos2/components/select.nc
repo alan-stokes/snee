@@ -15,6 +15,16 @@ __HEADER__
 	uint8_t inQueueSize;
 	int16_t currentEvalEpoch;
 
+	void task outQueueAppendTask();
+	void task signalDoneTask();
+
+	command error_t Parent.open()
+	{
+		call Child.open();
+		return SUCCESS;
+	}	
+
+
 	command error_t Parent.requestData(nx_int32_t evalEpoch)
   	{
 		dbg("__DBG_CHANNEL__","__MODULE_NAME__ __OPERATOR_DESCRIPTION__ requestData() entered, now calling child\n");
@@ -23,15 +33,18 @@ __HEADER__
 	   	return SUCCESS;
   	}
 
-	command error_t Parent.open()
-	{
-		call Child.open();
-		return SUCCESS;
-	}	
 
-	void task signalDoneTask()
+	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
 	{
-		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
+		atomic
+		{
+			inQueue = _inQueue;
+			inHead = _inHead;
+			inTail = _inTail;
+			inQueueSize = _inQueueSize;
+		}
+
+		post outQueueAppendTask();
 	}
 
 
@@ -74,18 +87,9 @@ __CONSTRUCT_TUPLE__
 		post signalDoneTask();
 	}
 
-	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
+
+	void task signalDoneTask()
 	{
-		atomic
-		{
-			inQueue = _inQueue;
-			inHead = _inHead;
-			inTail = _inTail;
-			inQueueSize = _inQueueSize;
-		}
-
-		post outQueueAppendTask();
+		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
 	}
-
-
 }
