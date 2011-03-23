@@ -892,4 +892,277 @@ extends EvaluatorPhysicalOperator {
 		return (Number)returnValue;
 	}
 
+	/** 
+	 * Computes the standard deviation over the set of tuples contained
+	 * in the provided <i>tuples</i> list. In case the list has fewer
+	 * than 2 elements, 0 is returned
+	 * 
+	 * @author lebiathan
+	 * @param attributeName The name of the attribute which holds the
+	 * data over which we compute the standard deviation
+	 * @param tuples The set of tuples over which we want will compute
+	 * the standard deviation
+	 * 
+	 * @return The standard deviatino for attribute with attributeName over
+	 * the set of <i>tuples</i>. In case the list has fewer
+	 * than 2 elements, 0 is returned.
+	 *  */
+	private Number computeStandardDeviation( String attributeName,
+			List<Tuple> tuples )
+	throws SNEEException {
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeStandardDeviation() with " +
+					attributeName);
+		}
+
+		/* Go through all of the tuples and compute their sum. The SUM is initially 0.
+		 * If there are no items in the tuples list, the result will also be 0. */
+		Number result = 0;
+		if ( !tuples.isEmpty() ){
+
+			/* Simply get the first tuple (there is definitely one) */
+			Tuple tuple = tuples.get(0);
+			List<String> attributeNames = tuple.getAttributeNames();
+			int attrIndex = attributeNames.indexOf(attributeName);
+
+			EvaluatorAttribute evalAttr = tuple.getAttribute(attrIndex);
+			int attrType = evalAttr.getAttributeType();
+
+			if ( attrType == SQLTypes.INTEGER.getSQLType() )
+				result = computeIntegerStandardDeviation(attrIndex, tuples);
+			else if ( attrType == SQLTypes.FLOAT.getSQLType() )
+				result = computeFloatStandardDeviation(attrIndex, tuples);
+			else if ( attrType == SQLTypes.DECIMAL.getSQLType() )
+				result = computeDecimalStandardDeviation(attrIndex, tuples);
+			else{
+				/* The attribute is not a number. Throw an exception! */
+				logger.warn("Non-numerical attribute type " + evalAttr.getAttributeType());
+				throw new SNEEException("Non-numerical attribute type " + 
+						evalAttr.getAttributeType());
+			}
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN computeMax() with " + 
+					result);
+		}
+		return result;
+	}
+
+	/** 
+	 * Computes the standard deviation over the set of tuples contained
+	 * in the provided <i>tuples</i> list, for which we know they
+	 * are of INTEGER value. In case the list has less than 2 items,
+	 * 0 is returned
+	 * 
+	 * @author lebiathan
+	 * @param attributeName The name of the attribute which holds the
+	 * data over which we compute the standard deviation
+	 * @param tuples The set of tuples over which we want to compute
+	 * the standard deviation
+	 * 
+	 * @return The standard deviation for the attrIndex-th attribute
+	 * of all tuples in the tuples list.
+	 *  */
+	private Number computeIntegerStandardDeviation( int attrIndex, List<Tuple> tuples  )
+	throws SNEEException {
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeIntegerStandardDeviation() with " + attrIndex);
+		}
+
+		/* Do a simple first check. We need at least two items in the tuples list
+		 * to compute the standard deviation. Otherwise, we simply return 0 */
+		if ( tuples.size() < 2 )
+			return (Number)0;
+		
+		/* Standard deviation requires that the following values are computed:
+		 * 1) Average of the tuples (so we need the sum)
+		 * 2) Count
+		 * 3) Deviation from the mean */
+
+		int sum = 0;
+
+		/* Create an iterator for the tuples */
+		Iterator<Tuple> tplItr = tuples.iterator();
+		Tuple t = tplItr.next();
+		Number n = (Number)t.getAttributeValue(attrIndex);
+
+		/* Compute the sum */
+		while ( tplItr.hasNext() ){
+
+			t = tplItr.next();
+			n = (Number)t.getAttributeValue(attrIndex);
+
+			sum += n.intValue();
+		}
+
+		/* Compute the sum of the deviation */
+		int average = sum / tuples.size();
+		int deviation = 0;
+
+		tplItr = tuples.iterator();
+		while ( tplItr.hasNext() ){
+
+			t = tplItr.next();
+			n = (Number)t.getAttributeValue(attrIndex);
+
+			deviation += (n.intValue() - average) * (n.intValue() - average);
+		}
+
+		/* We have the deviation at this point. Return the standard deviation.
+		 * The result will be of Integer type */
+		Number returnValue = (int)(Math.sqrt( deviation ) / Math.sqrt( tuples.size() - 1 ));
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN FROM computeIntegerStandardDeviation() with " +  returnValue);
+		}
+		return (Number)returnValue;
+
+	}
+
+	/** 
+	 * Computes the standard deviation over the set of tuples contained
+	 * in the provided <i>tuples</i> list, for which we know they
+	 * are of DECIMAL value. In case the list has less than 2 items,
+	 * 0 is returned
+	 * 
+	 * @author lebiathan
+	 * @param attributeName The name of the attribute which holds the
+	 * data over which we compute the standard deviation
+	 * @param tuples The set of tuples over which we want to compute
+	 * the standard deviation
+	 * 
+	 * @return The standard deviation for the attrIndex-th attribute
+	 * of all tuples in the tuples list.
+	 *  */
+	private Number computeFloatStandardDeviation( int attrIndex, List<Tuple> tuples  )
+	throws SNEEException {
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeFloatStandardDeviation() with " + attrIndex);
+		}
+
+		/* Do a simple first check. We need at least two items in the tuples list
+		 * to compute the standard deviation. Otherwise, we simply return 0 */
+		if ( tuples.size() < 2 )
+			return (Number)0.0;
+		
+		/* Standard deviation requires that the following values are computed:
+		 * 1) Average of the tuples (so we need the sum)
+		 * 2) Count
+		 * 3) Deviation from the mean */
+
+		float sum = 0.0f;
+
+		/* Create an iterator for the tuples */
+		Iterator<Tuple> tplItr = tuples.iterator();
+		Tuple t = tplItr.next();
+		Number n = (Number)t.getAttributeValue(attrIndex);
+
+		/* Compute the sum */
+		while ( tplItr.hasNext() ){
+
+			t = tplItr.next();
+			n = (Number)t.getAttributeValue(attrIndex);
+
+			sum += n.floatValue();
+		}
+
+		/* Compute the sum of the deviation */
+		float deviation = 0;
+		float average = sum / (float)tuples.size();
+
+		tplItr = tuples.iterator();
+		while ( tplItr.hasNext() ){
+
+			t = tplItr.next();
+			n = (Number)t.getAttributeValue(attrIndex);
+
+			deviation += (n.floatValue() - average) * (n.floatValue() - average);
+		}
+
+		/* We have the deviation at this point. Return the standard deviation */
+		Number returnValue = (float)(Math.sqrt( deviation ) / Math.sqrt( tuples.size() - 1 ));
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN FROM computeFloatStandardDeviation() with " +  returnValue);
+		}
+
+		return (Number)returnValue;
+	}
+
+	/** 
+	 * Computes the standard deviation over the set of tuples contained
+	 * in the provided <i>tuples</i> list, for which we know they
+	 * are of FLOAT value. In case the list has less than 2 items,
+	 * 0 is returned
+	 * 
+	 * @author lebiathan
+	 * @param attributeName The name of the attribute which holds the
+	 * data over which we compute the standard deviation
+	 * @param tuples The set of tuples over which we want to compute
+	 * the standard deviation
+	 * 
+	 * @return The standard deviation for the attrIndex-th attribute
+	 * of all tuples in the tuples list.
+	 *  */
+	private Number computeDecimalStandardDeviation( int attrIndex, List<Tuple> tuples  )
+	throws SNEEException {
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER computeFloatStandardDeviation() with " + attrIndex);
+		}
+
+		/* Do a simple first check. We need at least two items in the tuples list
+		 * to compute the standard deviation. Otherwise, we simply return 0 */
+		if ( tuples.size() < 2 )
+			return (Number)0.0;
+		
+		/* Standard deviation requires that the following values are computed:
+		 * 1) Average of the tuples (so we need the sum)
+		 * 2) Count
+		 * 3) Deviation from the mean */
+
+		double sum = 0.0;
+
+		/* Create an iterator for the tuples */
+		Iterator<Tuple> tplItr = tuples.iterator();
+		Tuple t = tplItr.next();
+		Number n = (Number)t.getAttributeValue(attrIndex);
+
+		/* Compute the sum */
+		while ( tplItr.hasNext() ){
+
+			t = tplItr.next();
+			n = (Number)t.getAttributeValue(attrIndex);
+
+			sum += n.doubleValue();
+		}
+
+		/* Compute the sum of the deviation */
+		double deviation = 0;
+		double average = (double)sum / (double)tuples.size();
+
+		tplItr = tuples.iterator();
+		while ( tplItr.hasNext() ){
+
+			t = tplItr.next();
+			n = (Number)t.getAttributeValue(attrIndex);
+
+			deviation += (n.doubleValue() - average) * (n.doubleValue() - average);
+		}
+
+		/* We have the deviation at this point. Return the standard deviation */
+		Number returnValue = (float)(Math.sqrt( deviation ) / Math.sqrt( tuples.size() - 1 ));
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN FROM computeFloatStandardDeviation() with " +  returnValue);
+		}
+
+		return (Number)returnValue;
+	}
+
+
 }
