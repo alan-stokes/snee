@@ -3,7 +3,6 @@
 
 __HEADER__
 
-	//Expressed as positive number in ms
 	#define WINDOW_FROM_IN_EPOCHS __WINDOW_FROM_IN_EPOCHS__
 	#define WINDOW_TO_IN_EPOCHS __WINDOW_TO_IN_EPOCHS__
 	#define SLIDE __SLIDE_IN_EPOCHS__
