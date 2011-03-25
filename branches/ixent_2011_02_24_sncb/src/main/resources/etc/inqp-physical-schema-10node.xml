@@ -9,7 +9,7 @@
 		<gateways>1</gateways>
 		<extents>
 			<extent name="SeaDefence">
-				<sites>1,2,3,4,5,6,7,8,9,10</sites>
+				<sites>9,10</sites>
 			</extent>
  			<extent name="SeaDefenceEast">
 				<sites>9</sites>
