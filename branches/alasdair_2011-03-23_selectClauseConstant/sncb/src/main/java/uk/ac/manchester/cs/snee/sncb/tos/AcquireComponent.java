@@ -236,6 +236,11 @@ public class AcquireComponent extends NesCComponent implements
     	
     	for (int i = 0; i < expressions.size(); i++) {
     		Expression expression = expressions.get(i);
+    		if (expression.isConstant()) {
+    			throw new CodeGenerationException("Constant values in the " +
+    					"select clause are not implemented for in-network " +
+    					"evaluation.");
+    		}
     		String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
 
   			tupleConstructionBuff.append("\t\t\t\toutQueue[outTail]." 
