@@ -59,6 +59,9 @@ public class SNEEClientUsingCCO extends SNEEClient {
 //			System.exit(1);
 			//XXX: Use default settings
 			query = "SELECT * FROM envdata_hernebay_tide;";
+			query = "SELECT \'HerneBay\', timestamp, datetime, observed, " +
+					"tz, hs, hmax, tp " +
+					"FROM envdata_hernebay_tide;";
 			duration = Long.valueOf("900");
 		} else {	
 			query = args[0];

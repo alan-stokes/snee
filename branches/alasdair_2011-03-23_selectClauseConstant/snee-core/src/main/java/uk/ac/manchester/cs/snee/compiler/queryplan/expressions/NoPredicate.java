@@ -34,6 +34,7 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 
@@ -49,7 +50,7 @@ public class NoPredicate implements Expression {
 	 * Causes an error if ever called.
 	 * @return Throws an AssertionError
 	 */
-	public ArrayList<Attribute> getRequiredAttributes() {
+	public List<Attribute> getRequiredAttributes() {
     	return new ArrayList<Attribute>();
 	}
 
@@ -76,7 +77,7 @@ public class NoPredicate implements Expression {
 	 * 
 	 * @return Empty list.
 	 */
-	public ArrayList<AggregationExpression> getAggregates()	{
+	public List<AggregationExpression> getAggregates()	{
 		return new ArrayList<AggregationExpression>(0);
 	}
 
@@ -134,6 +135,16 @@ public class NoPredicate implements Expression {
 	 */
 	public Attribute toAttribute() {
 		throw new AssertionError ("Unexpected call to toAttribute");
+	}
+
+	@Override
+	public boolean isConstant() {
+		return true;
+	}
+
+	@Override
+	public void setIsConstant(boolean isConstant) {
+		throw new AssertionError ("Unexpected call to setIsConstant");
 	}
 
 }

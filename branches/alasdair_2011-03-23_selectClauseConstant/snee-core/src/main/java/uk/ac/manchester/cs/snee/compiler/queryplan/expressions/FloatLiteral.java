@@ -45,6 +45,8 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
  */
 public class FloatLiteral implements Expression {
 
+	private boolean isConstant = true;
+	
 	/** Value of the constant. */
 	private float value;
 	private AttributeType _type;
@@ -162,7 +164,18 @@ public class FloatLiteral implements Expression {
 	throws SchemaMetadataException, TypeMappingException {
 		String attrName = new Float(this.getValue()).toString();
 		Attribute attribute = new DataAttribute("", attrName, attrName, _type);
+		attribute.setIsConstant(isConstant);
 		return attribute;
+	}
+
+	@Override
+	public boolean isConstant() {
+		return isConstant;
+	}
+
+	@Override
+	public void setIsConstant(boolean isConstant) {
+		this.isConstant = isConstant;
 	}
 
 }

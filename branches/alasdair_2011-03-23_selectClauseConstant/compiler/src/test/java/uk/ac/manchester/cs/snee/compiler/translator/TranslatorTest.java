@@ -33,7 +33,11 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
@@ -316,6 +320,20 @@ public class TranslatorTest {
 		assertEquals(1, op.getAttributes().size());
 	}
 	
+	@Test
+	public void testSimpleProject_math() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		LAF laf = testQuery("SELECT timestamp * 2 FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+	}
+	
 	@Test(expected=ExpressionException.class)
 	public void testProject_attrStar() 
 	throws ParserException, SourceDoesNotExistException, 
@@ -388,15 +406,19 @@ public class TranslatorTest {
 	{
 		LAF laf = testQuery("SELECT \'constant\' " +
 				"FROM TestStream;");
-		LogicalOperator rootOperator = laf.getRootOperator();
-		List<Attribute> attributes = 
-			rootOperator.getAttributes();
-		assertEquals(1, attributes.size());
-		Attribute attribute = attributes.get(0);
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
 		assertTrue(attribute.getAttributeDisplayName().
 				equalsIgnoreCase("constant"));
 		assertTrue(attribute.getAttributeSchemaName().
 				equalsIgnoreCase("constant"));
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertTrue(((StringLiteral) exp).getValue().equalsIgnoreCase("constant"));
 	}
 	
 	@Test
@@ -419,6 +441,9 @@ public class TranslatorTest {
 				equalsIgnoreCase("Something"));
 		assertTrue(attribute.getAttributeSchemaName().
 				equalsIgnoreCase("Constant"));
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertTrue(((StringLiteral) exp).getValue().equalsIgnoreCase("constant"));
 	}
 	 
 	@Test
@@ -441,6 +466,35 @@ public class TranslatorTest {
 				equalsIgnoreCase("4523"));
 		assertTrue(attribute.getAttributeSchemaName().
 				equalsIgnoreCase("4523"));
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertEquals(4523, ((IntLiteral) exp).getValue());
+	}
+	 
+	@Test
+	public void testProjectConstant_intMath() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT 4523 + 60 " +
+				"FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.getAttributeDisplayName().
+				equalsIgnoreCase(".4523 + 60"));
+		assertTrue(attribute.getAttributeSchemaName().
+				equalsIgnoreCase("4523 + 60"));
+		assertTrue(attribute.isConstant());
+		//XXX-AG: Calculations not performed in translator, so can't test result
+//		Expression exp = op.getExpressions().get(0);
+//		assertEquals(4583, ((IntLiteral) exp).getValue());
 	}
 	
 	@Test
@@ -463,6 +517,35 @@ public class TranslatorTest {
 				equalsIgnoreCase("ANumber"));
 		assertTrue(attribute.getAttributeSchemaName().
 				equalsIgnoreCase("4523"));
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertEquals(4523, ((IntLiteral) exp).getValue());
+	}
+	 
+	@Test
+	public void testProjectConstant_intMathRename() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT 4523 + 60 AS NumberConstant " +
+				"FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.getAttributeDisplayName().
+				equalsIgnoreCase("NumberConstant"));
+		assertTrue(attribute.getAttributeSchemaName().
+				equalsIgnoreCase("4523 + 60"));
+		assertTrue(attribute.isConstant());
+		//XXX-AG: Calculations not performed in translator, so can't test result
+//		Expression exp = op.getExpressions().get(0);
+//		assertEquals(4583, ((IntLiteral) exp).getValue());
 	}
 	 
 	@Test
@@ -485,6 +568,9 @@ public class TranslatorTest {
 				equalsIgnoreCase("8.2"));
 		assertTrue(attribute.getAttributeSchemaName().
 				equalsIgnoreCase("8.2"));
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertEquals(8.2, ((FloatLiteral) exp).getValue(), 0.1);
 	}
 	
 	@Test
@@ -507,6 +593,9 @@ public class TranslatorTest {
 				equalsIgnoreCase("ANumber"));
 		assertTrue(attribute.getAttributeSchemaName().
 				equalsIgnoreCase("72.6"));
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertEquals(72.6, ((FloatLiteral) exp).getValue(), 0.1);
 	}
 	
 	@Test(expected=ExpressionException.class)
@@ -536,6 +625,10 @@ public class TranslatorTest {
 		testOperator(iterator, "DELIVER");
 		LogicalOperator op = testOperator(iterator, "PROJECT");
 		assertEquals(2, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertTrue(((StringLiteral) exp).getValue().equalsIgnoreCase("constant"));
 	}
 	
 	@Test
@@ -553,6 +646,10 @@ public class TranslatorTest {
 		testOperator(iterator, "DELIVER");
 		LogicalOperator op = testOperator(iterator, "PROJECT");
 		assertEquals(2, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertTrue(((StringLiteral) exp).getValue().equalsIgnoreCase("constant"));
 	}
 	
 	@Test
@@ -570,6 +667,10 @@ public class TranslatorTest {
 		testOperator(iterator, "DELIVER");
 		LogicalOperator op = testOperator(iterator, "PROJECT");
 		assertEquals(2, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertEquals(4523, ((IntLiteral) exp).getValue());
 	}
 	
 	@Test
@@ -587,6 +688,10 @@ public class TranslatorTest {
 		testOperator(iterator, "DELIVER");
 		LogicalOperator op = testOperator(iterator, "PROJECT");
 		assertEquals(2, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertEquals(4523, ((IntLiteral) exp).getValue());
 	}
 	
 	@Test

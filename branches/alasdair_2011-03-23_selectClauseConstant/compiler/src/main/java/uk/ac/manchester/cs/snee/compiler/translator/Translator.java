@@ -1104,27 +1104,6 @@ public class Translator {
 				}
 				// Break out of the while loop as we're done!
 				break loop;
-			case SNEEqlParserTokenTypes.QuotedString:
-				if (logger.isTraceEnabled()) {
-					logger.trace("project to string constant");
-				}
-				expression = translateExpression(expressionAST, input);
-				attribute = expression.toAttribute();				
-				break;
-			case SNEEqlParserTokenTypes.Int:
-				if (logger.isTraceEnabled()) {
-					logger.trace("project to integer constant");
-				}
-				expression = translateExpression(expressionAST, input);
-				attribute = expression.toAttribute();
-				break;
-			case SNEEqlParserTokenTypes.Flt:
-				if (logger.isTraceEnabled()) {
-					logger.trace("project to float constant");
-				}
-				expression = translateExpression(expressionAST, input);
-				attribute = expression.toAttribute();
-				break;
 			case SNEEqlParserTokenTypes.AS:
 				if (logger.isTraceEnabled()) {
 					logger.trace("rename in select clause, Translate AS " + 
@@ -1229,6 +1208,7 @@ public class Translator {
 			expression = 
 				new IntLiteral(Integer.parseInt(ast.getText()), 
 						_types.getType("integer"));
+			expression.setIsConstant(true);
 			break;
 		case SNEEqlParserTokenTypes.Flt:
 			if (logger.isTraceEnabled()) {
@@ -1237,6 +1217,7 @@ public class Translator {
 			expression = 
 				new FloatLiteral(Float.parseFloat(ast.getText()), 
 						_types.getType("float"));
+			expression.setIsConstant(true);
 			break;
 		case SNEEqlParserTokenTypes.QuotedString:
 			if (logger.isTraceEnabled()) {
@@ -1244,6 +1225,7 @@ public class Translator {
 			}
 			expression = 
 				new StringLiteral(ast.getText(), _types.getType("string"));
+			expression.setIsConstant(true);
 			break;
 		case SNEEqlParserTokenTypes.Attribute:
 			if (logger.isTraceEnabled()) {

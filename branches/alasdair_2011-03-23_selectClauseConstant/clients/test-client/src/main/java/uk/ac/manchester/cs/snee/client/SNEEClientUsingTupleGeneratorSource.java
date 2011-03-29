@@ -47,6 +47,7 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 
 			query = "SELECT * FROM PushStream;";
 			
+//			query = "SELECT intattr, intattr * 2 FROM PushStream;";
 //			query = "SELECT \'const\', intattr FROM PushStream;";
 //			query = "SELECT 42, intattr FROM PushStream;";
 //			query = "SELECT \'const\' as StringConstant, intattr FROM PushStream;";

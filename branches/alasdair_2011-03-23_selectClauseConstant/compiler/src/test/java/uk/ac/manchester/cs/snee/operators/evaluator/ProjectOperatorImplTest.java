@@ -17,9 +17,11 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
@@ -70,6 +72,7 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		 */
 		expect(mockExpression.getRequiredAttributes()).
 			andReturn(mockQPAttributesList);
+		expect(mockExpression.isConstant()).andReturn(false);
 		expect(mockQPAttributesList.get(0)).andReturn(mockAttr);
 		expect(mockAttr.getAttributeSchemaName()).
 			andReturn("attrName");
@@ -87,6 +90,7 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 	public void testEvaluateSingleExpression_validField() 
 	throws SNEEException, SchemaMetadataException {
 		// Record behaviour
+		expect(mockExpression.isConstant()).andReturn(false);
 		expect(mockExpression.getRequiredAttributes()).
 			andReturn(mockQPAttributesList);
 		expect(mockQPAttributesList.get(0)).andReturn(mockAttr);
@@ -101,6 +105,78 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		EvaluatorAttribute attr = 
 			op.evaluateSingleExpression(mockExpression, mockTuple);
 		assertEquals(mockField, attr);
+		verifyAll();
+	}
+
+	@Test
+	public void testEvaluateSingleExpression_constantStringField() 
+	throws SNEEException, SchemaMetadataException, TypeMappingException {
+		// Record behaviour
+		StringLiteral mockStringLiteral = createMock(StringLiteral.class);
+		AttributeType mockType = createMock(AttributeType.class);
+		expect(mockStringLiteral.isConstant()).andReturn(true);
+		expect(mockStringLiteral.toAttribute()).andReturn(mockAttr);
+		expect(mockStringLiteral.getValue()).andReturn("const");
+		expect(mockAttr.getAttributeSchemaName()).andReturn("const");
+		expect(mockAttr.getAttributeDisplayName()).andReturn("const");
+		expect(mockAttr.getExtentName()).andReturn("");
+		expect(mockAttr.getType()).andReturn(mockType);
+		expect(mockType.getName()).andReturn("string").times(2);
+
+		//Test
+		replayAll();
+		ProjectOperatorImpl op = new ProjectOperatorImpl(mockProjOp);
+		EvaluatorAttribute attr = 
+			op.evaluateSingleExpression(mockStringLiteral, mockTuple);
+		assertEquals(true, ((String)attr.getData()).equals("const"));
+		verifyAll();
+	}
+
+	@Test
+	public void testEvaluateSingleExpression_constantIntField() 
+	throws SNEEException, SchemaMetadataException, TypeMappingException {
+		// Record behaviour
+		IntLiteral mockIntLiteral = createMock(IntLiteral.class);
+		AttributeType mockType = createMock(AttributeType.class);
+		expect(mockIntLiteral.isConstant()).andReturn(true);
+		expect(mockIntLiteral.toAttribute()).andReturn(mockAttr);
+		expect(mockIntLiteral.getValue()).andReturn(42);
+		expect(mockAttr.getAttributeSchemaName()).andReturn("42");
+		expect(mockAttr.getAttributeDisplayName()).andReturn("const");
+		expect(mockAttr.getExtentName()).andReturn("");
+		expect(mockAttr.getType()).andReturn(mockType);
+		expect(mockType.getName()).andReturn("integer").times(2);
+
+		//Test
+		replayAll();
+		ProjectOperatorImpl op = new ProjectOperatorImpl(mockProjOp);
+		EvaluatorAttribute attr = 
+			op.evaluateSingleExpression(mockIntLiteral, mockTuple);
+		assertEquals(42, ((Integer)attr.getData()).intValue());
+		verifyAll();
+	}
+
+	@Test
+	public void testEvaluateSingleExpression_constantFloatField() 
+	throws SNEEException, SchemaMetadataException, TypeMappingException {
+		// Record behaviour
+		FloatLiteral mockFloatLiteral = createMock(FloatLiteral.class);
+		AttributeType mockType = createMock(AttributeType.class);
+		expect(mockFloatLiteral.isConstant()).andReturn(true);
+		expect(mockFloatLiteral.toAttribute()).andReturn(mockAttr);
+		expect(mockFloatLiteral.getValue()).andReturn((float) 27.9);
+		expect(mockAttr.getAttributeSchemaName()).andReturn("27.9");
+		expect(mockAttr.getAttributeDisplayName()).andReturn("const");
+		expect(mockAttr.getExtentName()).andReturn("");
+		expect(mockAttr.getType()).andReturn(mockType);
+		expect(mockType.getName()).andReturn("float").times(2);
+
+		//Test
+		replayAll();
+		ProjectOperatorImpl op = new ProjectOperatorImpl(mockProjOp);
+		EvaluatorAttribute attr = 
+			op.evaluateSingleExpression(mockFloatLiteral, mockTuple);
+		assertEquals(27.9, ((Float)attr.getData()).floatValue(), 0.1);
 		verifyAll();
 	}
 

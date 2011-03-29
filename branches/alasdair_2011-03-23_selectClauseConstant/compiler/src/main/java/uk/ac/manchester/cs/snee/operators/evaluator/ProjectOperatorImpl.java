@@ -117,7 +117,6 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		}
 		Tuple projectedTuple = getProjectedTuple(tuple.getTuple());
 		// Replace the tuple in the tagged tuple
-		//XXX What is the meaning of a tick? Is it the time the tuple arrived in the system or the last time it was altered?
 		tuple.setTuple(projectedTuple);
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN processTuple() with " + tuple);
@@ -164,6 +163,9 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		logger.trace("Number of expressions: " + expressions.size());
 		//Iterate with index so that we can do renames
 		for (Expression exp : expressions) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Expression: " + exp);
+			}
 			EvaluatorAttribute attr = null;
 			if (exp instanceof MultiExpression) {
 				attr = evaluateMultiExpression(
@@ -172,7 +174,9 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 				attr = evaluateSingleExpression(exp, tuple);
 			}
 			// Add project field to the result tuple
-			logger.trace("Attribute: " + attr);
+			if (logger.isTraceEnabled()) {
+				logger.trace("Attribute: " + attr);
+			}
 			if (attr != null) {
 				projectedTuple.addAttribute(attr);
 			}
@@ -196,19 +200,48 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		}
 		EvaluatorAttribute returnField = null;
 		// Only a single expression, get attribute details
-		List<Attribute> attributes = exp.getRequiredAttributes();
-		Attribute attr = attributes.get(0);
-		String extentName = attr.getExtentName();
-		String attributeName = attr.getAttributeSchemaName();
-		try {
-			logger.trace("getting attribute " + attributeName +
-					" from extent " + extentName);
-			returnField = 
-				t.getAttribute(extentName, attributeName);
-		} catch (SNEEException e) {
-			logger.warn("Attribute " + attributeName + 
-					" does not exist.", e);
-			throw e;
+		if (exp.isConstant()) {
+			try {
+				if (exp instanceof IntLiteral) {
+					IntLiteral intLit = (IntLiteral) exp; 
+					returnField = new EvaluatorAttribute(exp.toAttribute(), 
+							intLit.getValue());
+				} else if (exp instanceof FloatLiteral) {
+					FloatLiteral floatLit = (FloatLiteral) exp; 
+					returnField = new EvaluatorAttribute(exp.toAttribute(), 
+							floatLit.getValue());
+				} else if (exp instanceof StringLiteral) {
+					StringLiteral strLit = (StringLiteral) exp; 
+					returnField = new EvaluatorAttribute(exp.toAttribute(), 
+							strLit.getValue());
+				}
+			} catch (SchemaMetadataException e) {
+				String message = "Could not create representation of " +
+					"constant value " + exp;
+				logger.warn(message, e);
+			} catch (TypeMappingException e) {
+				String message = "Could not create representation of " +
+					"constant value " + exp;
+				logger.warn(message, e);
+			}
+		} else {
+			List<Attribute> attributes = exp.getRequiredAttributes();
+			Attribute attr = attributes.get(0);
+			String extentName = attr.getExtentName();
+			String attributeName = attr.getAttributeSchemaName();
+			try {
+				if (logger.isTraceEnabled()) {
+					logger.trace("getting attribute " + attributeName +
+							" from extent " + extentName);
+				}
+				returnField = 
+					t.getAttribute(extentName, attributeName);
+			} catch (SNEEException e) {
+				String message = "Attribute " + attributeName + 
+						" does not exist.";
+				logger.warn(message, e);
+				throw new SNEEException(message, e);
+			}
 		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN evaluateSingleExpression() with " + 
@@ -269,9 +302,13 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 					daValue = 
 						t.getAttributeValueByDisplayName(daLabelName);
 				} catch (SNEEException e) {
+					try {
+						daValue = t.getAttributeValue(extentName, attrName);
+					} catch (SNEEException e1) {
 					logger.warn("Problem getting value for " + 
-							daLabelName, e);
+							daLabelName, e1);
 					throw e;
+					}
 				}
 				if (logger.isTraceEnabled()) {
 					logger.trace("Stack push attribute: " + 

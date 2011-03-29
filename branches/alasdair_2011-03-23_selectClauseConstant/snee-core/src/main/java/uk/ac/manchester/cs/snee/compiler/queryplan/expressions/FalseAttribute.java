@@ -47,6 +47,8 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
  */
 public class FalseAttribute implements Expression {
 
+	private boolean isConstant = true;
+
 	/**
 	 * Constructor.
 	 * @param newValue Constant value.
@@ -98,6 +100,10 @@ public class FalseAttribute implements Expression {
 	   	throw new AssertionError("getMinValue not allowed in test calls.");
 	}
 	
+	public boolean getValue() {
+		return false;
+	}
+	
 	/**
 	 * Finds the maximum value that this expression can return.
 	 * @return The maximum value for this expressions
@@ -142,6 +148,16 @@ public class FalseAttribute implements Expression {
 	 */
 	public Attribute toAttribute() {
 		throw new AssertionError ("Unexpected call to toAttribute");
+	}
+
+	@Override
+	public boolean isConstant() {
+		return isConstant;
+	}
+
+	@Override
+	public void setIsConstant(boolean isConstant) {
+		this.isConstant = isConstant;
 	}
 
 }
