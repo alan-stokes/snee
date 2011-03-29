@@ -79,7 +79,8 @@ public class InputOperatorTest extends EasyMockSupport {
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
-		.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		ScanOperator op = new ScanOperator(mockExtent, 
 				mockSource, 
@@ -88,7 +89,7 @@ public class InputOperatorTest extends EasyMockSupport {
 //		System.out.println(extentMetadata);
 		assertTrue(extentMetadata.equals(
 				"TYPE: relation   OPERATOR: SCAN " +
-		"(Name (cardinality=0 source=extentName ) - cardinality: 0"));
+		"(Name (cardinality=1 source=extentName ) - cardinality: 1"));
 		verifyAll();
 	}
 
@@ -98,6 +99,7 @@ public class InputOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		ScanOperator op = new ScanOperator(mockExtent, 
 				mockSource, 
@@ -112,6 +114,7 @@ public class InputOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
 		ScanOperator op = new ScanOperator(mockExtent, 
 				mockSource, 
@@ -124,6 +127,7 @@ public class InputOperatorTest extends EasyMockSupport {
 	public void testGetAttributes() 
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		expect(mockExtent.getCardinality()).andReturn(1);
 		List<Attribute> attributes = new ArrayList<Attribute>();
 		attributes.add(mockAttribute);
 		attributes.add(mockAttribute);
@@ -142,6 +146,7 @@ public class InputOperatorTest extends EasyMockSupport {
 	public void testGetExpressions() 
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		expect(mockExtent.getCardinality()).andReturn(1);
 		List<Attribute> attributes = new ArrayList<Attribute>();
 		attributes.add(mockAttribute);
 		attributes.add(mockAttribute);
@@ -160,6 +165,7 @@ public class InputOperatorTest extends EasyMockSupport {
 	public void testGetCardinality() 
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		expect(mockExtent.getCardinality()).andReturn(1);
 		List<Attribute> attributes = new ArrayList<Attribute>();
 		attributes.add(mockAttribute);
 		attributes.add(mockAttribute);
@@ -170,7 +176,7 @@ public class InputOperatorTest extends EasyMockSupport {
 				mockSource, 
 				types.getType("boolean"));
 		int cardinarlity = op.getCardinality(CardinalityType.MAX);
-		assertEquals(attributes.size(), cardinarlity);
+		assertEquals(1, cardinarlity);
 		verifyAll();
 	}
 
@@ -178,6 +184,7 @@ public class InputOperatorTest extends EasyMockSupport {
 	public void testGetInputAttributes() 
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		expect(mockExtent.getCardinality()).andReturn(1);
 		List<Attribute> attributes = new ArrayList<Attribute>();
 		attributes.add(mockAttribute);
 		attributes.add(mockAttribute);
@@ -196,6 +203,7 @@ public class InputOperatorTest extends EasyMockSupport {
 	public void testGetNumberInputAttributes() 
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		expect(mockExtent.getCardinality()).andReturn(1);
 		List<Attribute> attributes = new ArrayList<Attribute>();
 		attributes.add(mockAttribute);
 		attributes.add(mockAttribute);
@@ -215,6 +223,7 @@ public class InputOperatorTest extends EasyMockSupport {
 	throws TypeMappingException, SchemaMetadataException, OptimizationException 
 	{
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		expect(mockExtent.getCardinality()).andReturn(1);
 		List<Attribute> attributes = new ArrayList<Attribute>();
 		attributes.add(mockAttribute);
 		Attribute mockAttr = createMock(DataAttribute.class);
@@ -236,6 +245,7 @@ public class InputOperatorTest extends EasyMockSupport {
 	public void testIsAttributeSensitive() 
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
 		replayAll();
@@ -250,6 +260,7 @@ public class InputOperatorTest extends EasyMockSupport {
 	public void testIsLocationSensitive() 
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
 		replayAll();
@@ -264,6 +275,7 @@ public class InputOperatorTest extends EasyMockSupport {
 	public void testIsRecursive() 
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
 		replayAll();
@@ -278,6 +290,7 @@ public class InputOperatorTest extends EasyMockSupport {
 	public void testIsRemoveable() 
 	throws TypeMappingException, SchemaMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 		.andReturn(new ArrayList<Attribute>());
 		replayAll();
@@ -293,6 +306,7 @@ public class InputOperatorTest extends EasyMockSupport {
 //	public void testPushLocalNameDown() 
 //	throws TypeMappingException, SchemaMetadataException {
 //		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+//		expect(mockExtent.getCardinality()).andReturn(1);
 //		expect(mockExtent.getAttributes())
 //			.andReturn(new ArrayList<Attribute>());
 //		replayAll();

@@ -41,7 +41,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 
 /**
  * Interface for any expression.
- * Includs arithmatic, aggeragation and boolean expressions.
+ * Includes arithmetic, aggregation, and boolean expressions.
  * @author Christian
  */
 public interface Expression {
@@ -119,5 +119,20 @@ public interface Expression {
 	 */
 	public Attribute toAttribute() 
 	throws SchemaMetadataException, TypeMappingException;
+
+	/**
+	 * Check if the expression is a constant value, i.e. it does not involve
+	 * an attribute.
+	 * 
+	 * @return true if this expression is a constant
+	 */
+	public boolean isConstant();
+	
+	/**
+	 * Sets that this expression is a constant value
+	 * 
+	 * @param isConstant
+	 */
+	void setIsConstant(boolean isConstant);
 	
 }	

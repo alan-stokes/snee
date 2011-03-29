@@ -45,6 +45,8 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
  */
 public class StringLiteral implements Expression {
 
+	private boolean isConstant = true;
+	
 	/** Value of the constant. */
 	private String value;
 	private AttributeType _type;
@@ -155,8 +157,22 @@ public class StringLiteral implements Expression {
 	 */
 	public Attribute toAttribute() 
 	throws SchemaMetadataException, TypeMappingException {
-		throw new SchemaMetadataException("Attempt to convert " +
-		"StringLiteral to a DataAttribute.");
+//		throw new SchemaMetadataException("Attempt to convert " +
+//		"StringLiteral to a DataAttribute.");
+		Attribute attribute = new DataAttribute("", this.getValue(), 
+				this.getValue(), _type);
+		attribute.setIsConstant(isConstant);
+		return attribute;
+	}
+
+	@Override
+	public boolean isConstant() {
+		return isConstant;
+	}
+
+	@Override
+	public void setIsConstant(boolean isConstant) {
+		this.isConstant = isConstant;
 	}
 
 }
