@@ -117,6 +117,12 @@ def doCompileNesCCode(dir, targetParameter = "telosb", sensorBoard = None):
 
 	return exitVal	
 
+def generateODFile(dir, targetParameter):
+	commandStr = "avr-objdump -zhD ./build/"+targetParameter+"/main.exe > ../"+dir+".od"
+	os.system(commandStr)
+
+	commandStr = "cp ./build/"+targetParameter+"/main.exe ../"+dir+".elf"
+	os.system(commandStr)
 
 #Given a nesC root directory, compiles the nesC code to an executable for given target
 def compileNesCCode(nescRootDir, target = "telosb_t2", sensorBoard = None):
@@ -126,12 +132,20 @@ def compileNesCCode(nescRootDir, target = "telosb_t2", sensorBoard = None):
 	targetParameter = "telosb"
 	if (target == "tossim_t2"):
 		targetParameter = "micaz sim"
+	elif (target == "avrora_mica2_t2"):
+		sensorBoard = "mts300"
+		targetParameter = "mica2"
+	elif (target == "avrora_micaz_t2"):
+		targetParameter = "micaz"
+		sensorBoard = "mts300"
 
 	#TODO: check case when a combined image is used.
-	if (target == "telosb_t2"):
+	if ((target == "telosb_t2") or (target == "avrora_mica2_t2") or (target == "avrora_micaz_t2")):
 		for dir in os.listdir(nescRootDir):
 			if (dir.startswith("mote") and os.path.isdir(dir)):
 				exitVal = doCompileNesCCode(dir, targetParameter, sensorBoard)
+				if (target.startswith("avrora")):
+				    generateODFile(dir, targetParameter)
 				os.chdir(nescRootDir)
 	elif (target == "tossim_t2"):
 		exitVal = doCompileNesCCode(nescRootDir, targetParameter, sensorBoard)
