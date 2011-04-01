@@ -33,6 +33,7 @@
 package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -1979,6 +1980,21 @@ public class TinyOSGenerator {
 			generateCombinedMiscFiles();
 		} else if (tossimFlag) {
 			generateTossimMiscFiles();
+		}
+		if (this.target == CodeGenTarget.AVRORA_MICA2_T2 || 
+				this.target == CodeGenTarget.AVRORA_MICAZ_T2){
+			File dir = new File(nescOutputDir+ targetDirName + "/Blink");
+	        dir.mkdir();
+	        
+			System.err.println(NESC_MISC_FILES_DIR + "/Blink/BlinkAppC.nc");
+			System.err.println(nescOutputDir+ targetDirName + "/Blink/BlinkAppC.nc");
+
+			Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/BlinkAppC.nc", 
+					nescOutputDir+ targetDirName + "/Blink/BlinkAppC.nc");
+			Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/BlinkC.nc", 
+					nescOutputDir+ targetDirName + "/Blink/BlinkC.nc");
+			Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/Makefile", 
+					nescOutputDir+ targetDirName + "/Blink/Makefile");
 		}
     }
 

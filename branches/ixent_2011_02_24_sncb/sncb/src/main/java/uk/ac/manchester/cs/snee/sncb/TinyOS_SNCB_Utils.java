@@ -82,7 +82,7 @@ public class TinyOS_SNCB_Utils {
 				}
 				elfString.append("mote"+siteID+".elf ");
 			} else {
-				elfString.append("blink.elf ");
+				elfString.append("Blink.elf ");
 			}
 			
 			if (nodeCount.length()==0) {

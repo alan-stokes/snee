@@ -109,7 +109,7 @@ def doCompileNesCCode(dir, targetParameter = "telosb", sensorBoard = None):
 		reportError("Failed with "+dir+" compilation")
 		sys.exit(exitVal)
 
-	if (targetParameter=="telosb"):
+	if (targetParameter=="telosb" and dir.startswith("mote")):
 		exitVal = readMakeLog("make.log", None, targetParameter)
 		if (exitVal != 0):
 			reportError("RAM overflow with "+dir+" compilation")
@@ -142,7 +142,7 @@ def compileNesCCode(nescRootDir, target = "telosb_t2", sensorBoard = None):
 	#TODO: check case when a combined image is used.
 	if ((target == "telosb_t2") or (target == "avrora_mica2_t2") or (target == "avrora_micaz_t2")):
 		for dir in os.listdir(nescRootDir):
-			if (dir.startswith("mote") and os.path.isdir(dir)):
+			if (os.path.isdir(dir)):
 				exitVal = doCompileNesCCode(dir, targetParameter, sensorBoard)
 				if (target.startswith("avrora")):
 				    generateODFile(dir, targetParameter)
