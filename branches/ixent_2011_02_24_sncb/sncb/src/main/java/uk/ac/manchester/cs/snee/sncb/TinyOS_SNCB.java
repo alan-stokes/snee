@@ -19,6 +19,7 @@ import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
@@ -193,8 +194,9 @@ public class TinyOS_SNCB implements SNCB {
 					printTelosBCommands(queryOutputDir, qep);
 				} else if (this.target == CodeGenTarget.TOSSIM_T2) {
 					printTossimCommands(queryOutputDir);
-				} else if (this.target == CodeGenTarget.AVRORA_MICA2_T2) {
-					printAvroraCommands(queryOutputDir);					
+				} else if (this.target == CodeGenTarget.AVRORA_MICA2_T2 ||
+						this.target == CodeGenTarget.AVRORA_MICAZ_T2) {
+					printAvroraCommands(queryOutputDir, qep);					
 				}
 				System.exit(0);
 			}
@@ -267,10 +269,59 @@ public class TinyOS_SNCB implements SNCB {
 		System.out.println("./runTossim.py");
 	}
 	
-	private void printAvroraCommands(String queryOutputDir) {
+	private void printAvroraCommands(String queryOutputDir, SensorNetworkQueryPlan qep) {
 		String nescOutputDir = System.getProperty("user.dir") + "/"
 		+ queryOutputDir + targetDirName;
-//TODO: do the Avrora commands		
+		
+		int gatewayID = qep.getGateway();
+		int maxSiteID = qep.getRT().getMaxSiteID();
+		StringBuffer sensorData = new StringBuffer();
+		StringBuffer nodeCount = new StringBuffer();
+		StringBuffer elfString= new StringBuffer();
+
+		
+		RT rt = qep.getRT();
+		for (int i=0; i<=maxSiteID; i++) {
+			String siteID = ""+i;
+			Site site = rt.getSite(siteID);
+			if (site!=null) {
+				if (site.isSource()) {
+					if (sensorData.length()==0) {
+						sensorData.append("-sensor-data=light:"+siteID+":.");
+					} else {
+						sensorData.append(",light:"+siteID+":.");
+					}
+				}
+				elfString.append("mote"+siteID+".elf ");
+			} else {
+				elfString.append("blink.elf ");
+			}
+			
+			if (nodeCount.length()==0) {
+				nodeCount.append("-nodecount=1");
+			} else {
+				nodeCount.append(",1");
+			}
+			
+		}
+		
+		System.out.println("*** To start Avrora ***");
+		System.out.println("cd "+nescOutputDir);
+		System.out.println("java avrora.Main -mcu=mts300 -platform=mica2 " +
+				"-simulation=sensor-network -colors=false -seconds=100 " +
+				"-monitors=packet,serial -ports="+gatewayID+":0:2390 -random-seed=1 " +
+				sensorData + " " + "-report-seconds "+nodeCount+" "+elfString+" \n");
+		
+		System.out.println("*** In a separate terminal window ***");
+		System.out.println("(2a) To view raw packets:");
+		System.out.println("    java net.tinyos.tools.Listen");		
+		System.out.println("(2b) To view tuples:");
+		System.out.println("    cd "+nescOutputDir+"/mote0");
+		System.out.println("    mig java -target=null -java-classname="+
+				"DeliverMessage QueryPlan.h DeliverMessage " +
+				"-o DeliverMessage.java");
+		System.out.println("    javac DeliverMessage.java");
+		System.out.println("    java net.tinyos.tools.MsgReader DeliverMessage\n");
 	}
 	
 	private void generateNesCCode(SensorNetworkQueryPlan qep,

@@ -2074,15 +2074,7 @@ public class TinyOSGenerator {
 			    nescOutputDir + targetDirName +"/itoa.h");
 
     	//Make sure that all nodes in QEP are run by Tossim
-    	int maxSiteID = 0;
-    	Iterator<Site> sites = this.plan.getRT().siteIterator(TraversalOrder.PRE_ORDER);
-    	while (sites.hasNext()) {
-    		Site site = sites.next();
-    		int siteID = new Integer(site.getID());
-    		if (siteID > maxSiteID) {
-    			maxSiteID = siteID;
-    		}
-    	}
+    	int maxSiteID = this.plan.getRT().getMaxSiteID();
     	
 	    //By default run for one agenda evaluation
 	    long duration = (this.plan.getAcquisitionInterval_ms()/1000) 
