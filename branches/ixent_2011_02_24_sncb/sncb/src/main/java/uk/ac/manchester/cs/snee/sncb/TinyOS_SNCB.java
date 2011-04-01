@@ -191,12 +191,15 @@ public class TinyOS_SNCB implements SNCB {
 						"Over-the-air Programmer. ");
 				System.out.println("Please proceed using manual commands.\n");
 				if (this.target == CodeGenTarget.TELOSB_T2) {
-					printTelosBCommands(queryOutputDir, qep);
+					TinyOS_SNCB_Utils.printTelosBCommands(queryOutputDir, qep,
+							this.targetDirName, this.serialPort);
 				} else if (this.target == CodeGenTarget.TOSSIM_T2) {
-					printTossimCommands(queryOutputDir);
+					TinyOS_SNCB_Utils.printTossimCommands(queryOutputDir,
+							this.targetDirName);
 				} else if (this.target == CodeGenTarget.AVRORA_MICA2_T2 ||
 						this.target == CodeGenTarget.AVRORA_MICAZ_T2) {
-					printAvroraCommands(queryOutputDir, qep);					
+					TinyOS_SNCB_Utils.printAvroraCommands(queryOutputDir, qep, 
+							this.targetDirName, this.target);					
 				}
 				System.exit(0);
 			}
@@ -229,104 +232,6 @@ public class TinyOS_SNCB implements SNCB {
 		return mr;
 	}
 
-	private void printTelosBCommands(String queryOutputDir, SensorNetworkQueryPlan qep) {
-		String nescOutputDir = System.getProperty("user.dir") + "/"
-		+ queryOutputDir + targetDirName;
-		System.out.println("(1) Upload executables to each mote via the USB " +
-			"cable. For example, for mote one this is done as follows:");
-		
-		Iterator<Site> siteIter = qep.getRT().siteIterator(TraversalOrder.POST_ORDER);
-		while (siteIter.hasNext()) {
-			Site s = siteIter.next();
-			String id = s.getID();
-			System.out.println("*** PLUG IN MOTE "+id+" ***");
-			System.out.println("    cd "+nescOutputDir+"/mote"+id);
-			System.out.println("    make telosb install,"+id+"\n");			
-		}
-
-		System.out.println("(2a) To view raw packets:");
-		System.out.println("    java net.tinyos.tools.Listen -comm serial@"+
-				this.serialPort+":telos\n");		
-		System.out.println("(2b) To view tuples:");
-		System.out.println("    mig java -target=null -java-classname="+
-				"DeliverMessage QueryPlan.h DeliverMessage " +
-				"-o DeliverMessage.java");
-		System.out.println("    javac DeliverMessage.java");
-		System.out.println("    java net.tinyos.tools.MsgReader -comm serial@"+
-				this.serialPort+":telos DeliverMessage\n");
-		
-		System.out.println("(3) Start the query plan by pressing reset button "+
-				"on all motes simultaneously.");
-		
-
-	}
-
-	private void printTossimCommands(String queryOutputDir) {
-		String nescOutputDir = System.getProperty("user.dir") + "/"
-		+ queryOutputDir + targetDirName;
-		System.out.println("cd "+nescOutputDir);
-		System.out.println("chmod a+rx *");
-		System.out.println("./runTossim.py");
-	}
-	
-	private void printAvroraCommands(String queryOutputDir, SensorNetworkQueryPlan qep) {
-		String nescOutputDir = System.getProperty("user.dir") + "/"
-		+ queryOutputDir + targetDirName;
-		
-		int gatewayID = qep.getGateway();
-		int maxSiteID = qep.getRT().getMaxSiteID();
-		String platform = "mica2";
-		StringBuffer sensorData = new StringBuffer();
-		StringBuffer nodeCount = new StringBuffer();
-		StringBuffer elfString= new StringBuffer();
-
-		if (this.target==CodeGenTarget.AVRORA_MICAZ_T2) {
-			platform = "micaz";
-		}
-		
-		RT rt = qep.getRT();
-		for (int i=0; i<=maxSiteID; i++) {
-			String siteID = ""+i;
-			Site site = rt.getSite(siteID);
-			if (site!=null) {
-				if (site.isSource()) {
-					if (sensorData.length()==0) {
-						sensorData.append("-sensor-data=light:"+siteID+":.");
-					} else {
-						sensorData.append(",light:"+siteID+":.");
-					}
-				}
-				elfString.append("mote"+siteID+".elf ");
-			} else {
-				elfString.append("blink.elf ");
-			}
-			
-			if (nodeCount.length()==0) {
-				nodeCount.append("-nodecount=1");
-			} else {
-				nodeCount.append(",1");
-			}
-			
-		}
-		
-		System.out.println("*** To start Avrora ***");
-		System.out.println("cd "+nescOutputDir);
-		System.out.println("java avrora.Main -mcu=mts300 -platform="+platform+" " +
-				"-simulation=sensor-network -colors=false -seconds=100 " +
-				"-monitors=packet,serial -ports="+gatewayID+":0:2390 -random-seed=1 " +
-				sensorData + " " + "-report-seconds "+nodeCount+" "+elfString+" \n");
-		
-		System.out.println("*** In a separate terminal window ***");
-		System.out.println("(2a) To view raw packets:");
-		System.out.println("    java net.tinyos.tools.Listen");		
-		System.out.println("(2b) To view tuples:");
-		System.out.println("    cd "+nescOutputDir+"/mote0");
-		System.out.println("    mig java -target=null -java-classname="+
-				"DeliverMessage QueryPlan.h DeliverMessage " +
-				"-o DeliverMessage.java");
-		System.out.println("    javac DeliverMessage.java");
-		System.out.println("    java net.tinyos.tools.MsgReader DeliverMessage\n");
-	}
 	
 	private void generateNesCCode(SensorNetworkQueryPlan qep,
 			String queryOutputDir, CostParameters costParams)
