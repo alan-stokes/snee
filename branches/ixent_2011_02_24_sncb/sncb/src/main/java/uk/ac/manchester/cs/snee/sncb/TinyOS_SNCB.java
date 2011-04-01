@@ -275,10 +275,14 @@ public class TinyOS_SNCB implements SNCB {
 		
 		int gatewayID = qep.getGateway();
 		int maxSiteID = qep.getRT().getMaxSiteID();
+		String platform = "mica2";
 		StringBuffer sensorData = new StringBuffer();
 		StringBuffer nodeCount = new StringBuffer();
 		StringBuffer elfString= new StringBuffer();
 
+		if (this.target==CodeGenTarget.AVRORA_MICAZ_T2) {
+			platform = "micaz";
+		}
 		
 		RT rt = qep.getRT();
 		for (int i=0; i<=maxSiteID; i++) {
@@ -307,7 +311,7 @@ public class TinyOS_SNCB implements SNCB {
 		
 		System.out.println("*** To start Avrora ***");
 		System.out.println("cd "+nescOutputDir);
-		System.out.println("java avrora.Main -mcu=mts300 -platform=mica2 " +
+		System.out.println("java avrora.Main -mcu=mts300 -platform="+platform+" " +
 				"-simulation=sensor-network -colors=false -seconds=100 " +
 				"-monitors=packet,serial -ports="+gatewayID+":0:2390 -random-seed=1 " +
 				sensorData + " " + "-report-seconds "+nodeCount+" "+elfString+" \n");
