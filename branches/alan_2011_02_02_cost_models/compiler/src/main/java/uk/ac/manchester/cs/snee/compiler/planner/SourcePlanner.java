@@ -138,8 +138,6 @@ public class SourcePlanner {
 			logger.trace("RETURN doSensorNetworkSourcePlanning()");
 		
     costModel.addInstanceDAF(instanceWhere.getInstanceDAF());
-    costModel.addRoutingTree(rt);
-    costModel.addAgenda(agenda);
     costModel.runCardinality();
 		return qep;
 	}
