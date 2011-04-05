@@ -451,7 +451,7 @@ public class TranslatorTest {
 	RecognitionException, TokenStreamException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) " +
 				"UNION " +
-				"(SELECT timestamp FROM PullStream);");
+				"(SELECT timestamp FROM PushStream);");
 		verifyUnionQuery(laf, 1, 2);
 	}
 
@@ -462,8 +462,8 @@ public class TranslatorTest {
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) UNION " +
-				"(SELECT timestamp FROM PullStream) UNION" +
-				"(SELECT timestamp FROM PushStream);");
+				"(SELECT timestamp FROM PushStream) UNION" +
+				"(SELECT timestamp FROM PushStream2);");
 		verifyUnionQuery(laf, 2, 3);
 	}
 	
@@ -474,9 +474,9 @@ public class TranslatorTest {
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) UNION " +
-				"(SELECT timestamp FROM PullStream) UNION" +
-				"(SELECT timestamp FROM PushStream) UNION " +
-				"(SELECT timestamp FROM SensorStream);");
+				"(SELECT timestamp FROM PushStream) UNION" +
+				"(SELECT timestamp FROM PushStream2) UNION " +
+				"(SELECT timestamp FROM PushStream3);");
 		verifyUnionQuery(laf, 3, 4);
 	}
 	
@@ -516,7 +516,7 @@ public class TranslatorTest {
 	RecognitionException, TokenStreamException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) " +
 				"UNION " +
-				"(SELECT integerColumn FROM PullStream);");
+				"(SELECT integerColumn FROM PushStream);");
 		verifyUnionQuery(laf, 1, 2);
 	}
 	

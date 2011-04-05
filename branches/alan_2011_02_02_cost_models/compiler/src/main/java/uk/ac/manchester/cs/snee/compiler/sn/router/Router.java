@@ -109,6 +109,9 @@ public class Router {
 	    	if (nodesToAdd.contains(s.getID())) {
 	    		s.setIsSource(true);
 	    	}
+	    	if (gateway.getID().equals(s.getID())) {
+	    		gateway.setIsSource(true);
+	    	}
 	    }
 	
 		while (nodesToAdd.size() > 0) {

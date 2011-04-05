@@ -463,15 +463,15 @@ public class Translator {
 		if (isRowUnit(unit)) {
 			result = value;
 		}
-		int TICKS_PER_SECONDS = 1;
+		int TICKS_PER_SECOND = 1000;
 		if (unit.equalsIgnoreCase("seconds")) {
-			result = value * TICKS_PER_SECONDS;
+			result = value * TICKS_PER_SECOND;
 		} else if (unit.equalsIgnoreCase("minutes")) {
-			result = value * TICKS_PER_SECONDS * 60;
+			result = value * TICKS_PER_SECOND * 60;
 		} else if (unit.equalsIgnoreCase("hours")) {
-			result = value * TICKS_PER_SECONDS * 3600;
+			result = value * TICKS_PER_SECOND * 3600;
 		} else if (unit.equalsIgnoreCase("days")) {
-			result = value * TICKS_PER_SECONDS * 3600;
+			result = value * TICKS_PER_SECOND * 3600 * 24;
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN convertToTick() " + result);

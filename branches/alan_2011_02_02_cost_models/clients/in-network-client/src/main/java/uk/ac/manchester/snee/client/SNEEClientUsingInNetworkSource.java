@@ -49,7 +49,11 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 					"\t\"query parameters file\"\n");
 			//XXX: Use default query
 			
-	      query = "SELECT RSTREAM avg(c.light) " +
+			query = "SELECT * FROM SeaDefence;";
+			//query = "SELECT avg(seaLevel) FROM SeaDefence;";
+			//query = "SELECT e.seaLevel FROM SeaDefenceEast[NOW] e, SeaDefenceWest[NOW] w WHERE e.seaLevel > w.seaLevel;";
+			
+	     // query = "SELECT RSTREAM avg(c.light) " +
 	      //query = "SELECT * " +
 		  //query = "SELECT RSTREAM f.light, m.light " +
 	      //query = "SELECT RSTREAM c.light, m.light " +
@@ -64,7 +68,7 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 			  //"FROM Castilla[FROM NOW - 5 ROWS TO NOW SLIDE 5 ROWS] c;";
 			  //"FROM Castilla[FROM NOW - 5 TO NOW MINUTES] c;";
 			  //"FROM Castilla[FROM NOW - 5 TO NOW SECONDS] c;";
-			  "FROM Castilla[now] c;";
+			 // "FROM Castilla[now] c;";
 			  //"FROM (SELECT avg(m.light) as mLight FROM Meadow[now] m) a, " +
 			  //"(SELECT avg(f.light) as fLight FROM Forest[now] f) b " +
 			  //"WHERE a.mLight = b.fLight;";

@@ -19,9 +19,11 @@ import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 public class TinyOS_SNCB implements SNCB {
@@ -184,9 +186,21 @@ public class TinyOS_SNCB implements SNCB {
 			}
 
 			if (!this.useNodeController || this.serialPort==null) {
-				System.out
-						.println("Not using node controller, or no mote plugged in, so unable to disseminate query plan; ");
-				System.out.println("Please proceed manually.  ");
+				System.out.println("Not using node controller, or no mote "+
+						"plugged in, so unable to send query plan using" +
+						"Over-the-air Programmer. ");
+				System.out.println("Please proceed using manual commands.\n");
+				if (this.target == CodeGenTarget.TELOSB_T2) {
+					TinyOS_SNCB_Utils.printTelosBCommands(queryOutputDir, qep,
+							this.targetDirName, this.serialPort);
+				} else if (this.target == CodeGenTarget.TOSSIM_T2) {
+					TinyOS_SNCB_Utils.printTossimCommands(queryOutputDir,
+							this.targetDirName);
+				} else if (this.target == CodeGenTarget.AVRORA_MICA2_T2 ||
+						this.target == CodeGenTarget.AVRORA_MICAZ_T2) {
+					TinyOS_SNCB_Utils.printAvroraCommands(queryOutputDir, qep, 
+							this.targetDirName, this.target);					
+				}
 				System.exit(0);
 			}
 
@@ -218,6 +232,7 @@ public class TinyOS_SNCB implements SNCB {
 		return mr;
 	}
 
+	
 	private void generateNesCCode(SensorNetworkQueryPlan qep,
 			String queryOutputDir, CostParameters costParams)
 			throws IOException, SchemaMetadataException, TypeMappingException,
@@ -299,7 +314,7 @@ public class TinyOS_SNCB implements SNCB {
 		// Message msg = new DeliverMessage(); // needed for web service, for
 		// now.
 		Message msg = (Message) msgObj;
-		DeliverOperator delOp = (DeliverOperator) qep.getLAF()
+		SensornetDeliverOperator delOp = (SensornetDeliverOperator) qep.getDAF()
 				.getRootOperator();
 		mr = new SerialPortMessageReceiver("serial@"
 				+ this.serialPort + ":telos", delOp);
