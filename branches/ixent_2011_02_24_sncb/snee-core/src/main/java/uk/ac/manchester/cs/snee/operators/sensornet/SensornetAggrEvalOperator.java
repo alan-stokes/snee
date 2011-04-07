@@ -51,13 +51,6 @@ public class SensornetAggrEvalOperator extends SensornetIncrementalAggregationOp
 	public List<Attribute> getAttributes() {
 		ArrayList<Attribute> outputAttributes = new ArrayList<Attribute>();
 		
-		try {
-			outputAttributes.add(new EvalTimeAttribute());
-		} catch (SchemaMetadataException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.exit(0);
-		}
 		for (Attribute attr : this.getLogicalOperator().getAttributes()) {
 			outputAttributes.add(attr);
 		}
