@@ -8,19 +8,19 @@ __HEADER__
 	#define SLIDE __SLIDE_IN_EPOCHS__
 
 	__CHILD_TUPLE_PTR_TYPE__ inQueue;
-	int8_t inHead;
-	int8_t inTail;
-	uint16_t inQueueSize;
+	int inHead;
+	int inTail;
+	int inQueueSize;
 
 	#define OUT_QUEUE_CARD __OUT_QUEUE_CARD__
 
 	__OUTPUT_TUPLE_TYPE__ windowBuff[OUT_QUEUE_CARD];
-	int8_t windowHead=-1;
-	int8_t windowTail=-1;
+	int windowHead=-1;
+	int windowTail=-1;
 
 	__OUTPUT_TUPLE_TYPE__ outQueue[OUT_QUEUE_CARD];
-	int8_t outHead=-1;
-	int8_t outTail=-1;
+	int outHead=-1;
+	int outTail=-1;
 
 	int32_t currentEvalEpoch = 0;
 	float fromEvalEpoch;
@@ -74,7 +74,7 @@ __HEADER__
   	}
 
 
-	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
+	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int _inHead, int _inTail, int _inQueueSize)
 	{
 		dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled  child\n");
 
@@ -146,7 +146,7 @@ __CONSTRUCT_TUPLE__
 	}
 
 
-int8_t tmpWindowHead;
+int tmpWindowHead;
 
 	void task copyValidTuplesToOutQueueTask() 
 	{

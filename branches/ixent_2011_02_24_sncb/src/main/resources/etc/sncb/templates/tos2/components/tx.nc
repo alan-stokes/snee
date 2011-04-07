@@ -6,15 +6,15 @@ __HEADER__
 	#define BUFFERING_FACTOR __BUFFERING_FACTOR__
 
 	//vars shared for all trays (since we only process one at a time)
-	int8_t bFactorCount;
+	int bFactorCount;
 	nx_int32_t evalEpoch;
 	bool firstTime = TRUE;
 	message_t packet;
-	int8_t inHead;
-	int8_t inTail;
-	int8_t inQueueSize;
+	int inHead;
+	int inTail;
+	int inQueueSize;
 
-	int8_t tuplePacketPos;
+	int tuplePacketPos;
 	bool pending=FALSE;
 
 	__CHILD_TUPLE_PTR_TYPE__ inQueue;
@@ -51,7 +51,7 @@ __HEADER__
 	}
 
 
-	event void GetTuples.requestDataDone(__TUPLE_PTR_TYPE__  _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
+	event void GetTuples.requestDataDone(__TUPLE_PTR_TYPE__  _inQueue, int _inHead, int _inTail, int _inQueueSize)
 	{
 		dbg("__DBG_CHANNEL__", "tx:GetTuples.requestDataDone inHead=%d, inTail=%d, inQueueSize=%d\n", _inHead, _inTail, _inQueueSize);
 

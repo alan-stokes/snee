@@ -8,13 +8,13 @@ __HEADER__
 	#define MAXTUPLESINMSG __MAXTUPLESINMSG__
 
 	__TUPLE_TYPE__ tray[NUM_SUBTRAYS][SUBTRAY_SIZE];
-	int8_t subTrayNum=-1;
-	int8_t temp;
-	int8_t trayHead=-1;
-	int8_t trayTail;
+	int subTrayNum=-1;
+	int temp;
+	int trayHead=-1;
+	int trayTail;
 	error_t success=SUCCESS;
-	int8_t prevSubTrayNum= NUM_SUBTRAYS;
-	uint8_t initialized = FALSE;
+	int prevSubTrayNum= NUM_SUBTRAYS;
+	int initialized = FALSE;
 
 	inline void initialize()
 	{
@@ -99,7 +99,7 @@ __HEADER__
 	}
 
 
-	command error_t PutTuples.putTuples(__TUPLE_PTR_TYPE__ inQueue, int8_t inHead, int8_t inTail, uint8_t inQueueSize)
+	command error_t PutTuples.putTuples(__TUPLE_PTR_TYPE__ inQueue, int inHead, int inTail, int inQueueSize)
 	{
 		dbg("__DBG_CHANNEL__","__MODULE_NAME__  putTuples entered, inHead=%d, inTail=%d, inQueueSize=%d \n",inHead,inTail,inQueueSize);
 
@@ -169,7 +169,7 @@ __TUPLE_CONSTRUCTION__
 
 		atomic
 		{
-			uint8_t inHead=0;
+			int inHead=0;
 
 			do
 			{

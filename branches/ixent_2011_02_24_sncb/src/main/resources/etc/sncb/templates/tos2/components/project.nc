@@ -6,14 +6,14 @@ __HEADER__
 	#define OUT_QUEUE_CARD __OUT_QUEUE_CARD__
 
 	__CHILD_TUPLE_PTR_TYPE__ inQueue;
-	int8_t inHead;
-	int8_t inTail;
-	uint16_t inQueueSize;
+	int inHead;
+	int inTail;
+	int inQueueSize;
 	nx_int32_t currentEvalEpoch;
 
 	__OUTPUT_TUPLE_TYPE__ outQueue[OUT_QUEUE_CARD];
-	int8_t outHead;
-	int8_t outTail;
+	int outHead;
+	int outTail;
 
 	void task outQueueAppendTask();
 	void task signalDoneTask();
@@ -81,7 +81,7 @@ __CONSTRUCT_TUPLE__
 	}
 
 
-	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
+	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int _inHead, int _inTail, int _inQueueSize)
 	{
 		dbg("__DBG_CHANNEL__","__MODULE_NAME__ __OPERATOR_DESCRIPTION__ requestData() entered\n");
 		atomic

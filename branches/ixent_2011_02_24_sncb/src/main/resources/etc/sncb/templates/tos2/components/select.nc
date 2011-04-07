@@ -6,13 +6,13 @@ __HEADER__
 	#define OUT_QUEUE_CARD __OUT_QUEUE_CARD__
 
 	__OUTPUT_TUPLE_TYPE__ outQueue[OUT_QUEUE_CARD];
-	int8_t outHead;
-	int8_t outTail;
+	int outHead;
+	int outTail;
 
   	__CHILD_TUPLE_PTR_TYPE__ inQueue;
-	int8_t inHead;
-	int8_t inTail;
-	uint8_t inQueueSize;
+	int inHead;
+	int inTail;
+	int inQueueSize;
 	int16_t currentEvalEpoch;
 
 	void task outQueueAppendTask();
@@ -34,7 +34,7 @@ __HEADER__
   	}
 
 
-	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
+	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int _inHead, int _inTail, int _inQueueSize)
 	{
 		atomic
 		{

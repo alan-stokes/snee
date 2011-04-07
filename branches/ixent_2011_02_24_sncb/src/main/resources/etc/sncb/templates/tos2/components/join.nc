@@ -9,15 +9,15 @@ __HEADER__
 	__LEFT_CHILD_TUPLE_PTR_TYPE__ leftInQueue;
 	__RIGHT_CHILD_TUPLE_PTR_TYPE__ rightInQueue;
 
-	int8_t outHead;
-	int8_t outTail;
+	int outHead;
+	int outTail;
 	nx_int32_t currentEvalEpoch;
-	int8_t leftInHead;
-	int8_t leftInTail;
-  	uint16_t leftInQueueSize;
-	int8_t rightInHead;
-	int8_t rightInTail;
-	uint16_t rightInQueueSize;
+	int leftInHead;
+	int leftInTail;
+  	int leftInQueueSize;
+	int rightInHead;
+	int rightInTail;
+	int rightInQueueSize;
 
 	void task rightRequestDataTask();
 	void task performJoinTask();
@@ -39,7 +39,7 @@ __HEADER__
 	   	return SUCCESS;
   	}
 
-	event void LeftChild.requestDataDone(__LEFT_CHILD_TUPLE_PTR_TYPE__ _leftInQueue, int8_t _leftInHead, int8_t _leftInTail, uint8_t _leftInQueueSize)
+	event void LeftChild.requestDataDone(__LEFT_CHILD_TUPLE_PTR_TYPE__ _leftInQueue, int _leftInHead, int _leftInTail, int _leftInQueueSize)
 	{
 		if (_leftInHead>-1)
 		{
@@ -72,7 +72,7 @@ __HEADER__
 	}
 
 
-	event void RightChild.requestDataDone(__RIGHT_CHILD_TUPLE_PTR_TYPE__ _rightInQueue, int8_t _rightInHead, int8_t _rightInTail, uint8_t _rightInQueueSize)
+	event void RightChild.requestDataDone(__RIGHT_CHILD_TUPLE_PTR_TYPE__ _rightInQueue, int _rightInHead, int _rightInTail, int _rightInQueueSize)
 	{
 		if (_rightInHead>-1)
 		{
@@ -97,7 +97,7 @@ __HEADER__
 
 	void task performJoinTask()
 	{
-		int8_t tmpRightInHead=rightInHead;
+		int tmpRightInHead=rightInHead;
 		dbg("__DBG_CHANNEL__","leftInHead=%d, leftInTail=%d, rightInHead=%d\n", leftInHead, leftInTail, rightInHead);
 		
 		do
