@@ -75,6 +75,8 @@ public class Agenda extends SNEEAlgebraicForm {
      */
     private long beta;
 
+	boolean allowDiscontinuousSensing = true;
+    
     /**
      * The task schedule for all the sites. 
      */
@@ -107,13 +109,16 @@ public class Agenda extends SNEEAlgebraicForm {
     private long nonLeafStart = Integer.MAX_VALUE;
 
     public Agenda(final long acquisitionInterval, final long bfactor,
-	final DAF daf, CostParameters costParams, final String queryName) 
+	final DAF daf, CostParameters costParams, final String queryName,
+	boolean allowDiscontinuousSensing) 
     throws AgendaException, AgendaLengthException, OptimizationException, 
     SchemaMetadataException, TypeMappingException {
     	super(queryName);
 		this.alpha = msToBms_RoundUp(acquisitionInterval);
 		this.beta = bfactor;
 		this.daf = daf;
+		this.allowDiscontinuousSensing=allowDiscontinuousSensing;
+		
 		if (!queryName.equals("")) {
 			this.name = generateID(queryName);
 		}
@@ -129,17 +134,6 @@ public class Agenda extends SNEEAlgebraicForm {
 		
 		long length = this.getLength_bms(Agenda.INCLUDE_SLEEP);
 		logger.trace("Agenda alpha=" + this.alpha + " beta=" + this.beta + " alpha*beta = " + this.alpha * this.beta + " length="+length);
- 
-		boolean allowDiscontinuousSensing = true;
-		if (SNEEProperties.isSet(SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING)) {
-			try {
-				allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
-						SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
-			} catch (SNEEConfigurationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 		
 		if (length > (this.alpha * this.beta) && (!allowDiscontinuousSensing)) {
  			//display the invalid agenda, for debugging purposes
