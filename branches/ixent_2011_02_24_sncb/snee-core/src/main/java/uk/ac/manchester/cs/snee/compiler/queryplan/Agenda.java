@@ -41,6 +41,9 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
@@ -126,7 +129,19 @@ public class Agenda extends SNEEAlgebraicForm {
 		
 		long length = this.getLength_bms(Agenda.INCLUDE_SLEEP);
 		logger.trace("Agenda alpha=" + this.alpha + " beta=" + this.beta + " alpha*beta = " + this.alpha * this.beta + " length="+length);
- /*		if (length > (this.alpha * this.beta)) {
+ 
+		boolean allowDiscontinuousSensing = true;
+		if (SNEEProperties.isSet(SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING)) {
+			try {
+				allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
+						SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
+			} catch (SNEEConfigurationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		if (length > (this.alpha * this.beta) && (!allowDiscontinuousSensing)) {
  			//display the invalid agenda, for debugging purposes
 // 			this.display(QueryCompiler.queryPlanOutputDir,
 //					this.getName()+"-invalid");
@@ -136,7 +151,7 @@ public class Agenda extends SNEEAlgebraicForm {
  				+ bmsToMs(beta);
  			logger.warn(msg);
 			throw new AgendaLengthException(msg);
-		}*/
+		}
     }
 
     private void scheduleNetworkManagementSection() throws AgendaException {

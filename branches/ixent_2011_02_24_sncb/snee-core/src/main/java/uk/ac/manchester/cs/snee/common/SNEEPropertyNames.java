@@ -125,6 +125,12 @@ public final class SNEEPropertyNames {
     public static final String WHEN_SCHED_DECREASE_BETA_FOR_VALID_ALPHA =
     	"compiler.when_sched.decrease_beta_for_valid_alpha";
 
+    /** Specifies whether agendas generated should allow sensing to have 
+     * interruptions. Use this option to enable high acquisition intervals.
+     */
+    public static final String ALLOW_DISCONTINUOUS_SENSING =
+    	"compiler.allow_discontinuous_sensing";    	
+    
     /**
 	 * The name of the file with the logical schema.
 	 * Optional
