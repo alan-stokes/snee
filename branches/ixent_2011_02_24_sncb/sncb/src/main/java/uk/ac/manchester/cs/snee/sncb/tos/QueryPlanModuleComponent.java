@@ -865,6 +865,14 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    nextDelta = startTimeList.get(1).intValue()
 		    - startTimeList.get(0).intValue();
 	}
+	
+	//Hack to get round problem with discontinuous sensing option
+	//otherwise you get a negative nextDelta and node simply hangs after
+	//the end of first agenda execution.
+	if (nextDelta<0) {
+		nextDelta = (long) costParams.getTurnOffRadio(); //duration of final sleep task
+	}
+	
 	//CB: It takes one to start a timer
 	nextDelta = nextDelta - 1;
 	return nextDelta;
