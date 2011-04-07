@@ -1348,7 +1348,10 @@ public class Translator {
 			}
 			expression = new AggregationExpression(inner, 
 					AggregationFunction.SUM, 
-					inner.getType());
+//					inner.getType());
+					_types.getType("float")); 
+			//because in nesC floats have a much greater range than 16-bit ints
+			//TODO: Make this into a long int type
 		} else { 
 			String message = "Unprogrammed Function name " +
 					"AST Text:" + ast.getText();
