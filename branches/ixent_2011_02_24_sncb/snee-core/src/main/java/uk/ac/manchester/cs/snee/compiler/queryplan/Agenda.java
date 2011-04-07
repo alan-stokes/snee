@@ -126,7 +126,7 @@ public class Agenda extends SNEEAlgebraicForm {
 		
 		long length = this.getLength_bms(Agenda.INCLUDE_SLEEP);
 		logger.trace("Agenda alpha=" + this.alpha + " beta=" + this.beta + " alpha*beta = " + this.alpha * this.beta + " length="+length);
- 		if (length > (this.alpha * this.beta)) {
+ /*		if (length > (this.alpha * this.beta)) {
  			//display the invalid agenda, for debugging purposes
 // 			this.display(QueryCompiler.queryPlanOutputDir,
 //					this.getName()+"-invalid");
@@ -136,7 +136,7 @@ public class Agenda extends SNEEAlgebraicForm {
  				+ bmsToMs(beta);
  			logger.warn(msg);
 			throw new AgendaLengthException(msg);
-		}
+		}*/
     }
 
     private void scheduleNetworkManagementSection() throws AgendaException {
