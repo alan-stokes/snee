@@ -40,6 +40,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -53,6 +56,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 
@@ -152,6 +156,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 			}
 		
 			radioOn = false;
+			
 			//for each task start time in the agenda
 			for (int i = 0; i < startTimeList.size(); i++) {
 		
@@ -405,12 +410,28 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	out.println("\t}\n\n");
     }
 
-    private static void doAgendaChecking(final PrintWriter out,
+    private void doAgendaChecking(final PrintWriter out,
 	    final StringBuffer agendaCheckingBuff) {
 	out.println("\ttask void processAgendaItemsTask()");
 	out.println("\t{");
-
-	out.println(agendaCheckingBuff);
+	Site thisSite = tossimConfig.getSite();
+	CodeGenTarget target = CodeGenTarget.TELOSB_T2; //default
+	if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET)) 
+	{
+	  try 
+	  {
+		target = CodeGenTarget.parseCodeTarget(SNEEProperties
+				.getSetting(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET));
+	  } 
+	  catch (SNEEConfigurationException e) 
+	  {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	  }
+	}
+	if(!thisSite.isDead() && 
+	(target == CodeGenTarget.AVRORA_MICA2_T2 || target == CodeGenTarget.AVRORA_MICAZ_T2))	
+	  out.println(agendaCheckingBuff);
 	out.println("\t}\n\n");
     }
 

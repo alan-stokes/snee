@@ -50,6 +50,7 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.CostModel;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -58,6 +59,7 @@ import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
@@ -71,17 +73,31 @@ public class Dispatcher {
 	
 	private Map<Integer,QueryEvaluator> _queryEvaluators;
 	
+	private CostModel _costModel;
+	
+	public Dispatcher(MetadataManager schema, CostModel costModel) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER Dispatcher()");
+		}
+		_schema = schema;
+		_queryEvaluators = new HashMap<Integer, QueryEvaluator>();
+		_costModel = costModel;
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN Dispatcher()");
+		}
+	}
+	
 	public Dispatcher(MetadataManager schema) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER Dispatcher()");
 		}
 		_schema = schema;
 		_queryEvaluators = new HashMap<Integer, QueryEvaluator>();
+		_costModel = new CostModel();
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN Dispatcher()");
 		}
 	}
-	
 	protected Set<Integer> getRunningQueryIds() {
 		return _queryEvaluators.keySet();
 	}
@@ -136,15 +152,49 @@ public class Dispatcher {
 			try {
 				SensorNetworkQueryPlan snQueryPlan = (SensorNetworkQueryPlan)queryPlan;
 				CostParameters costParams = snQueryPlan.getCostParameters();
-				String sep = System.getProperty("file.separator");
-				String outputDir = SNEEProperties.getSetting(
-						SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
-						sep + queryPlan.getQueryName() + sep;
-				SNCB sncb = snQueryPlan.getSNCB();
-				SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, costParams);
-				InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
-				_queryEvaluators.put(queryID, queryEvaluator);
-				sncb.start();
+				CodeGenTarget target = CodeGenTarget.TELOSB_T2; //default
+				if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET)) 
+				{
+				  try 
+				  {
+					target = CodeGenTarget.parseCodeTarget(SNEEProperties
+							.getSetting(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET));
+				  } 
+				  catch (SNEEConfigurationException e) 
+				  {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				  }
+				}
+				if(target == CodeGenTarget.AVRORA_MICA2_T2 || target == CodeGenTarget.AVRORA_MICAZ_T2)
+				{
+				  int testNo = 1;
+				  while(_costModel.runTests())
+				  {
+				    String sep = System.getProperty("file.separator");
+				    String outputDir = SNEEProperties.getSetting(
+					  	    SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
+						    sep + queryPlan.getQueryName() + "Test" + testNo + sep;
+				    SNCB sncb = snQueryPlan.getSNCB();
+				    SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, costParams);
+				    //InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
+				    //_queryEvaluators.put(queryID, queryEvaluator);
+				    //sncb.start();
+				    testNo++;
+				  }
+				}
+				else
+				{
+					String sep = System.getProperty("file.separator");
+					String outputDir = SNEEProperties.getSetting(
+							SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
+							sep + queryPlan.getQueryName() + sep;
+					SNCB sncb = snQueryPlan.getSNCB();
+					SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, costParams);
+					InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
+					_queryEvaluators.put(queryID, queryEvaluator);
+					sncb.start();
+				}
 			} catch (Exception e) {
 				logger.warn(e.getLocalizedMessage(), e);
 				throw new EvaluatorException(e);

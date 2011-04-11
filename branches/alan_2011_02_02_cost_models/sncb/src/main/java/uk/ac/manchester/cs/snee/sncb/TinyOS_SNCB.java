@@ -159,7 +159,7 @@ public class TinyOS_SNCB implements SNCB {
 			throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER register()");
-		SerialPortMessageReceiver mr;
+		SerialPortMessageReceiver mr = null;
 		try {
 			if (demoMode) {
 				System.out.println("Query compilation complete.\n");
@@ -201,8 +201,10 @@ public class TinyOS_SNCB implements SNCB {
 					TinyOS_SNCB_Utils.printAvroraCommands(queryOutputDir, qep, 
 							this.targetDirName, this.target);					
 				}
-				System.exit(0);
+				//System.exit(0);
 			}
+			else
+			{
 
 			logger.trace("Disseminating Query Plan images");
 			System.out.println("Disseminating Query Plan images");
@@ -221,6 +223,7 @@ public class TinyOS_SNCB implements SNCB {
 			if (demoMode) {
 				System.out.println("Serial port listener for query results ready.");
 				System.in.read();
+			}
 			}
 
 		} catch (Exception e) {

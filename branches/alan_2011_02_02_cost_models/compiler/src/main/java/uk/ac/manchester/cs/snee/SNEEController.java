@@ -51,6 +51,7 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
+import uk.ac.manchester.cs.snee.compiler.costmodels.CostModel;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -115,6 +116,8 @@ public class SNEEController implements SNEE {
 	
 	private int _nextQueryID = 1;
 
+	private CostModel costModel;
+	
 	/**
 	 * Initialise SNEE based on the contents of the configuration files
 	 * @throws SNEEException 
@@ -186,6 +189,9 @@ public class SNEEController implements SNEE {
 			logger.debug("ENTER initialise()");
 
 		try {
+			/*set up cost modle structure */
+			costModel = new CostModel();
+			
 			_sncb = initialiseSNCB();
 			
 			/* Process metadata */
@@ -271,11 +277,11 @@ public class SNEEController implements SNEE {
 
 	protected QueryCompiler initialiseQueryCompiler() 
 	throws TypeMappingException {
-		return new QueryCompiler(_metadata);
+		return new QueryCompiler(_metadata, costModel);
 	}
 
 	protected Dispatcher initialiseDispatcher() {
-		return new Dispatcher(_metadata);
+		return new Dispatcher(_metadata, costModel);
 	}
 	
 	/* (non-Javadoc)

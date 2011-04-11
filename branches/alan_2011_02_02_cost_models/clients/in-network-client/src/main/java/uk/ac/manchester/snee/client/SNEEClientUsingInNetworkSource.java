@@ -50,9 +50,9 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 			//XXX: Use default query
 			
 			query = "SELECT * FROM SeaDefence;";
-			//query = "SELECT avg(seaLevel) FROM SeaDefence;";
+			//query = "SELECT avg(seaLevel) FROM SeaDefence[now];";
 			//query = "SELECT e.seaLevel FROM SeaDefenceEast[NOW] e, SeaDefenceWest[NOW] w WHERE e.seaLevel > w.seaLevel;";
-			
+			//query = "SELECT RSTREAM c.light, f.light FROM Castilla[now] c, Forest[now] f WHERE c.light < f.light;";
 	     // query = "SELECT RSTREAM avg(c.light) " +
 	      //query = "SELECT * " +
 		  //query = "SELECT RSTREAM f.light, m.light " +
@@ -73,7 +73,7 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 			  //"(SELECT avg(f.light) as fLight FROM Forest[now] f) b " +
 			  //"WHERE a.mLight = b.fLight;";
 			duration = Long.valueOf("120");
-			queryParams= "etc/common/query-parameters.xml";
+			queryParams= "etc/query-parameters.xml";
 //			System.exit(1);
 		} else {	
 			query = args[0];

@@ -88,12 +88,14 @@ public class QueryCompiler {
 	 * The metadata being used. 
 	 */
 	private MetadataManager metadata;
+	private CostModel costModel;
 
-	public QueryCompiler(MetadataManager schema) 
+	public QueryCompiler(MetadataManager schema, CostModel costModel) 
 	throws TypeMappingException {
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER QueryCompiler()");
 		metadata = schema;
+		this.costModel = costModel;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN QueryCompiler()");
 	}
@@ -237,7 +239,7 @@ public class QueryCompiler {
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Source Allocation for query " + queryID);
 		DLAF dlaf = doSourceAllocation(lafPrime, queryID);
-		CostModel costModel = new CostModel();
+		
 		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Source Planner for query " + queryID);
