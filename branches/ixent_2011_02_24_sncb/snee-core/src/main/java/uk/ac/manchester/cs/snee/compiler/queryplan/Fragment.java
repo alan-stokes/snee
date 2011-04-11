@@ -532,4 +532,8 @@ public class Fragment {
 		return this.sites.size();
 	}
     
+	public void removeOperator(SensornetOperator op) {
+		this.operators.remove(op);
+	}
+    
 }

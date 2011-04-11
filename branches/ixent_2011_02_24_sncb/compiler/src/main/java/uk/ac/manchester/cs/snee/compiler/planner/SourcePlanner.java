@@ -178,7 +178,14 @@ public class SourcePlanner {
 	TypeMappingException, OptimizationException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER doSNWhereScheduling()");
-		WhereScheduler whereSched = new WhereScheduler();
+		
+		boolean removeRedundantExchanges = true;
+		if (SNEEProperties.isSet(SNEEPropertyNames.
+				WHERE_SCHED_REMOVE_REDUNDANT_EXCHANGES)) {
+			removeRedundantExchanges = SNEEProperties.getBoolSetting(SNEEPropertyNames.WHERE_SCHED_REMOVE_REDUNDANT_EXCHANGES);
+		}
+		
+		WhereScheduler whereSched = new WhereScheduler(removeRedundantExchanges);
 		DAF daf = whereSched.doWhereScheduling(paf, rt, costParams, queryID);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new DAFUtils(daf).generateGraphImage();
