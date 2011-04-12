@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
@@ -31,8 +32,8 @@ public class AlgorithmSelector {
 	private Logger logger = 
 		Logger.getLogger(AlgorithmSelector.class.getName());
 	
-	public PAF doPhysicalOptimizaton(DLAF dlaf, CostParameters costParams, 
-	String queryName) 
+	public PAF doPhysicalOptimizaton(DLAF dlaf, QoSExpectations qos, 
+	CostParameters costParams, String queryName) 
 	throws SNEEException, SchemaMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER getInstance() with " + dlaf.getID());
@@ -51,10 +52,11 @@ public class AlgorithmSelector {
 		PAF paf = new PAF(deliverPhyOp, dlaf, costParams, queryName);
 		splitAggregationOperators(paf, costParams);
 		removeNOWwindows(paf);
+		checkConsistentSlide(paf, qos);
 		return paf;
 	}
-	
-    private void removeNOWwindows(PAF paf) {
+
+	private void removeNOWwindows(PAF paf) {
 		final Iterator<SensornetOperator> opIter = paf
 		.operatorIterator(TraversalOrder.POST_ORDER);
 		while (opIter.hasNext()) {
@@ -122,4 +124,30 @@ public class AlgorithmSelector {
 		}
     }
 
+	
+    private void checkConsistentSlide(PAF paf, QoSExpectations qos) throws SNEEException {
+		long alpha = qos.getMinAcquisitionInterval();
+		Iterator<SensornetOperator> opIter = 
+			paf.operatorIterator(TraversalOrder.POST_ORDER);
+		while (opIter.hasNext()) {
+			SensornetOperator op = opIter.next();
+			if (op instanceof SensornetWindowOperator) {
+				SensornetWindowOperator windowOp = (SensornetWindowOperator)op;
+				if (windowOp.isTimeScope()) {
+					int slide = windowOp.getTimeSlide();
+					if (slide<alpha || (slide % alpha != 0)) {
+						String msg = "Window with slide "+slide+" inconsistent with "+
+						"acquisition interval "+alpha+
+						".  For in-network windows, slide must be "+
+						"a multiple of the acquisition interval.";
+						logger.error(msg);
+						throw new SNEEException(msg);
+					}
+				}
+			}
+		}
+		
+	}
+
+    
 }

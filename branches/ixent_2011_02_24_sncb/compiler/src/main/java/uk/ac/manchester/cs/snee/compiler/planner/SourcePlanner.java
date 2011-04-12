@@ -119,7 +119,7 @@ public class SourcePlanner {
 			logger.trace("ENTER doSensorNetworkSourcePlanning() for " +
 					queryID);
 		logger.info("Starting Algorithm Selection for query " + queryID);
-		PAF paf = doSNAlgorithmSelection(dlaf, costParams, queryID);
+		PAF paf = doSNAlgorithmSelection(dlaf, qos, costParams, queryID);
 		logger.info("Starting Routing for query " + queryID);		
 		RT rt = doSNRouting(paf, queryID);
 		logger.info("Starting Where-Scheduling for query " + queryID);
@@ -143,14 +143,14 @@ public class SourcePlanner {
 	 * @throws SchemaMetadataException
 	 * @throws SNEEConfigurationException
 	 */
-	private PAF doSNAlgorithmSelection(DLAF dlaf, CostParameters costParams, 
-	String queryName) 
+	private PAF doSNAlgorithmSelection(DLAF dlaf, QoSExpectations qos,
+			CostParameters costParams, String queryName) 
 	throws SNEEException, SchemaMetadataException, SNEEConfigurationException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSNAlgorithmSelection() for " + 
 					queryName);
 		AlgorithmSelector algorithmSelector = new AlgorithmSelector();
-		PAF paf = algorithmSelector.doPhysicalOptimizaton(dlaf, costParams, queryName);
+		PAF paf = algorithmSelector.doPhysicalOptimizaton(dlaf, qos, costParams, queryName);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new PAFUtils(paf).generateGraphImage();
 		}
