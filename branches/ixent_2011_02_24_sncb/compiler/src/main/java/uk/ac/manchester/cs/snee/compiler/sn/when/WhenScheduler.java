@@ -29,8 +29,6 @@ public class WhenScheduler {
 	 */
 	private Logger logger = 
 		Logger.getLogger(WhenScheduler.class.getName());
-
-	private boolean decreaseBetaForValidAlpha = true;
 	
 	private CostParameters costParams;
 
@@ -39,14 +37,12 @@ public class WhenScheduler {
 	/**
 	 * Constructor for Sensor Network When-Scheduling Decision Maker.
 	 */
-	public WhenScheduler(boolean decreaseBetaForValidAlpha, 
-			boolean allowDiscontinuousSensing,
+	public WhenScheduler(boolean allowDiscontinuousSensing,
 			MetadataManager m,
 			boolean useNetworkController) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER WhenScheduler()");
 
-		this.decreaseBetaForValidAlpha=decreaseBetaForValidAlpha;
 		this.allowDiscontinuousSensing=allowDiscontinuousSensing;
 		this.costParams = m.getCostParameters();
 		if (logger.isDebugEnabled());
@@ -265,7 +261,7 @@ public class WhenScheduler {
 	
 	final long alpha_bms = (int) Agenda.msToBms_RoundUp((qos.getMaxAcquisitionInterval()));
 	do {
-		if (this.decreaseBetaForValidAlpha) {
+		if (!this.allowDiscontinuousSensing) {
 			beta = (lowerBeta+upperBeta)/2;
 		} else {
 			beta = upperBeta;
@@ -279,31 +275,31 @@ public class WhenScheduler {
 				    + alpha_bms * beta + " with beta="
 				    + beta);
 		    lowerBeta = beta;
+
+
 		    
 		} catch (AgendaLengthException e) {
 			
-			if (!this.decreaseBetaForValidAlpha) {
-				String msg="Set decrease_bfactor_to_avoid_agenda_overlap=true in the "+
-				 "ini file to avoid need for overlap, as overlapping agendas are not" +
-				 "yet supported.";
+			if (!this.allowDiscontinuousSensing) {
+				String msg="Current acquisition interval cannot be supported without "+
+				"discontinuous sensing enabled. To enable it, set the "+
+				"compiler.allow_discontinuous_sensing option in the " +
+				"snee.properties file to true";
 				logger.warn(msg);
 				throw new WhenSchedulerException(msg);
 			}
 			
 	    	upperBeta = beta;
-	    	
+
 	    	logger.trace("Max Buffering factor reduced to " + beta);
 	    	if (beta == 1) {
-	    		String msg ="Agenda requires overlap even with buffering factor=1.  "+
-	    		"Overlapping agendas are currently not supported; try increasing the "+
-	    		"acquisition interval in the QoS file."; 
+	    		String msg ="Acquisition interval too small to be supported."; 
 	    		logger.warn(msg);
 	    		throw new WhenSchedulerException(msg);
 	    	}
 	    	
 	    	continue;
-	    } 
-	    
+		}
 	} while (lowerBeta+1<upperBeta);
 	//(agenda.getLength_bms(Agenda.INCLUDE_SLEEP) > (alpha_bms * currMaxBeta))
 	//	&& (currMaxBeta > 0));

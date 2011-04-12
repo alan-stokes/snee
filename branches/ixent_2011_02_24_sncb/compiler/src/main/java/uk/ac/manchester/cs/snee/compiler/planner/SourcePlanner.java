@@ -200,14 +200,12 @@ public class SourcePlanner {
 	OptimizationException, WhenSchedulerException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER doSNWhenScheduling()");
-		boolean decreaseBetaForValidAlpha = SNEEProperties.getBoolSetting(
-				SNEEPropertyNames.WHEN_SCHED_DECREASE_BETA_FOR_VALID_ALPHA);
 		boolean useNetworkController = SNEEProperties.getBoolSetting(
 				SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
 		boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
 				SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
-		WhenScheduler whenSched = new WhenScheduler(decreaseBetaForValidAlpha,
-				allowDiscontinuousSensing, metadata, useNetworkController);
+		WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing,
+				metadata, useNetworkController);
 		Agenda agenda = whenSched.doWhenScheduling(daf, qos, queryName);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new AgendaUtils(agenda, true).generateImage();
