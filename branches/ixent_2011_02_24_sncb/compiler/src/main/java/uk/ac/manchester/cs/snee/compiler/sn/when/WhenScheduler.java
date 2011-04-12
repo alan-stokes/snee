@@ -76,12 +76,17 @@ public class WhenScheduler {
 //	    	CostExpressions costExpressions = CostExpressions.costExpressionFactory(daf);
 //	    	costExpressions.display();
 //		}
+		
 	    logger.trace("Computing maximum possible buffering factor based on "
 	    		+ " memory");
 	    long maxBFactorSoFar = computeMaximumBufferingFactorBasedOnMemory(
 		    daf, qos);
 	    logger.trace("Max possible buffering factor according to memory " 
 	    		+ " available on nodes in sensor network: "	+ maxBFactorSoFar);
+	    
+	    if (daf.getFragments().size()==1) {
+	    	maxBFactorSoFar = 1;
+	    }
 	    
 		// optimizer should compute best buffering factor based on memory, 
 		// maxBFactor and delivery time
