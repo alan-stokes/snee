@@ -8,11 +8,11 @@ __HEADER__
 
 	nx_int32_t evalEpoch;
 	bool firstTime = TRUE;
-	uint8_t bFactorCount=0;
+	int bFactorCount=0;
 	__CHILD_TUPLE_PTR_TYPE__ inQueue;
-	int8_t inHead;
-	int8_t inTail;
-	uint16_t inQueueSize;
+	int inHead;
+	int inTail;
+	int inQueueSize;
 
 	void task trayPutTask();
 
@@ -36,7 +36,7 @@ __HEADER__
 		return SUCCESS;
 	}
 
-	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
+	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int _inHead, int _inTail, int _inQueueSize)
 	{
 		dbg("__DBG_CHANNEL__","__MODULE_NAME__ requestDataDone() signalled from child, put results in tray\n");
 		atomic

@@ -1986,9 +1986,6 @@ public class TinyOSGenerator {
 			File dir = new File(nescOutputDir+ targetDirName + "/Blink");
 	        dir.mkdir();
 	        
-			System.err.println(NESC_MISC_FILES_DIR + "/Blink/BlinkAppC.nc");
-			System.err.println(nescOutputDir+ targetDirName + "/Blink/BlinkAppC.nc");
-
 			Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/BlinkAppC.nc", 
 					nescOutputDir+ targetDirName + "/Blink/BlinkAppC.nc");
 			Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/BlinkC.nc", 

@@ -1,5 +1,8 @@
 package uk.ac.manchester.cs.snee.sncb;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Iterator;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
@@ -94,6 +97,24 @@ public class TinyOS_SNCB_Utils {
 		}
 		
 		System.out.println("*** To start Avrora ***");
+		try
+    {
+      FileWriter output = new FileWriter(new File(nescOutputDir + "/avrora"));
+      output.write("#! /bin/bash \n");
+      output.write("cd "+nescOutputDir + "\n");
+      output.write("java avrora.Main -mcu=mts300 -platform="+platform+" " +
+        "-simulation=sensor-network -colors=false -seconds=100 " +
+        "-monitors=packet,serial -ports="+gatewayID+":0:2390 -random-seed=1 " +
+        sensorData + " " + "-report-seconds "+nodeCount+" "+elfString+" \n");
+      output.flush();
+      output.close();
+      
+    } catch (IOException e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+		
 		System.out.println("cd "+nescOutputDir);
 		System.out.println("java avrora.Main -mcu=mts300 -platform="+platform+" " +
 				"-simulation=sensor-network -colors=false -seconds=100 " +

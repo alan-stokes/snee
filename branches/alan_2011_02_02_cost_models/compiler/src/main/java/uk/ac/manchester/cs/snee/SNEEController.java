@@ -39,6 +39,7 @@ package uk.ac.manchester.cs.snee;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,12 +47,12 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
-import uk.ac.manchester.cs.snee.compiler.costmodels.CostModel;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -68,7 +69,7 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
-import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB;
+import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB_Controller;
 
 
 /**
@@ -116,7 +117,7 @@ public class SNEEController implements SNEE {
 	
 	private int _nextQueryID = 1;
 
-	private CostModel costModel;
+	
 	
 	/**
 	 * Initialise SNEE based on the contents of the configuration files
@@ -189,8 +190,6 @@ public class SNEEController implements SNEE {
 			logger.debug("ENTER initialise()");
 
 		try {
-			/*set up cost modle structure */
-			costModel = new CostModel();
 			
 			_sncb = initialiseSNCB();
 			
@@ -259,7 +258,7 @@ public class SNEEController implements SNEE {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseSNCB()");
 		
-		return new TinyOS_SNCB();
+		return new TinyOS_SNCB_Controller();
 	}
 	
 	protected MetadataManager initialiseMetadata() 
@@ -277,11 +276,11 @@ public class SNEEController implements SNEE {
 
 	protected QueryCompiler initialiseQueryCompiler() 
 	throws TypeMappingException {
-		return new QueryCompiler(_metadata, costModel);
+		return new QueryCompiler(_metadata);
 	}
 
 	protected Dispatcher initialiseDispatcher() {
-		return new Dispatcher(_metadata, costModel);
+		return new Dispatcher(_metadata);
 	}
 	
 	/* (non-Javadoc)
@@ -342,7 +341,7 @@ public class SNEEController implements SNEE {
 			logger.info("Compiling query " + queryId + "\n");
 		compileQuery(queryId, query, queryParams);
 		if (logger.isInfoEnabled())
-			logger.info("Successfully compiled query " + queryId);
+			logger.info("Successfully compiled query " + queryId);	
 		dispatchQuery(queryId, query);
 		if (logger.isInfoEnabled())
 			logger.info("Successfully started evaluation of query " + queryId);
@@ -517,4 +516,18 @@ public class SNEEController implements SNEE {
 
 	}
 	
+	public void setDeadNodes(ArrayList<Integer> deadNodes)
+	{
+	  _dispatcher.setDeadNodes(deadNodes);
+	}
+	
+	public void setNoDeadNodes(int noDeadNodes)
+	{
+	  _dispatcher.setNoDeadNodes(noDeadNodes);
+	}
+	
+	public QueryExecutionPlan getQEP()
+	{
+		return _compiler.getQEP();
+	}
 }

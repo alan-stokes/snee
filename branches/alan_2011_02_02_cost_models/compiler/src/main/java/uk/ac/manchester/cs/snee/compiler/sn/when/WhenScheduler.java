@@ -4,6 +4,9 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
@@ -30,15 +33,21 @@ public class WhenScheduler {
 	private boolean decreaseBetaForValidAlpha = true;
 	
 	private CostParameters costParams;
+
+	boolean allowDiscontinuousSensing = true;
 	
 	/**
 	 * Constructor for Sensor Network When-Scheduling Decision Maker.
 	 */
-	public WhenScheduler(boolean decreaseBetaForValidAlpha, MetadataManager m,
+	public WhenScheduler(boolean decreaseBetaForValidAlpha, 
+			boolean allowDiscontinuousSensing,
+			MetadataManager m,
 			boolean useNetworkController) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER WhenScheduler()");
+
 		this.decreaseBetaForValidAlpha=decreaseBetaForValidAlpha;
+		this.allowDiscontinuousSensing=allowDiscontinuousSensing;
 		this.costParams = m.getCostParameters();
 		if (logger.isDebugEnabled());
 			logger.debug("RETURN WhenScheduler()");
@@ -124,7 +133,7 @@ public class WhenScheduler {
 
 	    try {
 	    	final Agenda agenda = new Agenda(qos.getMaxAcquisitionInterval(), 
-	    			maxBFactorSoFar, daf, costParams, queryName);
+	    			maxBFactorSoFar, daf, costParams, queryName, allowDiscontinuousSensing);
 			if (logger.isDebugEnabled())
 				logger.debug("RETURN doWhenScheduling()");
 	    	return agenda;
@@ -259,7 +268,7 @@ public class WhenScheduler {
 	    
 		try {
 	    	agenda = new Agenda(qos.getMaxAcquisitionInterval(), beta, daf, 
-	    			costParams, "");
+	    			costParams, "", allowDiscontinuousSensing);
 		    logger.trace("Agenda constructed successfully length="
 				    + agenda.getLength_bms(Agenda.INCLUDE_SLEEP) + " met target length="
 				    + alpha_bms * beta + " with beta="
@@ -320,7 +329,7 @@ public class WhenScheduler {
 	    do {
 	    	try {
 	    		agenda = new Agenda(qos.getMaxAcquisitionInterval(), 
-	    				currentMaxBuffFactor, daf, costParams, "");
+	    				currentMaxBuffFactor, daf, costParams, "", allowDiscontinuousSensing);
 	    		//CB I don't think this is neseccary as new Agenda throw an error.
 	    		//CB :Left in for safety
 	    		if (agenda.getLength_bms(Agenda.IGNORE_SLEEP) > bmsDeliveryTime) {

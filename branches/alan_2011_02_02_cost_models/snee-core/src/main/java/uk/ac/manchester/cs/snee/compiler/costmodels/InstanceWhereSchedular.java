@@ -32,7 +32,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 public class InstanceWhereSchedular
 {
   private RT routingTree;
-  private InstanceDAF instanceDAF;
+  private IOT instanceDAF;
   private DAF cDAF;
   private CostParameters costs;
   private PAF paf;
@@ -464,7 +464,7 @@ public class InstanceWhereSchedular
   throws SNEEException, SchemaMetadataException
   {
     //make new instance daf
-    instanceDAF = new InstanceDAF(paf, routingTree, paf.getQueryName());
+    instanceDAF = new IOT(paf, routingTree, paf.getQueryName());
     HashMapList<String,InstanceOperator> disconnectedOpInstMapping =
       new HashMapList<String,InstanceOperator>();
     //collect a iterator for physical operators 
@@ -681,7 +681,7 @@ public class InstanceWhereSchedular
    */
   private void convergeAllChildOpSubstreams(SensornetOperator op,
                                            InstanceOperator opInst, 
-                                           InstanceDAF instanceDAF2,
+                                           IOT instanceDAF2,
       HashMapList<String, InstanceOperator> disconnectedOpInstMapping)
   {
     for (int k=0; k<op.getInDegree(); k++) 
@@ -695,7 +695,7 @@ public class InstanceWhereSchedular
 
   //add an edge in the instance daf for each child operator
   private void convergeSubstreams(Collection<InstanceOperator> childOpInstColl,
-                                  InstanceOperator opInst, InstanceDAF instanceDAF2)
+                                  InstanceOperator opInst, IOT instanceDAF2)
   {
     Iterator<InstanceOperator> childOpInstIter = childOpInstColl.iterator();    
     while (childOpInstIter.hasNext()) 
@@ -799,7 +799,7 @@ public class InstanceWhereSchedular
     
   }
   
-  private static DAF partitionPAF(final PAF paf, InstanceDAF oit, 
+  private static DAF partitionPAF(final PAF paf, IOT oit, 
                                   final String queryName, RT routingTree,
                                   CostParameters costs) 
   throws SNEEException, SchemaMetadataException 
@@ -847,7 +847,7 @@ public class InstanceWhereSchedular
     return faf;
   }
   
-  private static DAF linkFragments(DAF faf, RT rt, InstanceDAF daf,
+  private static DAF linkFragments(DAF faf, RT rt, IOT daf,
       String queryName) throws SNEEException, SchemaMetadataException {
     DAF cDAF = faf;
     
@@ -899,7 +899,7 @@ public class InstanceWhereSchedular
     return cDAF;
   }  
   
-  public InstanceDAF getInstanceDAF()
+  public IOT getInstanceDAF()
   {
     return instanceDAF;
   }

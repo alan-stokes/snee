@@ -36,6 +36,7 @@
 package uk.ac.manchester.cs.snee.evaluator;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -46,11 +47,12 @@ import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.costmodels.CostModel;
+import uk.ac.manchester.cs.snee.compiler.costmodels.CardinalityEstimatedCostModel;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -73,19 +75,7 @@ public class Dispatcher {
 	
 	private Map<Integer,QueryEvaluator> _queryEvaluators;
 	
-	private CostModel _costModel;
-	
-	public Dispatcher(MetadataManager schema, CostModel costModel) {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER Dispatcher()");
-		}
-		_schema = schema;
-		_queryEvaluators = new HashMap<Integer, QueryEvaluator>();
-		_costModel = costModel;
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN Dispatcher()");
-		}
-	}
+	private AutonomicManager _autonomicManager;
 	
 	public Dispatcher(MetadataManager schema) {
 		if (logger.isDebugEnabled()) {
@@ -93,7 +83,9 @@ public class Dispatcher {
 		}
 		_schema = schema;
 		_queryEvaluators = new HashMap<Integer, QueryEvaluator>();
-		_costModel = new CostModel();
+		/*set up cost modle structure */
+    _autonomicManager = new AutonomicManager();
+		
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN Dispatcher()");
 		}
@@ -152,48 +144,24 @@ public class Dispatcher {
 			try {
 				SensorNetworkQueryPlan snQueryPlan = (SensorNetworkQueryPlan)queryPlan;
 				CostParameters costParams = snQueryPlan.getCostParameters();
-				CodeGenTarget target = CodeGenTarget.TELOSB_T2; //default
-				if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET)) 
+			    String sep = System.getProperty("file.separator");
+				String outputDir = SNEEProperties.getSetting(
+				SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
+				sep + queryPlan.getQueryName() + sep;
+				SNCB sncb = snQueryPlan.getSNCB();
+        _autonomicManager.setQueryExecutionPlan(queryPlan);
+        _autonomicManager.runCostModels();
+        _autonomicManager.runAnyliserWithDeadNodes();
+				SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, costParams);
+				_autonomicManager.setListener(mr);
+				CodeGenTarget target = getTarget();
+				InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
+				 _queryEvaluators.put(queryID, queryEvaluator);
+				if(target != CodeGenTarget.AVRORA_MICA2_T2 && target != CodeGenTarget.AVRORA_MICAZ_T2)
 				{
-				  try 
-				  {
-					target = CodeGenTarget.parseCodeTarget(SNEEProperties
-							.getSetting(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET));
-				  } 
-				  catch (SNEEConfigurationException e) 
-				  {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				  }
-				}
-				if(target == CodeGenTarget.AVRORA_MICA2_T2 || target == CodeGenTarget.AVRORA_MICAZ_T2)
-				{
-				  int testNo = 1;
-				  while(_costModel.runTests())
-				  {
-				    String sep = System.getProperty("file.separator");
-				    String outputDir = SNEEProperties.getSetting(
-					  	    SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
-						    sep + queryPlan.getQueryName() + "Test" + testNo + sep;
-				    SNCB sncb = snQueryPlan.getSNCB();
-				    SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, costParams);
-				    //InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
-				    //_queryEvaluators.put(queryID, queryEvaluator);
-				    //sncb.start();
-				    testNo++;
-				  }
-				}
-				else
-				{
-					String sep = System.getProperty("file.separator");
-					String outputDir = SNEEProperties.getSetting(
-							SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
-							sep + queryPlan.getQueryName() + sep;
-					SNCB sncb = snQueryPlan.getSNCB();
-					SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, costParams);
-					InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
-					_queryEvaluators.put(queryID, queryEvaluator);
-					sncb.start();
+				//  InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
+				  //_queryEvaluators.put(queryID, queryEvaluator);
+				  sncb.start();
 				}
 			} catch (Exception e) {
 				logger.warn(e.getLocalizedMessage(), e);
@@ -205,6 +173,28 @@ public class Dispatcher {
 		}
 	}
 
+	private CodeGenTarget getTarget()
+    {
+    	if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET)) 
+    	{
+    	  try 
+    	  {
+    		return CodeGenTarget.parseCodeTarget(SNEEProperties
+    				.getSetting(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET));
+    	  } 
+    	  catch (SNEEConfigurationException e) 
+    	  {
+    		// TODO Auto-generated catch block
+    		e.printStackTrace();
+    		return CodeGenTarget.TELOSB_T2; //default
+    	  }
+    	}
+    	else
+    	{
+    		return CodeGenTarget.TELOSB_T2; //default
+    	}
+    }
+	
 	/**
 	 * Using a method for constructing the query evaluator so that it can be
 	 * overridden as a mock object for testing.
@@ -275,5 +265,15 @@ public class Dispatcher {
 			logger.debug("RETURN");
 		}
 	}
+  public void setDeadNodes(ArrayList<Integer> deadNodes)
+  {
+    _autonomicManager.setDeadNodes(deadNodes);// TODO Auto-generated method stub
+    
+  }
+  public void setNoDeadNodes(int noDeadNodes)
+  {
+    _autonomicManager.setNoDeadNodes(noDeadNodes);// TODO Auto-generated method stub
+    
+  }
 
 }

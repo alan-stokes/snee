@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.compiler.costmodels.IOT;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -29,13 +30,15 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 	
 	private Agenda agenda;
 	
+	private IOT instanceDAF;
+
 	/**
 	 * Constructor
 	 * @param dlaf The input DLAF
 	 * @throws TypeMappingException 
 	 * @throws SchemaMetadataException 
 	 */
-	public SensorNetworkQueryPlan(DLAF dlaf, RT rt, DAF daf, Agenda agenda, 
+	public SensorNetworkQueryPlan(DLAF dlaf, RT rt, DAF daf, IOT instanceDAF, Agenda agenda, 
 	String queryName) 
 	throws  SchemaMetadataException, TypeMappingException {
 		super(dlaf, queryName);
@@ -44,6 +47,7 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 		this.rt = rt;
 		this.daf = daf;
 		this.agenda = agenda;
+		this.instanceDAF = instanceDAF;
 		
 		SensornetOperator rootOperator = daf.getRootOperator();
 		metadata = new QueryPlanMetadata(rootOperator.getAttributes());
@@ -64,6 +68,13 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 	 */
 	public RT getRT() {
 		return rt;
+	}
+
+	/**
+	 * @return the instance daf
+	 */
+	public IOT getInstanceDAF() {
+		return instanceDAF;
 	}
 
 	/**

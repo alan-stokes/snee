@@ -26,7 +26,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperatorImpl;
 
 
-public class InstanceDAF extends SNEEAlgebraicForm
+public class IOT extends SNEEAlgebraicForm
 {
   private HashMapList<Site,InstanceOperator> siteToOpInstMap 
       = new HashMapList<Site,InstanceOperator>();
@@ -43,7 +43,7 @@ public class InstanceDAF extends SNEEAlgebraicForm
   protected static int candidateCount = 0;
   
   
-  public InstanceDAF(final PAF paf, final RT rt, final String queryName) 
+  public IOT(final PAF paf, final RT rt, final String queryName) 
   throws SNEEException, SchemaMetadataException
   {
     super(queryName);

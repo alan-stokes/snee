@@ -87,7 +87,7 @@ def readMakeLog(logfile, sizeFile, targetParameter = "telosb"):
 	(mote, ram, rom) = parseMemoryValues(logfile, targetParameter)
 	if sizeFile!=None:
 		sizeFile.write(str(mote)+","+str(rom)+","+str(ram)+","+str(rom+ram)+"\n")
-	if (ram > 4096):
+	if (ram > 10240):
 		reportError ("RAM = "+str(ram)+" in file "+str(sizeFile))
 		return ram
 	return 0

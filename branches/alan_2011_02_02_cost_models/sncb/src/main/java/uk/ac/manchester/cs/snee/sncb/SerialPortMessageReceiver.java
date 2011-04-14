@@ -32,7 +32,7 @@ public class SerialPortMessageReceiver extends Observable
 implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 
 	private Logger logger = 
-		Logger.getLogger(TinyOS_SNCB.class.getName());
+		Logger.getLogger(TinyOS_SNCB_TelosB.class.getName());
 	
 	private MoteIF moteIF;
 	  

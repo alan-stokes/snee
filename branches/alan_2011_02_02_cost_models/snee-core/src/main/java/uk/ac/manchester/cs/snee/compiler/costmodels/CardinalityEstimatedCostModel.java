@@ -2,13 +2,9 @@ package uk.ac.manchester.cs.snee.compiler.costmodels;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
@@ -21,99 +17,44 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetRStreamOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSelectOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
-import uk.ac.manchester.cs.snee.sncb.SNCB;
-import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 
-public class CostModel
+public class CardinalityEstimatedCostModel
 {
-  private InstanceDAF instanceDAF;
+  private IOT instanceDAF;
   private Agenda agenda;
   private RT routingTree;
-  private int testNo=1;
-  private ArrayList<Integer> sites = new ArrayList<Integer>();
-  private ArrayList<Integer> deadSites = new ArrayList<Integer>();
-  private Random generator = new Random();
-  float output = 1;
+  private float epochResult;
   
-  public CostModel()
+  public CardinalityEstimatedCostModel(QueryExecutionPlan qep)
   {
-  }
-
-  public boolean runTests() throws OptimizationException 
-  {
-	if(testNo ==1)
-	{
-	  //chooses to kill sites which contains acquires
-	  int biggestSiteID = routingTree.getMaxSiteID();
-	  int rootSiteValue = Integer.parseInt(routingTree.getRoot().getID());
-	  for(int siteNo = rootSiteValue; siteNo < biggestSiteID; siteNo++)
-	  {
-		Site toAdd = routingTree.getSite(siteNo);
-		if(!toAdd.isDead())
-		{
-		  sites.add(siteNo);
-		}
-		else
-		{
-		  deadSites.add(siteNo);
-		}
-	  }
-	}
-	
-	if(output == 0)
-	{
-	  Site reActivate = routingTree.getSite(deadSites.get(deadSites.size() -1));
-      reActivate.setisDead(false); 
-	  deadSites.remove(deadSites.size()-1);
-	}
-	
-	if( testNo < 5)
-	{
-	  int indexToSiteToDie = generator.nextInt(sites.size());
-	  int siteToDie = sites.get(indexToSiteToDie);
-	  Site toDie = routingTree.getSite(siteToDie);
-	  toDie.setisDead(true);
-	  sites.remove(indexToSiteToDie);
-	  deadSites.add(siteToDie);
-	  output = returnCardinalityOfQuery();
-	  String deadSitesList = "";
-	  for(int index = 0; index < deadSites.size(); index++)
-	  {
-		  deadSitesList = deadSitesList.concat(deadSites.get(index).toString() + " ");
-	  }
-	  System.out.println("Test with node " + deadSitesList + "death, cardianlity of the query per epoch is estimated to be " + output);
-	  System.out.println("Test with node " + deadSitesList + "death, cardianlity of the query per agenda cycle is estimated to be " + output * agenda.getBufferingFactor());
-	  testNo ++;
-	  return true;
-	}
-	else
-	{
-		return false;
-	}
+	  SensorNetworkQueryPlan sqep= (SensorNetworkQueryPlan) qep;
+	  agenda = sqep.getAgenda();
+	  routingTree = sqep.getRT();
+	  instanceDAF = sqep.getInstanceDAF(); 
   }
   
-  public float returnCardinalityOfQuery() throws OptimizationException 
+  public float returnEpochResult() throws OptimizationException 
+  {
+	  return epochResult;
+  }
+  
+  public float returnAgendaExecutionResult() throws OptimizationException 
+  {
+	  float epochResult = returnEpochResult();
+	  return epochResult * agenda.getBufferingFactor();
+  }
+  
+  
+  public void runModel() throws OptimizationException 
   {
 	  InstanceOperator rootOperator = instanceDAF.getRoot();
-	  
 	  CardinalityStruct result = cardinalities(rootOperator);
-	  return result.getCard();
-  }
-  
-  
-  public void runCardinality() throws OptimizationException 
-  {
-	  InstanceOperator rootOperator = instanceDAF.getRoot();
-	  
-	  CardinalityStruct result = cardinalities(rootOperator);
-	  float value = result.getCard();
-    System.out.println("the cardinality of this query for epoch cycle is " + value);
-    System.out.println("the cardinality of this query for agenda cycle is " + value * agenda.getBufferingFactor());
+	  epochResult = result.getCard();
   }
   
   private CardinalityStruct cardinalities(InstanceOperator operator) 
@@ -366,18 +307,9 @@ public class CostModel
     return outputs;
   }
   
-  public void addInstanceDAF(InstanceDAF daf)
+  public void setSiteDead(int siteID)
   {
-    this.instanceDAF = daf;
-  }
-
-  public void addAgenda(Agenda agenda) 
-  {
-	this.agenda = agenda;
-  }
-
-  public void addRoutingTree(RT rt) 
-  {
-	this.routingTree = rt;
+	  Site toDie = routingTree.getSite(siteID);
+	  toDie.setisDead(true);  
   }
 }

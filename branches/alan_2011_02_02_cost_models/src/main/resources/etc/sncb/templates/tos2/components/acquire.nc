@@ -7,8 +7,8 @@ __HEADER__
 
 	__OUTPUT_TUPLE_TYPE__ outQueue[OUT_QUEUE_CARD];
 __READING_VAR_DECLS__
-  	int8_t outHead=-1;
-	int8_t outTail=0;
+  	int outHead=-1;
+	int outTail=0;
 	nx_int32_t currentEvalEpoch;
 
 	void task constructTupleTask();

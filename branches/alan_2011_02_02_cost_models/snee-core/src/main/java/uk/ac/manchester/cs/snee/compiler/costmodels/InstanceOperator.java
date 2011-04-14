@@ -138,7 +138,7 @@ public class InstanceOperator extends NodeImplementation implements Node
    */
   public boolean isNodeDead()
   {
-    return site.isDead();
+    return site.isDeadInSimulation();
   }
   
   /**

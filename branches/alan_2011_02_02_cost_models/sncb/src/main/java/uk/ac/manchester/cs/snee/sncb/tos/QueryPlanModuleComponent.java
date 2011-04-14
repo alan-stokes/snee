@@ -157,9 +157,13 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		
 			radioOn = false;
 			
+			agendaCheckingBuff.append("\t\t\tif (deadBySimulation) \n");
+			agendaCheckingBuff.append("\t\t\t{ \n");
+			agendaCheckingBuff.append("\t\t\t\t return; \n");
+			agendaCheckingBuff.append("\t\t\t} \n\n");
+			
 			//for each task start time in the agenda
-			for (int i = 0; i < startTimeList.size(); i++) {
-		
+			for (int i = 0; i < startTimeList.size(); i++) {		
 			    //Get values for lastTime, startTime  and nextDelta
 			    boolean lastTask = false;
 			    if (i == startTimeList.size() - 1) {
@@ -410,38 +414,51 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	out.println("\t}\n\n");
     }
 
-    private void doAgendaChecking(final PrintWriter out,
+    private static void doAgendaChecking(final PrintWriter out,
 	    final StringBuffer agendaCheckingBuff) {
 	out.println("\ttask void processAgendaItemsTask()");
 	out.println("\t{");
-	Site thisSite = tossimConfig.getSite();
-	CodeGenTarget target = CodeGenTarget.TELOSB_T2; //default
-	if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET)) 
-	{
-	  try 
-	  {
-		target = CodeGenTarget.parseCodeTarget(SNEEProperties
-				.getSetting(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET));
-	  } 
-	  catch (SNEEConfigurationException e) 
-	  {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	  }
-	}
-	if(!thisSite.isDead() && 
-	(target == CodeGenTarget.AVRORA_MICA2_T2 || target == CodeGenTarget.AVRORA_MICAZ_T2))	
-	  out.println(agendaCheckingBuff);
+	out.println(agendaCheckingBuff);
 	out.println("\t}\n\n");
     }
 
+    private CodeGenTarget getTarget()
+    {
+    	if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET)) 
+    	{
+    	  try 
+    	  {
+    		return CodeGenTarget.parseCodeTarget(SNEEProperties
+    				.getSetting(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET));
+    	  } 
+    	  catch (SNEEConfigurationException e) 
+    	  {
+    		// TODO Auto-generated catch block
+    		e.printStackTrace();
+    		return CodeGenTarget.TELOSB_T2; //default
+    	  }
+    	}
+    	else
+    	{
+    		return CodeGenTarget.TELOSB_T2; //default
+    	}
+    }
     
-	private static void doInitialize(final PrintWriter out, final int firstDelta) {
+    
+	private void doInitialize(final PrintWriter out, final int firstDelta) {
 		
 		out.println("\ttask void initialize()");
 		out.println("\t{");
 		out.println("\t\tnextDelta = " + (firstDelta - 1) + ";");
 		out.println("\t\tagendaRow = 0;");
+		Site thisSite = tossimConfig.getSite();
+		CodeGenTarget target = getTarget();
+		
+		if(thisSite.isDeadInSimulation() && 
+		(target == CodeGenTarget.AVRORA_MICA2_T2 || target == CodeGenTarget.AVRORA_MICAZ_T2))	
+		  out.println("\t\tdeadBySimulation = TRUE;");
+		else
+		  out.println("\t\tdeadBySimulation = FALSE;");
 		out.println("\t\tpost processAgendaItemsTask();");
 		out.println("\t}\n");
 	}
@@ -886,6 +903,14 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    nextDelta = startTimeList.get(1).intValue()
 		    - startTimeList.get(0).intValue();
 	}
+	
+	//Hack to get round problem with discontinuous sensing option
+	//otherwise you get a negative nextDelta and node simply hangs after
+	//the end of first agenda execution.
+	if (nextDelta<0) {
+		nextDelta = (long) costParams.getTurnOffRadio(); //duration of final sleep task
+	}
+	
 	//CB: It takes one to start a timer
 	nextDelta = nextDelta - 1;
 	return nextDelta;
@@ -911,6 +936,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	out.println("\n");
 	out.println("\tuint32_t nextDelta;\n");
 	out.println("\tuint32_t agendaRow;\n");
+	out.println("\tbool deadBySimulation;\n");
 	out.println("\tint busyUntil;\n");
     }
 }

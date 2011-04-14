@@ -205,6 +205,20 @@ public class RT extends SNEEAlgebraicForm {
 		return result;
 	}    
     
+	public ArrayList<Integer> getSiteIDs()
+	{
+	  ArrayList<Integer> siteIDs = new ArrayList<Integer>();
+	  Iterator<Site> sites = this.siteIterator(TraversalOrder.PRE_ORDER);
+	  while (sites.hasNext()) 
+	  {
+		Site site = sites.next();
+		int siteID = new Integer(site.getID());
+		siteIDs.add(siteID);
+	  }
+	  return siteIDs;
+	}
+	
+	
 	public int getMaxSiteID() {
 		int maxSiteID = 0;
 		Iterator<Site> sites = this.siteIterator(TraversalOrder.PRE_ORDER);

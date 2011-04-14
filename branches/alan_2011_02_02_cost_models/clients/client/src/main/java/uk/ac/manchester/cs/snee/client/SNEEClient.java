@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Observable;
@@ -20,6 +21,9 @@ import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEController;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 
 public abstract class SNEEClient implements Observer {
 
@@ -163,4 +167,23 @@ public abstract class SNEEClient implements Observer {
 			logger.debug("RETURN");
 	}
 
+	public ArrayList<Integer> getSties()
+	{
+	  SNEEController control = (SNEEController) controller;
+	  SensorNetworkQueryPlan qep =  (SensorNetworkQueryPlan) control.getQEP();
+	  return qep.getRT().getSiteIDs();
+	}
+	
+	public void setDeadNodes(ArrayList<Integer> deadNodes)
+  {
+	  SNEEController control = (SNEEController) controller;
+    control.setDeadNodes(deadNodes);
+  }
+  
+  public void setDeadNodes(int noDeadNodes)
+  {
+    SNEEController control = (SNEEController) controller;
+    control.setNoDeadNodes(noDeadNodes);
+  }
+	
 }

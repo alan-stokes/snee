@@ -39,7 +39,7 @@ import java.io.StringReader;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.compiler.costmodels.CostModel;
+import uk.ac.manchester.cs.snee.compiler.costmodels.CardinalityEstimatedCostModel;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
@@ -88,14 +88,18 @@ public class QueryCompiler {
 	 * The metadata being used. 
 	 */
 	private MetadataManager metadata;
-	private CostModel costModel;
+	private QueryExecutionPlan qep;
+	
+	public QueryExecutionPlan getQEP()
+	{
+		return qep;
+	}
 
-	public QueryCompiler(MetadataManager schema, CostModel costModel) 
+	public QueryCompiler(MetadataManager schema) 
 	throws TypeMappingException {
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER QueryCompiler()");
 		metadata = schema;
-		this.costModel = costModel;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN QueryCompiler()");
 	}
@@ -169,14 +173,14 @@ public class QueryCompiler {
 	}
 	
 	private QueryExecutionPlan doSourcePlanning(DLAF dlaf, QoSExpectations qos, 
-	int queryID, CostModel model) 
+	int queryID) 
 	throws SNEEException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException,
 	OptimizationException, WhenSchedulerException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSourcePlanning: " + dlaf);
 		SourcePlanner planner = new SourcePlanner(metadata);
-		QueryExecutionPlan qep = planner.doSourcePlanning(dlaf, qos,
-			metadata.getCostParameters(), queryID, model);
+		qep = planner.doSourcePlanning(dlaf, qos,
+			metadata.getCostParameters(), queryID);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doSourcePlanning");
 		return qep;
@@ -243,7 +247,7 @@ public class QueryCompiler {
 		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Source Planner for query " + queryID);
-		QueryExecutionPlan qep = doSourcePlanning(dlaf, qos, queryID, costModel);
+		QueryExecutionPlan qep = doSourcePlanning(dlaf, qos, queryID);
 
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN: " + qep.getID());

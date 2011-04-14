@@ -6,16 +6,16 @@ __HEADER__
 	#define OUT_QUEUE_CARD __OUT_QUEUE_CARD__
 
 	__OUTPUT_TUPLE_TYPE__ outQueue[OUT_QUEUE_CARD];
-	int8_t outHead;
-	int8_t outTail;
+	int outHead;
+	int outTail;
 	int16_t currentEvalEpoch;
 
   	__CHILD_TUPLE_PTR_TYPE__ inQueue;
-	int8_t inHead;
-	int8_t inTail;
-	int8_t inHead2;
-	int8_t inTail2;
-	uint8_t inQueueSize;
+	int inHead;
+	int inTail;
+	int inHead2;
+	int inTail2;
+	int inQueueSize;
 __AGGREGATE_VAR_DECLS__
 
 
@@ -54,7 +54,7 @@ __AGGREGATE_VAR_INITIALIZATION__
 		return SUCCESS;
 	}
 
-	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
+	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int _inHead, int _inTail, int _inQueueSize)
 	{
 		atomic
 		{
