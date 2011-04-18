@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<schema xmlns="http://snee.cs.man.ac.uk/namespace/logical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/logical-schema ../schema/logical-schema.xsd">
+
+      <stream name="SeaDefence" type="pull">
+         <column name="seaLevel">
+          	<type class ="integer"/>
+         </column>
+         <column name="airTemperature">
+          	<type class ="integer"/>
+         </column>
+     </stream>
+
+     <stream name="SeaDefenceEast" type="pull">
+         <column name="seaLevel">
+          	<type class ="integer"/>
+         </column>
+         <column name="airTemperature">
+          	<type class ="integer"/>
+         </column>         
+     </stream>
+
+      <stream name="SeaDefenceWest" type="pull">
+         <column name="seaLevel">
+          	<type class ="integer"/>
+         </column>
+         <column name="airTemperature">
+          	<type class ="integer"/>
+         </column>         
+     </stream>
+
+	<!-- Testing for the newly created schema, that takes DATs into account. This is a testing
+	table for the Linear Regression, so we only have 2 columns. -->
+     	<!--column name="ts">
+     		<type class="timestamp"/>
+     	</column> -->
+      <stream name="SeaDefenceLRF" isIntensional="true" type="push">
+         <column name="seaLevel">
+          	<type class ="integer"/>
+         </column>
+         <column name="airTemperature">
+          	<type class ="integer"/>
+         </column>
+         <datParams type="CLASSIFIER" subtype="LinearRegressionFunction">
+			<derivedAttribute name="airTemperature"/>
+			<source>SELECT seaLevel, airTemperature FROM SeaDefenceEast[FROM NOW TO NOW SLIDE 5000 seconds]</source>
+         </datParams>
+     </stream>     
+
+
+	<!-- 
+	<stream name="forestMoisture" type="push">
+		<column name="ts">
+			<type class ="timestamp"/>
+		</column>
+		<column name="moisture">
+			<type class ="integer"/>
+		</column>
+	</stream>
+	 -->
+
+	<!-- Testing for the newly created schema, that takes DATs into account. This is a testing
+	table for the Linear Regression, so we only have 2 columns. -->
+     	<!--column name="ts">
+     		<type class="timestamp"/>
+     	</column>
+      <stream name="forestLRF" isIntensional="true" type="push">
+         <column name="temperature">
+          	<type class ="float"/>
+         </column>
+         <column name="moisture">
+          	<type class ="float"/>
+         </column>
+         <datParams type="CLASSIFIER" subtype="LinearRegressionFunction">
+			<derivedAttribute name="temperature"/>
+			<source>SELECT moisture, temperature FROM Forest[FROM NOW-10 MINUTES TO NOW SLIDE 1 MINUTE]</source>
+         </datParams>
+     </stream>     
+     -->
+
+</schema>
