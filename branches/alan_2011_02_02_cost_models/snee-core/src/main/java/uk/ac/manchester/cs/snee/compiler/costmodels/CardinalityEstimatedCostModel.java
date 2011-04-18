@@ -312,4 +312,9 @@ public class CardinalityEstimatedCostModel
 	  Site toDie = routingTree.getSite(siteID);
 	  toDie.setisDead(true);  
   }
+
+  public long getBeta()
+  {
+    return agenda.getBufferingFactor();
+  }
 }

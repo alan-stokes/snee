@@ -50,6 +50,21 @@ public abstract class SNEEClient implements Observer {
 			logger.debug("RETURN SNEEClient()");
 	}
 	
+	 public SNEEClient(String query, double duration, String queryParams, String sneeProperties) 
+	  throws SNEEException, IOException, SNEEConfigurationException {
+	    if (logger.isDebugEnabled())
+	      logger.debug("ENTER SNEEClient() with query " + query + 
+	          " duration " + duration);
+	    
+	    _query = query;
+	    _duration = duration;
+	    _queryParams = queryParams;
+	    controller = new SNEEController(sneeProperties);
+
+	    if (logger.isDebugEnabled())
+	      logger.debug("RETURN SNEEClient()");
+	  }
+	
 	public SNEEClient(String query, double duration) 
 	throws SNEEException, IOException, SNEEConfigurationException {
 		this(query, duration, null);

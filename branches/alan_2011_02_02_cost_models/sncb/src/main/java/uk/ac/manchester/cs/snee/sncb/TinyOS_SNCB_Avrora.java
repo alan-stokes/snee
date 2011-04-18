@@ -3,6 +3,9 @@ package uk.ac.manchester.cs.snee.sncb;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import avrora.Avrora;
+import avrora.Main;
+
 import net.tinyos.message.Message;
 
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
@@ -16,7 +19,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 
 public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB 
 {
-  private Process p;
+  private Process avrora = null;
   
   public TinyOS_SNCB_Avrora()throws SNCBException 
   {
@@ -102,6 +105,7 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
         System.in.read();
       }
 
+      String avroraCommand = "";
       if (!this.useNodeController || this.serialPort==null) {
         System.out.println("Not using node controller, or no mote "+
             "plugged in, so unable to send query plan using" +
@@ -109,16 +113,23 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
         System.out.println("Please proceed using manual commands.\n");
         if (this.target == CodeGenTarget.AVRORA_MICA2_T2 ||
             this.target == CodeGenTarget.AVRORA_MICAZ_T2) {
-          TinyOS_SNCB_Utils.printAvroraCommands(queryOutputDir, qep, 
+          avroraCommand = TinyOS_SNCB_Utils.printAvroraCommands(queryOutputDir, qep, 
               this.targetDirName, this.target);         
         }
+        
         //set up running Avrora
-        String nescOutputDir = System.getProperty("user.dir") + "/"
-        + queryOutputDir + targetDirName;
+        /*
+        AvroraWrapper avrora = new AvroraWrapper(avroraCommand);
+        Thread avroraThread = new Thread(avrora);
+        avroraThread.setPriority(1);
+        Thread.currentThread().setPriority(2);
+        
+        avroraThread.start();
+        */
+        
         Runtime rt = Runtime.getRuntime();
-        Process t = rt.exec("chmod +x " + nescOutputDir + "/avrora");
-        p = rt.exec(nescOutputDir + "/avrora");
-        Thread.currentThread().sleep((long)1000);
+        avrora = rt.exec("java avrora.Main " + avroraCommand);
+        Thread.currentThread().sleep((long)2500);
         //System.exit(0);
         mr = setUpResultCollector(qep, queryOutputDir);
         return mr;
@@ -147,6 +158,8 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
       }
 
     } catch (Exception e) {
+      if(avrora != null)
+        avrora.destroy();
       e.printStackTrace();
       logger.warn(e.getLocalizedMessage(), e);
       throw new SNCBException(e.getLocalizedMessage(), e);
@@ -155,7 +168,7 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
       logger.debug("RETURN register()");
     return mr;
   }
-  
+
   protected SerialPortMessageReceiver setUpResultCollector(
       SensorNetworkQueryPlan qep, String queryOutputDir) throws Exception {
     if (logger.isTraceEnabled())
@@ -166,7 +179,6 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
         + queryOutputDir + targetDirName;
     String nesCHeaderFile = nescOutputDir + "/mote" + qep.getGateway()
         + "/QueryPlan.h";
-    System.out.println(nesCHeaderFile);
     String outputJavaFile = System.getProperty("user.dir") + "/"
         + queryOutputDir + "DeliverMessage.java";
     String params[] = { "java", "-target=null",
@@ -208,18 +220,12 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
   public void stop(SensorNetworkQueryPlan qep) throws SNCBException 
   {
     isStarted = false;
-    //p.destroy();
+    avrora.destroy();
   }
   
   public void deregister(SensorNetworkQueryPlan qep) throws SNCBException {
     if (logger.isDebugEnabled())
       logger.debug("ENTER deregister()");
-    try {
-      
-    } catch (Exception e) {
-      logger.warn(e.getLocalizedMessage());
-      throw new SNCBException(e.getLocalizedMessage(), e);
-    }
     if (logger.isDebugEnabled())
       logger.debug("RETURN deregister()");
   }

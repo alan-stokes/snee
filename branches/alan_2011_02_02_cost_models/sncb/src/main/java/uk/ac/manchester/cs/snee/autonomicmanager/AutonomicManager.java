@@ -1,7 +1,14 @@
 package uk.ac.manchester.cs.snee.autonomicmanager;
 
 import java.util.ArrayList;
+import java.util.Map;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
+import uk.ac.manchester.cs.snee.ResultStore;
+import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
@@ -15,16 +22,18 @@ public class AutonomicManager
   private QueryExecutionPlan qep;
   private ArrayList<Integer> deadNodes = null;
   private int noDeadNodes = 0;
+  private static Logger resultsLogger = 
+    Logger.getLogger("results.autonomicManager");
   
   public AutonomicManager()
   {
-	anyliser = new AutonomicManagerAnaylsis(this);
-	monitor = new AutonomicManagerMonitor(this);
-	planner = new AutonomicManagerPlanner(this);
-	executer = new AutonomicManagerExecuter(this);
+	  anyliser = new AutonomicManagerAnaylsis(this);
+	  monitor = new AutonomicManagerMonitor(this);
+	  planner = new AutonomicManagerPlanner(this);
+	  executer = new AutonomicManagerExecuter(this);
   }
  
-  public void setQueryExecutionPlan(QueryExecutionPlan qep)
+  public void setQueryExecutionPlan(QueryExecutionPlan qep) throws SNEEException, SNEEConfigurationException
   {
 	  this.qep = qep;
 	  anyliser.initiliseCardECM(qep);
@@ -37,10 +46,11 @@ public class AutonomicManager
   
   public void runAnyliserWithDeadNodes() throws OptimizationException
   {
-	if(deadNodes != null)
-	  anyliser.simulateDeadNodes(deadNodes);
-	else
+	  if(deadNodes != null)
+	    anyliser.simulateDeadNodes(deadNodes);
+	  else
       anyliser.simulateDeadNodes(noDeadNodes);
+	  monitor.queryStarting();
   }
   
   public void setDeadNodes(ArrayList<Integer> deadNodes)
@@ -68,8 +78,26 @@ public class AutonomicManager
     monitor.addPacketReciever(mr);
   }
   
-  public void callAnaysliserAnaylsisSNEECard(float sneeTuplesPerEpoch, float sneeTuplesPerAgendaCycle)
+  public void callAnaysliserAnaylsisSNEECard(Map <Integer, Integer> sneeTuplesPerEpoch)
   {
-    anyliser.anaylsisSNEECard(sneeTuplesPerEpoch, sneeTuplesPerAgendaCycle);
+    anyliser.anaylsisSNEECard(sneeTuplesPerEpoch);
+  }
+
+  public void setResultSet(ResultStore resultSet)
+  {
+    monitor.setResultSet(resultSet);
+    
+  }
+
+  public void queryEnded()
+  {
+    monitor.queryEnded();  
+  }
+
+  //no tuples received this query
+  public void callAnaysliserAnaylsisSNEECard()
+  {
+    anyliser.anaylsisSNEECard();
+    
   }
 }

@@ -150,6 +150,7 @@ public class Dispatcher {
 				sep + queryPlan.getQueryName() + sep;
 				SNCB sncb = snQueryPlan.getSNCB();
         _autonomicManager.setQueryExecutionPlan(queryPlan);
+        _autonomicManager.setResultSet(resultSet);
         _autonomicManager.runCostModels();
         _autonomicManager.runAnyliserWithDeadNodes();
 				SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, costParams);
@@ -220,6 +221,7 @@ public class Dispatcher {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER with: " + queryID);
 		}
+		_autonomicManager.queryEnded();
 		boolean success = false;
 		if (_queryEvaluators.containsKey(queryID)) {
 			QueryEvaluator queryEvaluator = _queryEvaluators.get(queryID);
