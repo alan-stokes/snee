@@ -79,6 +79,7 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
+import uk.ac.manchester.cs.snee.sncb.SensorType;
 
 public class MetadataManager {
 
@@ -478,6 +479,15 @@ public class MetadataManager {
 	SchemaMetadataException, TypeMappingException, SourceMetadataException 
 	{
 		_sources.addServiceSource(string, url, sourceType);
+	}
+	
+	/**
+	 * Given an attribute, returns the corresponding sensor type it is mapped to.
+	 * @param attr
+	 * @return
+	 */
+	public SensorType getAttributeSensorType(Attribute attr) {
+		return this._sources.getAttributeSensorType(attr);
 	}
 	
 }

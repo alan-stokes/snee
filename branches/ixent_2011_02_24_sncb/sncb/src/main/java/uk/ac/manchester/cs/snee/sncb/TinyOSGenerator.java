@@ -48,9 +48,12 @@ import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
@@ -58,6 +61,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
@@ -234,6 +239,8 @@ public class TinyOSGenerator {
     
     private CostParameters costParams;
     
+    private MetadataManager metadata;
+    
 	private boolean controlRadioOff;
 
 	private boolean enablePrintf;
@@ -257,7 +264,7 @@ public class TinyOSGenerator {
 	private boolean useNodeController;
 	    
     public TinyOSGenerator(CodeGenTarget codeGenTarget,
-    boolean combinedImage, String nescOutputDir, CostParameters costParams, boolean controlRadioOff,
+    boolean combinedImage, String nescOutputDir, MetadataManager metadata, boolean controlRadioOff,
     boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
     boolean usePowerManagement, boolean deliverLast, boolean adjustRadioPower,
     boolean includeDeluge, boolean debugLeds, boolean showLocalTime,
@@ -285,10 +292,11 @@ public class TinyOSGenerator {
         	this.tossimFlag = true;
     		this.useNodeController = false; // incompatible
         	this.combinedImage = true; // doesn't work otherwise
-    	}    	
+    	}
     	
     	this.nescOutputDir = nescOutputDir;
-		this.costParams = costParams;
+		this.costParams = metadata.getCostParameters();
+		this.metadata = metadata;
 
 		this.controlRadioOff =controlRadioOff;
 		this.enablePrintf = enablePrintf;
@@ -903,20 +911,33 @@ public class TinyOSGenerator {
 	private void wireFragToSensors(final Site currentSite, 
 	final NesCConfiguration config, final FragmentComponent fragComp, final SensornetOperator op)
 	throws CodeGenerationException {
-		final int numSensedAttr
-		= ((AcquireOperator) op.getLogicalOperator()).getNumSensedAttributes();
-		for (int i = 0; i < numSensedAttr; i++) {
-			//TODO: look up sensorID in metadata
-			String sensorId = new Integer(i).toString();
+		AcquireOperator acqOp = (AcquireOperator) op.getLogicalOperator();
+		List<Attribute> attributes = acqOp.getAttributes();
+		
+		int sensorID = 0;
+		for (Attribute attr : attributes) {
+			if ((attr instanceof EvalTimeAttribute) ||
+					(attr instanceof IDAttribute)) {
+				continue;
+			}
+//			String extentName = attr.getExtentName();
+			SensorType sensorType = metadata.getAttributeSensorType(attr);
+			String nesCComponentName = COMPONENT_SENSOR;
+			String nesCInterfaceName = INTERFACE_READ;
+			
+			System.err.println(""+sensorType);
+			
 			final SensorComponent sensorComp = new SensorComponent(
-					currentSite, sensorId, COMPONENT_SENSOR, config, "",
+					currentSite, ""+sensorID, nesCComponentName, config, "",
 					tossimFlag);
 			config.addComponent(sensorComp);
 			final String sensorName = sensorComp.getID();
 
 			config.addWiring(fragComp.getID(), sensorName,
 					INTERFACE_READ, TYPE_READ,
-					"Op" + op.getID() + INTERFACE_READ + i, INTERFACE_READ);
+					"Op" + op.getID() + INTERFACE_READ + sensorID, nesCInterfaceName);
+			
+			sensorID++;
 		}
 	}
 

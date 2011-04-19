@@ -16,6 +16,7 @@ import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -155,7 +156,7 @@ public class TinyOS_SNCB implements SNCB {
 
 	@Override
 	public SerialPortMessageReceiver register(SensorNetworkQueryPlan qep,
-			String queryOutputDir, CostParameters costParams)
+			String queryOutputDir, MetadataManager metadata)
 			throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER register()");
@@ -168,7 +169,7 @@ public class TinyOS_SNCB implements SNCB {
 
 			logger.trace("Generating TinyOS/nesC code for query plan.");
 			System.out.println("Generating TinyOS/nesC code for query plan.");
-			generateNesCCode(qep, queryOutputDir, costParams);
+			generateNesCCode(qep, queryOutputDir, metadata);
 
 			if (demoMode) {
 				System.out.println("nesC code generation complete.\n");
@@ -234,7 +235,7 @@ public class TinyOS_SNCB implements SNCB {
 
 	
 	private void generateNesCCode(SensorNetworkQueryPlan qep,
-			String queryOutputDir, CostParameters costParams)
+			String queryOutputDir, MetadataManager metadata)
 			throws IOException, SchemaMetadataException, TypeMappingException,
 			OptimizationException, CodeGenerationException {
 		// TODO: move some of these to an sncb .properties file
@@ -250,7 +251,7 @@ public class TinyOS_SNCB implements SNCB {
 		boolean showLocalTime = false;
 
 		TinyOSGenerator codeGenerator = new TinyOSGenerator(target, combinedImage, queryOutputDir,
-				costParams, controlRadioOff, enablePrintf, useStartUpProtocol,
+				metadata, controlRadioOff, enablePrintf, useStartUpProtocol,
 				enableLeds, usePowerManagement, deliverLast, adjustRadioPower,
 				includeDeluge, debugLeds, showLocalTime, useNodeController);
 		// TODO: in the code generator, need to connect controller components to
