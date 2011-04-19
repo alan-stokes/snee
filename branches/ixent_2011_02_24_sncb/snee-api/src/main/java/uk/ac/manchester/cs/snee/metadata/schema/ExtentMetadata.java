@@ -102,6 +102,21 @@ public class ExtentMetadata {
 	}
 
 	/**
+	 * Returns the attribute with the given name, or null if not found.
+	 * @param attributeName
+	 * @return
+	 */
+	public Attribute getAttribute(String attributeName) {
+		for (Attribute attr : _attributes) {
+			String attrName = attr.getAttributeSchemaName();
+			if (attrName.equalsIgnoreCase(attributeName)) {
+				return attr;
+			}
+		}
+		return null;
+	}
+	
+	/**
 	 * Test if this extent has an attribute with the specified
 	 * name.
 	 * @param attribute name of the attribute to test for
