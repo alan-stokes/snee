@@ -263,6 +263,8 @@ public class TinyOSGenerator {
 	
 	private boolean useNodeController;
 	    
+	private boolean usesCustomSeaLevelSensor = false;
+	
     public TinyOSGenerator(CodeGenTarget codeGenTarget,
     boolean combinedImage, String nescOutputDir, MetadataManager metadata, boolean controlRadioOff,
     boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
@@ -917,6 +919,9 @@ public class TinyOSGenerator {
 				getNesCInterfaceName(sensorType, this.target);
 			
 			System.err.println(""+sensorType);
+			if (sensorType == SensorType.SEA_LEVEL) {
+				usesCustomSeaLevelSensor = true;
+			}
 			
 			final SensorComponent sensorComp = new SensorComponent(
 					currentSite, ""+sensorID, nesCComponentName, config, "",
@@ -1995,17 +2000,21 @@ public class TinyOSGenerator {
 		}
 		if (this.target == CodeGenTarget.AVRORA_MICA2_T2 || 
 				this.target == CodeGenTarget.AVRORA_MICAZ_T2){
-			File dir = new File(nescOutputDir+ targetDirName + "/Blink");
-	        dir.mkdir();
-	        
-			Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/BlinkAppC.nc", 
-					nescOutputDir+ targetDirName + "/Blink/BlinkAppC.nc");
-			Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/BlinkC.nc", 
-					nescOutputDir+ targetDirName + "/Blink/BlinkC.nc");
-			Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/Makefile", 
-					nescOutputDir+ targetDirName + "/Blink/Makefile");
+			copyBlinkFiles();
 		}
     }
+
+	private void copyBlinkFiles() throws IOException, URISyntaxException {
+		File dir = new File(nescOutputDir+ targetDirName + "/Blink");
+		dir.mkdir();
+		
+		Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/BlinkAppC.nc", 
+				nescOutputDir+ targetDirName + "/Blink/BlinkAppC.nc");
+		Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/BlinkC.nc", 
+				nescOutputDir+ targetDirName + "/Blink/BlinkC.nc");
+		Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/Makefile", 
+				nescOutputDir+ targetDirName + "/Blink/Makefile");
+	}
 
     public void copySerialStarterFiles(String dir) throws IOException, URISyntaxException {
     	Template.instantiate(NESC_MISC_FILES_DIR + "/SerialStarterC.nc",
@@ -2054,7 +2063,30 @@ public class TinyOSGenerator {
 		    if (!this.useNodeController && isSink) {
 		    	copySerialStarterFiles(nescOutputDir + nodeDir);
 		    }
+		    
+		    if (this.usesCustomSeaLevelSensor) {
+		    	copySeaLevelSensorFiles(nescOutputDir + nodeDir);
+		    }
 		}
+	}
+
+	private void copySeaLevelSensorFiles(String dir) throws IOException,
+			URISyntaxException {
+		Template.instantiate(NESC_MISC_FILES_DIR + 
+				"/SeaLevelADC/Msp430Adc12.h",
+			     dir +"/Msp430Adc12.h");
+		Template.instantiate(NESC_MISC_FILES_DIR + 
+				"/SeaLevelADC/Msp430AdcREADME.txt",
+				dir + "/Msp430AdcREADME.txt");
+		Template.instantiate(NESC_MISC_FILES_DIR + 
+				"/SeaLevelADC/Msp430SeaLevelC.nc",
+			    dir +"/Msp430SeaLevelC.nc");
+		Template.instantiate(NESC_MISC_FILES_DIR + 
+				"/SeaLevelADC/Msp430SeaLevelP.nc",
+			    dir +"/Msp430SeaLevelP.nc");
+		Template.instantiate(NESC_MISC_FILES_DIR + 
+				"/SeaLevelADC/SeaLevelC.nc",
+			    dir +"/SeaLevelC.nc");
 	}
 
 	private void generateCombinedMiscFiles() throws IOException, URISyntaxException {
@@ -2075,7 +2107,11 @@ public class TinyOSGenerator {
 		    }
 		    
 	    	copySerialStarterFiles(nescOutputDir + targetDirName);
-		}
+	    	
+	    	if (this.usesCustomSeaLevelSensor) {
+	    		copySeaLevelSensorFiles(nescOutputDir + targetDirName);
+	    	}
+	    }
 	
 
 	/**
@@ -2121,6 +2157,10 @@ public class TinyOSGenerator {
 			    nescOutputDir + targetDirName +"/RandomSensorC.nc");
 		
     	copySerialStarterFiles(nescOutputDir + targetDirName);
+    	
+    	if (this.usesCustomSeaLevelSensor) {
+    		copySeaLevelSensorFiles(nescOutputDir + targetDirName);
+    	}
 	}
 
 
