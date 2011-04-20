@@ -45,24 +45,53 @@ public class SensorComponentUtils {
 		if (sensorType==SensorType.LIGHT) 
 			return "PhotoC";
 		if (sensorType==SensorType.PHOTO_SYNTHETIC_RADIATION) 
-			return null;
+			return "PhotoC";
 		if (sensorType==SensorType.TOTAL_SOLAR_RADIATION) 
-			return null;
+			return "PhotoC";
 		if (sensorType==SensorType.TEMPERATURE) 
 			return "TempC";
 		if (sensorType==SensorType.PRESSURE) 
-			return null;
+			return "PhotoC";
 		if (sensorType==SensorType.VOLTAGE) 
 			return "VoltageC";
 		if (sensorType==SensorType.SEA_LEVEL) 
-			return null;
+			return "PhotoC";
 		
 		return "PhotoC";
 	}
 
 	private static String getTossimNesCComponentName(SensorType sensorType) {
-		return "RandomC";
+		return "RandomSensorC";
 	}
 
-	//TODO: Interface types
+	public static String getNesCInterfaceName(SensorType sensorType, 
+			CodeGenTarget platform) {
+		
+		if (platform==CodeGenTarget.TELOSB_T2) 
+			return getTelosBNesCInterfaceName(sensorType);
+		else if (platform==CodeGenTarget.AVRORA_MICA2_T2 || 
+				platform==CodeGenTarget.AVRORA_MICAZ_T2) {
+			return getAvroraNesCInterfaceName(sensorType);
+		} else if (platform==CodeGenTarget.TOSSIM_T2) {
+			return getTossimNesCInterfaceName(sensorType);
+		}
+		return null;
+	}
+
+	private static String getTelosBNesCInterfaceName(SensorType sensorType) {
+		if (sensorType==SensorType.TEMPERATURE) 
+			return "TempC";
+		if (sensorType==SensorType.PRESSURE) 
+			return "PhotoC";
+		
+		return "Read";
+	}
+
+	private static String getAvroraNesCInterfaceName(SensorType sensorType) {
+		return "Read";
+	}
+	
+	private static String getTossimNesCInterfaceName(SensorType sensorType) {
+		return "Read";
+	}
 }

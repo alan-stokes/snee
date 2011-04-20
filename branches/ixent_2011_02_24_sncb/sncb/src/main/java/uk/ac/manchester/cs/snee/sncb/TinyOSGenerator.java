@@ -70,6 +70,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregationOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
@@ -104,6 +105,7 @@ import uk.ac.manchester.cs.snee.sncb.tos.RXComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.RadioComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SelectComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SensorComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.SensorComponentUtils;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialAMReceiveComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialAMSendComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialStarterComponent;
@@ -166,8 +168,6 @@ public class TinyOSGenerator {
     public static String COMPONENT_QUERY_PLAN;
 
     private static String COMPONENT_QUERY_PLANC;
-
-    public static String COMPONENT_SENSOR;
 
     private static String COMPONENT_LEDS;
     
@@ -333,18 +333,7 @@ public class TinyOSGenerator {
 	    COMPONENT_QUERY_PLANC = "QueryPlan";  //AppC
 	    COMPONENT_RADIO = "ActiveMessageC";
 	    COMPONENT_RADIOTX = "AMSenderC";
-	    COMPONENT_RADIORX = "AMRecieverC";
-	    if (target == CodeGenTarget.TELOSB_T2) {
-//		    	COMPONENT_SENSOR = "VoltageC";
-	    	COMPONENT_SENSOR = "HamamatsuS1087ParC";
-	    } else if (target == CodeGenTarget.AVRORA_MICA2_T2) {	
-	    	COMPONENT_SENSOR = "DemoSensorC"; //PhotoTemp
-	    } else if (target == CodeGenTarget.TOSSIM_T2) {
-	    	COMPONENT_SENSOR  = "RandomSensorC";
-	    } else {
-	    	COMPONENT_SENSOR = "DemoSensorC";
-	    }
-	    	
+	    COMPONENT_RADIORX = "AMRecieverC";	    	
 	    COMPONENT_LEDS = "LedsC";
 	    COMPONENT_SERIALTX = "SerialAMSenderC";
 	    COMPONENT_SERIALRX = "SerialAMReceiverC";
@@ -920,10 +909,12 @@ public class TinyOSGenerator {
 					(attr instanceof IDAttribute)) {
 				continue;
 			}
-//			String extentName = attr.getExtentName();
+
 			SensorType sensorType = metadata.getAttributeSensorType(attr);
-			String nesCComponentName = COMPONENT_SENSOR;
-			String nesCInterfaceName = INTERFACE_READ;
+			String nesCComponentName = SensorComponentUtils.
+				getNesCComponentName(sensorType, this.target);
+			String nesCInterfaceName = SensorComponentUtils.
+				getNesCInterfaceName(sensorType, this.target);
 			
 			System.err.println(""+sensorType);
 			

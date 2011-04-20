@@ -33,14 +33,9 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
-
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class SensorComponent extends GenericNesCComponent {
-
-    public static String TYPE_NAME = TinyOSGenerator.COMPONENT_SENSOR;
 
     Site sourceSite;
 
@@ -50,10 +45,9 @@ public class SensorComponent extends GenericNesCComponent {
 	    final String name, final NesCConfiguration config,
 	    final String packetType,
 	    boolean tossimFlag) {
-	super(config, TYPE_NAME, packetType, tossimFlag);
+	super(config, name, packetType, tossimFlag);
 	this.sourceSite = sourceSite;
 	this.sensorId = sensorId;
-	//this.id = name;
 	this.id = this.generateName();
 	this.systemComponent = true;
     }
