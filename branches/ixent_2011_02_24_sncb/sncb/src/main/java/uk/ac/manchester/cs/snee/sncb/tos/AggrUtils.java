@@ -28,10 +28,11 @@ public class AggrUtils {
        				CodeGenUtils.getNescAttrName(incrAttr);
 	  		   	final AttributeType attrType = incrAttr.getType();	  		   	
 	  		   	
-	  		   	String nesCType = attrType.getNesCName();
-	  		   	if (incrAttr.getAggrFunction() == AggregationFunction.SUM) {
-	  		   		nesCType = "uint64_t";
-	  		   	}
+//	  		   	String nesCType = attrType.getNesCName();
+//	  		   	if (incrAttr.getAggrFunction() == AggregationFunction.SUM) {
+//	  		   		nesCType = "uint64_t";
+//	  		   	}
+	  		   	String nesCType = "float";
 	  		   	aggrVariablesBuff.append("\t" + nesCType + " " + attrName + ";\n");       			
 
 	  		   	String baseAttr = incrAttr.getBaseAttribute().getAttributeDisplayName().replace('.','_');

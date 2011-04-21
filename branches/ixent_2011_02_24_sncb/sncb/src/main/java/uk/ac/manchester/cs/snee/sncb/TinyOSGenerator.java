@@ -1637,11 +1637,18 @@ public class TinyOSGenerator {
 
 			final AttributeType attrType = attributes.get(i).getType();
 
-			String nesCType = attrType.getNesCName();
-
-			if (!this.tossimFlag) {
-				nesCType = "nx_"+nesCType;				
+			String nesCType;
+			if (attributes.get(i) instanceof EvalTimeAttribute) {
+				nesCType = "uint16_t";
+			} else {
+				nesCType = "float";
 			}
+			
+//			String nesCType = attrType.getNesCName();
+
+//			if (!this.tossimFlag) {
+//				nesCType = "nx_"+nesCType;				
+//			}
 
 			if (!(op instanceof SensornetExchangeOperator) && (!op.isRecursive())) {
 				tupleTypeBuff.append("\t" + nesCType + " " + attrName + ";\n");
