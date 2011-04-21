@@ -69,7 +69,7 @@ public class AggrUtils {
 				incrementAggregatesBuff.append("\t\t\t"
 						+ attrName + " = 0;\n");
 				
-	  		   	String baseAttr = incrAttr.getBaseAttribute().getAttributeSchemaName();
+	  		   	String baseAttr = incrAttr.getBaseAttribute().getAttributeDisplayName().replace('.', '_');
 	       		baseAttributes.add(baseAttr);
 			}		
 		}
@@ -151,17 +151,16 @@ public class AggrUtils {
 		for (AggregationExpression aggr : aggregates) {
 			List<Attribute> attributes = aggr.getRequiredAttributes();
 			for (Attribute attr : attributes) {
-				String extentName = attr.getExtentName();
-				String schemaName = attr.getAttributeSchemaName();
+				String displayName = attr.getAttributeDisplayName().replace('.', '_');
 				AggregationFunction aggrFn = aggr.getAggregationFunction();
 				if ((aggrFn == AggregationFunction.AVG)) {
-					String averageVar = extentName+"_"+schemaName+"_avg";
+					String averageVar = displayName+"_avg";
 					final String nesCType = "float";
 					derivedAggregatesDeclsBuff.append("\t"+nesCType+" "+averageVar+";\n");
 				}
 				if ((aggrFn == AggregationFunction.STDEV)) {
-					String stdevVar = extentName+"_"+schemaName+"_stdev";
-					String avgForStdevVar = extentName+"_"+schemaName+"_avg_for_stdev";
+					String stdevVar = displayName+"_stdev";
+					String avgForStdevVar = displayName+"_avg_for_stdev";
 					derivedAggregatesDeclsBuff.append("\tfloat "+stdevVar+";\n");
 					derivedAggregatesDeclsBuff.append("\tfloat "+avgForStdevVar+";\n");
 					derivedAggregatesDeclsBuff.append("\tfloat tmpDiff;\n");
@@ -178,21 +177,20 @@ public class AggrUtils {
 		for (AggregationExpression aggr : aggregates) {
 			List<Attribute> attributes = aggr.getRequiredAttributes();
 			for (Attribute attr : attributes) {
-				String extentName = attr.getExtentName();
-				String schemaName = attr.getAttributeSchemaName();
+				String displayName = attr.getAttributeDisplayName().replace('.', '_');
 				AggregationFunction aggrFn = aggr.getAggregationFunction();
 				if ((aggrFn == AggregationFunction.AVG)) {
-					String countVar = extentName+"_"+schemaName+"_count";
-					String sumVar = extentName+"_"+schemaName+"_sum";
-					String averageVar = extentName+"_"+schemaName+"_avg";
+					String countVar = displayName+"_count";
+					String sumVar = displayName+"_sum";
+					String averageVar = displayName+"_avg";
 					derivedAggregatesBuff.append("\t\t"+averageVar+
 							" = ((float)"+sumVar+" / (float)"+countVar+");\n");
 				}
 				if ((aggrFn == AggregationFunction.STDEV)) {
-					String countVar = extentName+"_"+schemaName+"_count";
-					String sumVar = extentName+"_"+schemaName+"_sum";
-					String avgForStdevVar = extentName+"_"+schemaName+"_avg_for_stdev";
-					String stdevVar = extentName+"_"+schemaName+"_stdev";
+					String countVar = displayName+"_count";
+					String sumVar = displayName+"_sum";
+					String avgForStdevVar = displayName+"_avg_for_stdev";
+					String stdevVar = displayName+"_stdev";
 					String sqrtfn = "sqrtf";
 					
 					
@@ -203,7 +201,7 @@ public class AggrUtils {
 					derivedAggregatesBuff.append("\t\ttmpSum = 0.0;\n");
 					derivedAggregatesBuff.append("\t\tdo\n\t\t{\n");
 					derivedAggregatesBuff.append("\t\t\ttmpDiff = (inQueue[inHead]."+
-							extentName+"_"+schemaName+" - "+avgForStdevVar+");\n");
+							displayName+" - "+avgForStdevVar+");\n");
 					derivedAggregatesBuff.append("\t\t\ttmpSum += (tmpDiff * tmpDiff);\n\n");
 					derivedAggregatesBuff.append("\t\t\tinHead=(inHead+1) % inQueueSize;\n\t\t}\n");
 					derivedAggregatesBuff.append("\t\twhile(inHead!=inTail);\n");
@@ -245,4 +243,39 @@ public class AggrUtils {
 		return incrementAggregatesBuff;
     } 
 	
+    
+    public static StringBuffer generateTuple(
+    		List <Attribute> outputAttributes, List<AggregationExpression> aggregates) {
+    	final StringBuffer tupleBuffer = new StringBuffer();
+    	
+    	int i = 0;
+		for (AggregationExpression aggr : aggregates) {
+			//works because there is one required attribute per aggregate expression
+			List<Attribute> aggrAttributes = aggr.getRequiredAttributes();
+			for (Attribute aggrAttribute : aggrAttributes) {
+				AggregationFunction aggrFn = aggr.getAggregationFunction();
+				String aggrAttrDisplayName = aggrAttribute.
+					getAttributeDisplayName().replace('.', '_') +
+					"_" + aggrFn.toString();
+				
+				Attribute outputAttribute = outputAttributes.get(i);
+				String outputAttrDisplayName = outputAttribute.
+					getAttributeDisplayName().replace('.', '_');
+
+				if (outputAttribute instanceof EvalTimeAttribute) {
+					tupleBuffer.append("\t\toutQueue[outTail]." 
+							+ "evalEpoch = currentEvalEpoch;\n");
+				}
+				else
+				{
+					tupleBuffer.append("\t\toutQueue[outTail]." 
+							+ outputAttrDisplayName + " = " + aggrAttrDisplayName + ";\n");					
+				}
+				
+				i++;
+			}
+    	}
+    	
+    	return tupleBuffer;
+    }
 }
