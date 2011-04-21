@@ -105,7 +105,7 @@ public class AggrUtils {
 				Attribute baseAttr = incrAttr.getBaseAttribute();
 				String inputAttrName = attrName;
 				if (initFlag) {
-					inputAttrName = baseAttr.getExtentName()+"_"+baseAttr.getAttributeSchemaName();
+					inputAttrName = baseAttr.getAttributeDisplayName().replaceAll("\\.", "_");
 				}
 				if (aggrFn == AggregationFunction.SUM) {
 					incrementAggregatesBuff.append("\t\t\t\t" 
