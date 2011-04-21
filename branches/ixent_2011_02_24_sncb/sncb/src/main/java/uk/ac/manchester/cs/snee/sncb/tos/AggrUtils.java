@@ -34,7 +34,7 @@ public class AggrUtils {
 	  		   	}
 	  		   	aggrVariablesBuff.append("\t" + nesCType + " " + attrName + ";\n");       			
 
-	  		   	String baseAttr = incrAttr.getBaseAttribute().getAttributeSchemaName();
+	  		   	String baseAttr = incrAttr.getBaseAttribute().getAttributeDisplayName().replace('.','_');
 	       		baseAttributes.add(baseAttr);
        		}
 		}	

@@ -59,35 +59,42 @@ public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOp
 			for (Attribute attr : attributes) {
 				String extentName = attr.getExtentName();
 				String schemaName = attr.getAttributeSchemaName();
+				String displayName = attr.getAttributeDisplayName();
+				
 				AttributeType attrType = attr.getType();
 				AggregationFunction aggrFn = aggr.getAggregationFunction();
 				if ((aggrFn == AggregationFunction.AVG) || (aggrFn == AggregationFunction.STDEV)) {
 					String newAttrName = schemaName+"_"+AggregationFunction.COUNT;
-					addAttribute(extentName, newAttrName, attrType, attr, AggregationFunction.COUNT, result);
+					String newAttrDisplayName = displayName+"_"+AggregationFunction.COUNT;
+					addAttribute(extentName, newAttrName, newAttrDisplayName, attrType, attr, AggregationFunction.COUNT, result);
 					String newAttrName2 = schemaName+"_"+AggregationFunction.SUM;
-					addAttribute(extentName, newAttrName2, attrType, attr, AggregationFunction.SUM, result);
+					String newAttrDisplayName2 = displayName+"_"+AggregationFunction.SUM;
+					addAttribute(extentName, newAttrName2, newAttrDisplayName2, attrType, attr, AggregationFunction.SUM, result);
 				} else {
 					String newAttrName = schemaName+"_"+aggrFn;
-					addAttribute(extentName, newAttrName, attrType, attr, aggrFn, result);
+					String newAttrDisplayName = displayName+"_"+aggrFn;
+					addAttribute(extentName, newAttrName, newAttrDisplayName, attrType, attr, aggrFn, result);
 				}
 			}			
 		}
 		return result;
 	}
 
-    private static void addAttribute(String extentName, String schemaName, AttributeType type,
+    private static void addAttribute(String extentName, String schemaName, String displayName, AttributeType type,
     		Attribute baseAttribute, AggregationFunction aggrFunction, List<Attribute> result)
     throws SchemaMetadataException {
     	//check for dups
     	for (Attribute a: result) {
     		if ((a.getExtentName().equals(extentName)) && 
-    			(a.getAttributeSchemaName().equals(schemaName))) {
+    			(a.getAttributeSchemaName().equals(schemaName) &&
+    			(a.getAttributeDisplayName().equals(displayName)))) {
     			return; //duplicate, do not add
     		}
     	}
     	
 		Attribute newAttr = new IncrementalAggregationAttribute(extentName, schemaName, 
 				type, (DataAttribute) baseAttribute, aggrFunction);
+		newAttr.setAttributeDisplayName(displayName);
 		result.add(newAttr); 
     }
     
