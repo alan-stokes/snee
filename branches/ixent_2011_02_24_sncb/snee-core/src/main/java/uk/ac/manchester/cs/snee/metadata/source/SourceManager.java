@@ -53,8 +53,8 @@ public class SourceManager {
 
 	private Types _types;
 
-	private Map<Attribute, SensorType> _sensorTypes = 
-		new HashMap<Attribute, SensorType>();
+	private Map<String, SensorType> _sensorTypes = 
+		new HashMap<String, SensorType>();
 	
 	public SourceManager(Map<String, ExtentMetadata> schema, Types types) {
 		_schema = schema;
@@ -212,7 +212,7 @@ public class SourceManager {
 							"'.");
 				}
 				
-				_sensorTypes.put(attr,sensorType);
+				_sensorTypes.put(generateAttributeKey(attr), sensorType);
 			}
 		}
 	}
@@ -529,6 +529,10 @@ public class SourceManager {
 	 * @return
 	 */
 	public SensorType getAttributeSensorType(Attribute attr) {
-		return this._sensorTypes.get(attr);
+		return this._sensorTypes.get(generateAttributeKey(attr));
+	}
+	
+	private String generateAttributeKey(Attribute attr) {
+		return attr.getExtentName()+ "_"+ attr.getAttributeSchemaName();
 	}
 }
