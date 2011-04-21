@@ -903,7 +903,7 @@ public class TinyOSGenerator {
 	final NesCConfiguration config, final FragmentComponent fragComp, final SensornetOperator op)
 	throws CodeGenerationException {
 		AcquireOperator acqOp = (AcquireOperator) op.getLogicalOperator();
-		List<Attribute> attributes = acqOp.getAttributes();
+		List<Attribute> attributes = acqOp.getSensedAttributes();
 		
 		int sensorID = 0;
 		for (Attribute attr : attributes) {
