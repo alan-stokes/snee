@@ -1,0 +1,12 @@
+data/.hgignore.i
+data/BlinkAppC.nc.i
+data/BlinkC.nc.i
+data/Makefile.i
+data/README.txt.i
+data/burn.i
+data/burn-net.i
+data/volumes-at45db.xml.i
+data/volumes-stm25p.xml.i
+data/OtaServerAppC.nc.i
+data/OtaServerC.nc.i
+data/FlashVolumeManagerP.nc.i
