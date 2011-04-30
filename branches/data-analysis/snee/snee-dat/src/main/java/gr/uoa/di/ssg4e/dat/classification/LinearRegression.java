@@ -78,7 +78,7 @@ class LinearRegression extends AbstractClassifier {
 		/* One of the arguments is the output parameter. Skip it */
 		input_Xi = new String[selArgs.length - 1];
 		for ( int i = 0; i < selArgs.length; i++ ){
-			if ( selArgs[i].equals(derAttr) )
+			if ( selArgs[i].equalsIgnoreCase(derAttr) )
 				predAttrIdx = i; /* store the index of the predicted attribute */
 			else
 				input_Xi[i - (predAttrIdx < 0 ? 0 : 1 )] = selArgs[i].replace(tableIter, "");
@@ -111,16 +111,18 @@ class LinearRegression extends AbstractClassifier {
 	private String getABComputationString(String inp_x, String inp_y){
 
 		return 
-			"SELECT	( S.n*S.sum_xy - S.sum_y * S.sum_x ) / ( S.n * S.sum_sqr_x - S.sum_x * S.sumx_x ) as a," +
-			"		( S.sum_y * S.sum_sqr_x - S.sum_x * S.sum_xy ) / ( S.n * S.sum_sqr_x - S.sum_x * S.sum_x ) as b " +
+			"SELECT	( U.n*U.sum_xy - U.sum_y * U.sum_x ) / ( U.n * U.sum_xx - U.sum_x * U.sum_x ) as a," +
+			"		( U.sum_y * U.sum_xx - U.sum_x * U.sum_xy ) / ( U.n * U.sum_xx - U.sum_x * U.sum_x ) as b " +
 			"FROM (" +
-			"	SELECT	COUNT(*) as n," +
-			"			SUM( S." + inp_x + " * S." + inp_y + " ) as sum_xy," +
-			"			SUM( S." + inp_x + " ) as sum_x," +
-			"			SUM( S." + inp_y + " ) as sum_y," +
-			"			SUM( S." + inp_x + " * S." + inp_x + " ) as sum_sqr_x" +
-			"	FROM ( " + super.datSource.toString() + " ) S " +
-			") S ";
+			"	SELECT	COUNT( T.x ) as n, SUM( T.x ) as sum_x," +
+			"			SUM( T.y ) as sum_y," +
+			"			SUM( T.xx ) as sum_xx," +
+			"			SUM( T.xy ) as sum_xy " +
+			"	FROM (" +
+			"		SELECT S." + inp_x + " as x, S." + inp_y + " as y, S." + inp_x + " * S." + inp_y + " as xy, S." + inp_x + " * S." + inp_x + " as xx " +
+					"FROM ( " + super.datSource.toString() + " ) S " +
+			"	) T " +
+			") U ";
 	}
 
 	/** 
@@ -147,7 +149,7 @@ class LinearRegression extends AbstractClassifier {
 		StringBuilder sb = new StringBuilder(query.getPrefix());
 		sb.append(SNEEqlQuery.selectStr);
 		for ( int i = 0; i < args.length; i++ )
-			 sb.append(' ').append(args[i].replaceAll("\\b" + derAtt + "\\b",
+			 sb.append(' ').append(args[i].replaceAll("\\b" + derAtt.toLowerCase() + "\\b",
 						datItr + ".a * " + bindings[0].replaceAll("[() ]", "") + 
 						" + " + datItr + ".b") ).append(",");
 
@@ -242,12 +244,12 @@ class LinearRegression extends AbstractClassifier {
 		/* 2) The derived attribute must exist in the SELECT or in the WHERE clause */
 		int i = 0;
 		for ( ; i < q.getSelectArgs().length; i++ )
-			if ( q.getSelectArgs()[i].contains(derAtt) )
+			if ( q.getSelectArgs()[i].contains(derAtt.toLowerCase()) )
 				break;
 
 		if ( i == q.getSelectArgs().length ){
 			for ( i = 0; i < q.getWhereArgs().length; i++ )
-				if ( q.getWhereArgs()[i].contains(derAtt) )
+				if ( q.getWhereArgs()[i].contains(derAtt.toLowerCase()) )
 					break;
 
 			if ( i == q.getWhereArgs().length )
@@ -301,12 +303,12 @@ class LinearRegression extends AbstractClassifier {
 
 						/* Bindings can only be before / after a conjunction (AND). If not
 						 * then we assume it is an error */
-						if ( j != 0 && !whereConds[j - 1].equals("and") ){
+						if ( j != 0 && !whereConds[j - 1].equalsIgnoreCase("and") ){
 							bindings[i] = null;
 							break; 
 						}
 
-						if ( j != (whereArgs.length - 1) && !whereConds[j + 1].equals("and") ){
+						if ( j != (whereArgs.length - 1) && !whereConds[j + 1].equalsIgnoreCase("and") ){
 							bindings[i] = null;
 							break; 
 						}

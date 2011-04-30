@@ -39,7 +39,7 @@ public class QueryRefactorer {
 	public String refactorQuery( String query ) 
 	throws ParserException, DATException, IException{
 
-		//FIXME: The semicolon is removed from the query in some occasions!
+		//FIXME: The semicolon is removed from the query in some occasions! why?
 
 		/*
 		 * FIXME: Known Limitations: UNION can only be top level.
@@ -136,7 +136,6 @@ public class QueryRefactorer {
 				if ( idx <= 0 )
 					idx = src.length();
 				src = src.substring(0, idx).trim();
-
 
 				/* The source is not a subquery. Get the metadata for this source */
 				IExtentMetadata metadata = _metadata.getExtentMetadata(src);
