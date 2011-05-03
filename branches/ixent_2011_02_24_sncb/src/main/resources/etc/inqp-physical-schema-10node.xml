@@ -4,8 +4,8 @@
 	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../schema/physical-schema.xsd ">
 
 	<sensor_network name="wsn1">
-		<topology>etc/wsn1-topology.xml</topology>
-		<site-resources>etc/telosb.xml</site-resources>
+		<topology>etc/inqp-topology.xml</topology>
+		<site-resources>etc/inqp-telosb.xml</site-resources>
 		<gateways>1</gateways>
 		<extents>
 			<extent name="SeaDefence">
