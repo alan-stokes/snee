@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<schema xmlns="http://snee.cs.man.ac.uk/namespace/logical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/logical-schema ../schema/logical-schema.xsd">
+
+      <stream name="Castilla" type="pull">
+         <column name="light">
+          	<type class ="integer"/>
+         </column>
+     </stream>
+
+       <stream name="Forest" type="pull">
+         <column name="light">
+          	<type class ="integer"/>
+         </column>
+     </stream>
+
+      <stream name="Meadow" type="pull">
+         <column name="light">
+          	<type class ="integer"/>
+         </column>
+     </stream> 
+     
+</schema>

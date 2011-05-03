@@ -27,5 +27,6 @@
 		<module>test-client</module>
 		<module>in-network-client</module>
 		<module>cco-stored-client</module>
+		<module>ecm-client</module>
 	</modules>
 </project>

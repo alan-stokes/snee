@@ -13,7 +13,7 @@ public class TinyOS_SNCB_Controller implements SNCB
   private SNCB sncb;
   
   
-  public TinyOS_SNCB_Controller() throws SNCBException
+  public TinyOS_SNCB_Controller(double duration) throws SNCBException
   {
     if (logger.isDebugEnabled())
       logger.debug("ENTER TinyOS_SNCB()");
@@ -24,22 +24,16 @@ public class TinyOS_SNCB_Controller implements SNCB
           .getSetting(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET));
       if(target == CodeGenTarget.TELOSB_T2)
       {
-        sncb = new TinyOS_SNCB_TelosB();
+        sncb = new TinyOS_SNCB_TelosB(duration);
       }
       else if(target == CodeGenTarget.AVRORA_MICA2_T2 || target == CodeGenTarget.AVRORA_MICAZ_T2)
       {
-        sncb = new TinyOS_SNCB_Avrora();
+        sncb = new TinyOS_SNCB_Avrora(duration);
       }
       else if(target == CodeGenTarget.TOSSIM_T2)
       {
-        sncb = new TinyOS_SNCB_Tossim();
+        sncb = new TinyOS_SNCB_Tossim(duration);
       }
-      else
-      {
-        
-      }
-        
-        
     }
     catch(Exception e)
     {
@@ -76,5 +70,11 @@ public class TinyOS_SNCB_Controller implements SNCB
   public void stop(SensorNetworkQueryPlan qep) throws SNCBException
   {
     sncb.stop(qep);
+  }
+
+  @Override
+  public void waitForQueryEnd() throws InterruptedException
+  {
+    sncb.waitForQueryEnd();  
   }
 }

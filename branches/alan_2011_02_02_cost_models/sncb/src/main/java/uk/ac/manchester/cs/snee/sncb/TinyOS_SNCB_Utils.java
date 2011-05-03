@@ -58,7 +58,7 @@ public class TinyOS_SNCB_Utils {
 	
 	protected static String printAvroraCommands(String queryOutputDir, 
 			SensorNetworkQueryPlan qep, String targetDirName,
-			CodeGenTarget target) throws UtilsException {
+			CodeGenTarget target, double duration) throws UtilsException {
 		String nescOutputDir = System.getProperty("user.dir") + "/"
 		+ queryOutputDir + targetDirName;
 		
@@ -109,7 +109,7 @@ public class TinyOS_SNCB_Utils {
 		
 		System.out.println("*** To start Avrora ***");
 		System.out.println("java avrora.Main -mcu=mts300 -platform="+platform+" " +
-				"-simulation=sensor-network -colors=false -seconds=100 " +
+				"-simulation=sensor-network -colors=false -seconds=" + (int)duration +
 				"-monitors=packet,serial -ports="+gatewayID+":0:2390 -random-seed=1 " +
 				sensorData + " " + "-report-seconds "+nodeCount+" "+elfString+" \n");
 		

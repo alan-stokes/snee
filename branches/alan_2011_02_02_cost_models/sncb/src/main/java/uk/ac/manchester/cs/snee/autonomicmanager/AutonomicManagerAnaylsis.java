@@ -96,11 +96,7 @@ public class AutonomicManagerAnaylsis
   }
 
   public void anaylsisSNEECard(Map<Integer, Integer> sneeTuples)
-  {
-    if(lastSneeTuplesSize >= sneeTuples.size() & !anaylisieCECM)
-      anaylisieCECM = true;
-    
-    lastSneeTuplesSize = sneeTuples.size();
+  { 
     if(anaylisieCECM)
     {
       if(sneeTuples.size() > 0)
@@ -116,8 +112,8 @@ public class AutonomicManagerAnaylsis
           boolean sameEpochValue = false;
           boolean sameAgendaValue = false;
           int epoch = 0;
-          System.out.println("size of map is " + sneeTuples.size());
           sneeEpochCard = sneeTuples.get(epoch);
+          
           
           //check all epochs have same values also used to figure if an agenda worth of epochs have arrived
           while(epoch <= (cardECM.getBeta()) && epoch < (sneeTuples.size()))
@@ -130,6 +126,7 @@ public class AutonomicManagerAnaylsis
           
           if(epoch >= cardECM.getBeta())//reached an agenda cycle.
           {
+            anaylisieCECM = false;
             if(sameValue)
             {
               sneeAgendaCard = sneeEpochCard * cardECM.getBeta();
@@ -150,7 +147,6 @@ public class AutonomicManagerAnaylsis
               out.write("&" + deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "SUCCESS \\\\ \\hline \n");
             else
               out.write("&" + deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "FAIL \\\\ \\hline \n");
-            anaylisieCECM = false;
             out.flush();
             out.close();
           }
@@ -189,13 +185,12 @@ public class AutonomicManagerAnaylsis
         out.write("&" + deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "FAIL \\\\ \\hline \n");
       out.flush();
       out.close();
-      
-      
     }
-    catch(Exception e)
-    {
-      
-    }
-    
+    catch(Exception e) { }  
+  }
+
+  public void queryStarted()
+  {
+    anaylisieCECM = true;   
   }
 }

@@ -44,7 +44,7 @@ public abstract class SNEEClient implements Observer {
 		_query = query;
 		_duration = duration;
 		_queryParams = queryParams;
-		controller = new SNEEController("etc/snee.properties");
+		controller = new SNEEController("etc/snee.properties", _duration);
 
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SNEEClient()");
@@ -154,7 +154,9 @@ public abstract class SNEEClient implements Observer {
 			(ResultStoreImpl) controller.getResultStore(queryId1);
 		resultStore.addObserver(this);
 		
-		try {			
+		try {		
+		  SNEEController control = (SNEEController) controller;
+		  control.waitForQueryEnd();
 			Thread.currentThread().sleep((long)_duration * 1000);
 		} catch (InterruptedException e) {
 		}

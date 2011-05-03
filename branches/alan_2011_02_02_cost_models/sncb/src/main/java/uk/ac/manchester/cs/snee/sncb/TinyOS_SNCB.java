@@ -38,6 +38,8 @@ public abstract class TinyOS_SNCB
   protected CodeGenTarget target = CodeGenTarget.TELOSB_T2; //default
   
   protected String targetDirName; 
+  
+  protected double duration;
 
   // Is the network running?
   protected static boolean isStarted = false;
@@ -140,7 +142,7 @@ public abstract class TinyOS_SNCB
         } else if (this.target == CodeGenTarget.AVRORA_MICA2_T2 ||
             this.target == CodeGenTarget.AVRORA_MICAZ_T2) {
           TinyOS_SNCB_Utils.printAvroraCommands(queryOutputDir, qep, 
-              this.targetDirName, this.target);         
+              this.targetDirName, this.target, duration);         
         }
         //System.exit(0);
         mr = setUpResultCollector(qep, queryOutputDir);

@@ -21,4 +21,6 @@ public interface SNCB {
 	public void stop(SensorNetworkQueryPlan qep) 
 	throws SNCBException;
 
+  public void waitForQueryEnd() throws InterruptedException;
+
 }

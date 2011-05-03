@@ -24,7 +24,9 @@ public class AutonomicManagerMonitor implements Observer
   private SerialPortMessageReceiver listener;
   private ResultStore _results;
   private boolean recievedPacketsThisQuery = false;
-
+  private QueryExecutionPlan qep;
+  private String query;
+  
   public AutonomicManagerMonitor(AutonomicManager autonomicManager)
   {
     manager = autonomicManager;
@@ -36,6 +38,11 @@ public class AutonomicManagerMonitor implements Observer
   {
     try
     {
+      if (observed instanceof Output) {
+        _results.add((Output) observed);
+      } else if (observed instanceof List<?>) {
+        _results.addAll((Collection<Output>) observed);
+      }
       CECMCollection();
     } 
     catch (Exception e)
@@ -72,8 +79,15 @@ public class AutonomicManagerMonitor implements Observer
         {
           tuplesAEpoch++;
         }
-        else if(value > epochValue)
+        else if(value != epochValue)
         {
+          if(tuplesPerEpoch.containsKey(epochValue))
+          {
+            int pastTuplesForSameEpoch = tuplesPerEpoch.get(epochValue);
+            tuplesPerEpoch.remove(epochValue);
+            tuplesAEpoch += pastTuplesForSameEpoch;
+          }
+          
           tuplesPerEpoch.put(epochValue, tuplesAEpoch);
           epochValue = value;
           tuplesAEpoch = 1;
@@ -90,9 +104,16 @@ public class AutonomicManagerMonitor implements Observer
     listener.addObserver(this);// TODO Auto-generated method stub
   }
 
-  public void setResultSet(ResultStore resultSet)
+  public void setResultSet(ResultStore resultSet) 
   {
-    _results = resultSet;
+    try
+    {
+      _results = new ResultStoreImpl(query, qep);
+    } catch (Exception e)
+    {
+      _results = resultSet;
+      e.printStackTrace();
+    }
   }
 
   public void queryEnded()
@@ -106,6 +127,17 @@ public class AutonomicManagerMonitor implements Observer
   public void queryStarting()
   {
     recievedPacketsThisQuery = false;
+  }
+
+  public void setQueryPlan(QueryExecutionPlan qep)
+  {
+    this.qep = qep; 
+  }
+
+  public void setQuery(String query)
+  {
+    this.query = query;
+    
   }
 
 }

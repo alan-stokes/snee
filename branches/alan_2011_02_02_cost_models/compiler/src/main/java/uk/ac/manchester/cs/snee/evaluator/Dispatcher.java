@@ -77,6 +77,8 @@ public class Dispatcher {
 	
 	private AutonomicManager _autonomicManager;
 	
+	private SNCB sncb;
+	
 	public Dispatcher(MetadataManager schema) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER Dispatcher()");
@@ -148,7 +150,7 @@ public class Dispatcher {
 				String outputDir = SNEEProperties.getSetting(
 				SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
 				sep + queryPlan.getQueryName() + sep;
-				SNCB sncb = snQueryPlan.getSNCB();
+				sncb = snQueryPlan.getSNCB();
         _autonomicManager.setQueryExecutionPlan(queryPlan);
         _autonomicManager.setResultSet(resultSet);
         _autonomicManager.runCostModels();
@@ -269,12 +271,22 @@ public class Dispatcher {
 	}
   public void setDeadNodes(ArrayList<Integer> deadNodes)
   {
-    _autonomicManager.setDeadNodes(deadNodes);// TODO Auto-generated method stub
+    _autonomicManager.setDeadNodes(deadNodes);
     
   }
   public void setNoDeadNodes(int noDeadNodes)
   {
-    _autonomicManager.setNoDeadNodes(noDeadNodes);// TODO Auto-generated method stub
+    _autonomicManager.setNoDeadNodes(noDeadNodes);
+    
+  }
+  public void waitForQueryEnd() throws InterruptedException
+  {
+    sncb.waitForQueryEnd();
+    
+  }
+  public void giveAutonomicManagerQuery(String query)
+  {
+    _autonomicManager.setQuery(query);
     
   }
 

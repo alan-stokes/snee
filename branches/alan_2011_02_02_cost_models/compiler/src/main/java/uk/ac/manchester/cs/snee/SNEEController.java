@@ -117,7 +117,7 @@ public class SNEEController implements SNEE {
 	
 	private int _nextQueryID = 1;
 
-	
+	private double duration;
 	
 	/**
 	 * Initialise SNEE based on the contents of the configuration files
@@ -166,7 +166,31 @@ public class SNEEController implements SNEE {
 		if (logger.isInfoEnabled())
 			logger.info("RETURN SNEEController()");
 	}
-	
+	 
+  public SNEEController(String propertiesFilename, double duration) 
+  throws SNEEException, SNEEConfigurationException {
+    if (logger.isInfoEnabled())
+      logger.info("ENTER SNEEController() properties file " + propertiesFilename);
+    logger.info(this.getClass().getClassLoader().getResource("/"));
+    InputStream propsStream = 
+      this.getClass().getClassLoader().getResourceAsStream(propertiesFilename);
+    this.duration = duration;
+    logger.trace("Creating properties table");
+    Properties props = new Properties();
+    try {
+      logger.trace("Loading properties");
+      props.load(propsStream);
+      propsStream.close();
+      SNEEProperties.initialise(props);
+      initialise();
+    } catch (IOException e) {
+      logger.error("Could not load properties file.");
+      throw new SNEEConfigurationException(e);
+    } 
+    if (logger.isInfoEnabled())
+      logger.info("RETURN SNEEController()");
+  }
+  
 	public SNEEController(Properties props) 
 	throws SNEEException, SNEEConfigurationException {
 		if (logger.isInfoEnabled())
@@ -191,7 +215,7 @@ public class SNEEController implements SNEE {
 
 		try {
 			
-			_sncb = initialiseSNCB();
+			_sncb = initialiseSNCB(duration);
 			
 			/* Process metadata */
 			_metadata = initialiseMetadata();
@@ -254,11 +278,11 @@ public class SNEEController implements SNEE {
 			logger.debug("RETURN initialise()");
 	}
 
-	protected SNCB initialiseSNCB() throws SNEEConfigurationException, SNCBException {
+  protected SNCB initialiseSNCB(double duration) throws SNEEConfigurationException, SNCBException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseSNCB()");
 		
-		return new TinyOS_SNCB_Controller();
+		return new TinyOS_SNCB_Controller(duration);
 	}
 	
 	protected MetadataManager initialiseMetadata() 
@@ -396,7 +420,7 @@ public class SNEEController implements SNEE {
 		}
 		QueryExecutionPlan queryPlan = _queryPlans.get(queryId);
 		ResultStore resultSet = createStreamResultSet(query, queryPlan);
-		
+		_dispatcher.giveAutonomicManagerQuery(query);
 		_dispatcher.startQuery(queryId, resultSet, queryPlan);
 		_queryResults.put(queryId, resultSet);
 		
@@ -529,4 +553,31 @@ public class SNEEController implements SNEE {
 	{
 		return _compiler.getQEP();
 	}
+	
+	public void waitForQueryEnd() throws InterruptedException
+	{
+	  _dispatcher.waitForQueryEnd();
+	}
+
+  public int addQueryWithoutCompile(String query, String queryParamsFile)
+  throws EvaluatorException, SNEECompilerException, SNEEException,
+  MetadataException, SNEEConfigurationException 
+  {
+    if (logger.isDebugEnabled()) {
+      logger.debug("ENTER addQuery() with " + query);
+    }
+    if (query == null || query.trim().equals("")) {
+      logger.warn("Null or empty query passed in");
+      throw new SNEECompilerException("Null or empty query passed in.");
+    }
+    int queryId = _nextQueryID - 1;
+    dispatchQuery(queryId, query);
+    if (logger.isInfoEnabled())
+      logger.info("Successfully started evaluation of query " + queryId);
+
+    if (logger.isDebugEnabled()) {
+        logger.debug("RETURN addQuery() with query id " + queryId);
+      }
+    return queryId;
+  }
 }

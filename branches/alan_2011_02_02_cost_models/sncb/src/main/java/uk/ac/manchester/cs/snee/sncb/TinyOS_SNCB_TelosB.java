@@ -10,12 +10,13 @@ import uk.ac.manchester.cs.snee.metadata.CostParameters;
 
 public class TinyOS_SNCB_TelosB extends TinyOS_SNCB implements SNCB {
 
-	public TinyOS_SNCB_TelosB() throws SNCBException {
+	public TinyOS_SNCB_TelosB(double duration) throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER TinyOS_SNCB()");
 		try {
 			// TinyOS environment variables
 			this.tinyOSEnvVars = new HashMap<String, String>();
+			this.duration = duration;
 			workingDir = Utils.getResourcePath("etc/sncb/tools/python");
 			String currentPath = System.getenv("PATH");
 			this.tinyOSEnvVars.put("PATH", currentPath + ":" + workingDir + ":"
@@ -132,5 +133,12 @@ public class TinyOS_SNCB_TelosB extends TinyOS_SNCB implements SNCB {
     if (logger.isDebugEnabled())
       logger.debug("RETURN register()");
     return mr;
+  }
+
+  @Override
+  public void waitForQueryEnd() throws InterruptedException
+  {
+    Thread.currentThread().sleep((long)duration * 1000);
+    
   }
 }

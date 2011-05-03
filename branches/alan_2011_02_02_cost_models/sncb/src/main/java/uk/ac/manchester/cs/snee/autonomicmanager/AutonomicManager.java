@@ -37,6 +37,7 @@ public class AutonomicManager
   {
 	  this.qep = qep;
 	  anyliser.initiliseCardECM(qep);
+	  monitor.setQueryPlan(qep);
   }
 
   public void runCostModels() throws OptimizationException 
@@ -51,6 +52,7 @@ public class AutonomicManager
 	  else
       anyliser.simulateDeadNodes(noDeadNodes);
 	  monitor.queryStarting();
+	  anyliser.queryStarted();
   }
   
   public void setDeadNodes(ArrayList<Integer> deadNodes)
@@ -98,6 +100,12 @@ public class AutonomicManager
   public void callAnaysliserAnaylsisSNEECard()
   {
     anyliser.anaylsisSNEECard();
+    
+  }
+
+  public void setQuery(String query)
+  {
+    monitor.setQuery(query);
     
   }
 }

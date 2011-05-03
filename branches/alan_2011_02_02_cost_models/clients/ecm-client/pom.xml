@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>clients</artifactId>
+    <groupId>uk.ac.manchester.cs.snee</groupId>
+    <version>1.5.4-SNAPSHOT</version>
+  </parent>
+  <groupId>uk.ac.manchester.cs.snee</groupId>
+  <artifactId>ecm-client</artifactId>
+  <version>1.5.4-SNAPSHOT</version>
+  <name>ecm-client</name>
+  <url>http://maven.apache.org</url>
+  <properties>
+  </properties>
+  <dependencies>
+    <dependency>
+			<groupId>uk.ac.manchester.cs.snee.client</groupId>
+			<artifactId>client</artifactId>
+			<version>${snee.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-api</artifactId>
+			<version>${snee.version}</version>
+			<scope>compile</scope>
+		</dependency>
+  </dependencies>
+</project>
