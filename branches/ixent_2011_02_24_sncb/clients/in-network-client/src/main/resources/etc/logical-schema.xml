@@ -38,6 +38,6 @@
          <column name="voltage">
           	<type class ="integer"/>
          </column>                  
-     </stream> -->
+     </stream>
      
 </schema>

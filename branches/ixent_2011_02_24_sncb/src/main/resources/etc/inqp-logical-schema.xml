@@ -8,18 +8,36 @@
          <column name="seaLevel">
           	<type class ="integer"/>
          </column>
+         <column name="airTemperature">
+          	<type class ="integer"/>
+         </column>
+         <column name="voltage">
+          	<type class ="integer"/>
+         </column>         
      </stream>
 
      <stream name="SeaDefenceEast" type="pull">
          <column name="seaLevel">
           	<type class ="integer"/>
          </column>
+         <column name="airTemperature">
+          	<type class ="integer"/>
+         </column>
+         <column name="voltage">
+          	<type class ="integer"/>
+         </column>                   
      </stream>
 
       <stream name="SeaDefenceWest" type="pull">
          <column name="seaLevel">
           	<type class ="integer"/>
          </column>
-     </stream> -->
+         <column name="airTemperature">
+          	<type class ="integer"/>
+         </column> 
+         <column name="voltage">
+          	<type class ="integer"/>
+         </column>                  
+     </stream>
      
 </schema>
