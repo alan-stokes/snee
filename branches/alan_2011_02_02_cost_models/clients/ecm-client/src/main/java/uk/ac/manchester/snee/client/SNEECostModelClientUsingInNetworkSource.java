@@ -74,13 +74,11 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
     {
 		  
       //update results file to put header and query, testno
-     // String path = Utils.getResourcePath("results");
-      String path = "/home/S06/stokesa6/PHD/Dropbox/SNEE_Cost_Models/SNEE/clients/cost-model-client/results/";
-      //.validateFileLocation("output/results.tex");
-      File folder = new File(path);
+      File folder = new File("results");
+      String path = folder.getAbsolutePath();
       folder.delete();
       folder.mkdir();
-      File resultsFile = new File(path + "results.tex");
+      File resultsFile = new File(path + "/results.tex");
       if(!resultsFile.exists())
         resultsFile.createNewFile();
       else
@@ -103,8 +101,10 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
       
       //run Ixent's modified script to produce 30 random test cases. 
      // String pythonPath = Utils.validateFileLocation("resources/python/generateScenarios.py");
-      String pythonPath ="/home/S06/stokesa6/PHD/Dropbox/SNEE_Cost_Models/SNEE/clients/cost-model-client/src/main/resources/python/";
-      String testPath = "/home/S06/stokesa6/PHD/Dropbox/SNEE_Cost_Models/SNEE/clients/cost-model-client/src/main/resources/tests/";
+      File pythonFolder = new File("src/main/resources/python/");
+      String pythonPath = pythonFolder.getAbsolutePath();
+      File testFolder = new File("src/main/resources/tests");
+      String testPath = testFolder.getAbsolutePath();
       String [] params = {"generateScenarios.py", testPath};
       Map<String,String> enviro = new HashMap<String, String>();
       System.out.println("running Ixent's scripts for 30 random queries");
@@ -114,7 +114,8 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
       //holds all 30 queries produced by python script.
       ArrayList<String> queries = new ArrayList<String>();
       //String filePath = Utils.validateFileLocation("tests/queries.txt");
-      String filePath = "/home/S06/stokesa6/PHD/Dropbox/SNEE_Cost_Models/SNEE/clients/cost-model-client/src/main/resources/tests/queries.txt";
+      File queriesFile = new File("src/main/resources/tests/queries.txt");
+      String filePath = queriesFile.getAbsolutePath();
       BufferedReader queryReader = new BufferedReader(new FileReader(filePath));
       String line = "";
       while((line = queryReader.readLine()) != null)
