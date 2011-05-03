@@ -1621,11 +1621,8 @@ public class TinyOSGenerator {
 					CodeGenUtils.outputTypeSize.get(
 					CodeGenUtils.generateOutputTupleType(op))+ " bytes\n\n");
 
-			if (this.tossimFlag) {
-				tupleTypeBuff.append("typedef struct ");				
-			} else {
-				tupleTypeBuff.append("typedef nx_struct ");
-			}
+			tupleTypeBuff.append("typedef struct ");				
+
 
 
 			tupleTypeBuff.append(CodeGenUtils.generateOutputTupleType(op) + " {\n");
@@ -1643,12 +1640,6 @@ public class TinyOSGenerator {
 			} else {
 				nesCType = "float";
 			}
-			
-//			String nesCType = attrType.getNesCName();
-
-//			if (!this.tossimFlag) {
-//				nesCType = "nx_"+nesCType;				
-//			}
 
 			if (!(op instanceof SensornetExchangeOperator) && (!op.isRecursive())) {
 				tupleTypeBuff.append("\t" + nesCType + " " + attrName + ";\n");
@@ -1689,11 +1680,7 @@ public class TinyOSGenerator {
 			messageTypeBuff.append("// Message output type for Fragment "
 				+ fragID + " (operator " + op.getID() + ")\n");
 			
-			if (this.tossimFlag) {
-				messageTypeBuff.append("typedef struct ");
-			} else {
-				messageTypeBuff.append("typedef nx_struct ");	
-			}
+			messageTypeBuff.append("typedef struct ");
 				
 			messageTypeBuff.append(CodeGenUtils.generateMessageType(op) + " {\n");
 			messageTypeBuff.append("\tTupleFrag" + fragID + " tuples["
@@ -1720,11 +1707,8 @@ public class TinyOSGenerator {
 		assert (numTuplesPerMessage > 0);
 		
 		StringBuffer deliverMsgBuff = new StringBuffer();
-		if (this.tossimFlag) {
-			deliverMsgBuff.append("typedef struct DeliverMessage {\n");
-		} else {
-			deliverMsgBuff.append("typedef nx_struct DeliverMessage {\n");			
-		}
+		deliverMsgBuff.append("typedef struct DeliverMessage {\n");
+
 		deliverMsgBuff.append("\t" + CodeGenUtils.generateOutputTupleType(op.getLeftChild()) + " tuples["
 			+ numTuplesPerMessage + "];\n"); //use child type because deliver doesn't change tuple type
 		deliverMsgBuff.append("} DeliverMessage;\n\n");
