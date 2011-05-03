@@ -288,7 +288,7 @@ public class TinyOS_SNCB implements SNCB {
 		System.out.println(nesCHeaderFile);
 		String outputJavaFile = System.getProperty("user.dir") + "/"
 				+ queryOutputDir + "DeliverMessage.java";
-		String params[] = { "java", "-target=null",
+		String params[] = { "java", "-target=telosb",
 				"-java-classname=DeliverMessage", nesCHeaderFile,
 				"DeliverMessage", "-o", outputJavaFile };
 		Utils.runExternalProgram("mig", params, this.tinyOSEnvVars, workingDir);

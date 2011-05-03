@@ -30,7 +30,7 @@ public class TinyOS_SNCB_Utils {
 		System.out.println("    java net.tinyos.tools.Listen -comm serial@"+
 				serialPort+":telos\n");		
 		System.out.println("(2b) To view tuples:");
-		System.out.println("    mig java -target=null -java-classname="+
+		System.out.println("    mig java -target=telosb -java-classname="+
 				"DeliverMessage QueryPlan.h DeliverMessage " +
 				"-o DeliverMessage.java");
 		System.out.println("    javac DeliverMessage.java");
