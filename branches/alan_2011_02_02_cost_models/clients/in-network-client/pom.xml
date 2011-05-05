@@ -7,9 +7,9 @@
 		<version>1.5.4-SNAPSHOT</version>
 	</parent>
 	<groupId>uk.ac.manchester.cs.snee</groupId>
-	<artifactId>CostModelClient</artifactId>
-	<name>in-network test client for costmodels</name>
-	<description>Test client for In-Network SNEE with costmodels.</description>
+	<artifactId>in-network-client</artifactId>
+	<name>in-network test client</name>
+	<description>Test client for In-Network SNEE</description>
 	<dependencies>
 		<dependency>
 			<groupId>uk.ac.manchester.cs.snee.client</groupId>
