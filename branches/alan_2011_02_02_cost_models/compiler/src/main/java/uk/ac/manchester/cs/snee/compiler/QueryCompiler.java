@@ -39,7 +39,7 @@ import java.io.StringReader;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.compiler.costmodels.CardinalityEstimatedCostModel;
+import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
@@ -89,6 +89,7 @@ public class QueryCompiler {
 	 */
 	private MetadataManager metadata;
 	private QueryExecutionPlan qep;
+	private static boolean deletedFolderContents = false;
 	
 	public QueryExecutionPlan getQEP()
 	{
@@ -261,8 +262,12 @@ public class QueryCompiler {
 			logger.trace("ENTER createQueryDirectory() queryID: " + queryID);
 		String queryPlanOutputDir;
 		try {
-			Utils.deleteDirectoryContents(SNEEProperties.getSetting(
-					SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR));
+		  if(!deletedFolderContents)
+		  {
+			  Utils.deleteDirectoryContents(SNEEProperties.getSetting(
+					  SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR));
+			  deletedFolderContents = true;
+		  }
 			String fileSeparator = System.getProperty("file.separator");
 			String outputRootDir = 
 				SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +

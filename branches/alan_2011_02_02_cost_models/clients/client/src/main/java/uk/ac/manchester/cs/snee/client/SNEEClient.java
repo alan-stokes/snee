@@ -23,6 +23,7 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 
 public abstract class SNEEClient implements Observer {
@@ -184,11 +185,11 @@ public abstract class SNEEClient implements Observer {
 			logger.debug("RETURN");
 	}
 
-	public ArrayList<Integer> getSties()
+	public RT getRT()
 	{
 	  SNEEController control = (SNEEController) controller;
 	  SensorNetworkQueryPlan qep =  (SensorNetworkQueryPlan) control.getQEP();
-	  return qep.getRT().getSiteIDs();
+	  return qep.getRT();
 	}
 	
 	public void setDeadNodes(ArrayList<Integer> deadNodes)

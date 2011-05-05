@@ -6,7 +6,7 @@
 #TODO: Move query generator out to a separate library
 import os, random, RandomSeeder, math, networkLib, SneeqlLib, sys, getopt, UtilLib
 
-optNumNodes = 10
+optNumNodes = 20
 optScenariosFile = 'scenarios.csv'
 
 #Scenarios 1
@@ -23,7 +23,7 @@ optOutputDir2 = os.getenv('HOME')+os.sep+"tmp"+os.sep+"results"+os.sep+"scenario
 optMaxQueryNesting = 1
 optMaxSourcesPerQueryLevel = 1
 optProbabilitySubquery = 1 #prob that each source in a query level is a sub-query
-optProbabilityAggregate = 0.3 #prob that aggregate is projected in query level
+optProbabilityAggregate = 1 #prob that aggregate is projected in query level
 
 #network generation
 optRadioRange = 60

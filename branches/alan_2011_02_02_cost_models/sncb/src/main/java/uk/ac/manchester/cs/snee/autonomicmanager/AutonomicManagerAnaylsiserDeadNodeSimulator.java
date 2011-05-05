@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Random;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.costmodels.CardinalityEstimatedCostModel;
+import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -47,7 +47,7 @@ public class AutonomicManagerAnaylsiserDeadNodeSimulator
     int biggestSiteID = qep.getRT().getMaxSiteID();
     for(int siteNo = rootSiteValue; siteNo < biggestSiteID; siteNo++)
     {
-    sites.add(siteNo);
+      sites.add(siteNo);
     }
     
     for(int deadNodeValue = 0; deadNodeValue < numberOfDeadNodes; deadNodeValue++)

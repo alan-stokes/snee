@@ -115,7 +115,7 @@ public class SNEEController implements SNEE {
 	private Map<Integer, QueryExecutionPlan> _queryPlans = 
 		new HashMap<Integer, QueryExecutionPlan>();
 	
-	private int _nextQueryID = 1;
+	private static int _nextQueryID = 1;
 
 	private double duration;
 	

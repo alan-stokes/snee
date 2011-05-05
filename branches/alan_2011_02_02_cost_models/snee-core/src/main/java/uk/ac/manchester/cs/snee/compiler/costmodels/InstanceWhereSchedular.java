@@ -51,7 +51,8 @@ public class InstanceWhereSchedular
   throws SNEEException, SchemaMetadataException, OptimizationException, SNEEConfigurationException
   {
     //make directory withoutput folder to place cost model images
-    String fileDirectory = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + "/costModelImages";
+    String fileSeparator = System.getProperty("file.separator");
+    String fileDirectory = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + fileSeparator + paf.getQueryName() + fileSeparator + "costModelImages";
     //String fileDirectory = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + "/costModelImages";
     boolean success = new File(fileDirectory).mkdir();
     if(success)
@@ -59,22 +60,22 @@ public class InstanceWhereSchedular
       //generate floating operators / fixed locations
       generatePartialDaf();
       //produce image output so that can be validated
-      instanceDAF.exportAsDOTFile(fileDirectory + "/partialInstanceDAF.dot", "");
+      instanceDAF.exportAsDOTFile(fileDirectory + fileSeparator + "partialInstanceDAF.dot", "");
       //do heuristic placement
       doInstanceOperatorSiteAssignment();
-      instanceDAF.exportAsDOTFile(fileDirectory + "/siteAssignment.dot", "");
+      instanceDAF.exportAsDOTFile(fileDirectory + fileSeparator + "siteAssignment.dot", "");
       //move duplicate aggerates upwards
       moveAggeratesInitsUpwards();
-      instanceDAF.exportAsDOTFile(fileDirectory + "/movedInitsUpwards.dot", "");
+      instanceDAF.exportAsDOTFile(fileDirectory + fileSeparator + "movedInitsUpwards.dot", "");
       //remove instances which are redundant
       removeRedundantOpInstances();
-      instanceDAF.exportAsDOTFile(fileDirectory + "/cleanedSiteAssignment.dot", "");
+      instanceDAF.exportAsDOTFile(fileDirectory + fileSeparator + "cleanedSiteAssignment.dot", "");
       startFragmentation();
-      instanceDAF.exportAsDotFileWithFrags(fileDirectory + "/fragmentedInstanceDAF.dot", "", false);
+      instanceDAF.exportAsDotFileWithFrags(fileDirectory + fileSeparator + "fragmentedInstanceDAF.dot", "", false);
       addExchangeParts();
       createCDAF();
       updateOperatorLinksToIncludeExchangeParts();
-      instanceDAF.exportAsDotFileWithFrags(fileDirectory + "/InstanceDAFWithExchangeLinksBuiltIN.dot", "", true);
+      instanceDAF.exportAsDotFileWithFrags(fileDirectory + fileSeparator + "InstanceDAFWithExchangeLinksBuiltIN.dot", "", true);
     }    
     else
     {

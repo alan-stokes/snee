@@ -1,6 +1,8 @@
-package uk.ac.manchester.cs.snee.compiler.costmodels;
+package uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel;
 
-public class CardinalityStruct
+import uk.ac.manchester.cs.snee.compiler.costmodels.CostModelDataStructure;
+
+public class CardinalityDataStructure extends CostModelDataStructure
 {
   //streamCard
   private float cardOfStream = 0;
@@ -11,14 +13,14 @@ public class CardinalityStruct
   private float windowCard = 0;
 
   //stream/window constructor
-  public CardinalityStruct(float card)
+  public CardinalityDataStructure(float card)
   {
     this.cardOfStream = card;
     stream = true;
   }
   
   //stream of windows constructor
-  public CardinalityStruct(float windowStreamCard, float windowCard)
+  public CardinalityDataStructure(float windowStreamCard, float windowCard)
   {
     this.windowCard = windowCard;
     this.windowStreamCard = windowStreamCard;
@@ -98,4 +100,10 @@ public class CardinalityStruct
     else
       return this.windowStreamCard;
   }
+  
+  public void setStream(boolean streamValue)
+  {
+    stream = streamValue;
+  }
+  
 }

@@ -11,6 +11,9 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 
 public class AutonomicManager 
@@ -41,7 +44,7 @@ public class AutonomicManager
   }
 
   public void runCostModels() throws OptimizationException 
-  {
+  {    
     anyliser.runECMs();
   }
   
