@@ -186,8 +186,10 @@ public class SNEEControllerTest extends EasyMockSupport {
 	SNEEConfigurationException, MetadataException, EvaluatorException,
 	SNEECompilerException, SourceAllocatorException, WhenSchedulerException  
 	{		//Record expected calls to the mock objects
+		_snee.resetQueryId();
 		expect(mockQueryCompiler.compileQuery(1, mQuery, null)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
+		mockDispatcher.giveAutonomicManagerQuery(mQuery);
 		expect(mockDispatcher.stopQuery(1)).andReturn(true);
 
 		//Test
@@ -206,10 +208,13 @@ public class SNEEControllerTest extends EasyMockSupport {
 	SNEEConfigurationException, SNEECompilerException, MetadataException, 
 	SourceAllocatorException, WhenSchedulerException {
 		//Record expected calls to the mock objects
+		_snee.resetQueryId();
 		expect(mockQueryCompiler.compileQuery(1, mQuery, null)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
+		mockDispatcher.giveAutonomicManagerQuery(mQuery);
 		expect(mockQueryCompiler.compileQuery(2, mQuery, null)).andReturn(mockPlan);
 		mockDispatcher.startQuery(2, mockResultset, mockPlan);
+		mockDispatcher.giveAutonomicManagerQuery(mQuery);
 		mockDispatcher.close();
 
 		//Test
@@ -247,9 +252,11 @@ public class SNEEControllerTest extends EasyMockSupport {
 	SourceAllocatorException, WhenSchedulerException
 	{
 		//Record expected calls to the mock objects
+		_snee.resetQueryId();
 		expect(mockQueryCompiler.compileQuery(1, mQuery, null)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
-
+		mockDispatcher.giveAutonomicManagerQuery(mQuery);
+		
 		//Test
 		replayAll();		
 		int qID = _snee.addQuery(mQuery, null);

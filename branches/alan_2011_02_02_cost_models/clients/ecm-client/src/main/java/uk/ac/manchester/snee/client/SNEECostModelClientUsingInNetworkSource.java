@@ -33,10 +33,14 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class SNEECostModelClientUsingInNetworkSource extends SNEEClient 
 {
 	private static ArrayList<Integer> siteIDs = null;
+	private static RT routingTree;
 	
 	protected static Logger resultsLogger;
 	private static int testNo = 1;
@@ -139,7 +143,7 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
         out.close();
         client.run();
         testNo ++;
-        siteIDs = client.getSties();
+        routingTree = client.getRT();
         System.out.println("ran control: success");
         runTests(client, currentQuery);
         queryid ++;
@@ -160,7 +164,17 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
 
   private static void runTests(SNEECostModelClientUsingInNetworkSource client, String currentQuery) throws SNEECompilerException, MetadataException, EvaluatorException, SNEEException, SNEEConfigurationException, IOException, OptimizationException, SQLException, UtilsException
   {
-    //go though all site combinations running with snee to test validity
+    //go though all sites looking for confluence sites which are sites which will cause likely changes to results when lost
+	Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
+	while(siteIterator.hasNext())
+	{
+	  Site currentSite = siteIterator.next();
+	  if(currentSite.getInDegree() > 1)
+	  {
+		  siteIDs.add(Integer.parseInt(currentSite.getID()));
+	  }
+	}
+	  
     int noSites = siteIDs.size();
     int position = 0;
     ArrayList<Integer> deadNodes = new ArrayList<Integer>();

@@ -580,4 +580,9 @@ public class SNEEController implements SNEE {
       }
     return queryId;
   }
+  
+  public void resetQueryId()
+  {
+	 _nextQueryID = 1;
+  }
 }
