@@ -130,7 +130,7 @@ public class AggrUtils {
 				}
 				if (aggrFn == AggregationFunction.MIN || aggrFn == 
 					AggregationFunction.MAX) {
-					String baseAttrName = baseAttr.getAttributeSchemaName();
+					String baseAttrName = baseAttr.getAttributeDisplayName().replace('.', '_');
 					incrementAggregatesBuff.append("\t\t\t\tif " +
 							"(("+baseAttrName+"_tuplesReceived==FALSE) || (inQueue[inHead]."+
 							inputAttrName+" "+comp+" " + attrName + "))\n");
