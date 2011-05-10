@@ -144,9 +144,9 @@ public class AutonomicManagerAnaylsis
             if ( deadSitesList.equals(""))
               deadSitesList = "control";
             if(sameEpochValue && sameAgendaValue)
-              out.write("&" + deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "SUCCESS \\\\ \\hline \n");
+              out.write("&" + deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "SUCCESS \\\\ \\cline{2-7} \n");
             else
-              out.write("&" + deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "FAIL \\\\ \\hline \n");
+              out.write("&" + deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "FAIL \\\\ \\cline{2-7} \n");
             out.flush();
             out.close();
           }
@@ -180,9 +180,9 @@ public class AutonomicManagerAnaylsis
       if ( deadSitesList.equals(""))
         deadSitesList = "control";
       if(sameEpochValue && sameAgendaValue)
-        out.write("&" + deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "SUCCESS \\\\ \\hline \n");
+        out.write("&" + deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "SUCCESS \\\\ \\cline{2-7} \n");
       else
-        out.write("&" + deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "FAIL \\\\ \\hline \n");
+        out.write("&" + deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "FAIL \\\\ \\cline{2-7} \n");
       out.flush();
       out.close();
     }

@@ -19,9 +19,13 @@ public class TinyOS_SNCB_Controller implements SNCB
       logger.debug("ENTER TinyOS_SNCB()");
     try 
     {
+      CodeGenTarget target = CodeGenTarget.TELOSB_T2;
       //get target of compiler, decide on which version of SNCB to run
-      CodeGenTarget target = CodeGenTarget.parseCodeTarget(SNEEProperties
+      if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET)) 
+      {
+       target = CodeGenTarget.parseCodeTarget(SNEEProperties
           .getSetting(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET));
+      }
       if(target == CodeGenTarget.TELOSB_T2)
       {
         sncb = new TinyOS_SNCB_TelosB(duration);

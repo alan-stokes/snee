@@ -39,12 +39,16 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class SNEECostModelClientUsingInNetworkSource extends SNEEClient 
 {
-	private static ArrayList<Integer> siteIDs = null;
+	private static ArrayList<Integer> siteIDs = new ArrayList<Integer>();
 	private static RT routingTree;
 	
 	protected static Logger resultsLogger;
-	private static int testNo = 1;
 	private String sneeProperties;
+	private static int testNo = 1;
+	private static int recoveredTestValue = 0;
+	private static boolean inRecoveryMode = false;
+	private static int actualTestNo = 0;
+	private static int queryid = 0;
 	
 	public SNEECostModelClientUsingInNetworkSource(String query, 
 			double duration, String queryParams, String sneeProperties) 
@@ -76,83 +80,46 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
 		String queryParams = "etc/query-parameters.xml";
 		try
     {
-		  
-      //update results file to put header and query, testno
-      File folder = new File("results");
-      String path = folder.getAbsolutePath();
-      folder.delete();
-      folder.mkdir();
-      File resultsFile = new File(path + "/results.tex");
-      if(!resultsFile.exists())
-        resultsFile.createNewFile();
-      else
+      checkRecoveryFile();
+      if(!inRecoveryMode)
       {
-        resultsFile.delete();
-        resultsFile.createNewFile();
+        writeBeginningBlurb();
       }
-      //add blurb for results file, so can be compiled into latex doc at later date
-      BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile, true));
-      out.write("\\documentclass{article} \n \\usepackage{a4-mancs} \n \\usepackage{graphicx} \n" +
-                "\\usepackage{mathtools} \n \\usepackage{subfig} \n \\usepackage[english]{babel} \n" +
-                "\\usepackage{marvosym} \n\n\n \\begin{document} \n");
-                
-      out.write("\\begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}  \n \\hline \n");
-      out.write("testNo &  dead Sites List & Cost Model Epoch Cardinality & Cost Model Angeda Cardinality & " +
-                " Snee Epoch Cardinality & Snee Agenda Cardinality & correct \\\\ \\hline \n");
-      out.flush();
-      out.close();
-    
+      runIxentsScripts();
       
-      //run Ixent's modified script to produce 30 random test cases. 
-     // String pythonPath = Utils.validateFileLocation("resources/python/generateScenarios.py");
-      File pythonFolder = new File("src/main/resources/python/");
-      String pythonPath = pythonFolder.getAbsolutePath();
-      File testFolder = new File("src/main/resources/tests");
-      String testPath = testFolder.getAbsolutePath();
-      String [] params = {"generateScenarios.py", testPath};
-      Map<String,String> enviro = new HashMap<String, String>();
-      System.out.println("running Ixent's scripts for 30 random queries");
-      Utils.runExternalProgram("python", params, enviro, pythonPath);
-      System.out.println("have ran Ixent's scripts for 30 random queries");
       
       //holds all 30 queries produced by python script.
       ArrayList<String> queries = new ArrayList<String>();
-      //String filePath = Utils.validateFileLocation("tests/queries.txt");
-      File queriesFile = new File("src/main/resources/tests/queries.txt");
-      String filePath = queriesFile.getAbsolutePath();
-      BufferedReader queryReader = new BufferedReader(new FileReader(filePath));
-      String line = "";
-      while((line = queryReader.readLine()) != null)
-      {
-        queries.add(line);
-      }
+      collectQueries(queries);
       
-      int queryid = 0;
-  		Iterator<String> queryIterator = queries.iterator();
-  		while(queryIterator.hasNext())
-  		{
+	    Iterator<String> queryIterator = queries.iterator();
+	  
+	    moveQueryToRecoveryLocation(queries);
+	   
+	    while(queryIterator.hasNext())
+	    {
   		  //get query & schemas
   		  String currentQuery = queryIterator.next();
   		  String propertiesPath = "tests/snee" + queryid + ".properties";
   		  
         SNEECostModelClientUsingInNetworkSource client = 
           new  SNEECostModelClientUsingInNetworkSource(currentQuery, duration, queryParams, propertiesPath);
-        out = new BufferedWriter(new FileWriter(resultsFile, true));
-        out.write(testNo + " &  \\multicolumn{6}{|c|}{" + currentQuery + "} \\\\ \\hline \n");
-        out.flush();
-        out.close();
-        client.run();
+        
+        writeQueryToResultsFile(currentQuery);
         testNo ++;
+        
+        //added to allow recovery from crash
+        actualTestNo = 0;
+        updateRecoveryFile();
+        
+        client.run();
         routingTree = client.getRT();
         System.out.println("ran control: success");
         runTests(client, currentQuery);
         queryid ++;
-        System.out.println("Ran to completion");
-  		}
-  		out = new BufferedWriter(new FileWriter(path, true));
-      out.write("\\end{tabular} \n \\end{document} \n");
-      out.flush();
-      out.close();
+        System.out.println("Ran all tests on query " + testNo);
+      }
+	    writeLastResultsSection();
     } catch (Exception e)
     {
       System.out.println("Execution failed. See logs for detail.");
@@ -162,22 +129,63 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
     }
 	}
 
+  private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
+  {
+    Iterator<String> queryIterator = queries.iterator();
+    //recovery move
+    for(int i = 0; i < queryid - 1; i++)
+    {
+      queryIterator.next();  
+    }
+  }
+
+  private static void collectQueries(ArrayList<String> queries) throws IOException
+  {
+    //String filePath = Utils.validateFileLocation("tests/queries.txt");
+    File queriesFile = new File("src/main/resources/tests/queries.txt");
+    String filePath = queriesFile.getAbsolutePath();
+    BufferedReader queryReader = new BufferedReader(new FileReader(filePath));
+    String line = "";
+    while((line = queryReader.readLine()) != null)
+    {
+      queries.add(line);
+    }  
+  }
+
+  private static void runIxentsScripts() throws IOException
+  {
+     //run Ixent's modified script to produce 30 random test cases. 
+     File pythonFolder = new File("src/main/resources/python/");
+     String pythonPath = pythonFolder.getAbsolutePath();
+     File testFolder = new File("src/main/resources/tests");
+     String testPath = testFolder.getAbsolutePath();
+     String [] params = {"generateScenarios.py", testPath};
+     Map<String,String> enviro = new HashMap<String, String>();
+     System.out.println("running Ixent's scripts for 30 random queries");
+     Utils.runExternalProgram("python", params, enviro, pythonPath);
+     System.out.println("have ran Ixent's scripts for 30 random queries");
+    
+  }
+
   private static void runTests(SNEECostModelClientUsingInNetworkSource client, String currentQuery) throws SNEECompilerException, MetadataException, EvaluatorException, SNEEException, SNEEConfigurationException, IOException, OptimizationException, SQLException, UtilsException
   {
     //go though all sites looking for confluence sites which are sites which will cause likely changes to results when lost
-	Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
-	while(siteIterator.hasNext())
-	{
-	  Site currentSite = siteIterator.next();
-	  if(currentSite.getInDegree() > 1)
-	  {
-		  siteIDs.add(Integer.parseInt(currentSite.getID()));
-	  }
-	}
-	  
+	  Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
+  	siteIDs.clear();
+  	actualTestNo = 0;
+  	while(siteIterator.hasNext())
+  	{
+  	  Site currentSite = siteIterator.next();
+  	  if(currentSite.getInDegree() > 1)
+  		  if(!siteIDs.contains(Integer.parseInt(currentSite.getID())))
+  		    siteIDs.add(Integer.parseInt(currentSite.getID()));
+  	}
+  	 
     int noSites = siteIDs.size();
     int position = 0;
     ArrayList<Integer> deadNodes = new ArrayList<Integer>();
+    writeIncludeImageSection();
+    
     chooseNodes(deadNodes, noSites, position, client, currentQuery);
   }
 
@@ -193,11 +201,49 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
     }
     else
     {
-      client.setDeadNodes(deadNodes);
-      client.runForTests();
+      updateRecoveryFile();
+        
+      if(inRecoveryMode)
+      {
+    	  if(actualTestNo != recoveredTestValue)
+    	  {
+    		  actualTestNo++;
+    	  }
+    	  else
+    	  {
+      		inRecoveryMode = false;
+      		client.resetNodes();
+          client.setDeadNodes(deadNodes);
+          client.runForTests(); 
+    	  }
+      }
+      else
+      {
+        if(actualTestNo == 0)
+        {
+          actualTestNo++;
+        }
+        else
+        {
+      	  client.resetNodes();
+          client.setDeadNodes(deadNodes);
+          client.runForTests(); 
+          actualTestNo++;
+        }
+      }      
     }
   }
-  
+
+  private void resetNodes() 
+  {
+	  Iterator<Site> routingTreeIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
+	  while(routingTreeIterator.hasNext())
+	  {
+		  Site currentSite = routingTreeIterator.next();
+		  currentSite.setisDead(false);
+	  }
+  }
+
   public void runForTests()throws SNEECompilerException, MetadataException, EvaluatorException,
   SNEEException, SQLException, SNEEConfigurationException
   {
@@ -233,5 +279,133 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
     controller.close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
+  }
+
+  private static void writeBeginningBlurb() throws IOException 
+  {
+	  File folder = new File("results");
+    String path = folder.getAbsolutePath();
+	  File resultsFile = new File(path + "/results.tex");
+	  BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile, true));
+	  //add blurb for results file, so can be compiled into latex doc at later date
+    out.write("\\documentclass{article} \n \\usepackage{a4-mancs} \n \\usepackage{graphicx} \n" +
+              "\\usepackage{mathtools} \n \\usepackage{subfig} \n \\usepackage[english]{babel} \n" +
+              "\\usepackage{marvosym} \n\n\n \\begin{document} \n");
+            
+    out.write("\\begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}  \n \\hline \n");
+    out.write("testNo &  dead Sites List & Cost Model Epoch Cardinality & Cost Model Angeda Cardinality & " +
+            " Snee Epoch Cardinality & Snee Agenda Cardinality & correct \\\\ \\hline \n");
+    out.flush();
+    out.close();	
+  }
+  
+  private static void writeQueryToResultsFile(String currentQuery) throws IOException
+  {
+    File folder = new File("results");
+    String path = folder.getAbsolutePath();
+    File resultsFile = new File(path + "/results.tex");
+    BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile, true));
+    
+    if(!inRecoveryMode || recoveredTestValue == 0)
+    {
+      out = new BufferedWriter(new FileWriter(resultsFile, true));
+      out.write(testNo + " &  \\multicolumn{6}{|c|}{" + currentQuery + "} \\\\ \\hline \n");
+      out.write("\\hline \n");
+      out.flush();
+      out.close();
+    } 
+  }
+  
+  private static void writeIncludeImageSection() throws IOException, UtilsException
+  {
+    File folder = new File("results");
+    String path = folder.getAbsolutePath();
+    File resultsFile = new File(path + "/results.tex");
+    BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile, true));
+    int numberOfTests = (int) Math.pow(2.0, (double) siteIDs.size()) -1;
+    int realQueryid = queryid+1;
+    out.write("\\multirow{" + numberOfTests + "}{*}{\\includegraphics[width=1.6cm}{query" + realQueryid + "-RT-" + realQueryid + "}");
+    out.flush();
+    out.close();
+    copyRTtoResultsFolder();
+  }
+  
+  private static void copyRTtoResultsFolder() throws UtilsException
+  {
+    int realQueryid = queryid+1;
+    String path = Utils.validateFileLocation("output/query" + realQueryid + "/query-plan/");
+    File rtDotFile = new File(path + "/query" + realQueryid  + "-RT-" + realQueryid + ".dot");
+    File resultsFolder = new File("results");
+    String resultsPath = resultsFolder.getAbsolutePath();
+    File movedFile = new File(resultsPath + "/query"+ realQueryid  + "-RT-" + realQueryid + ".dot");
+    boolean success = rtDotFile.renameTo(movedFile);
+    if(!success)
+      System.out.println("attemptt o move file failed");
+  }
+
+  private static void writeLastResultsSection() throws IOException
+  {
+    File folder = new File("results");
+    String path = folder.getAbsolutePath();
+    File resultsFile = new File(path + "/results.tex");
+    BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile, true));
+    out = new BufferedWriter(new FileWriter(path, true));
+    out.write("\\end{tabular} \n \\end{document} \n");
+    out.flush();
+    out.close();
+  }
+  
+  private static void updateRecoveryFile() throws IOException
+  {
+    File folder = new File("results"); 
+    String path = folder.getAbsolutePath();
+    //added to allow recovery from crash
+    BufferedWriter recoverWriter = new BufferedWriter(new FileWriter(new File(path + "/recovery.tex")));
+    recoverWriter.write(testNo + "\n");
+    recoverWriter.write(actualTestNo + "\n");
+    recoverWriter.flush();
+    recoverWriter.close();
+    
+  }
+  
+  private static void checkRecoveryFile() throws IOException
+  {
+    //added to allow recovery from crash
+    File folder = new File("results"); 
+    String path = folder.getAbsolutePath();
+    File resultsFile = new File(path + "/results.tex");
+    File recoveryFile = new File(path + "/recovery.tex");
+    if(recoveryFile.exists())
+    {
+      BufferedReader recoveryTest = new BufferedReader(new FileReader(recoveryFile));
+      String recoveryQueryIdLine = recoveryTest.readLine();
+      String recoverQueryTestLine = recoveryTest.readLine();
+      System.out.println("recovery text located with query test value = " +  recoveryQueryIdLine + " and has test no = " + recoverQueryTestLine);
+      queryid = Integer.parseInt(recoveryQueryIdLine);
+      testNo = queryid;
+      recoveredTestValue = Integer.parseInt(recoverQueryTestLine);
+      inRecoveryMode = true;
+      if(queryid == 0 && recoveredTestValue == 0)
+      {
+        boolean result;
+        deleteAllFilesInResultsFolder(folder);
+        result = resultsFile.createNewFile();
+        result = recoveryFile.createNewFile();
+        inRecoveryMode = false;
+      }
+    }
+    else
+    {
+      System.out.println("create file recovery.tex with 2 lines each containing the number 0");
+    }
+  }
+
+  private static void deleteAllFilesInResultsFolder(File folder)
+  {
+    File [] filesInFolder = folder.listFiles();
+    for(int fileIndex = 0; fileIndex < filesInFolder.length; fileIndex++)
+    {
+      filesInFolder[fileIndex].delete();
+    }
   }
 }

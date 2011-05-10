@@ -254,7 +254,10 @@ public class CardinalityEstimatedCostModel extends CostModel
     }
     
     ArrayList<CardinalityDataStructure> outputs = new ArrayList<CardinalityDataStructure>();
-    outputs.add((CardinalityDataStructure) inputs.get(0));
+    if(inputs.size() != 0)
+      outputs.add((CardinalityDataStructure) inputs.get(0));
+    else
+      outputs.add(new CardinalityDataStructure(0));
     
     for(int inputsIndex = 1; inputsIndex < inputs.size(); inputsIndex++)
     {
