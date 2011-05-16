@@ -185,8 +185,8 @@ public class AcquireOperator extends LogicalOperatorImpl {
 //		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
 //			outputAttributes.add(new LocalTimeAttribute()); //Ixent added this
 //		}		
-		sensedAttributes = extentMetadata.getAttributes();
-		outputAttributes.addAll(sensedAttributes);
+		sensedAttributes = extentMetadata.getDataAttributes();
+		outputAttributes = extentMetadata.getAttributes();
 //		sites =  sourceMetaData.getSourceNodes();
 		this.cardinality = extentMetadata.getCardinality();
 		copyExpressions(outputAttributes);

@@ -918,7 +918,6 @@ public class TinyOSGenerator {
 			String nesCInterfaceName = SensorComponentUtils.
 				getNesCInterfaceName(sensorType, this.target);
 			
-			System.err.println(""+sensorType);
 			if (sensorType == SensorType.SEA_LEVEL) {
 				usesCustomSeaLevelSensor = true;
 			}

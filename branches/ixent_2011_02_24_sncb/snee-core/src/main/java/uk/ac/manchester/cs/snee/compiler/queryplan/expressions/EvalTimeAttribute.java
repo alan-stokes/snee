@@ -64,6 +64,10 @@ public class EvalTimeAttribute extends Attribute {
 		super("system", Constants.EVAL_TIME, timeType);
 	}
 	
+	public EvalTimeAttribute(Attribute attribute) throws SchemaMetadataException {
+		super(attribute);
+	}
+
 	/**
 	 * All evalTime objects are equals.
 	 * @param other Object to compare with.

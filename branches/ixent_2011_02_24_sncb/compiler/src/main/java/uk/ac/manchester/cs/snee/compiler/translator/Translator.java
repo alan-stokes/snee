@@ -17,12 +17,15 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
@@ -1177,7 +1180,17 @@ public class Translator {
 				/* Now, check if the requested item has been found */
 				if ( attrName.equalsIgnoreCase(searchName) ) {
 
-					Attribute newAttribute = new DataAttribute(attribute);
+					Attribute newAttribute;
+					if (attribute instanceof EvalTimeAttribute) {
+						newAttribute = new EvalTimeAttribute(attribute);
+					} else if (attribute instanceof TimeAttribute) {
+						newAttribute = new TimeAttribute(attribute);
+					} else if (attribute instanceof IDAttribute) {
+						newAttribute = new IDAttribute(attribute);
+					} else {
+						newAttribute = new DataAttribute(attribute);						
+					}
+
 					newAttribute.setAttributeDisplayName(searchName);
 					expression = newAttribute;
 					attrFound = true;
