@@ -11,7 +11,7 @@
 			<extent name="SeaDefence">
 				<sites>2,3</sites>
 				<sensorTypes>
-					<attribute name="seaLevel" sensorType="seaLevel"/>
+					<attribute name="seaLevel" sensorType="light"/>
 					<attribute name="airTemperature" sensorType="temperature"/>
 					<attribute name="voltage" sensorType="voltage"/>		
 				</sensorTypes>
@@ -19,7 +19,7 @@
  			<extent name="SeaDefenceEast">
 				<sites>2</sites>
 				<sensorTypes>
-					<attribute name="seaLevel" sensorType="seaLevel"/>
+					<attribute name="seaLevel" sensorType="light"/>
 					<attribute name="airTemperature" sensorType="temperature"/>
 					<attribute name="voltage" sensorType="voltage"/>		
 				</sensorTypes>
@@ -27,7 +27,7 @@
 			<extent name="SeaDefenceWest">
 				<sites>3</sites>
 				<sensorTypes>
-					<attribute name="seaLevel" sensorType="seaLevel"/>
+					<attribute name="seaLevel" sensorType="light"/>
 					<attribute name="airTemperature" sensorType="temperature"/>
 					<attribute name="voltage" sensorType="voltage"/>		
 				</sensorTypes>				
