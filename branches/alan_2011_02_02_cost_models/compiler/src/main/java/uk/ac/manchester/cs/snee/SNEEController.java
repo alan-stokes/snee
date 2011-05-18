@@ -47,7 +47,6 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
@@ -376,6 +375,69 @@ public class SNEEController implements SNEE {
 		return queryId;
 	}
 	
+  public int addQueryWithoutCompilation(String query, String queryParamsFile)
+  throws EvaluatorException, SNEECompilerException, SNEEException,
+  MetadataException, SNEEConfigurationException 
+  {
+    if (logger.isDebugEnabled()) {
+      logger.debug("ENTER addQuery() with " + query);
+    }
+    if (query == null || query.trim().equals("")) {
+      logger.warn("Null or empty query passed in");
+      throw new SNEECompilerException("Null or empty query passed in.");
+    }
+    int queryId = _nextQueryID - 1;
+    dispatchQuery(queryId, query);
+    if (logger.isInfoEnabled())
+      logger.info("Successfully started evaluation of query " + queryId);
+
+    if (logger.isDebugEnabled()) {
+        logger.debug("RETURN addQuery() with query id " + queryId);
+      }
+    return queryId;
+  }
+  
+	public int addQuery(String query, String queryParamsFile, int currentQueryID)
+	throws EvaluatorException, SNEECompilerException, SNEEException,
+  MetadataException, SNEEConfigurationException
+	{
+	  if (logger.isDebugEnabled()) {
+      logger.debug("ENTER addQuery() with " + query);
+    }
+    if (query == null || query.trim().equals("")) {
+      logger.warn("Null or empty query passed in");
+      throw new SNEECompilerException("Null or empty query passed in.");
+    }
+    int queryId = currentQueryID;
+    _nextQueryID = currentQueryID+1;
+    if (logger.isInfoEnabled()) 
+      logger.info("Assigned ID " + queryId + " to query\n");
+    if (logger.isInfoEnabled()) 
+      logger.info("Reading query " + queryId + " parameters\n");
+    QueryParameters queryParams = null;
+    if (queryParamsFile != null) {
+      try {
+        queryParams = new QueryParameters(queryId, queryParamsFile);
+      } catch (Exception e) {
+        logger.warn("Error obtaining query parameters: " + e);
+        throw new SNEECompilerException(e.getLocalizedMessage());
+      }
+    }
+    if (logger.isInfoEnabled()) 
+      logger.info("Compiling query " + queryId + "\n");
+    compileQuery(queryId, query, queryParams);
+    if (logger.isInfoEnabled())
+      logger.info("Successfully compiled query " + queryId);  
+    dispatchQuery(queryId, query);
+    if (logger.isInfoEnabled())
+      logger.info("Successfully started evaluation of query " + queryId);
+
+    if (logger.isDebugEnabled()) {
+        logger.debug("RETURN addQuery() with query id " + queryId);
+      }
+    return queryId;
+	}
+	
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.SNEE#removeQuery(int)
 	 */
@@ -558,28 +620,6 @@ public class SNEEController implements SNEE {
 	{
 	  _dispatcher.waitForQueryEnd();
 	}
-
-  public int addQueryWithoutCompile(String query, String queryParamsFile)
-  throws EvaluatorException, SNEECompilerException, SNEEException,
-  MetadataException, SNEEConfigurationException 
-  {
-    if (logger.isDebugEnabled()) {
-      logger.debug("ENTER addQuery() with " + query);
-    }
-    if (query == null || query.trim().equals("")) {
-      logger.warn("Null or empty query passed in");
-      throw new SNEECompilerException("Null or empty query passed in.");
-    }
-    int queryId = _nextQueryID - 1;
-    dispatchQuery(queryId, query);
-    if (logger.isInfoEnabled())
-      logger.info("Successfully started evaluation of query " + queryId);
-
-    if (logger.isDebugEnabled()) {
-        logger.debug("RETURN addQuery() with query id " + queryId);
-      }
-    return queryId;
-  }
   
   public void resetQueryId()
   {

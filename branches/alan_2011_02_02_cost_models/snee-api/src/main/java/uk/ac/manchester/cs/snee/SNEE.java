@@ -61,6 +61,52 @@ public interface SNEE {
 	EvaluatorException, SNEEException, SNEEConfigurationException;
 
 	/**
+   * Adds a query to the set of registered queries and returns the 
+   * generated query identifier. 
+   * 
+   * It takes a query statement as input, and optionally any 
+   * parameters associated with it, generates a query plan for its 
+   * evaluation, and adds it to the set of registered query plans.
+   * 
+   * @param query Statement of the query
+   * @param parametersFile location of the query parameters file
+   * @param queryID id for this query
+   *
+   * @throws SNEEException
+   * @throws MetadataException 
+   * @throws EvaluatorException 
+   * @throws SNEECompilerException 
+   * @throws SNEEConfigurationException 
+   */
+	
+	public int addQuery(String query, String parametersFile, int queryID)
+	throws SNEECompilerException, MetadataException, 
+  EvaluatorException, SNEEException, SNEEConfigurationException;
+	
+  /**
+   * Adds a query to the set of registered queries and returns the 
+   * generated query identifier. 
+   * 
+   * It takes a query statement as input, and optionally any 
+   * parameters associated with it, does not go though the compilation stages
+   * , and adds it to the set of registered query plans.
+   * 
+   * @param query Statement of the query
+   * @param parametersFile location of the query parameters file
+   * @param queryID id for this query
+   *
+   * @throws SNEEException
+   * @throws MetadataException 
+   * @throws EvaluatorException 
+   * @throws SNEECompilerException 
+   * @throws SNEEConfigurationException 
+   */	
+	
+	public int addQueryWithoutCompilation(String query, String queryParamsFile)
+	throws SNEECompilerException, MetadataException, 
+  EvaluatorException, SNEEException, SNEEConfigurationException;
+	
+	/**
 	 * Retrieve the ResultStore for a specified query if it exists.
 	 * 
 	 * @param queryId Identifier of the query for which the result store should be returned
