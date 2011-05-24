@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.autonomicmanager;
+package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser;
 
 import java.util.ArrayList;
 import java.util.Iterator;

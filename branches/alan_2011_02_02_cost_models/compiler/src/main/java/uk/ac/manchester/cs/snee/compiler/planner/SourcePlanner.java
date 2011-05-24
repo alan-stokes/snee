@@ -132,6 +132,7 @@ public class SourcePlanner {
 		IOT instanceDaf = instanceWhere.getInstanceDAF();
 		new DAFUtils(daf).generateGraphImage();
 		//DAF daf = doSNWhereScheduling(rt, paf, costParams, queryID);
+		//IOT instanceDaf = null;
 		logger.info("Starting When-Scheduling for query " + queryID);
 		Agenda agenda = doSNWhenScheduling(daf, qos, queryID);
 		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, rt, daf, instanceDaf,

@@ -55,9 +55,12 @@ public class CardinalityEstimatedCostModel extends CostModel
   
   public void runModel() throws OptimizationException 
   {
-	  InstanceOperator rootOperator = instanceDAF.getRoot();
-	  CardinalityDataStructure result = (CardinalityDataStructure) model(rootOperator);
-	  epochResult = result.getCard();
+	  if(instanceDAF != null)
+    {
+	    InstanceOperator rootOperator = instanceDAF.getRoot();
+	    CardinalityDataStructure result = (CardinalityDataStructure) model(rootOperator);
+	    epochResult = result.getCard();
+	  }
   }
   
   protected CardinalityDataStructure selectCard(InstanceOperator inputOperator) 

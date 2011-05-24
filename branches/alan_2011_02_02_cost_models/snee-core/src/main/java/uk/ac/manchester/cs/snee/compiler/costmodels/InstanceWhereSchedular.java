@@ -12,6 +12,7 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.DAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
@@ -633,7 +634,16 @@ public class InstanceWhereSchedular
         getConfluenceOpInstances(site, disconnectedChildOpInstSet, false);
       //if sets coincide (meaning all instances of input are located on site) break
       if (confluenceOpInstSet.equals(disconnectedChildOpInstSet)) 
-      {
+      { 
+        //place new operator
+        InstanceOperator opInst = new InstanceOperator(op, site);
+        instanceDAF.addOpInst(op, opInst); 
+        //update children to new parent
+        convergeSubstreams(confluenceOpInstSet, opInst, instanceDAF);
+        //add new disconnected instance
+        disconnectedChildOpInstSet.add(opInst);
+        //remove what are now connected instances from the disconnected Operator hash
+        disconnectedChildOpInstSet.removeAll(confluenceOpInstSet);
         break;
       }
       //if more than one instance on current site but not all
@@ -652,7 +662,6 @@ public class InstanceWhereSchedular
     }
     //set all operators with this id to be the of input instances operators.
     disconnectedOpInstMapping.set(op.getID(), disconnectedChildOpInstSet);
-    
     
   }
 
@@ -723,7 +732,8 @@ public class InstanceWhereSchedular
       InstanceOperator operator = opInstIter.next();
       if(operator.getInstanceOperator() instanceof SensornetAggrMergeOperator)
       {
-        if(operator.getInDegree() == 1)
+        if(operator.getInDegree() == 1 && 
+            instanceDAF.getOpInstances(operator.getInstanceOperator()).size() != 1)
         {
           instanceDAF.removeOpInst(operator);
         }
@@ -765,7 +775,7 @@ public class InstanceWhereSchedular
       InstanceOperator opInst = opInstIter.next();
       //if the operator is a agg merge or aggr eval
       if (   opInst.getInstanceOperator() instanceof SensornetAggrMergeOperator 
-          || opInst.getInstanceOperator() instanceof SensornetAggrEvalOperator) 
+          /*|| opInst.getInstanceOperator() instanceof SensornetAggrEvalOperator*/) 
       {
         /*check all children operators  for a agg merge which is on the same site as the op.
          * if so then remove child operator
@@ -778,7 +788,8 @@ public class InstanceWhereSchedular
           if (   childOpInst.getInstanceOperator() instanceof SensornetAggrMergeOperator 
               && opSite == childOpSite) 
           {
-            instanceDAF.removeOpInst(childOpInst);
+            if(instanceDAF.getOpInstances(childOpInst.getInstanceOperator()).size() != 1)
+              instanceDAF.removeOpInst(childOpInst);
           }
         }
       }
@@ -786,18 +797,11 @@ public class InstanceWhereSchedular
   }
   
   private void createCDAF() 
-  throws OptimizationException, SNEEException, SchemaMetadataException
+  throws OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException
   {
-    DAF faf = partitionPAF(paf, instanceDAF, routingTree.getQueryName(), routingTree, costs);
-    //faf.display(SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR), faf.getName(), "faf");
-    
+    DAF faf = partitionPAF(paf, instanceDAF, routingTree.getQueryName(), routingTree, costs);  
     cDAF = linkFragments(faf, routingTree, instanceDAF, routingTree.getQueryName());
-    //cDAF.display(SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR),
-    //    cDAF.getQueryName(),
-    //    "cdaf");
-    
-    removeRedundantAggrIterOp(cDAF);
-    
+    removeRedundantAggrIterOp(cDAF, instanceDAF);
   }
   
   private static DAF partitionPAF(final PAF paf, IOT oit, 
@@ -807,7 +811,7 @@ public class InstanceWhereSchedular
   {
     DAF faf = new DAF(paf, routingTree, queryName);
     
-    //Get rid of unecessary aggrIter in FAF... (i.e., they have not been assigned to any site)
+    //Get rid of unnecessary aggrIter in FAF... (i.e., they have not been assigned to any site)
     Iterator<SensornetOperator> opIter = faf
     .operatorIterator(TraversalOrder.POST_ORDER);
     while (opIter.hasNext()) {
@@ -823,20 +827,30 @@ public class InstanceWhereSchedular
     }
     //Insert exchanges where necessary to partition the query plan
     opIter = faf.operatorIterator(TraversalOrder.POST_ORDER);
-    while (opIter.hasNext()) {
+    while (opIter.hasNext()) 
+    {
       final SensornetOperator op = (SensornetOperator) opIter.next();
-      HashSet<Site> opSites = oit.getSites(op);     
+      HashSet<Site> opSites = oit.getSites(op);    
       
-      if (op instanceof SensornetAggrMergeOperator) {
+      if(op instanceof SensornetAggrEvalOperator)
+      {
         final SensornetOperator childOp = (SensornetOperator) op.getInput(0);
-          final SensornetExchangeOperator exchOp = new SensornetExchangeOperator(costs);
-            faf.getOperatorTree().insertNode(childOp, op, exchOp);        
+        final SensornetExchangeOperator exchOp = new SensornetExchangeOperator(costs);
+        faf.getOperatorTree().insertNode(childOp, op, exchOp);        
+      }
+      else if (op instanceof SensornetAggrMergeOperator) 
+      {
+        final SensornetOperator childOp = (SensornetOperator) op.getInput(0);
+        final SensornetExchangeOperator exchOp = new SensornetExchangeOperator(costs);
+        faf.getOperatorTree().insertNode(childOp, op, exchOp);        
       } else {
-        for (int i=0; i<op.getInDegree(); i++) {
+        for (int i=0; i<op.getInDegree(); i++) 
+        {
           final SensornetOperator childOp = (SensornetOperator) op.getInput(i);
           
           HashSet<Site> childSites = oit.getSites(childOp);
-          if (!opSites.equals(childSites)) {
+          if (!opSites.equals(childSites)) 
+          {
             final SensornetExchangeOperator exchOp = new SensornetExchangeOperator(costs);   
             faf.getOperatorTree().insertNode(childOp, op, exchOp);
           }
@@ -882,13 +896,15 @@ public class InstanceWhereSchedular
   }
 
 
-  private static void removeRedundantAggrIterOp(DAF daf) throws OptimizationException {
+  private static void removeRedundantAggrIterOp(DAF daf, IOT instanceDAF) throws OptimizationException {
 
     Iterator<SensornetOperator> opIter = daf.operatorIterator(TraversalOrder.POST_ORDER);
     while (opIter.hasNext()) {
       SensornetOperator op = opIter.next();
       if (op instanceof SensornetAggrMergeOperator) {
-        if (!(op.getParent() instanceof SensornetExchangeOperator)) {
+        if (!(op.getParent() instanceof SensornetExchangeOperator) &&
+            instanceDAF.getOpInstances(op).size() != 1
+            ) {
           daf.getOperatorTree().removeNode(op);
         }
       }

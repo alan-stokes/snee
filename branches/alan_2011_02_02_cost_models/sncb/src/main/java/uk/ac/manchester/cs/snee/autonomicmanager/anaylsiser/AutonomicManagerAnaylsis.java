@@ -1,19 +1,16 @@
-package uk.ac.manchester.cs.snee.autonomicmanager;
+package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Random;
 
+import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class AutonomicManagerAnaylsis 
 {
@@ -23,7 +20,6 @@ public class AutonomicManagerAnaylsis
   private AutonomicManagerAnaylsiserDeadNodeSimulator deadNodeSimulator; 
   private boolean anaylisieCECM = true;
   private String deadSitesList = "";
-  private int lastSneeTuplesSize = 0;
 
   public AutonomicManagerAnaylsis(AutonomicManager autonomicManager)
   {
@@ -31,7 +27,7 @@ public class AutonomicManagerAnaylsis
     deadNodeSimulator = new AutonomicManagerAnaylsiserDeadNodeSimulator();
   }
 
-  public void initiliseCardECM(QueryExecutionPlan qep) 
+  public void initilise(QueryExecutionPlan qep) 
   {//sets ECMs with correct query execution plan
 	  this.qep = (SensorNetworkQueryPlan) qep;
 	  cardECM = new CardinalityEstimatedCostModel(qep);

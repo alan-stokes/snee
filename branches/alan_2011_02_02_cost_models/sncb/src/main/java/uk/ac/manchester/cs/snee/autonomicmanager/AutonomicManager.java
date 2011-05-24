@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.AutonomicManagerAnaylsis;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -39,7 +40,7 @@ public class AutonomicManager
   public void setQueryExecutionPlan(QueryExecutionPlan qep) throws SNEEException, SNEEConfigurationException
   {
 	  this.qep = qep;
-	  anyliser.initiliseCardECM(qep);
+	  anyliser.initilise(qep);
 	  monitor.setQueryPlan(qep);
   }
 
