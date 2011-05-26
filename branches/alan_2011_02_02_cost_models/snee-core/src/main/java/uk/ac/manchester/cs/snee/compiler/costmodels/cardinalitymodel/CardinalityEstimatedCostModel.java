@@ -38,7 +38,7 @@ public class CardinalityEstimatedCostModel extends CostModel
 	  SensorNetworkQueryPlan sqep= (SensorNetworkQueryPlan) qep;
 	  agenda = sqep.getAgenda();
 	  routingTree = sqep.getRT();
-	  instanceDAF = sqep.getInstanceDAF(); 
+	  instanceDAF = sqep.getIOT(); 
   }
   
   public float returnEpochResult() throws OptimizationException 

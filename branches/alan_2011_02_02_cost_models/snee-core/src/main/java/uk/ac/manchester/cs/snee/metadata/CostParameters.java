@@ -44,7 +44,7 @@ import org.w3c.dom.NodeList;
 
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 
-public class CostParameters {
+public class CostParameters{
 
     private final Logger logger = Logger.getLogger(CostParameters.class
 	    .getName());

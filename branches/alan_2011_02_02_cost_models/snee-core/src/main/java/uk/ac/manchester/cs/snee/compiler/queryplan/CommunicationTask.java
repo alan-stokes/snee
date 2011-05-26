@@ -48,7 +48,7 @@ import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
  * @author Ixent Galpin
  *
  */
-public class CommunicationTask extends Task {
+public class CommunicationTask extends Task implements Comparable{
 
 	//TODO move to task.
     //The site which is transmitting data
@@ -212,4 +212,18 @@ public class CommunicationTask extends Task {
 	return "TX " + this.sourceNode.getID() + "_" + this.destNode.getID();
     }
 
+  @Override
+  public int compareTo(Object o)
+  {
+    final int BEFORE = -1;
+    final int EQUAL = 0;
+    final int AFTER = 1;
+    CommunicationTask other = (CommunicationTask) o;
+    if(other.startTime < this.startTime)
+      return BEFORE;
+    else if(other.startTime == this.startTime)
+      return EQUAL;
+    else
+      return AFTER;
+  }
 }

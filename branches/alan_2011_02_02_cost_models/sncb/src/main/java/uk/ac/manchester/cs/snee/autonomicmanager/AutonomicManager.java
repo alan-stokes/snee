@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.autonomicmanager;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -8,45 +9,75 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.AutonomicManagerAnaylsis;
+import uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.Anaylsiser;
+import uk.ac.manchester.cs.snee.autonomicmanager.executer.Executer;
+import uk.ac.manchester.cs.snee.autonomicmanager.monitor.Monitor;
+import uk.ac.manchester.cs.snee.autonomicmanager.planner.Planner;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 
 public class AutonomicManager 
 {
-  private AutonomicManagerAnaylsis anyliser;
-  private AutonomicManagerMonitor monitor;
-  private AutonomicManagerPlanner planner;
-  private AutonomicManagerExecuter executer;
+  private Anaylsiser anyliser;
+  private Monitor monitor;
+  private Planner planner;
+  private Executer executer;
   private QueryExecutionPlan qep;
   private ArrayList<Integer> deadNodes = null;
   private int noDeadNodes = 0;
   private static Logger resultsLogger = 
     Logger.getLogger("results.autonomicManager");
+  private File outputFolder;
   
   public AutonomicManager()
   {
-	  anyliser = new AutonomicManagerAnaylsis(this);
-	  monitor = new AutonomicManagerMonitor(this);
-	  planner = new AutonomicManagerPlanner(this);
-	  executer = new AutonomicManagerExecuter(this);
+	  anyliser = new Anaylsiser(this);
+	  monitor = new Monitor(this);
+	  planner = new Planner(this);
+	  executer = new Executer(this);
+	  //set up output folder for any autonomic data structures
+	  outputFolder = new File("AutonomicFolder");
+	  if(outputFolder.exists())
+	  {
+	    File[] contents = outputFolder.listFiles();
+	    for(int index = 0; index < contents.length; index++)
+	    {
+	      File delete = contents[index];
+	      delete.delete();
+	    }
+	  }
+	  else
+	  {
+	    outputFolder.mkdir();
+	  }
   }
  
-  public void setQueryExecutionPlan(QueryExecutionPlan qep) throws SNEEException, SNEEConfigurationException
+  public void setQueryExecutionPlan(QueryExecutionPlan qep) throws SNEEException, SNEEConfigurationException, SchemaMetadataException
   {
 	  this.qep = qep;
 	  anyliser.initilise(qep);
 	  monitor.setQueryPlan(qep);
   }
 
-  public void runCostModels() throws OptimizationException 
+  public void runStragity2(int failedNodeID) throws SNEEConfigurationException
+  {
+    SensorNetworkQueryPlan newQEP = anyliser.runStrategy2(failedNodeID);
+    //newQEP.getIOT().exportAsDotFileWithFrags(fname, label, exchangesOnSites)
+    new AgendaUtils( newQEP.getAgenda(), true).generateImage();
+  }
+  
+  
+  public void runCostModels() throws OptimizationException, SNEEConfigurationException
   {    
     anyliser.runECMs();
+    monitor.chooseFakeNodeFailure();
   }
   
   public void runAnyliserWithDeadNodes() throws OptimizationException
@@ -110,6 +141,10 @@ public class AutonomicManager
   public void setQuery(String query)
   {
     monitor.setQuery(query);
-    
+  }
+  
+  public File getOutputFolder()
+  {
+    return outputFolder;
   }
 }

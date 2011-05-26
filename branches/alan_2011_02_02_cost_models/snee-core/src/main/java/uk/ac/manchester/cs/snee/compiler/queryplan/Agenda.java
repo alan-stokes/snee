@@ -35,6 +35,8 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -45,6 +47,7 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -57,7 +60,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
  * @author 	Ixent Galpin
  *
  */
-public class Agenda extends SNEEAlgebraicForm {
+public class Agenda extends SNEEAlgebraicForm{
 
     /**
      * Logger for this class.
@@ -145,6 +148,7 @@ public class Agenda extends SNEEAlgebraicForm {
  				+ bmsToMs(beta);
  			logger.warn(msg);
 			throw new AgendaLengthException(msg);
+			
 		}
     }
 
@@ -417,6 +421,8 @@ public class Agenda extends SNEEAlgebraicForm {
 	}
 	return null;
     }
+    
+    
 
     /**
      * Adds a fragment task at the specified startTime on the specified node
@@ -813,4 +819,70 @@ public class Agenda extends SNEEAlgebraicForm {
 	public CostParameters getCostParameters() {
 		return this.costParams;
 	}    
+	
+	public void removeNodeFromAgenda(int siteID)
+	{
+	  Site toBeRemove = daf.getRT().getSite(siteID);
+	  tasks.remove(toBeRemove);
+	}
+
+  public void orderNodesByTransmissionTasks(ArrayList<Node> children)
+  {
+    Iterator<Node> childIterator = children.iterator();
+    ArrayList<CommunicationTask> transmissionTasks = new ArrayList<CommunicationTask>();
+    while(childIterator.hasNext())
+    {
+      Node child = childIterator.next();
+      CommunicationTask transmissionTask = getTransmissionTask(child);
+      transmissionTasks.add(transmissionTask);
+    }
+    Collections.sort(transmissionTasks);
+    children.clear();
+    Iterator<CommunicationTask> transmissionTaskIterator = transmissionTasks.iterator();
+    while(transmissionTaskIterator.hasNext())
+    {
+      CommunicationTask task = transmissionTaskIterator.next();
+      Site node = task.getSourceNode();
+      children.add(node);
+    }
+  }
+
+  public CommunicationTask getTransmissionTask(Node child)
+  {
+    final Iterator<Task> taskIter = this.taskIterator((Site) child);
+    while (taskIter.hasNext()) 
+    {
+      final Task t = taskIter.next();
+      if (t instanceof CommunicationTask) 
+      {
+        final CommunicationTask commTask = (CommunicationTask) t;
+        if ((commTask.getSourceNode() == child)
+           && (commTask.getMode() == CommunicationTask.TRANSMIT)) 
+        {
+           return commTask;
+        }
+      }
+    }
+    return null;
+  }
+
+  public CommunicationTask getLastCommunicationTask(Node nodePrime, int receive)
+  {
+    final Iterator<Task> taskIter = this.taskIterator((Site) nodePrime);
+    CommunicationTask currentLastReceiveTask = null;
+    while (taskIter.hasNext()) 
+    {
+      final Task t = taskIter.next();
+      if (t instanceof CommunicationTask) 
+      {
+        final CommunicationTask commTask = (CommunicationTask) t;
+        if ((commTask.getSourceNode() == nodePrime)
+           && (commTask.getMode() == CommunicationTask.RECEIVE)) 
+        {
+          currentLastReceiveTask = commTask;
+        }
+      }
+    }
+    return currentLastReceiveTask;
+  }
 }

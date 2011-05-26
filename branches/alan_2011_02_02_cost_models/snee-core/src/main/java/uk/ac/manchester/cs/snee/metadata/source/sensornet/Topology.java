@@ -166,7 +166,8 @@ public class Topology extends Graph {
 		final Site n = (Site) element;
 		final RadioLink e = (RadioLink) this.edges.get(this
 			.generateEdgeID(nextClosestVertexID, n.getID()));
-
+    if(e != null)
+    {
 		final double try_d = (distance.get(nextClosestVertexID))
 			.doubleValue()
 			+ e.getCost(linkCostMetric);
@@ -176,10 +177,12 @@ public class Topology extends Graph {
 		    distance.put(n.getID(), new Double(try_d));
 		    previous.put(n.getID(), nextClosestVertexID); //?
 		}
+		}
 	    }
+	    
 	}
 
-	final Path path = new Path((Site) this.nodes.get(destID));
+	Path path = new Path((Site) this.nodes.get(destID));
 	
 	if (previous.containsKey(destID)) {
 	    String siteID = destID;
@@ -191,6 +194,7 @@ public class Topology extends Graph {
 	} else if (!sourceID.equals(destID)) {
 	    logger.info("Sites " + sourceID + " and " + destID
 		    + " are not linked.");
+	    path = null;
 	}
 	return path;
     }

@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.autonomicmanager;
+package uk.ac.manchester.cs.snee.autonomicmanager.monitor;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -12,13 +12,14 @@ import java.util.Observer;
 import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.ResultStoreImpl;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 import uk.ac.manchester.cs.snee.sncb.SerialPortMessageReceiver;
 
-public class AutonomicManagerMonitor implements Observer
+public class Monitor implements Observer
 {
   private AutonomicManager manager;
   private SerialPortMessageReceiver listener;
@@ -27,7 +28,7 @@ public class AutonomicManagerMonitor implements Observer
   private QueryExecutionPlan qep;
   private String query;
   
-  public AutonomicManagerMonitor(AutonomicManager autonomicManager)
+  public Monitor(AutonomicManager autonomicManager)
   {
     manager = autonomicManager;
   }
@@ -138,6 +139,11 @@ public class AutonomicManagerMonitor implements Observer
   {
     this.query = query;
     
+  }
+  
+  public void chooseFakeNodeFailure() throws SNEEConfigurationException
+  {
+    manager.runStragity2(1);
   }
 
 }

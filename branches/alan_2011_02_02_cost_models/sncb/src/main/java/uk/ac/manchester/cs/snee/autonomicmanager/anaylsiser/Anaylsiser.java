@@ -11,27 +11,31 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 
-public class AutonomicManagerAnaylsis 
+public class Anaylsiser 
 {
   private CardinalityEstimatedCostModel cardECM;
+  private Strategy2Rules strategy2;
   private SensorNetworkQueryPlan qep;
   private AutonomicManager manager;
-  private AutonomicManagerAnaylsiserDeadNodeSimulator deadNodeSimulator; 
+  private DeadNodeSimulator deadNodeSimulator; 
   private boolean anaylisieCECM = true;
   private String deadSitesList = "";
 
-  public AutonomicManagerAnaylsis(AutonomicManager autonomicManager)
+  public Anaylsiser(AutonomicManager autonomicManager)
   {
     manager = autonomicManager;
-    deadNodeSimulator = new AutonomicManagerAnaylsiserDeadNodeSimulator();
+    strategy2 = new Strategy2Rules(manager);
+    deadNodeSimulator = new DeadNodeSimulator();
   }
 
-  public void initilise(QueryExecutionPlan qep) 
+  public void initilise(QueryExecutionPlan qep) throws SchemaMetadataException 
   {//sets ECMs with correct query execution plan
 	  this.qep = (SensorNetworkQueryPlan) qep;
 	  cardECM = new CardinalityEstimatedCostModel(qep);
-	  deadNodeSimulator.initilise(qep, cardECM);
+	  strategy2.initilise(qep);
+	  deadNodeSimulator.initilise(qep, cardECM);  
   }
    
   public void runECMs() throws OptimizationException 
@@ -188,5 +192,10 @@ public class AutonomicManagerAnaylsis
   public void queryStarted()
   {
     anaylisieCECM = true;   
+  }
+  
+  public SensorNetworkQueryPlan runStrategy2(int failedNodeID)
+  {
+    return strategy2.calculateNewQEP(failedNodeID);
   }
 }

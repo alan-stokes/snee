@@ -465,5 +465,10 @@ public class IOT extends SNEEAlgebraicForm
   {
     this.rootFragment = rootFragment;
   }
+  
+  public Node getNode(int siteID)
+  {
+    return rt.getSite(siteID);
+  }
 
 }

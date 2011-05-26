@@ -10,12 +10,12 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
-public class AutonomicManagerAnaylsiserDeadNodeSimulator
+public class DeadNodeSimulator
 {
   private SensorNetworkQueryPlan qep;
   private CardinalityEstimatedCostModel cardECM;
   
-  public AutonomicManagerAnaylsiserDeadNodeSimulator()
+  public DeadNodeSimulator()
   {}
   
   public void initilise(QueryExecutionPlan qep, CardinalityEstimatedCostModel cardECM) 

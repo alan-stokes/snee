@@ -30,7 +30,7 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 	
 	private Agenda agenda;
 	
-	private IOT instanceDAF;
+	private IOT iot;
 
 	/**
 	 * Constructor
@@ -38,7 +38,7 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 	 * @throws TypeMappingException 
 	 * @throws SchemaMetadataException 
 	 */
-	public SensorNetworkQueryPlan(DLAF dlaf, RT rt, DAF daf, IOT instanceDAF, Agenda agenda, 
+	public SensorNetworkQueryPlan(DLAF dlaf, RT rt, DAF daf, IOT iot, Agenda agenda, 
 	String queryName) 
 	throws  SchemaMetadataException, TypeMappingException {
 		super(dlaf, queryName);
@@ -47,7 +47,7 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 		this.rt = rt;
 		this.daf = daf;
 		this.agenda = agenda;
-		this.instanceDAF = instanceDAF;
+		this.iot = iot;
 		
 		SensornetOperator rootOperator = daf.getRootOperator();
 		metadata = new QueryPlanMetadata(rootOperator.getAttributes());
@@ -73,8 +73,8 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 	/**
 	 * @return the instance daf
 	 */
-	public IOT getInstanceDAF() {
-		return instanceDAF;
+	public IOT getIOT() {
+		return iot;
 	}
 
 	/**
