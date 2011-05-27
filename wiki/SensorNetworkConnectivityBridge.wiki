@@ -24,7 +24,8 @@ The code for these programs is located at {{{$SNEEROOT/SNEE/sncb/target/classes/
   * First, manually with a USB cable, add OTAServer to each non-basestation mote:
   {{{ make telosb install,<node_id> }}}
 
-  * Then, manually with a USB cable, and OTABasestation to the basestation mote.
+  * Then, manually with a USB cable, install OTABasestation on the basestation mote.
+  {{{ make telosb install,<node_id> }}}
 
   * Then, with the basestation plugged in, install the OTA image into each node except the basestation at slot 1
   {{{ tos-ota <source> <destination> -i 1 <tos_image.xml>  }}}
