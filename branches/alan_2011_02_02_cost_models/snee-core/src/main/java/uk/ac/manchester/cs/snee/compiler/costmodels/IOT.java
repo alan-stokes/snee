@@ -52,7 +52,12 @@ public class IOT extends SNEEAlgebraicForm
   }
 
   
-  
+  /**
+   * creates a iterator for all fragments in IOT. 
+   * @param traversalOrder which order iterator goes in
+   * Post order or Pre order
+   * @return
+   */
   public final Iterator<InstanceFragment> fragmentIterator(final 
       TraversalOrder traversalOrder) 
   {
@@ -66,6 +71,12 @@ public class IOT extends SNEEAlgebraicForm
     return fragList.iterator();
    }
 
+  /**
+   * helper method for fragment iterator
+   * @param frag
+   * @param fragList
+   * @param traversalOrder
+   */
   private void doFragmentIterator(InstanceFragment frag,
       ArrayList<InstanceFragment> fragList, TraversalOrder traversalOrder)
   {
@@ -88,54 +99,128 @@ public class IOT extends SNEEAlgebraicForm
       logger.trace("RETURN doFragmentIterator()"); 
   }
 
+  /**
+   * set the root operator for the IOT
+   * @param rootOp
+   */
   public void setRoot(InstanceOperator rootOp)
   {
     this.rootOp = rootOp;
     instanceOperatorTree.setRoot(rootOp);
   }
   
+  /**
+   * return the root operator for the IOT
+   * @return
+   */
   public InstanceOperator getRoot() 
   {
     return this.rootOp;
   }
   
+  /**
+   * adds a fragment to the fragment array.
+   * @param frag
+   */
   public void addFragment(InstanceFragment frag)
   {
     fragments.add(frag);
   }
   
+  /**
+   * gets the operators which are on a site (in the form of instance operators
+   * @param site site to which the operators are being found on
+   * @return the operators on site site in the form of a arraylist
+   */
   public ArrayList<InstanceOperator> getOpInstances(Site site) 
   {
     return this.siteToOpInstMap.get(site);
   }
   
+  /**
+   * removes all operators from a site, and removes the site from the IOT
+   * @param site the site to be removed
+   * @throws OptimizationException 
+   */
+  public void removeSite(Site site) throws OptimizationException
+  {
+    ArrayList<InstanceOperator> operatorsOnSite = getOpInstances(site);
+    Iterator<InstanceOperator> operatorIterator = operatorsOnSite.iterator();
+    while(operatorIterator.hasNext())
+    {
+      InstanceOperator operator = operatorIterator.next();
+      this.removeOpInst(operator);
+    }
+  }
+  
+  /**
+   * adds a instance operators of a physical operator.
+   * @param op the physical operator,
+   * @param opInst the instance operator.
+   */
   public void addOpInst(SensornetOperator op, InstanceOperator opInst) 
   {
     instanceOperatorTree.addNode(opInst);
     this.opInstMapping.add(op.getID(), opInst);
   }
   
+  /**
+   * add a operator instance to a site
+   * @param opInst instance operator to add
+   * @param site to add instance operator to.
+   */
+  public void addOpInstToSite(InstanceOperator opInst, Site site)
+  {
+    this.siteToOpInstMap.add(site, opInst);
+  }
+  
+  /**
+   * get all instances of a physical operator
+   * @param op the physical operator
+   * @return array list of the instance operators.
+   */
   public ArrayList<InstanceOperator> getOpInstances(SensornetOperator op) 
   {
     return this.opInstMapping.get(op.getID()); 
   }
   
+  /**
+   * update the list of the instance operators for a physical operator.
+   * @param op physical operator
+   * @param opInstColl list of instance operators
+   */
   public void setOpInstances(SensornetOperator op, Collection<InstanceOperator> opInstColl) 
   {
     this.opInstMapping.set(op.getID(), opInstColl);
   }
   
+  /**
+   * get number of instances of a physical operator
+   * @param op the physical operator
+   * @return the number of instances of the physical operator.
+   */
   public int getNumOpInstances(SensornetOperator op) 
   {
     return this.getOpInstances(op).size();
   }
   
+  /**
+   * place a instance operator on a site
+   * @param opInst the instance operator
+   * @param site the site to place the instance op
+   */
   public void assign(InstanceOperator opInst, Site site) 
   {  
     opInst.setSite(site);
     this.siteToOpInstMap.add(site, opInst);
   }
   
+  /**
+   * move a instance operator from a site to a new site.
+   * @param opInst instance operator
+   * @param newSite new loc
+   * @param oldSite old loc
+   */
   public void reAssign(InstanceOperator opInst, Site newSite, Site oldSite) 
   {
     opInst.setSite(newSite);
@@ -143,6 +228,11 @@ public class IOT extends SNEEAlgebraicForm
     this.siteToOpInstMap.add(newSite, opInst);
   }
 
+  /**
+   * get a set of all sites containing a physical operator
+   * @param op the physical operator.
+   * @return
+   */
   public HashSet<Site> getSites(SensornetOperator op) 
   {
     ArrayList<InstanceOperator> opInstances = this.getOpInstances(op); 
@@ -155,7 +245,12 @@ public class IOT extends SNEEAlgebraicForm
     return sites;
   }
   
-  
+  /**
+   * produce a image of the IOT as a dot file
+   * @param fname name of file
+   * @param label label for within the dot file.
+   * @throws SchemaMetadataException
+   */
   public void exportAsDOTFile(final String fname, final String label) 
   throws SchemaMetadataException
   {
@@ -220,6 +315,12 @@ public class IOT extends SNEEAlgebraicForm
     }
   }
   
+  /**
+   * exports the IOT as a dot file, but contains fragments, and allows to turn on or off exchange operators
+   * @param fname  name of file
+   * @param label label for within dot file
+   * @param exchangesOnSites if exchange operators are broken down
+   */
   public void exportAsDotFileWithFrags(final String fname, final String label, boolean exchangesOnSites)
   {
 	  try
@@ -305,7 +406,11 @@ public class IOT extends SNEEAlgebraicForm
 	  }
   }
   
-
+/**
+ * iterator for the instance operators
+ * @param Order order the iterator goes in
+ * @return a iterator
+ */
   public Iterator<InstanceOperator> iterator(TraversalOrder Order)
   {
     final ArrayList<InstanceOperator> nodeList = 
@@ -315,6 +420,12 @@ public class IOT extends SNEEAlgebraicForm
     return nodeList.iterator();
   }
   
+  /**
+   * iterator over a sub tree of the IOT
+   * @param Order order the iterator goes in
+   * @param node sub tree root operator
+   * @return a iterator
+   */
   public Iterator<InstanceOperator> subTreeIterator(TraversalOrder Order, InstanceOperator node)
   {
     final ArrayList<InstanceOperator> nodeList = 
@@ -324,6 +435,12 @@ public class IOT extends SNEEAlgebraicForm
     return nodeList.iterator();
   } 
 
+  /**
+   * helper method for instance operator iterator
+   * @param node
+   * @param nodeList
+   * @param order
+   */
   private void doIterator(InstanceOperator node, 
       ArrayList<InstanceOperator> nodeList, TraversalOrder order)
   {
@@ -343,6 +460,53 @@ public class IOT extends SNEEAlgebraicForm
     }
   }
 
+  /**
+   * produces a iterator for sites
+   * @param Order order the iterator goes in
+   * @return a iterator
+   */
+  public Iterator<Site> siteIterator(TraversalOrder Order)
+  {
+    final ArrayList<Site> nodeList = 
+      new ArrayList<Site>();
+    this.doSiteIterator(this.getRoot().getSite(), nodeList, Order);
+
+    return nodeList.iterator();
+  }
+  
+  /**
+   * helper method for site iterator
+   * @param root
+   * @param nodeList
+   * @param order
+   */
+  private void doSiteIterator(Site root, ArrayList<Site> nodeList,
+      TraversalOrder order)
+  {
+    if (order == TraversalOrder.PRE_ORDER) 
+    {
+      nodeList.add(root);
+    }
+
+    for (int n = 0; n < root.getInDegree(); n++) 
+    {
+        Node input = root.getInput(n);
+        this.doSiteIterator((Site)input, nodeList, order);
+    }
+  
+    if (order == TraversalOrder.POST_ORDER) 
+    {
+        nodeList.add(root);
+    }
+    
+  }
+
+
+/**
+ * remove a specific instance operator
+ * @param childOpInst
+ * @throws OptimizationException
+ */
   public void removeOpInst(InstanceOperator childOpInst) 
   throws OptimizationException
   {
@@ -372,6 +536,11 @@ public class IOT extends SNEEAlgebraicForm
     
   }
 
+  /**
+   * removes duplicate operators (siblings)
+   * @param siblings
+   * @throws OptimizationException
+   */
   public void mergeSiblings(ArrayList<InstanceOperator> siblings) 
   throws OptimizationException
   {
@@ -419,6 +588,13 @@ public class IOT extends SNEEAlgebraicForm
     }
   }
 
+  /**
+   * return iterator for input sites for a site.
+   * @param op
+   * @param site
+   * @param index
+   * @return
+   */
   public Iterator<Site> getInputOperatorInstanceSites(
       SensornetOperatorImpl op, Site site, int index)
   {
@@ -433,6 +609,18 @@ public class IOT extends SNEEAlgebraicForm
     return results.iterator();
   }
 
+  /**
+   * get the root operator of a site
+   * @param site which to find root operator
+   * @return the instance operator at the root of the site 
+   * (either a instance deliver or a instance Exchange Part)
+   */
+  public InstanceOperator getRootOperatorOfSite(Site site)
+  {
+    ArrayList<InstanceOperator> list = this.getOpInstances(site);
+    return list.get(0);
+  }
+  
   @Override
   protected String generateID(String queryName)
   {
@@ -469,6 +657,16 @@ public class IOT extends SNEEAlgebraicForm
   public Node getNode(int siteID)
   {
     return rt.getSite(siteID);
+  }
+  
+  public PAF getPAF()
+  {
+    return paf;
+  }
+  
+  public RT getRT()
+  {
+    return rt;
   }
 
 }

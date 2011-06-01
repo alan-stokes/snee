@@ -14,8 +14,12 @@ import uk.ac.manchester.cs.snee.ResultStoreImpl;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 import uk.ac.manchester.cs.snee.sncb.SerialPortMessageReceiver;
 
@@ -140,8 +144,8 @@ public class Monitor implements Observer
     this.query = query;
     
   }
-  
-  public void chooseFakeNodeFailure() throws SNEEConfigurationException
+  //Temporary code to allow notation tests without a failed node
+  public void chooseFakeNodeFailure() throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException
   {
     manager.runStragity2(1);
   }

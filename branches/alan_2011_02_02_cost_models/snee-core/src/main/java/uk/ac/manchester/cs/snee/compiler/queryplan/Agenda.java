@@ -481,7 +481,8 @@ public class Agenda extends SNEEAlgebraicForm{
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
      * @throws OptimizationException 
-     */
+     */ 
+    
     public final void appendCommunicationTask(final Site sourceNode,
 	    final Site destNode,
 	    final HashSet<ExchangePart> exchangeComponents)
@@ -826,6 +827,11 @@ public class Agenda extends SNEEAlgebraicForm{
 	  tasks.remove(toBeRemove);
 	}
 
+	/**
+	 * takes a set of children sites, and orders them by start transmission times. 
+	 * (assumes 1 transmission task per site. (tree structure)
+	 * @param children
+	 */
   public void orderNodesByTransmissionTasks(ArrayList<Node> children)
   {
     Iterator<Node> childIterator = children.iterator();
@@ -847,6 +853,11 @@ public class Agenda extends SNEEAlgebraicForm{
     }
   }
 
+  /**
+   * gets the transmission task for the child node
+   * @param child node to get task for.
+   * @return first communication task found during task iterator which is a transmission task.
+   */
   public CommunicationTask getTransmissionTask(Node child)
   {
     final Iterator<Task> taskIter = this.taskIterator((Site) child);
@@ -866,9 +877,31 @@ public class Agenda extends SNEEAlgebraicForm{
     return null;
   }
 
-  public CommunicationTask getLastCommunicationTask(Node nodePrime, int receive)
+  /**
+   * gets last communication task temporally which is a receive.
+   * @param nodePrime node to find last receive task on.
+   * @return communication task
+   */
+  public CommunicationTask getLastCommunicationTask(Node nodePrime)
   {
+    final Iterator<Site> siteIterator = this.siteIterator();
+    boolean inQEP = false;
+    //check site is within QEP, if not, thenr eturn null. (as no tasks).
+    //needs to be done here, as task iterator will fail with a node with no tasks.
+    while(siteIterator.hasNext() && !inQEP)
+    {
+      Site currentSite = siteIterator.next();
+      if(currentSite.getID().equals(nodePrime.getID()))
+      {
+        inQEP = true;
+      }
+    }
+    
+    if(!inQEP)
+      return null;
+      
     final Iterator<Task> taskIter = this.taskIterator((Site) nodePrime);
+    
     CommunicationTask currentLastReceiveTask = null;
     while (taskIter.hasNext()) 
     {
@@ -884,5 +917,119 @@ public class Agenda extends SNEEAlgebraicForm{
       }
     }
     return currentLastReceiveTask;
+  }
+  
+  /**
+   * returns the communication task between child and parent
+   * @param child transmitter of communication task
+   * @param parent receiver of communication task
+   * @return communication task.
+   */
+  public CommunicationTask getCommunicationTaskBetween(Node child, Node parent)
+  {
+    final Iterator<Task> taskIter = this.taskIterator((Site)child);
+    while(taskIter.hasNext())
+    {
+      Task task = taskIter.next();
+      if (task instanceof CommunicationTask) 
+      {
+        final CommunicationTask commTask = (CommunicationTask) task;
+        if ((commTask.getSourceNode() == child) && 
+            (commTask.getDestNode() == parent))
+        {
+          return commTask;
+        }
+      }
+    }
+    return null;
+  }
+  
+  /**
+   * removes the communication task from the tasks hash map.
+   * @param taskToBeRemoved 
+   */
+  public int removeCommunicationTask(CommunicationTask taskToBeRemoved)
+  {
+    //remove tx
+    ArrayList<Task>  tasksOfNode = tasks.remove(taskToBeRemoved.getSourceNode());
+    Iterator<Task> taskIterator = tasksOfNode.iterator();
+    boolean removedtx = false;
+    int index = -1;
+    while(taskIterator.hasNext() && !removedtx)
+    {
+      Task task = taskIterator.next();
+      index ++;
+      if(task instanceof CommunicationTask) 
+      {
+        final CommunicationTask commTask = (CommunicationTask) task;
+        if ((commTask.getSourceNode() == taskToBeRemoved.getSourceNode()) && 
+            (commTask.getDestNode() == taskToBeRemoved.getDestNode()))
+        {
+          taskIterator.remove();
+          removedtx = true;
+        }
+      }
+    }
+    tasks.put(taskToBeRemoved.getSourceNode(), tasksOfNode);
+    
+    return index;
+    
+  }
+  
+  /**
+   * Appends a communication task between two nodes in the sensor network at a given time
+   * @param sourceNode        the node transmitting data
+   * @param destNode          the node receiving data
+   * @param time              The start time of this communication task
+   * @param exchangeComponents    the data being sent
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
+   */ 
+  
+  public final void appendCommunicationTask(final Site sourceNode,
+    final Site destNode, final long time,
+    final HashSet<ExchangePart> exchangeComponents, int childIndex)
+    throws AgendaException, OptimizationException, SchemaMetadataException, TypeMappingException 
+  {
+
+    final long startTime = time;
+
+    final CommunicationTask commTaskTx = new CommunicationTask(startTime,
+    sourceNode, destNode, exchangeComponents,
+    CommunicationTask.TRANSMIT, this.alpha, this.beta, this.daf, costParams);
+    final CommunicationTask commTaskRx = new CommunicationTask(startTime,
+    sourceNode, destNode, exchangeComponents,
+    CommunicationTask.RECEIVE, this.alpha, this.beta, this.daf, costParams);
+  
+    this.addTask(commTaskTx, sourceNode, childIndex);
+    this.addTask(commTaskRx, destNode);
+  
+    logger.trace("Scheduled Communication task from node "
+    + sourceNode.getID() + " to node " + destNode.getID()
+    + " at time " + startTime + "(size: "
+    + exchangeComponents.size() + " exchange components )");
+  }
+  
+  /**
+   * adds a task at a specfic index in the arraylist
+   * @param t the task to be added
+   * @param site the site the task is being added to
+   * @param index the index in the list.
+   */
+  private void addTask(final Task t, final Site site, final int index) 
+  {
+    //add node to schedule if necessary
+    if (this.tasks.get(site) == null) 
+    {
+        this.tasks.put(site, new ArrayList<Task>());
+    }
+  
+    //add task to the node schedule
+    final ArrayList<Task> taskList = this.tasks.get(site);
+    taskList.add(index, t);
+  
+    //add to list of start times
+    this.addStartTime(t.getStartTime());
   }
 }

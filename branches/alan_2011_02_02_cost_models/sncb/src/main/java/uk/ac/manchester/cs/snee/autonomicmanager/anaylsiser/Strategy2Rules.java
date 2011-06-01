@@ -1,13 +1,16 @@
 package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser;
 
 import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.IOT;
+import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaLengthException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaUtilsIOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -20,12 +23,8 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 
 /**
@@ -68,16 +67,22 @@ public class Strategy2Rules
    * calculates new QEP designed to adjust for the failed node. 
    * @param nodeID the id for the failed node of the query plan
    * @return new query plan which has now adjusted for the failed node.
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
+   * @throws AgendaException 
    */
-  public SensorNetworkQueryPlan calculateNewQEP(int failedNodeID)
+  public SensorNetworkQueryPlan calculateNewQEP(int failedNodeID) throws OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException
   { 
-    //create a duplicate agenda
+    outputNewAgendaImage(agenda, iot);
+    
+    //create copies of iot and agenda
     Agenda newAgenda = AgendaCopy(agenda);
-    //remove dead node from new agenda & topology(so that adjustments can be made)
-    newAgenda.removeNodeFromAgenda(failedNodeID);
+    IOT newIOT = IOTCopy(iot);
+    //remove faield node
+    removedDeadNodeData(newAgenda, wsnTopology, newIOT, failedNodeID);
     Node failedNode = iot.getNode(failedNodeID);
-    wsnTopology.removeNode(failedNode.getID());
-    outputTopologyAsDotFile("topologyAfterNodeLoss.dot");
+    
     //collect children and parents nodes to failed node
     ArrayList<Node> children = new ArrayList<Node>(failedNode.getInputsList());
     Node parent = failedNode.getOutput(0);
@@ -87,12 +92,72 @@ public class Strategy2Rules
       System.out.println("no link between a child and parent, currently failed");
       return qep;
     }
+    
+    //set up new fragment location
+    fragmentPositioning(children, newAgenda, newIOT, failedNode, parent);
+    
     //set up children to be in order of transmission tasks
     newAgenda.orderNodesByTransmissionTasks(children);
-    //all checks done, start calculation
-    childrenReWiring(children, parent, newAgenda, failedNode);
+    //all checks done, start children rewiring
+    childrenReWiringAndRouting(children, parent, newAgenda, newIOT, failedNode);
     //tempralCorrection(parent, )
+    outputNewAgendaImage(newAgenda, newIOT);
     return qep;
+  }
+
+  /**
+   * removes the failed node from all dependent objects
+   * @param newAgenda
+   * @param wsnTopology2
+   * @param newIOT
+   * @param failedNodeID
+   * @throws OptimizationException
+   */
+  private void removedDeadNodeData(Agenda newAgenda, Topology wsnTopology2,
+      IOT newIOT, int failedNodeID) throws OptimizationException
+  {
+    //remove dead node from new agenda, topology, new iot(so that adjustments can be made)
+    newAgenda.removeNodeFromAgenda(failedNodeID);
+    Node failedNode = iot.getNode(failedNodeID);
+    wsnTopology.removeNode(failedNode.getID());
+    newIOT.removeSite((Site)failedNode);
+    outputTopologyAsDotFile("/topologyAfterNodeLoss.dot");
+  }
+
+  /**
+   * places any fragments on dead node on node within children path
+   * @param children
+   * @param newAgenda
+   * @param newIOT
+   * @param failedNode
+   * @param parent
+   */
+  private void fragmentPositioning(ArrayList<Node> children, Agenda newAgenda,
+      IOT newIOT, Node failedNode, Node parent)
+  {
+    // TODO Auto-generated method stub
+    
+  }
+
+  /**
+   * outputs a agenda in latex form into the autonomic manager.
+   * @param newAgenda
+   * @param newIOT
+   */
+  private void outputNewAgendaImage(Agenda newAgenda, IOT newIOT)
+  {
+    try
+    {
+      AgendaUtilsIOT output = new AgendaUtilsIOT(newAgenda, newIOT, true);
+      output.generateImage(outputFolder.toString());
+      output.exportAsLatex(outputFolder.toString(), "newAgenda");
+    }
+    catch (SNEEConfigurationException e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } 
+    
   }
 
   /**
@@ -100,34 +165,119 @@ public class Strategy2Rules
    * @param children the children to node failedNode
    * @param parent the parent of failedNode
    * @param newAgenda the agenda all changes are made to
+   * @param newIOT 
    * @param failedNode the failed node
-   * function designed to connect all children of faield node to parent and update Agenda accordingly.
+   * function designed to connect all children of failed node to parent and update Agenda and iot accordingly.
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
+   * @throws AgendaException 
    */
-  private void childrenReWiring(ArrayList<Node> children, Node parent,
-      Agenda newAgenda, Node failedNode)
+  private void childrenReWiringAndRouting(ArrayList<Node> children, Node parent,
+      Agenda newAgenda, IOT newIOT, Node failedNode) 
+  throws OptimizationException, 
+         SchemaMetadataException, 
+         TypeMappingException, AgendaException
   {
+    //initil set up phase
     long time  = 0;
     long timePrime = 0;
     LinkCostMetric linkCostMetric = LinkCostMetric.RADIO_LOSS;
     Iterator<Node> childIterator = children.iterator();
+    boolean merged = false;
+    
+    //go though each child
     while(childIterator.hasNext())
     {
+      //get route to parent
       Node child = childIterator.next();
       Path route = wsnTopology.getShortestPath(child.getID(), parent.getID(), linkCostMetric);
+      
       Iterator<Site> routeIterator = route.iterator();
       routeIterator.next();
       Node nodePrime = routeIterator.next();
       CommunicationTask lastRecieve = null;
-      if((lastRecieve = newAgenda.getLastCommunicationTask(nodePrime, CommunicationTask.RECEIVE)) != null)
+      //choose correct time
+      if((lastRecieve = newAgenda.getLastCommunicationTask(nodePrime)) != null)
       {
         CommunicationTask oldCommTask = agenda.getTransmissionTask(child);
+        long endTimeOfLastRecieve = lastRecieve.getEndTime();
+        long startTimeInOrginalAgenda = oldCommTask.getStartTime();
+        time = Math.max(endTimeOfLastRecieve, startTimeInOrginalAgenda);
       }
       else
       {
-        
+        CommunicationTask oldCommTask = agenda.getTransmissionTask(child);
+        long startTimeInOrginalAgenda = oldCommTask.getStartTime();
+        time = Math.max(timePrime, startTimeInOrginalAgenda);
       }
+      //get communication task from child to failed node
+      cleanCommunicationBetweenNodes(child, failedNode, nodePrime, newAgenda, time, newIOT);
+      //set up rest of route
+      setupRouteWiring(child, failedNode, newAgenda, time, routeIterator, newIOT, parent);
     }
+  }
+
+  /**
+   * does routing section of notation
+   * @param child
+   * @param failedNode
+   * @param newAgenda
+   * @param time
+   * @param routeIterator
+   * @param newIOT
+   * @param parent
+   */
+  private void setupRouteWiring(Node child, Node failedNode, Agenda newAgenda,
+      long time, Iterator<Site> routeIterator, IOT newIOT, Node parent)
+  {
+    Node nodePrime = routeIterator.next();
     
+    
+  }
+
+  /**
+   * connects two nodes in communication (includes wiring in both agenda and iot)
+   * @param child
+   * @param failedNode
+   * @param nodePrime
+   * @param newAgenda
+   * @param time
+   * @param newIOT
+   * @throws AgendaException
+   * @throws OptimizationException
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   */
+  private void cleanCommunicationBetweenNodes(Node child, Node failedNode,
+      Node nodePrime, Agenda newAgenda, long time, IOT newIOT) 
+  throws AgendaException, 
+         OptimizationException, 
+         SchemaMetadataException, 
+         TypeMappingException
+  {
+    //remove task
+    CommunicationTask failedCommTask = newAgenda.getCommunicationTaskBetween(child, failedNode);
+    int childIndex = newAgenda.removeCommunicationTask(failedCommTask);
+    //get exchange parts set up
+    HashSet<ExchangePart> exchangeComponents = new HashSet<ExchangePart>();
+    HashSet<ExchangePart> oldExchangeComponents = failedCommTask.getExchangeComponents();
+    Iterator<ExchangePart> partIterator = oldExchangeComponents.iterator();
+    while(partIterator.hasNext())
+    {
+      ExchangePart part = partIterator.next();
+      exchangeComponents.add(new ExchangePart(part.getDestFrag(), (Site)child, part.getDestFrag(),
+                                              (Site)nodePrime, part.getCurrentSite(), part.getComponentType(),
+                                              part.isRemote(), part.getPrevious()));
+    }
+    //append new task to agenda
+    newAgenda.appendCommunicationTask((Site)child, (Site)nodePrime, time, exchangeComponents, childIndex);
+    //append new operators to IOT
+    InstanceExchangePart childExchangePart = (InstanceExchangePart) newIOT.getRootOperatorOfSite((Site)child);
+   // InstanceExchangePart nodePrimeExchangeOperator =       
+    //new InstanceExchangePart(childExchangePart.getSourceFrag(), childExchangePart.getSourceSite(),
+      //                       );
+    //newIOT.addOpInstToSite(opInst, site)
   }
 
   /**
@@ -169,12 +319,13 @@ public class Strategy2Rules
     }
     return !noRoute;
   }
-
+  
   /**
-   * method to create a deep copy of the orginal agenda
+   * method to create a deep copy of the orginal agenda 
    * @param orginal 
    * @return the copyied version of orginal
    */
+  //TODO fix to make true deep copy
   private Agenda AgendaCopy(Agenda orginal) 
   {
     Agenda agenda = null;
@@ -183,7 +334,7 @@ public class Strategy2Rules
     try
     {
       agenda = new Agenda(orginal.getAcquisitionInterval_bms(), orginal.getBufferingFactor(),
-                          orginal.getDAF(), orginal.getCostParameters(), "new",
+                          orginal.getDAF(), orginal.getCostParameters(), this.qep.getQueryName(),
                           false);
     }
     catch (Exception e)
@@ -193,4 +344,27 @@ public class Strategy2Rules
     }
     return agenda;
   }
+  
+  /**
+   * method to create a deep copy of the orginal iot 
+   * @param orginal
+   * @return
+   */
+  //TODO fix to make true deep copy
+  private IOT IOTCopy(IOT orginal)
+  {
+    IOT iot = null;
+    try
+    {
+      iot = new IOT(orginal.getPAF(), orginal.getRT(), "");
+    }
+    catch(Exception e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return iot;
+  }
+  
+  
 }

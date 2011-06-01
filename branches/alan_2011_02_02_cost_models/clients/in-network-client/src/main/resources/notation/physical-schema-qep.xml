@@ -11,9 +11,11 @@
 			<extent name="Castilla">
 				<sites>6,7</sites>
 			</extent>
+<!--			
 			<extent name="Forest">
 				<sites>2</sites>
 			</extent>
+-->
 		</extents>
 	</sensor_network>
 

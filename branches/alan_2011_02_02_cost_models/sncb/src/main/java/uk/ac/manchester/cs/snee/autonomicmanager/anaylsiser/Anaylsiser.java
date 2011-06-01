@@ -9,9 +9,11 @@ import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 
 public class Anaylsiser 
 {
@@ -194,7 +196,11 @@ public class Anaylsiser
     anaylisieCECM = true;   
   }
   
-  public SensorNetworkQueryPlan runStrategy2(int failedNodeID)
+  public SensorNetworkQueryPlan runStrategy2(int failedNodeID) 
+  throws OptimizationException, 
+         SchemaMetadataException, 
+         TypeMappingException, 
+         AgendaException
   {
     return strategy2.calculateNewQEP(failedNodeID);
   }

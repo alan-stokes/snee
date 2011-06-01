@@ -117,6 +117,16 @@ public class CommunicationTask extends Task implements Comparable{
 	return this.mode;
     }
 
+    public final HashSet<ExchangePart> getExchangeComponents()
+    {
+      return exchangeComponents;
+    }
+    
+    public final CostParameters getCostParameters()
+    {
+      return this.costParams;
+    }
+    
     @Override
 	public final Site getSite() {
 	if (this.mode == RECEIVE) {
