@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.compiler.queryplan;
+package uk.ac.manchester.cs.snee.compiler.iot;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -20,16 +20,21 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
-import uk.ac.manchester.cs.snee.compiler.costmodels.IOT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
+import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.FragmentTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
+import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
-public class AgendaUtilsIOT {
+public class AgendaIOTUtils {
 
 	/**
 	 * Logger for this class.
 	 */
 	private Logger logger = 
-		Logger.getLogger(AgendaUtilsIOT.class.getName());
+		Logger.getLogger(AgendaIOTUtils.class.getName());
 	
 	
     private static final int CELL_WIDTH = 100;
@@ -38,11 +43,11 @@ public class AgendaUtilsIOT {
 
     IOT iot;
 
-    Agenda agenda;
+    AgendaIOT agenda;
 
     private boolean useMilliSeconds;
 
-    public AgendaUtilsIOT(final Agenda agenda, IOT iot, final boolean useMilliSeconds) {
+    public AgendaIOTUtils(final AgendaIOT agenda, IOT iot, final boolean useMilliSeconds) {
     	this.agenda = agenda;
     	this.iot = iot;
     	this.useMilliSeconds = useMilliSeconds;
@@ -65,10 +70,20 @@ public class AgendaUtilsIOT {
 	return (this.agenda.getStartTimes().size() + 3) * CELL_HEIGHT;
     }
 
+    public void generateImage() throws SNEEConfigurationException {
+      
+      String sep = System.getProperty("file.separator");
+      String outputDir = SNEEProperties.getSetting(
+          SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
+          sep + agenda.getQueryName() + sep + "query-plan";
+      generateImage(outputDir);
+    }
+    
+    
     public void generateImage(String outputDir) throws SNEEConfigurationException {
 
 		String sep = System.getProperty("file.separator");
-		String pngFilePath = outputDir + sep + agenda.getID() + ".png";
+		String pngFilePath = outputDir + sep + agenda.getID() + "IOT.png";
     	
 	final BufferedImage offImage = new BufferedImage(this.computeWidth(),
 		this.computeHeight(), BufferedImage.TYPE_INT_RGB);

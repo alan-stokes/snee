@@ -38,7 +38,7 @@ import java.util.Iterator;
 import java.util.logging.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.NodeImplementation;
-import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceExchangePart;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;

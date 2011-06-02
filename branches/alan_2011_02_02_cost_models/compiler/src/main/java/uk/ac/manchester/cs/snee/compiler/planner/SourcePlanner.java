@@ -7,9 +7,12 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.costmodels.IOT;
-import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceWhereSchedular;
 import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
+import uk.ac.manchester.cs.snee.compiler.iot.IOT;
+import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceWhereSchedular;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaUtils;
@@ -128,13 +131,15 @@ public class SourcePlanner {
 		RT rt = doSNRouting(paf, queryID);
 		logger.info("Starting Where-Scheduling for query " + queryID);
 		InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, rt, costParams);
-		DAF daf = instanceWhere.getDAF();
 		IOT iot = instanceWhere.getInstanceDAF();
+		DAF daf = instanceWhere.getDAF();
 		new DAFUtils(daf).generateGraphImage();
 		//DAF daf = doSNWhereScheduling(rt, paf, costParams, queryID);
 		//IOT iot = null;
 		logger.info("Starting When-Scheduling for query " + queryID);
 		Agenda agenda = doSNWhenScheduling(daf, qos, queryID);
+		AgendaIOT agendaIOT = doSNWhenScheduling(iot, qos, queryID, costParams);
+		agenda.setAgendaIOT(agendaIOT);
 		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, rt, daf, iot,
 				agenda, queryID); //agenda		
 		if (logger.isTraceEnabled())
@@ -143,7 +148,30 @@ public class SourcePlanner {
 	}
 	
 
-	/**
+	private AgendaIOT doSNWhenScheduling(IOT iot, QoSExpectations qos,
+      String queryName, CostParameters costParams)
+	  throws SNEEConfigurationException, SNEEException, SchemaMetadataException,
+	  OptimizationException, WhenSchedulerException {
+	    if (logger.isTraceEnabled())
+	      logger.debug("ENTER doSNWhenScheduling()");
+	    boolean decreaseBetaForValidAlpha = SNEEProperties.getBoolSetting(
+	        SNEEPropertyNames.WHEN_SCHED_DECREASE_BETA_FOR_VALID_ALPHA);
+	    boolean useNetworkController = SNEEProperties.getBoolSetting(
+	        SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
+	    boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
+	        SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
+	    WhenScheduler whenSched = new WhenScheduler(decreaseBetaForValidAlpha,
+	        allowDiscontinuousSensing, metadata, useNetworkController);
+	    AgendaIOT agenda = whenSched.doWhenScheduling(iot, qos, queryName, costParams);
+	    if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
+	      new AgendaIOTUtils(agenda, iot, true).generateImage();
+	    }   
+	    if (logger.isTraceEnabled())
+	      logger.debug("RETURN doSNWhenScheduling()");
+	    return agenda;
+  }
+
+  /**
 	 * Invokes the sensor network physical optimizer.
 	 * @param dlaf
 	 * @param queryName

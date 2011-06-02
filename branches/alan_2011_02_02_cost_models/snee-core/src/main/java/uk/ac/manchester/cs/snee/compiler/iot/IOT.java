@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.compiler.costmodels;
+package uk.ac.manchester.cs.snee.compiler.iot;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -15,6 +15,7 @@ import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SNEEAlgebraicForm;
@@ -47,7 +48,7 @@ public class IOT extends SNEEAlgebraicForm
   throws SNEEException, SchemaMetadataException
   {
     super(queryName);
-    this.paf = paf;
+    this.setPaf(paf);
     this.rt=rt;
   }
 
@@ -621,6 +622,45 @@ public class IOT extends SNEEAlgebraicForm
     return list.get(0);
   }
   
+  /**
+   * returns a instance fragment with the corresponding frag id.
+   * @param fragid the fragments id
+   * @return the instance fragment
+   */
+  public InstanceFragment getInstanceFragment(String fragid)
+  {
+    Iterator<InstanceFragment> fragIterator = fragments.iterator();
+    while(fragIterator.hasNext())
+    {
+      InstanceFragment frag = fragIterator.next();
+      if(frag.getID().equals(fragid))
+        return frag;
+    }
+    return null;
+  }
+  
+  /**
+   * returns as a hash set the instance fragments located on leaf nodes.
+   * @return hash set containing instance fragments on leaf nodes.
+   */
+  public HashSet<InstanceFragment> getLeafFragments()
+  {
+    HashSet<InstanceFragment> output = new HashSet<InstanceFragment>();
+    Iterator<InstanceFragment> fragIterator = fragments.iterator();
+    while(fragIterator.hasNext())
+    {
+      InstanceFragment frag = fragIterator.next();
+      if(frag.isLeaf())
+        output.add(frag);
+    }
+    return output;
+  }
+  
+  public boolean HasSiteGotFrag( Site site, InstanceFragment frag)
+  {
+    return frag.site.getID().equals(site.getID());
+  }
+  
   @Override
   protected String generateID(String queryName)
   {
@@ -631,7 +671,7 @@ public class IOT extends SNEEAlgebraicForm
   @Override
   public String getDescendantsString()
   {
-    return this.getID()+"-"+this.paf.getDescendantsString();
+    return this.getID()+"-"+this.getPaf().getDescendantsString();
   } 
   
   public EdgeImplementation addEdge(Node source, Node dest)
@@ -661,12 +701,24 @@ public class IOT extends SNEEAlgebraicForm
   
   public PAF getPAF()
   {
-    return paf;
+    return getPaf();
   }
   
   public RT getRT()
   {
     return rt;
+  }
+
+
+  public void setPaf(PAF paf)
+  {
+    this.paf = paf;
+  }
+
+
+  public PAF getPaf()
+  {
+    return paf;
   }
 
 }

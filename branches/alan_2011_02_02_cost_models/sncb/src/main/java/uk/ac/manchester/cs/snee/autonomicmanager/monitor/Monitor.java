@@ -14,12 +14,16 @@ import uk.ac.manchester.cs.snee.ResultStoreImpl;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 import uk.ac.manchester.cs.snee.sncb.SerialPortMessageReceiver;
 
@@ -29,7 +33,7 @@ public class Monitor implements Observer
   private SerialPortMessageReceiver listener;
   private ResultStore _results;
   private boolean recievedPacketsThisQuery = false;
-  private QueryExecutionPlan qep;
+  private SensorNetworkQueryPlan qep;
   private String query;
   
   public Monitor(AutonomicManager autonomicManager)
@@ -136,7 +140,7 @@ public class Monitor implements Observer
 
   public void setQueryPlan(QueryExecutionPlan qep)
   {
-    this.qep = qep; 
+    this.qep = (SensorNetworkQueryPlan) qep; 
   }
 
   public void setQuery(String query)
@@ -145,8 +149,13 @@ public class Monitor implements Observer
     
   }
   //Temporary code to allow notation tests without a failed node
-  public void chooseFakeNodeFailure() throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException
+  public void chooseFakeNodeFailure() throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException, SNEEException
   {
+    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) 
+    qep.getDLAF().getSource();
+    Topology network = sm.getTopology();
+    Node failedNode = qep.getIOT().getNode(1);
+    network.removeNode(failedNode.getID());
     manager.runStragity2(1);
   }
 

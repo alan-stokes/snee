@@ -1,14 +1,16 @@
 package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser;
 
+import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.costmodels.IOT;
-import uk.ac.manchester.cs.snee.compiler.costmodels.InstanceExchangePart;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
+import uk.ac.manchester.cs.snee.compiler.iot.IOT;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaUtilsIOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -40,7 +42,7 @@ public class Strategy2Rules
   private RT routingTree;
   private Topology wsnTopology;
   private IOT iot;
-  private Agenda agenda;
+  private AgendaIOT agenda;
   private File outputFolder;
   /**
    * @param autonomicManager
@@ -60,7 +62,7 @@ public class Strategy2Rules
     outputTopologyAsDotFile("/topology.dot");
     this.routingTree = this.qep.getRT();
     this.iot = this.qep.getIOT();
-    this.agenda = this.qep.getAgenda();
+    this.agenda = this.qep.getAgenda().getAgendaIOT();
   }
   
   /**
@@ -71,13 +73,14 @@ public class Strategy2Rules
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    * @throws AgendaException 
+   * @throws SNEEConfigurationException 
+   * @throws SNEEException 
    */
-  public SensorNetworkQueryPlan calculateNewQEP(int failedNodeID) throws OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException
+  public SensorNetworkQueryPlan calculateNewQEP(int failedNodeID) throws OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException, SNEEException, SNEEConfigurationException
   { 
     outputNewAgendaImage(agenda, iot);
-    
     //create copies of iot and agenda
-    Agenda newAgenda = AgendaCopy(agenda);
+    AgendaIOT newAgenda = AgendaCopy(agenda);
     IOT newIOT = IOTCopy(iot);
     //remove faield node
     removedDeadNodeData(newAgenda, wsnTopology, newIOT, failedNodeID);
@@ -113,42 +116,42 @@ public class Strategy2Rules
    * @param failedNodeID
    * @throws OptimizationException
    */
-  private void removedDeadNodeData(Agenda newAgenda, Topology wsnTopology2,
+  private void removedDeadNodeData(AgendaIOT newAgenda, Topology wsnTopology2,
       IOT newIOT, int failedNodeID) throws OptimizationException
   {
     //remove dead node from new agenda, topology, new iot(so that adjustments can be made)
     newAgenda.removeNodeFromAgenda(failedNodeID);
     Node failedNode = iot.getNode(failedNodeID);
-    wsnTopology.removeNode(failedNode.getID());
     newIOT.removeSite((Site)failedNode);
     outputTopologyAsDotFile("/topologyAfterNodeLoss.dot");
   }
-
+  
   /**
    * places any fragments on dead node on node within children path
-   * @param children
-   * @param newAgenda
+   * @param children set of children nodes
+   * @param newAgenda 
    * @param newIOT
-   * @param failedNode
-   * @param parent
+   * @param failedNode the node which has failed in original QEP
+   * @param parent parent of failedNode
    */
-  private void fragmentPositioning(ArrayList<Node> children, Agenda newAgenda,
+  private void fragmentPositioning(ArrayList<Node> children, AgendaIOT newAgenda,
       IOT newIOT, Node failedNode, Node parent)
   {
-    // TODO Auto-generated method stub
+    /*should call where scheduler with reduced scope*/
+    
     
   }
 
   /**
    * outputs a agenda in latex form into the autonomic manager.
-   * @param newAgenda
+   * @param agendaIOT
    * @param newIOT
    */
-  private void outputNewAgendaImage(Agenda newAgenda, IOT newIOT)
+  private void outputNewAgendaImage(AgendaIOT agendaIOT, IOT newIOT)
   {
     try
     {
-      AgendaUtilsIOT output = new AgendaUtilsIOT(newAgenda, newIOT, true);
+      AgendaIOTUtils output = new AgendaIOTUtils(agendaIOT, newIOT, true);
       output.generateImage(outputFolder.toString());
       output.exportAsLatex(outputFolder.toString(), "newAgenda");
     }
@@ -172,12 +175,14 @@ public class Strategy2Rules
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    * @throws AgendaException 
+   * @throws SNEEConfigurationException 
+   * @throws SNEEException 
    */
   private void childrenReWiringAndRouting(ArrayList<Node> children, Node parent,
-      Agenda newAgenda, IOT newIOT, Node failedNode) 
+      AgendaIOT newAgenda, IOT newIOT, Node failedNode) 
   throws OptimizationException, 
          SchemaMetadataException, 
-         TypeMappingException, AgendaException
+         TypeMappingException, AgendaException, SNEEException, SNEEConfigurationException
   {
     //initil set up phase
     long time  = 0;
@@ -228,7 +233,7 @@ public class Strategy2Rules
    * @param newIOT
    * @param parent
    */
-  private void setupRouteWiring(Node child, Node failedNode, Agenda newAgenda,
+  private void setupRouteWiring(Node child, Node failedNode, AgendaIOT newAgenda,
       long time, Iterator<Site> routeIterator, IOT newIOT, Node parent)
   {
     Node nodePrime = routeIterator.next();
@@ -248,13 +253,15 @@ public class Strategy2Rules
    * @throws OptimizationException
    * @throws SchemaMetadataException
    * @throws TypeMappingException
+   * @throws SNEEConfigurationException 
+   * @throws SNEEException 
    */
   private void cleanCommunicationBetweenNodes(Node child, Node failedNode,
-      Node nodePrime, Agenda newAgenda, long time, IOT newIOT) 
+      Node nodePrime, AgendaIOT newAgenda, long time, IOT newIOT) 
   throws AgendaException, 
          OptimizationException, 
          SchemaMetadataException, 
-         TypeMappingException
+         TypeMappingException, SNEEException, SNEEConfigurationException
   {
     //remove task
     CommunicationTask failedCommTask = newAgenda.getCommunicationTaskBetween(child, failedNode);
@@ -322,19 +329,19 @@ public class Strategy2Rules
   
   /**
    * method to create a deep copy of the orginal agenda 
-   * @param orginal 
+   * @param agendaIOT 
    * @return the copyied version of orginal
    */
   //TODO fix to make true deep copy
-  private Agenda AgendaCopy(Agenda orginal) 
+  private AgendaIOT AgendaCopy(AgendaIOT agendaIOT) 
   {
-    Agenda agenda = null;
+    AgendaIOT agenda = null;
     //Cloner cloner=new Cloner();
     //agenda = cloner.deepClone(orginal);
     try
     {
-      agenda = new Agenda(orginal.getAcquisitionInterval_bms(), orginal.getBufferingFactor(),
-                          orginal.getDAF(), orginal.getCostParameters(), this.qep.getQueryName(),
+      agenda = new AgendaIOT(agendaIOT.getAcquisitionInterval_bms(), agendaIOT.getBufferingFactor(),
+                          iot, agendaIOT.getCostParameters(), this.qep.getQueryName(),
                           false);
     }
     catch (Exception e)

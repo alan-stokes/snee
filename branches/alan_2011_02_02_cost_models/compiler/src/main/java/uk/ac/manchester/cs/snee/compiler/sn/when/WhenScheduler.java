@@ -4,10 +4,14 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
+import uk.ac.manchester.cs.snee.compiler.iot.IOT;
+import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
@@ -359,6 +363,97 @@ public class WhenScheduler {
 	}
 
 	return currentMaxBuffFactor;
+    }
+
+    public AgendaIOT doWhenScheduling(IOT iot, QoSExpectations qos, String queryName, 
+                                      CostParameters costParams)
+    throws OptimizationException, WhenSchedulerException, SNEEException, SNEEConfigurationException 
+    {
+
+        try {
+          if (logger.isDebugEnabled())
+            logger.debug("ENTER doWhenScheduling() with " + iot.getID());
+//          if (Settings.DISPLAY_COST_EXPRESSIONS) {
+//            //Even if not used in this version of When Scheduling.  
+//              CostExpressions costExpressions = CostExpressions.costExpressionFactory(daf);
+//              costExpressions.display();
+//          }
+            logger.trace("Computing maximum possible buffering factor based on "
+                + " memory");
+            DAF daf = new IOTUtils(iot, costParams).getDAF();
+            long maxBFactorSoFar = computeMaximumBufferingFactorBasedOnMemory(
+              daf, qos);
+            logger.trace("Max possible buffering factor according to memory " 
+                + " available on nodes in sensor network: " + maxBFactorSoFar);
+            
+          // optimizer should compute best buffering factor based on memory, 
+          // maxBFactor and delivery time
+            if (qos.getBufferingFactor() == -1) { 
+            logger.trace("qos.getBufferingFactor()==-1");     
+            if ((qos.getMaxBufferingFactor() < maxBFactorSoFar)
+              && (qos.getMaxBufferingFactor() != -1)) {
+                maxBFactorSoFar = qos.getMaxBufferingFactor();
+            }
+        
+            logger.trace("Reduce buffering factor to meet delivery time QoS, "
+                + "if given");
+            maxBFactorSoFar = computeMaximumBufferingFactorToMeetDeliveryTime(
+              daf, qos, maxBFactorSoFar);
+            
+            //We need this until we can support overlapping agendas
+            logger.trace("Reduce buffering factor if agenda overlap will occur");
+            maxBFactorSoFar = computeMaximumBufferingFactorWithoutAgendaOverlap(
+              daf, qos, maxBFactorSoFar);
+            
+            } else {
+          //use the buffering factor specified in the Qos 
+            //(overrides Max buffering factor)
+
+            if (qos.getBufferingFactor() 
+              > computeMaximumBufferingFactorToMeetDeliveryTime(
+              daf, qos, maxBFactorSoFar)) {
+                throw new OptimizationException(
+                  "Buffering factor " + qos.getBufferingFactor() 
+                  + " specified in QoS cannot meet the maximum delivery time "
+                + qos.getMaxDeliveryTime());
+            }
+            if (maxBFactorSoFar < qos.getBufferingFactor()) {
+                throw new OptimizationException(
+              "Buffering factor " + qos.getBufferingFactor()
+              + " specified in QoS cannot be supported due to "
+              + "lack of memory");
+            }
+            long maxBfWithoutOverlap = computeMaximumBufferingFactorWithoutAgendaOverlap(daf,
+                qos, maxBFactorSoFar);
+            if (maxBfWithoutOverlap < qos.getMaxBufferingFactor()) {
+                throw new OptimizationException(
+              "Buffering factor " + qos.getBufferingFactor()
+              + " specified in QoS would require an agenda overlap;"
+              + " these are currently not supported");
+            }
+            maxBFactorSoFar = qos.getMaxBufferingFactor();
+            }
+
+            try {
+              final AgendaIOT agenda = new AgendaIOT(qos.getMaxAcquisitionInterval(), 
+                  maxBFactorSoFar, iot, costParams, queryName, allowDiscontinuousSensing);
+            if (logger.isDebugEnabled())
+              logger.debug("RETURN doWhenScheduling()");
+              return agenda;
+            } catch (Exception e) {
+              logger.warn("When Scheduler exception", e);
+              throw new WhenSchedulerException(e);
+              
+            }
+        } catch (final AgendaException e) {
+          logger.warn(e);
+            throw new WhenSchedulerException(e.getMessage());
+        } catch (SchemaMetadataException e) {
+          logger.warn(e);
+          throw new WhenSchedulerException(e.getMessage());
+        } catch (TypeMappingException e) {
+          logger.warn(e);
+          throw new WhenSchedulerException(e.getMessage()); }
     }
 }	
 	

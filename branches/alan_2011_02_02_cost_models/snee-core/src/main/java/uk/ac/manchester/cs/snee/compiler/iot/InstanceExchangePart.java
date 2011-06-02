@@ -31,7 +31,7 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.compiler.costmodels;
+package uk.ac.manchester.cs.snee.compiler.iot;
 
 import org.apache.log4j.Logger;
 

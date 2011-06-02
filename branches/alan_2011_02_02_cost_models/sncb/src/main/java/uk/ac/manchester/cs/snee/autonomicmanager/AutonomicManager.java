@@ -94,7 +94,7 @@ public class AutonomicManager
          OptimizationException, 
          SchemaMetadataException, 
          TypeMappingException, 
-         AgendaException
+         AgendaException, SNEEException
   {
     SensorNetworkQueryPlan newQEP = anyliser.runStrategy2(failedNodeID);
     //newQEP.getIOT().exportAsDotFileWithFrags(fname, label, exchangesOnSites)
@@ -107,7 +107,7 @@ public class AutonomicManager
          SNEEConfigurationException, 
          SchemaMetadataException, 
          TypeMappingException, 
-         AgendaException
+         AgendaException, SNEEException
   {    
     anyliser.runECMs();
     monitor.chooseFakeNodeFailure();

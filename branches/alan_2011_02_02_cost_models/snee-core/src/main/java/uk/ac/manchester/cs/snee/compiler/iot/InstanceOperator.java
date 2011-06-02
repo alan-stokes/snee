@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.compiler.costmodels;
+package uk.ac.manchester.cs.snee.compiler.iot;
 
 import java.util.ArrayList;
 import java.util.Iterator;

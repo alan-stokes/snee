@@ -32,7 +32,7 @@
 *                                                                            *
 \****************************************************************************/
 
-package uk.ac.manchester.cs.snee.compiler.queryplan;
+package uk.ac.manchester.cs.snee.compiler.iot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,13 +43,27 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaLengthException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.EndManagementTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
+import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.FragmentTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.ManagementTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SNEEAlgebraicForm;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
+import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -58,15 +72,15 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 /**
  * Class responsible for recording the schedules of nodes in a sensor network.
- * @author 	Ixent Galpin
+ * @author 	Alan Stokes
  *
  */
-public class Agenda extends SNEEAlgebraicForm{
+public class AgendaIOT extends SNEEAlgebraicForm{
 
     /**
      * Logger for this class.
      */
-    private Logger logger = Logger.getLogger(Agenda.class.getName());
+    private Logger logger = Logger.getLogger(AgendaIOT.class.getName());
 	
     /**
      * The acquisition interval, in binary ms.  The finest granularity that 
@@ -95,7 +109,7 @@ public class Agenda extends SNEEAlgebraicForm{
 
     public static final boolean INCLUDE_SLEEP = false;
 
-    private DAF daf;
+    private IOT iot;
 
     private String name;
 
@@ -106,26 +120,24 @@ public class Agenda extends SNEEAlgebraicForm{
      */
     private static int candidateCount = 0;
     
+    private DAF daf;
     /**
      * Start of nonLeaf part of the agenda.
      * This will be where the last leaf jumps to at the end of the query duration 
      */
     private long nonLeafStart = Integer.MAX_VALUE;
 
-    /**agenda containing instance version*/
-    private AgendaIOT agendaIOT = null;
-    
-    public Agenda(final long acquisitionInterval, final long bfactor,
-	final DAF daf, CostParameters costParams, final String queryName,
+    public AgendaIOT(final long acquisitionInterval, final long bfactor,
+	final IOT iot, CostParameters costParams, final String queryName,
 	boolean allowDiscontinuousSensing) 
     throws AgendaException, AgendaLengthException, OptimizationException, 
-    SchemaMetadataException, TypeMappingException {
+    SchemaMetadataException, TypeMappingException, SNEEException, SNEEConfigurationException {
     	super(queryName);
 		this.alpha = msToBms_RoundUp(acquisitionInterval);
 		this.beta = bfactor;
-		this.daf = daf;
+		this.iot = iot;
 		this.allowDiscontinuousSensing=allowDiscontinuousSensing;
-		
+		this.daf = new IOTUtils(iot, costParams).getDAF();
 		if (!queryName.equals("")) {
 			this.name = generateID(queryName);
 		}
@@ -139,7 +151,7 @@ public class Agenda extends SNEEAlgebraicForm{
 		logger.trace("Scheduled final sleep task");
 		scheduleFinalSleepTask();
 		
-		long length = this.getLength_bms(Agenda.INCLUDE_SLEEP);
+		long length = this.getLength_bms(AgendaIOT.INCLUDE_SLEEP);
 		logger.trace("Agenda alpha=" + this.alpha + " beta=" + this.beta + " alpha*beta = " + this.alpha * this.beta + " length="+length);
 		
 		if (length > (this.alpha * this.beta) && (!allowDiscontinuousSensing)) {
@@ -157,13 +169,13 @@ public class Agenda extends SNEEAlgebraicForm{
     }
 
     private void scheduleNetworkManagementSection() throws AgendaException {
-		final long start = this.getLength_bms(Agenda.INCLUDE_SLEEP);
+		final long start = this.getLength_bms(AgendaIOT.INCLUDE_SLEEP);
 		final long end = start + costParams.getManagementSectionDuration();
 		
 		if (start < 0) {
 		    throw new AgendaException("Start time < 0");
 		}
-		final Iterator<Site> siteIter = this.daf.getRT()
+		final Iterator<Site> siteIter = this.iot.getRT()
 			.siteIterator(TraversalOrder.POST_ORDER);
 		while (siteIter.hasNext()) {
 		    final Site site = siteIter.next();
@@ -174,13 +186,13 @@ public class Agenda extends SNEEAlgebraicForm{
 	}
 
     private void scheduleEndNetworkManagementSection() throws AgendaException {
-		final long start = this.getLength_bms(Agenda.INCLUDE_SLEEP);
+		final long start = this.getLength_bms(AgendaIOT.INCLUDE_SLEEP);
 		final long end = start + costParams.getEndManagementSectionDuration();
 		
 		if (start < 0) {
 		    throw new AgendaException("Start time < 0");
 		}
-		final Iterator<Site> siteIter = this.daf.getRT()
+		final Iterator<Site> siteIter = this.iot.getRT()
 			.siteIterator(TraversalOrder.POST_ORDER);
 		while (siteIter.hasNext()) {
 		    final Site site = siteIter.next();
@@ -214,12 +226,12 @@ public class Agenda extends SNEEAlgebraicForm{
 			logger.debug("ENTER getDescendantsString()"); 
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getDescendantsString()"); 
-		return this.getID()+"-"+this.daf.getDescendantsString();
+		return this.getID()+"-"+this.iot.getDescendantsString();
 	}
     
     
-    public DAF getDAF() {
-    	return this.daf;
+    public IOT getIOT() {
+    	return this.iot;
     }
     
     public String getName() {
@@ -239,7 +251,7 @@ public class Agenda extends SNEEAlgebraicForm{
      * @return the acquisition interval, in ms
      */
 	public long getAcquisitionInterval_ms() {
-		return Agenda.bmsToMs(this.alpha);
+		return AgendaIOT.bmsToMs(this.alpha);
 	}
 
     /**
@@ -263,7 +275,7 @@ public class Agenda extends SNEEAlgebraicForm{
      * @return the processing time, in ms
      */
 	public long getProcessingTime_ms() {
-		return Agenda.bmsToMs(this.getDeliveryTime_bms() - this.alpha * (this.beta -1));
+		return AgendaIOT.bmsToMs(this.getDeliveryTime_bms() - this.alpha * (this.beta -1));
 	}
 	
     /**
@@ -281,7 +293,7 @@ public class Agenda extends SNEEAlgebraicForm{
      */
 	public long getDeliveryTime_ms() {
 		
-		return Agenda.bmsToMs(this.getLength_bms(true));
+		return AgendaIOT.bmsToMs(this.getLength_bms(true));
 	}
 	
     public static int bmsToMs(final long startTime) {
@@ -436,13 +448,16 @@ public class Agenda extends SNEEAlgebraicForm{
      * @param occurrence	the nth evaluation of a leaf fragment
      * @throws AgendaException
      * @throws OptimizationException 
+     * @throws SNEEConfigurationException 
+     * @throws SchemaMetadataException 
+     * @throws SNEEException 
      */
-    public final void addFragmentTask(final long startTime, final Fragment frag,
-	    final Site node, final long occurrence) throws AgendaException, OptimizationException {
+    public final void addFragmentTask(final long startTime, final InstanceFragment frag,
+	    final Site node, final long occurrence) throws AgendaException, OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException {
 
 	this.assertConsistentStartTime(startTime, node);
-	final FragmentTask fragTask = new FragmentTask(startTime, frag, node,
-		occurrence, this.alpha, this.beta, this.daf, costParams);
+	final InstanceFragmentTask fragTask = new InstanceFragmentTask(startTime, frag, node,
+		occurrence, this.alpha, this.beta, daf, costParams);
 	this.addTask(fragTask, node);
 
 	logger.trace("Scheduled Fragment " + frag.getID() + " on node "
@@ -450,29 +465,32 @@ public class Agenda extends SNEEAlgebraicForm{
 
     }
 
-    public final void addFragmentTask(final int startTime, final Fragment frag,
-	    final Site node) throws AgendaException, OptimizationException {
+    public final void addFragmentTask(final int startTime, final InstanceFragment frag,
+	    final Site node) throws AgendaException, OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException {
 
 	this.addFragmentTask(startTime, frag, node, 1);
     }
 
     /**
      * Adds a fragment task at the next available time on the specified node
-     * @param fragment		the query plan fragment to be executed
+     * @param frag		the query plan fragment to be executed
      * @param node			the sensor network node 
      * @throws AgendaException	
      * @throws OptimizationException 
+     * @throws SNEEConfigurationException 
+     * @throws SchemaMetadataException 
+     * @throws SNEEException 
      */
-    public final void addFragmentTask(final Fragment fragment, final Site node)
-	    throws AgendaException, OptimizationException {
+    public final void addFragmentTask(final InstanceFragment frag, final Site node)
+	    throws AgendaException, OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException {
 
 	final long startTime = this.getNextAvailableTime(node, INCLUDE_SLEEP);
 	logger.trace("start time =" + startTime);
-	this.addFragmentTask(startTime, fragment, node, 1);
+	this.addFragmentTask(startTime, frag, node, 1);
     }
 
-    public final void addFragmentTask(final Fragment fragment, final Site node,
-	    final long ocurrence) throws AgendaException, OptimizationException {
+    public final void addFragmentTask(final InstanceFragment fragment, final Site node,
+	    final long ocurrence) throws AgendaException, OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException {
 	final long startTime = this.getNextAvailableTime(node, INCLUDE_SLEEP);
 	this.addFragmentTask(startTime, fragment, node, ocurrence);
     }
@@ -485,21 +503,22 @@ public class Agenda extends SNEEAlgebraicForm{
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
      * @throws OptimizationException 
+     * @throws SNEEConfigurationException 
+     * @throws SNEEException 
      */ 
     
     public final void appendCommunicationTask(final Site sourceNode,
 	    final Site destNode,
 	    final HashSet<ExchangePart> exchangeComponents)
-	    throws AgendaException, OptimizationException, SchemaMetadataException, TypeMappingException {
+	    throws AgendaException, OptimizationException, SchemaMetadataException, TypeMappingException, SNEEException, SNEEConfigurationException {
 
     final long startTime = this.getLength_bms(true);
-
 	final CommunicationTask commTaskTx = new CommunicationTask(startTime,
 		sourceNode, destNode, exchangeComponents,
-		CommunicationTask.TRANSMIT, this.alpha, this.beta, this.daf, costParams);
+		CommunicationTask.TRANSMIT, this.alpha, this.beta, daf, costParams);
 	final CommunicationTask commTaskRx = new CommunicationTask(startTime,
 		sourceNode, destNode, exchangeComponents,
-		CommunicationTask.RECEIVE, this.alpha, this.beta, this.daf, costParams);
+		CommunicationTask.RECEIVE, this.alpha, this.beta, daf, costParams);
 
 	this.addTask(commTaskTx, sourceNode);
 	this.addTask(commTaskRx, destNode);
@@ -515,7 +534,7 @@ public class Agenda extends SNEEAlgebraicForm{
 	if (sleepStart < 0) {
 	    throw new AgendaException("Start time < 0");
 	}
-	final Iterator<Site> siteIter = this.daf.getRT()
+	final Iterator<Site> siteIter = this.iot.getRT()
 		.siteIterator(TraversalOrder.POST_ORDER);
 	while (siteIter.hasNext()) {
 	    final Site site = siteIter.next();
@@ -631,7 +650,7 @@ public class Agenda extends SNEEAlgebraicForm{
 
     public final long getFragmentTimerOffsetVal(final String fragID,
 	    final String siteID) {
-	final Site site = (Site) this.daf.getRT().getSite(siteID);
+	final Site site = (Site) this.iot.getRT().getSite(siteID);
 	final Iterator<Task> taskIter = this.taskIterator(site);
 	while (taskIter.hasNext()) {
 	    final Task task = taskIter.next();
@@ -650,7 +669,7 @@ public class Agenda extends SNEEAlgebraicForm{
     }
 
     public final long getFragmentTimerRepeatVal(final String fragID) {
-	final Fragment frag = this.daf.getFragment(fragID);
+	final InstanceFragment frag = this.iot.getInstanceFragment(fragID);
 
 	if (frag.isLeaf()) {
 	    return this.getAcquisitionInterval_bms();
@@ -664,9 +683,9 @@ public class Agenda extends SNEEAlgebraicForm{
 	Site site;
 
 	if (mode == CommunicationTask.RECEIVE) {
-	    site = (Site) this.daf.getRT().getSite(destID);
+	    site = (Site) this.iot.getRT().getSite(destID);
 	} else {
-	    site = (Site) this.daf.getRT().getSite(sourceID);
+	    site = (Site) this.iot.getRT().getSite(sourceID);
 	}
 
 	final Iterator<Task> taskIter = this.taskIterator(site);
@@ -696,9 +715,12 @@ public class Agenda extends SNEEAlgebraicForm{
      * @param agenda
      * @throws AgendaException
      * @throws OptimizationException 
+     * @throws SNEEConfigurationException 
+     * @throws SchemaMetadataException 
+     * @throws SNEEException 
      */
     private void scheduleLeafFragments()
-	    throws AgendaException, OptimizationException {
+	    throws AgendaException, OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException {
 
 	//First schedule the leaf fragments, according to the buffering factor specified 
 	//Note: a separate task needs to be scheduled for each execution of a leaf fragment
@@ -706,15 +728,13 @@ public class Agenda extends SNEEAlgebraicForm{
 	    final long startTime = this.alpha * n;
 
 	    //For each leaf fragment
-	    HashSet<Fragment> leafFrags = daf.getLeafFragments();
-	    final Iterator<Fragment> fragIter = leafFrags.iterator();
+	    HashSet<InstanceFragment> leafFrags = iot.getLeafFragments();
+	    final Iterator<InstanceFragment> fragIter = leafFrags.iterator();
 	    while (fragIter.hasNext()) {
-		final Fragment frag = fragIter.next();
+		final InstanceFragment frag = fragIter.next();
 
 		//For each site the fragment is executing on 
-		final Iterator<Site> nodeIter = frag.getSites().iterator();
-		while (nodeIter.hasNext()) {
-		    final Site node = nodeIter.next();
+		  final Site node = frag.getSite();
 
 		    try {
 
@@ -722,13 +742,13 @@ public class Agenda extends SNEEAlgebraicForm{
 
 		    } catch (final AgendaException e) {
 
-			final long taskDuration = new FragmentTask(startTime,
-				frag, node, (n + 1), this.alpha, this.beta, this.daf, costParams)
-				.getTimeCost(this.daf);
+			final long taskDuration = new InstanceFragmentTask(startTime,
+				frag, node, (n + 1), this.alpha, this.beta, daf, costParams)
+				.getTimeCost(daf);
 
 			//If time to run task before the next acquisition time:
 			if (this.getNextAvailableTime(node,
-				Agenda.INCLUDE_SLEEP)
+				AgendaIOT.INCLUDE_SLEEP)
 				+ taskDuration <= startTime
 				+ this.alpha) {
 			    //TODO: change this to time synchronisation QoS
@@ -739,13 +759,12 @@ public class Agenda extends SNEEAlgebraicForm{
 					    + node.getID());
 			}
 		    }
-		}
 	    }
 	    //Go active uses the disactivated sleep to represent all nodes do nothing
 	    //if ((Settings.NESC_DO_SNOOZE) && ((n+1) != bFactor)) {
 	    if ((n + 1) != this.beta) {
 		final long sleepStart = this
-			.getLength_bms(Agenda.INCLUDE_SLEEP);
+			.getLength_bms(AgendaIOT.INCLUDE_SLEEP);
 		final long sleepEnd = (this.alpha * (n + 1));
 		this.addSleepTask(sleepStart, sleepEnd, false);
 	    }
@@ -762,29 +781,31 @@ public class Agenda extends SNEEAlgebraicForm{
      * @throws OptimizationException 
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
+     * @throws SNEEConfigurationException 
+     * @throws SNEEException 
      */
     private void scheduleNonLeafFragments()
-	    throws AgendaException, OptimizationException, SchemaMetadataException, TypeMappingException {
+	    throws AgendaException, OptimizationException, SchemaMetadataException, TypeMappingException, SNEEException, SNEEConfigurationException {
 
 	long nonLeafStart = Long.MAX_VALUE;
 
-	final Iterator<Site> siteIter = daf.getRT().siteIterator(TraversalOrder.POST_ORDER);
+	final Iterator<Site> siteIter = iot.getRT().siteIterator(TraversalOrder.POST_ORDER);
 	while (siteIter.hasNext()) {
 	    final Site currentNode = siteIter.next();
 
 	    final long startTime = this.getNextAvailableTime(currentNode,
-		    Agenda.IGNORE_SLEEP);
+		    AgendaIOT.IGNORE_SLEEP);
 	    if (startTime < nonLeafStart) {
 		nonLeafStart = startTime;
 	    }
 
 	    //Schedule all fragment which have been allocated to execute on this node,
 	    //ensuring the precedence conditions are met
-	    final Iterator<Fragment> fragIter = daf
+	    final Iterator<InstanceFragment> fragIter = iot
 		    .fragmentIterator(TraversalOrder.POST_ORDER);
 	    while (fragIter.hasNext()) {
-		final Fragment frag = fragIter.next();
-		if (currentNode.hasFragmentAllocated(frag) && (!frag.isLeaf())) {
+		final InstanceFragment frag = fragIter.next();
+		if (iot.HasSiteGotFrag(currentNode, frag) && (!frag.isLeaf())) {
 		    this.addFragmentTask(frag, currentNode);
 		}
 	    }
@@ -811,7 +832,7 @@ public class Agenda extends SNEEAlgebraicForm{
     }
 
 	private void scheduleFinalSleepTask() throws AgendaException {
-		final long sleepStart = this.getLength_bms(Agenda.INCLUDE_SLEEP);
+		final long sleepStart = this.getLength_bms(AgendaIOT.INCLUDE_SLEEP);
 		
 		//A sleep task of at least 10 ms needs to be added here, to turn the radio off
 		final long sleepEnd = Math.max(this.alpha * this.beta, 
@@ -827,7 +848,7 @@ public class Agenda extends SNEEAlgebraicForm{
 	
 	public void removeNodeFromAgenda(int siteID)
 	{
-	  Site toBeRemove = daf.getRT().getSite(siteID);
+	  Site toBeRemove = iot.getRT().getSite(siteID);
 	  tasks.remove(toBeRemove);
 	}
 
@@ -989,22 +1010,24 @@ public class Agenda extends SNEEAlgebraicForm{
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
+   * @throws SNEEConfigurationException 
+   * @throws SNEEException 
    */ 
   
   public final void appendCommunicationTask(final Site sourceNode,
     final Site destNode, final long time,
     final HashSet<ExchangePart> exchangeComponents, int childIndex)
-    throws AgendaException, OptimizationException, SchemaMetadataException, TypeMappingException 
+    throws AgendaException, OptimizationException, SchemaMetadataException, TypeMappingException, SNEEException, SNEEConfigurationException 
   {
 
     final long startTime = time;
 
     final CommunicationTask commTaskTx = new CommunicationTask(startTime,
     sourceNode, destNode, exchangeComponents,
-    CommunicationTask.TRANSMIT, this.alpha, this.beta, this.daf, costParams);
+    CommunicationTask.TRANSMIT, this.alpha, this.beta, daf, costParams);
     final CommunicationTask commTaskRx = new CommunicationTask(startTime,
     sourceNode, destNode, exchangeComponents,
-    CommunicationTask.RECEIVE, this.alpha, this.beta, this.daf, costParams);
+    CommunicationTask.RECEIVE, this.alpha, this.beta, daf, costParams);
   
     this.addTask(commTaskTx, sourceNode, childIndex);
     this.addTask(commTaskRx, destNode);
@@ -1035,15 +1058,5 @@ public class Agenda extends SNEEAlgebraicForm{
   
     //add to list of start times
     this.addStartTime(t.getStartTime());
-  }
-
-  public void setAgendaIOT(AgendaIOT agendaIOT)
-  {
-    this.agendaIOT = agendaIOT;
-  }
-
-  public AgendaIOT getAgendaIOT()
-  {
-    return agendaIOT;
   }
 }

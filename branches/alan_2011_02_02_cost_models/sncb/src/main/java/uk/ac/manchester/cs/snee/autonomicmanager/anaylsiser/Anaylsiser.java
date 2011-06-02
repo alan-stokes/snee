@@ -5,7 +5,9 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Map;
 
+import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
@@ -200,7 +202,7 @@ public class Anaylsiser
   throws OptimizationException, 
          SchemaMetadataException, 
          TypeMappingException, 
-         AgendaException
+         AgendaException, SNEEException, SNEEConfigurationException
   {
     return strategy2.calculateNewQEP(failedNodeID);
   }
