@@ -117,7 +117,7 @@ public class IOTUtils
       String queryName) throws SNEEException, SchemaMetadataException {
     DAF cDAF = faf;
     
-    Iterator<InstanceOperator> opInstIter = iot.iterator(TraversalOrder.POST_ORDER);
+    Iterator<InstanceOperator> opInstIter = iot.treeIterator(TraversalOrder.POST_ORDER);
     while (opInstIter.hasNext()) {
       InstanceOperator opInst = opInstIter.next();
       //have to get the cloned copy in compactDaf...

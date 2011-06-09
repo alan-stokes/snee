@@ -88,7 +88,7 @@ public class LAFUtils extends GraphUtils {
 	/**
 	 * Generate a DOT file representation of the DLAF for Graphviz.
 	 */
-	protected void exportAsDOTFile(String fname) 
+	public void exportAsDOTFile(String fname) 
 	throws SchemaMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER exportAsDOTFile()");

@@ -10,7 +10,6 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
@@ -40,6 +39,8 @@ public class InstanceWhereSchedular
   private DAF cDAF;
   private CostParameters costs;
   private PAF paf;
+  private String fileDirectory;
+  String fileSeparator = System.getProperty("file.separator");
   
   
   public InstanceWhereSchedular(PAF paf, RT routingTree, CostParameters costs) 
@@ -48,24 +49,31 @@ public class InstanceWhereSchedular
     this.paf = paf;
     this.routingTree = routingTree;
     this.costs = costs;
+    fileDirectory = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + fileSeparator + paf.getQueryName() + fileSeparator + "costModelImages";
+    InstanceFragment.resetFragmentCounter();
     buildInstanceDAF();
   }
   
+  public InstanceWhereSchedular(PAF paf, RT rt, CostParameters costParams,
+      String outputFolder) throws SNEEException, SchemaMetadataException, OptimizationException, SNEEConfigurationException
+  {
+    this.paf = paf;
+    this.routingTree = rt;
+    this.costs = costs;
+    fileDirectory = outputFolder + fileSeparator + "costModelImages";
+    InstanceFragment.resetFragmentCounter();
+    buildInstanceDAF();
+  }
+
   public void buildInstanceDAF() 
   throws SNEEException, SchemaMetadataException, OptimizationException, SNEEConfigurationException
   {
     //make directory withoutput folder to place cost model images
-    String fileSeparator = System.getProperty("file.separator");
-    String fileDirectory = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + fileSeparator + paf.getQueryName() + fileSeparator + "costModelImages";
-    //String fileDirectory = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + "/costModelImages";
     boolean success = new File(fileDirectory).mkdir();
     if(success)
     {
-      if(paf.isPhysicalOperators())
-        //generate floating operators / fixed locations
-        generatePartialDaf();
-      else
-        generateInstancePartialDaf();
+      //generate floating operators / fixed locations
+      generatePartialDaf();
       //produce image output so that can be validated
       new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialInstanceDAF.dot", "", true);
       //do heuristic placement
@@ -92,119 +100,6 @@ public class InstanceWhereSchedular
     }
   }
   
-  private void generateInstancePartialDaf()
-  throws SNEEException, SchemaMetadataException
-  {
-    //make new instance daf
-    iot = new IOT(paf, routingTree, paf.getQueryName());
-    HashMapList<String,InstanceOperator> disconnectedOpInstMapping =
-      new HashMapList<String,InstanceOperator>();
-    //collect a iterator for physical operators 
-    Iterator<Node> opIter = paf.instanceOperatorIterator(TraversalOrder.POST_ORDER);
-    /*iterate though physical operators looking at each and determining 
-    how many instances there should be */
-    InstanceOperator op = null;
-    while (opIter.hasNext())
-    {
-      op = (InstanceOperator) opIter.next();
-      if(op.isLocked())
-      {
-        addLockedOpInstance(op, disconnectedOpInstMapping);
-      }
-      else if (   op.getSensornetOperator() instanceof SensornetAcquireOperator 
-          || op.getSensornetOperator() instanceof SensornetDeliverOperator) 
-      {
-        //Location-sensitive operator
-        addLocationSensitiveOpInstances(op.getSensornetOperator(), disconnectedOpInstMapping);
-      } 
-      else if (op.getSensornetOperator().isAttributeSensitive()) 
-      {
-        //Attribute-sensitive operator
-        addAttributeSensitiveOpInstances(op, disconnectedOpInstMapping);     
-      }
-      else if (op.getSensornetOperator().isRecursive()) 
-      {
-        //Iterative operator
-        addIterativeOpInstances(op.getSensornetOperator(), disconnectedOpInstMapping);
-      } 
-      else 
-      {
-        //Other operators
-        addOtherOpTypeInstances(op.getSensornetOperator(), disconnectedOpInstMapping);
-      }
-        
-      if (op.getSensornetOperator() instanceof SensornetDeliverOperator) 
-      {
-        InstanceOperator opInst = iot.getOpInstances(op.getSensornetOperator()).get(0);
-        iot.setRoot(opInst);
-        
-      } 
-    }
-    iot.setRoot(op);
-    /*
-    Iterator<InstanceOperator> InstanceOperatorIterator 
-    = iot.iterator(TraversalOrder.POST_ORDER);
-    System.out.println("Start");
-    while(InstanceOperatorIterator.hasNext())
-    {
-      InstanceOperator operator = InstanceOperatorIterator.next();
-      System.out.println(operator.getID());
-    }
-    System.out.println("finish");
-    */
-  }
-
-  private void addAttributeSensitiveOpInstances(InstanceOperator op,
-      HashMapList<String, InstanceOperator> disconnectedOpInstMapping)
-  {
-    Site dSite = findDeepestConfluenceSite(op, disconnectedOpInstMapping);  
-    op.setSite(dSite);
-    op.setDeepestConfluenceSite(dSite);
-    iot.addOpInst(op.getSensornetOperator(), op);
-    disconnectedOpInstMapping.add(op.getID(), op);
-    //sorts out edges eventually
-    convergeAllChildOpSubstreams(op.getSensornetOperator(), op, iot, disconnectedOpInstMapping); 
-    
-  }
-
-  private Site findDeepestConfluenceSite(InstanceOperator op,
-      HashMapList<String, InstanceOperator> disconnectedOpInstMapping)
-  {
-    HashSet<InstanceOperator> opInstSet = new HashSet<InstanceOperator>();
-    //for each child of operator. add all instances of that child to hashset
-    for (int i = 0; i<op.getInDegree(); i++) 
-    {
-      InstanceOperator childOp = (InstanceOperator) op.getInput(i);
-      opInstSet.addAll(disconnectedOpInstMapping.get(childOp.getID()));
-    }
-    //iterate though routingtree from deep to shallow
-    Iterator<Site> siteIter = routingTree.siteIterator(TraversalOrder.POST_ORDER);
-    while (siteIter.hasNext()) 
-    {
-      Site site = siteIter.next();      
-      //locate instances which have a deepest confluence site as the current site
-      HashSet<InstanceOperator> found = getConfluenceOpInstances(site, opInstSet, false);
-      //if the instances coincide with set we're looking for, return the site
-      if (found.equals(opInstSet)) 
-      {
-        return site;
-      }
-      
-    }
-    return null;
-  }
-
-  private void addLockedOpInstance(InstanceOperator op,
-      HashMapList<String, InstanceOperator> disconnectedOpInstMapping)
-  {
-    Site site = routingTree.getSite(op.getSite().getID());
-    iot.addOpInst(op.getSensornetOperator(), op);//add to instance dafs hashmap
-    op.setDeepestConfluenceSite(site);
-    iot.assign(op, site);//put this operator on this site (placed)
-    disconnectedOpInstMapping.add(op.getID(), op);//add to temp hash map which holds operators which dont have a connection upwards
-    convergeAllChildOpSubstreams(op, iot, disconnectedOpInstMapping);
-  }
-
   //XXX works, but doesnt link the exchanges to sites
   private void updateOperatorLinksToIncludeExchangeParts() 
   {
@@ -282,7 +177,7 @@ public class InstanceWhereSchedular
 
   private void startFragmentation()
   {
-    Iterator<InstanceOperator> InstanceOperatorIterator = iot.iterator(TraversalOrder.PRE_ORDER);
+    Iterator<InstanceOperator> InstanceOperatorIterator = iot.treeIterator(TraversalOrder.PRE_ORDER);
     InstanceFragment fragment = new InstanceFragment();
     fragmentate(InstanceOperatorIterator, fragment);
   }
@@ -416,7 +311,7 @@ public class InstanceWhereSchedular
   {
     //iterate over operators looking for ones which haven't got a fixed location
     Iterator<InstanceOperator> InstanceOperatorIterator 
-        = iot.iterator(TraversalOrder.POST_ORDER);
+        = iot.treeIterator(TraversalOrder.POST_ORDER);
     while(InstanceOperatorIterator.hasNext())
     {
       InstanceOperator instance = InstanceOperatorIterator.next();      
@@ -475,7 +370,8 @@ public class InstanceWhereSchedular
          * 3. count the times it satisfies the search (2 = place instance here)
          */
         int satisifiedSearch = 0;
-        satisifiedSearch+= checkArray(currentSiteOperatorInstances, childOperatorInstances);
+        if(checkArray(currentSiteOperatorInstances, childOperatorInstances))
+          satisifiedSearch++;
         
         for(int currentInputIndex = 0; currentInputIndex < currentSite.getInDegree();
             currentInputIndex++)
@@ -489,7 +385,8 @@ public class InstanceWhereSchedular
             operatorsOnSite = iot.getOpInstances(inputSite);
           }
           
-            satisifiedSearch+= checkArray(operatorsOnSite, childOperatorInstances);
+          if(checkArray(operatorsOnSite, childOperatorInstances))
+            satisifiedSearch++;
         }
         if(satisifiedSearch >= 2)//found two instances which fit criteria
         {
@@ -505,14 +402,13 @@ public class InstanceWhereSchedular
     }
   }
   
-  private int checkArray(ArrayList<InstanceOperator> operatorInstances,
+  private boolean checkArray(ArrayList<InstanceOperator> operatorInstances,
       ArrayList<InstanceOperator> childOperatorInstances)
   {
-    int counter = 0;
     for(int childInstanceIndex = 0; childInstanceIndex < childOperatorInstances.size(); childInstanceIndex++)
       if(operatorInstances.contains(childOperatorInstances.get(childInstanceIndex)))
-        counter++;
-    return counter;
+        return true;
+    return false;
   }
 
   //tested and works
@@ -539,7 +435,8 @@ public class InstanceWhereSchedular
          * 2. iterate over inputs, checking if child operator is either an child or current
          * 3. count the times it satisfies the search (2 = place instance here)
          */
-        satisifiedSearch+= checkArray(currentSiteOperatorInstances, operatorInstances);
+        if(checkArray(currentSiteOperatorInstances, operatorInstances))
+          satisifiedSearch++;
         
         for(int currentInputIndex = 0; currentInputIndex < currentSite.getInDegree();
             currentInputIndex++)
@@ -548,7 +445,8 @@ public class InstanceWhereSchedular
           //check if instance of current or child
           ArrayList<InstanceOperator> operatorsOnSite = iot.getOpInstances(inputSite);
           
-          satisifiedSearch+= checkArray(operatorsOnSite, operatorInstances);
+          if(checkArray(operatorsOnSite, operatorInstances))
+            satisifiedSearch++;
           
           satisifiedSearch = checkSubTree(inputSite, satisifiedSearch, operatorInstances);
 
@@ -573,7 +471,8 @@ public class InstanceWhereSchedular
     {
        Site newInput = (Site) input.getInput(inputSiteIndex);
        ArrayList<InstanceOperator> operatorsOnSite = iot.getOpInstances(newInput);
-       satisifiedSearch+= checkArray(operatorsOnSite, operatorInstances);
+       if(checkArray(operatorsOnSite, operatorInstances))
+           satisifiedSearch++;
        satisifiedSearch = checkSubTree(newInput, satisifiedSearch, operatorInstances);  
     }
     return satisifiedSearch;
@@ -594,10 +493,10 @@ public class InstanceWhereSchedular
     {
       SensornetOperator op = opIter.next();
       SensornetOperatorImpl opImpl = (SensornetOperatorImpl) op;
-      if(opImpl.isLocked())
+      if(opImpl.isPinned())
       {
-        System.out.println(opImpl.getID());
-      }
+    	  addPinnedOpInstances(op, opImpl, disconnectedOpInstMapping);
+      } 
       else if (   op instanceof SensornetAcquireOperator 
           || op instanceof SensornetDeliverOperator) 
       {
@@ -629,7 +528,24 @@ public class InstanceWhereSchedular
     } 
   }
 
-  private void addOtherOpTypeInstances(SensornetOperator op, 
+  private void addPinnedOpInstances(SensornetOperator op,	SensornetOperatorImpl opImpl,
+		HashMapList<String, InstanceOperator> disconnectedOpInstMapping) 
+  {
+    Iterator<String> siteIterator = opImpl.getPinnedIterator();
+    //For each site, spawn an operator instance
+    while(siteIterator.hasNext())
+    {
+      String siteID = siteIterator.next();
+      Site site = routingTree.getSite(siteID);
+      InstanceOperator opInst = new InstanceOperator(op, site);//make new instance of the operator
+      iot.addOpInst(op, opInst);//add to instance dafs hashmap
+      iot.assign(opInst, site);//put this operator on this site (placed)
+      disconnectedOpInstMapping.add(op.getID(), opInst);//add to temp hash map which holds operators which dont have a connection upwards
+      convergeAllChildOpSubstreams(op, opInst, iot, disconnectedOpInstMapping);
+    }
+	}
+
+private void addOtherOpTypeInstances(SensornetOperator op, 
       HashMapList<String, InstanceOperator> disconnectedOpInstMapping)
   {
     //data flows in parallel
@@ -824,20 +740,6 @@ public class InstanceWhereSchedular
     }
   }
 
-  private void convergeAllChildOpSubstreams(InstanceOperator op,
-                                            IOT instanceDAF2,
-  HashMapList<String, InstanceOperator> disconnectedOpInstMapping)
-  {
-    for (int k=0; k<op.getInDegree(); k++) 
-    {
-      InstanceOperator childOp =  (InstanceOperator) op.getInput(k);
-      ArrayList<InstanceOperator> childOpInstColl 
-      = disconnectedOpInstMapping.get(childOp.getID());
-      convergeSubstreams(childOpInstColl, op, iot);
-    }
-  }
-
-  
   //add an edge in the instance daf for each child operator
   private void convergeSubstreams(Collection<InstanceOperator> childOpInstColl,
                                   InstanceOperator opInst, IOT instanceDAF2)
@@ -861,7 +763,7 @@ public class InstanceWhereSchedular
   private void removeRedundantAggrIterOpAfterInitMergeInstances() 
   throws OptimizationException
   {
-    Iterator<InstanceOperator> opInstIter = iot.iterator(TraversalOrder.POST_ORDER);
+    Iterator<InstanceOperator> opInstIter = iot.treeIterator(TraversalOrder.POST_ORDER);
     while (opInstIter.hasNext()) 
     {
       InstanceOperator operator = opInstIter.next();
@@ -880,7 +782,7 @@ public class InstanceWhereSchedular
   throws OptimizationException
   {
     //get iterator over instance operators
-    Iterator<InstanceOperator> opInstIter = iot.iterator(TraversalOrder.POST_ORDER);
+    Iterator<InstanceOperator> opInstIter = iot.treeIterator(TraversalOrder.POST_ORDER);
     while (opInstIter.hasNext()) {
       InstanceOperator opInst = opInstIter.next();
       HashMapList<Site, InstanceOperator> siteOpInstMap = new HashMapList<Site, InstanceOperator>();
@@ -904,22 +806,22 @@ public class InstanceWhereSchedular
   throws OptimizationException
   {
     //iterate the operator instances
-    Iterator<InstanceOperator> opInstIter = iot.iterator(TraversalOrder.POST_ORDER);
+    Iterator<InstanceOperator> opInstIter = iot.treeIterator(TraversalOrder.POST_ORDER);
     while (opInstIter.hasNext()) 
     {
       InstanceOperator opInst = opInstIter.next();
       //if the operator is a agg merge or aggr eval
       if (   opInst.getSensornetOperator() instanceof SensornetAggrMergeOperator 
-          /*|| opInst.getInstanceOperator() instanceof SensornetAggrEvalOperator*/) 
+          /*|| opInst.getSensornetOperator() instanceof SensornetAggrEvalOperator*/) 
       {
         /*check all children operators  for a agg merge which is on the same site as the op.
          * if so then remove child operator
          */
-        if(opInst.getInDegree() == 1 && iot.getNumOpInstances(opInst.getSensornetOperator()) > 1)
+    	if(opInst.getInDegree() == 1 && iot.getNumOpInstances(opInst.getSensornetOperator()) > 1)
         {
           iot.removeOpInst(opInst);
-        }
-        
+        }  
+    	
         for (int i=0; i<opInst.getInDegree(); i++) 
         {
           InstanceOperator childOpInst = (InstanceOperator)opInst.getInput(i);

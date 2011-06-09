@@ -20,7 +20,8 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 public class Anaylsiser 
 {
   private CardinalityEstimatedCostModel cardECM;
-  private Strategy2Rules strategy2;
+  private AdapatationStrategyIntermediate adapatationStrategyIntermediateSpaceAndTimePinned;
+  private AdapatationStrategyIntermediate adapatationStrategyIntermediateSpacePinned;
   private SensorNetworkQueryPlan qep;
   private AutonomicManager manager;
   private DeadNodeSimulator deadNodeSimulator; 
@@ -30,7 +31,8 @@ public class Anaylsiser
   public Anaylsiser(AutonomicManager autonomicManager)
   {
     manager = autonomicManager;
-    strategy2 = new Strategy2Rules(manager);
+    adapatationStrategyIntermediateSpaceAndTimePinned = new AdapatationStrategyIntermediate(manager, true, true);
+    adapatationStrategyIntermediateSpacePinned = new AdapatationStrategyIntermediate(manager, true, false);
     deadNodeSimulator = new DeadNodeSimulator();
   }
 
@@ -38,7 +40,7 @@ public class Anaylsiser
   {//sets ECMs with correct query execution plan
 	  this.qep = (SensorNetworkQueryPlan) qep;
 	  cardECM = new CardinalityEstimatedCostModel(qep);
-	  strategy2.initilise(qep);
+	  adapatationStrategyIntermediateSpaceAndTimePinned.initilise(qep);
 	  deadNodeSimulator.initilise(qep, cardECM);  
   }
    
@@ -204,6 +206,6 @@ public class Anaylsiser
          TypeMappingException, 
          AgendaException, SNEEException, SNEEConfigurationException
   {
-    return strategy2.calculateNewQEP(failedNodeID);
+    return adapatationStrategyIntermediateSpaceAndTimePinned.calculateNewQEP(failedNodeID);
   }
 }

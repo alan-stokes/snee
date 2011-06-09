@@ -23,7 +23,6 @@ public class InstanceOperator extends NodeImplementation implements Node
   private static int counter = 0;
   private float selectivity = 1;
   private ArrayList<InstanceOperator> childOps = new ArrayList<InstanceOperator>();
-  private boolean locked = false;
 
   public Iterator<InstanceOperator> childIterator()
   {
@@ -203,15 +202,4 @@ public class InstanceOperator extends NodeImplementation implements Node
     childOps.clear();
     super.removeAllInputs();
   }
-  
-  public boolean isLocked()
-  {
-    return locked;
-  }
-
-  public void setLocked(boolean locked)
-  {
-    this.locked = locked;
-  }
-  
 }

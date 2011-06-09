@@ -238,6 +238,20 @@ public class IOT extends SNEEAlgebraicForm
    */
   public ArrayList<InstanceOperator> getOpInstances(SensornetOperator op) 
   {
+    if(op instanceof SensornetExchangeOperator)
+    {
+      ArrayList<InstanceOperator> exchangeOperators = new ArrayList<InstanceOperator>();
+      Iterator<InstanceOperator> operatorIterator = this.treeIterator(TraversalOrder.POST_ORDER);
+      while(operatorIterator.hasNext())
+      {
+        InstanceOperator operator = operatorIterator.next();
+        if(operator instanceof InstanceExchangePart)
+        {
+          exchangeOperators.add(operator);
+        }
+      }
+      return exchangeOperators;
+    }
     return this.opInstMapping.get(op.getID()); 
   }
   
@@ -303,18 +317,33 @@ public class IOT extends SNEEAlgebraicForm
   }
   
 /**
- * iterator for the instance operators
+ * tree iterator for all the instance operators
  * @param Order order the iterator goes in
  * @return a iterator
  */
-  public Iterator<InstanceOperator> iterator(TraversalOrder Order)
+  public Iterator<InstanceOperator> treeIterator(TraversalOrder Order)
   {
     final ArrayList<InstanceOperator> nodeList = 
       new ArrayList<InstanceOperator>();
-    this.doIterator(this.getRoot(), nodeList, Order);
+    this.doIterator(this.getRoot(), nodeList, Order, true);
 
     return nodeList.iterator();
   }
+  
+  /**
+   * tree iterator for all the instance operators includes exchanges if exchanges = true
+   * @param order order the iterator goes in
+   * @param exchanges
+   * @return a iterator
+   */
+    public Iterator<InstanceOperator> treeIterator(TraversalOrder order, boolean exchanges)
+    {
+      final ArrayList<InstanceOperator> nodeList = 
+        new ArrayList<InstanceOperator>();
+      this.doIterator(this.getRoot(), nodeList, order, exchanges);
+
+      return nodeList.iterator();
+    }
   
   /**
    * iterator over a sub tree of the IOT
@@ -326,7 +355,7 @@ public class IOT extends SNEEAlgebraicForm
   {
     final ArrayList<InstanceOperator> nodeList = 
       new ArrayList<InstanceOperator>();
-    this.doIterator(node, nodeList, Order);
+    this.doIterator(node, nodeList, Order, true);
 
     return nodeList.iterator();
   } 
@@ -338,20 +367,22 @@ public class IOT extends SNEEAlgebraicForm
    * @param order
    */
   private void doIterator(InstanceOperator node, 
-      ArrayList<InstanceOperator> nodeList, TraversalOrder order)
+      ArrayList<InstanceOperator> nodeList, TraversalOrder order, boolean exchanges)
   {
     if (order == TraversalOrder.PRE_ORDER) 
     {
-      nodeList.add(node);
+      if(exchanges || (!exchanges && !(node instanceof InstanceExchangePart)))
+        nodeList.add(node);
     }
 
     for (int n = 0; n < node.getInDegree(); n++) 
     {
-        this.doIterator((InstanceOperator)node.getInput(n), nodeList, order);
+        this.doIterator((InstanceOperator)node.getInput(n), nodeList, order, exchanges);
     }
   
     if (order == TraversalOrder.POST_ORDER) 
     {
+      if(exchanges || (!exchanges && !(node instanceof InstanceExchangePart)))
         nodeList.add(node);
     }
   }

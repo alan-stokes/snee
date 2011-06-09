@@ -74,9 +74,14 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 	/**
 	 * is true if locked by past PAF. false otherwise
 	 */
-	protected boolean isLocked = false;
+	protected boolean isPinned = false;
 
-  public CostParameters getCostParams()
+  /**
+	 * list containing all site ids of which this operator is pinned on
+	 */
+	protected ArrayList<String> pinnedSites = new ArrayList<String>();
+
+public CostParameters getCostParams()
   {
     return costParams;
   }
@@ -697,13 +702,29 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 		return this.getLogicalOperator().getTupleAttributesStr(maxPerLine);
 	}
 	
-	public boolean isLocked()
+	public boolean isPinned()
   {
-	  return isLocked;
+	  return isPinned;
 	}
 
-	public void setLocked(boolean isLocked)
+	public void setIsPinned(boolean isPinned)
 	{
-	  this.isLocked = isLocked;
+	  this.isPinned = isPinned;
 	}	
+	
+	public boolean addSiteToPinnedList(String string) 
+	{
+      return pinnedSites.add(string);
+	}
+	
+	public Iterator<String> getPinnedIterator()
+	{
+	  return pinnedSites.iterator();
+	}
+  
+  public int getPinnedQuantity()
+  {
+    return pinnedSites.size();
+  }
 }
+
