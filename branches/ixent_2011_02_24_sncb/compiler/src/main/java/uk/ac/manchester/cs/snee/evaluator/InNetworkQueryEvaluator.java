@@ -89,7 +89,7 @@ public class InNetworkQueryEvaluator extends QueryEvaluator {//Runnable {
 		SNCB sncb = _qep.getSNCB();
 		try {
 			sncb.stop(_qep);
-			sncb.deregister(_qep);
+			//sncb.deregister(_qep);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
