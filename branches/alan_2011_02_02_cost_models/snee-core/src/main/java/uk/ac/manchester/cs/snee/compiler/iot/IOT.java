@@ -22,6 +22,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SNEEAlgebraicForm;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperatorImpl;
@@ -131,13 +132,68 @@ public class IOT extends SNEEAlgebraicForm
   /**
    * gets the operators which are on a site (in the form of instance operators
    * @param site site to which the operators are being found on
-   * @return the operators on site site in the form of a arraylist
+   * @return the operators on site site in the form of a arraylist no order to the array
    */
   public ArrayList<InstanceOperator> getOpInstances(Site site) 
   {
     return this.siteToOpInstMap.get(site);
   }
   
+  /**
+   * gets the operators which are on a site (in the form of instance operators
+   * @param site site to which the operators are being found on
+   * @param traversalOrder post or pre order of operators in tree.
+   * @return the operators on site site in the form of a arraylist in a order 
+   * defined in traversal order
+   */
+  public ArrayList<InstanceOperator> getOpInstances(Site site, TraversalOrder traversalOrder, 
+                                     boolean exchanges) 
+  {
+    InstanceOperator root = this.rootOp; 
+    final ArrayList<InstanceOperator> operatorList = new ArrayList<InstanceOperator>();
+    this.doTransvesalIterator(root, site, operatorList, traversalOrder, exchanges);
+    return operatorList;
+  }
+  
+  /**
+   * helper method to produce order of operators
+   * @param rootFragment2
+   * @param operatorList
+   * @param traversalOrder
+   */
+  private void doTransvesalIterator(InstanceOperator instanceOperator, Site site,
+      ArrayList<InstanceOperator> operatorList, TraversalOrder traversalOrder,
+      boolean exchanges)
+  {
+    // TODO Auto-generated method stub
+    if (logger.isTraceEnabled())
+      logger.trace("ENTER doFragmentIterator()"); 
+      String currentSiteID = instanceOperator.getSite().getID();
+      String lookingSiteID = site.getID();
+      if (traversalOrder == TraversalOrder.PRE_ORDER && 
+          currentSiteID.equals(lookingSiteID)) 
+      {
+        if(exchanges || !(instanceOperator instanceof InstanceExchangePart))
+          operatorList.add(instanceOperator);
+      }
+
+      for (int n = 0; n < instanceOperator.getInDegree(); n++) 
+      {
+          this.doTransvesalIterator((InstanceOperator)instanceOperator.getInput(n), 
+                                     site, operatorList, traversalOrder, exchanges);
+      }
+
+      if (traversalOrder == TraversalOrder.POST_ORDER && 
+          currentSiteID.equals(lookingSiteID)) 
+      {
+        if(exchanges || !(instanceOperator instanceof InstanceExchangePart))
+          operatorList.add(instanceOperator);
+      }
+      if (logger.isTraceEnabled())
+      logger.trace("RETURN doTransversalIterator()"); 
+  }
+
+
   /**
    * removes all operators from a site, and removes the site from the IOT
    * @param site the site to be removed
@@ -244,167 +300,6 @@ public class IOT extends SNEEAlgebraicForm
       sites.add(opInst.getSite());
     }
     return sites;
-  }
-  
-  /**
-   * produce a image of the IOT as a dot file
-   * @param fname name of file
-   * @param label label for within the dot file.
-   * @throws SchemaMetadataException
-   */
-  public void exportAsDOTFile(final String fname, final String label) 
-  throws SchemaMetadataException
-  {
-    try
-    {   
-      PrintWriter out = new PrintWriter(new BufferedWriter(
-            new FileWriter(fname)));
-        out.println("digraph \"" + (String) instanceOperatorTree.getName() + "\" {");
-        String edgeSymbol = "->";
-        
-        out.println("label = \"" + label + "\";");
-        out.println("rankdir=\"BT\";");
-        
-         /**
-         * Draw the operators on the site
-         */
-        final Iterator<Site> siteIter = this.rt.siteIterator(TraversalOrder.POST_ORDER);
-        while (siteIter.hasNext()) 
-        {
-          final Site site = siteIter.next();
-          ArrayList<InstanceOperator> opInstSubTree = this.getOpInstances(site);
-          if (!opInstSubTree.isEmpty()) 
-          {
-            out.println("subgraph cluster_" + site.getID() + " {");
-            out.println("style=\"rounded,dotted\"");
-            out.println("color=blue;");
-        
-            final Iterator<InstanceOperator> opInstIter 
-              = opInstSubTree.iterator();
-            while (opInstIter.hasNext()) 
-            {
-                final InstanceOperator opInst = opInstIter.next();
-                out.println("\"" + opInst.getID() + "\" ;");
-            }
-        
-            out.println("fontsize=9;");
-            out.println("fontcolor=red;");
-            out.println("labelloc=t;");
-            out.println("labeljust=r;");
-            out.println("label =\"Site " + site.getID()+"\"");
-            out.println("}\n");
-          }
-        }
-        
-        //traverse the edges now
-        Iterator<String> i = instanceOperatorTree.getEdges().keySet().iterator();
-        while (i.hasNext()) 
-        {
-          Edge e = instanceOperatorTree.getEdges().get((String) i.next());
-          out.println("\"" + instanceOperatorTree.getAllNodes().get(e.getSourceID()).getID()
-          + "\"" + edgeSymbol + "\""
-          + instanceOperatorTree.getAllNodes().get(e.getDestID()).getID() + "\" ");
-        }
-        out.println("}");
-        out.close();
-
-    } 
-    catch (IOException e) 
-    {
-      System.out.println("Export failed: " + e.toString());
-        System.err.println("Export failed: " + e.toString());
-    }
-  }
-  
-  /**
-   * exports the IOT as a dot file, but contains fragments, and allows to turn on or off exchange operators
-   * @param fname  name of file
-   * @param label label for within dot file
-   * @param exchangesOnSites if exchange operators are broken down
-   */
-  public void exportAsDotFileWithFrags(final String fname, final String label, boolean exchangesOnSites)
-  {
-	  try
-	  {
-	    //create writer
-	    PrintWriter out = new PrintWriter(new BufferedWriter( new FileWriter(fname)));
-	    //create blurb
-	    out.println("digraph \"" + (String) instanceOperatorTree.getName() + "\" {");
-      out.println("label = \"" + label + "\";");
-      out.println("rankdir=\"BT\";");
-      out.println("compound=\"true\";");
-      //itterate though sites in routing tree (depth to shallow)
-      Iterator<Site> siteIterator = rt.siteIterator(TraversalOrder.POST_ORDER);
-      while(siteIterator.hasNext())
-      {//for each site do blurb and then go though fragments
-    	  Site currentSite = siteIterator.next();
-    	  out.println("subgraph cluster_s" + currentSite.getID() + " {");
-    	  out.println("style=\"rounded,dotted\"");
-    	  out.println("color=blue;");
-    	  //get fragments within site
-    	  Iterator<InstanceFragment> fragmentIterator = fragments.iterator();
-    	  while(fragmentIterator.hasNext())
-    	  {
-    		  InstanceFragment currentFrag = fragmentIterator.next();
-    		  if(currentFrag.getSite().getID().equals(currentSite.getID()))
-    		  { //produce blurb
-      		  out.println("subgraph cluster_f" + currentFrag.getID() + " {");
-      		  out.println("style=\"rounded,dashed\"");
-      	    out.println("color=red;");
-      	    //go though operators printing ids
-      	    Iterator<InstanceOperator> operatorIterator = currentFrag.operatorIterator(TraversalOrder.POST_ORDER);
-      	    while(operatorIterator.hasNext())
-      	    {
-      	      InstanceOperator currentOperator = operatorIterator.next();
-      	      out.println("\"" + currentOperator.getID() + "\" ;");
-      	    }
-      	    //output bottom blurb of a cluster
-      	    out.println("fontsize=9;");
-      	    out.println("fontcolor=red");
-      	    out.println("labelloc=t;");
-      	    out.println("labeljust=r;");
-      	    out.println("label =\"frag " + currentFrag.getID() + "\"");
-      	    out.println("}"); 
-      		}
-      	}
-      	//add exchanges if needed
-      	if(exchangesOnSites)
-      	{
-      	  HashSet<InstanceExchangePart> exchangeParts = currentSite.getInstanceExchangeComponents();
-      	  Iterator<InstanceExchangePart> exchangePartsIterator = exchangeParts.iterator();
-      	  while(exchangePartsIterator.hasNext())
-      	  {
-      		  InstanceExchangePart exchangePart = exchangePartsIterator.next();
-      	    out.println("\"" + exchangePart.getID() + "\" ;");
-      	  }
-      	}
-    	
-      	//output bottom blurb of a site
-      	out.println("fontsize=9;");
-      	out.println("fontcolor=red");
-      	out.println("labelloc=t;");
-      	out.println("labeljust=r;");
-      	out.println("label =\"site " + currentSite.getID() + "\"");
-      	out.println("}");  
-      }
-      //get operator edges
-      String edgeSymbol = "->";
-      Iterator<String> i = instanceOperatorTree.getEdges().keySet().iterator();
-      while (i.hasNext()) 
-      {
-        Edge e = instanceOperatorTree.getEdges().get((String) i.next());
-        out.println("\"" + instanceOperatorTree.getAllNodes().get(e.getSourceID()).getID()
-        + "\"" + edgeSymbol + "\""
-        + instanceOperatorTree.getAllNodes().get(e.getDestID()).getID() + "\" ");
-      }
-      out.println("}");
-      out.close();
-    }
-	  catch(IOException e)
-	  {
-	    System.out.println("Export failed: " + e.toString());
-	    System.err.println("Export failed: " + e.toString());
-	  }
   }
   
 /**
@@ -576,16 +471,19 @@ public class IOT extends SNEEAlgebraicForm
     for (int i=1; i<siblings.size(); i++) 
     {
       InstanceOperator currentSibling =  siblings.get(i);
-      for (int j=0; j<currentSibling.getInDegree(); j++) 
+      if(!(currentSibling.getSensornetOperator() instanceof SensornetAcquireOperator))
       {
-        InstanceOperator siblingChild = (InstanceOperator)currentSibling.getInput(j); 
-        firstSibling.addInput(siblingChild);
-        siblingChild.addOutput(firstSibling);
-        instanceOperatorTree.addEdge(siblingChild, firstSibling);
+        for (int j=0; j<currentSibling.getInDegree(); j++) 
+        {
+          InstanceOperator siblingChild = (InstanceOperator)currentSibling.getInput(j); 
+          firstSibling.addInput(siblingChild);
+          siblingChild.addOutput(firstSibling);
+          instanceOperatorTree.addEdge(siblingChild, firstSibling);
+        }
+        instanceOperatorTree.removeNode(currentSibling.getID());
+        siteToOpInstMap.remove(currentSibling.getSite(), currentSibling); 
+        firstParent.removeInput(currentSibling);
       }
-      instanceOperatorTree.removeNode(currentSibling.getID());
-      siteToOpInstMap.remove(currentSibling.getSite(), currentSibling); 
-      firstParent.removeInput(currentSibling);
     }
   }
 
@@ -671,7 +569,7 @@ public class IOT extends SNEEAlgebraicForm
   @Override
   public String getDescendantsString()
   {
-    return this.getID()+"-"+this.getPaf().getDescendantsString();
+    return this.getID()+"-"+this.getPAF().getDescendantsString();
   } 
   
   public EdgeImplementation addEdge(Node source, Node dest)
@@ -701,7 +599,7 @@ public class IOT extends SNEEAlgebraicForm
   
   public PAF getPAF()
   {
-    return getPaf();
+    return paf;
   }
   
   public RT getRT()
@@ -709,16 +607,18 @@ public class IOT extends SNEEAlgebraicForm
     return rt;
   }
 
-
+  public Tree getOperatorTree()
+  {
+    return instanceOperatorTree;
+  }
+  
+  public HashSet<InstanceFragment> getFragments()
+  {
+    return fragments;
+  }
+  
   public void setPaf(PAF paf)
   {
     this.paf = paf;
   }
-
-
-  public PAF getPaf()
-  {
-    return paf;
-  }
-
 }

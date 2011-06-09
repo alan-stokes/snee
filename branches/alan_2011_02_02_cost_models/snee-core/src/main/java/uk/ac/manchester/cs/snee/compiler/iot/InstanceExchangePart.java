@@ -35,6 +35,7 @@ package uk.ac.manchester.cs.snee.compiler.iot;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
@@ -43,6 +44,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 
 /**
  * Class to represent exchange operator parts (namely: producer, relay, consumer).
@@ -119,11 +121,14 @@ public class InstanceExchangePart extends InstanceOperator{
      * @param partType
      * @param isRemote
      * @param prev
+     * @param costs 
+     * @throws SchemaMetadataException 
+     * @throws SNEEException 
      */
     public InstanceExchangePart(final InstanceFragment sourceFrag, final Site sourceSite,
 	    final InstanceFragment destFrag, final Site destSite,
 	    final Site currentSite, final ExchangePartType partType,
-	    final boolean isRemote, final InstanceExchangePart prev) {
+	    final boolean isRemote, final InstanceExchangePart prev, CostParameters costs) throws SNEEException, SchemaMetadataException {
 
 		this.sourceFrag = sourceFrag;
 		this.sourceSite = sourceSite;
@@ -132,6 +137,7 @@ public class InstanceExchangePart extends InstanceOperator{
 		this.setSite(currentSite);
 		this.partType = partType;
 		this.isRemote = isRemote;
+		this.setInstanceOperator(new SensornetExchangeOperator(costs));
 		this.id = "F" + sourceFrag.getID() + "_S" + this.getSite().getID() + "_" + partType.toString().toLowerCase();
 	
 		//link components in a path
@@ -331,7 +337,7 @@ public class InstanceExchangePart extends InstanceOperator{
     public final int getDataMemoryCost(final Site site, final DAF daf) throws OptimizationException, SchemaMetadataException, TypeMappingException {
     	InstanceOperator root = this.sourceFrag.getRootOperator();
  		return root.getCardinality(CardinalityType.MAX, this.sourceSite, daf)
-			* root.getInstanceOperator().getPhysicalTupleSize();
+			* root.getSensornetOperator().getPhysicalTupleSize();
     }
 
 //    /**
@@ -373,7 +379,7 @@ public class InstanceExchangePart extends InstanceOperator{
     	final long tuples
     		= root.getCardinality(CardinalityType.MAX, sourceSite, daf) 
     		* bufferingFactor;
-		final int tupleSize = root.getInstanceOperator().getPhysicalTupleSize();
+		final int tupleSize = root.getSensornetOperator().getPhysicalTupleSize();
 		final int tuplesPerPacket = computeTuplesPerMessage(tupleSize, costParams);
 		return (int) Math.ceil(tuples / ((float) tuplesPerPacket));
     }

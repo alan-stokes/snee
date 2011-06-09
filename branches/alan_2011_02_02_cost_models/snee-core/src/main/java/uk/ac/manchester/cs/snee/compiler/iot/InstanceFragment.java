@@ -126,7 +126,7 @@ public class InstanceFragment
     final Iterator<InstanceOperator> ops = this.operators.iterator();
     while (ops.hasNext()) 
     {
-      if (ops.next().getInstanceOperator().isRecursive()) 
+      if (ops.next().getSensornetOperator().isRecursive()) 
       {
         found = true;
         break;
@@ -253,7 +253,7 @@ public class InstanceFragment
   final Iterator<InstanceOperator> ops = this
     .operatorIterator(TraversalOrder.PRE_ORDER);
   while (ops.hasNext()) {
-      if (ops.next().getInstanceOperator().getLogicalOperator().isLocationSensitive()) {
+      if (ops.next().getSensornetOperator().getLogicalOperator().isLocationSensitive()) {
     found = true;
     break;
       }
@@ -266,7 +266,7 @@ boolean found = false;
 final Iterator<InstanceOperator> ops = this
   .operatorIterator(TraversalOrder.PRE_ORDER);
 while (ops.hasNext()) {
-    if (ops.next().getInstanceOperator().getLogicalOperator().isAttributeSensitive()) {
+    if (ops.next().getSensornetOperator().getLogicalOperator().isAttributeSensitive()) {
   found = true;
   break;
     }
@@ -279,7 +279,7 @@ return found;
    * @return True if the fragment ends in a deliver and therefor does not output tuples to a tray.
    */
   public final boolean isDeliverFragment() {
-    if (this.getRootOperator().getInstanceOperator() instanceof DeliverOperator) {
+    if (this.getRootOperator().getSensornetOperator() instanceof DeliverOperator) {
       return true;
     }
     return false;

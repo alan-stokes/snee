@@ -29,44 +29,44 @@ public abstract class CostModel
   throws OptimizationException
   {
     //System.out.println("within operator " + operator.getID());
-    if(operator.getInstanceOperator() instanceof SensornetAcquireOperator)
+    if(operator.getSensornetOperator() instanceof SensornetAcquireOperator)
     {
       return acquireCard(operator);
     }
-    else if(operator.getInstanceOperator() instanceof SensornetAggrEvalOperator)
+    else if(operator.getSensornetOperator() instanceof SensornetAggrEvalOperator)
     {
       return aggerateCard(operator);
     }
-    else if(operator.getInstanceOperator() instanceof SensornetAggrInitOperator)
+    else if(operator.getSensornetOperator() instanceof SensornetAggrInitOperator)
     {
       return aggerateCard(operator);
     }
-    else if(operator.getInstanceOperator() instanceof SensornetAggrMergeOperator)
+    else if(operator.getSensornetOperator() instanceof SensornetAggrMergeOperator)
     {
       return aggerateCard(operator);
     }
-    else if(operator.getInstanceOperator() instanceof SensornetDeliverOperator)
+    else if(operator.getSensornetOperator() instanceof SensornetDeliverOperator)
     {
       return deliverModel(operator);
     }
-    else if(operator.getInstanceOperator() instanceof SensornetNestedLoopJoinOperator)
+    else if(operator.getSensornetOperator() instanceof SensornetNestedLoopJoinOperator)
     {
       return joinCard(operator);
     }
-    else if(operator.getInstanceOperator() instanceof SensornetProjectOperator)
+    else if(operator.getSensornetOperator() instanceof SensornetProjectOperator)
     {
       InstanceOperator op = (InstanceOperator)(operator.getInstanceInput(0));
       return model(op);
     }
-    else if(operator.getInstanceOperator() instanceof SensornetRStreamOperator)
+    else if(operator.getSensornetOperator() instanceof SensornetRStreamOperator)
     {
       return RStreamCard(operator);
     }
-    else if(operator.getInstanceOperator() instanceof SensornetSelectOperator)
+    else if(operator.getSensornetOperator() instanceof SensornetSelectOperator)
     {
       return selectCard(operator);
     }
-    else if(operator.getInstanceOperator() instanceof SensornetWindowOperator)
+    else if(operator.getSensornetOperator() instanceof SensornetWindowOperator)
     {
       return windowCard(operator);
     }
@@ -76,7 +76,7 @@ public abstract class CostModel
     }
     else
     {
-      String msg = "Unsupported operator " + operator.getInstanceOperator().getOperatorName();
+      String msg = "Unsupported operator " + operator.getSensornetOperator().getOperatorName();
       System.out.println("UNKNOWN OPORATEOR " + msg);
       return new CardinalityDataStructure(0);
     }

@@ -227,6 +227,11 @@ public class NodeImplementation implements Node {
 		return clonedNode;
 	}
 
+	protected void removeAllInputs()
+	{
+	  inputs.clear();
+	}
+	
 	public boolean isLeaf() {
 		return (this.getInDegree() == 0);
 	}

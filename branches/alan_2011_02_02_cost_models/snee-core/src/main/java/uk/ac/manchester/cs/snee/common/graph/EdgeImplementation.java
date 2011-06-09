@@ -43,7 +43,7 @@ package uk.ac.manchester.cs.snee.common.graph;
  * 
  */
 
-public class EdgeImplementation implements Edge {
+public class EdgeImplementation implements Edge, Comparable{
 
 	private String id;
 
@@ -102,5 +102,15 @@ public class EdgeImplementation implements Edge {
 
 		return true;
 	}
+
+  @Override
+  public int compareTo(Object o)
+  {
+    EdgeImplementation other = (EdgeImplementation) o;
+    if( this.id.equals((other.id)))
+      return 0;
+    else
+      return -1;
+  }
 
 }

@@ -8,6 +8,9 @@
          <column name="light">
           	<type class ="integer"/>
          </column>
+         <column name="water">
+          	<type class ="integer"/>
+         </column>
      </stream>
 
        <stream name="Forest" type="pull">

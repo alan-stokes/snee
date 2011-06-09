@@ -30,11 +30,12 @@ public class Tree extends Graph {
   /**
 	 * Tree constructor
 	 */
-	public Tree(Node root) {
+	public Tree(Node root, boolean update) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER Tree()");
 		this.root = root;
-		this.updateNodesAndEdgesColls(this.root);
+		if(update)
+		  this.updateNodesAndEdgesColls(this.root);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN Tree()");
 	}

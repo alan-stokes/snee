@@ -9,6 +9,7 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Graph;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
@@ -40,7 +41,11 @@ public class PAF extends SNEEAlgebraicForm {
 	 */
 	private Tree physicalOperatorTree;
 	
-    
+	/**
+	 * flag used to indicate if objects within tree are physical operators, or instances of them
+	 */
+	private boolean physicalOperators;
+
     /**
      * Counter to assign unique id to different candidates.
      */
@@ -60,14 +65,41 @@ public class PAF extends SNEEAlgebraicForm {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER PAF()"); 
 		this.dlaf=dlaf;
-		DeliverOperator logDelOp = 
-			(DeliverOperator) dlaf.getRootOperator();
-		SensornetDeliverOperator phyDelOp =
-			new SensornetDeliverOperator(logDelOp, costParams);
-		this.physicalOperatorTree = new Tree(phyDelOp);
+		this.physicalOperators = true;
+		//DeliverOperator logDelOp = 
+			//(DeliverOperator) dlaf.getRootOperator();
+		//SensornetDeliverOperator phyDelOp =
+			//new SensornetDeliverOperator(logDelOp, costParams);
+		//this.physicalOperatorTree = new Tree(phyDelOp);
+		this.physicalOperatorTree = new Tree(deliverPhyOp, true);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN PAF()"); 	
 	}
+	
+	 /**
+   * Constructor for Physical-algebraic form using instance operators
+   * @param deliverPhyOp the instance operator which is the root of the tree
+   * @param dlaf The distributed logical-algebraic form of the query plan 
+   * operator tree from which PAF is derived.
+   * @param queryName The name of the query
+   * @throws SNEEException 
+   */
+  public PAF(InstanceOperator deliverPhyOp, final DLAF dlaf, 
+  CostParameters costParams, final String queryName) throws SNEEException, SchemaMetadataException {
+    super(queryName);
+    if (logger.isDebugEnabled())
+      logger.debug("ENTER PAF()"); 
+    this.dlaf=dlaf;
+    this.physicalOperators = false;
+    //DeliverOperator logDelOp = 
+      //(DeliverOperator) dlaf.getRootOperator();
+    //SensornetDeliverOperator phyDelOp =
+      //new SensornetDeliverOperator(logDelOp, costParams);
+    //this.physicalOperatorTree = new Tree(phyDelOp);
+    this.physicalOperatorTree = new Tree(deliverPhyOp, false);
+    if (logger.isDebugEnabled())
+      logger.debug("RETURN PAF()");   
+  }
 
     /**
      * Resets the counter; use prior to compiling the next query.
@@ -147,6 +179,14 @@ public class PAF extends SNEEAlgebraicForm {
 			logger.debug("RETURN operatorIterator()"); 
 		return this.physicalOperatorTree.nodeIterator(order);
 	}
+	
+	public Iterator<Node> instanceOperatorIterator(TraversalOrder order) {
+    if (logger.isDebugEnabled())
+      logger.debug("ENTER operatorIterator()"); 
+    if (logger.isDebugEnabled())
+      logger.debug("RETURN operatorIterator()"); 
+    return this.physicalOperatorTree.nodeIterator(order);
+  }
 
 	/**
 	 * Returns the physical operator tree.
@@ -159,4 +199,14 @@ public class PAF extends SNEEAlgebraicForm {
 			logger.debug("RETURN getOperatorTree()"); 
 		return this.physicalOperatorTree;
 	}
+	
+  public boolean isPhysicalOperators()
+  {
+    return physicalOperators;
+  }
+
+  public void setPhysicalOperators(boolean physicalOperators)
+  {
+    this.physicalOperators = physicalOperators;
+  }
 }

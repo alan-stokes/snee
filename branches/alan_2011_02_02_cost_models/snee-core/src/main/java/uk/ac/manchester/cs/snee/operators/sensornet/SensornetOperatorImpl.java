@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.NodeImplementation;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
@@ -70,7 +71,12 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 	 */
 	protected CostParameters costParams;
 	
-	public CostParameters getCostParams()
+	/**
+	 * is true if locked by past PAF. false otherwise
+	 */
+	protected boolean isLocked = false;
+
+  public CostParameters getCostParams()
   {
     return costParams;
   }
@@ -691,4 +697,13 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 		return this.getLogicalOperator().getTupleAttributesStr(maxPerLine);
 	}
 	
+	public boolean isLocked()
+  {
+	  return isLocked;
+	}
+
+	public void setLocked(boolean isLocked)
+	{
+	  this.isLocked = isLocked;
+	}	
 }

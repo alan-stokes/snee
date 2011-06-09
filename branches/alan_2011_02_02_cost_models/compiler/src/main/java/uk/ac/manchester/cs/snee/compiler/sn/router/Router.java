@@ -91,7 +91,7 @@ public class Router {
 			logger.trace("ENTER computeSteinerTree() with sink=" +sink+
 					" sources="+sources.toString());    	
     	Site gateway = new Site(network.getSite(sink));
-    	Tree steinerTree = new Tree(gateway);
+    	Tree steinerTree = new Tree(gateway, true);
 
 		final ArrayList<String> nodesToAdd = new ArrayList<String>();
 		final ArrayList<String> nodesAdded = new ArrayList<String>();

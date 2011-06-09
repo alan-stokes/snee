@@ -1,11 +1,18 @@
 package uk.ac.manchester.cs.snee.compiler.iot;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.graph.Edge;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
@@ -24,6 +31,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 public class IOTUtils
 {
   private IOT iot;
+  private Tree instanceOperatorTree = null;
   static private DAF daf;
   private CostParameters costs;
   
@@ -31,6 +39,7 @@ public class IOTUtils
   {
     this.iot = iot;
     this.costs = costParams;
+    this.instanceOperatorTree = iot.getOperatorTree();
   }
   
   public void convertToDAF() throws OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException
@@ -41,7 +50,7 @@ public class IOTUtils
   private void createDAF() 
   throws OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException
   {
-    DAF faf = partitionPAF(iot.getPaf(), iot, iot.getRT().getQueryName(), iot.getRT(), costs);  
+    DAF faf = partitionPAF(iot.getPAF(), iot, iot.getRT().getQueryName(), iot.getRT(), costs);  
     daf = linkFragments(faf, iot.getRT(), iot, iot.getRT().getQueryName());
     removeRedundantAggrIterOp(daf, iot);
   }
@@ -112,7 +121,7 @@ public class IOTUtils
     while (opInstIter.hasNext()) {
       InstanceOperator opInst = opInstIter.next();
       //have to get the cloned copy in compactDaf...
-      SensornetOperator op = (SensornetOperator)cDAF.getOperatorTree().getNode(opInst.getInstanceOperator().getID());
+      SensornetOperator op = (SensornetOperator)cDAF.getOperatorTree().getNode(opInst.getSensornetOperator().getID());
 
       Site sourceSite = (Site)cDAF.getRT().getSite(opInst.getSite().getID());
       Fragment sourceFrag = op.getContainingFragment();
@@ -124,7 +133,7 @@ public class IOTUtils
 
           InstanceOperator paOpInst = (InstanceOperator)opInst.getOutput(0);
           Site destSite = (Site)cDAF.getRT().getSite(paOpInst.getSite().getID());
-          Fragment destFrag = ((SensornetOperator)cDAF.getOperatorTree().getNode(((InstanceOperator)opInst.getOutput(0)).getInstanceOperator().getID())).getContainingFragment();
+          Fragment destFrag = ((SensornetOperator)cDAF.getOperatorTree().getNode(((InstanceOperator)opInst.getOutput(0)).getSensornetOperator().getID())).getContainingFragment();
           final Path path = cDAF.getRT().getPath(sourceSite.getID(), destSite.getID());
           
           cDAF.placeFragment(sourceFrag, sourceSite);
@@ -150,6 +159,180 @@ public class IOTUtils
           daf.getOperatorTree().removeNode(op);
         }
       }
+    }
+  }
+  
+  /**
+   * produce a image of the IOT as a dot file
+   * @param fname name of file
+   * @param label label for within the dot file.
+   * @throws SchemaMetadataException
+   */
+  public void exportAsDOTFile(final String fname, final String label, boolean exchangesOnSites) 
+  throws SchemaMetadataException
+  {
+    try
+    {   
+      PrintWriter out = new PrintWriter(new BufferedWriter(
+            new FileWriter(fname)));
+        out.println("digraph \"" + (String) instanceOperatorTree.getName() + "\" {");
+        String edgeSymbol = "->";
+        
+        out.println("label = \"" + label + "\";");
+        out.println("rankdir=\"BT\";");
+        
+         /**
+         * Draw the operators on the site
+         */
+        final Iterator<Site> siteIter = iot.getRT().siteIterator(TraversalOrder.POST_ORDER);
+        while (siteIter.hasNext()) 
+        {
+          final Site site = siteIter.next();
+          ArrayList<InstanceOperator> opInstSubTree = iot.getOpInstances(site);
+          if (!opInstSubTree.isEmpty()) 
+          {
+            out.println("subgraph cluster_" + site.getID() + " {");
+            out.println("style=\"rounded,dotted\"");
+            out.println("color=blue;");
+        
+            final Iterator<InstanceOperator> opInstIter 
+              = opInstSubTree.iterator();
+            while (opInstIter.hasNext()) 
+            {
+                final InstanceOperator opInst = opInstIter.next();
+                out.println("\"" + opInst.getID() + "\" ;");
+            }
+        
+            out.println("fontsize=9;");
+            out.println("fontcolor=red;");
+            out.println("labelloc=t;");
+            out.println("labeljust=r;");
+            out.println("label =\"Site " + site.getID()+"\"");
+            out.println("}\n");
+          }
+        
+        
+        //add exchanges if needed
+        if(exchangesOnSites)
+        {
+          HashSet<InstanceExchangePart> exchangeParts = site.getInstanceExchangeComponents();
+          Iterator<InstanceExchangePart> exchangePartsIterator = exchangeParts.iterator();
+          while(exchangePartsIterator.hasNext())
+          {
+            InstanceExchangePart exchangePart = exchangePartsIterator.next();
+            out.println("\"" + exchangePart.getID() + "\" ;");
+          }
+        }
+        }
+        
+        //traverse the edges now
+        Iterator<String> i = instanceOperatorTree.getEdges().keySet().iterator();
+        while (i.hasNext()) 
+        {
+          Edge e = instanceOperatorTree.getEdges().get((String) i.next());
+          out.println("\"" + instanceOperatorTree.getAllNodes().get(e.getSourceID()).getID()
+          + "\"" + edgeSymbol + "\""
+          + instanceOperatorTree.getAllNodes().get(e.getDestID()).getID() + "\" ");
+        }
+        out.println("}");
+        out.close();
+
+    } 
+    catch (IOException e) 
+    {
+      System.out.println("Export failed: " + e.toString());
+        System.err.println("Export failed: " + e.toString());
+    }
+  }
+  
+  /**
+   * exports the IOT as a dot file, but contains fragments, and allows to turn on or off exchange operators
+   * @param fname  name of file
+   * @param label label for within dot file
+   * @param exchangesOnSites if exchange operators are broken down
+   */
+  public void exportAsDotFileWithFrags(final String fname, final String label, boolean exchangesOnSites)
+  {
+    try
+    {
+      //create writer
+      PrintWriter out = new PrintWriter(new BufferedWriter( new FileWriter(fname)));
+      //create blurb
+      out.println("digraph \"" + (String) instanceOperatorTree.getName() + "\" {");
+      out.println("label = \"" + label + "\";");
+      out.println("rankdir=\"BT\";");
+      out.println("compound=\"true\";");
+      //itterate though sites in routing tree (depth to shallow)
+      Iterator<Site> siteIterator = iot.getRT().siteIterator(TraversalOrder.POST_ORDER);
+      while(siteIterator.hasNext())
+      {//for each site do blurb and then go though fragments
+        Site currentSite = siteIterator.next();
+        out.println("subgraph cluster_s" + currentSite.getID() + " {");
+        out.println("style=\"rounded,dotted\"");
+        out.println("color=blue;");
+        //get fragments within site
+        Iterator<InstanceFragment> fragmentIterator = iot.getFragments().iterator();
+        while(fragmentIterator.hasNext())
+        {
+          InstanceFragment currentFrag = fragmentIterator.next();
+          if(currentFrag.getSite().getID().equals(currentSite.getID()))
+          { //produce blurb
+            out.println("subgraph cluster_f" + currentFrag.getID() + " {");
+            out.println("style=\"rounded,dashed\"");
+            out.println("color=red;");
+            //go though operators printing ids
+            Iterator<InstanceOperator> operatorIterator = currentFrag.operatorIterator(TraversalOrder.POST_ORDER);
+            while(operatorIterator.hasNext())
+            {
+              InstanceOperator currentOperator = operatorIterator.next();
+              out.println("\"" + currentOperator.getID() + "\" ;");
+            }
+            //output bottom blurb of a cluster
+            out.println("fontsize=9;");
+            out.println("fontcolor=red");
+            out.println("labelloc=t;");
+            out.println("labeljust=r;");
+            out.println("label =\"frag " + currentFrag.getID() + "\"");
+            out.println("}"); 
+          }
+        }
+        //add exchanges if needed
+        if(exchangesOnSites)
+        {
+          HashSet<InstanceExchangePart> exchangeParts = currentSite.getInstanceExchangeComponents();
+          Iterator<InstanceExchangePart> exchangePartsIterator = exchangeParts.iterator();
+          while(exchangePartsIterator.hasNext())
+          {
+            InstanceExchangePart exchangePart = exchangePartsIterator.next();
+            out.println("\"" + exchangePart.getID() + "\" ;");
+          }
+        }
+      
+        //output bottom blurb of a site
+        out.println("fontsize=9;");
+        out.println("fontcolor=red");
+        out.println("labelloc=t;");
+        out.println("labeljust=r;");
+        out.println("label =\"site " + currentSite.getID() + "\"");
+        out.println("}");  
+      }
+      //get operator edges
+      String edgeSymbol = "->";
+      Iterator<String> i = instanceOperatorTree.getEdges().keySet().iterator();
+      while (i.hasNext()) 
+      {
+        Edge e = instanceOperatorTree.getEdges().get((String) i.next());
+        out.println("\"" + instanceOperatorTree.getAllNodes().get(e.getSourceID()).getID()
+        + "\"" + edgeSymbol + "\""
+        + instanceOperatorTree.getAllNodes().get(e.getDestID()).getID() + "\" ");
+      }
+      out.println("}");
+      out.close();
+    }
+    catch(IOException e)
+    {
+      System.out.println("Export failed: " + e.toString());
+      System.err.println("Export failed: " + e.toString());
     }
   }
   

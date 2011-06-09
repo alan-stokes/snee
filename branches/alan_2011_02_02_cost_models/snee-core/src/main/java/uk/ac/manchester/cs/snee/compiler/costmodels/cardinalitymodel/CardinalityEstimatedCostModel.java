@@ -113,7 +113,7 @@ public class CardinalityEstimatedCostModel extends CostModel
     float output = 1 * inputOperator.selectivity();
     CardinalityDataStructure out = new CardinalityDataStructure(output);
     //System.out.println(inputOperator.getID() + " outputCard= " + output);
-    List<Attribute> attributes = inputOperator.getInstanceOperator().getLogicalOperator().getAttributes();
+    List<Attribute> attributes = inputOperator.getSensornetOperator().getLogicalOperator().getAttributes();
     out.setExtentName(attributes.get(1).toString());
     return out;
   }
@@ -146,7 +146,7 @@ public class CardinalityEstimatedCostModel extends CostModel
     if(inputOperator.isNodeDead())
       return new CardinalityDataStructure(0);
     
-    WindowOperator logicalOp = (WindowOperator) inputOperator.getInstanceOperator().getLogicalOperator();
+    WindowOperator logicalOp = (WindowOperator) inputOperator.getSensornetOperator().getLogicalOperator();
     float to = logicalOp.getTo();
     float from = logicalOp.getFrom();
     float length = (to-from)+1;

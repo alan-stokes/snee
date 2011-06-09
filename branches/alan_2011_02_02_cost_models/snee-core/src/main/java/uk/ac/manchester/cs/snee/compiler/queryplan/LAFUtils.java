@@ -225,4 +225,19 @@ public class LAFUtils extends GraphUtils {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN generateGraphImage()");
 	}	
+	
+	public void exportAsDotFile(String outputFolder)
+	{
+	  String dotFilePath = outputFolder + ".dot";
+	  try
+    {
+      exportAsDOTFile(dotFilePath);
+      super.generateGraphImage(dotFilePath);
+    }
+    catch (Exception e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+	}
 }

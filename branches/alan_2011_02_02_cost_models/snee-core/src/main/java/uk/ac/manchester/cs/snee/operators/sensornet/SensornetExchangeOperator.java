@@ -65,6 +65,19 @@ public class SensornetExchangeOperator extends SensornetOperatorImpl {
 			logger.debug("RETURN SensornetExchangeOperator()");
 		}
 	}
+	
+	 public SensornetExchangeOperator(CostParameters costParams, String exchangeName) 
+	  throws SNEEException, SchemaMetadataException {
+	    super(costParams);
+	    if (logger.isDebugEnabled()) {
+	      logger.debug("ENTER SensornetExchangeOperator() ");
+	    }
+	    this.setOperatorName(exchangeName);
+	    this.setNesCTemplateName("producer");
+	    if (logger.isDebugEnabled()) {
+	      logger.debug("RETURN SensornetExchangeOperator()");
+	    }
+	  }
 
 
     /**

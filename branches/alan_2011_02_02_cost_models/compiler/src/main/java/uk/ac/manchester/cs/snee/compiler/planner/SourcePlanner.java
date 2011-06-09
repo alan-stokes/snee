@@ -131,13 +131,14 @@ public class SourcePlanner {
 		RT rt = doSNRouting(paf, queryID);
 		logger.info("Starting Where-Scheduling for query " + queryID);
 		InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, rt, costParams);
-		IOT iot = instanceWhere.getInstanceDAF();
+		IOT iot = instanceWhere.getIOT();
 		DAF daf = instanceWhere.getDAF();
 		new DAFUtils(daf).generateGraphImage();
 		//DAF daf = doSNWhereScheduling(rt, paf, costParams, queryID);
 		//IOT iot = null;
 		logger.info("Starting When-Scheduling for query " + queryID);
 		Agenda agenda = doSNWhenScheduling(daf, qos, queryID);
+		new AgendaUtils(agenda, false).exportAsLatex("agendaLatex");
 		AgendaIOT agendaIOT = doSNWhenScheduling(iot, qos, queryID, costParams);
 		agenda.setAgendaIOT(agendaIOT);
 		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, rt, daf, iot,
@@ -164,7 +165,7 @@ public class SourcePlanner {
 	        allowDiscontinuousSensing, metadata, useNetworkController);
 	    AgendaIOT agenda = whenSched.doWhenScheduling(iot, qos, queryName, costParams);
 	    if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
-	      new AgendaIOTUtils(agenda, iot, true).generateImage();
+	     // new AgendaIOTUtils(agenda, iot, true).generateImage();
 	    }   
 	    if (logger.isTraceEnabled())
 	      logger.debug("RETURN doSNWhenScheduling()");

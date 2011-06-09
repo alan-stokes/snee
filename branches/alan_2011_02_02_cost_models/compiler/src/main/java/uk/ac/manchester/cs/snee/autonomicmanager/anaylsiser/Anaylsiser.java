@@ -1,0 +1,209 @@
+package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.Map;
+
+import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+
+public class Anaylsiser 
+{
+  private CardinalityEstimatedCostModel cardECM;
+  private Strategy2Rules strategy2;
+  private SensorNetworkQueryPlan qep;
+  private AutonomicManager manager;
+  private DeadNodeSimulator deadNodeSimulator; 
+  private boolean anaylisieCECM = true;
+  private String deadSitesList = "";
+
+  public Anaylsiser(AutonomicManager autonomicManager)
+  {
+    manager = autonomicManager;
+    strategy2 = new Strategy2Rules(manager);
+    deadNodeSimulator = new DeadNodeSimulator();
+  }
+
+  public void initilise(QueryExecutionPlan qep) throws SchemaMetadataException 
+  {//sets ECMs with correct query execution plan
+	  this.qep = (SensorNetworkQueryPlan) qep;
+	  cardECM = new CardinalityEstimatedCostModel(qep);
+	  strategy2.initilise(qep);
+	  deadNodeSimulator.initilise(qep, cardECM);  
+  }
+   
+  public void runECMs() throws OptimizationException 
+  {//runs ecms
+	  runCardECM();
+  }
+  
+  public void runCardECM() throws OptimizationException
+  {//runs ecm and outputs result to terminal
+  	cardECM.runModel();
+  	float epochResult = cardECM.returnEpochResult();
+  	float agendaCycleResult = cardECM.returnAgendaExecutionResult();
+  		
+  	System.out.println("the cardinality of this query for epoch cycle is " + epochResult);
+  	System.out.println("the cardinality of this query for agenda cycle is " + agendaCycleResult);
+  }
+  
+  /**
+   * sets all nodes in deadNodes to dead for simulation
+   * @param deadNodes
+ * @throws OptimizationException 
+   */
+  public void simulateDeadNodes(ArrayList<Integer> deadNodes) throws OptimizationException
+  {
+    deadSitesList = deadNodeSimulator.simulateDeadNodes(deadNodes);
+  	cardECM.runModel();
+  	float epochResult = cardECM.returnEpochResult();
+  	float agendaResult = cardECM.returnAgendaExecutionResult();
+  	  
+  	System.out.println("Test with node " + deadSitesList + "death, cardianlity of the query per epoch is estimated to be " + epochResult);
+  	System.out.println("Test with node " + deadSitesList + "death, cardianlity of the query per agenda cycle is estimated to be " + agendaResult);
+  }
+  
+  /**
+   * assumes root site has the lowest node value
+   * @param numberOfDeadNodes
+ * @throws OptimizationException 
+   */
+  public void simulateDeadNodes(int numberOfDeadNodes) throws OptimizationException
+  { 
+    deadSitesList = deadNodeSimulator.simulateDeadNodes(numberOfDeadNodes);  
+	  cardECM.runModel();
+	  float epochResult = cardECM.returnEpochResult();
+	  float agendaResult = cardECM.returnAgendaExecutionResult();
+	  
+	  System.out.println("Test with node " + deadSitesList + "death, cardianlity of the query per epoch is estimated to be " + epochResult);
+	  System.out.println("Test with node " + deadSitesList + "death, cardianlity of the query per agenda cycle is estimated to be " + agendaResult);
+  }
+  
+  public float getCECMEpochResult() throws OptimizationException
+  {
+    return cardECM.returnEpochResult();
+  }
+  
+  public float getCECMAgendaResult() throws OptimizationException
+  {
+    return cardECM.returnAgendaExecutionResult();
+  }
+
+  public void anaylsisSNEECard(Map<Integer, Integer> sneeTuples)
+  { 
+    if(anaylisieCECM)
+    {
+      if(sneeTuples.size() > 0)
+      {
+        try
+        {
+          System.out.println("comparing");
+          float cecmEpochCard = getCECMEpochResult();
+          float cecmAgendaCard = getCECMAgendaResult();
+          float sneeAgendaCard = 0;
+          float sneeEpochCard = 0;
+          boolean sameValue = true;
+          boolean sameEpochValue = false;
+          boolean sameAgendaValue = false;
+          int epoch = 0;
+          sneeEpochCard = sneeTuples.get(epoch);
+          
+          
+          //check all epochs have same values also used to figure if an agenda worth of epochs have arrived
+          while(epoch <= (cardECM.getBeta()) && epoch < (sneeTuples.size()))
+          {
+            float sneeNextEpochCard = sneeTuples.get(epoch);
+            if(sneeNextEpochCard != sneeEpochCard)
+              sameValue = false;
+            epoch ++;
+          }
+          
+          if(epoch >= cardECM.getBeta())//reached an agenda cycle.
+          {
+            anaylisieCECM = false;
+            if(sameValue)
+            {
+              sneeAgendaCard = sneeEpochCard * cardECM.getBeta();
+            }
+            
+            //compare snee tuples to cost model estimates
+            if(cecmEpochCard == sneeEpochCard)
+              sameEpochValue = true;
+            if(sneeAgendaCard == cecmAgendaCard)
+              sameAgendaValue = true;
+            
+            //append to results file
+            String path = Utils.validateFileLocation("results/results.tex");
+            BufferedWriter out = new BufferedWriter(new FileWriter(path, true));
+            if ( deadSitesList.equals(""))
+              deadSitesList = "control";
+            if(sameEpochValue && sameAgendaValue)
+              out.write(deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "Y \\\\ \\hline \n");
+            else
+              out.write(deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "N \\\\ \\hline \n");
+            out.flush();
+            out.close();
+          }
+        }
+        catch (Exception e)
+        {
+          e.printStackTrace();
+        } 
+      }
+    }   
+  }
+
+  public void anaylsisSNEECard()
+  {
+    try
+    {
+      float cecmEpochCard = getCECMEpochResult();
+      float cecmAgendaCard = getCECMAgendaResult();
+      float sneeAgendaCard = 0;
+      float sneeEpochCard = 0;
+      boolean sameEpochValue = false;
+      boolean sameAgendaValue = false;
+      
+      if(cecmEpochCard == sneeEpochCard)
+        sameEpochValue = true;
+      if(sneeAgendaCard == cecmAgendaCard)
+        sameAgendaValue = true;
+      
+      String path = Utils.validateFileLocation("results/results.tex");
+      BufferedWriter out = new BufferedWriter(new FileWriter(path, true));
+      if ( deadSitesList.equals(""))
+        deadSitesList = "control";
+      if(sameEpochValue && sameAgendaValue)
+        out.write(deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "Y \\\\ \\hline \n");
+      else
+        out.write(deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "N \\\\ \\hline \n");
+      out.flush();
+      out.close();
+    }
+    catch(Exception e) { }  
+  }
+
+  public void queryStarted()
+  {
+    anaylisieCECM = true;   
+  }
+  
+  public SensorNetworkQueryPlan runStrategy2(int failedNodeID) 
+  throws OptimizationException, 
+         SchemaMetadataException, 
+         TypeMappingException, 
+         AgendaException, SNEEException, SNEEConfigurationException
+  {
+    return strategy2.calculateNewQEP(failedNodeID);
+  }
+}

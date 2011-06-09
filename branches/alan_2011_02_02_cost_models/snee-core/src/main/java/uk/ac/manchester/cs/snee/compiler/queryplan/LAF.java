@@ -73,7 +73,7 @@ public class LAF extends SNEEAlgebraicForm {
 		super(queryName);
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER LAF()");
-		this.logicalOperatorTree = new Tree(rootOp);
+		this.logicalOperatorTree = new Tree(rootOp, true);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN LAF()");
 		}

@@ -17,17 +17,27 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
 public class InstanceOperator extends NodeImplementation implements Node
 {
-  private SensornetOperator instanceOperator;
+  private SensornetOperator sensornetOperator;
   private Site site = null;
   private Site getDeepestConfluenceSite;
   private static int counter = 0;
   private float selectivity = 1;
   private ArrayList<InstanceOperator> childOps = new ArrayList<InstanceOperator>();
+  private boolean locked = false;
 
-  
-  public Iterator<InstanceOperator> iterator()
+  public Iterator<InstanceOperator> childIterator()
   {
     return childOps.iterator();
+  }
+  
+  public InstanceOperator[] getChildren()
+  {
+    InstanceOperator[] children = new InstanceOperator[childOps.size()];
+    for(int childIndex = 0; childIndex < childOps.size(); childIndex++)
+    {
+      children[childIndex] = childOps.get(childIndex);
+    }
+    return children;
   }
 
   public boolean add(InstanceOperator e)
@@ -44,17 +54,17 @@ public class InstanceOperator extends NodeImplementation implements Node
   throws SNEEException, SchemaMetadataException
   {
     super();
-    this.instanceOperator = instanceOp;
+    this.sensornetOperator = instanceOp;
     this.site = site;
   }
   
   public InstanceOperator(SensornetOperator instanceOp, Site deepestConfluanceSite) 
   {
     super();
-    this.instanceOperator = instanceOp;
+    this.sensornetOperator = instanceOp;
     this.getDeepestConfluenceSite = deepestConfluanceSite;
     counter ++;
-    this.id = generateID(instanceOperator, getDeepestConfluenceSite);
+    this.id = generateID(sensornetOperator, getDeepestConfluenceSite);
   }
   
   private static String generateID(SensornetOperator op, Site site) 
@@ -69,14 +79,14 @@ public class InstanceOperator extends NodeImplementation implements Node
     return id.toString();
   }
   
-  public SensornetOperator getInstanceOperator()
+  public SensornetOperator getSensornetOperator()
   {
-    return instanceOperator;
+    return sensornetOperator;
   }
 
   public void setInstanceOperator(SensornetOperator instanceOperator)
   {
-    this.instanceOperator = instanceOperator;
+    this.sensornetOperator = instanceOperator;
   }
 
   public Site getSite()
@@ -93,39 +103,44 @@ public class InstanceOperator extends NodeImplementation implements Node
   {
     return getDeepestConfluenceSite;
   }
+  
+  public void setDeepestConfluenceSite(Site newSite)
+  {
+    getDeepestConfluenceSite = newSite;
+  }
 
   //@Override
   public int[] getSourceSites()
   {
-    return instanceOperator.getSourceSites();
+    return sensornetOperator.getSourceSites();
   }
 
   //@Override
   public int getCardinality(CardinalityType card, Site node, DAF daf)
   throws OptimizationException
   {
-    return instanceOperator.getCardinality(card, node, daf);
+    return sensornetOperator.getCardinality(card, node, daf);
   }
 
   //@Override
   public int getOutputQueueCardinality(Site node, DAF daf)
   throws OptimizationException
   {
-    return instanceOperator.getOutputQueueCardinality(node, daf);
+    return sensornetOperator.getOutputQueueCardinality(node, daf);
   }
 
   //@Override
   public int getDataMemoryCost(Site node, DAF daf)
   throws SchemaMetadataException, TypeMappingException, OptimizationException
   {
-    return instanceOperator.getDataMemoryCost(node, daf);
+    return sensornetOperator.getDataMemoryCost(node, daf);
   }
 
   //@Override
   public double getTimeCost(CardinalityType card, Site node, DAF daf)
   throws OptimizationException
   {
-    return instanceOperator.getTimeCost(card, node, daf);
+    return sensornetOperator.getTimeCost(card, node, daf);
   }
   
   public InstanceOperator getInstanceInput(int index)
@@ -163,6 +178,40 @@ public class InstanceOperator extends NodeImplementation implements Node
      * selectivity is assumed
      */
     return selectivity;
+  }
+ 
+  /**
+   * over load method so input node also adds to childOps
+   */
+  public void addInput(Node n)
+  {
+    super.addInput(n);
+    childOps.add((InstanceOperator) n);
+  }
+  
+  /**
+   * overload method so remove input also removes from childOps
+   */
+  public void removeInput(Node n)
+  {
+    super.removeInput(n);
+    childOps.remove((InstanceOperator) n);
+  }
+  
+  public void removeAllInputs()
+  {
+    childOps.clear();
+    super.removeAllInputs();
+  }
+  
+  public boolean isLocked()
+  {
+    return locked;
+  }
+
+  public void setLocked(boolean locked)
+  {
+    this.locked = locked;
   }
   
 }

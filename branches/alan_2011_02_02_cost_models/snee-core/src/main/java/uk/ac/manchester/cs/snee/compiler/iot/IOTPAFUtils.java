@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.compiler.queryplan;
+package uk.ac.manchester.cs.snee.compiler.iot;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -12,6 +12,8 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
 import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.compiler.queryplan.DLAFUtils;
+import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
@@ -21,12 +23,12 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 /**
  * Utility class for displaying PAF.
  */
-public class PAFUtils extends DLAFUtils {
+public class IOTPAFUtils extends DLAFUtils {
 
 	/**
 	 * Logger for this class.
 	 */
-	private Logger logger = Logger.getLogger(PAFUtils.class.getName());
+	private Logger logger = Logger.getLogger(IOTPAFUtils.class.getName());
 	
 	/**
 	 * PAF to be displayed.
@@ -37,7 +39,7 @@ public class PAFUtils extends DLAFUtils {
 	 * Constructor for LAFUtils.
 	 * @param laf
 	 */	
-	public PAFUtils(PAF paf) {
+	public IOTPAFUtils(PAF paf) {
 		super(paf.getDLAF());
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER PAFUtils()"); 
@@ -88,26 +90,21 @@ public class PAFUtils extends DLAFUtils {
 			//	tree.nodeIterator(TraversalOrder.POST_ORDER);
 			Iterator<Node> opIter = paf.getOperatorTree().getNodes().iterator();
 			while (opIter.hasNext()) {
-				SensornetOperator op = (SensornetOperator) opIter.next();
+				InstanceOperator op = (InstanceOperator) opIter.next();
 				out.print("\"" + op.getID() + "\" [fontsize=9 ");
 
-				if (op instanceof SensornetExchangeOperator) {
+				if (op instanceof InstanceExchangePart) {
 					out.print("fontcolor = blue ");
 				}
 
 				out.print("label = \"");
 				
-				if ((showOperatorCollectionType) && !(op instanceof SensornetExchangeOperator)) {
-					out.print("(" + op.getLogicalOperator().getOperatorDataType().toString()
+				if ((showOperatorCollectionType) && !(op instanceof InstanceExchangePart)) {
+					out.print("(" + op.toString()
 							+ ") ");
 				}
-				out.print(op.getOperatorName() + "\\n");
+				out.print(op.getID() + "\\n");
 
-				if (!(op instanceof SensornetExchangeOperator)) {
-					if (op.getLogicalOperator().getParamStr() != null) {
-						out.print(op.getLogicalOperator().getParamStr() + "\\n");
-					}
-				}
 				if (showOperatorID) {
 					out.print("id = " + op.getID() + "\\n");
 				}
@@ -125,7 +122,7 @@ public class PAFUtils extends DLAFUtils {
 			opIter = paf.getOperatorTree().getNodes().iterator();
 			ArrayList<EdgeImplementation> listOfEdges = new ArrayList<EdgeImplementation>();
 			while (opIter.hasNext()) {
-				SensornetOperator op = (SensornetOperator) opIter.next();
+				InstanceOperator op = (InstanceOperator) opIter.next();
 				Iterator<EdgeImplementation> edgeIter = paf.getOperatorTree().getNodeEdges(op.getID()).iterator();
 				while (edgeIter.hasNext()) {
 				  EdgeImplementation edge = edgeIter.next();
