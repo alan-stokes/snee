@@ -18,7 +18,17 @@ public class SNEEClientUsingCCO extends SNEEClient {
 	
 	private String serviceUrl = 
 		"http://webgis1.geodata.soton.ac.uk:8080/CCO/services/PullStream?wsdl";
+//		"http://webgis1.geodata.soton.ac.uk:8080/EMU/services/PullStream?wsdl";
 	
+	private static String query =
+		"SELECT * FROM envdata_hernebay_tide;";
+
+//		"SELECT * FROM rtdata_haylingisl;";
+
+//		"SELECT \'HerneBay\', timestamp, datetime, observed, " +
+//			"tz, hs, hmax, tp " +
+//			"FROM envdata_hernebay_tide;";
+
 
 	public SNEEClientUsingCCO(String query, double duration) 
 	throws SNEEException, IOException, SNEEConfigurationException,
@@ -49,7 +59,6 @@ public class SNEEClientUsingCCO extends SNEEClient {
 		PropertyConfigurator.configure(
 				SNEEClientUsingCCO.class.getClassLoader().
 				getResource("etc/log4j.properties"));
-		String query;
 		Long duration;
 		//This method represents the web server wrapper
 		if (args.length != 2) {
@@ -58,10 +67,6 @@ public class SNEEClientUsingCCO extends SNEEClient {
 					"\t\"query duration in seconds\"\n");
 //			System.exit(1);
 			//XXX: Use default settings
-			query = "SELECT * FROM envdata_hernebay_tide;";
-			query = "SELECT \'HerneBay\', timestamp, datetime, observed, " +
-					"tz, hs, hmax, tp " +
-					"FROM envdata_hernebay_tide;";
 			duration = Long.valueOf("900");
 		} else {	
 			query = args[0];
