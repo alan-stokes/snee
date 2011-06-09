@@ -38,6 +38,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 
 public class ExtentMetadata {
@@ -58,6 +59,8 @@ public class ExtentMetadata {
 	//XXX-Ixent moved this to here from SensorNetworkSourceMetadata, as this seems 
 	//to be a something considered during early steps of query optimization.
 	private int cardinality = 1;
+	
+	private double rate;
 	
 	public ExtentMetadata(String extentName, 
 			List<Attribute> attributes,
@@ -210,6 +213,19 @@ public class ExtentMetadata {
 
 	public int getCardinality() {
 		return cardinality;
+	}
+
+	public double getRate() throws MetadataException {
+		if (_extentType == ExtentType.TABLE) {
+			String message = "Rate not defined for " + ExtentType.TABLE; 
+			logger.warn(message);
+			throw new MetadataException(message);
+		}
+		return rate;
+	}
+
+	public void setRate(double rate) {
+		this.rate = rate;
 	}
 	
 }
