@@ -231,7 +231,22 @@ public class AggregationExpression implements Expression {
 	 */
 	public Attribute toAttribute() 
 	throws SchemaMetadataException, TypeMappingException{
-		Attribute attr = inputExpression.getRequiredAttributes().get(0);
-		return new DataAttribute(attr.getExtentName(), attr.getAttributeSchemaName()+"_"+aggrFunction.toString(), this.getType()); 
+		Attribute innerAttr = inputExpression.getRequiredAttributes().get(0);
+		DataAttribute attribute = new DataAttribute(innerAttr.getExtentName(), innerAttr.getAttributeSchemaName()+"_"
+			+aggrFunction.toString(), this.getType());
+		attribute.setIsConstant(false);
+		return attribute;
+	}
+	
+	public void setIsConstant(boolean b) {
+		throw new AssertionError("An aggregation expression cannot be a constant.");
+	}
+	
+	/* (non-Javadoc)
+	 * @see uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression#isConstant()
+	 * An aggregation expression cannot be a constant
+	 */
+	public boolean isConstant() {
+		return false;
 	}
 }

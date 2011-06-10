@@ -178,8 +178,8 @@ public class QueryEvaluator implements Observer {
 			// Get the root operator of the PAF
 			_rootOper = getInstance(_queryPlan.getRootOperator());
 			_rootOper.setSchema(_schema);
-			_rootOper.open();
 			_rootOper.addObserver(this);
+			_rootOper.open();
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN openQueryPlan()");

@@ -11,15 +11,11 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
-import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
-import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.LinkCostMetric;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
@@ -62,7 +58,7 @@ public class Router {
 		//XXX: There is potentially one routing tree for each Sensor Network Source
 		//For now, assume only one source
 		SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) 
-			paf.getDLAF().getSource();
+			paf.getDLAF().getSources().iterator().next();
 		Topology network = sm.getTopology();
 		int sink = sm.getGateway(); 
 		int[] sources = sm.getSourceSites();

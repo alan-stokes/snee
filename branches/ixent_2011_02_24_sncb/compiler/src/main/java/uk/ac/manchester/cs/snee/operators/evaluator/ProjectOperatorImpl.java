@@ -15,6 +15,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
@@ -85,7 +87,7 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 				for (Output output : outputList) {
 					if (output instanceof Window) {
 						result.add(processWindow(output));
-					} else if (output instanceof Tuple) {
+					} else if (output instanceof TaggedTuple) {
 						result.add(processTuple(output));
 					}
 				}
@@ -115,7 +117,6 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		}
 		Tuple projectedTuple = getProjectedTuple(tuple.getTuple());
 		// Replace the tuple in the tagged tuple
-		//XXX What is the meaning of a tick? Is it the time the tuple arrived in the system or the last time it was altered?
 		tuple.setTuple(projectedTuple);
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN processTuple() with " + tuple);
@@ -162,6 +163,9 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		logger.trace("Number of expressions: " + expressions.size());
 		//Iterate with index so that we can do renames
 		for (Expression exp : expressions) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Expression: " + exp);
+			}
 			EvaluatorAttribute attr = null;
 			if (exp instanceof MultiExpression) {
 				attr = evaluateMultiExpression(
@@ -170,7 +174,9 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 				attr = evaluateSingleExpression(exp, tuple);
 			}
 			// Add project field to the result tuple
-			logger.trace("Attribute: " + attr);
+			if (logger.isTraceEnabled()) {
+				logger.trace("Attribute: " + attr);
+			}
 			if (attr != null) {
 				projectedTuple.addAttribute(attr);
 			}
@@ -194,32 +200,49 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		}
 		EvaluatorAttribute returnField = null;
 		// Only a single expression, get attribute details
-		List<Attribute> attributes = exp.getRequiredAttributes();
-		Attribute attr = attributes.get(0);
-		String extentName = attr.getExtentName();
-		String attributeName = attr.getAttributeSchemaName();
-
-		/*
-		 * In-network SNEE adds the following attributes which 
-		 * should just be ignored
-		 */
-		if (attributeName.equalsIgnoreCase("evalTime") ||
-				attributeName.equalsIgnoreCase("time") ||
-				attributeName.equalsIgnoreCase("id")) {
-			logger.trace("Ignoring in-network SNEE assumed attribute " + 
-					attributeName);
-		} else {
+		if (exp.isConstant()) {
 			try {
-				logger.trace("getting attribute " + attributeName +
-						" from extent " + extentName);
+				if (exp instanceof IntLiteral) {
+					IntLiteral intLit = (IntLiteral) exp; 
+					returnField = new EvaluatorAttribute(exp.toAttribute(), 
+							intLit.getValue());
+				} else if (exp instanceof FloatLiteral) {
+					FloatLiteral floatLit = (FloatLiteral) exp; 
+					returnField = new EvaluatorAttribute(exp.toAttribute(), 
+							floatLit.getValue());
+				} else if (exp instanceof StringLiteral) {
+					StringLiteral strLit = (StringLiteral) exp; 
+					returnField = new EvaluatorAttribute(exp.toAttribute(), 
+							strLit.getValue());
+				}
+			} catch (SchemaMetadataException e) {
+				String message = "Could not create representation of " +
+					"constant value " + exp;
+				logger.warn(message, e);
+			} catch (TypeMappingException e) {
+				String message = "Could not create representation of " +
+					"constant value " + exp;
+				logger.warn(message, e);
+			}
+		} else {
+			List<Attribute> attributes = exp.getRequiredAttributes();
+			Attribute attr = attributes.get(0);
+			String extentName = attr.getExtentName();
+			String attributeName = attr.getAttributeSchemaName();
+			try {
+				if (logger.isTraceEnabled()) {
+					logger.trace("getting attribute " + attributeName +
+							" from extent " + extentName);
+				}
 				returnField = 
 					t.getAttribute(extentName, attributeName);
 			} catch (SNEEException e) {
-				logger.warn("Attribute " + attributeName + 
-						" does not exist.", e);
-				throw e;
+				String message = "Attribute " + attributeName + 
+						" does not exist.";
+				logger.warn(message, e);
+				throw new SNEEException(message, e);
 			}
-		}					
+		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN evaluateSingleExpression() with " + 
 					returnField);
@@ -279,9 +302,13 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 					daValue = 
 						t.getAttributeValueByDisplayName(daLabelName);
 				} catch (SNEEException e) {
+					try {
+						daValue = t.getAttributeValue(extentName, attrName);
+					} catch (SNEEException e1) {
 					logger.warn("Problem getting value for " + 
-							daLabelName, e);
+							daLabelName, e1);
 					throw e;
+					}
 				}
 				if (logger.isTraceEnabled()) {
 					logger.trace("Stack push attribute: " + 
@@ -298,10 +325,18 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 				}
 			} else if (expr instanceof FloatLiteral){
 				FloatLiteral fl = (FloatLiteral) expr;
-				daValue = new Float(fl.toString());
+				daValue = new Float(fl.getValue());
 				if (logger.isTraceEnabled()) {
 					logger.trace("Stack push float: " +
-							fl.getMaxValue() + ", type " + 
+							fl.getValue() + ", type " + 
+							daValue.getClass());
+				}
+			} else if (expr instanceof StringLiteral){
+				StringLiteral sl = (StringLiteral) expr;
+				daValue = sl.getValue();
+				if (logger.isTraceEnabled()) {
+					logger.trace("Stack push string: " +
+							sl.getValue() + ", type " + 
 							daValue.getClass());
 				}
 			} else {
@@ -316,8 +351,16 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		}
 		while (operands.size() >= 2){
 			// Evaluate result
-			Object result = evaluate(operands.pop(), operands.pop(), 
-					((MultiExpression)exp).getMultiType());
+			Object op1 = operands.pop();
+			Object op2 = operands.pop();
+			Object result;
+			MultiType type = ((MultiExpression)exp).getMultiType();
+			if (op1 instanceof StringLiteral && op2 instanceof StringLiteral) {
+				result = evaluateString((String)op1, (String)op2, type);
+			} else {
+				result = evaluateNumeric((Number)op1, (Number)op2, type);
+			}
+			
 			if (logger.isTraceEnabled())
 				logger.trace("Creating new attribute: " +
 						extentName + "." + attrName + " AS " +

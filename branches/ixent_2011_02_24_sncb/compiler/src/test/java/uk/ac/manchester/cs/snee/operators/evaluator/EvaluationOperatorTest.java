@@ -111,8 +111,8 @@ public class EvaluationOperatorTest extends EasyMockSupport {
 		//Test
 		replayAll();
 		EvaluationOperator op = instantiateEvalOp();
-		Object answer = op.evaluate(new Float(5.28), 9, MultiType.MULTIPLY);
-		System.out.println("Answer=" + answer);
+		Object answer = op.evaluateNumeric(new Float(5.28), 9, MultiType.MULTIPLY);
+//		System.out.println("Answer=" + answer);
 		assertEquals(47.52, ((Number) answer).doubleValue(), 0.1);
 		verifyAll();
 	}
@@ -123,8 +123,8 @@ public class EvaluationOperatorTest extends EasyMockSupport {
 		//Test
 		replayAll();
 		EvaluationOperator op = instantiateEvalOp();
-		Object answer = op.evaluate(new BigDecimal(0.0000), 9, MultiType.MULTIPLY);
-		System.out.println("Answer=" + answer);
+		Object answer = op.evaluateNumeric(new BigDecimal(0.0000), 9, MultiType.MULTIPLY);
+//		System.out.println("Answer=" + answer);
 		assertEquals(0.0000, ((Number) answer).doubleValue(), 0.1);
 		verifyAll();
 	}
@@ -135,9 +135,33 @@ public class EvaluationOperatorTest extends EasyMockSupport {
 		//Test
 		replayAll();
 		EvaluationOperator op = instantiateEvalOp();
-		Object answer = op.evaluate(9, new Float(0.13), MultiType.MULTIPLY);
-		System.out.println("Answer=" + answer);
+		Object answer = op.evaluateNumeric(9, new Float(0.13), MultiType.MULTIPLY);
+//		System.out.println("Answer=" + answer);
 		assertEquals(1.17, ((Number) answer).doubleValue(), 0.1);
+		verifyAll();
+	}
+	
+	@Test
+	public void testEvaluate_stringEquality() {
+		//Record
+		//Test
+		replayAll();
+		EvaluationOperator op = instantiateEvalOp();
+		Object answer = op.evaluateString("hello", "hello", MultiType.EQUALS);
+		System.out.println("Answer=" + answer);
+		assertEquals(true, answer);
+		verifyAll();
+	}
+	
+	@Test
+	public void testEvaluate_stringInEquality() {
+		//Record
+		//Test
+		replayAll();
+		EvaluationOperator op = instantiateEvalOp();
+		Object answer = op.evaluateString("hello", "hello", MultiType.NOTEQUALS);
+//		System.out.println("Answer=" + answer);
+		assertEquals(false, answer);
 		verifyAll();
 	}
 

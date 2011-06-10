@@ -139,6 +139,7 @@ public class QueryCompiler {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doLogicalRewriting: " + laf);
 		LogicalRewriter rewriter = new LogicalRewriter();
+		//TODO: Push projections and selections down to scan operator
 		LAF lafPrime = rewriter.doLogicalRewriting(laf);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new LAFUtils(lafPrime).generateGraphImage();

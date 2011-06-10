@@ -128,12 +128,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		// Instantiate this as a receive operator
 		receiveOp = (ReceiveOperator) op;
 		m_qid = qid;
-		try {
-			attributes = receiveOp.getAllReceivedAttributes();
-		} catch (TypeMappingException e) {
-			logger.error(e);
-			throw new SchemaMetadataException("", e);
-		}
+		attributes = receiveOp.getInputAttributes();
 		_streamName = receiveOp.getExtentName();
 	
 		if (logger.isTraceEnabled()) {
@@ -344,32 +339,32 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			 * Process a tuple that has been received in the 
 			 * background thread
 			 */
-				try {
-					// receive the tuple, blocking operation
-					tuple = _streamReceiver.receive();
-					// create a tagged tuple from the received tuple
-					TaggedTuple taggedTuple = new TaggedTuple(tuple);
-		
-					setChanged();
-					notifyObservers(taggedTuple);
-				} catch (ReceiveTimeoutException e) {
-					logger.warn("Receive Timeout Exception.", e);
-					receive = false;
-				} catch (SNEEException e) {
-					logger.warn("Received a SNEEException.", e);
-					receive = false;
-				} catch (EndOfResultsException e) {
-					executing = false;
-				} catch (SNEEDataSourceException e) {
-					logger.warn("Received a SNEEDataSourceException.", e);
-					receive = false;
-				} catch (TypeMappingException e) {
-					logger.warn("Received a TypeMappingException.", e);
-					receive = false;
-				} catch (SchemaMetadataException e) {
-					logger.warn("Received a SchemaMetadataException.", e);
-					receive = false;
-				}
+			try {
+				// receive the tuple, blocking operation
+				tuple = _streamReceiver.receive();
+				// create a tagged tuple from the received tuple
+				TaggedTuple taggedTuple = new TaggedTuple(tuple);
+
+				setChanged();
+				notifyObservers(taggedTuple);
+			} catch (ReceiveTimeoutException e) {
+				logger.warn("Receive Timeout Exception.", e);
+				receive = false;
+			} catch (SNEEException e) {
+				logger.warn("Received a SNEEException.", e);
+				receive = false;
+			} catch (EndOfResultsException e) {
+				executing = false;
+			} catch (SNEEDataSourceException e) {
+				logger.warn("Received a SNEEDataSourceException.", e);
+				receive = false;
+			} catch (TypeMappingException e) {
+				logger.warn("Received a TypeMappingException.", e);
+				receive = false;
+			} catch (SchemaMetadataException e) {
+				logger.warn("Received a SchemaMetadataException.", e);
+				receive = false;
+			}
 			if (logger.isDebugEnabled()) {
 				logger.debug("RETURN run() time to next execution: " + 
 						_longSleepPeriod);

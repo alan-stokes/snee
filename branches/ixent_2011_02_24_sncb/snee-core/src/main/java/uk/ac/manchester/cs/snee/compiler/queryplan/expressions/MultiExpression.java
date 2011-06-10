@@ -54,6 +54,11 @@ public class MultiExpression implements Expression {
 	private MultiType multiType;
 
 	private AttributeType _booleanType;
+	
+	/**
+	 * A multi-expression can only be a constant if all its parts are constants
+	 */
+	private boolean isConstant = false;
 
 	/**
 	 * Constuctor.
@@ -69,8 +74,20 @@ public class MultiExpression implements Expression {
 		assert (type != null);
 		this.multiType = type;
 		_booleanType = booleanType;
+		calculateIsConstant();
 	}
 	
+	private void calculateIsConstant() {
+		boolean result = true;
+		for (Expression exp : expressions) {
+			if (!exp.isConstant()) {
+				result = false;
+				break;
+			}
+		}
+		setIsConstant(result);
+	}
+
 	public MultiExpression combinePredicates (MultiExpression first, 
 			MultiExpression second) {
 		if (second.getMultiType() != MultiType.AND)
@@ -158,7 +175,7 @@ public class MultiExpression implements Expression {
 	 * @return An array List of all the aggregates within this expressions.
 	 * Could contain duplicates.
 	 */
-	public ArrayList<AggregationExpression> getAggregates()	{
+	public List<AggregationExpression> getAggregates()	{
 		ArrayList<AggregationExpression> list 
 			= new ArrayList<AggregationExpression>(1);
 		for (int i = 0;  i < expressions.length; i++) {
@@ -400,7 +417,20 @@ public class MultiExpression implements Expression {
 	 */
 	public Attribute toAttribute() 
 	throws SchemaMetadataException, TypeMappingException{
-		return new DataAttribute("", multiType.toString(), getType()); 
+		DataAttribute attribute = 
+			new DataAttribute("", this.toString(), getType());
+		attribute.setIsConstant(isConstant);
+		return attribute; 
+	}
+
+	@Override
+	public boolean isConstant() {
+		return isConstant;
+	}
+
+	@Override
+	public void setIsConstant(boolean isConstant) {
+		this.isConstant = isConstant;
 	}
 
 }

@@ -1,14 +1,11 @@
 package uk.ac.manchester.cs.snee.common.graph;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class Tree extends Graph {
 
@@ -45,7 +42,7 @@ public class Tree extends Graph {
 	 */
 	public void updateNodesAndEdgesColls(Node node) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER updateNodesAndEdgesColls()");
+			logger.debug("ENTER updateNodesAndEdgesColls() with " + node);
 		this.nodes.put(node.getID(), node);
 
 		/* Post-order traversal of operator tree */
@@ -71,9 +68,7 @@ public class Tree extends Graph {
 	 */
 	public Node getRoot() {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER getRoot()");
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN getRoot()");		
+			logger.debug("ENTER/RETURN getRoot()");
 		return this.root;
 	}
 	
@@ -87,7 +82,7 @@ public class Tree extends Graph {
 			ArrayList<N> nodeList, 
 			TraversalOrder traversalOrder) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER doNodeIterator()");
+			logger.debug("ENTER doNodeIterator() with " + node.getID());
 		if (traversalOrder == TraversalOrder.PRE_ORDER) {
 			nodeList.add(node);
 		}

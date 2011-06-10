@@ -67,7 +67,7 @@ public class LAFUtils extends GraphUtils {
 	 */
 	public LAFUtils(LAF laf) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER LAFUtils()"); 		
+			logger.debug("ENTER LAFUtils() for " + laf.getID()); 		
 		this.laf = laf;
 		this.name = laf.getID();
 		this.tree = laf.getOperatorTree();
@@ -91,7 +91,7 @@ public class LAFUtils extends GraphUtils {
 	protected void exportAsDOTFile(String fname) 
 	throws SchemaMetadataException {
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER exportAsDOTFile()");
+			logger.trace("ENTER exportAsDOTFile() " + fname);
 		exportAsDOTFile(fname, "", new TreeMap<String, StringBuffer>(), 
 				new TreeMap<String, StringBuffer>(), new StringBuffer());
 		if (logger.isTraceEnabled())

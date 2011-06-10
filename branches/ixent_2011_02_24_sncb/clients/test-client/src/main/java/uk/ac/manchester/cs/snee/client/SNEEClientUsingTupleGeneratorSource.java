@@ -4,22 +4,23 @@ import java.io.IOException;
 
 import org.apache.log4j.PropertyConfigurator;
 
+import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator;
 
 public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 	
-	private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;
+	private static ConstantRatePushStreamGenerator _myDataSource;
 
 	public SNEEClientUsingTupleGeneratorSource(String query, 
 			double duration) 
-	throws SNEEException, IOException, SNEEConfigurationException {
+	throws SNEEException, IOException, SNEEConfigurationException, 
+	MetadataException {
 		super(query, duration);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClietnUsingTupleGeneratorSource()");		
-		//Set sleep to 10 seconds
-		_sleepDuration = 10000;
+		displayAllExtents();
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SNEEClietnUsingTupleGeneratorSource()");
 	}
@@ -45,8 +46,35 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 			//XXX: Use default query
 
 			query = "SELECT * FROM PushStream;";
+			
+//			query = "SELECT intattr, intattr * 2 FROM PushStream;";
+//			query = "SELECT \'const\', intattr FROM PushStream;";
+//			query = "SELECT 42, intattr FROM PushStream;";
+//			query = "SELECT \'const\' as StringConstant, intattr FROM PushStream;";
 
-			/* The following query is successfully executed */
+//			query = "SELECT * FROM PushStream WHERE stream_name = \'pushstream\';";
+			
+			/* The following queries should run */
+			//SELECT-PROJECT
+//			query = "SELECT intattr " +
+//				"FROM PushStream " +
+//				"WHERE intattr <= 5;";
+
+			//SELECT-PROJECT-ALIAS
+//			query = "SELECT p.intattr " +
+//				"FROM PushStream p " +
+//				"WHERE p.intattr <= 5;";
+
+			//SELECT-PROJECT-ALIAS-RENAME
+//			query = "SELECT p.intattr AS IntegerValue " +
+//				"FROM PushStream p " +
+//				"WHERE p.intattr <= 5;";
+
+			//JOIN
+//			query = "SELECT * " +
+//					"FROM PushStream[NOW] p, HerneBay_Tide[NOW] h " +
+//					"WHERE p.intattr <= h.Tz;";
+
 //			query = 
 //				"SELECT p.intattr, s.integerColumn, s.floatColumn " +
 //				"FROM PushStream[NOW] p, " +

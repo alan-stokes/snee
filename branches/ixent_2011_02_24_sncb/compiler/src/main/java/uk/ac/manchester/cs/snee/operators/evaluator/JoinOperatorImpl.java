@@ -21,8 +21,10 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
+import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -79,8 +81,11 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER open()");
 		}
-		startChildReceiver(leftOperator);
+		/*
+		 *  Open right child first as it may be a relation!
+		 */
 		startChildReceiver(rightOperator);
+		startChildReceiver(leftOperator);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN open()");
 		}
@@ -94,8 +99,8 @@ public class JoinOperatorImpl extends EvaluationOperator {
 					op.toString());
 		}
 		op.setSchema(getSchema());
-		op.open();
 		op.addObserver(this);
+		op.open();
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN startChildReceiver()");
 		}
@@ -170,7 +175,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER update() for query " + m_qid + " " +
-					" with " + observed);
+					" with " + observed + " (" + observed.getClass() + ")");
 		}
 		try {
 			List<Output> resultItems = new ArrayList<Output>();
@@ -190,8 +195,12 @@ public class JoinOperatorImpl extends EvaluationOperator {
 						if (output instanceof Window) {
 							processWindow((Window) output, 
 									resultItems, leftBuffer);
+						} else if (output instanceof TaggedTuple) {
+							processTuple((TaggedTuple) output, resultItems);
 						}
 					}
+				} else if (observed instanceof TaggedTuple) {
+					processTuple((TaggedTuple) observed, resultItems);
 				}
 			} else if (obj == rightOperator) {
 				if (logger.isTraceEnabled()) {
@@ -208,7 +217,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 									resultItems, rightBuffer);
 						}
 					}
-				}
+				} //No checks for tagged tuple on right child as relation always on right!
 			} else {
 				logger.warn("Notification received from " +
 						"unknown source");
@@ -226,11 +235,32 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		}
 	}
 
+	private void processTuple(TaggedTuple taggedTuple, List<Output> resultItems) 
+	throws SNEEException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER processTuple() " + taggedTuple);
+		}
+		Window relation = 
+			(Window) rightBuffer.get(rightBuffer.size()-1);
+		Tuple tuple = taggedTuple.getTuple();
+		for (Tuple relationTuple : relation.getTuples()) {
+			if (evaluate(joinPredicate, tuple, relationTuple)) {
+				Tuple joinTuple = 
+					generateJoinTuple(tuple, relationTuple);
+				resultItems.add(new TaggedTuple(joinTuple));
+			}
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN processTuple() #resultItems=" +
+					resultItems.size());
+		}
+	}
+
 	private void processWindow(Window window, 
 			List<Output> resultItems, CircularArray<Window> buffer)
 	throws SNEEException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER processWindow()");
+			logger.trace("ENTER processWindow() " + window);
 		}
 		buffer.add(window);
 		if (logger.isTraceEnabled()) {
@@ -363,27 +393,49 @@ public class JoinOperatorImpl extends EvaluationOperator {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Stack push: " + daValue);
 				}
+				/* 
+				 * Check if the value is null 
+				 * Nulls are not considered in a join
+				 */
+				if (daValue instanceof java.sql.Types &&
+						(Integer)daValue == java.sql.Types.NULL) {
+					logger.warn("Join value is null. Ignore");
+					return false;
+				}
 				operands.add(daValue);
 			} else if (arrExpr[i] instanceof IntLiteral){
 				IntLiteral il = (IntLiteral) arrExpr[i];
 				if (logger.isTraceEnabled()) {
 					logger.trace("Stack push integer: " + 
-							il.getMaxValue());
+							il.getValue());
 				}
-				operands.add(new Integer(il.toString()));
+				operands.add(new Integer(il.getValue()));
 			} else if (arrExpr[i] instanceof FloatLiteral){
 				FloatLiteral fl = (FloatLiteral) arrExpr[i];
 				if (logger.isTraceEnabled()) {
 					logger.trace("Stack push float: " + 
-							fl.getMaxValue());
+							fl.getValue());
 				}
-				operands.add(new Float(fl.toString()));
+				operands.add(new Float(fl.getValue()));
+			} else if (arrExpr[i] instanceof StringLiteral) {
+				StringLiteral sl = (StringLiteral) arrExpr[i];
+				if (logger.isTraceEnabled()) {
+					logger.trace("Stack push float: " + 
+							sl.getValue());
+				}
+				operands.add(sl.getValue());
 			}
 		}
 		boolean retVal = false;
 		while (operands.size() >= 2){
-			Object result = evaluate(operands.pop(), operands.pop(), 
-					type);
+			Object op1 = operands.pop();
+			Object op2 = operands.pop();
+			Object result;
+			if (op1 instanceof StringLiteral && op2 instanceof StringLiteral) {
+				result = evaluateString((String)op1, (String)op2, type);
+			} else {
+				result = evaluateNumeric((Number)op1, (Number)op2, type);
+			}
 			if (type.isBooleanDataType()){
 				retVal = ((Boolean)result).booleanValue();
 			} 

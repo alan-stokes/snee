@@ -129,13 +129,14 @@ implements LogicalOperator {
 		return this.getInput(0).pushSelectDown(predicate);
 	}
 
-	/** 
-	 * {@inheritDoc}
-	 * Push passed on to child.
-	 */   
-	public void pushLocalNameDown(String newLocalName) {
-		getInput(0).pushLocalNameDown(newLocalName); 
-	}
+	//XXX: Removed by AG as metadata now handled in metadata object
+//	/** 
+//	 * {@inheritDoc}
+//	 * Push passed on to child.
+//	 */   
+//	public void pushLocalNameDown(String newLocalName) {
+//		getInput(0).pushLocalNameDown(newLocalName); 
+//	}
 
 	/**
 	 * Calculated the cardinality based on the requested type. 

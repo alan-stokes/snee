@@ -29,13 +29,15 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlLexer;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
-import uk.ac.manchester.cs.snee.sncb.SNCBException;
-
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
@@ -47,7 +49,9 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+import uk.ac.manchester.cs.snee.operators.logical.OperatorDataType;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import antlr.CommonAST;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -79,7 +83,7 @@ public class TranslatorTest {
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_LOGICAL_SCHEMA_FILE, "etc/logical-schema.xml");
-		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema_translator.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
 		props.setProperty(SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION, "false");
@@ -163,6 +167,15 @@ public class TranslatorTest {
 	 * SELECT temperature, pressure, (temperature * 9 / 5) + 32 as Fahrenheit FROM InFlow;
 	 */
 	
+	private LogicalOperator testOperator(Iterator<LogicalOperator> iterator, 
+			String exOpName) {
+		LogicalOperator op = iterator.next();
+		String opName = op.getOperatorName();
+		assertTrue("Expected " + exOpName + " but instead " + opName, 
+				exOpName.equals(opName));
+		return op;
+	}
+
 	@Test(expected=ParserException.class)
 	public void testRubbish() 
 	throws ParserException, SourceDoesNotExistException, 
@@ -182,21 +195,115 @@ public class TranslatorTest {
 	}
 	
 	@Test
-	public void testSimpleQuery() 
+	public void testSimpleQuery_pushStream() 
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
-		testQuery("SELECT * FROM TestStream;");
+		LAF laf = testQuery("SELECT * FROM PushStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator operator = testOperator(iterator, "RECEIVE");
+		assertEquals(OperatorDataType.STREAM, operator.getOperatorDataType());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
 	}
 	
+	@Test
+	public void testSimpleQuery_pullStream() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		LAF laf = testQuery("SELECT * FROM PullStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator operator = testOperator(iterator, "ACQUIRE");
+		assertEquals(OperatorDataType.STREAM, operator.getOperatorDataType());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
+	}
+	
+	@Test
+	public void testSimpleQuery_table() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException,
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		LAF laf = testQuery("SELECT * FROM TestTable;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator operator = testOperator(iterator, "SCAN");
+		assertEquals(OperatorDataType.RELATION, operator.getOperatorDataType());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
+	}
+	
+	/**
+	 * Exception expected since SCAN is not part of the language
+	 */
+	@Test(expected=ParserException.class)
+	public void testSimpleQuery_tableScan() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException,
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		LAF laf = testQuery("SELECT * FROM TestTable[SCAN 24 hours];");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator operator = testOperator(iterator, "SCAN");
+		assertEquals(OperatorDataType.RELATION, operator.getOperatorDataType());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
+	}
+	
+	@Test
+	public void testSimpleQuery_tableRescan() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException,
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		LAF laf = testQuery("SELECT * FROM TestTable[RESCAN 24 hours];");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator operator = testOperator(iterator, "SCAN");
+		assertEquals(OperatorDataType.RELATION, operator.getOperatorDataType());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
+	}
+	
+	@Test
+	public void testSimpleQuery_tableRescanAlias() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException,
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		LAF laf = testQuery("SELECT * FROM TestTable[RESCAN 24 hours] t;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator operator = testOperator(iterator, "SCAN");
+		assertEquals(OperatorDataType.RELATION, operator.getOperatorDataType());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
+	}
+
 	@Test
 	public void testSimpleQuery_paren() 
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
-		testQuery("(SELECT * FROM TestStream);");
+		LAF laf = testQuery("(SELECT * FROM TestStream);");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator operator = testOperator(iterator, "RECEIVE");
+		assertEquals(OperatorDataType.STREAM, operator.getOperatorDataType());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
 	}
 	
 	@Test
@@ -205,7 +312,53 @@ public class TranslatorTest {
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
-		testQuery("SELECT timestamp FROM TestStream;");
+		LAF laf = testQuery("SELECT timestamp FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+	}
+	
+	@Test
+	public void testSimpleProject_math() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		LAF laf = testQuery("SELECT timestamp * 2 FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+	}
+	
+	@Test(expected=ExpressionException.class)
+	public void testProject_attrStar() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT timestamp, * FROM TestStream;");
+	}
+	
+	@Test(expected=ExpressionException.class)
+	public void testProject_starAttr() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT *, timestamp FROM TestStream;");
+	}
+	
+	@Test(expected=ExpressionException.class)
+	public void testProject_starRename() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT * AS timestamp FROM TestStream;");
 	}
 		
 	@Test
@@ -214,7 +367,12 @@ public class TranslatorTest {
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException {
-		testQuery("(SELECT timestamp FROM TestStream);");
+		LAF laf = testQuery("(SELECT timestamp FROM TestStream);");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
 	}
 	
 	@Test
@@ -239,7 +397,305 @@ public class TranslatorTest {
 	}
 	
 	@Test
-	public void testSimpleSelect() 
+	public void testProjectConstant_stringConstant() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT \'constant\' " +
+				"FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.getAttributeDisplayName().
+				equalsIgnoreCase("constant"));
+		assertTrue(attribute.getAttributeSchemaName().
+				equalsIgnoreCase("constant"));
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertTrue(((StringLiteral) exp).getValue().equalsIgnoreCase("constant"));
+	}
+	
+	@Test
+	public void testProjectConstant_stringConstantRename() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT \'constant\' AS Something " +
+				"FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.getAttributeDisplayName().
+				equalsIgnoreCase("Something"));
+		assertTrue(attribute.getAttributeSchemaName().
+				equalsIgnoreCase("Constant"));
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertTrue(((StringLiteral) exp).getValue().equalsIgnoreCase("constant"));
+	}
+	 
+	@Test
+	public void testProjectConstant_int() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT 4523 " +
+				"FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.getAttributeDisplayName().
+				equalsIgnoreCase("4523"));
+		assertTrue(attribute.getAttributeSchemaName().
+				equalsIgnoreCase("4523"));
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertEquals(4523, ((IntLiteral) exp).getValue());
+	}
+	 
+	@Test
+	public void testProjectConstant_intMath() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT 4523 + 60 " +
+				"FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.getAttributeDisplayName().
+				equalsIgnoreCase(".4523 + 60"));
+		assertTrue(attribute.getAttributeSchemaName().
+				equalsIgnoreCase("4523 + 60"));
+		assertTrue(attribute.isConstant());
+		//XXX-AG: Calculations not performed in translator, so can't test result
+//		Expression exp = op.getExpressions().get(0);
+//		assertEquals(4583, ((IntLiteral) exp).getValue());
+	}
+	
+	@Test
+	public void testProjectConstant_intRename() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT 4523 AS ANumber " +
+				"FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.getAttributeDisplayName().
+				equalsIgnoreCase("ANumber"));
+		assertTrue(attribute.getAttributeSchemaName().
+				equalsIgnoreCase("4523"));
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertEquals(4523, ((IntLiteral) exp).getValue());
+	}
+	 
+	@Test
+	public void testProjectConstant_intMathRename() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT 4523 + 60 AS NumberConstant " +
+				"FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.getAttributeDisplayName().
+				equalsIgnoreCase("NumberConstant"));
+		assertTrue(attribute.getAttributeSchemaName().
+				equalsIgnoreCase("4523 + 60"));
+		assertTrue(attribute.isConstant());
+		//XXX-AG: Calculations not performed in translator, so can't test result
+//		Expression exp = op.getExpressions().get(0);
+//		assertEquals(4583, ((IntLiteral) exp).getValue());
+	}
+	 
+	@Test
+	public void testProjectConstant_float() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT 8.2 " +
+				"FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.getAttributeDisplayName().
+				equalsIgnoreCase("8.2"));
+		assertTrue(attribute.getAttributeSchemaName().
+				equalsIgnoreCase("8.2"));
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertEquals(8.2, ((FloatLiteral) exp).getValue(), 0.1);
+	}
+	
+	@Test
+	public void testProjectConstant_floatRename() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT 72.6 AS ANumber " +
+				"FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.getAttributeDisplayName().
+				equalsIgnoreCase("ANumber"));
+		assertTrue(attribute.getAttributeSchemaName().
+				equalsIgnoreCase("72.6"));
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertEquals(72.6, ((FloatLiteral) exp).getValue(), 0.1);
+	}
+	
+	@Test(expected=ExpressionException.class)
+	public void testProjectConstant_constantStar() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT \'constant\' AS Something, * " +
+				"FROM TestStream;");
+	}
+	
+	@Test
+	public void testProjectConstant_stringConstantAttr() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT \'constant\', timestamp " +
+				"FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(2, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertTrue(((StringLiteral) exp).getValue().equalsIgnoreCase("constant"));
+	}
+	
+	@Test
+	public void testProjectConstant_stringConstantRenameAttr() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT \'constant\' AS Something, timestamp " +
+				"FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(2, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertTrue(((StringLiteral) exp).getValue().equalsIgnoreCase("constant"));
+	}
+	
+	@Test
+	public void testProjectConstant_intAttr() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT 4523, timestamp " +
+				"FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(2, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertEquals(4523, ((IntLiteral) exp).getValue());
+	}
+	
+	@Test
+	public void testProjectConstant_intRenameAttr() 
+	throws SourceDoesNotExistException,
+	ExtentDoesNotExistException, RecognitionException, 
+	ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException 
+	{
+		LAF laf = testQuery("SELECT 4523 AS ANumber, timestamp " +
+				"FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(2, op.getAttributes().size());
+		Attribute attribute = op.getAttributes().get(0);
+		assertTrue(attribute.isConstant());
+		Expression exp = op.getExpressions().get(0);
+		assertEquals(4523, ((IntLiteral) exp).getValue());
+	}
+	
+	@Test
+	public void testSimpleSelect_integer() 
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
@@ -247,6 +703,17 @@ public class TranslatorTest {
 		testQuery("SELECT Timestamp " +
 				"FROM TestStream " +
 				"WHERE Timestamp < 42;");
+	}
+	
+	@Test
+	public void testSimpleSelect_string() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		testQuery("SELECT Timestamp " +
+				"FROM TestStream " +
+				"WHERE StringColumn = \'Some text\';");
 	}
 	
 	@Test
@@ -386,6 +853,77 @@ public class TranslatorTest {
 		assertEquals(2, attributes.size());
 		assertEquals(testTimestampAttr, attributes.get(0));
 		assertEquals(pullTimestampAttr, attributes.get(1));
+	}
+	
+	@Ignore //XXX: No support for self-join at present!
+	@Test
+	public void testStreamSelfJoin() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException 
+	{
+		testQuery("SELECT * " +
+				"FROM TestStream[NOW] t, TestStream[NOW] s " +
+				"WHERE t.integerColumn = s.integerColumn;");
+	}
+	
+	@Test
+	public void testMultiJoin() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException 
+	{
+		testQuery("SELECT * " +
+				"FROM TestStream[NOW] t, PushStream[NOW] s, PullStream[NOW] p " +
+				"WHERE t.integerColumn = s.integerColumn AND " +
+				"s.integerColumn = p.integerColumn;");
+	}
+	
+	@Test
+	public void testJoinStreamRelation() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		testQuery("SELECT * FROM TestStream s, TestTable r " +
+				"WHERE s.integerColumn <= r.integerColumn;");
+	}
+	
+	@Test
+	public void testJoinWindowRelation() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		testQuery("SELECT * FROM TestStream[NOW] s, TestTable r " +
+				"WHERE s.integerColumn <= r.integerColumn;");
+	}
+	
+	@Test
+	public void testJoinWindowWindowRelation() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		testQuery("SELECT * " +
+				"FROM TestStream[NOW] s, PullStream[NOW] p, TestTable r " +
+				"WHERE s.integerColumn <= r.integerColumn;");
+	}
+	
+	@Test
+	public void testJoinRelationRelation() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException
+	{
+		testQuery("SELECT * FROM TestTable t, Relation r " +
+				"WHERE t.integerColumn <= r.integerColumn;");
 	}
 	
 	@Test

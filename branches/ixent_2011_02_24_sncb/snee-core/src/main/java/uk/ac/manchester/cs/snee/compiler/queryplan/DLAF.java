@@ -1,14 +1,11 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
-import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 /**
@@ -34,7 +31,7 @@ public class DLAF extends SNEEAlgebraicForm {
 	/**
 	 * The sources that are used in this query operator tree.
 	 */
-	private SourceMetadataAbstract source;
+	private Set<SourceMetadataAbstract> sources;
 	
     /**
      * Counter to assign unique id to different candidates.
@@ -50,7 +47,7 @@ public class DLAF extends SNEEAlgebraicForm {
 	public DLAF(final LAF laf, final String queryName) {
 		super(queryName);
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER DLAF()");
+			logger.debug("ENTER DLAF() with " + queryName);
 		this.laf = laf;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN DLAF()");
@@ -72,11 +69,6 @@ public class DLAF extends SNEEAlgebraicForm {
 //			logger.trace("ENTER generateName()");       	
     	return queryName + "-DLAF-" + candidateCount;
     }
-    
-//
-//	public void setSourceType(SourceType sourceType) {
-//		this.sourceType = sourceType;
-//	}
 
     /** {@inheritDoc} */
 	public String getDescendantsString() {
@@ -87,12 +79,12 @@ public class DLAF extends SNEEAlgebraicForm {
 		return this.getID()+"-"+this.laf.getDescendantsString();
 	}
 
-	public void setSource(SourceMetadataAbstract source2) {
-		this.source = source2;
+	public void setSource(Set<SourceMetadataAbstract> sources) {
+		this.sources = sources;
 	}
 
-	public SourceMetadataAbstract getSource() {
-		return source;
+	public Set<SourceMetadataAbstract> getSources() {
+		return sources;
 	}
 
 	/**
@@ -100,10 +92,10 @@ public class DLAF extends SNEEAlgebraicForm {
 	 * @return
 	 */
 	public LAF getLAF() {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER getLAF()");
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN getLAF()");		
+//		if (logger.isDebugEnabled())
+//			logger.debug("ENTER getLAF()");
+//		if (logger.isDebugEnabled())
+//			logger.debug("RETURN getLAF()");		
 		return this.laf;
 	}
 
@@ -114,9 +106,10 @@ public class DLAF extends SNEEAlgebraicForm {
 	public LogicalOperator getRootOperator() {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getRootOperator()");
+		LogicalOperator rootOperator = this.getLAF().getRootOperator();
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN getRootOperator()");		
-		return this.getLAF().getRootOperator();
+			logger.debug("RETURN getRootOperator() " + rootOperator);		
+		return rootOperator;
 	}
 
 	/**
@@ -124,10 +117,10 @@ public class DLAF extends SNEEAlgebraicForm {
 	 * @return
 	 */
 	public Tree getOperatorTree() {
-		if (logger.isDebugEnabled())
-			logger.debug("ENTER getOperatorTree()");
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN getOperatorTree()");		
+//		if (logger.isDebugEnabled())
+//			logger.debug("ENTER getOperatorTree()");
+//		if (logger.isDebugEnabled())
+//			logger.debug("RETURN getOperatorTree()");		
 		return this.getLAF().getOperatorTree();
 	}	
 }

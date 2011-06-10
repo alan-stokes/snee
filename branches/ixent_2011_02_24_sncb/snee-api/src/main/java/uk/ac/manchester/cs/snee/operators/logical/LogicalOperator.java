@@ -204,13 +204,14 @@ public interface LogicalOperator extends Node {
 	boolean pushSelectDown(Expression predicate) 
 	throws SchemaMetadataException, AssertionError, TypeMappingException;
 
-	/** 
-	 * This method will be called by the rename operators.
-	 * 
-	 * The new localName is pushed down. 
-	 * @param newLocalName LocalName to push down.
-	 */
-	void pushLocalNameDown(String newLocalName);
+	//XXX: Removed by AG as metadata now handled in metadata object
+//	/** 
+//	 * This method will be called by the rename operators.
+//	 * 
+//	 * The new localName is pushed down. 
+//	 * @param newLocalName LocalName to push down.
+//	 */
+//	void pushLocalNameDown(String newLocalName);
 
 	/** 
 	 * Retrieve the predicate this operator will check.

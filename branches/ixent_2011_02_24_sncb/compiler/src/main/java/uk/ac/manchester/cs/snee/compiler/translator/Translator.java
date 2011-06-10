@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
@@ -25,6 +26,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
@@ -47,9 +49,11 @@ import uk.ac.manchester.cs.snee.operators.logical.OperatorDataType;
 import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
+import uk.ac.manchester.cs.snee.operators.logical.ScanOperator;
 import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
+import uk.ac.manchester.cs.snee.types.Duration;
 import antlr.RecognitionException;
 import antlr.collections.AST;
 
@@ -72,10 +76,12 @@ public class Translator {
 	throws TypeMappingException, SchemaMetadataException 
 	{
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER Translator(), #extents=" + 
-					metadata.getExtentNames().size());
+			logger.debug("ENTER Translator()");
 		}
 		_metadata = metadata;
+		if (logger.isTraceEnabled()) {
+			logger.trace("#extents=" + metadata.getExtentNames().size());
+		}
 		_types = metadata.getTypes();
 		_boolType = _types.getType("boolean");
 		if (logger.isDebugEnabled()) {
@@ -240,6 +246,14 @@ public class Translator {
 			operator = createWindow(1-range, rangeUnit, 0, rangeUnit, 
 					slide, slideUnit, operator);
 			break;
+		case SNEEqlParserTokenTypes.RESCAN:
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate RESCAN window");
+			}
+			Duration rescanInterval = translateRescanWindow(ast);
+			((ScanOperator)operator).setRescanInterval(rescanInterval);
+			ast = ast.getNextSibling();
+			break;
 		default:
 			String message = "Unprogrammed AST Type:" + 
 					ast.getType() +" Text:"+ ast.getText();
@@ -252,6 +266,49 @@ public class Translator {
 					"operator " + operator);
 		}
 		return operator;
+	}
+	
+	private Duration translateRescanWindow(AST ast) 
+	throws RecognitionException, ParserException, ExpressionException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER translateRescanWindow() with " + ast + 
+					" (" + ast.getFirstChild() + ", " + 
+					ast.getFirstChild().getNextSibling() + ")");
+		}
+		AST expression = ast.getFirstChild();
+		SNEEqlTreeWalker walker = new SNEEqlTreeWalker();
+		double value = walker.expr(expression);
+		AST unit = expression.getNextSibling();
+		Duration duration = null;
+		if (unit.getType() != SNEEqlParserTokenTypes.UNIT_NAME) {
+			String msg = "No Unit found with window declaration " +
+				ast.getText();
+			logger.warn(msg);
+			throw new ExpressionException(msg);
+		} else if (unit.getText().equalsIgnoreCase("millisecond") || 
+				unit.getText().equalsIgnoreCase("milliseconds")) {
+			duration  = new Duration((long) value, TimeUnit.MILLISECONDS);
+		} else if (unit.getText().equalsIgnoreCase("second") || 
+				unit.getText().equalsIgnoreCase("seconds")) {
+			duration  = new Duration((long) value, TimeUnit.SECONDS);
+		} else if (unit.getText().equalsIgnoreCase("minute") || 
+				unit.getText().equalsIgnoreCase("minutes")) {
+			duration  = new Duration((long) value, TimeUnit.MINUTES);
+		} else if (unit.getText().equalsIgnoreCase("hour") || 
+				unit.getText().equalsIgnoreCase("hours")) {
+			duration  = new Duration((long) value, TimeUnit.HOURS);
+		} else if (unit.getText().equalsIgnoreCase("day") || 
+				unit.getText().equalsIgnoreCase("days")) {
+			duration  = new Duration((long) value, TimeUnit.DAYS);
+		} else {
+			String msg = "Unsupported time unit " + unit.getText();
+			logger.warn(msg);
+			throw new ExpressionException(msg);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN translateRescanWindow() with " + duration);
+		}
+		return duration;
 	}
 
 	private ASTPair findAST(AST ast, int type) {
@@ -306,7 +363,7 @@ public class Translator {
 					throw new ExpressionException(message);
 				}
 			} else if (!timeScope) {
-				String message = "Can not mike a Window " +
+				String message = "Can not make a Window " +
 						"to unit of: " + toUnit.getText() + 
 						" with a from " +
 						"unit of " + fromUnit.getText();
@@ -521,7 +578,7 @@ public class Translator {
 			String extentName) 
 	throws OptimizationException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER translateLocalName() with op=" + 
+			logger.trace("ENTER translateLocalName() with alias=" + ast + " op=" + 
 					operator);
 		}
 		if (ast == null) {
@@ -542,7 +599,7 @@ public class Translator {
 			 * is not, then (most likely) we are in a sub-query. In this case
 			 * we need to rename the attributes with the extent reference.
 			 * We do this by applying the name to the attribute label */
-			ArrayList<Attribute> attributes = 
+			List<Attribute> attributes = 
 				(ArrayList<Attribute>) operator.getAttributes();
 
 			/* For every attribute, apply a rename on the display name */
@@ -582,8 +639,8 @@ public class Translator {
 
 				attribute.setAttributeDisplayName(newAttrName);
 			}
-
-			operator.pushLocalNameDown(extentReference);
+			//XXX: Removed by AG as metadata now handled in metadata object
+//			operator.pushLocalNameDown(extentReference);
 		} else {
 			String msg = "Unprogrammed AST Type:" + ast.getType() +
 				" Text:"+ extentReference;
@@ -634,8 +691,15 @@ public class Translator {
 		}
 		temp = operators[operators.length-1];
 		for (int i = 0; i < operators.length-1; i++) {
-			if (operators[i].getOperatorDataType() == OperatorDataType.STREAM) {
+			if (operators[i].getOperatorDataType() == OperatorDataType.STREAM &&
+					temp.getOperatorDataType() == OperatorDataType.STREAM) {
 				String msg = "Unable to join two streams";
+				logger.warn(msg);
+				throw new ExpressionException(msg);
+			} else if (operators[i].getOperatorDataType() == OperatorDataType.STREAM &&
+					temp.getOperatorDataType() == OperatorDataType.WINDOWS) {
+				String msg = "Unable to join a stream and a window, " +
+						"both stream extents need to have a window declared.";
 				logger.warn(msg);
 				throw new ExpressionException(msg);
 			}
@@ -716,7 +780,9 @@ public class Translator {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Translate TABLE");
 				}
-				//FIXME: Implement translate to scan operator!
+				output = new ScanOperator(extentMetadata, source,
+						_boolType);
+				break;
 			default:
 				String msg = "Unprogrammed ExtentType:" + 
 					extentMetadata + " Type:" + 
@@ -1007,40 +1073,69 @@ public class Translator {
 					"" + ast.toStringList() + " " + input);
 		}
 		AST expressionAST = ast.getFirstChild();
+		if (expressionAST == null) {
+			String msg = "Invalid SELECT clause syntax";
+			logger.warn(msg);
+			throw new ExpressionException(msg);
+		}
 		List<Expression> expressions = new ArrayList<Expression>();
 		List<Attribute> attributes = new ArrayList<Attribute>();
 		boolean allowedInProjectOperator = true;
 		boolean allowedInAggregationOperator = true;
+		loop: //label to enable breaking out from inner case statement
 		do {
-			if (expressionAST.getType() == SNEEqlParserTokenTypes.STAR) {
+			int expType = expressionAST.getType();
+			Expression expression;
+			Attribute attribute;
+			switch (expType) {
+			case SNEEqlParserTokenTypes.STAR:
 				if (logger.isTraceEnabled()) {
 					logger.trace("project to all attribtues");
 				}
-				List<Attribute> incoming = input.getAttributes();
-				expressions.addAll(incoming);
-				attributes.addAll(incoming);
-				allowedInAggregationOperator = false;
-			} else {
+				/* STAR must be the only token in the select clause */
+				if (expressions.isEmpty() && 
+						expressionAST.getNextSibling() == null) {
+					List<Attribute> incoming = input.getAttributes();
+					expressions.addAll(incoming);
+					attributes.addAll(incoming);
+					allowedInAggregationOperator = false;
+				} else {
+					String msg = "Invalid SELECT Clause syntax. " +
+							"\'*\' must be only attribute";
+					logger.warn(msg);
+					throw new ExpressionException(msg);
+				}
+				// Break out of the while loop as we're done!
+				break loop;
+			case SNEEqlParserTokenTypes.AS:
+				if (logger.isTraceEnabled()) {
+					logger.trace("rename in select clause, Translate AS " + 
+							expressionAST.getFirstChild());
+				}
+				expression = 
+					translateExpression(expressionAST.getFirstChild(), input);
+					attribute = expression.toAttribute();
+					attribute = translateAttributeRename(
+							expressionAST.getFirstChild().getNextSibling(), 
+							attribute);
+				break;
+			default:
 				if (logger.isTraceEnabled()) {
 					logger.trace("project to specified attributes");
 				}
-				Expression expression = 
+				expression = 
 					translateExpression(expressionAST, input);
-				expressions.add(expression);
-				Attribute attribute = expression.toAttribute();
-				if (expressionAST.getType() == SNEEqlParserTokenTypes.AS) {
-					attribute = translateAttributeRename(
-							expressionAST.getFirstChild().getNextSibling(),
-							attribute);
-				} 
-				attributes.add(attribute);
+				attribute = expression.toAttribute();
 				if (!expression.allowedInProjectOperator()) {
 					allowedInProjectOperator = false;
 				}
 				if (!expression.allowedInAggregationOperator()) {
 					allowedInAggregationOperator = false;
 				}
-			}	
+				break;
+			}
+			expressions.add(expression);
+			attributes.add(attribute);
 			expressionAST = expressionAST.getNextSibling();
 		} while(expressionAST != null);
 		if (allowedInProjectOperator) {
@@ -1102,13 +1197,13 @@ public class Translator {
 		AST child;
 		Expression expression = null;
 		switch (ast.getType()) {
-		case SNEEqlParserTokenTypes.AS:
-			if (logger.isTraceEnabled()) {
-				logger.trace("Translate AS " + ast.getFirstChild());
-			}
-			expression = 
-				translateExpression(ast.getFirstChild(), input);
-			break;
+//		case SNEEqlParserTokenTypes.AS:
+//			if (logger.isTraceEnabled()) {
+//				logger.trace("Translate AS " + ast.getFirstChild());
+//			}
+//			expression = 
+//				translateExpression(ast.getFirstChild(), input);
+//			break;
 		case SNEEqlParserTokenTypes.Int:
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate Int " + ast.getText());
@@ -1116,6 +1211,7 @@ public class Translator {
 			expression = 
 				new IntLiteral(Integer.parseInt(ast.getText()), 
 						_types.getType("integer"));
+			expression.setIsConstant(true);
 			break;
 		case SNEEqlParserTokenTypes.Flt:
 			if (logger.isTraceEnabled()) {
@@ -1124,6 +1220,15 @@ public class Translator {
 			expression = 
 				new FloatLiteral(Float.parseFloat(ast.getText()), 
 						_types.getType("float"));
+			expression.setIsConstant(true);
+			break;
+		case SNEEqlParserTokenTypes.QuotedString:
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate QuotedString");
+			}
+			expression = 
+				new StringLiteral(ast.getText(), _types.getType("string"));
+			expression.setIsConstant(true);
 			break;
 		case SNEEqlParserTokenTypes.Attribute:
 			if (logger.isTraceEnabled()) {
@@ -1200,7 +1305,7 @@ public class Translator {
 			}
 			if (!attrFound) {
 				String msg = "Unable to find Attribute " + 
-					ast.getText() + "||";
+					ast.getText();
 				logger.warn(msg);
 				throw new ExpressionException(msg);
 			}

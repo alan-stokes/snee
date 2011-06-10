@@ -1,9 +1,8 @@
 package uk.ac.manchester.cs.snee.compiler.allocator;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -11,6 +10,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
@@ -37,22 +37,23 @@ public class SourceAllocator {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER allocateSources() laf="+laf.getID());
 		DLAF dlaf = new DLAF(laf, laf.getQueryName());
-		HashSet<SourceMetadataAbstract> sources = retrieveSources(laf);
+		Set<SourceMetadataAbstract> sources = retrieveSources(laf);
 		//currently one source is supported
-		SourceMetadataAbstract onlySource = validateSources(sources);
-		dlaf.setSource(onlySource);
+		validateSources(sources);
+		dlaf.setSource(sources);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN allocateSources()");
 		}
 		return dlaf;
 	}
 
-	private HashSet<SourceMetadataAbstract> retrieveSources(LAF laf)
+	private Set<SourceMetadataAbstract> retrieveSources(LAF laf)
 			throws SourceAllocatorException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER retrieveSources() for " + laf.getID());
 		}
-		HashSet<SourceMetadataAbstract> sources = new HashSet<SourceMetadataAbstract>();
+		Set<SourceMetadataAbstract> sources = 
+			new HashSet<SourceMetadataAbstract>();
 		Iterator<LogicalOperator> opIter =
 			laf.operatorIterator(TraversalOrder.PRE_ORDER);
 		while (opIter.hasNext()) {
@@ -63,14 +64,12 @@ public class SourceAllocator {
 				sources.add(acqSource);
 			} else if (op instanceof ReceiveOperator) {
 				ReceiveOperator receiveOp = (ReceiveOperator) op;
-				SourceMetadataAbstract recSources = receiveOp.getSource();
-				sources.add(recSources);
+				SourceMetadataAbstract recSource = receiveOp.getSource();
+				sources.add(recSource);
 			} else if (op instanceof ScanOperator) {
-				String msg = "Scan operator found in LAF; " +
-					"these are not currently supported by the " +
-					"source allocator ";
-				logger.warn(msg);
-				throw new SourceAllocatorException(msg);
+				ScanOperator scanOp = (ScanOperator) op;
+				SourceMetadataAbstract scanSource = scanOp.getSource();
+				sources.add(scanSource);
 			}
 		}
 		if (logger.isTraceEnabled()) {
@@ -80,19 +79,42 @@ public class SourceAllocator {
 		return sources;
 	}
 
-	private SourceMetadataAbstract validateSources(HashSet<SourceMetadataAbstract> sources)
-			throws SourceAllocatorException {
+	private SourceMetadataAbstract validateSources(
+			Set<SourceMetadataAbstract> sources)
+	throws SourceAllocatorException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER validateSources() #sources=" +
 					sources.size());
 		}
 		if (sources.size()>1) {
-			String msg = "More than " +
-			"one source in LAF; queries with more " +
-			"than one source are currently not " +
-			"supported by source allocator.";
-			logger.warn(msg);
-			throw new SourceAllocatorException(msg);				
+			/* 
+			 * Permit more than one pull-stream or push-stream
+			 * source to be used 
+			 */
+			for (SourceMetadataAbstract source : sources) {
+				SourceType sourceType = source.getSourceType();
+				switch (sourceType) {
+				case PULL_STREAM_SERVICE:
+				case PUSH_STREAM_SERVICE:
+				case UDP_SOURCE:
+					break;
+				case RELATIONAL:
+				case WSDAIR:
+					break;
+				case SENSOR_NETWORK:
+					String msg = "More than " +
+						"one source in LAF; queries with more " +
+						"than one source are currently not " +
+						"supported by source allocator for " +
+						"queries over a sensor network.";
+					logger.warn(msg);
+					throw new SourceAllocatorException(msg);
+				default:
+					msg = "Unsupported data source type " + sourceType;
+					logger.warn(msg);
+					throw new SourceAllocatorException(msg);
+				}
+			}
 		} else if (sources.size()==0) {
 			String msg = "No sources found in LAF.";
 			logger.warn(msg);

@@ -131,7 +131,7 @@ public class AcquireComponent extends NesCComponent {
     private void doGetDataMethods(final Map<String, String> replacements) {
     	final List<Attribute> sensedAttribs = 
     		((AcquireOperator)op.getLogicalOperator()).
-    		getSensedAttributes();
+    		getInputAttributes();
     	final StringBuffer getDataBuff = new StringBuffer();
     	final StringBuffer declsBuff = new StringBuffer();
     	for (int i = sensedAttribs.size()-1; i >= 0; i--) {
@@ -189,7 +189,7 @@ public class AcquireComponent extends NesCComponent {
      */
     private void doGetEmptyDataMethods(final Map<String, String> replacements) {
     	final List<Attribute> sensedAttribs = 
-    		((AcquireOperator)op.getLogicalOperator()).getSensedAttributes();
+    		((AcquireOperator)op.getLogicalOperator()).getInputAttributes();
     	final StringBuffer getDataBuff = new StringBuffer();
     	for (int i = sensedAttribs.size() - 1; i >= 0; i--) {
     	    getDataBuff.append("\tasync event result_t ADC" + i
@@ -218,6 +218,11 @@ public class AcquireComponent extends NesCComponent {
     	
     	for (int i = 0; i < expressions.size(); i++) {
     		Expression expression = expressions.get(i);
+    		if (expression.isConstant()) {
+    			throw new CodeGenerationException("Constant values in the " +
+    					"select clause are not implemented for in-network " +
+    					"evaluation.");
+    		}
     		String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
 
   			tupleConstructionBuff.append("\t\t\t\toutQueue[outTail]." 
@@ -259,7 +264,7 @@ public class AcquireComponent extends NesCComponent {
 		if (expression instanceof DataAttribute) {
 			try {
 				return "reading" + ((AcquireOperator)op.
-				getLogicalOperator()).getSensedAttributeNumber(expression);
+				getLogicalOperator()).getInputAttributeNumber(expression);
 			} catch (OptimizationException e) {
 				throw new CodeGenerationException(e);
 			} 

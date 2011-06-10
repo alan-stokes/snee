@@ -76,15 +76,17 @@ public class SourcePlanner {
 			logger.debug("ENTER doSourcePlanning() for " + queryID);
 		QueryExecutionPlan qep = null;
 		//TODO: In the future, this will involve iterating over fragment identified by source allocator in turn.
-		SourceType dataSourceType = dlaf.getSource().getSourceType();
+		SourceType dataSourceType = dlaf.getSources().iterator().next().getSourceType();
 		switch (dataSourceType) {
 		case SENSOR_NETWORK:
-			qep = doSensorNetworkSourcePlanning(dlaf, qos, costParams, "query"+queryID);
+			qep = doSensorNetworkSourcePlanning(dlaf, qos, costParams, 
+					"query"+queryID);
 			break;
 		case PULL_STREAM_SERVICE:
 		case PUSH_STREAM_SERVICE:
 		case QUERY_SERVICE:
 		case UDP_SOURCE:
+		case WSDAIR:
 			qep = doEvaluatorPlanning(dlaf, queryID);
 			break;
 		default:
@@ -237,4 +239,5 @@ public class SourcePlanner {
 			logger.trace("RETURN doEvaluatorPlanning()");
 		return qep;
 	}
+	
 }

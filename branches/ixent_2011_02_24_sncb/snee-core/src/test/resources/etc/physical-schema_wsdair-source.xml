@@ -6,7 +6,7 @@
 
 	<service_source name="WSDAIRService">
 		<interface-type>wsdair</interface-type>
-		<endpoint-reference>http://www.snee.info/test?wsdl</endpoint-reference>
+		<endpoint-reference>http://www.snee.info/test/</endpoint-reference>
 	</service_source>
 
 </source>
