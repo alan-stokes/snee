@@ -77,7 +77,7 @@ public class MetadataManagerTest extends EasyMockSupport {
 		SNEEProperties.initialise(props);
 
 		MetadataManager schema = new MetadataManager(null);
-		assertEquals(2, schema.getPushedExtents().size());
+		assertEquals(4, schema.getPushedExtents().size());
 	}
 
 	@Test

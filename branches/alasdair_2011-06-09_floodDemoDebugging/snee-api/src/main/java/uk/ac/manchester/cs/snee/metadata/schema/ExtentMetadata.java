@@ -215,11 +215,11 @@ public class ExtentMetadata {
 		return cardinality;
 	}
 
-	public double getRate() throws MetadataException {
+	public double getRate() throws SchemaMetadataException {
 		if (_extentType == ExtentType.TABLE) {
 			String message = "Rate not defined for " + ExtentType.TABLE; 
 			logger.warn(message);
-			throw new MetadataException(message);
+			throw new SchemaMetadataException(message);
 		}
 		return rate;
 	}

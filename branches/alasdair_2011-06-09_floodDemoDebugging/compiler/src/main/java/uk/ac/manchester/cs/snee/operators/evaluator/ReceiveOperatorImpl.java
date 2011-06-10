@@ -97,6 +97,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	private long totalTuplesReceived;
 
 	List<Attribute> attributes ;
+	double rate;
 
 	private int _tupleIndex = 0;
 	private int currentTupleIndex = 0;
@@ -130,6 +131,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		m_qid = qid;
 		attributes = receiveOp.getInputAttributes();
 		_streamName = receiveOp.getExtentName();
+		rate = receiveOp.getRate();
 	
 		if (logger.isTraceEnabled()) {
 			logger.trace("Receiver for stream: " + _streamName);
@@ -173,7 +175,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			logger.trace("ENTER initializeStreamReceiver()");
 		}
 		SourceMetadataAbstract source = receiveOp.getSource();
-		calculateSleepPeriods((SourceMetadata) source);
+		calculateSleepPeriods();
 		SourceType sourceType = source.getSourceType();
 		switch (sourceType) {
 		case UDP_SOURCE:
@@ -194,15 +196,13 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		}
 	}
 
-	private void calculateSleepPeriods(SourceMetadata source) 
+	private void calculateSleepPeriods() 
 	throws SourceMetadataException 
 	{
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER calculateSleepPeriod() with " + 
-					source +
-					" " + _streamName);
+			logger.trace("ENTER calculateSleepPeriod() for " + 
+					_streamName + " with rate " + rate);
 		}
-		double rate = source.getRate(_streamName);
 		double period = (1 / rate) * 1000;
 		_shortSleepPeriod = (long) (period * 0.1);
 		_longSleepPeriod = (long) (period - _shortSleepPeriod);

@@ -113,6 +113,12 @@ public class SourceManagerTest extends EasyMockSupport {
 		ExtentMetadata pullStreamMD = new ExtentMetadata("pullstream", 
 				(List<Attribute>) new ArrayList<Attribute>(), ExtentType.SENSED);
 		schema.put("pullstream", pullStreamMD);
+		ExtentMetadata extent = new ExtentMetadata("hernebay_met", 
+				(List<Attribute>) new ArrayList<Attribute>(), ExtentType.PUSHED);
+		schema.put("hernebay_met", extent);
+		extent = new ExtentMetadata("hernebay_tide", 
+				(List<Attribute>) new ArrayList<Attribute>(), ExtentType.PUSHED);
+		schema.put("hernebay_tide", extent);
 		String physSchemaFile = 
 			SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE);
 		
