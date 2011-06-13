@@ -94,6 +94,7 @@ public class AcquireOperator extends InputOperator {
 		}
 		this.setOperatorName("ACQUIRE");
 		this.setOperatorDataType(OperatorDataType.STREAM);
+		this.setOperatorSourceType(source.getSourceType());
 		this._types=types;
 		updateSensedAttributes(); 
 		updateMetadataInfo(extentMetadata);
