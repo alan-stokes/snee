@@ -79,6 +79,7 @@ implements LogicalOperator {
 		this.setOperatorName("ISTREAM");
 //		this.setNesCTemplateName("istream never set");
 		this.setOperatorDataType(OperatorDataType.STREAM);
+		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
 		this.setParamStr("");
 
 		setChildren(new LogicalOperator[] {inputOperator});
