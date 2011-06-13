@@ -228,7 +228,11 @@ public class AcquireComponent extends NesCComponent {
   			tupleConstructionBuff.append("\t\t\t\toutQueue[outTail]." 
         			+ attrName + "=" + getNescText(expression) + ";\n");
   
-  			tupleStrBuff1.append(comma+attrName+"=%g"); //getNescText(expression)
+  			if (attributes.get(i) instanceof EvalTimeAttribute) {
+  	  			tupleStrBuff1.append(comma+attrName+"=%d"); 
+  			} else {
+  	  			tupleStrBuff1.append(comma+attrName+"=%g");
+  			}
   			tupleStrBuff2.append(comma+"outQueue[outTail]."+attrName);
   			comma = ",";
     	}
