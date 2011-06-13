@@ -1,0 +1,109 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+		<artifactId>SNEE</artifactId>
+		<groupId>uk.ac.manchester.cs.snee</groupId>
+		<version>1.5.4-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>uk.ac.manchester.cs.snee</groupId>
+	<artifactId>snee-compiler</artifactId>
+	<name>SNEE Compiler</name>
+	<description>Compiles a SNEEql query into a query plan</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>antlr</groupId>
+			<artifactId>antlr</artifactId>
+			<version>2.7.5</version>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-core</artifactId>
+			<version>${snee.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-sncb</artifactId>
+			<version>${snee.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>data-source</artifactId>
+			<version>${snee.version}</version>
+			<type>pom</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>data-source-pull-stream</artifactId>
+			<version>${snee.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>data-source-wsdair</artifactId>
+			<version>${snee.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-api</artifactId>
+			<version>${snee.version}</version>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antlr-plugin</artifactId>
+				<version>2.0-beta-1</version>
+				<configuration>
+					<grammars>SNEEql.g</grammars>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!--
+				<plugin> <groupId>org.codehaus.mojo</groupId>
+				<artifactId>antlr-maven-plugin</artifactId> <configuration> Comma
+				separated list of grammar files or pattern grammar files By default,
+				grammar file(s) is in ${basedir}/src/main/antlr
+
+				<grammars>SNEEql.g</grammars> </configuration> <executions>
+				<execution> <goals> <goal>generate</goal> </goals> </execution>
+				</executions> </plugin>
+			-->
+		</plugins>
+	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>antlr-maven-plugin</artifactId>
+				<configuration>
+					<!--
+						Comma separated list of grammar files or pattern grammar files By
+						default, grammar file(s) is in ${basedir}/src/main/antlr
+					-->
+					<grammars>SNEEql.g</grammars>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
+
+</project>
