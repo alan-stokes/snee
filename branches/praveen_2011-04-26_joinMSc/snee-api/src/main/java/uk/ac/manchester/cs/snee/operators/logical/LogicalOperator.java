@@ -44,6 +44,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 public interface LogicalOperator extends Node {
 
@@ -232,4 +233,10 @@ public interface LogicalOperator extends Node {
 	 * @return True If and only if the operator can be safely removed. 
 	 */
 	boolean isRemoveable();
+	
+	/**
+	 * 
+	 * @return the source type of the operator
+	 */
+	SourceType getOperatorSourceType();
 }
