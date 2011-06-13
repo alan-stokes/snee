@@ -121,7 +121,6 @@ public class DeliverComponent extends NesCComponent {
 	  			} else {
 	  				displayTupleBuff3.append("=%g");
 	  			}
-			    System.err.println("deliverName="+deliverName);
 	  			
 			    displayTupleBuff4.append(comma+"inQueue[inHead]."+attrName);
 		
