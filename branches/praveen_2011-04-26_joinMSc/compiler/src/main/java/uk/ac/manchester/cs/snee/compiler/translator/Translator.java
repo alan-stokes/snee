@@ -40,6 +40,7 @@ import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
 import uk.ac.manchester.cs.snee.operators.logical.DStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.IStreamOperator;
+import uk.ac.manchester.cs.snee.operators.logical.InputOperator;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.OperatorDataType;
@@ -668,47 +669,205 @@ public class Translator {
 			}
 			return operators[0];
 		}
+		
+		
 		LogicalOperator temp;
-		for (int i = 0; i < operators.length -1; i++) {
-			for (int j = i+1; j < operators.length; j++) {
-				if ((operators[j].getOperatorDataType() == OperatorDataType.STREAM) || 
-						((operators[i].getOperatorDataType() == OperatorDataType.RELATION) 
-								&& (operators[j].getOperatorDataType() == OperatorDataType.WINDOWS))) {
-					temp = operators[i];
-					operators[i] = operators[j];
-					operators[j] = temp;
+		//Praveen commented starts
+//		for (int i = 0; i < operators.length -1; i++) {
+//			for (int j = i+1; j < operators.length; j++) {
+//				if ((operators[j].getOperatorDataType() == OperatorDataType.STREAM) || 
+//						((operators[i].getOperatorDataType() == OperatorDataType.RELATION) 
+//								&& (operators[j].getOperatorDataType() == OperatorDataType.WINDOWS))) {
+//					temp = operators[i];
+//					operators[i] = operators[j];
+//					operators[j] = temp;
+//				}
+//			}
+//		}
+		//Praveen commented ends
+		
+		//Praveen Begin
+		//Source Name - operator map
+		temp = null;
+		LogicalOperator mainJoin = null;
+		HashMap<String, LogicalOperator[]> sourceOperatorMap = getSourceOperatorsMap(operators);
+		for (Map.Entry<String, LogicalOperator[]> ipMap : sourceOperatorMap
+				.entrySet()) {
+			LogicalOperator[] operatorGroup = ipMap.getValue();
+			for (int i = 0; i < operatorGroup.length; i++) {
+				if (temp == null) {
+					temp = operatorGroup[i];
+					continue;
 				}
+				temp = insertJoin(temp, operatorGroup[i]);
 			}
+			if (mainJoin == null) {
+				mainJoin = temp;
+			} else {
+				mainJoin = insertJoin(mainJoin, temp);
+			}
+			temp = null;
 		}
+		temp = mainJoin;
+		
+		//Praveen End
+		
 		if (logger.isTraceEnabled()) {
 			logger.trace("Operator list sorted");
 			for (int i = 0; i < operators.length; i++) {
 				logger.trace("OP"+i+": "+operators[i]);
 			}
 		}
-		temp = operators[operators.length-1];
-		for (int i = 0; i < operators.length-1; i++) {
-			if (operators[i].getOperatorDataType() == OperatorDataType.STREAM &&
-					temp.getOperatorDataType() == OperatorDataType.STREAM) {
-				String msg = "Unable to join two streams";
-				logger.warn(msg);
-				throw new ExpressionException(msg);
-			} else if (operators[i].getOperatorDataType() == OperatorDataType.STREAM &&
-					temp.getOperatorDataType() == OperatorDataType.WINDOWS) {
-				String msg = "Unable to join a stream and a window, " +
-						"both stream extents need to have a window declared.";
-				logger.warn(msg);
-				throw new ExpressionException(msg);
-			}
-			temp = new JoinOperator(operators[i], temp, _boolType);
-			if (logger.isTraceEnabled()) {
-				logger.trace("join "+i+": "+temp);
-			}
-		}
+		//Praveen commented starts
+//		temp = operators[operators.length-1];
+//		for (int i = 0; i < operators.length-1; i++) {
+//			if (operators[i].getOperatorDataType() == OperatorDataType.STREAM &&
+//					temp.getOperatorDataType() == OperatorDataType.STREAM) {
+//				String msg = "Unable to join two streams";
+//				logger.warn(msg);
+//				throw new ExpressionException(msg);
+//			} else if (operators[i].getOperatorDataType() == OperatorDataType.STREAM &&
+//					temp.getOperatorDataType() == OperatorDataType.WINDOWS) {
+//				String msg = "Unable to join a stream and a window, " +
+//						"both stream extents need to have a window declared.";
+//				logger.warn(msg);
+//				throw new ExpressionException(msg);
+//			}
+//			temp = new JoinOperator(operators[i], temp, _boolType);
+//			if (logger.isTraceEnabled()) {
+//				logger.trace("join "+i+": "+temp);
+//			}
+//		}
+		//Praveen commented ends
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN combineSources() with " + temp);
 		}
 		return temp;
+	}
+
+	/**
+	 * This method accepts a left operator and a right operator,
+	 * performs some basic check to validate the SNEE rules,
+	 * and performs the join between these input operators and
+	 * returns the resulting join operator.
+	 * 
+	 * @param leftOperator
+	 * @param rightOperator
+	 * @return
+	 * @throws ExpressionException
+	 * @throws OptimizationException
+	 * @throws SchemaMetadataException
+	 */
+	private LogicalOperator insertJoin(LogicalOperator leftOperator,
+			LogicalOperator rightOperator) throws ExpressionException, OptimizationException, SchemaMetadataException {
+		
+		if (leftOperator.getOperatorDataType() == OperatorDataType.STREAM &&
+				rightOperator.getOperatorDataType() == OperatorDataType.STREAM) {
+			String msg = "Unable to join two streams";
+			logger.warn(msg);
+			throw new ExpressionException(msg);
+		} else if (rightOperator.getOperatorDataType() == OperatorDataType.STREAM &&
+				leftOperator.getOperatorDataType() == OperatorDataType.WINDOWS) {
+			String msg = "Unable to join a stream and a window, " +
+					"both stream extents need to have a window declared.";
+			logger.warn(msg);
+			throw new ExpressionException(msg);
+		}
+		
+		return new JoinOperator(leftOperator, rightOperator, _boolType);		
+		
+	}
+
+	/**
+	 * This method returns the source name mapped to the operators that originate
+	 * out of that source name in the query.
+	 * 
+	 * The Map returned will be of the form
+	 * {wsn1	=	[WindowOperator, WindowOperator],
+	 * PushStreamGenerator	= [WindowOperator, ScanOperator]}
+	 * where the query has two Windowed sources arising from wsn1 and 
+	 * one Window and a relation operator from the source PushStreamGenerator 						
+	 * 
+	 * @param operators
+	 * @return
+	 */
+	private HashMap<String, LogicalOperator[]> getSourceOperatorsMap(
+			LogicalOperator[] operators) {
+		HashMap<String, LogicalOperator[]> sourceOperatorMap = null;
+		InputOperator inputOperator;
+		//InputOperator innerInputOperator; 
+		for (int i = 0; i < operators.length ; i++) {
+			inputOperator = getInputOperator(operators[i]);					
+			/*ExtentMetadata extentMetadata = 
+				_metadata.getExtentMetadata(inputOperator.getExtentName());
+			SourceMetadataAbstract source = 
+				_metadata.getSource(inputOperator.getExtentName());
+			System.out.println("Earlier***************************");*/
+			System.out.println("id: " + inputOperator.getID() + "***Extent Name: "
+					+ inputOperator.getExtentName() + "***Source: "
+					+ inputOperator.getSource()+ "***Source Type: "
+					+ inputOperator.getSource().getSourceType()+ "***Source Name: "
+					+ inputOperator.getSource().getSourceName());
+			if (sourceOperatorMap == null) {
+				sourceOperatorMap = new HashMap<String, LogicalOperator[]>(
+						1);
+			}
+			LogicalOperator[] operatorList = sourceOperatorMap
+					.get(inputOperator.getSource().getSourceName());
+			
+			if (operatorList == null) {
+				operatorList = new LogicalOperator[1];
+				operatorList[0] = operators[i];
+				sourceOperatorMap
+						.put(inputOperator.getSource().getSourceName(),
+								operatorList);
+			} else {
+				LogicalOperator[] newList = new LogicalOperator[operatorList.length + 1];
+				int newListCount = 0;
+				boolean hasInserted = false;
+				for (int j = 0; j < operatorList.length; j++) {
+					if ((operatorList[j].getOperatorDataType() == OperatorDataType.STREAM)
+							|| (((operators[i].getOperatorDataType() == OperatorDataType.RELATION) && (operatorList[j]
+									.getOperatorDataType() == OperatorDataType.WINDOWS)))
+							&& !hasInserted) {
+						newList[newListCount++] = operatorList[j];
+					} else if (!hasInserted) {
+						newList[newListCount++] = operators[i];
+						newList[newListCount++] = operatorList[j];
+						hasInserted = true;
+					} else {
+						newList[newListCount++] = operatorList[j];
+					}
+				}
+				if (!hasInserted) {
+					newList[newListCount] = operators[i];
+				}
+				sourceOperatorMap.put(
+						inputOperator.getSource().getSourceName(), newList);				
+			}
+		}
+		return sourceOperatorMap;
+	}
+
+	/**
+	 * This method iterates into an operator until it finds an input operator
+	 * and returns that input operator
+	 * 
+	 * @param logicalOperator
+	 * @return
+	 */
+	private InputOperator getInputOperator(LogicalOperator logicalOperator) {
+		InputOperator inputOperator;
+		LogicalOperator tempOp = logicalOperator;
+		while (true) {
+			if (tempOp instanceof InputOperator) {
+				inputOperator = (InputOperator)tempOp;
+				break;
+			} else {
+				tempOp = tempOp.getInput(0);						
+			}
+		}	
+		return inputOperator;
 	}
 
 	private LogicalOperator translateExtent(AST ast) 
@@ -1030,9 +1189,26 @@ public class Translator {
 		case SNEEqlParserTokenTypes.WHERE:{
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate WHERE");
-			}
+			}			
+			
+			///Start here			
+			Expression[] expressions = new Expression[ast.getNumberOfChildren()];			
+			int count = 0;
+			AST child = ast.getFirstChild();			
+			while (child != null) {
+				expressions[count] = translateExpression(child, input);
+				count++;
+				child = child.getNextSibling();
+			}		
+			
 			Expression expression = 
-				translateExpression(ast.getFirstChild(), input);
+				new MultiExpression(expressions, MultiType.AND,
+						_boolType);
+			//End here
+			
+			//Expression expression = 
+				//translateExpression(ast.getFirstChild(), input);
+			
 			if (logger.isTraceEnabled()) {
 				logger.trace("Expression (" + expression + 
 						") type: " + expression.getType());
@@ -1191,7 +1367,7 @@ public class Translator {
 		List<Attribute> attributes;
 		Expression[] expressions;
 		int count;
-		AST child;
+		AST child;		
 		Expression expression = null;
 		switch (ast.getType()) {
 //		case SNEEqlParserTokenTypes.AS:
@@ -1349,18 +1525,27 @@ public class Translator {
 		case SNEEqlParserTokenTypes.PRED: 
 		case SNEEqlParserTokenTypes.MUL: 
 		case SNEEqlParserTokenTypes.MOD: 
-		case SNEEqlParserTokenTypes.OR: 
+		case SNEEqlParserTokenTypes.OR:		
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate boolean operator");
 			}
+			
 			expressions = new Expression[ast.getNumberOfChildren()];
 			count = 0;
-			child = ast.getFirstChild();
+			child = ast.getFirstChild();			
+			
 			while (child != null) {
-				expressions[count] = translateExpression(child, input);
+				expressions[count] = translateExpression(child, input);				
 				count++;
 				child = child.getNextSibling();
 			}
+			//sibling = sibling.getFirstChild();
+			/*if (sibling != null) {
+				expressions[count] = translateExpression(sibling, input);
+				count++;
+				//sibling = sibling.getNextSibling();
+			}*/
+			
 			expression = 
 				new MultiExpression(expressions, getMultiType(ast),
 						_boolType);
