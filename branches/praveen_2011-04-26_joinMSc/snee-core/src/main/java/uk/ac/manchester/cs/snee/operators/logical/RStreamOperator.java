@@ -58,6 +58,7 @@ implements LogicalOperator {
         this.setOperatorName("RSTREAM");
 //        this.setNesCTemplateName("rstream never set");
         this.setOperatorDataType(OperatorDataType.STREAM);
+        this.setOperatorSourceType(inputOperator.getOperatorSourceType());
         this.setParamStr("");
         
         setChildren(new LogicalOperator[] {inputOperator});
