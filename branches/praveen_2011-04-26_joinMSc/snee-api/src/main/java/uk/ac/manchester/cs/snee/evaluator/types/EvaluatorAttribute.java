@@ -110,4 +110,12 @@ public class EvaluatorAttribute extends DataAttribute {
 		return super.toString() + " " + _data.toString();
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((_data == null) ? 0 : _data.hashCode());
+		return result;
+	}	
+
 }
