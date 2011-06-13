@@ -40,6 +40,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
@@ -116,7 +118,8 @@ public class DeliverComponent extends NesCComponent {
 				String deliverName = attr.getAttributeDisplayName();
 		
 			    displayTupleBuff3.append(comma+deliverName);
-	  			if (attr instanceof EvalTimeAttribute) {
+	  			if (attr instanceof EvalTimeAttribute || attr instanceof IDAttribute
+	  					|| attr instanceof TimeAttribute ) {
 	  				displayTupleBuff3.append("=%d"); 
 	  			} else {
 	  				displayTupleBuff3.append("=%g");
