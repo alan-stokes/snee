@@ -47,6 +47,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 
 /**
@@ -89,6 +90,8 @@ implements LogicalOperator {
 	private Expression predicate = new NoPredicate();
 
 	protected AttributeType _boolType;
+	
+	private SourceType operatorSourceType;
 
 	/**
 	 * Constructs a new operator. 
@@ -129,6 +132,7 @@ implements LogicalOperator {
 		opCount++;        
 		assert (newID);
 		this.operatorDataType = model.getOperatorDataType();
+		this.operatorSourceType = model.getOperatorSourceType();
 		this.operatorName = model.getOperatorName();
 		this.paramStr = model.getParamStr();
 		this.predicate = model.getPredicate();
@@ -334,6 +338,7 @@ implements LogicalOperator {
 	public void setPredicate(Expression newPredicate) 
 	throws SchemaMetadataException, AssertionError, TypeMappingException 
 	{
+		System.out.println("newPredicate: "+ newPredicate);
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER setPredicate() with " + newPredicate);
 		if (newPredicate instanceof NoPredicate) {
@@ -365,6 +370,62 @@ implements LogicalOperator {
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN setPredicate()");
+	}
+	
+	/** {@inheritDoc} */
+	public SourceType getOperatorSourceType() {
+		assert (operatorSourceType != null);
+		return this.operatorSourceType;
+	}
+
+	/**
+	 * @param newOperatorDataType New value.
+	 */
+	protected void setOperatorSourceType(
+			SourceType sourceType) {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER setOperatorSourceType() with " +
+					sourceType);
+		}
+		assert (sourceType != null);
+		this.operatorSourceType = sourceType;
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN setOperatorSourceType()");
+		}
+	}
+	
+	/**
+	 * This method find the source type of the join operator
+	 * based on its left and right child inputs.
+	 * 
+	 * @param left
+	 * @param right
+	 * @return
+	 */
+	protected SourceType getOperatorSourceType(LogicalOperator left,
+			LogicalOperator right) {
+		SourceType returnSourceType = null;
+		SourceType lSourceType = left.getOperatorSourceType();
+		SourceType rSourceType = right.getOperatorSourceType();
+		if (lSourceType == rSourceType) {
+			returnSourceType = lSourceType;
+		} else if ((lSourceType == SourceType.SENSOR_NETWORK)
+				&& (rSourceType == SourceType.PULL_STREAM_SERVICE
+						|| rSourceType == SourceType.UDP_SOURCE || rSourceType == SourceType.PUSH_STREAM_SERVICE)) {
+			returnSourceType = rSourceType;
+		} else if ((lSourceType == SourceType.PULL_STREAM_SERVICE
+				|| lSourceType == SourceType.UDP_SOURCE || lSourceType == SourceType.PUSH_STREAM_SERVICE)
+				&& (rSourceType == SourceType.SENSOR_NETWORK)) {
+			returnSourceType = lSourceType;
+		} else if ((lSourceType == SourceType.SENSOR_NETWORK)
+				&& (rSourceType == SourceType.RELATIONAL || rSourceType == SourceType.WSDAIR)) {
+			returnSourceType = lSourceType;
+		} else if ((lSourceType == SourceType.PULL_STREAM_SERVICE
+				|| lSourceType == SourceType.UDP_SOURCE || lSourceType == SourceType.PUSH_STREAM_SERVICE)
+				&& (rSourceType == SourceType.RELATIONAL || rSourceType == SourceType.WSDAIR)) {
+			returnSourceType = rSourceType;
+		}
+		return returnSourceType;
 	}
 }
 
