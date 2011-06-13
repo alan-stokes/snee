@@ -55,6 +55,7 @@ implements LogicalOperator {
 		this.setOperatorName("UNION");
 		setOperatorDataType(OperatorDataType.STREAM);
 		setChildren(new LogicalOperator[] {left, right});
+		this.setOperatorSourceType(getOperatorSourceType(left, right));
 	}
 
 	@Override
