@@ -65,6 +65,7 @@ public class ScanOperator extends InputOperator {
 		}
 		this.setOperatorName("SCAN");
 		this.setOperatorDataType(OperatorDataType.RELATION);
+		this.setOperatorSourceType(source.getSourceType());
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN ScanOperator()");
 		}
