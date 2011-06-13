@@ -135,10 +135,10 @@ public class QueryCompiler {
 	}
 
 	private LAF doLogicalRewriting(LAF laf, int queryID) 
-	throws SNEEConfigurationException, OptimizationException {
+	throws SNEEConfigurationException, OptimizationException, TypeMappingException, SchemaMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doLogicalRewriting: " + laf);
-		LogicalRewriter rewriter = new LogicalRewriter();
+		LogicalRewriter rewriter = new LogicalRewriter(metadata);
 		//TODO: Push projections and selections down to scan operator
 		LAF lafPrime = rewriter.doLogicalRewriting(laf);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
