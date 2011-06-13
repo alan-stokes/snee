@@ -338,7 +338,6 @@ implements LogicalOperator {
 	public void setPredicate(Expression newPredicate) 
 	throws SchemaMetadataException, AssertionError, TypeMappingException 
 	{
-		System.out.println("newPredicate: "+ newPredicate);
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER setPredicate() with " + newPredicate);
 		if (newPredicate instanceof NoPredicate) {
