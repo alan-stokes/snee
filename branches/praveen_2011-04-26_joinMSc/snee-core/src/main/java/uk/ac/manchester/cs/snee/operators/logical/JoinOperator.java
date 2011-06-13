@@ -45,6 +45,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 /** 
  * A Join or Cross product operator.
@@ -106,8 +107,11 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 		this.setParamStr("");
 
 		setChildren(left, right);
+		setOperatorSourceType(getOperatorSourceType(left, right));
 		getIncomingAttributes();
 	}
+
+	
 
 	private void setChildren (LogicalOperator left, LogicalOperator right) 
 	throws OptimizationException {
