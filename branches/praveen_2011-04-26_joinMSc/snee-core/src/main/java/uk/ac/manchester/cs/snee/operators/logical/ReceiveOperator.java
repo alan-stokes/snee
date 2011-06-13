@@ -73,7 +73,8 @@ public class ReceiveOperator extends InputOperator {
 					extentMetaData + " source=" + source.getSourceName());
 					}
 		this.setOperatorName("RECEIVE");
-		this.setOperatorDataType(OperatorDataType.STREAM);			
+		this.setOperatorDataType(OperatorDataType.STREAM);	
+		this.setOperatorSourceType(source.getSourceType());
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN ReceiveOperator()");
 	} 		 
