@@ -803,11 +803,13 @@ public class Translator {
 			SourceMetadataAbstract source = 
 				_metadata.getSource(inputOperator.getExtentName());
 			System.out.println("Earlier***************************");*/
-			System.out.println("id: " + inputOperator.getID() + "***Extent Name: "
+			if (logger.isTraceEnabled()) {
+				logger.trace("id: " + inputOperator.getID() + "***Extent Name: "
 					+ inputOperator.getExtentName() + "***Source: "
 					+ inputOperator.getSource()+ "***Source Type: "
 					+ inputOperator.getSource().getSourceType()+ "***Source Name: "
 					+ inputOperator.getSource().getSourceName());
+			}
 			if (sourceOperatorMap == null) {
 				sourceOperatorMap = new HashMap<String, LogicalOperator[]>(
 						1);
