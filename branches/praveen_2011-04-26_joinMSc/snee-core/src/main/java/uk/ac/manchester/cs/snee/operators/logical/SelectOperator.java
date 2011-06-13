@@ -78,6 +78,7 @@ public class SelectOperator extends LogicalOperatorImpl {
 		this.setOperatorName("SELECT");
 //		this.setNesCTemplateName("select");
 		setOperatorDataType(inputOperator.getOperatorDataType());
+		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
 
 		setChildren(new LogicalOperator[] {inputOperator});
 
