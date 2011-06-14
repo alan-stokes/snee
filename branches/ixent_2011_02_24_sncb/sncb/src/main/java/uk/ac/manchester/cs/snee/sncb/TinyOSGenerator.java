@@ -63,6 +63,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
@@ -1634,7 +1635,9 @@ public class TinyOSGenerator {
 			final AttributeType attrType = attributes.get(i).getType();
 
 			String nesCType;
-			if (attributes.get(i) instanceof EvalTimeAttribute) {
+			if (attributes.get(i) instanceof EvalTimeAttribute ||
+					attributes.get(i) instanceof TimeAttribute ||
+					attributes.get(i) instanceof IDAttribute ) {
 				nesCType = "uint16_t";
 			} else {
 				nesCType = "float";
