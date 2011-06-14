@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.autonomicmanager.monitor;
 
+import java.net.MalformedURLException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -9,8 +10,10 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.ResultStoreImpl;
+import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
@@ -19,11 +22,17 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
+import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 import uk.ac.manchester.cs.snee.sncb.SerialPortMessageReceiver;
 
@@ -149,7 +158,7 @@ public class Monitor implements Observer
     
   }
   //Temporary code to allow notation tests without a failed node
-  public void chooseFakeNodeFailure() throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException, SNEEException
+  public void chooseFakeNodeFailure() throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException, SNEEException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
   {
     SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) 
     qep.getDLAF().getSource();

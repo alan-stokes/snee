@@ -35,7 +35,6 @@
 package uk.ac.manchester.cs.snee.compiler.iot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,8 +44,6 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
@@ -137,7 +134,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
 		this.beta = bfactor;
 		this.iot = iot;
 		this.allowDiscontinuousSensing=allowDiscontinuousSensing;
-		this.daf = new IOTUtils(iot, costParams).getDAF();
+		this.daf = iot.getDAF();
 		if (!queryName.equals("")) {
 			this.name = generateID(queryName);
 		}

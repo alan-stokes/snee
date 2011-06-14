@@ -16,6 +16,7 @@ import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
+import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SNEEAlgebraicForm;
@@ -41,6 +42,7 @@ public class IOT extends SNEEAlgebraicForm
   private InstanceOperator rootOp;
   private RT rt;
   private PAF paf;
+  private DAF cDAF;
   protected boolean showTupleTypes = false;
   protected static int candidateCount = 0;
   
@@ -651,5 +653,17 @@ public class IOT extends SNEEAlgebraicForm
   public void setPaf(PAF paf)
   {
     this.paf = paf;
+  }
+
+
+  public void setDAF(DAF cDAF)
+  {
+    this.cDAF = cDAF;
+  }
+
+
+  public DAF getDAF()
+  {
+    return cDAF;
   }
 }

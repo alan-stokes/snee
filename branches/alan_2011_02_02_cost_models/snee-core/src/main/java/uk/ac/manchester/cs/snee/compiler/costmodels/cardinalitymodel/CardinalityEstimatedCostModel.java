@@ -36,7 +36,7 @@ public class CardinalityEstimatedCostModel extends CostModel
   public CardinalityEstimatedCostModel(QueryExecutionPlan qep)
   {
 	  SensorNetworkQueryPlan sqep= (SensorNetworkQueryPlan) qep;
-	  agenda = sqep.getAgenda();
+	  agenda = sqep.getAgendaIOT();
 	  routingTree = sqep.getRT();
 	  instanceDAF = sqep.getIOT(); 
   }

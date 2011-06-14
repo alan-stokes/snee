@@ -4,6 +4,7 @@ import java.io.File;
 
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 
@@ -64,14 +65,14 @@ public class AdapatationStrategyIntermediateUtils
   /**
    * method used to output a route as a dot file inside an adaption
    */
-  public void outputRouteAsDotFile(File outputFolder , String string)
+  public void outputRouteAsDotFile(File outputFolder , String string, RT route)
   {
     try
     {
       
       File topFolder = new File(outputFolder.toString() + sep + "Route");
       topFolder.mkdir();
-      new RTUtils(ad.getRT()).exportAsDOTFile(topFolder.toString() + sep + string);
+      new RTUtils(route).exportAsDOTFile(topFolder.toString() + sep + string);
     }
     catch (SchemaMetadataException e)
     {

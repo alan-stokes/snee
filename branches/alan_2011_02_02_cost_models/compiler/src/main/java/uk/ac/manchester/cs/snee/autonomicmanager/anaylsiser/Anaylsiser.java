@@ -2,10 +2,14 @@ package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Map;
 
+import uk.ac.manchester.cs.snee.MetadataException;
+import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.autonomicmanager.Adapatation;
 import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
@@ -14,8 +18,14 @@ import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.Cardinality
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
+import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public class Anaylsiser 
 {
@@ -200,12 +210,14 @@ public class Anaylsiser
     anaylisieCECM = true;   
   }
   
-  public SensorNetworkQueryPlan runStrategy2(int failedNodeID) 
+  public SensorNetworkQueryPlan adapatationStrategyIntermediateSpaceAndTimePinned(int failedNodeID) 
   throws OptimizationException, 
          SchemaMetadataException, 
          TypeMappingException, 
-         AgendaException, SNEEException, SNEEConfigurationException
+         AgendaException, SNEEException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
   {
-    return adapatationStrategyIntermediateSpaceAndTimePinned.calculateNewQEP(failedNodeID);
+    ArrayList<Adapatation> adapatations = adapatationStrategyIntermediateSpaceAndTimePinned.calculateNewQEP(failedNodeID);
+    
+    return null;
   }
 }

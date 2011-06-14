@@ -1,13 +1,16 @@
 package uk.ac.manchester.cs.snee.autonomicmanager;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Map;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.ResultStore;
+import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.Anaylsiser;
 import uk.ac.manchester.cs.snee.autonomicmanager.executer.Executer;
@@ -17,14 +20,21 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
+import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 
 public class AutonomicManager 
@@ -71,7 +81,7 @@ public class AutonomicManager
     String sep = System.getProperty("file.separator");
     String outputDir = SNEEProperties.getSetting(
         SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
-        sep + sQep.getAgenda().getQueryName();
+        sep + sQep.getAgendaIOT().getQueryName();
     File firstOutputFolder = new File(outputDir + sep + "AutonomicManData");;
     
     if(firstOutputFolder.exists())
@@ -96,11 +106,21 @@ public class AutonomicManager
          OptimizationException, 
          SchemaMetadataException, 
          TypeMappingException, 
-         AgendaException, SNEEException
+         AgendaException, 
+         SNEEException, 
+         MalformedURLException, 
+         WhenSchedulerException, 
+         MetadataException, 
+         UnsupportedAttributeTypeException, 
+         SourceMetadataException, 
+         TopologyReaderException, 
+         SNEEDataSourceException, 
+         CostParametersException, 
+         SNCBException
   {
-    SensorNetworkQueryPlan newQEP = anyliser.runStrategy2(failedNodeID);
+    SensorNetworkQueryPlan newQEP = anyliser.adapatationStrategyIntermediateSpaceAndTimePinned(failedNodeID);
     //newQEP.getIOT().exportAsDotFileWithFrags(fname, label, exchangesOnSites)
-    new AgendaUtils( newQEP.getAgenda(), true).generateImage();
+    //new AgendaIOTUtils( newQEP.getAgendaIOT(), newQEP.getIOT(), true).generateImage();
   }
   
   
@@ -109,7 +129,17 @@ public class AutonomicManager
          SNEEConfigurationException, 
          SchemaMetadataException, 
          TypeMappingException, 
-         AgendaException, SNEEException
+         AgendaException, 
+         SNEEException, 
+         MalformedURLException, 
+         WhenSchedulerException, 
+         MetadataException, 
+         UnsupportedAttributeTypeException, 
+         SourceMetadataException, 
+         TopologyReaderException, 
+         SNEEDataSourceException, 
+         CostParametersException, 
+         SNCBException
   {    
     anyliser.runECMs();
     monitor.chooseFakeNodeFailure();

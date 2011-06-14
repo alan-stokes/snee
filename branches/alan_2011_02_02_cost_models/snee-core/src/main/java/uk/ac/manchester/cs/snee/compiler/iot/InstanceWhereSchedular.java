@@ -75,7 +75,7 @@ public class InstanceWhereSchedular
       //generate floating operators / fixed locations
       generatePartialDaf();
       //produce image output so that can be validated
-      new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialInstanceDAF.dot", "", true);
+      new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT.dot", "", true);
       //do heuristic placement
       doInstanceOperatorSiteAssignment();
       new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "siteAssignment.dot", "", true);
@@ -86,13 +86,14 @@ public class InstanceWhereSchedular
       removeRedundantOpInstances();
       new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "cleanedSiteAssignment.dot", "", true);
       startFragmentation();
-      new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "fragmentedInstanceDAF.dot", "", false);
+      new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "fragmentedIOT.dot", "", false);
       addExchangeParts();
       //needs to be placed here, as updating links breaks the cDAF manufacture
-      new IOTUtils(iot, costs).convertToDAF();
-      cDAF = new IOTUtils(iot, costs).getDAF();
+      cDAF = new IOTUtils(iot, costs).convertToDAF();
+      iot.setDAF(cDAF);
+      new DAFUtils(cDAF).exportAsDotFile(fileDirectory + fileSeparator + "CDAF.dot");
       updateOperatorLinksToIncludeExchangeParts();
-      new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "InstanceDAFWithExchangeLinksBuiltIN.dot", "", true);
+      new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "IOTWithExchangeLinksBuiltIN.dot", "", true);
     }    
     else
     {
@@ -100,7 +101,6 @@ public class InstanceWhereSchedular
     }
   }
   
-  //XXX works, but doesnt link the exchanges to sites
   private void updateOperatorLinksToIncludeExchangeParts() 
   {
     Iterator<InstanceFragment> fragmentIterator = iot.fragmentIterator(TraversalOrder.POST_ORDER);
@@ -497,6 +497,8 @@ public class InstanceWhereSchedular
       {
     	  addPinnedOpInstances(op, opImpl, disconnectedOpInstMapping);
       } 
+      //if(opImpl.isTotallyPinned())
+      //{}
       else if (   op instanceof SensornetAcquireOperator 
           || op instanceof SensornetDeliverOperator) 
       {
@@ -568,6 +570,9 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         iot.addEdge(childOpInst, opInst);
         
         disconnectedOpInstMapping.add(op.getID(), opInst);
+        //TODO
+       // disconnectedOpInstMapping.remove(childOpInst.getID(), childOpInst);
+        //TODO
       }
     }
   }
@@ -676,7 +681,7 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         InstanceOperator opInst = new InstanceOperator(op, site);
         iot.addOpInst(op, opInst); 
         //update children to new parent
-        convergeSubstreams(confluenceOpInstSet, opInst, iot);
+        convergeSubstreams(confluenceOpInstSet, opInst, iot, disconnectedOpInstMapping);
         //add new disconnected instance
         disconnectedChildOpInstSet.add(opInst);
         //remove what are now connected instances from the disconnected Operator hash
@@ -690,7 +695,7 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         InstanceOperator opInst = new InstanceOperator(op, site);
         iot.addOpInst(op, opInst);
         //update children to new parent
-        convergeSubstreams(confluenceOpInstSet, opInst, iot);
+        convergeSubstreams(confluenceOpInstSet, opInst, iot, disconnectedOpInstMapping);
         //add new disconnected instance
         disconnectedChildOpInstSet.add(opInst);
         //remove what are now connected instances from the disconnected Operator hash
@@ -736,19 +741,23 @@ private void addOtherOpTypeInstances(SensornetOperator op,
       SensornetOperator childOp = (SensornetOperator) op.getInput(k);
       ArrayList<InstanceOperator> childOpInstColl 
         = disconnectedOpInstMapping.get(childOp.getID());
-      convergeSubstreams(childOpInstColl, opInst, iot);
+      convergeSubstreams(childOpInstColl, opInst, iot, disconnectedOpInstMapping);
     }
   }
 
   //add an edge in the instance daf for each child operator
   private void convergeSubstreams(Collection<InstanceOperator> childOpInstColl,
-                                  InstanceOperator opInst, IOT instanceDAF2)
+                                  InstanceOperator opInst, IOT instanceDAF2,
+                                  HashMapList<String, InstanceOperator> disconnectedOpInstMapping)
   {
     Iterator<InstanceOperator> childOpInstIter = childOpInstColl.iterator();    
     while (childOpInstIter.hasNext()) 
     {
       InstanceOperator childOpInst = childOpInstIter.next();
       iot.addEdge(childOpInst, opInst);
+      //TODO
+      //disconnectedOpInstMapping.remove(childOpInst.getID(), childOpInst);
+      //TODO
     }
   }
 

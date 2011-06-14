@@ -76,6 +76,11 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 	 */
 	protected boolean isPinned = false;
 
+	/**
+	 * is true if all instances of the physical operator are pinned
+	 */
+	protected boolean isTotallyPinned = false;
+
   /**
 	 * list containing all site ids of which this operator is pinned on
 	 */
@@ -726,5 +731,16 @@ public CostParameters getCostParams()
   {
     return pinnedSites.size();
   }
+  
+  public boolean isTotallyPinned()
+  {
+    return isTotallyPinned;
+  }
+
+  public void setTotallyPinned(boolean isTotallyPinned)
+  {
+    this.isTotallyPinned = isTotallyPinned;
+  }
+
 }
 

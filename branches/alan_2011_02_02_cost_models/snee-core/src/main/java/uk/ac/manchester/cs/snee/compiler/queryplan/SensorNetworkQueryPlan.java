@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -30,10 +31,13 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 	private RT rt;
 	
 	private Agenda agenda;
+	private AgendaIOT agendaIOT;
 	
 	private IOT iot;
+	
+	private QoSExpectations qos = null;
 
-	/**
+  /**
 	 * Constructor
 	 * @param dlaf The input DLAF
 	 * @throws TypeMappingException 
@@ -56,8 +60,73 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SensorNetworkQueryPlan()"); 
 	}
+	
+  /**
+   * Constructor
+   * @param dlaf The input DLAF
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   */
+  public SensorNetworkQueryPlan(DLAF dlaf, RT rt, DAF daf, IOT iot, AgendaIOT agenda, 
+  String queryName) 
+  throws  SchemaMetadataException, TypeMappingException {
+    super(dlaf, queryName);
+    if (logger.isDebugEnabled())
+      logger.debug("ENTER SensorNetworkQueryPlan()"); 
+    this.rt = rt;
+    this.daf = daf;
+    this.agendaIOT = agenda;
+    this.iot = iot;
+    
+    SensornetOperator rootOperator = daf.getRootOperator();
+    metadata = new QueryPlanMetadata(rootOperator.getAttributes());
 
-	/**
+    if (logger.isDebugEnabled())
+      logger.debug("RETURN SensorNetworkQueryPlan()"); 
+  }
+  
+	public SensorNetworkQueryPlan(DLAF dlaf, RT rt, DAF daf, IOT iot,
+      Agenda agenda, String queryName, QoSExpectations qos) 
+	throws SchemaMetadataException, TypeMappingException
+  {
+	  super(dlaf, queryName);
+    if (logger.isDebugEnabled())
+      logger.debug("ENTER SensorNetworkQueryPlan()"); 
+    this.rt = rt;
+    this.daf = daf;
+    this.agenda = agenda;
+    this.iot = iot;
+    this.qos = qos;
+    
+    SensornetOperator rootOperator = daf.getRootOperator();
+    metadata = new QueryPlanMetadata(rootOperator.getAttributes());
+
+    if (logger.isDebugEnabled())
+      logger.debug("RETURN SensorNetworkQueryPlan()"); 
+  }
+
+  public SensorNetworkQueryPlan(DLAF dlaf, RT rt, IOT iot,
+      AgendaIOT agendaIOT, String queryName, QoSExpectations qos)
+  throws SchemaMetadataException, TypeMappingException
+  {
+    super(dlaf, queryName);
+    if (logger.isDebugEnabled())
+      logger.debug("ENTER SensorNetworkQueryPlan()"); 
+    this.rt = rt;
+    this.agendaIOT = agendaIOT;
+    this.daf = iot.getDAF();
+    this.agenda = null;
+    this.iot = iot;
+    this.qos = qos;
+    
+    SensornetOperator rootOperator = iot.getRoot().getSensornetOperator();
+    metadata = new QueryPlanMetadata(rootOperator.getAttributes());
+
+    if (logger.isDebugEnabled())
+      logger.debug("RETURN SensorNetworkQueryPlan()"); 
+  }
+
+  /**
 	 * @return the daf
 	 */
 	public DAF getDAF() {
@@ -85,6 +154,10 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 		return agenda;
 	}
 
+	public AgendaIOT getAgendaIOT()
+	{
+	  return agendaIOT;
+	}
 	public long getAcquisitionInterval_ms() {
 		return this.agenda.getAcquisitionInterval_ms();
 	}
@@ -107,7 +180,10 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 	}
 
 	public CostParameters getCostParameters() {
-		return this.getAgenda().getCostParameters();
+	  if(this.getAgenda() != null)
+		  return this.getAgenda().getCostParameters();
+	  else
+	    return this.getAgendaIOT().getCostParameters();
 	}
 
 	public SNCB getSNCB() {
@@ -116,6 +192,16 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 			(SensorNetworkSourceMetadata)this.dlaf.getSource();
 		return metadata.getSNCB();
 	}
+	
+	 public QoSExpectations getQos()
+	  {
+	    return qos;
+	  }
+
+	  public void setQos(QoSExpectations qos)
+	  {
+	    this.qos = qos;
+	  }
 
 	
 //	

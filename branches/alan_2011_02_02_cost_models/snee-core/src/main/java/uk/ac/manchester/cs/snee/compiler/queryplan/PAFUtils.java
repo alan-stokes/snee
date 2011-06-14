@@ -17,6 +17,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperatorImpl;
 
 /**
  * Utility class for displaying PAF.
@@ -87,8 +88,15 @@ public class PAFUtils extends DLAFUtils {
 		//	Iterator<Node> opIter = 
 			//	tree.nodeIterator(TraversalOrder.POST_ORDER);
 			Iterator<Node> opIter = paf.getOperatorTree().getNodes().iterator();
+			int clusterCounter = 0;
 			while (opIter.hasNext()) {
 				SensornetOperator op = (SensornetOperator) opIter.next();
+				SensornetOperatorImpl opImpl = (SensornetOperatorImpl) op;
+				if(opImpl.isPinned())
+				{
+				  out.print("subgraph cluster_" + clusterCounter + " {");
+				  clusterCounter++;
+				}
 				out.print("\"" + op.getID() + "\" [fontsize=9 ");
 
 				if (op instanceof SensornetExchangeOperator) {
@@ -117,6 +125,23 @@ public class PAFUtils extends DLAFUtils {
 					out.print(opLabelBuff.get(op.getID())); 
 				}
 				out.println("\" ]; ");
+				if(opImpl.isPinned())
+				{
+				  boolean first = true;
+				  Iterator<String> operatorIterator = opImpl.getPinnedIterator();
+				  String pinnedLocs = "Pinned at \n {";
+				  while(operatorIterator.hasNext())
+				  {
+				    if(!first)
+				    {
+				      pinnedLocs = pinnedLocs.concat(", ");
+				    }
+				    pinnedLocs = pinnedLocs.concat(operatorIterator.next());
+				    first = false;
+				  }
+				  out.println("label = \"" + pinnedLocs + "} \"");
+				  out.println("}");
+				}
 			}
 
 			/**

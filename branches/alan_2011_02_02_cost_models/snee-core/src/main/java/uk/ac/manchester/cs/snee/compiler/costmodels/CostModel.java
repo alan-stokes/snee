@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityDataStructure;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
@@ -22,7 +22,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
 
 public abstract class CostModel
 {
-  protected Agenda agenda;
+  protected AgendaIOT agenda;
   protected RT routingTree;
   
   protected CostModelDataStructure model(InstanceOperator operator) 

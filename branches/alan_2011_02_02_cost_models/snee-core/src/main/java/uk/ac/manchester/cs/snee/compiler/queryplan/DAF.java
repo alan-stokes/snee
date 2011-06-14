@@ -271,7 +271,8 @@ public class DAF extends SNEEAlgebraicForm {
 		    if (op instanceof SensornetExchangeOperator) {
 				//new fragment indicated by exhange
 				//link the current fragment to the exchange operator
-				currentFrag = op.getParent().getContainingFragment();
+		    SensornetOperator parent = op.getParent();
+				currentFrag = parent.getContainingFragment();
 				((SensornetExchangeOperator) op).setDestinationFragment(currentFrag);
 				currentFrag.addChildExchange((SensornetExchangeOperator) op);
 				// create a new fragment

@@ -170,10 +170,10 @@ public class RT extends SNEEAlgebraicForm {
      */    
     public final Iterator<Site> siteIterator(
     		final TraversalOrder traversalOrder) {
-    	if (logger.isDebugEnabled())
-			logger.debug("ENTER siteIterator()");
-    	if (logger.isDebugEnabled())
-			logger.debug("RETURN siteIterator()");
+    	//if (logger.isDebugEnabled())
+			//logger.debug("ENTER siteIterator()");
+    	//if (logger.isDebugEnabled())
+			//logger.debug("RETURN siteIterator()");
     	return this.siteTree.nodeIterator(traversalOrder);
     }
     

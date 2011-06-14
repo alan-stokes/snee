@@ -697,7 +697,7 @@ public class Agenda extends SNEEAlgebraicForm{
      * @throws AgendaException
      * @throws OptimizationException 
      */
-    private void scheduleLeafFragments()
+    protected void scheduleLeafFragments()
 	    throws AgendaException, OptimizationException {
 
 	//First schedule the leaf fragments, according to the buffering factor specified 
@@ -763,7 +763,7 @@ public class Agenda extends SNEEAlgebraicForm{
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
      */
-    private void scheduleNonLeafFragments()
+    protected void scheduleNonLeafFragments()
 	    throws AgendaException, OptimizationException, SchemaMetadataException, TypeMappingException {
 
 	long nonLeafStart = Long.MAX_VALUE;
@@ -810,7 +810,7 @@ public class Agenda extends SNEEAlgebraicForm{
 	}
     }
 
-	private void scheduleFinalSleepTask() throws AgendaException {
+	protected void scheduleFinalSleepTask() throws AgendaException {
 		final long sleepStart = this.getLength_bms(Agenda.INCLUDE_SLEEP);
 		
 		//A sleep task of at least 10 ms needs to be added here, to turn the radio off

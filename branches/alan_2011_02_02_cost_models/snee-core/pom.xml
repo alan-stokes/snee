@@ -10,7 +10,7 @@
 	<artifactId>snee-core</artifactId>
 	<name>SNEE Core</name>
 	<description>Compiles a SNEEql query into a query plan</description>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>uk.ac.manchester.cs.snee</groupId>
@@ -38,6 +38,11 @@
 			<version>${snee.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.com.robust-it</groupId>
+			<artifactId>cloning</artifactId>
+			<version>1.7.4</version>
 		</dependency>
 	</dependencies>
 

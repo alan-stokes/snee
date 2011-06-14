@@ -132,17 +132,17 @@ public class SourcePlanner {
 		logger.info("Starting Where-Scheduling for query " + queryID);
 		InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, rt, costParams);
 		IOT iot = instanceWhere.getIOT();
-		DAF daf = instanceWhere.getDAF();
-		new DAFUtils(daf).generateGraphImage();
+		//DAF daf = instanceWhere.getDAF();
+		//new DAFUtils(daf).generateGraphImage();
 		//DAF daf = doSNWhereScheduling(rt, paf, costParams, queryID);
 		//IOT iot = null;
 		logger.info("Starting When-Scheduling for query " + queryID);
-		Agenda agenda = doSNWhenScheduling(daf, qos, queryID);
+		//Agenda agenda = doSNWhenScheduling(daf, qos, queryID);
 		//new AgendaUtils(agenda, false).exportAsLatex("agendaLatex");
 		AgendaIOT agendaIOT = doSNWhenScheduling(iot, qos, queryID, costParams);
-		agenda.setAgendaIOT(agendaIOT);
-		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, rt, daf, iot,
-				agenda, queryID); //agenda		
+		//agenda.setAgendaIOT(agendaIOT);
+		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, rt, iot,
+				agendaIOT, queryID, qos); //agenda		
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doSensorNetworkSourcePlanning()");
 		return qep;

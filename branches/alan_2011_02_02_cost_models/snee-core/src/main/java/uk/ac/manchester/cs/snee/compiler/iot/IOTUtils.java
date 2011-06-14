@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
+import com.rits.cloning.Cloner;
+
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
@@ -15,6 +19,7 @@ import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
@@ -30,21 +35,29 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
 public class IOTUtils
 {
-  private IOT iot;
+  private final IOT iot;
   private Tree instanceOperatorTree = null;
-  static private DAF daf;
+  private DAF daf;
   private CostParameters costs;
   
-  public IOTUtils(final IOT iot, CostParameters costParams) 
+  public IOTUtils(final IOT newIot, CostParameters costParams) 
   {
-    this.iot = iot;
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    this.iot = cloner.deepClone(newIot);
     this.costs = costParams;
-    this.instanceOperatorTree = iot.getOperatorTree();
+    this.instanceOperatorTree = this.iot.getOperatorTree();
   }
   
-  public void convertToDAF() throws OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException
+  public DAF convertToDAF() throws OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException
   {
     createDAF();
+    return daf;
+  }
+  
+  public DAF getDAF()
+  {
+    return iot.getDAF();
   }
   
   private void createDAF() 
@@ -53,9 +66,10 @@ public class IOTUtils
     DAF faf = partitionPAF(iot.getPAF(), iot, iot.getRT().getQueryName(), iot.getRT(), costs);  
     daf = linkFragments(faf, iot.getRT(), iot, iot.getRT().getQueryName());
     removeRedundantAggrIterOp(daf, iot);
+    removeRedundantExchanges(daf);
   }
   
-  private static DAF partitionPAF(final PAF paf, IOT oit, 
+  private static DAF partitionPAF(final PAF paf, IOT iot, 
                                   final String queryName, RT routingTree,
                                   CostParameters costs) 
   throws SNEEException, SchemaMetadataException 
@@ -67,7 +81,7 @@ public class IOTUtils
     .operatorIterator(TraversalOrder.POST_ORDER);
     while (opIter.hasNext()) {
       final SensornetOperator op = (SensornetOperator) opIter.next();
-      HashSet<Site> opSites = oit.getSites(op);
+      HashSet<Site> opSites = iot.getSites(op);
       if (opSites.size()==0) {
         try {
           faf.getOperatorTree().removeNode(op);
@@ -81,7 +95,7 @@ public class IOTUtils
     while (opIter.hasNext()) 
     {
       final SensornetOperator op = (SensornetOperator) opIter.next();
-      HashSet<Site> opSites = oit.getSites(op);    
+      HashSet<Site> opSites = iot.getSites(op);    
       
       if(op instanceof SensornetAggrEvalOperator)
       {
@@ -99,7 +113,7 @@ public class IOTUtils
         {
           final SensornetOperator childOp = (SensornetOperator) op.getInput(i);
           
-          HashSet<Site> childSites = oit.getSites(childOp);
+          HashSet<Site> childSites = iot.getSites(childOp);
           if (!opSites.equals(childSites)) 
           {
             final SensornetExchangeOperator exchOp = new SensornetExchangeOperator(costs);   
@@ -146,7 +160,66 @@ public class IOTUtils
     return cDAF;
   }
 
-
+  public void removeRedundantExchanges(DAF daf) throws OptimizationException {
+    HashSet<SensornetExchangeOperator> exchangesToBeRemoved =
+      new HashSet<SensornetExchangeOperator>(); 
+    
+    Iterator<SensornetOperator> opIter = daf.operatorIterator(TraversalOrder.PRE_ORDER);
+    while (opIter.hasNext()) {
+      SensornetOperator op = opIter.next();
+      if (op instanceof SensornetExchangeOperator) {
+        SensornetExchangeOperator exchOp = (SensornetExchangeOperator)op;
+        Fragment sourceFrag = exchOp.getSourceFragment();
+        ArrayList<Site> sourceSites = sourceFrag.getSites();
+        Fragment destFrag = exchOp.getDestFragment();
+        ArrayList<Site> destSites = destFrag.getSites();
+        
+        if (sourceSites.equals(destSites)) {
+          exchangesToBeRemoved.add(exchOp);
+        }
+      }
+    }
+    
+    Iterator<SensornetExchangeOperator> exchOpIter = exchangesToBeRemoved.iterator();
+    while (exchOpIter.hasNext()) {
+      SensornetExchangeOperator exchOp = exchOpIter.next();
+      this.removeExchangeOperator(exchOp, daf);
+    }
+  }
+  
+  public void removeExchangeOperator(SensornetExchangeOperator exchOp, DAF daf) throws OptimizationException {
+    //Merge the source fragment operators into the destination fragment     
+    Fragment sourceFrag = exchOp.getSourceFragment();
+    Fragment destFrag = exchOp.getDestFragment();
+    destFrag.mergeChildFragment(sourceFrag);
+    
+    //Remove the exchange operator and fragment
+    daf.removeNode(exchOp);
+    daf.removeFragment(sourceFrag);
+    
+    Iterator<Site> siteIter = iot.getRT().siteIterator(TraversalOrder.POST_ORDER);
+    while (siteIter.hasNext()) {
+      Site site = siteIter.next();
+    
+      //Remove the exchange components from any routing tree sites
+      site.removeExchangeComponents(exchOp);
+      
+      //Remove the source fragment from any routing tree sites
+      site.removeFragment(sourceFrag);
+      
+      //Change the destination fragment on any exchange component which has the 
+      //old destination fragment
+      Iterator<ExchangePart> exchCompIter = site.getExchangeComponents().iterator();
+      while (exchCompIter.hasNext()) {
+        ExchangePart exchComp = exchCompIter.next();
+        if (exchComp.getDestFrag()==sourceFrag) {
+          exchComp.setDestFrag(destFrag);
+        }
+      }
+    }
+  }
+  
+  
   private static void removeRedundantAggrIterOp(DAF daf, IOT instanceDAF) throws OptimizationException {
 
     Iterator<SensornetOperator> opIter = daf.operatorIterator(TraversalOrder.POST_ORDER);
@@ -334,10 +407,5 @@ public class IOTUtils
       System.out.println("Export failed: " + e.toString());
       System.err.println("Export failed: " + e.toString());
     }
-  }
-  
-  public DAF getDAF()
-  {
-    return daf;
   }
 }
