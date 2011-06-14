@@ -269,7 +269,7 @@ public class AcquireComponent extends NesCComponent {
 //	    }
 		if (expression instanceof DataAttribute) {
 			try {
-				return "reading" + ((AcquireOperator)op.
+				return "(float) reading" + ((AcquireOperator)op.
 				getLogicalOperator()).getInputAttributeNumber(expression);
 			} catch (OptimizationException e) {
 				throw new CodeGenerationException(e);
