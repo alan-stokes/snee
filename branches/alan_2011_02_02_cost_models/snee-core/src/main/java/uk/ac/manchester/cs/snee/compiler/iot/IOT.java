@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.TreeMap;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
@@ -51,7 +52,7 @@ public class IOT extends SNEEAlgebraicForm
   throws SNEEException, SchemaMetadataException
   {
     super(queryName);
-    this.setPaf(paf);
+    this.paf = paf;
     this.rt=rt;
   }
 
@@ -665,5 +666,58 @@ public class IOT extends SNEEAlgebraicForm
   public DAF getDAF()
   {
     return cDAF;
+  }
+
+
+  /**
+   * locates the edge corraspondign to the parent link
+   * @param childOpInst
+   * @return
+   */
+  public Edge getTransmissionEdge(InstanceOperator childOpInst)
+  {
+    HashSet<EdgeImplementation> edgesOfOp = getOperatorTree().getNodeEdges(childOpInst.getID());
+    Iterator<EdgeImplementation> edgeIterator = edgesOfOp.iterator();
+    while(edgeIterator.hasNext())
+    {
+      EdgeImplementation edge = edgeIterator.next();
+      if(edge.getSourceID().equals(childOpInst.getID()))
+        return edge;  
+    }
+    return null;
+  }
+
+  /**
+   * gets the instance operator corresponding to a certain id
+   * @param operatorID
+   * @return
+   */
+  public InstanceOperator getOperatorInstance(String operatorID)
+  {
+   TreeMap<String, Node> instanceOperators = this.getOperatorTree().getAllNodes();
+   if(instanceOperators.containsKey(operatorID))
+    return (InstanceOperator) instanceOperators.get(operatorID);
+
+    return null;
+  }
+
+
+  /**
+   * gets the instance operator located on site site, which is of the sensornet operator op.
+   * @param op
+   * @param site
+   * @return
+   */
+  public InstanceOperator getOperatorInstance(SensornetOperator op, Site site)
+  {
+    ArrayList<InstanceOperator> instanceOps = this.getOpInstances(op);
+    Iterator<InstanceOperator> instanceOperatorIterator = instanceOps.iterator();
+    while(instanceOperatorIterator.hasNext())
+    {
+      InstanceOperator instanceOp = instanceOperatorIterator.next();
+      if(instanceOp.getSite().getID().equals(site.getID()))
+        return instanceOp;
+    }
+    return null;
   }
 }

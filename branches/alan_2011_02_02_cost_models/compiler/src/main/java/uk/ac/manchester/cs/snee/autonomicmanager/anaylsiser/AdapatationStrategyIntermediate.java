@@ -57,6 +57,9 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.logging.Logger;
+
+import com.rits.cloning.Cloner;
 
 /**
  * @author stokesa6
@@ -88,9 +91,14 @@ public class AdapatationStrategyIntermediate
     
   }
   
-  public void initilise(QueryExecutionPlan qep) throws SchemaMetadataException 
+  public void initilise(QueryExecutionPlan oldQep) throws SchemaMetadataException 
   {
-    this.qep = (SensorNetworkQueryPlan) qep;
+    //Cloner cloner = new Cloner();
+   // cloner.dontClone(Logger.class);
+   // SensorNetworkQueryPlan toClone = (SensorNetworkQueryPlan) oldQep;
+  //  this.qep = cloner.deepClone(toClone);
+    this.qep = (SensorNetworkQueryPlan) oldQep;
+    
     SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata)this.qep.getDLAF().getSource();
     this.wsnTopology =  sm.getTopology();
     outputFolder = manager.getOutputFolder();
@@ -122,6 +130,7 @@ public class AdapatationStrategyIntermediate
    */
   public ArrayList<Adapatation> calculateNewQEP(int failedNodeID) throws OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException, SNEEException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
   { 
+    System.out.println("Running fake Adapatation ");
     new AdapatationStrategyIntermediateUtils(this).outputNewAgendaImage(outputFolder);
     //remove faield node
     removedDeadNodeData(agenda, failedNodeID);
@@ -162,6 +171,13 @@ public class AdapatationStrategyIntermediate
     return totalAdapatations;
   }
 
+  /**
+   * chekcs agendas for time pinning and temperoral adjustments.
+   * @param agenda2
+   * @param newAgenda
+   * @param currentAdapatation
+   * @return
+   */
   private boolean checkAgendas(AgendaIOT agenda2, AgendaIOT newAgenda,
       Adapatation currentAdapatation)
   {
@@ -169,12 +185,41 @@ public class AdapatationStrategyIntermediate
     return false;
   }
 
+  /**
+   * checks iots for the different types of adapatations on nodes which are required
+   * @param newIOT
+   * @param iot2
+   * @param currentAdapatation
+   */
   private void checkIOT(IOT newIOT, IOT iot2, Adapatation currentAdapatation)
   {
-    // TODO Auto-generated method stub
+    //check reprogrammed nodes
+    
     
   }
 
+  /**
+   * run when scheduling
+   * @param newIOT
+   * @param qos
+   * @param id
+   * @param costParameters
+   * @return
+   * @throws SNEEConfigurationException
+   * @throws SNEEException
+   * @throws SchemaMetadataException
+   * @throws OptimizationException
+   * @throws WhenSchedulerException
+   * @throws MalformedURLException
+   * @throws TypeMappingException
+   * @throws MetadataException
+   * @throws UnsupportedAttributeTypeException
+   * @throws SourceMetadataException
+   * @throws TopologyReaderException
+   * @throws SNEEDataSourceException
+   * @throws CostParametersException
+   * @throws SNCBException
+   */
   private AgendaIOT doSNWhenScheduling(IOT newIOT, QoSExpectations qos,
                                        String id, CostParameters costParameters)
   throws SNEEConfigurationException, SNEEException, SchemaMetadataException,
@@ -230,21 +275,36 @@ public class AdapatationStrategyIntermediate
   private PAF pinPhysicalOperators(AgendaIOT agenda2, IOT iot, Site failedNode) throws SNEEException, SchemaMetadataException, SNEEConfigurationException, OptimizationException
   {
     //get paf 
-    PAF paf = iot.getPAF();
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    PAF paf = cloner.deepClone(iot.getPAF());
     //get iterator for IOT without exchanges
     Iterator<InstanceOperator> iotInstanceOperatorIterator = iot.treeIterator(TraversalOrder.POST_ORDER, false);
+    ArrayList<SensornetOperatorImpl> opsOnFailedNode = new ArrayList<SensornetOperatorImpl>();
     while(iotInstanceOperatorIterator.hasNext())
     {
       InstanceOperator instanceOperator = iotInstanceOperatorIterator.next();
+      SensornetOperator physicalOperator = instanceOperator.getSensornetOperator();
+      SensornetOperatorImpl physicalOperatorImpl = (SensornetOperatorImpl) physicalOperator;
       if(!instanceOperator.getSite().getID().equals(failedNode.getID()))
       {
-        SensornetOperator physicalOperator = instanceOperator.getSensornetOperator();
-        SensornetOperatorImpl physicalOperatorImpl = (SensornetOperatorImpl) physicalOperator;
         physicalOperatorImpl.setIsPinned(true);
         physicalOperatorImpl.addSiteToPinnedList(instanceOperator.getSite().getID());
       }
+      else
+      {
+        opsOnFailedNode.add(physicalOperatorImpl);
+      }
+    }
+    //remove total pinning on operators located on failed node
+    Iterator<SensornetOperatorImpl> failedNodeOpIterator = opsOnFailedNode.iterator();
+    while(failedNodeOpIterator.hasNext())
+    {
+      SensornetOperatorImpl physicalOperatorImpl = failedNodeOpIterator.next();
+      physicalOperatorImpl.setTotallyPinned(false);
     }
     
+    //remove exchange operators (does not exist in a paf)
     Iterator<SensornetOperator> pafIterator = paf.operatorIterator(TraversalOrder.POST_ORDER);
     while(pafIterator.hasNext())
     {
@@ -260,7 +320,7 @@ public class AdapatationStrategyIntermediate
   /**
    * removes the failed node from all dependent objects
    * @param newAgenda
- * @param iot 
+   * @param iot 
    * @param wsnTopology2
    * @param newIOT
    * @param failedNodeID

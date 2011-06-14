@@ -95,6 +95,8 @@ public class PAFUtils extends DLAFUtils {
 				if(opImpl.isPinned())
 				{
 				  out.print("subgraph cluster_" + clusterCounter + " {");
+				  out.print("style=\"rounded,dotted\"");
+				  out.print("color=darkgreen;");
 				  clusterCounter++;
 				}
 				out.print("\"" + op.getID() + "\" [fontsize=9 ");
@@ -129,7 +131,11 @@ public class PAFUtils extends DLAFUtils {
 				{
 				  boolean first = true;
 				  Iterator<String> operatorIterator = opImpl.getPinnedIterator();
-				  String pinnedLocs = "Pinned at \n {";
+				  String pinnedLocs ="";
+				  if(opImpl.isTotallyPinned())
+				    pinnedLocs = "TPin {";
+				  else
+				    pinnedLocs = "Pin {";
 				  while(operatorIterator.hasNext())
 				  {
 				    if(!first)
@@ -139,7 +145,8 @@ public class PAFUtils extends DLAFUtils {
 				    pinnedLocs = pinnedLocs.concat(operatorIterator.next());
 				    first = false;
 				  }
-				  out.println("label = \"" + pinnedLocs + "} \"");
+				  out.println("labelloc=t; \n labeljust=r;");
+				  out.println("label = \"" + pinnedLocs + "} \" [fontcolor=darkgreen]");
 				  out.println("}");
 				}
 			}

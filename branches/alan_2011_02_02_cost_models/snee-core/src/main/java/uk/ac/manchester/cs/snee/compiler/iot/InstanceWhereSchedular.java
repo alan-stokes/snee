@@ -10,6 +10,8 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.common.graph.Edge;
+import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
@@ -17,6 +19,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.DAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.PAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
@@ -72,6 +75,8 @@ public class InstanceWhereSchedular
     boolean success = new File(fileDirectory).mkdir();
     if(success)
     {
+      //output paf
+      new PAFUtils(paf).exportAsDotFile(fileDirectory + fileSeparator + "PAF.dot");
       //generate floating operators / fixed locations
       generatePartialDaf();
       //produce image output so that can be validated
@@ -79,9 +84,6 @@ public class InstanceWhereSchedular
       //do heuristic placement
       doInstanceOperatorSiteAssignment();
       new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "siteAssignment.dot", "", true);
-      //move duplicate aggerates upwards
-      moveAggeratesInitsUpwards();
-      new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "movedInitsUpwards.dot", "", true);
       //remove instances which are redundant
       removeRedundantOpInstances();
       new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "cleanedSiteAssignment.dot", "", true);
@@ -133,9 +135,10 @@ public class InstanceWhereSchedular
   }
 
   //tested and works 
-  private void moveAggeratesInitsUpwards()//aggerate inits
+  private boolean moveAggeratesInitsUpwards()//aggerate inits
   {
     //go though routing tree from top to bottom
+    boolean changed = false;
     Iterator<Site> siteIter = routingTree.siteIterator(TraversalOrder.PRE_ORDER);
     while(siteIter.hasNext())
     {
@@ -167,12 +170,14 @@ public class InstanceWhereSchedular
           {
             if(!child.getSite().getID().equals(mergeInstance.getSite().getID()))
             {
+              changed = true;
               iot.reAssign(child, mergeInstance.getSite(), child.getSite());
             }
           }
         }
       }
     }
+    return changed;
   }
 
   private void startFragmentation()
@@ -493,12 +498,13 @@ public class InstanceWhereSchedular
     {
       SensornetOperator op = opIter.next();
       SensornetOperatorImpl opImpl = (SensornetOperatorImpl) op;
+      boolean wasTotallyPinned = opImpl.isTotallyPinned();
       if(opImpl.isPinned())
       {
     	  addPinnedOpInstances(op, opImpl, disconnectedOpInstMapping);
       } 
-      //if(opImpl.isTotallyPinned())
-      //{}
+      if(wasTotallyPinned)
+      {}
       else if (   op instanceof SensornetAcquireOperator 
           || op instanceof SensornetDeliverOperator) 
       {
@@ -545,6 +551,7 @@ public class InstanceWhereSchedular
       disconnectedOpInstMapping.add(op.getID(), opInst);//add to temp hash map which holds operators which dont have a connection upwards
       convergeAllChildOpSubstreams(op, opInst, iot, disconnectedOpInstMapping);
     }
+    opImpl.setIsPinned(false);
 	}
 
 private void addOtherOpTypeInstances(SensornetOperator op, 
@@ -563,16 +570,22 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         InstanceOperator childOpInst = childOpInstIter.next();
         //get deepest site for this operator
         Site site = childOpInst.getDeepestConfluenceSite();
-        //add operator to this site also.
-        InstanceOperator opInst = new InstanceOperator(op,site);
-        //update structures
-        iot.addOpInst(op, opInst);
-        iot.addEdge(childOpInst, opInst);
-        
-        disconnectedOpInstMapping.add(op.getID(), opInst);
-        //TODO
-       // disconnectedOpInstMapping.remove(childOpInst.getID(), childOpInst);
-        //TODO
+        HashSet<Site> opSites = iot.getSites(op);
+        if(!opSites.contains(site))
+        {
+          //add operator to this site also.
+          InstanceOperator opInst = new InstanceOperator(op,site);
+          //update structures
+          iot.addOpInst(op, opInst);
+          Edge transmissionEdge = iot.getTransmissionEdge(childOpInst);
+          if(transmissionEdge != null)
+          {
+            InstanceOperator dest = iot.getOperatorInstance(transmissionEdge.getDestID());
+            iot.removeEdge(childOpInst, dest);
+          }
+          iot.addEdge(childOpInst, opInst);       
+          disconnectedOpInstMapping.add(op.getID(), opInst);
+        }
       }
     }
   }
@@ -677,9 +690,17 @@ private void addOtherOpTypeInstances(SensornetOperator op,
       //if sets coincide (meaning all instances of input are located on site) break
       if (confluenceOpInstSet.equals(disconnectedChildOpInstSet)) 
       { 
-        //place new operator
-        InstanceOperator opInst = new InstanceOperator(op, site);
-        iot.addOpInst(op, opInst); 
+        HashSet<Site> opSites = iot.getSites(op);
+        InstanceOperator opInst = null;
+        if(opSites.contains(site))
+        {
+          opInst = iot.getOperatorInstance(op, site);
+        }
+        else
+        {
+          opInst = new InstanceOperator(op, site);
+          iot.addOpInst(op, opInst); 
+        }
         //update children to new parent
         convergeSubstreams(confluenceOpInstSet, opInst, iot, disconnectedOpInstMapping);
         //add new disconnected instance
@@ -690,17 +711,25 @@ private void addOtherOpTypeInstances(SensornetOperator op,
       }
       //if more than one instance on current site but not all
       if (confluenceOpInstSet.size()>1) 
-      {
-        //place new operator
-        InstanceOperator opInst = new InstanceOperator(op, site);
-        iot.addOpInst(op, opInst);
+      { 
+        HashSet<Site> opSites = iot.getSites(op);
+        InstanceOperator opInst = null;
+        if(opSites.contains(site))
+        {
+          opInst = iot.getOperatorInstance(op, site);
+        }
+        else
+        {
+          opInst = new InstanceOperator(op, site);
+          iot.addOpInst(op, opInst);
+        }
         //update children to new parent
         convergeSubstreams(confluenceOpInstSet, opInst, iot, disconnectedOpInstMapping);
         //add new disconnected instance
         disconnectedChildOpInstSet.add(opInst);
         //remove what are now connected instances from the disconnected Operator hash
         disconnectedChildOpInstSet.removeAll(confluenceOpInstSet);
-      }
+    }
     }
     //set all operators with this id to be the of input instances operators.
     disconnectedOpInstMapping.set(op.getID(), disconnectedChildOpInstSet);
@@ -754,43 +783,55 @@ private void addOtherOpTypeInstances(SensornetOperator op,
     while (childOpInstIter.hasNext()) 
     {
       InstanceOperator childOpInst = childOpInstIter.next();
+      Edge transmissionEdge = iot.getTransmissionEdge(childOpInst);
+      if(transmissionEdge != null)
+      {
+        InstanceOperator dest = iot.getOperatorInstance(transmissionEdge.getDestID());
+        iot.removeEdge(childOpInst, dest);
+      }
       iot.addEdge(childOpInst, opInst);
-      //TODO
-      //disconnectedOpInstMapping.remove(childOpInst.getID(), childOpInst);
-      //TODO
     }
   }
 
   private void removeRedundantOpInstances() 
-  throws OptimizationException
+  throws OptimizationException, SchemaMetadataException
   {
-    removeRedundantAggrIterOpInstances();
-    removeRedundantSiblingOpInstances();  
-    removeRedundantAggrIterOpAfterInitMergeInstances();
+    boolean changed = true;
+    //move duplicate aggerates upwards
+    boolean firstPhase = moveAggeratesInitsUpwards();
+    new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "movedInitsUpwards.dot", "", true);
+    boolean secondPhase = removeRedundantAggrIterOpInstances();
+    boolean thirdPhase = removeRedundantSiblingOpInstances();  
+    boolean forthPhase = removeRedundantAggrIterOpAfterInitMergeInstances();
   }
    
-  private void removeRedundantAggrIterOpAfterInitMergeInstances() 
+  private boolean removeRedundantAggrIterOpAfterInitMergeInstances() 
   throws OptimizationException
   {
+    boolean changed = false;
     Iterator<InstanceOperator> opInstIter = iot.treeIterator(TraversalOrder.POST_ORDER);
     while (opInstIter.hasNext()) 
     {
       InstanceOperator operator = opInstIter.next();
       if(operator.getSensornetOperator() instanceof SensornetAggrMergeOperator)
       {
-        if(operator.getInDegree() == 1 && 
+        if(operator.getInDegree() == 1 && operator.getInput(0).getInDegree() == 1 &&
             iot.getOpInstances(operator.getSensornetOperator()).size() != 1)
         {
+          System.out.println("number of init merges" + iot.getOpInstances(operator.getSensornetOperator()).size());
           iot.removeOpInst(operator);
+          changed = true;
         }
       }
     }
+    return changed;
   }
 
-  private void removeRedundantSiblingOpInstances() 
+  private boolean removeRedundantSiblingOpInstances() 
   throws OptimizationException
   {
     //get iterator over instance operators
+    boolean changed = false;
     Iterator<InstanceOperator> opInstIter = iot.treeIterator(TraversalOrder.POST_ORDER);
     while (opInstIter.hasNext()) {
       InstanceOperator opInst = opInstIter.next();
@@ -808,12 +849,14 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         ArrayList<InstanceOperator> opInstColl = siteOpInstMap.get(site);
         iot.mergeSiblings(opInstColl);
       }
-    } 
+    }
+    return changed;
   }
 
-  private void removeRedundantAggrIterOpInstances() 
+  private boolean removeRedundantAggrIterOpInstances() 
   throws OptimizationException
   {
+    boolean changed = false;
     //iterate the operator instances
     Iterator<InstanceOperator> opInstIter = iot.treeIterator(TraversalOrder.POST_ORDER);
     while (opInstIter.hasNext()) 
@@ -826,9 +869,10 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         /*check all children operators  for a agg merge which is on the same site as the op.
          * if so then remove child operator
          */
-    	if(opInst.getInDegree() == 1 && iot.getNumOpInstances(opInst.getSensornetOperator()) > 1)
+      	if(opInst.getInDegree() == 1 && iot.getNumOpInstances(opInst.getSensornetOperator()) > 1)
         {
           iot.removeOpInst(opInst);
+          changed = true;
         }  
     	
         for (int i=0; i<opInst.getInDegree(); i++) 
@@ -840,11 +884,15 @@ private void addOtherOpTypeInstances(SensornetOperator op,
               && opSite == childOpSite) 
           {
             if(iot.getOpInstances(childOpInst.getSensornetOperator()).size() != 1)
+            {
               iot.removeOpInst(childOpInst);
+              changed = true;
+            }
           }
         }
       }
     } 
+    return changed;
   }
   
   public IOT getIOT()

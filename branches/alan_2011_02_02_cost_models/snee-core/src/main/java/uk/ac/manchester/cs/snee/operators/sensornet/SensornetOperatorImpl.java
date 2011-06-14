@@ -714,7 +714,17 @@ public CostParameters getCostParams()
 
 	public void setIsPinned(boolean isPinned)
 	{
-	  this.isPinned = isPinned;
+	  if(!isPinned)
+	  {
+	    pinnedSites.clear();
+	    this.isPinned = isPinned;
+	    this.isTotallyPinned = false;
+	  }
+	  else
+	  {
+	    this.isPinned = isPinned;
+	    this.setTotallyPinned(true);
+	  }
 	}	
 	
 	public boolean addSiteToPinnedList(String string) 

@@ -165,6 +165,7 @@ public class Monitor implements Observer
     Topology network = sm.getTopology();
     Node failedNode = qep.getIOT().getNode(3);
     network.removeNode(failedNode.getID());
+    System.out.println("fake node failure of node 3");
     manager.runStragity2(3);
   }
 
