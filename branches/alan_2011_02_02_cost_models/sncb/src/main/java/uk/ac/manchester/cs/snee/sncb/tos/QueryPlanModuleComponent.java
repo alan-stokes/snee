@@ -46,6 +46,7 @@ import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EndManagementTask;
@@ -64,7 +65,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 
     SensorNetworkQueryPlan plan;
 
-    Agenda agenda;
+    AgendaIOT agenda;
     
     Integer sink;
 
@@ -102,7 +103,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		super(config, tossimFlag, debugLeds);
 		this.id = name;
 		this.plan = plan;
-		this.agenda = plan.getAgenda();
+		this.agenda = plan.getAgendaIOT();
 		this.sink = sink;
 		this.costParams = costParams;
 

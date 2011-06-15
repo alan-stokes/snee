@@ -133,7 +133,7 @@ public class IOT extends SNEEAlgebraicForm
   }
   
   /**
-   * gets the operators which are on a site (in the form of instance operators
+   * gets the operators which are on a site (in the form of instance operators does not include exchanges)
    * @param site site to which the operators are being found on
    * @return the operators on site site in the form of a arraylist no order to the array
    */
@@ -143,7 +143,7 @@ public class IOT extends SNEEAlgebraicForm
   }
   
   /**
-   * gets the operators which are on a site (in the form of instance operators
+   * gets the operators which are on a site (in the form of instance operators, and can include exchanges)
    * @param site site to which the operators are being found on
    * @param traversalOrder post or pre order of operators in tree.
    * @return the operators on site site in the form of a arraylist in a order 
@@ -155,6 +155,20 @@ public class IOT extends SNEEAlgebraicForm
     InstanceOperator root = this.rootOp; 
     final ArrayList<InstanceOperator> operatorList = new ArrayList<InstanceOperator>();
     this.doTransvesalIterator(root, site, operatorList, traversalOrder, exchanges);
+    return operatorList;
+  }
+  
+  /**
+   * gets the operators which are on a site in an order(in the form of instance operators, and can include exchanges)
+   * @param site site to which the operators are being found on
+   * @return the operators on site site in the form of a arraylist in a order 
+   * defined in traversal order
+   */
+  public ArrayList<InstanceOperator> getOpInstances(Site site, boolean exchanges) 
+  {
+    InstanceOperator root = this.rootOp; 
+    final ArrayList<InstanceOperator> operatorList = new ArrayList<InstanceOperator>();
+    this.doTransvesalIterator(root, site, operatorList, TraversalOrder.POST_ORDER, exchanges);
     return operatorList;
   }
   

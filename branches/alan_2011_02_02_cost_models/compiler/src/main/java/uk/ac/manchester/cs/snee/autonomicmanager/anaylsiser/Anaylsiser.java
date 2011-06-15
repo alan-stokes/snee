@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 
 import uk.ac.manchester.cs.snee.MetadataException;
@@ -217,6 +218,12 @@ public class Anaylsiser
          AgendaException, SNEEException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
   {
     ArrayList<Adapatation> adapatations = adapatationStrategyIntermediateSpaceAndTimePinned.calculateNewQEP(failedNodeID);
+    //output adapatations in a String format
+    Iterator<Adapatation> adapatationIterator = adapatations.iterator();
+    while(adapatationIterator.hasNext())
+    {
+      System.out.println(adapatationIterator.next().toString());
+    }
     
     return null;
   }

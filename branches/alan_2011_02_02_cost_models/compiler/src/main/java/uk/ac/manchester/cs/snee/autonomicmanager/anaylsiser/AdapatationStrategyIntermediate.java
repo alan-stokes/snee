@@ -93,10 +93,6 @@ public class AdapatationStrategyIntermediate
   
   public void initilise(QueryExecutionPlan oldQep) throws SchemaMetadataException 
   {
-    //Cloner cloner = new Cloner();
-   // cloner.dontClone(Logger.class);
-   // SensorNetworkQueryPlan toClone = (SensorNetworkQueryPlan) oldQep;
-  //  this.qep = cloner.deepClone(toClone);
     this.qep = (SensorNetworkQueryPlan) oldQep;
     
     SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata)this.qep.getDLAF().getSource();
@@ -132,6 +128,11 @@ public class AdapatationStrategyIntermediate
   { 
     System.out.println("Running fake Adapatation ");
     new AdapatationStrategyIntermediateUtils(this).outputNewAgendaImage(outputFolder);
+    //clone the iot so that any changes do not affect comparisons.
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    IOT oldIOT = cloner.deepClone(iot);
+    
     //remove faield node
     removedDeadNodeData(agenda, failedNodeID);
     Node failedNode = iot.getNode(failedNodeID);
@@ -153,16 +154,16 @@ public class AdapatationStrategyIntermediate
       InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), outputFolder.toString());
       IOT newIOT = instanceWhere.getIOT();
       //analysis newIOT for interesting nodes
-      checkIOT(newIOT, iot, currentAdapatation);
+      checkIOT(newIOT, oldIOT, (Site) failedNode, currentAdapatation);
         
-      //TODO run new iot though when scheduler and locate changes
+      //run new iot though when scheduler and locate changes
       AgendaIOT newAgenda = doSNWhenScheduling(newIOT, qep.getQos(), qep.getID(), qep.getCostParameters());
       //check if agenda agrees to constraints.
       boolean success = checkAgendas(agenda, newAgenda, currentAdapatation);
       //check if new plan agrees with time pinning
       if(success)
       {
-        DAF daf = new IOTUtils(newIOT, qep.getCostParameters()).convertToDAF();
+        DAF daf = new IOTUtils(newIOT, qep.getCostParameters()).getDAF();
         SensorNetworkQueryPlan newQep = new SensorNetworkQueryPlan(qep.getDLAF(), routingTree, daf, newIOT, newAgenda, qep.getID());
         currentAdapatation.setNewQep(newQep);
         totalAdapatations.add(currentAdapatation);
@@ -178,24 +179,156 @@ public class AdapatationStrategyIntermediate
    * @param currentAdapatation
    * @return
    */
-  private boolean checkAgendas(AgendaIOT agenda2, AgendaIOT newAgenda,
+  private boolean checkAgendas(AgendaIOT oldAgenda, AgendaIOT newAgenda,
       Adapatation currentAdapatation)
   {
+    checkForTemporalChnagedNodes(newAgenda, oldAgenda, currentAdapatation);
+    if(timePinned)
+      if(currentAdapatation.getTemporalChangesSize() == 0)
+        return true;
+      else
+        return false;
+    else
+      return true;
+  }
+
+  /**
+   * checks between old and new agendas and locates nodes whos fragments need a temporal adjustment.
+   * @param newAgenda
+   * @param oldAgenda
+   * @param currentAdapatation
+   */
+  private void checkForTemporalChnagedNodes(AgendaIOT newAgenda,
+      AgendaIOT oldAgenda, Adapatation currentAdapatation)
+  {
     // TODO Auto-generated method stub
-    return false;
+    
   }
 
   /**
    * checks iots for the different types of adapatations on nodes which are required
    * @param newIOT
+   * @param failedNode 
    * @param iot2
    * @param currentAdapatation
    */
-  private void checkIOT(IOT newIOT, IOT iot2, Adapatation currentAdapatation)
+  private void checkIOT(IOT newIOT, IOT oldIOT, Site failedNode, Adapatation currentAdapatation)
   {
     //check reprogrammed nodes
-    
-    
+    checkForReProgrammedNodes(newIOT, oldIOT, currentAdapatation);
+    checkForReDirectionNodes(newIOT, oldIOT, currentAdapatation);
+    checkForDeactivatedNodes(newIOT, oldIOT, failedNode, currentAdapatation);
+  }
+
+  /**
+   * checks iots for nodes which have operators in the old IOT, but have none in the new iot
+   * @param newIOT
+   * @param oldIOT
+   * @param failedNode 
+   * @param currentAdapatation
+   */
+  private void checkForDeactivatedNodes(IOT newIOT, IOT oldIOT,
+      Site failedNode, Adapatation ad)
+  {
+    RT rt = oldIOT.getRT();
+    Iterator<Site> siteIterator = rt.siteIterator(TraversalOrder.PRE_ORDER);
+    //get rid of root site (no exchanges to work with)
+    siteIterator.next();
+    //go though each site, looking to see if destination sites are the same for exchanges.
+    while(siteIterator.hasNext())
+    {
+      Site site = siteIterator.next();
+      ArrayList<InstanceOperator> instanceOperatorsNew = newIOT.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
+      if(instanceOperatorsNew.size() == 0 && !failedNode.getID().equals(site.getID()))
+      {
+        ad.addDeactivatedSite(site);
+      }
+    }
+  }
+
+  /**
+   * check all sites in new IOT for sites in the old IOT where they communicate with different sites.
+   * @param newIOT
+   * @param oldIOT
+   * @param ad
+   */
+  private void checkForReDirectionNodes(IOT newIOT, IOT oldIOT,
+      Adapatation ad)
+  {
+    RT rt = newIOT.getRT();
+    Iterator<Site> siteIterator = rt.siteIterator(TraversalOrder.PRE_ORDER);
+    //get rid of root site (no exchanges to work with)
+    siteIterator.next();
+    //go though each site, looking to see if destination sites are the same for exchanges.
+    while(siteIterator.hasNext())
+    {
+      Site site = siteIterator.next();
+      ArrayList<InstanceOperator> instanceOperatorsNew = newIOT.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
+      ArrayList<InstanceOperator> instanceOperatorsOld = oldIOT.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
+      InstanceExchangePart exchangeNew = (InstanceExchangePart) instanceOperatorsNew.get(0);
+      InstanceExchangePart exchangeOld = null;
+      if(instanceOperatorsOld.size() == 0)
+      {}
+      else
+      {
+        exchangeOld = (InstanceExchangePart) instanceOperatorsOld.get(0);
+        if(!exchangeNew.getNext().getSite().getID().equals(exchangeOld.getNext().getSite().getID()))
+        {
+          ad.addRedirectedSite(site);
+        }
+      }
+    }
+  }
+  
+  /**
+   * checks for nodes which have need to be reprogrammed to go from one IOT to the other
+   * @param newIOT
+   * @param oldIOT
+   * @param currentAdapatation
+   */
+  private void checkForReProgrammedNodes(IOT newIOT, IOT oldIOT,
+      Adapatation ad)
+  {
+    RT rt = newIOT.getRT();
+    Iterator<Site> siteIterator = rt.siteIterator(TraversalOrder.POST_ORDER);
+    while(siteIterator.hasNext())
+    {
+      Site site = siteIterator.next();
+      ArrayList<SensornetOperator> physicalOpsNew = new ArrayList<SensornetOperator>();
+      ArrayList<SensornetOperator> physicalOpsOld = new ArrayList<SensornetOperator>();
+      ArrayList<InstanceOperator> instanceOperatorsNew = newIOT.getOpInstances(site, true);
+      ArrayList<InstanceOperator> instanceOperatorsOld = oldIOT.getOpInstances(site, true);
+      Iterator<InstanceOperator> newInsOpIterator = instanceOperatorsNew.iterator();
+      Iterator<InstanceOperator> oldInsOpIterator = instanceOperatorsOld.iterator();
+      while(newInsOpIterator.hasNext())
+      {
+        physicalOpsNew.add(newInsOpIterator.next().getSensornetOperator());
+      }
+      while(oldInsOpIterator.hasNext())
+      {
+        physicalOpsOld.add(oldInsOpIterator.next().getSensornetOperator());
+      }
+      Iterator<SensornetOperator> newSenOpIterator = physicalOpsNew.iterator();
+      Iterator<SensornetOperator> oldSenOpIterator = physicalOpsOld.iterator();
+      if(physicalOpsNew.size() != physicalOpsOld.size())
+      {
+        ad.addReprogrammedSite(site); 
+      }
+      else
+      {
+        boolean notSame = false;
+        while(newSenOpIterator.hasNext() && notSame)
+        {
+          SensornetOperator newSenOp = newSenOpIterator.next();
+          SensornetOperator oldSenOp = oldSenOpIterator.next();
+          if(!newSenOp.getID().equals(oldSenOp.getID()))
+          {
+            ad.addReprogrammedSite(site); 
+            notSame = true;
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -288,19 +421,19 @@ public class AdapatationStrategyIntermediate
       SensornetOperatorImpl physicalOperatorImpl = (SensornetOperatorImpl) physicalOperator;
       if(!instanceOperator.getSite().getID().equals(failedNode.getID()))
       {
-        physicalOperatorImpl.setIsPinned(true);
-        physicalOperatorImpl.addSiteToPinnedList(instanceOperator.getSite().getID());
+        ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).setIsPinned(true);
+        ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).addSiteToPinnedList(instanceOperator.getSite().getID());
       }
       else
       {
-        opsOnFailedNode.add(physicalOperatorImpl);
+        opsOnFailedNode.add(((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())));
       }
     }
     //remove total pinning on operators located on failed node
     Iterator<SensornetOperatorImpl> failedNodeOpIterator = opsOnFailedNode.iterator();
     while(failedNodeOpIterator.hasNext())
     {
-      SensornetOperatorImpl physicalOperatorImpl = failedNodeOpIterator.next();
+      SensornetOperatorImpl physicalOperatorImpl = ((SensornetOperatorImpl) paf.getOperatorTree().getNode(failedNodeOpIterator.next().getID()));
       physicalOperatorImpl.setTotallyPinned(false);
     }
     

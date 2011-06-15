@@ -159,15 +159,24 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 	  return agendaIOT;
 	}
 	public long getAcquisitionInterval_ms() {
-		return this.agenda.getAcquisitionInterval_ms();
+	  if(this.agenda != null)
+		  return this.agenda.getAcquisitionInterval_ms();
+	  else
+	    return this.agendaIOT.getAcquisitionInterval_ms();
 	}
 	
 	public long getAcquisitionInterval_bms() {
-		return this.agenda.getAcquisitionInterval_bms();
+	  if(this.agenda != null) 
+		  return this.agenda.getAcquisitionInterval_bms();
+	  else
+      return this.agendaIOT.getAcquisitionInterval_bms();
 	}
 	
 	public long getBufferingFactor() {
-		return this.agenda.getBufferingFactor();
+	  if(this.agenda != null) 
+		  return this.agenda.getBufferingFactor();
+	  else
+	    return this.agendaIOT.getBufferingFactor();
 	}
 
 	//delegate
