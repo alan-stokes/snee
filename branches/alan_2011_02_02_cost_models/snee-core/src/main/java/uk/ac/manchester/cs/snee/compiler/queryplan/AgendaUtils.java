@@ -64,13 +64,17 @@ public class AgendaUtils {
 	return (this.agenda.getStartTimes().size() + 3) * CELL_HEIGHT;
     }
 
-    public void generateImage() throws SNEEConfigurationException {
-
-		String sep = System.getProperty("file.separator");
-		String outputDir = SNEEProperties.getSetting(
-				SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
-				sep + agenda.getQueryName() + sep + "query-plan";
-		String pngFilePath = outputDir + sep + agenda.getID() + ".png";
+    public void generateImage() throws SNEEConfigurationException 
+    {
+      String sep = System.getProperty("file.separator");
+      String outputDir = SNEEProperties.getSetting(
+          SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
+          sep + agenda.getQueryName() + sep + "query-plan";
+      String pngFilePath = outputDir + sep + agenda.getID() + ".png";
+      generateImage(pngFilePath);
+    }
+    
+    public void generateImage(String pngFilePath) throws SNEEConfigurationException {
     	
 	final BufferedImage offImage = new BufferedImage(this.computeWidth(),
 		this.computeHeight(), BufferedImage.TYPE_INT_RGB);

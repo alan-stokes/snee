@@ -3,7 +3,10 @@ package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser;
 import java.io.File;
 
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -24,7 +27,7 @@ public class AdapatationStrategyIntermediateUtils
    * @param agendaIOT
    * @param newIOT
    */
-  public void outputNewAgendaImage(File outputFolder)
+  public void outputNewAgendaImage(File outputFolder, String fileName)
   {
     try
     {
@@ -33,7 +36,7 @@ public class AdapatationStrategyIntermediateUtils
       File agendaFolder = new File(outputFolder.toString() + sep + "Agendas");
       agendaFolder.mkdir();
       output.generateImage(agendaFolder.toString());
-      output.exportAsLatex(agendaFolder.toString() + sep, "newAgenda");
+      output.exportAsLatex(agendaFolder.toString() + sep, fileName);
     }
     catch (SNEEConfigurationException e)
     {
@@ -78,6 +81,19 @@ public class AdapatationStrategyIntermediateUtils
     {
       e.printStackTrace();
     }
+  }
+
+  public void outputAgendas(AgendaIOT newAgenda, AgendaIOT agenda, File outputFolder) throws SNEEConfigurationException
+  {
+    AgendaIOTUtils oldOutput = new AgendaIOTUtils(agenda, ad.getIOT(), true);
+    AgendaIOTUtils output = new AgendaIOTUtils(newAgenda, ad.getIOT(), true);
+    File agendaFolder = new File(outputFolder.toString() + sep + "Agendas");
+    agendaFolder.mkdir();
+    output.generateImage(agendaFolder.toString());
+    output.exportAsLatex(agendaFolder.toString() + sep + "newAgendaLatex.tex");
+    oldOutput.generateImage(agendaFolder.toString());
+    oldOutput.exportAsLatex(agendaFolder.toString() + sep + "oldAgendaLatex.tex");
+    
   }
   
 }

@@ -47,6 +47,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperatorImpl;
@@ -127,7 +128,6 @@ public class AdapatationStrategyIntermediate
   public ArrayList<Adapatation> calculateNewQEP(ArrayList<String> failedNodes) throws OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException, SNEEException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
   { 
     System.out.println("Running fake Adapatation ");
-    new AdapatationStrategyIntermediateUtils(this).outputNewAgendaImage(outputFolder);
     //clone the iot so that any changes do not affect comparisons.
     Cloner cloner = new Cloner();
     cloner.dontClone(Logger.class);
@@ -152,11 +152,13 @@ public class AdapatationStrategyIntermediate
       //run fragment paf though where scheduler.
       InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), outputFolder.toString());
       IOT newIOT = instanceWhere.getIOT();
-      //analysis newIOT for interesting nodes
-      checkIOT(newIOT, oldIOT, failedNodes, currentAdapatation);
         
       //run new iot though when scheduler and locate changes
       AgendaIOT newAgenda = doSNWhenScheduling(newIOT, qep.getQos(), qep.getID(), qep.getCostParameters());
+      //output new and old agendas
+      new AdapatationStrategyIntermediateUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), outputFolder);
+      //analysis newIOT for interesting nodes
+      checkIOT(newIOT, oldIOT, failedNodes, currentAdapatation);
       //check if agenda agrees to constraints.
       boolean success = checkAgendas(agenda, newAgenda, currentAdapatation);
       //check if new plan agrees with time pinning
@@ -432,7 +434,8 @@ public class AdapatationStrategyIntermediate
       }
       else
       {
-        opsOnFailedNode.add(((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())));
+        if(!(physicalOperator instanceof SensornetAcquireOperator))
+          opsOnFailedNode.add(((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())));
       }
     }
     //remove total pinning on operators located on failed node

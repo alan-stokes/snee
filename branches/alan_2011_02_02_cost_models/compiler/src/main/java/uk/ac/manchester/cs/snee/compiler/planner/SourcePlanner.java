@@ -140,6 +140,8 @@ public class SourcePlanner {
 		//Agenda agenda = doSNWhenScheduling(daf, qos, queryID);
 		//new AgendaUtils(agenda, false).exportAsLatex("agendaLatex");
 		AgendaIOT agendaIOT = doSNWhenScheduling(iot, qos, queryID, costParams);
+		new AgendaIOTUtils(agendaIOT, iot, true).generateImage();
+		new AgendaIOTUtils(agendaIOT, iot, true).exportAsLatex();
 		//agenda.setAgendaIOT(agendaIOT);
 		SensorNetworkQueryPlan qep = new SensorNetworkQueryPlan(dlaf, rt, iot,
 				agendaIOT, queryID, qos); //agenda		

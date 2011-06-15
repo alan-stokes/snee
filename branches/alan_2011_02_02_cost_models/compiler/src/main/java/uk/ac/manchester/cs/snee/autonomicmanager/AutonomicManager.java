@@ -82,7 +82,7 @@ public class AutonomicManager
     String outputDir = SNEEProperties.getSetting(
         SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
         sep + sQep.getAgendaIOT().getQueryName();
-    File firstOutputFolder = new File(outputDir + sep + "AutonomicManData");;
+    File firstOutputFolder = new File(outputDir + sep + "AutonomicManData");
     
     if(firstOutputFolder.exists())
     {

@@ -171,51 +171,15 @@ public class AgendaIOTUtils {
 	}
 
     }    
-    
-//    public final void exportAsDOTFile(final String fname) {
-//    	try {
-//    	    final PrintWriter out = new PrintWriter(new BufferedWriter(
-//    		    new FileWriter(fname)));
-//
-//    	    out.println("digraph \"" + fname + "\" {");
-//    	    out.println("node [shape = plaintext fontsize = 8]");
-//
-//    	    //display all the start times
-//    	    boolean first = true;
-//    	    final Iterator<Long> startTimeIter = this.startTimes.iterator();
-//    	    while (startTimeIter.hasNext()) {
-//    		if (first) {
-//    		    first = false;
-//    		} else {
-//    		    out.print(" -> ");
-//    		}
-//
-//    		final Long s = startTimeIter.next();
-//    		out.print(s.toString());
-//    	    }
-//
-//    	    final Iterator<Site> nodeIter = this.tasks.keySet().iterator();
-//    	    while (nodeIter.hasNext()) {
-//    		final Site n = nodeIter.next();
-//
-//    		final ArrayList<Task> taskList = this.tasks.get(n);
-//    		final Iterator<Task> taskIter = taskList.iterator();
-//    		while (taskIter.hasNext()) {
-//    		    final Task t = taskIter.next();
-//
-//    		    out.println("{ rank=same; " + t.getStartTime() + " "
-//    			    + t.toString() + " }");
-//    		}
-//    	    }
-//
-//    	    out.println("}");
-//    	    out.close();
-//    	} catch (final IOException e) {
-//    	    logger.warn("Export failed: " + e.toString());
-//    	}
-//
-//        }
-
+     
+    public final void exportAsLatex() throws SNEEConfigurationException
+    {
+      String sep = System.getProperty("file.separator");
+      String outputDir = SNEEProperties.getSetting(
+          SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
+          sep + agenda.getQueryName() + sep + "query-plan" + sep + "query-planLatex";
+      exportAsLatex(outputDir);
+    }
     
     public final void exportAsLatex(final String outputFileName) {
 	try {
