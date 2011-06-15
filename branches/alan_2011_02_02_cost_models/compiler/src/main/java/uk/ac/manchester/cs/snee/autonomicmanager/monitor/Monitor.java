@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -163,10 +164,12 @@ public class Monitor implements Observer
     SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) 
     qep.getDLAF().getSource();
     Topology network = sm.getTopology();
+    ArrayList<String> failedNodes = new ArrayList<String>();
     Node failedNode = qep.getIOT().getNode(3);
+    failedNodes.add(failedNode.getID());
     network.removeNode(failedNode.getID());
     System.out.println("fake node failure of node 3");
-    manager.runStragity2(3);
+    manager.runStragity2(failedNodes);
   }
 
 }

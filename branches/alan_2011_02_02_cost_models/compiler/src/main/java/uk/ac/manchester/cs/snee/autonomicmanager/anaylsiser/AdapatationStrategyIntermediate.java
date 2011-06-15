@@ -124,7 +124,7 @@ public class AdapatationStrategyIntermediate
    * @throws WhenSchedulerException 
    * @throws MalformedURLException 
    */
-  public ArrayList<Adapatation> calculateNewQEP(int failedNodeID) throws OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException, SNEEException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
+  public ArrayList<Adapatation> calculateNewQEP(ArrayList<String> failedNodes) throws OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException, SNEEException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
   { 
     System.out.println("Running fake Adapatation ");
     new AdapatationStrategyIntermediateUtils(this).outputNewAgendaImage(outputFolder);
@@ -134,13 +134,12 @@ public class AdapatationStrategyIntermediate
     IOT oldIOT = cloner.deepClone(iot);
     
     //remove faield node
-    removedDeadNodeData(agenda, failedNodeID);
-    Node failedNode = iot.getNode(failedNodeID);
+    removedDeadNodeData(agenda, failedNodes);
     //create paf
-    PAF paf = pinPhysicalOperators(agenda, iot, (Site) failedNode);
+    PAF paf = pinPhysicalOperators(agenda, iot, failedNodes);
     
     //create new routing tree
-    ArrayList<RT> routingTrees = createNewRoutingTrees(agenda, iot, failedNodeID, paf);
+    ArrayList<RT> routingTrees = createNewRoutingTrees(agenda, iot, failedNodes, paf);
     //create store for all adapatations
     ArrayList<Adapatation> totalAdapatations = new ArrayList<Adapatation>();
     Iterator<RT> routeIterator = routingTrees.iterator();
@@ -154,7 +153,7 @@ public class AdapatationStrategyIntermediate
       InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), outputFolder.toString());
       IOT newIOT = instanceWhere.getIOT();
       //analysis newIOT for interesting nodes
-      checkIOT(newIOT, oldIOT, (Site) failedNode, currentAdapatation);
+      checkIOT(newIOT, oldIOT, failedNodes, currentAdapatation);
         
       //run new iot though when scheduler and locate changes
       AgendaIOT newAgenda = doSNWhenScheduling(newIOT, qep.getQos(), qep.getID(), qep.getCostParameters());
@@ -208,27 +207,27 @@ public class AdapatationStrategyIntermediate
   /**
    * checks iots for the different types of adapatations on nodes which are required
    * @param newIOT
-   * @param failedNode 
+   * @param failedNodes 
    * @param iot2
    * @param currentAdapatation
    */
-  private void checkIOT(IOT newIOT, IOT oldIOT, Site failedNode, Adapatation currentAdapatation)
+  private void checkIOT(IOT newIOT, IOT oldIOT, ArrayList<String> failedNodes, Adapatation currentAdapatation)
   {
     //check reprogrammed nodes
     checkForReProgrammedNodes(newIOT, oldIOT, currentAdapatation);
     checkForReDirectionNodes(newIOT, oldIOT, currentAdapatation);
-    checkForDeactivatedNodes(newIOT, oldIOT, failedNode, currentAdapatation);
+    checkForDeactivatedNodes(newIOT, oldIOT, failedNodes, currentAdapatation);
   }
 
   /**
    * checks iots for nodes which have operators in the old IOT, but have none in the new iot
    * @param newIOT
    * @param oldIOT
-   * @param failedNode 
+   * @param failedNodes.contains(o) 
    * @param currentAdapatation
    */
   private void checkForDeactivatedNodes(IOT newIOT, IOT oldIOT,
-      Site failedNode, Adapatation ad)
+      ArrayList<String> failedNodes, Adapatation ad)
   {
     RT rt = oldIOT.getRT();
     Iterator<Site> siteIterator = rt.siteIterator(TraversalOrder.PRE_ORDER);
@@ -239,7 +238,7 @@ public class AdapatationStrategyIntermediate
     {
       Site site = siteIterator.next();
       ArrayList<InstanceOperator> instanceOperatorsNew = newIOT.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
-      if(instanceOperatorsNew.size() == 0 && !failedNode.getID().equals(site.getID()))
+      if(instanceOperatorsNew.size() == 0 && !failedNodes.contains(site.getID()))
       {
         ad.addDeactivatedSite(site);
       }
@@ -379,13 +378,13 @@ public class AdapatationStrategyIntermediate
    * creates a new routeing tree for the where scheduler
    * @param agenda2
    * @param iot2
-   * @param failedNodeID
+   * @param failedNodes
    * @param paf 
    * @throws SNEEConfigurationException 
    * @throws NumberFormatException 
    */
   private ArrayList<RT> createNewRoutingTrees(AgendaIOT agenda2, IOT iot2,
-      int failedNodeID, PAF paf) throws NumberFormatException, SNEEConfigurationException
+      ArrayList<String> failedNodes, PAF paf) throws NumberFormatException, SNEEConfigurationException
   {
     ArrayList<RT> routes = new ArrayList<RT>();
     Router router = new Router();
@@ -399,13 +398,13 @@ public class AdapatationStrategyIntermediate
    * creates a fragment of a physical operator tree, this fragment encapsulates the failed nodes operators.
    * @param agenda2
    * @param iot
-   * @param failedNode
+   * @param failedNodes
    * @throws SNEEException
    * @throws SchemaMetadataException
    * @throws SNEEConfigurationException
    * @throws OptimizationException 
    */
-  private PAF pinPhysicalOperators(AgendaIOT agenda2, IOT iot, Site failedNode) throws SNEEException, SchemaMetadataException, SNEEConfigurationException, OptimizationException
+  private PAF pinPhysicalOperators(AgendaIOT agenda2, IOT iot, ArrayList<String> failedNodes) throws SNEEException, SchemaMetadataException, SNEEConfigurationException, OptimizationException
   {
     //get paf 
     Cloner cloner = new Cloner();
@@ -419,7 +418,14 @@ public class AdapatationStrategyIntermediate
       InstanceOperator instanceOperator = iotInstanceOperatorIterator.next();
       SensornetOperator physicalOperator = instanceOperator.getSensornetOperator();
       SensornetOperatorImpl physicalOperatorImpl = (SensornetOperatorImpl) physicalOperator;
-      if(!instanceOperator.getSite().getID().equals(failedNode.getID()))
+      boolean locatedOnAFailedNode = false;
+      Iterator<String> failedNodeIterator = failedNodes.iterator();
+      while(failedNodeIterator.hasNext() && !locatedOnAFailedNode)
+      {
+        if(instanceOperator.getSite().getID().equals(failedNodeIterator.next()))
+          locatedOnAFailedNode = true;
+      }
+      if(!locatedOnAFailedNode)
       {
         ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).setIsPinned(true);
         ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).addSiteToPinnedList(instanceOperator.getSite().getID());
@@ -456,14 +462,16 @@ public class AdapatationStrategyIntermediate
    * @param iot 
    * @param wsnTopology2
    * @param newIOT
-   * @param failedNodeID
+   * @param failedNodes
    * @throws OptimizationException
    */
-  private void removedDeadNodeData(AgendaIOT newAgenda, int failedNodeID) 
+  private void removedDeadNodeData(AgendaIOT newAgenda, ArrayList<String> failedNodes) 
   throws OptimizationException
   {
     //remove dead node from new agenda, topology, new iot(so that adjustments can be made)
-    newAgenda.removeNodeFromAgenda(failedNodeID);
+    Iterator<String> failedNodeIterator = failedNodes.iterator();
+    while(failedNodeIterator.hasNext())
+      newAgenda.removeNodeFromAgenda(Integer.parseInt(failedNodeIterator.next()));
     new AdapatationStrategyIntermediateUtils(this).outputTopologyAsDotFile(outputFolder, "/topologyAfterNodeLoss.dot");
   }
 

@@ -211,13 +211,13 @@ public class Anaylsiser
     anaylisieCECM = true;   
   }
   
-  public SensorNetworkQueryPlan adapatationStrategyIntermediateSpaceAndTimePinned(int failedNodeID) 
+  public SensorNetworkQueryPlan adapatationStrategyIntermediateSpaceAndTimePinned(ArrayList<String> failedNodes) 
   throws OptimizationException, 
          SchemaMetadataException, 
          TypeMappingException, 
          AgendaException, SNEEException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
   {
-    ArrayList<Adapatation> adapatations = adapatationStrategyIntermediateSpaceAndTimePinned.calculateNewQEP(failedNodeID);
+    ArrayList<Adapatation> adapatations = adapatationStrategyIntermediateSpaceAndTimePinned.calculateNewQEP(failedNodes);
     //output adapatations in a String format
     Iterator<Adapatation> adapatationIterator = adapatations.iterator();
     while(adapatationIterator.hasNext())

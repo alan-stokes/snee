@@ -645,6 +645,11 @@ public class IOT extends SNEEAlgebraicForm
     return rt.getSite(siteID);
   }
   
+  public Node getNode(String siteID)
+  {
+    return rt.getSite(siteID);
+  }
+  
   public PAF getPAF()
   {
     return paf;

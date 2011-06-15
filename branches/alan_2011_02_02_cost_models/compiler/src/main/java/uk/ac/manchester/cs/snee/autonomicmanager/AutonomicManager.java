@@ -101,7 +101,7 @@ public class AutonomicManager
     outputFolder.mkdir();
   }
 
-  public void runStragity2(int failedNodeID) 
+  public void runStragity2(ArrayList<String> failedNodes) 
   throws SNEEConfigurationException, 
          OptimizationException, 
          SchemaMetadataException, 
@@ -118,7 +118,7 @@ public class AutonomicManager
          CostParametersException, 
          SNCBException
   {
-    SensorNetworkQueryPlan newQEP = anyliser.adapatationStrategyIntermediateSpaceAndTimePinned(failedNodeID);
+    SensorNetworkQueryPlan newQEP = anyliser.adapatationStrategyIntermediateSpaceAndTimePinned(failedNodes);
     //newQEP.getIOT().exportAsDotFileWithFrags(fname, label, exchangesOnSites)
     //new AgendaIOTUtils( newQEP.getAgendaIOT(), newQEP.getIOT(), true).generateImage();
   }
