@@ -18,6 +18,7 @@ import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SNEEAlgebraicForm;
@@ -704,6 +705,27 @@ public class IOT extends SNEEAlgebraicForm
         return edge;  
     }
     return null;
+  }
+  
+  /**
+   * gets all exchange operators located on a site
+   * @param site
+   * @return
+   */
+  public ArrayList<InstanceExchangePart> getExchangeOperators(Site site)
+  {
+    ArrayList<InstanceExchangePart> outwardsExchanges = new ArrayList<InstanceExchangePart>();
+    ArrayList<InstanceOperator> instanceOperatorsOnSite = this.getOpInstances(site, true);
+    Iterator<InstanceOperator> operatorsOnSiteIterator = instanceOperatorsOnSite.iterator();
+    while(operatorsOnSiteIterator.hasNext())
+    {
+      InstanceOperator op = operatorsOnSiteIterator.next();
+      if(op instanceof InstanceExchangePart)
+      {
+        outwardsExchanges.add((InstanceExchangePart) op);
+      }
+    }
+    return outwardsExchanges;
   }
 
   /**

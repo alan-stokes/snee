@@ -170,6 +170,7 @@ public class Monitor implements Observer
     network.removeNode(failedNode.getID());
     System.out.println("fake node failure of node 3");
     manager.runStragity2(failedNodes);
+    
   }
 
 }

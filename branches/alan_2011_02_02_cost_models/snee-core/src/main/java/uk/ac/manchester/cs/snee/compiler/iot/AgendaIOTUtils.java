@@ -146,7 +146,8 @@ public class AgendaIOTUtils {
 		    g2.setColor(Color.BLUE);
 		    g2.draw(new Rectangle(xpos, ypos - CELL_HEIGHT, CELL_WIDTH,
 			    CELL_HEIGHT));
-		    g2.drawString(task.toString(), xpos + 12, ypos + 12
+		    String output = task.toString();
+		    g2.drawString(output, xpos + 12, ypos + 12
 			    - CELL_HEIGHT);
 
 		}

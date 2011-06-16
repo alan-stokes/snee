@@ -21,6 +21,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -54,9 +55,10 @@ public class InstanceWhereSchedular
     this.costs = costs;
     fileDirectory = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + fileSeparator + paf.getQueryName() + fileSeparator + "costModelImages";
     InstanceFragment.resetFragmentCounter();
-    buildInstanceDAF();
+    IOT();
   }
   
+  @SuppressWarnings("static-access")
   public InstanceWhereSchedular(PAF paf, RT rt, CostParameters costParams,
       String outputFolder) throws SNEEException, SchemaMetadataException, OptimizationException, SNEEConfigurationException
   {
@@ -65,10 +67,10 @@ public class InstanceWhereSchedular
     this.costs = costs;
     fileDirectory = outputFolder + fileSeparator + "costModelImages";
     InstanceFragment.resetFragmentCounter();
-    buildInstanceDAF();
+    IOT();
   }
 
-  public void buildInstanceDAF() 
+  public void IOT() 
   throws SNEEException, SchemaMetadataException, OptimizationException, SNEEConfigurationException
   {
     //make directory withoutput folder to place cost model images

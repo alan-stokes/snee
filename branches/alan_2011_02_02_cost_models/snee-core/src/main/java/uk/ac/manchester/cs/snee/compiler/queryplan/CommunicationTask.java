@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -70,13 +71,15 @@ public class CommunicationTask extends Task implements Comparable{
     private long alpha;
 
     private long beta;
+
+    private HashSet<InstanceExchangePart> instanceExchangeComponents;
     
     /**
      * Create an instance of a CommunicationTask.
      * @param startTime
      * @param sourceNode
      * @param destNode
-     * @param exchangeComponents
+     * @param tuplesToSend
      * @param mode
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
@@ -84,17 +87,43 @@ public class CommunicationTask extends Task implements Comparable{
      */
     public CommunicationTask(final long startTime, final Site sourceNode,
 	    final Site destNode,
-	    final HashSet<ExchangePart> exchangeComponents,
-	    final int mode, final long alpha, final long bufferingFactor, final DAF daf,  
+	    final int mode, final HashSet<InstanceExchangePart> tuplesToSend,
+	     final long alpha, final long bufferingFactor, final DAF daf,  
 	    CostParameters costParams) throws OptimizationException, SchemaMetadataException, TypeMappingException {
 	super(startTime, costParams);
 	this.sourceNode = sourceNode;
 	this.destNode = destNode;
-	this.exchangeComponents = exchangeComponents;
+	this.instanceExchangeComponents = tuplesToSend;
 	this.beta = bufferingFactor;
 	this.endTime = startTime + this.getTimeCost(daf);
 	this.mode = mode;
 	this.alpha = alpha;
+    }
+    
+    /**
+     * Create an instance of a CommunicationTask.
+     * @param startTime
+     * @param sourceNode
+     * @param destNode
+     * @param tuplesToSend
+     * @param mode
+     * @throws TypeMappingException 
+     * @throws SchemaMetadataException 
+     * @throws OptimizationException 
+     */
+    public CommunicationTask(final long startTime, final Site sourceNode,
+      final Site destNode,
+      final HashSet<ExchangePart> tuplesToSend,
+      final int mode, final long alpha, final long bufferingFactor, final DAF daf,  
+      CostParameters costParams) throws OptimizationException, SchemaMetadataException, TypeMappingException {
+  super(startTime, costParams);
+  this.sourceNode = sourceNode;
+  this.destNode = destNode;
+  this.exchangeComponents = tuplesToSend;
+  this.beta = bufferingFactor;
+  this.endTime = startTime + this.getTimeCost(daf);
+  this.mode = mode;
+  this.alpha = alpha;
     }
 
     public final Site getSourceNode() {
@@ -117,9 +146,14 @@ public class CommunicationTask extends Task implements Comparable{
 	return this.mode;
     }
 
-    public final HashSet<ExchangePart> getExchangeComponents()
+  //  public final HashSet<ExchangePart> getExchangeComponents()
+    //{
+      //return exchangeComponents;
+    //}
+    
+    public final HashSet<InstanceExchangePart> getInstanceExchangeComponents()
     {
-      return exchangeComponents;
+      return instanceExchangeComponents;
     }
     
     public final CostParameters getCostParameters()
@@ -186,18 +220,36 @@ public class CommunicationTask extends Task implements Comparable{
 	protected final long getTimeCost(final DAF daf) throws OptimizationException, SchemaMetadataException, TypeMappingException {
     	long result = 0;
 	
-    	final Iterator<ExchangePart> exchCompIter 
-    		= this.exchangeComponents.iterator();
-    	while (exchCompIter.hasNext()) {
-    		final ExchangePart exchComp = exchCompIter.next();
-    		if ((exchComp.getComponentType() 
-    					== ExchangePartType.PRODUCER)
-    				|| (exchComp.getComponentType() 
-    					== ExchangePartType.RELAY)) {
-    			result += exchComp.getTimeCost(daf, beta, costParams);
-    		}
+    	if(instanceExchangeComponents == null)
+    	{
+      	final Iterator<ExchangePart> exchCompIter 
+      		= this.exchangeComponents.iterator();
+      	while (exchCompIter.hasNext()) {
+      		final ExchangePart exchComp = exchCompIter.next();
+      		if ((exchComp.getComponentType() 
+      					== ExchangePartType.PRODUCER)
+      				|| (exchComp.getComponentType() 
+      					== ExchangePartType.RELAY)) {
+      			result += exchComp.getTimeCost(daf, beta, costParams);
+      		}
+      	}
+      	result += getTimeCostOverhead(costParams);
     	}
-    	result += getTimeCostOverhead(costParams);
+    	else
+    	{
+    	  final Iterator<InstanceExchangePart> exchCompIter 
+        = this.instanceExchangeComponents.iterator();
+      while (exchCompIter.hasNext()) {
+        final InstanceExchangePart exchComp = exchCompIter.next();
+        if ((exchComp.getComponentType() 
+              == ExchangePartType.PRODUCER)
+            || (exchComp.getComponentType() 
+              == ExchangePartType.RELAY)) {
+          result += exchComp.getTimeCost(daf, beta, costParams);
+        }
+      }
+      result += getTimeCostOverhead(costParams);
+    	}
 //IG: Might be best to have this check...
 //    	assert (result <= getTimeExpression(
 //    			CardinalityType.PHYSICAL_MAX, daf, true)

@@ -5,6 +5,7 @@ import java.io.File;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
+import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
@@ -27,12 +28,12 @@ public class AdapatationStrategyIntermediateUtils
    * @param agendaIOT
    * @param newIOT
    */
-  public void outputNewAgendaImage(File outputFolder, String fileName)
+  public void outputNewAgendaImage(File outputFolder, IOT iot, String fileName)
   {
     try
     {
       ad.getAgenda().setID("newAgenda");
-      AgendaIOTUtils output = new AgendaIOTUtils(ad.getAgenda(), ad.getIOT(), true);
+      AgendaIOTUtils output = new AgendaIOTUtils(ad.getAgenda(), iot, true);
       File agendaFolder = new File(outputFolder.toString() + sep + "Agendas");
       agendaFolder.mkdir();
       output.generateImage(agendaFolder.toString());
@@ -83,10 +84,10 @@ public class AdapatationStrategyIntermediateUtils
     }
   }
 
-  public void outputAgendas(AgendaIOT newAgenda, AgendaIOT agenda, File outputFolder) throws SNEEConfigurationException
+  public void outputAgendas(AgendaIOT newAgenda, AgendaIOT agenda, IOT oldIOT, IOT newIOT, File outputFolder) throws SNEEConfigurationException
   {
-    AgendaIOTUtils oldOutput = new AgendaIOTUtils(agenda, ad.getIOT(), true);
-    AgendaIOTUtils output = new AgendaIOTUtils(newAgenda, ad.getIOT(), true);
+    AgendaIOTUtils oldOutput = new AgendaIOTUtils(agenda, oldIOT, true);
+    AgendaIOTUtils output = new AgendaIOTUtils(newAgenda, newIOT, true);
     File agendaFolder = new File(outputFolder.toString() + sep + "Agendas");
     agendaFolder.mkdir();
     output.generateImage(agendaFolder.toString());

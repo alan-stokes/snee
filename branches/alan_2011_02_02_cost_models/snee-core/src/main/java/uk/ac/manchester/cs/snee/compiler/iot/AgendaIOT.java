@@ -496,7 +496,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
      * Appends a communication task between two nodes in the sensor network
      * @param sourceNode				the node transmitting data
      * @param destNode					the node receiving data
-     * @param exchangeComponents		the data being sent
+     * @param tuplesToSend		the data being sent
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
      * @throws OptimizationException 
@@ -506,16 +506,16 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     
     public final void appendCommunicationTask(final Site sourceNode,
 	    final Site destNode,
-	    final HashSet<ExchangePart> exchangeComponents)
+	    final HashSet<InstanceExchangePart> tuplesToSend)
 	    throws AgendaException, OptimizationException, SchemaMetadataException, TypeMappingException, SNEEException, SNEEConfigurationException {
 
     final long startTime = this.getLength_bms(true);
 	final CommunicationTask commTaskTx = new CommunicationTask(startTime,
-		sourceNode, destNode, exchangeComponents,
-		CommunicationTask.TRANSMIT, this.alpha, this.beta, daf, costParams);
+		sourceNode, destNode,CommunicationTask.TRANSMIT,
+		tuplesToSend, this.alpha, this.beta, daf, costParams);
 	final CommunicationTask commTaskRx = new CommunicationTask(startTime,
-		sourceNode, destNode, exchangeComponents,
-		CommunicationTask.RECEIVE, this.alpha, this.beta, daf, costParams);
+		sourceNode, destNode,CommunicationTask.RECEIVE,
+		tuplesToSend, this.alpha, this.beta, daf, costParams);
 
 	this.addTask(commTaskTx, sourceNode);
 	this.addTask(commTaskRx, destNode);
@@ -523,7 +523,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
 	logger.trace("Scheduled Communication task from node "
 		+ sourceNode.getID() + " to node " + destNode.getID()
 		+ " at time " + startTime + "(size: "
-		+ exchangeComponents.size() + " exchange components )");
+		+ tuplesToSend.size() + " exchange components )");
     }
 
     public final void addSleepTask(final long sleepStart, final long sleepEnd,
@@ -781,52 +781,59 @@ public class AgendaIOT extends SNEEAlgebraicForm{
      * @throws SNEEConfigurationException 
      * @throws SNEEException 
      */
-    private void scheduleNonLeafFragments()
-	    throws AgendaException, OptimizationException, SchemaMetadataException, TypeMappingException, SNEEException, SNEEConfigurationException {
+  private void scheduleNonLeafFragments()
+	throws AgendaException, OptimizationException, SchemaMetadataException, TypeMappingException, SNEEException, SNEEConfigurationException 
+	{
 
-	long nonLeafStart = Long.MAX_VALUE;
-
-	final Iterator<Site> siteIter = iot.getRT().siteIterator(TraversalOrder.POST_ORDER);
-	while (siteIter.hasNext()) {
-	    final Site currentNode = siteIter.next();
-
-	    final long startTime = this.getNextAvailableTime(currentNode,
-		    AgendaIOT.IGNORE_SLEEP);
-	    if (startTime < nonLeafStart) {
-		nonLeafStart = startTime;
+  	long nonLeafStart = Long.MAX_VALUE;
+  
+  	final Iterator<Site> siteIter = iot.getRT().siteIterator(TraversalOrder.POST_ORDER);
+  	while (siteIter.hasNext()) 
+  	{
+  	  final Site currentNode = siteIter.next();
+  
+  	  final long startTime = this.getNextAvailableTime(currentNode, AgendaIOT.IGNORE_SLEEP);
+  	  if (startTime < nonLeafStart) 
+  	  {
+  		  nonLeafStart = startTime;
+  	  }
+  
+  	  //Schedule all fragment which have been allocated to execute on this node,
+  	  //ensuring the precedence conditions are met
+  	  final Iterator<InstanceFragment> fragIter = iot.fragmentIterator(TraversalOrder.POST_ORDER);
+  	  while (fragIter.hasNext()) 
+  	  {
+  		  final InstanceFragment frag = fragIter.next();
+  		  if (iot.HasSiteGotFrag(currentNode, frag) && (!frag.isLeaf())) 
+  		  {
+  		    this.addFragmentTask(frag, currentNode);
+  		  }
+  	  }
+  
+      //Then Schedule any onward transmissions
+      if (currentNode.getOutputs().length > 0) 
+      {
+    		final HashSet<InstanceExchangePart> tuplesToSend = new HashSet<InstanceExchangePart>();
+    		final Iterator<InstanceExchangePart> exchCompIter = iot.getExchangeOperators(currentNode).iterator();
+    		//TODO fix to use instance exchange parts.
+    		while (exchCompIter.hasNext()) 
+    		{
+    		  final InstanceExchangePart exchComp = exchCompIter.next();
+    		  if ((exchComp.getComponentType() == ExchangePartType.PRODUCER)
+              || (exchComp.getComponentType() == ExchangePartType.RELAY))
+    		  {
+    		    tuplesToSend.add(exchComp);
+    		  }
+    		}
+    		
+    		if (tuplesToSend.size() > 0) 
+    		{
+    		    this.appendCommunicationTask(currentNode, (Site) currentNode
+    			    .getOutput(0), tuplesToSend);
+    		}
 	    }
-
-	    //Schedule all fragment which have been allocated to execute on this node,
-	    //ensuring the precedence conditions are met
-	    final Iterator<InstanceFragment> fragIter = iot
-		    .fragmentIterator(TraversalOrder.POST_ORDER);
-	    while (fragIter.hasNext()) {
-		final InstanceFragment frag = fragIter.next();
-		if (iot.HasSiteGotFrag(currentNode, frag) && (!frag.isLeaf())) {
-		    this.addFragmentTask(frag, currentNode);
-		}
-	    }
-
-	    //Then Schedule any onward transmissions
-	    if (currentNode.getOutputs().length > 0) {
-		final HashSet<ExchangePart> tuplesToSend = new HashSet<ExchangePart>();
-		final Iterator<ExchangePart> exchCompIter = currentNode
-			.getExchangeComponents().iterator();
-		while (exchCompIter.hasNext()) {
-		    final ExchangePart exchComp = exchCompIter.next();
-		    if ((exchComp.getComponentType() == ExchangePartType.PRODUCER)
-			    || (exchComp.getComponentType() == ExchangePartType.RELAY)) {
-			tuplesToSend.add(exchComp);
-		    }
-		}
-
-		if (tuplesToSend.size() > 0) {
-		    this.appendCommunicationTask(currentNode, (Site) currentNode
-			    .getOutput(0), tuplesToSend);
-		}
-	    }
-	}
-    }
+	  }
+  }
 
 	private void scheduleFinalSleepTask() throws AgendaException {
 		final long sleepStart = this.getLength_bms(AgendaIOT.INCLUDE_SLEEP);
@@ -1013,18 +1020,18 @@ public class AgendaIOT extends SNEEAlgebraicForm{
   
   public final void appendCommunicationTask(final Site sourceNode,
     final Site destNode, final long time,
-    final HashSet<ExchangePart> exchangeComponents, int childIndex)
+    final HashSet<InstanceExchangePart> exchangeComponents, int childIndex)
     throws AgendaException, OptimizationException, SchemaMetadataException, TypeMappingException, SNEEException, SNEEConfigurationException 
   {
 
     final long startTime = time;
 
     final CommunicationTask commTaskTx = new CommunicationTask(startTime,
-    sourceNode, destNode, exchangeComponents,
-    CommunicationTask.TRANSMIT, this.alpha, this.beta, daf, costParams);
+    sourceNode, destNode, CommunicationTask.TRANSMIT, 
+    exchangeComponents, this.alpha, this.beta, daf, costParams);
     final CommunicationTask commTaskRx = new CommunicationTask(startTime,
-    sourceNode, destNode, exchangeComponents,
-    CommunicationTask.RECEIVE, this.alpha, this.beta, daf, costParams);
+    sourceNode, destNode, CommunicationTask.RECEIVE, 
+    exchangeComponents, this.alpha, this.beta, daf, costParams);
   
     this.addTask(commTaskTx, sourceNode, childIndex);
     this.addTask(commTaskRx, destNode);

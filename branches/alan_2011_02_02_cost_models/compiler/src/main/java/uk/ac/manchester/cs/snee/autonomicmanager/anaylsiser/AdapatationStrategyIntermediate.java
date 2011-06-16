@@ -136,10 +136,10 @@ public class AdapatationStrategyIntermediate
     //remove faield node
     removedDeadNodeData(agenda, failedNodes);
     //create paf
-    PAF paf = pinPhysicalOperators(agenda, iot, failedNodes);
+    PAF paf = pinPhysicalOperators(agenda, oldIOT, failedNodes);
     
     //create new routing tree
-    ArrayList<RT> routingTrees = createNewRoutingTrees(agenda, iot, failedNodes, paf);
+    ArrayList<RT> routingTrees = createNewRoutingTrees(agenda, oldIOT, failedNodes, paf);
     //create store for all adapatations
     ArrayList<Adapatation> totalAdapatations = new ArrayList<Adapatation>();
     Iterator<RT> routeIterator = routingTrees.iterator();
@@ -152,11 +152,10 @@ public class AdapatationStrategyIntermediate
       //run fragment paf though where scheduler.
       InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), outputFolder.toString());
       IOT newIOT = instanceWhere.getIOT();
-        
       //run new iot though when scheduler and locate changes
       AgendaIOT newAgenda = doSNWhenScheduling(newIOT, qep.getQos(), qep.getID(), qep.getCostParameters());
       //output new and old agendas
-      new AdapatationStrategyIntermediateUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), outputFolder);
+      new AdapatationStrategyIntermediateUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), iot, newIOT, outputFolder);
       //analysis newIOT for interesting nodes
       checkIOT(newIOT, oldIOT, failedNodes, currentAdapatation);
       //check if agenda agrees to constraints.
@@ -368,7 +367,7 @@ public class AdapatationStrategyIntermediate
       MetadataManager metadata = new MetadataManager(qep.getSNCB());
       WhenScheduler whenSched = new WhenScheduler(decreaseBetaForValidAlpha,
           allowDiscontinuousSensing, metadata, useNetworkController);
-      AgendaIOT agenda = whenSched.doWhenScheduling(iot, qos, qep.getID(), qep.getCostParameters());
+      AgendaIOT agenda = whenSched.doWhenScheduling(newIOT, qos, qep.getID(), qep.getCostParameters());
       if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) 
       {
        // new AgendaIOTUtils(agenda, iot, true).generateImage();
@@ -471,10 +470,6 @@ public class AdapatationStrategyIntermediate
   private void removedDeadNodeData(AgendaIOT newAgenda, ArrayList<String> failedNodes) 
   throws OptimizationException
   {
-    //remove dead node from new agenda, topology, new iot(so that adjustments can be made)
-    Iterator<String> failedNodeIterator = failedNodes.iterator();
-    while(failedNodeIterator.hasNext())
-      newAgenda.removeNodeFromAgenda(Integer.parseInt(failedNodeIterator.next()));
     new AdapatationStrategyIntermediateUtils(this).outputTopologyAsDotFile(outputFolder, "/topologyAfterNodeLoss.dot");
   }
 
@@ -488,7 +483,7 @@ public class AdapatationStrategyIntermediate
     return agenda;
   }
   
-  public IOT getIOT()
+  public IOT getOldIOT()
   {
     return iot;
   }
