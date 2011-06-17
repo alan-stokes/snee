@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.xml.namespace.QName;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
@@ -20,6 +22,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import eu.semsorgrid4env.service.stream.StreamDescriptionType;
+import eu.semsorgrid4env.service.stream.StreamRateType;
 import eu.semsorgrid4env.service.stream.pull.GetStreamItemRequest;
 import eu.semsorgrid4env.service.stream.pull.GetStreamNewestItemRequest;
 import eu.semsorgrid4env.service.stream.pull.PullStreamPropertyDocumentType;
@@ -134,6 +137,7 @@ implements PullSourceWrapper {
     			}
     			extents  = extractSchema(schemaParser, ExtentType.PUSHED);
     		}
+    		setStreamRates(extents, pullStreamPropDoc.getStreamRate());
     	} catch (ClassCastException e) {
     		String msg = "Unable to construct a pull stream property document from the received property document.";
     		logger.warn(msg);
@@ -162,7 +166,49 @@ implements PullSourceWrapper {
     	return extents;
     }
 
-    private PropertyDocumentType getPropertyDocument(String resourceName)
+    private void setStreamRates(List<ExtentMetadata> extents,
+			List<StreamRateType> streamRates) {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER setStreamRates() #extents=" + extents.size() +
+					" #streamRates=" + streamRates.size());
+		}
+		for (ExtentMetadata extent : extents) {
+			double rate = findAverageStreamRate(extent.getExtentName(), streamRates);
+			extent.setRate(rate);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN setStreamRates()");
+		}
+	}
+
+	/**
+	 * Finds the declared average stream rate for the given extent name.
+	 * If no rate has been declared, then a rate of 1.0 is assumed, i.e. 1Hz
+	 * 
+	 * @param extentName name of the extent 
+	 * @param streamRates stream rates declared
+	 * @return stream rate as a double
+	 */
+	private double findAverageStreamRate(String extentName,
+			List<StreamRateType> streamRates) {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER findAverageStreamRate() with " + extentName);
+		}
+		double rate = 1.0;
+		for (StreamRateType streamRate : streamRates) {
+			QName streamQName = streamRate.getStreamQName();
+			logger.debug(streamQName);
+			if (extentName.equalsIgnoreCase(streamQName.getLocalPart())) {
+				rate = streamRate.getAverageFlowRate();
+			}
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN findAverageStreamRate() with " + rate);
+		}
+		return rate;
+	}
+
+	private PropertyDocumentType getPropertyDocument(String resourceName)
     throws SchemaMetadataException, InvalidResourceNameFault,
     DataResourceUnavailableFault, NotAuthorizedFault, ServiceBusyFault {
     	if (logger.isTraceEnabled()) {

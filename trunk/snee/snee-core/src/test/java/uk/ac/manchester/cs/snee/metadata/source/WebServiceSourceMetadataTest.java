@@ -28,54 +28,94 @@ public class WebServiceSourceMetadataTest extends EasyMockSupport {
 				getResource("etc/log4j.properties"));
 	}
 
-	private WebServiceSourceMetadata serviceMetadata;
-	private List<String> mockList;
-	private Map<String, String> mockMap;
-	private PullSourceWrapper mockSource;
-
 	@Before
 	public void setUp() throws Exception {
-		mockList = createMock(List.class);
-		mockMap = createMock(Map.class);
-		mockSource = createMock(PullSourceWrapper.class);
-		serviceMetadata = new WebServiceSourceMetadata("testService", 
-				mockList, "http://localhost", mockMap, mockSource);
 	}
 
 	@After
 	public void tearDown() throws Exception {
 	}
 
-	@Test@Ignore
+	@Test
 	public void testGetServiceUrl() {
+		List<String> mockList = createMock(List.class);
+		Map<String, String> mockMap = createMock(Map.class);
+		PullSourceWrapper mockSource = createMock(PullSourceWrapper.class);
+
+		//Record
+		expect(mockSource.getSourceType()).andReturn(SourceType.PULL_STREAM_SERVICE);
+
+		//Test
+		replayAll();
+		WebServiceSourceMetadata serviceMetadata = 
+			new WebServiceSourceMetadata("testService", 
+				mockList, "http://localhost", mockMap, mockSource);
 		assertEquals("http://localhost", serviceMetadata.getServiceUrl());
+		verifyAll();
 	}
 
-	@Ignore
 	@Test(expected=ExtentDoesNotExistException.class)
 	public void testGetResourceName_invalidStreamName() 
 	throws ExtentDoesNotExistException {
 		String streamName = "testStream";
+		String resourceName = "test:pull:resource";
+		List<String> mockList = createMock(List.class);
+		Map<String, String> mockMap = createMock(Map.class);
+		PullSourceWrapper mockSource = createMock(PullSourceWrapper.class);
+
 		//Record
-		expect(mockMap.containsKey(streamName )).andReturn(false);
+		expect(mockSource.getSourceType()).andReturn(SourceType.PULL_STREAM_SERVICE);
+		expect(mockMap.containsKey(streamName)).andReturn(false);
+		expect(mockMap.get(streamName)).andReturn(resourceName);
+
 		//Test
 		replayAll();
+		WebServiceSourceMetadata serviceMetadata = 
+			new WebServiceSourceMetadata("testService", 
+				mockList, "http://localhost", mockMap, mockSource);
 		serviceMetadata.getResourceName(streamName);
 		verifyAll();
 	}
 
-	@Test@Ignore
+	@Test
 	public void testGetResourceName_validStreamName() 
 	throws ExtentDoesNotExistException {
 		String streamName = "testStream";
 		String resourceName = "test:pull:resource";
+		List<String> mockList = createMock(List.class);
+		Map<String, String> mockMap = createMock(Map.class);
+		PullSourceWrapper mockSource = createMock(PullSourceWrapper.class);
+
 		//Record
+		expect(mockSource.getSourceType()).andReturn(SourceType.PULL_STREAM_SERVICE);
 		expect(mockMap.containsKey(streamName)).andReturn(true);
 		expect(mockMap.get(streamName)).andReturn(resourceName);
+
 		//Test
 		replayAll();
+		WebServiceSourceMetadata serviceMetadata = 
+			new WebServiceSourceMetadata("testService", 
+				mockList, "http://localhost", mockMap, mockSource);
 		assertEquals(resourceName, serviceMetadata.getResourceName(streamName));
 		verifyAll();
 	}
 
+	@Test
+	public void testGetSource() {
+		List<String> mockList = createMock(List.class);
+		Map<String, String> mockMap = createMock(Map.class);
+		PullSourceWrapper mockSource = createMock(PullSourceWrapper.class);
+
+		//Record
+		expect(mockSource.getSourceType()).andReturn(SourceType.PULL_STREAM_SERVICE);
+
+		//Test
+		replayAll();
+		WebServiceSourceMetadata serviceMetadata = 
+			new WebServiceSourceMetadata("testService", 
+				mockList, "http://localhost", mockMap, mockSource);
+		assertEquals(mockSource, serviceMetadata.getSource());
+		verifyAll();
+	}
+	
 }

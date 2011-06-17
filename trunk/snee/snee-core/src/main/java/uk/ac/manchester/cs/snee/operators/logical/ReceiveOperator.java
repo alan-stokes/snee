@@ -54,6 +54,8 @@ public class ReceiveOperator extends InputOperator {
 	private Logger logger = 
 		Logger.getLogger(ReceiveOperator.class.getName());
 	
+	private double rate;
+	
 	/**
 	 * Constructs a new Receive operator.
 	 * 
@@ -73,10 +75,15 @@ public class ReceiveOperator extends InputOperator {
 					extentMetaData + " source=" + source.getSourceName());
 					}
 		this.setOperatorName("RECEIVE");
-		this.setOperatorDataType(OperatorDataType.STREAM);			
+		this.setOperatorDataType(OperatorDataType.STREAM);
+		rate = extentMetaData.getRate();
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN ReceiveOperator()");
 	} 		 
+	
+	public double getRate() {
+		return rate;
+	}
 
 	/** {@inheritDoc} */
 	public boolean acceptsPredicates() {

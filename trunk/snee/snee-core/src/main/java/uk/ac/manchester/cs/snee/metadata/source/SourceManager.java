@@ -433,7 +433,8 @@ public class SourceManager {
 				}
 			}
 			SourceMetadataAbstract source = 
-				new UDPSourceMetadata(sourceName, extentNames, hostName, extentNodes);
+				new UDPSourceMetadata(sourceName, extentNames, hostName,
+						extentNodes, _schema);
 			_sources.add(source);
 		}
 		if (logger.isTraceEnabled()) 
