@@ -17,13 +17,14 @@ public class SNEEClientUsingCCO extends SNEEClient {
 		Logger.getLogger(SNEEClientUsingCCO.class.getName());
 	
 	private String serviceUrl = 
-//		"http://webgis1.geodata.soton.ac.uk:8080/CCO/services/PullStream?wsdl";
-		"http://webgis1.geodata.soton.ac.uk:8080/EMU/services/PullStream?wsdl";
+		"http://webgis1.geodata.soton.ac.uk:8080/CCO/services/PullStream?wsdl";
+//		"http://webgis1.geodata.soton.ac.uk:8080/EMU/services/PullStream?wsdl";
 	
 	private static String query =
 //		"SELECT * FROM envdata_hernebay_tide;";
+		"SELECT * FROM envdata_hernebay_met;";
 
-		"SELECT * FROM rtdata_haylingisl;";
+//		"SELECT * FROM rtdata_haylingisl;";
 
 //		"SELECT \'HerneBay\', timestamp, datetime, observed, " +
 //			"tz, hs, hmax, tp " +

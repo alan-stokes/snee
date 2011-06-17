@@ -203,6 +203,10 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			logger.trace("ENTER calculateSleepPeriod() for " + 
 					_streamName + " with rate " + rate);
 		}
+		// Code to prevent rates being set to 0.0
+		if (rate == 0.0) {
+			rate = 1.0;
+		}
 		double period = (1 / rate) * 1000;
 		_shortSleepPeriod = (long) (period * 0.1);
 		_longSleepPeriod = (long) (period - _shortSleepPeriod);
