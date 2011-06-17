@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../schema/physical-schema.xsd ">
 
 	<sensor_network name="wsn1">
-		<topology>notation/wsn2-topology.xml</topology>
+		<topology>notation/wsn4-topology.xml</topology>
 		<site-resources>etc/common/tmotesky-site-resources.xml</site-resources>
 		<gateways>8</gateways>
 		<extents>

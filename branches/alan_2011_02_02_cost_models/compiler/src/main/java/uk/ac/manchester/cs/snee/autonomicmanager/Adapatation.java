@@ -10,10 +10,8 @@ public class Adapatation
 {
   private ArrayList<Site> reprogrammingSites;
   private ArrayList<Site> redirectedionSites;
-  private ArrayList<Site> temporalSites;
+  private ArrayList<TemporalAdjustment> temporalSites;
   private ArrayList<Site> deactivationSites;
-  private long adjustmentPosition = 0;
-  private long adjustmentDuration = 0;
   private SensorNetworkQueryPlan newQep = null;
   private SensorNetworkQueryPlan oldQep = null;
   
@@ -21,7 +19,7 @@ public class Adapatation
   {
     reprogrammingSites = new ArrayList<Site>();
     redirectedionSites = new ArrayList<Site>();
-    temporalSites = new ArrayList<Site>();
+    temporalSites = new ArrayList<TemporalAdjustment>();
     deactivationSites = new ArrayList<Site>();
     this.oldQep = oldQep;
   }
@@ -36,7 +34,7 @@ public class Adapatation
     redirectedionSites.add(site);
   }
   
-  public void addTemporalSite(Site site)
+  public void addTemporalSite(TemporalAdjustment site)
   {
     temporalSites.add(site);
   }
@@ -56,7 +54,7 @@ public class Adapatation
     return redirectedionSites.iterator();
   }
   
-  public Iterator<Site> temporalSitesIterator()
+  public Iterator<TemporalAdjustment> temporalSitesIterator()
   {
     return temporalSites.iterator();
   }
@@ -81,24 +79,9 @@ public class Adapatation
     return this.temporalSites.size();
   }
   
-  public long getAdjustmentPosition()
+  public boolean reprogrammingContains(Site find)
   {
-    return adjustmentPosition;
-  }
-
-  public void setAdjustmentPosition(long adjustmentPosition)
-  {
-    this.adjustmentPosition = adjustmentPosition;
-  }
-
-  public long getAdjustmentDuration()
-  {
-    return adjustmentDuration;
-  }
-
-  public void setAdjustmentDuration(long adjustmentDuration)
-  {
-    this.adjustmentDuration = adjustmentDuration;
+    return reprogrammingSites.contains(find);
   }
   
   public String toString()
@@ -106,7 +89,7 @@ public class Adapatation
     String output = "";
     Iterator<Site> reporgramIterator = reprogrammingSitesIterator();
     Iterator<Site> redirectedIterator = redirectedionSitesIterator();
-    Iterator<Site> temporalIterator = temporalSitesIterator();
+    Iterator<TemporalAdjustment> temporalIterator = temporalSitesIterator();
     Iterator<Site> deactivatedIterator = deactivationSitesIterator();
     output = output.concat("Reprogrammed[");
     while(reporgramIterator.hasNext())
@@ -126,15 +109,6 @@ public class Adapatation
       else
         output = output.concat(concat);
     }
-    output = output.concat("] Temporal[");
-    while(temporalIterator.hasNext())
-    {
-      String concat = temporalIterator.next().getID();
-      if(temporalIterator.hasNext())
-        output = output.concat(concat + ", ");
-      else
-        output = output.concat(concat);
-    }
     output = output.concat("] Deactivated[");
     while(deactivatedIterator.hasNext())
     {
@@ -143,6 +117,18 @@ public class Adapatation
         output = output.concat(concat + ", ");
       else
         output = output.concat(concat);
+    }
+    output = output.concat("] Temporal[");
+    int counter = 1;
+    while(temporalIterator.hasNext())
+    {
+      output = output.concat("AD " + counter + " (");
+      String concat = temporalIterator.next().toString();
+      if(temporalIterator.hasNext())
+        output = output.concat(concat + "), ");
+      else
+        output = output.concat(concat + ")");
+      counter++;
     }
     output = output.concat("]");
     return output;

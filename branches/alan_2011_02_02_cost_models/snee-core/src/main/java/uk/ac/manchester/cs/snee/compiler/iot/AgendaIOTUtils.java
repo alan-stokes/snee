@@ -83,7 +83,11 @@ public class AgendaIOTUtils {
     public void generateImage(String outputDir) throws SNEEConfigurationException {
 
 		String sep = System.getProperty("file.separator");
-		String pngFilePath = outputDir + sep + agenda.getID() + "IOT.png";
+		String pngFilePath = "";
+		if(this.useMilliSeconds)  
+		  pngFilePath = outputDir + sep + agenda.getID() + "MS.png";
+		else
+		  pngFilePath = outputDir + sep + agenda.getID() + "BMS.png";
     	
 	final BufferedImage offImage = new BufferedImage(this.computeWidth(),
 		this.computeHeight(), BufferedImage.TYPE_INT_RGB);

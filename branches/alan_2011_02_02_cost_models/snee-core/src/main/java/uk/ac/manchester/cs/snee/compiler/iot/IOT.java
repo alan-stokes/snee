@@ -761,4 +761,12 @@ public class IOT extends SNEEAlgebraicForm
     }
     return null;
   }
+
+
+  public ArrayList<Node> getInputSites(Site failedSite)
+  {
+    Node failedNode = this.rt.getSite(failedSite.getID());
+    ArrayList<Node> inputSites = new ArrayList<Node>(failedNode.getInputsList());
+    return inputSites;
+  }
 }

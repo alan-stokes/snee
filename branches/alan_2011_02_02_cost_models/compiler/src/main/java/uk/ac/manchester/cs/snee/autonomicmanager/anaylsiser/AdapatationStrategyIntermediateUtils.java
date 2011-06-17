@@ -86,14 +86,22 @@ public class AdapatationStrategyIntermediateUtils
 
   public void outputAgendas(AgendaIOT newAgenda, AgendaIOT agenda, IOT oldIOT, IOT newIOT, File outputFolder) throws SNEEConfigurationException
   {
-    AgendaIOTUtils oldOutput = new AgendaIOTUtils(agenda, oldIOT, true);
-    AgendaIOTUtils output = new AgendaIOTUtils(newAgenda, newIOT, true);
+    AgendaIOTUtils oldOutput = new AgendaIOTUtils(agenda, oldIOT, false);
+    AgendaIOTUtils output = new AgendaIOTUtils(newAgenda, newIOT, false);
+    AgendaIOTUtils oldOutputMS = new AgendaIOTUtils(agenda, oldIOT, true);
+    AgendaIOTUtils outputMS = new AgendaIOTUtils(newAgenda, newIOT, true);
     File agendaFolder = new File(outputFolder.toString() + sep + "Agendas");
     agendaFolder.mkdir();
+    //bms
     output.generateImage(agendaFolder.toString());
-    output.exportAsLatex(agendaFolder.toString() + sep + "newAgendaLatex.tex");
+    output.exportAsLatex(agendaFolder.toString() + sep + "newAgendaLatexBMS.tex");
     oldOutput.generateImage(agendaFolder.toString());
-    oldOutput.exportAsLatex(agendaFolder.toString() + sep + "oldAgendaLatex.tex");
+    oldOutput.exportAsLatex(agendaFolder.toString() + sep + "oldAgendaLatexBMS.tex");
+    //ms
+    outputMS.generateImage(agendaFolder.toString());
+    outputMS.exportAsLatex(agendaFolder.toString() + sep + "newAgendaLatexMS.tex");
+    oldOutputMS.generateImage(agendaFolder.toString());
+    oldOutputMS.exportAsLatex(agendaFolder.toString() + sep + "oldAgendaLatexMS.tex");
     
   }
   

@@ -53,10 +53,10 @@ public class CommunicationTask extends Task implements Comparable{
 
 	//TODO move to task.
     //The site which is transmitting data
-    private Site sourceNode;
+    private Site sourceNode = null;
 
     //The site which is receiving data
-    private Site destNode;
+    private Site destNode = null;
 
     //The exchange components involved
     private HashSet<ExchangePart> exchangeComponents;

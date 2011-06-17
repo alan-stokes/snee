@@ -963,8 +963,8 @@ public class AgendaIOT extends SNEEAlgebraicForm{
       if (task instanceof CommunicationTask) 
       {
         final CommunicationTask commTask = (CommunicationTask) task;
-        if ((commTask.getSourceNode() == child) && 
-            (commTask.getDestNode() == parent))
+        if ((commTask.getSourceNode().getID().equals(child.getID())) && 
+            (commTask.getDestNode().getID().equals(parent.getID())))
         {
           return commTask;
         }

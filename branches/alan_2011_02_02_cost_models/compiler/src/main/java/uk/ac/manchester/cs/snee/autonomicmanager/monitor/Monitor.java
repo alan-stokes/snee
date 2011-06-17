@@ -168,6 +168,9 @@ public class Monitor implements Observer
     Node failedNode = qep.getIOT().getNode(3);
     failedNodes.add(failedNode.getID());
     network.removeNode(failedNode.getID());
+    //failedNode = qep.getIOT().getNode(1);
+    //failedNodes.add(failedNode.getID());
+    //network.removeNode(failedNode.getID());
     System.out.println("fake node failure of node 3");
     manager.runStragity2(failedNodes);
     

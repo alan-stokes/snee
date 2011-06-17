@@ -5,31 +5,27 @@ import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.autonomicmanager.Adapatation;
 import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
+import uk.ac.manchester.cs.snee.autonomicmanager.TemporalAdjustment;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
-import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
-import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceWhereSchedular;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
-import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
-import uk.ac.manchester.cs.snee.compiler.queryplan.PAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
@@ -42,8 +38,6 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.LinkCostMetric;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
@@ -56,7 +50,6 @@ import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
@@ -74,9 +67,7 @@ public class AdapatationStrategyIntermediate
   private boolean spacePinned;
   private boolean timePinned;
   private SensorNetworkQueryPlan qep;
-  private RT currentRoutingTree;
-  private Topology wsnTopology;
-  private IOT iot;
+  private IOT oldIOT;
   private AgendaIOT agenda;
   private File outputFolder;
   private String sep = System.getProperty("file.separator");
@@ -89,19 +80,17 @@ public class AdapatationStrategyIntermediate
     this.manager = autonomicManager;
     this.spacePinned = spacePinned;
     this.timePinned = timePinned;
+    this.timePinned = false;
     
   }
   
   public void initilise(QueryExecutionPlan oldQep) throws SchemaMetadataException 
   {
     this.qep = (SensorNetworkQueryPlan) oldQep;
-    
-    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata)this.qep.getDLAF().getSource();
-    this.wsnTopology =  sm.getTopology();
     outputFolder = manager.getOutputFolder();
     new AdapatationStrategyIntermediateUtils(this).outputTopologyAsDotFile(outputFolder, "/topology.dot");
-    this.currentRoutingTree = this.qep.getRT();
-    this.iot = this.qep.getIOT();
+    this.oldIOT = qep.getIOT();
+    oldIOT.setID("OldIOT");
     this.agenda = this.qep.getAgendaIOT();
   }
   
@@ -127,19 +116,14 @@ public class AdapatationStrategyIntermediate
    */
   public ArrayList<Adapatation> calculateNewQEP(ArrayList<String> failedNodes) throws OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException, SNEEException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
   { 
-    System.out.println("Running fake Adapatation ");
-    //clone the iot so that any changes do not affect comparisons.
-    Cloner cloner = new Cloner();
-    cloner.dontClone(Logger.class);
-    IOT oldIOT = cloner.deepClone(iot);
-    
-    //remove faield node
-    removedDeadNodeData(agenda, failedNodes);
+    System.out.println("Running fake Adapatation "); 
+    //generate topology file
+    new AdapatationStrategyIntermediateUtils(this).outputTopologyAsDotFile(outputFolder, sep + "topologyAfterNodeLoss.dot");
     //create paf
-    PAF paf = pinPhysicalOperators(agenda, oldIOT, failedNodes);
+    PAF paf = pinPhysicalOperators(oldIOT, failedNodes);
     
     //create new routing tree
-    ArrayList<RT> routingTrees = createNewRoutingTrees(agenda, oldIOT, failedNodes, paf);
+    ArrayList<RT> routingTrees = createNewRoutingTrees(failedNodes, paf);
     //create store for all adapatations
     ArrayList<Adapatation> totalAdapatations = new ArrayList<Adapatation>();
     Iterator<RT> routeIterator = routingTrees.iterator();
@@ -155,14 +139,14 @@ public class AdapatationStrategyIntermediate
       //run new iot though when scheduler and locate changes
       AgendaIOT newAgenda = doSNWhenScheduling(newIOT, qep.getQos(), qep.getID(), qep.getCostParameters());
       //output new and old agendas
-      new AdapatationStrategyIntermediateUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), iot, newIOT, outputFolder);
+      new AdapatationStrategyIntermediateUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), oldIOT, newIOT, outputFolder);
       //analysis newIOT for interesting nodes
       checkIOT(newIOT, oldIOT, failedNodes, currentAdapatation);
       //check if agenda agrees to constraints.
-      boolean success = checkAgendas(agenda, newAgenda, currentAdapatation);
+      boolean success = checkAgendas(agenda, newAgenda, newIOT, oldIOT, failedNodes, currentAdapatation);
       //check if new plan agrees with time pinning
       if(success)
-      {
+      {//create new qep, add qep to list of adapatations.
         DAF daf = new IOTUtils(newIOT, qep.getCostParameters()).getDAF();
         SensorNetworkQueryPlan newQep = new SensorNetworkQueryPlan(qep.getDLAF(), routingTree, daf, newIOT, newAgenda, qep.getID());
         currentAdapatation.setNewQep(newQep);
@@ -176,13 +160,14 @@ public class AdapatationStrategyIntermediate
    * chekcs agendas for time pinning and temperoral adjustments.
    * @param agenda2
    * @param newAgenda
+   * @param failedNodes 
    * @param currentAdapatation
    * @return
    */
-  private boolean checkAgendas(AgendaIOT oldAgenda, AgendaIOT newAgenda,
-      Adapatation currentAdapatation)
+  private boolean checkAgendas(AgendaIOT oldAgenda, AgendaIOT newAgenda, IOT newIOT, IOT oldIOT,
+      ArrayList<String> failedNodes, Adapatation currentAdapatation)
   {
-    checkForTemporalChnagedNodes(newAgenda, oldAgenda, currentAdapatation);
+    checkForTemporalChangedNodes(newAgenda, oldAgenda, newIOT, oldIOT, failedNodes, currentAdapatation);
     if(timePinned)
       if(currentAdapatation.getTemporalChangesSize() == 0)
         return true;
@@ -196,13 +181,99 @@ public class AdapatationStrategyIntermediate
    * checks between old and new agendas and locates nodes whos fragments need a temporal adjustment.
    * @param newAgenda
    * @param oldAgenda
+   * @param failedNodes 
    * @param currentAdapatation
    */
-  private void checkForTemporalChnagedNodes(AgendaIOT newAgenda,
-      AgendaIOT oldAgenda, Adapatation currentAdapatation)
+  private void checkForTemporalChangedNodes(AgendaIOT newAgenda,
+      AgendaIOT oldAgenda,  IOT newIOT, IOT oldIOT, ArrayList<String> failedNodes, 
+      Adapatation ad)
   {
-    // TODO Auto-generated method stub
+    Iterator<String> failedNodesIterator = failedNodes.iterator();
+    while(failedNodesIterator.hasNext())
+    {
+      Site failedSite  = (Site) oldIOT.getNode(failedNodesIterator.next());
+      ArrayList<Node> children = oldIOT.getInputSites(failedSite);
+      Iterator<Node> childrenIterator = children.iterator();
+      ArrayList<Site> affectedSites = new ArrayList<Site>();
+      long startTime = 0;
+      long duration = 0;
+      boolean reprogrammed = true;
+      while(childrenIterator.hasNext() && reprogrammed)
+      {
+        Node child = newIOT.getNode(childrenIterator.next().getID());
+        Node orginal = child;
+        Node lastChild = null;
+        while(reprogrammed)
+        {
+          Node nextChild = newAgenda.getTransmissionTask(child).getDestNode();
+          if (ad.reprogrammingContains((Site) nextChild))
+          {
+            lastChild = child;
+            child = nextChild;
+          }
+          else
+          {
+            lastChild = child;
+            TemporalAdjustment adjust = new TemporalAdjustment();
+            boolean changed = sortOutTiming(lastChild, orginal, nextChild, (Node) failedSite, startTime, 
+                          duration, newAgenda, oldAgenda, adjust);
+            if(changed)
+            {
+              findAffectedSites(nextChild, affectedSites, newAgenda);
+              adjust.setAffectedSites(affectedSites);
+              ad.addTemporalSite(adjust);
+            }
+            reprogrammed = false;           
+          } 
+        }
+      }
+    } 
+  }
+
+
+  private void findAffectedSites(Node start, ArrayList<Site> affectedSites, AgendaIOT newAgenda)
+  {
+    affectedSites.add((Site) start);
     
+    Task comm = newAgenda.getTransmissionTask(start); 
+    while(comm!= null)
+    {
+      start = newAgenda.getTransmissionTask(start).getDestNode();
+      affectedSites.add((Site) start);
+      comm = newAgenda.getTransmissionTask(start);
+    }
+  }
+
+  private boolean sortOutTiming(Node newChild, Node orginal, Node parent, 
+      Node failedSite, Long startTime, Long duration, AgendaIOT newAgenda, 
+      AgendaIOT oldAgenda, TemporalAdjustment adjust)
+  {
+    Task commTask = newAgenda.getCommunicationTaskBetween(newChild, parent);
+    Task commTimeOld = oldAgenda.getCommunicationTaskBetween(failedSite, parent);
+    //if failed site not got a direct communication between itself and the parent, look for a parent of the failed node which does
+    while(commTimeOld == null)
+    {
+      failedSite = oldAgenda.getTransmissionTask(failedSite).getDestNode();
+      commTimeOld = oldAgenda.getCommunicationTaskBetween(failedSite, parent);
+    }
+    long commStartTime = commTask.getStartTime();
+    long commOldStartTime = commTimeOld.getStartTime();
+    if(commStartTime != commOldStartTime)
+    {
+      Long difference = new Long(commStartTime - commOldStartTime);
+      if(difference > 0)
+      {
+        if(commStartTime > startTime)
+        {
+          startTime = commOldStartTime;
+          duration = difference;
+          adjust.setAdjustmentPosition(startTime);
+          adjust.setAdjustmentDuration(duration);
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
@@ -367,11 +438,9 @@ public class AdapatationStrategyIntermediate
       MetadataManager metadata = new MetadataManager(qep.getSNCB());
       WhenScheduler whenSched = new WhenScheduler(decreaseBetaForValidAlpha,
           allowDiscontinuousSensing, metadata, useNetworkController);
-      AgendaIOT agenda = whenSched.doWhenScheduling(newIOT, qos, qep.getID(), qep.getCostParameters());
-      if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) 
-      {
-       // new AgendaIOTUtils(agenda, iot, true).generateImage();
-      }   
+      AgendaIOT agenda = whenSched.doWhenScheduling(newIOT, qos, qep.getID(), qep.getCostParameters());  
+      agenda.setID("new Agenda");
+      this.agenda.setID("old Agenda");
       return agenda;
   }
 
@@ -384,14 +453,14 @@ public class AdapatationStrategyIntermediate
    * @throws SNEEConfigurationException 
    * @throws NumberFormatException 
    */
-  private ArrayList<RT> createNewRoutingTrees(AgendaIOT agenda2, IOT iot2,
-      ArrayList<String> failedNodes, PAF paf) throws NumberFormatException, SNEEConfigurationException
+  private ArrayList<RT> createNewRoutingTrees(ArrayList<String> failedNodes, PAF paf) throws NumberFormatException, SNEEConfigurationException
   {
     ArrayList<RT> routes = new ArrayList<RT>();
     Router router = new Router();
     RT route = router.doRouting(paf, "");
+    route.setID("newRoute" + routes.size()+1);
     routes.add(route);
-    new AdapatationStrategyIntermediateUtils(this).outputRouteAsDotFile(outputFolder, "newRoute" + routes.size(), route);
+    new AdapatationStrategyIntermediateUtils(this).outputRouteAsDotFile(outputFolder, "newRoute" + route.getID(), route);
     return routes;
   }
 
@@ -405,7 +474,7 @@ public class AdapatationStrategyIntermediate
    * @throws SNEEConfigurationException
    * @throws OptimizationException 
    */
-  private PAF pinPhysicalOperators(AgendaIOT agenda2, IOT iot, ArrayList<String> failedNodes) throws SNEEException, SchemaMetadataException, SNEEConfigurationException, OptimizationException
+  private PAF pinPhysicalOperators(IOT iot, ArrayList<String> failedNodes) throws SNEEException, SchemaMetadataException, SNEEConfigurationException, OptimizationException
   {
     //get paf 
     Cloner cloner = new Cloner();
@@ -455,27 +524,16 @@ public class AdapatationStrategyIntermediate
         paf.getOperatorTree().removeNode(physicalOperator);
       }
     }
+    paf.setID("PinnedPAF");
     return paf;
-  }
-  
-  /**
-   * removes the failed node from all dependent objects
-   * @param newAgenda
-   * @param iot 
-   * @param wsnTopology2
-   * @param newIOT
-   * @param failedNodes
-   * @throws OptimizationException
-   */
-  private void removedDeadNodeData(AgendaIOT newAgenda, ArrayList<String> failedNodes) 
-  throws OptimizationException
-  {
-    new AdapatationStrategyIntermediateUtils(this).outputTopologyAsDotFile(outputFolder, "/topologyAfterNodeLoss.dot");
   }
 
   public Topology getWsnTopology()
   {
-    return wsnTopology;
+    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) 
+    qep.getDLAF().getSource();
+    Topology network = sm.getTopology();
+    return network;
   }
 
   public AgendaIOT getAgenda()
@@ -485,6 +543,6 @@ public class AdapatationStrategyIntermediate
   
   public IOT getOldIOT()
   {
-    return iot;
+    return oldIOT;
   }
 }

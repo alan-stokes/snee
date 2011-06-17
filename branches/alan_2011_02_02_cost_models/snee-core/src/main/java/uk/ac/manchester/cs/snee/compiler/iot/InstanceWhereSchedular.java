@@ -97,7 +97,7 @@ public class InstanceWhereSchedular
       iot.setDAF(cDAF);
       new DAFUtils(cDAF).exportAsDotFile(fileDirectory + fileSeparator + "CDAF.dot");
       updateOperatorLinksToIncludeExchangeParts();
-      new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "IOTWithExchangeLinksBuiltIN.dot", "", true);
+      new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "IOT.dot", "", true);
     }    
     else
     {
