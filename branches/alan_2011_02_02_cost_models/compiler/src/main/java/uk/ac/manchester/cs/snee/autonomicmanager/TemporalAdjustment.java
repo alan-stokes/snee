@@ -43,6 +43,11 @@ public class TemporalAdjustment
     return adjustmentPosition;
   }
 
+  public void removeSiteFromAffectedSites(Site site)
+  {
+    sitesAffected.remove(site);
+  }
+  
   public void setAdjustmentPosition(long adjustmentPosition)
   {
     this.adjustmentPosition = adjustmentPosition;

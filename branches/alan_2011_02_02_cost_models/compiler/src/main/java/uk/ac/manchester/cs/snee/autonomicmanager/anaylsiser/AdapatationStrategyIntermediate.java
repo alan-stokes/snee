@@ -127,6 +127,21 @@ public class AdapatationStrategyIntermediate
     //create store for all adapatations
     ArrayList<Adapatation> totalAdapatations = new ArrayList<Adapatation>();
     Iterator<RT> routeIterator = routingTrees.iterator();
+    
+    try
+    {
+      tryGoingThoughRoutes(routeIterator, paf, failedNodes, totalAdapatations);
+    }
+    catch(Exception e)
+    {
+      tryGoingThoughRoutes(routeIterator, paf, failedNodes, totalAdapatations);
+    }
+    return totalAdapatations;
+  }
+
+  private void tryGoingThoughRoutes(Iterator<RT> routeIterator, PAF paf,
+      ArrayList<String> failedNodes, ArrayList<Adapatation> totalAdapatations) throws SNEEException, SchemaMetadataException, OptimizationException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, TypeMappingException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
+  {
     while(routeIterator.hasNext())
     {
       //set up current objects
@@ -153,7 +168,7 @@ public class AdapatationStrategyIntermediate
         totalAdapatations.add(currentAdapatation);
       }
     }
-    return totalAdapatations;
+    
   }
 
   /**
@@ -219,7 +234,7 @@ public class AdapatationStrategyIntermediate
                           duration, newAgenda, oldAgenda, adjust);
             if(changed)
             {
-              findAffectedSites(nextChild, affectedSites, newAgenda);
+              findAffectedSites(nextChild, affectedSites, newAgenda, ad, adjust);
               adjust.setAffectedSites(affectedSites);
               ad.addTemporalSite(adjust);
             }
@@ -231,7 +246,8 @@ public class AdapatationStrategyIntermediate
   }
 
 
-  private void findAffectedSites(Node start, ArrayList<Site> affectedSites, AgendaIOT newAgenda)
+  private void findAffectedSites(Node start, ArrayList<Site> affectedSites, AgendaIOT newAgenda,
+		                         Adapatation ad, TemporalAdjustment adjust)
   {
     affectedSites.add((Site) start);
     
@@ -239,9 +255,22 @@ public class AdapatationStrategyIntermediate
     while(comm!= null)
     {
       start = newAgenda.getTransmissionTask(start).getDestNode();
-      affectedSites.add((Site) start);
+      ArrayList<Site> allAffectedSites = ad.getSitesAffectedByAllTemporalChanges();
+      if(allAffectedSites.contains(start))
+      {
+    	  TemporalAdjustment otherAdjust = ad.getAdjustmentContainingSite((Site) start);
+    	  if(otherAdjust.getAdjustmentDuration() < adjust.getAdjustmentDuration())
+    	  {
+    	    affectedSites.add((Site) start);
+    	    otherAdjust.removeSiteFromAffectedSites((Site) start);
+    	  }
+      }
+      else
+      {
+        affectedSites.add((Site) start); 
+      }
       comm = newAgenda.getTransmissionTask(start);
-    }
+    }    
   }
 
   private boolean sortOutTiming(Node newChild, Node orginal, Node parent, 

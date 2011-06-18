@@ -33,6 +33,8 @@ public class Anaylsiser
   private CardinalityEstimatedCostModel cardECM;
   private AdapatationStrategyIntermediate adapatationStrategyIntermediateSpaceAndTimePinned;
   private AdapatationStrategyIntermediate adapatationStrategyIntermediateSpacePinned;
+  private AdapatationStrategyIntermediate adapatationStrategyIntermediateTimePinned;
+  private AdapatationStrategyIntermediate adapatationStrategyIntermediateNotPinned;
   private SensorNetworkQueryPlan qep;
   private AutonomicManager manager;
   private DeadNodeSimulator deadNodeSimulator; 
@@ -44,6 +46,8 @@ public class Anaylsiser
     manager = autonomicManager;
     adapatationStrategyIntermediateSpaceAndTimePinned = new AdapatationStrategyIntermediate(manager, true, true);
     adapatationStrategyIntermediateSpacePinned = new AdapatationStrategyIntermediate(manager, true, false);
+    adapatationStrategyIntermediateTimePinned = new AdapatationStrategyIntermediate(manager, false, true);
+    adapatationStrategyIntermediateNotPinned = new AdapatationStrategyIntermediate(manager, false, false);
     deadNodeSimulator = new DeadNodeSimulator();
   }
 
@@ -52,6 +56,9 @@ public class Anaylsiser
 	  this.qep = (SensorNetworkQueryPlan) qep;
 	  cardECM = new CardinalityEstimatedCostModel(qep);
 	  adapatationStrategyIntermediateSpaceAndTimePinned.initilise(qep);
+	  adapatationStrategyIntermediateSpacePinned.initilise(qep);
+	  adapatationStrategyIntermediateTimePinned.initilise(qep);
+	  adapatationStrategyIntermediateNotPinned.initilise(qep);
 	  deadNodeSimulator.initilise(qep, cardECM);  
   }
    
@@ -217,7 +224,21 @@ public class Anaylsiser
          TypeMappingException, 
          AgendaException, SNEEException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
   {
-    ArrayList<Adapatation> adapatations = adapatationStrategyIntermediateSpaceAndTimePinned.calculateNewQEP(failedNodes);
+	ArrayList<AdapatationStrategyIntermediate> methodologyiesOfAdapatation = new ArrayList<AdapatationStrategyIntermediate>();
+	//add methodologyies
+	methodologyiesOfAdapatation.add(adapatationStrategyIntermediateSpaceAndTimePinned);
+	methodologyiesOfAdapatation.add(adapatationStrategyIntermediateSpacePinned);
+	methodologyiesOfAdapatation.add(adapatationStrategyIntermediateTimePinned);
+	methodologyiesOfAdapatation.add(adapatationStrategyIntermediateNotPinned);
+	//create adaparatation array
+	ArrayList<Adapatation> adapatations = new ArrayList<Adapatation>();
+	Iterator<AdapatationStrategyIntermediate> methodologyIterator = methodologyiesOfAdapatation.iterator();
+	//go though methodologyies till located a adapatation.
+	while(adapatations.size() == 0 && methodologyIterator.hasNext())
+	{
+	  adapatations = methodologyIterator.next().calculateNewQEP(failedNodes);
+	}
+    
     //output adapatations in a String format
     Iterator<Adapatation> adapatationIterator = adapatations.iterator();
     while(adapatationIterator.hasNext())

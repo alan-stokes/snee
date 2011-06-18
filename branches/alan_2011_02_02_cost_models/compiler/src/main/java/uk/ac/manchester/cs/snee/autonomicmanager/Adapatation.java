@@ -24,6 +24,39 @@ public class Adapatation
     this.oldQep = oldQep;
   }
   
+  /**
+   * returns an arraylist of all sites which are affected by the temporal adjustments. 
+   * does not reduce duplicates
+   * @return
+   */
+  public ArrayList<Site> getSitesAffectedByAllTemporalChanges()
+  {
+	ArrayList<Site> affectedSites = new ArrayList<Site>();
+	Iterator<TemporalAdjustment> adjustmentIterator = temporalSitesIterator();
+	while(adjustmentIterator.hasNext())
+	{
+	  affectedSites.addAll(adjustmentIterator.next().getAffectedSites());
+	}
+	return affectedSites;
+  }
+  
+  /**
+   * gets the adjustment which contains site
+   * @param site
+   * @return
+   */
+  public TemporalAdjustment getAdjustmentContainingSite(Site site)
+  {
+	Iterator<TemporalAdjustment> adjustmentIterator = temporalSitesIterator();
+	while(adjustmentIterator.hasNext())
+	{
+		TemporalAdjustment adjustment = adjustmentIterator.next();
+	  if(adjustment.getAffectedSites().contains(site))
+        return adjustment; 
+	}
+	return null;
+  }
+  
   public void addReprogrammedSite(Site site)
   {
     reprogrammingSites.add(site);

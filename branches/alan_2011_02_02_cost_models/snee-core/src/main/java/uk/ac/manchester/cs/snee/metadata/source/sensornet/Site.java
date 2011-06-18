@@ -43,7 +43,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 
-public class Site extends NodeImplementation {
+public class Site extends NodeImplementation implements Comparable{
 
     /**
      * Logger for this class.
@@ -309,6 +309,16 @@ public class Site extends NodeImplementation {
     public HashSet<InstanceExchangePart> getInstanceExchangeComponents() {
 		return instanceExchangeComponents;
 	}
+
+    @Override
+    public int compareTo(Object arg0)
+    {
+      Site other = (Site) arg0;
+      if(this.id.equals(other.id))
+        return 0;
+      else
+        return -1;
+    }
 
 //    /**
 //     * Remove the given exchange components for this site.
