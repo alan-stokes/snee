@@ -5,11 +5,11 @@
 	<artifactId>SNEE</artifactId>
 	<packaging>pom</packaging>
 	<name>SNEE</name>
-	<version>1.6.2-SNAPSHOT</version>
+	<version>1.6.2</version>
 	<description>Continuous query processing engine for streaming and stored data.</description>
 
 	<properties>
-		<snee.version>1.6.2-SNAPSHOT</snee.version>
+		<snee.version>1.6.2</snee.version>
 		<cxf.version>2.2.8</cxf.version>
 	</properties>
 	<modules>

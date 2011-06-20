@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>data-source</artifactId>
 		<groupId>uk.ac.manchester.cs.snee</groupId>
-		<version>1.6.2-SNAPSHOT</version>
+		<version>1.6.2</version>
 	</parent>
 	<groupId>uk.ac.manchester.cs.snee</groupId>
 	<artifactId>data-source-pull-stream</artifactId>
