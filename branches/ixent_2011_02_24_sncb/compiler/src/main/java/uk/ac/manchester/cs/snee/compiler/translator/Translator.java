@@ -1285,16 +1285,7 @@ public class Translator {
 				/* Now, check if the requested item has been found */
 				if ( attrName.equalsIgnoreCase(searchName) ) {
 
-					Attribute newAttribute;
-					if (attribute instanceof EvalTimeAttribute) {
-						newAttribute = new EvalTimeAttribute(attribute);
-					} else if (attribute instanceof TimeAttribute) {
-						newAttribute = new TimeAttribute(attribute);
-					} else if (attribute instanceof IDAttribute) {
-						newAttribute = new IDAttribute(attribute);
-					} else {
-						newAttribute = new DataAttribute(attribute);						
-					}
+					Attribute newAttribute = copyAttribute(attribute);
 
 					newAttribute.setAttributeDisplayName(searchName);
 					expression = newAttribute;
@@ -1338,8 +1329,8 @@ public class Translator {
 				 * copy it and assign that one. Otherwise, there
 				 * will be problems */
 				Attribute attribute = attributes.get(found);
-
-				Attribute newAttribute = new DataAttribute(attribute);
+				Attribute newAttribute = copyAttribute(attribute);
+				
 				expression = newAttribute;
 				break;
 			} else {
@@ -1389,6 +1380,21 @@ public class Translator {
 			logger.trace("RETURN translateExpression() " + expression);
 		}
 		return expression;
+	}
+
+	private Attribute copyAttribute(Attribute attribute)
+			throws SchemaMetadataException {
+		Attribute newAttribute;
+		if (attribute instanceof EvalTimeAttribute) {
+			newAttribute = new EvalTimeAttribute(attribute);
+		} else if (attribute instanceof TimeAttribute) {
+			newAttribute = new TimeAttribute(attribute);
+		} else if (attribute instanceof IDAttribute) {
+			newAttribute = new IDAttribute(attribute);
+		} else {
+			newAttribute = new DataAttribute(attribute);						
+		}
+		return newAttribute;
 	}
 
 	private Expression getFunction(AST ast, LogicalOperator input) 
