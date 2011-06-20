@@ -33,8 +33,6 @@ public class Anaylsiser
   private CardinalityEstimatedCostModel cardECM;
   private AdapatationStrategyIntermediate adapatationStrategyIntermediateSpaceAndTimePinned;
   private AdapatationStrategyIntermediate adapatationStrategyIntermediateSpacePinned;
-  private AdapatationStrategyIntermediate adapatationStrategyIntermediateTimePinned;
-  private AdapatationStrategyIntermediate adapatationStrategyIntermediateNotPinned;
   private SensorNetworkQueryPlan qep;
   private AutonomicManager manager;
   private DeadNodeSimulator deadNodeSimulator; 
@@ -46,8 +44,6 @@ public class Anaylsiser
     manager = autonomicManager;
     adapatationStrategyIntermediateSpaceAndTimePinned = new AdapatationStrategyIntermediate(manager, true, true);
     adapatationStrategyIntermediateSpacePinned = new AdapatationStrategyIntermediate(manager, true, false);
-    adapatationStrategyIntermediateTimePinned = new AdapatationStrategyIntermediate(manager, false, true);
-    adapatationStrategyIntermediateNotPinned = new AdapatationStrategyIntermediate(manager, false, false);
     deadNodeSimulator = new DeadNodeSimulator();
   }
 
@@ -57,8 +53,6 @@ public class Anaylsiser
 	  cardECM = new CardinalityEstimatedCostModel(qep);
 	  adapatationStrategyIntermediateSpaceAndTimePinned.initilise(qep);
 	  adapatationStrategyIntermediateSpacePinned.initilise(qep);
-	  adapatationStrategyIntermediateTimePinned.initilise(qep);
-	  adapatationStrategyIntermediateNotPinned.initilise(qep);
 	  deadNodeSimulator.initilise(qep, cardECM);  
   }
    
@@ -228,8 +222,6 @@ public class Anaylsiser
 	//add methodologyies
 	methodologyiesOfAdapatation.add(adapatationStrategyIntermediateSpaceAndTimePinned);
 	methodologyiesOfAdapatation.add(adapatationStrategyIntermediateSpacePinned);
-	methodologyiesOfAdapatation.add(adapatationStrategyIntermediateTimePinned);
-	methodologyiesOfAdapatation.add(adapatationStrategyIntermediateNotPinned);
 	//create adaparatation array
 	ArrayList<Adapatation> adapatations = new ArrayList<Adapatation>();
 	Iterator<AdapatationStrategyIntermediate> methodologyIterator = methodologyiesOfAdapatation.iterator();

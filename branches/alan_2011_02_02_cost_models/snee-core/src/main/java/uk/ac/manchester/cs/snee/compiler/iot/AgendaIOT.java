@@ -1063,4 +1063,31 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     //add to list of start times
     this.addStartTime(t.getStartTime());
   }
+
+  public ArrayList<Node> sitesWithTransmissionTasksAfterTime(long startTime)
+  {
+    ArrayList<Node> sites = new ArrayList<Node> ();
+    ArrayList<Long> startTimes = this.getStartTimes();
+    ArrayList<Long> interestedStartTimes = new ArrayList<Long>();
+    Iterator<Long> startTimesIterator = startTimes.iterator();
+    while(startTimesIterator.hasNext())
+    {
+      Long curremtStartTime = startTimesIterator.next();
+      if(curremtStartTime > startTime && startTimesIterator.hasNext())
+        interestedStartTimes.add(curremtStartTime);
+    }
+    Iterator<Site> siteIter = this.iot.siteIterator(TraversalOrder.POST_ORDER);
+    while(siteIter.hasNext())
+    {
+      Site site = siteIter.next();
+      Iterator<Long> interestedTimesIterator = interestedStartTimes.iterator();
+      while(interestedTimesIterator.hasNext())
+      {
+        Task hopefulTask = this.getTask(interestedTimesIterator.next(), site);
+        if(hopefulTask != null && !sites.contains(site))
+          sites.add(site);
+      }
+    }
+    return sites;
+  }
 }

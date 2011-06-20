@@ -119,11 +119,21 @@ public class AdapatationStrategyIntermediate
     System.out.println("Running fake Adapatation "); 
     //generate topology file
     new AdapatationStrategyIntermediateUtils(this).outputTopologyAsDotFile(outputFolder, sep + "topologyAfterNodeLoss.dot");
-    //create paf
-    PAF paf = pinPhysicalOperators(oldIOT, failedNodes);
+    //setup collectors
+    PAF paf = null; 
+    ArrayList<RT> routingTrees = new ArrayList<RT>();
     
-    //create new routing tree
-    ArrayList<RT> routingTrees = createNewRoutingTrees(failedNodes, paf);
+    while(routingTrees.size() == 0)
+    {
+      //create pinned paf
+      paf = pinPhysicalOperators(oldIOT, failedNodes);
+      //create new routing tree
+      routingTrees = createNewRoutingTrees(failedNodes, paf);
+      if(routingTrees.size() == 0)
+      {
+        chooseDisconnectedNode(oldIOT, failedNodes);
+      }
+    }
     //create store for all adapatations
     ArrayList<Adapatation> totalAdapatations = new ArrayList<Adapatation>();
     Iterator<RT> routeIterator = routingTrees.iterator();
@@ -137,6 +147,12 @@ public class AdapatationStrategyIntermediate
       tryGoingThoughRoutes(routeIterator, paf, failedNodes, totalAdapatations);
     }
     return totalAdapatations;
+  }
+
+  private void chooseDisconnectedNode(IOT oldIOT2, ArrayList<String> failedNodes)
+  {
+    // TODO Auto-generated method stub
+    
   }
 
   private void tryGoingThoughRoutes(Iterator<RT> routeIterator, PAF paf,
@@ -231,7 +247,7 @@ public class AdapatationStrategyIntermediate
             lastChild = child;
             TemporalAdjustment adjust = new TemporalAdjustment();
             boolean changed = sortOutTiming(lastChild, orginal, nextChild, (Node) failedSite, startTime, 
-                          duration, newAgenda, oldAgenda, adjust);
+                          duration, newAgenda, oldAgenda, adjust, ad);
             if(changed)
             {
               findAffectedSites(nextChild, affectedSites, newAgenda, ad, adjust);
@@ -250,11 +266,12 @@ public class AdapatationStrategyIntermediate
 		                         Adapatation ad, TemporalAdjustment adjust)
   {
     affectedSites.add((Site) start);
-    
     Task comm = newAgenda.getTransmissionTask(start); 
-    while(comm!= null)
+    ArrayList<Node> sites =  newAgenda.sitesWithTransmissionTasksAfterTime(comm.getStartTime());
+    Iterator<Node> siteIterator = sites.iterator();
+    while(siteIterator.hasNext())
     {
-      start = newAgenda.getTransmissionTask(start).getDestNode();
+      start = siteIterator.next();
       ArrayList<Site> allAffectedSites = ad.getSitesAffectedByAllTemporalChanges();
       if(allAffectedSites.contains(start))
       {
@@ -269,13 +286,12 @@ public class AdapatationStrategyIntermediate
       {
         affectedSites.add((Site) start); 
       }
-      comm = newAgenda.getTransmissionTask(start);
     }    
   }
 
   private boolean sortOutTiming(Node newChild, Node orginal, Node parent, 
       Node failedSite, Long startTime, Long duration, AgendaIOT newAgenda, 
-      AgendaIOT oldAgenda, TemporalAdjustment adjust)
+      AgendaIOT oldAgenda, TemporalAdjustment adjust, Adapatation ad)
   {
     Task commTask = newAgenda.getCommunicationTaskBetween(newChild, parent);
     Task commTimeOld = oldAgenda.getCommunicationTaskBetween(failedSite, parent);
@@ -290,7 +306,8 @@ public class AdapatationStrategyIntermediate
     if(commStartTime != commOldStartTime)
     {
       Long difference = new Long(commStartTime - commOldStartTime);
-      if(difference > 0)
+      ArrayList<Long> differeneces = ad.getTemporalDifferences();
+      if(difference > 0 && !differeneces.contains(difference))
       {
         if(commStartTime > startTime)
         {

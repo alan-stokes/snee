@@ -117,6 +117,21 @@ public class Adapatation
     return reprogrammingSites.contains(find);
   }
   
+  /**
+   * returns all offset start times of all temporal adjustments
+   * @return
+   */
+  public ArrayList<Long> getTemporalDifferences()
+  {
+    ArrayList<Long> differences = new ArrayList<Long>();
+    Iterator<TemporalAdjustment> temporalIterator = this.temporalSitesIterator();
+    while(temporalIterator.hasNext())
+    {
+      differences.add(temporalIterator.next().getAdjustmentPosition());
+    }
+    return differences;
+  }
+  
   public String toString()
   {
     String output = "";
