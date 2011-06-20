@@ -104,7 +104,10 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 		return this.getLogicalOperator().getAttributes();
 	}
 	
-
+	//delegate
+	public String getExtentName() {
+		return acqOp.getExtentName();
+	}
 
 
 }
