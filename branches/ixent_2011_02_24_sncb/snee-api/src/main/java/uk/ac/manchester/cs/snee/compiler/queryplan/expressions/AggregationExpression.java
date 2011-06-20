@@ -233,7 +233,7 @@ public class AggregationExpression implements Expression {
 	throws SchemaMetadataException, TypeMappingException{
 		Attribute innerAttr = inputExpression.getRequiredAttributes().get(0);
 		DataAttribute attribute = new DataAttribute(innerAttr.getExtentName(), innerAttr.getAttributeSchemaName()+"_"
-			+aggrFunction.toString(), this.getType());
+			+aggrFunction.toString(), innerAttr.getAttributeDisplayName()+"_"+aggrFunction.toString(), this.getType());
 		attribute.setIsConstant(false);
 		return attribute;
 	}
