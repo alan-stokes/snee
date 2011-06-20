@@ -1340,7 +1340,6 @@ public class Translator {
 				Attribute attribute = attributes.get(found);
 
 				Attribute newAttribute = new DataAttribute(attribute);
-				newAttribute.setAttributeDisplayName(ast.getText());
 				expression = newAttribute;
 				break;
 			} else {
