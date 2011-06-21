@@ -266,7 +266,7 @@ implements LogicalOperator {
 					strBuff.append("\\n");
 				}
 			}
-			strBuff.append(attributes.get(i));
+			strBuff.append(attributes.get(i).getAttributeDisplayName());
 			strBuff.append(":");
 			assert (attributes.get(i) != null);
 			assert (attributes.get(i).getType() != null);            

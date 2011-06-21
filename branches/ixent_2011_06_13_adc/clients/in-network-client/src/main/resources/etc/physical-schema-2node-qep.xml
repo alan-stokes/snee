@@ -12,7 +12,6 @@
 				<sites>2</sites>
 				<sensorTypes>
 					<attribute name="seaLevel" sensorType="seaLevel"/>
-					<attribute name="airTemperature" sensorType="temperature"/>
 					<attribute name="voltage" sensorType="voltage"/>		
 				</sensorTypes>
 			</extent>
@@ -20,7 +19,6 @@
 				<sites>2</sites>
 				<sensorTypes>
 					<attribute name="seaLevel" sensorType="seaLevel"/>
-					<attribute name="airTemperature" sensorType="temperature"/>
 					<attribute name="voltage" sensorType="voltage"/>		
 				</sensorTypes>				
 			</extent>
@@ -28,7 +26,6 @@
 				<sites>2</sites>
 				<sensorTypes>
 					<attribute name="seaLevel" sensorType="seaLevel"/>
-					<attribute name="airTemperature" sensorType="temperature"/>
 					<attribute name="voltage" sensorType="voltage"/>		
 				</sensorTypes>				
 			</extent>  
