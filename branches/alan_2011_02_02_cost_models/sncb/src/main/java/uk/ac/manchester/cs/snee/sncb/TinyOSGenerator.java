@@ -1145,6 +1145,7 @@ public class TinyOSGenerator {
 		    final Site site = siteIter.next();
 
 		    // for each fragment on the node
+		    
 		    final Iterator<Fragment> fragIter = site.getFragments().iterator();
 		    while (fragIter.hasNext()) {
 				final Fragment frag = fragIter.next();

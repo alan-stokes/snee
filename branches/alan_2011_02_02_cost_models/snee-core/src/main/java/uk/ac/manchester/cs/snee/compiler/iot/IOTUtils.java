@@ -40,11 +40,9 @@ public class IOTUtils
   private DAF daf;
   private CostParameters costs;
   
-  public IOTUtils(final IOT newIot, CostParameters costParams) 
+  public IOTUtils(final IOT newIOT, CostParameters costParams) 
   {
-    Cloner cloner = new Cloner();
-    cloner.dontClone(Logger.class);
-    this.iot = cloner.deepClone(newIot);
+    this.iot = newIOT;
     this.costs = costParams;
     this.instanceOperatorTree = this.iot.getOperatorTree();
   }
@@ -54,7 +52,7 @@ public class IOTUtils
     createDAF();
     return daf;
   }
-  
+
   public DAF getDAF()
   {
     return iot.getDAF();
@@ -67,8 +65,32 @@ public class IOTUtils
     daf = linkFragments(faf, iot.getRT(), iot, iot.getRT().getQueryName());
     removeRedundantAggrIterOp(daf, iot);
     removeRedundantExchanges(daf);
+    updateSites(daf);
   }
   
+  /**
+   * this method instills the fragemtns onto the sites, this is to allow the iot to be compatiable with the code generator.
+   * @param daf
+   */
+  private void updateSites(DAF daf)
+  {
+    Iterator<Fragment> fragIterator = daf.fragmentIterator(TraversalOrder.POST_ORDER);
+    while(fragIterator.hasNext())
+    {
+      Fragment frag = fragIterator.next();
+      ArrayList<Site> fragSites = frag.getSites();
+      Iterator<Site> fragSiteIterator = fragSites.iterator();
+      while(fragSiteIterator.hasNext())
+      {
+        Site currentSite = fragSiteIterator.next();
+        currentSite = daf.getRT().getSite(currentSite.getID());
+        currentSite.addFragment(frag);
+        System.out.print("");
+      }
+    }
+    
+  }
+
   private static DAF partitionPAF(final PAF paf, IOT iot, 
                                   final String queryName, RT routingTree,
                                   CostParameters costs) 
