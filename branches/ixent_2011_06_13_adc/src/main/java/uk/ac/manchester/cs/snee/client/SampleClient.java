@@ -61,7 +61,7 @@ public class SampleClient implements Observer {
 	public void displayExtents()
 	throws MetadataException
 	{
-		Collection<String> extents = controller.getExtents();
+		Collection<String> extents = controller.getExtentNames();
 		for (String extent : extents) {
 			displayExtentSchema(extent);
 		}
