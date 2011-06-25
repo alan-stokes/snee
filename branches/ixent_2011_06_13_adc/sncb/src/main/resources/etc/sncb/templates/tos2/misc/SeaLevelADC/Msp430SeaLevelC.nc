@@ -58,4 +58,7 @@ implementation {
   components HplMsp430GeneralIOC;
   Msp430SeaLevelP.Boot -> MainC.Boot;
   Msp430SeaLevelP.ADC2 -> HplMsp430GeneralIOC.ADC2;
+
+  components new TimerMilliC() as PowerUpDelayTimer;
+  Msp430SeaLevelP.PowerUpDelayTimer -> PowerUpDelayTimer.Timer;
 }

@@ -35,6 +35,7 @@ module Msp430SeaLevelP {
   uses { 
        interface Boot as Boot;
        interface HplMsp430GeneralIO as ADC2;
+       interface Timer<TMilli> as PowerUpDelayTimer;
   }
   provides { 
        interface AdcConfigure<const msp430adc12_channel_config_t*>;
@@ -58,9 +59,25 @@ implementation {
     return &config;
   }
 
+  task void powerUpDelayTask();
+
   event void Boot.booted()
   {
      call ADC2.makeOutput();
      call ADC2.set();
+     //post powerUpDelayTask();
   }
+
+  //This task gives the sensor time to power up to avoid getting a spurious reading
+  //Doesn't seem to work though, so commented out
+  task void powerUpDelayTask()
+  {
+     call PowerUpDelayTimer.startOneShot(60000);
+  }
+
+  event void PowerUpDelayTimer.fired()
+  {
+     //do nothing!
+  }
+
 }
