@@ -2,19 +2,14 @@ package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.common.CircularArray;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -28,18 +23,11 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
-public class HashJoinOperatorImpl extends EvaluationOperator {
+public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 	Logger logger = Logger.getLogger(HashJoinOperatorImpl.class.getName());
 
-	private EvaluatorPhysicalOperator leftOperator, rightOperator;
-	private JoinOperator join;
-	
-	private CircularArray<Window> leftBuffer, rightBuffer;
-	private Hashtable<Integer, List<Tuple>> leftHashTable, rightHashTable;
-
-	private Expression joinPredicate;
-
-	private List<Attribute> returnAttrs;
+	private Hashtable<Integer, List<Tuple>> operandHashTable;
+	private EvaluatorPhysicalOperator hashableOperator, otherOperator;
 
 	public HashJoinOperatorImpl(LogicalOperator op, int qid)
 			throws SNEEException, SchemaMetadataException,
@@ -47,89 +35,28 @@ public class HashJoinOperatorImpl extends EvaluationOperator {
 		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER HashJoinOperatorImpl() " + op);
-		}
-
-		// Create connections to child operators
-		Iterator<LogicalOperator> iter = op.childOperatorIterator();
-		leftOperator = getEvaluatorOperator(iter.next());
-		rightOperator = getEvaluatorOperator(iter.next());
-		// XXX: Join could be speeded up by working out once which attribute
-		// numbers are required from each tuple
-		// Instantiate this as a join operator
-		join = (JoinOperator) op;
-		int maxBufferSize = SNEEProperties
-				.getIntSetting(SNEEPropertyNames.RESULTS_HISTORY_SIZE_TUPLES);
+		}		
 		if (logger.isTraceEnabled()) {
 			logger.trace("Buffer size: " + maxBufferSize);
 		}
-		leftBuffer = new CircularArray<Window>(maxBufferSize);
-		rightBuffer = new CircularArray<Window>(maxBufferSize);
-		leftHashTable = new Hashtable<Integer, List<Tuple>>(maxBufferSize);
-		rightHashTable = new Hashtable<Integer, List<Tuple>>(maxBufferSize);
-		joinPredicate = join.getPredicate();
-		System.out.println(joinPredicate);
-		System.out.println(op);
-		/*joinPredicate = getJoinPredicateForSelect(op);
-		System.out.println(joinPredicate);
-		System.out.println(op);*/
-		returnAttrs = join.getAttributes();
-
+		
+		//TODO change the leftoperator to decide on which operator can
+		//be hashed based on an algorithm
+		if (join.getAlgorithm().equals(JoinOperator.LHJ_MODE)) {
+			hashableOperator = leftOperator;
+			otherOperator = rightOperator;
+		} else {
+			hashableOperator = rightOperator;
+			otherOperator = leftOperator;
+		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN HashJoinOperatorImpl()");
 		}
-	}
-
-	/*private Expression getJoinPredicateForSelect(LogicalOperator op) {
-		LogicalOperator tempOp = op.getParent();
-		while (!(tempOp instanceof SelectOperator)) {
-			System.out.println("Looping In here mate"+tempOp);
-			tempOp = tempOp.getParent();
-		}		
-		return tempOp.getPredicate();
-	}*/
-
-	@Override
-	public void open() throws EvaluatorException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER open()");
-		}
-		/*
-		 * Open right child first as it may be a relation!
-		 */
-		startChildReceiver(rightOperator);
-		startChildReceiver(leftOperator);
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN open()");
-		}
-	}
-
-	private void startChildReceiver(EvaluatorPhysicalOperator op)
-			throws EvaluatorException {
-		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER startChildReceiver() " + op.toString());
-		}
-		op.setSchema(getSchema());
-		op.addObserver(this);
-		op.open();
-		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN startChildReceiver()");
-		}
-	}
-
-	public void close() {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER close()");
-		}
-		leftOperator.close();
-		rightOperator.close();
-		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN close()");
-		}
-	}
+	}	
 
 	@Override
 	public void update(Observable obj, Object observed) {
-		if (logger.isDebugEnabled()) {
+		/*if (logger.isDebugEnabled()) {
 			logger.debug("ENTER update() for query " + m_qid + " " + " with "
 					+ observed + " (" + observed.getClass() + ")");
 		}
@@ -190,51 +117,103 @@ public class HashJoinOperatorImpl extends EvaluationOperator {
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN update()");
-		}
+		}*/
 	}
+	/**
+	 * Simple Hash Join Algorithm
+		1. Get left operand
+		2. If the left operand is not null, then
+			a. Clear the left hash table
+			b. Build the left hash table from the left operand
+		3. Get the right operand
+		4. If the right operand is not null, then
+			i. Generate the hash value for the right operand
+			ii. perform join of right hash value over the left hash table
+		6. Goto Step 1
+	 * @throws SNEEException 
 
-	private void processWindow(Window window, List<Output> resultItems,
-			CircularArray<Window> buffer,
-			Hashtable<Integer, List<Tuple>> currOperatorHT,
-			Hashtable<Integer, List<Tuple>> otherOperatorHT)
-			throws SNEEException {
-		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER processWindow() " + window);
-		}
-		System.out.println("Process Window");
-		buffer.add(window);
-		Window joinTuple = computeJoin(buffer, currOperatorHT, otherOperatorHT);
-		if (joinTuple != null) {
-			resultItems.add(joinTuple);
-		}
-		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN processWindow() #resultItems="
-					+ resultItems.size());
-		}
+	 */
+	@Override
+	public void generateAndUpdate() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER generateAndUpdate() for query " + m_qid);
+		}		
 
-	}
+		List<Output> resultItems = new ArrayList<Output>(1);
 
-	private Window computeJoin(CircularArray<Window> buffer,
-			Hashtable<Integer, List<Tuple>> currOperatorHT,
-			Hashtable<Integer, List<Tuple>> otherOperatorHT)
-			throws SNEEException {
-		Window window = buffer.get(buffer.size() - 1);
-		List<Tuple> joinTuples = null;
-		for (Tuple innerTuple : window.getTuples()) {
-			System.out.println("innerTuple"+innerTuple);
-			int hashKey = generateHashKey(joinPredicate, innerTuple);
-			System.out.println("hashKey: "+ hashKey);
-			// getHashKey(leftTuple, joinPredicate);
-			if (!currOperatorHT.containsKey(hashKey)) {
-				currOperatorHT.put(hashKey, new ArrayList<Tuple>(2));
+		Output operand;
+		try {
+			operand = getNextFromChild(hashableOperator);
+			if (operand != null) {
+				if (operandHashTable != null && operandHashTable.size() > 0) {
+					operandHashTable.clear();
+				} 
+				operandHashTable = buildHashTable(operand);
 			}
-			currOperatorHT.get(hashKey).add(innerTuple);
-			System.out.println("Parent: ");
-			outputHashTable(currOperatorHT);
-			System.out.println("Child: ");
-			outputHashTable(otherOperatorHT);
-			if (otherOperatorHT.containsKey(hashKey)) {
-				for (Tuple outerTuple : otherOperatorHT.get(hashKey)) {
+			if (operandHashTable != null) {
+				operand = getNextFromChild(otherOperator);
+				if (operand != null) {
+					computeJoin(operandHashTable, operand, resultItems);
+				}
+			}
+
+			if (!resultItems.isEmpty()) {
+				setChanged();
+				notifyObservers(resultItems);
+			}
+		} catch (SNEEException sneeException) {
+			logger.warn("Error processing join.", sneeException);
+		}
+	}	
+	
+
+	/**
+	 * This method computes the join and fills the result items collection
+	 * with the generated tuples
+	 * 
+	 * @param hashTable
+	 * @param output
+	 * @param resultItems
+	 * @throws SNEEException
+	 */
+	private void computeJoin(Hashtable<Integer, List<Tuple>> hashTable,
+			Output output, List<Output> resultItems) throws SNEEException {
+		
+		if (output instanceof Window)  {
+			Window joinTuple = processWindowJoin(hashTable, (Window)output);
+			if (joinTuple != null) {
+				resultItems.add(joinTuple);
+			}
+		} else if (output instanceof TaggedTuple) {
+			processTaggedTupleJoin(hashTable, (TaggedTuple)output, resultItems);			
+		}
+		
+	}
+
+	private void processTaggedTupleJoin(
+			Hashtable<Integer, List<Tuple>> hashTable, TaggedTuple taggedTuple,
+			List<Output> resultItems) throws SNEEException {
+
+		Tuple tuple = taggedTuple.getTuple();
+		int hashKey = generateHashKey(joinPredicate, tuple);
+		List<Tuple> hashedTuples = hashTable.get(hashKey);
+		if (hashedTuples != null && hashedTuples.size() > 0) {
+			for (Tuple innerTuple: hashedTuples) {
+				Tuple joinTuple = generateJoinTuple(innerTuple, tuple);
+				System.out.println("joinTuple: "+ joinTuple);				
+				resultItems.add(new TaggedTuple(joinTuple));
+			}
+		}
+	}
+
+	private Window processWindowJoin(Hashtable<Integer, List<Tuple>> hashTable,
+			Window window) throws SNEEException {
+		List<Tuple> joinTuples = null;
+		for (Tuple outerTuple: window.getTuples()) {
+			int hashKey = generateHashKey(joinPredicate, outerTuple);
+			List<Tuple> hashedTuples = hashTable.get(hashKey); 
+			if (hashedTuples != null && hashedTuples.size() > 0) {
+				for (Tuple innerTuple: hashedTuples) {
 					Tuple joinTuple = generateJoinTuple(innerTuple, outerTuple);
 					System.out.println("joinTuple: "+ joinTuple);
 					if (joinTuples == null) {
@@ -245,14 +224,95 @@ public class HashJoinOperatorImpl extends EvaluationOperator {
 			}
 		}
 		Window joinWindow = null;
-		if (joinTuples != null && joinTuples.size() > 0) {
+		if (joinTuples != null) {
 			joinWindow = new Window(joinTuples);
 		}
-		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN computeJoin() with " + joinWindow);
-		}
 		return joinWindow;
+		
 	}
+
+	/**
+	 * A hash join is implemented, where in at least one of the operands
+	 * can be fully held in memory. Even though this concept does not hold
+	 * in case of streams, a modified version of it is assumed here.
+	 * 
+	 * So if there is a join between 
+	 * stream & relation - relation is hashed
+	 * stream & window - window is hashed
+	 * window & window - one of the windows is hashed
+	 * 
+	 * The above selection is performed in the Algorithm selection phase,
+	 * and the join operator is set to be of LHJ or RHJ according to this.
+	 * This means a stream of tagged tuples is never used to build the 
+	 * hash table and hence the otherOperand can be tagged tuples or windows,
+	 * but the hashable operand is never a stream of tagged tuples
+	 *  
+	 * @param hashableOperand
+	 * @return
+	 * @throws SNEEException
+	 */
+	private Hashtable<Integer, List<Tuple>> buildHashTable(
+			Output hashableOperand) throws SNEEException {
+		Hashtable<Integer, List<Tuple>> hashTable = null;
+		if (hashableOperand instanceof Window) {
+			hashTable = generateHashTableForWindow((Window) hashableOperand);
+		} else if (hashableOperand instanceof TaggedTuple) {
+			System.out.println("Never supposed to be here");
+			//This is never supposed to happen
+			hashTable = generateHashTableForTaggedTuple((TaggedTuple) hashableOperand);
+		}
+		return hashTable;
+	}
+
+	private Hashtable<Integer, List<Tuple>> generateHashTableForTaggedTuple(
+			TaggedTuple hashableOperand) {
+		Hashtable<Integer, List<Tuple>> hashTable = null;
+		
+		return hashTable;
+	}
+
+	/**
+	 * Generate the hash table for the window of tuples
+	 * 
+	 * @param window
+	 * @return
+	 * @throws SNEEException
+	 */
+	private Hashtable<Integer, List<Tuple>> generateHashTableForWindow(
+			Window window) throws SNEEException {
+		Hashtable<Integer, List<Tuple>> hashTable = null;
+		for (Tuple innerTuple : window.getTuples()) {
+			System.out.println("innerTuple"+innerTuple);
+			int hashKey = generateHashKey(joinPredicate, innerTuple);
+			System.out.println("hashKey: "+ hashKey);
+			// getHashKey(leftTuple, joinPredicate);
+			if (hashTable == null) {
+				hashTable = new Hashtable<Integer, List<Tuple>>(maxBufferSize);
+			}
+			if (!hashTable.containsKey(hashKey)) {
+				hashTable.put(hashKey, new ArrayList<Tuple>(1));
+			}
+			hashTable.get(hashKey).add(innerTuple);
+			System.out.println("Parent: ");
+			outputHashTable(hashTable);			
+		}
+		return hashTable;
+	}
+
+	/**
+	 * For a hash join operator the child operator is assumed to
+	 * be a valve operator. Rather a valve is considered to be the buffer
+	 * for the join and is also a part of the join operation, but maintained 
+	 * separately
+	 * 
+	 * @param leftOperator
+	 * @return
+	 */
+	private Output getNextFromChild(EvaluatorPhysicalOperator leftOperator) {
+		return ((ValveOperatorAbstractImpl)leftOperator).getNext();
+	}
+
+	
 	
 	private void outputHashTable (Hashtable<Integer, List<Tuple>> currOperatorHT) {
 		for (Map.Entry<Integer, List<Tuple>> curEntry: currOperatorHT.entrySet()) {
@@ -263,39 +323,6 @@ public class HashJoinOperatorImpl extends EvaluationOperator {
 		}
 	}
 
-	private void processTuple(TaggedTuple taggedTuple, List<Output> resultItems)
-			throws SNEEException {
-		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER processTuple() " + taggedTuple);
-		}
-		Window relation = (Window) rightBuffer.get(rightBuffer.size() - 1);
-		Tuple tuple = taggedTuple.getTuple();
-		int leftHashKey = generateHashKey(joinPredicate, tuple);
-		if (!leftHashTable.containsKey(leftHashKey)) {
-			leftHashTable.put(leftHashKey, new ArrayList<Tuple>(2));
-		}
-		leftHashTable.get(leftHashKey).add(tuple);
-		for (Tuple relationTuple : relation.getTuples()) {
-			int rightHashKey = generateHashKey(joinPredicate, relationTuple);
-			// getHashKey(leftTuple, joinPredicate);
-			if (!leftHashTable.containsKey(rightHashKey)) {
-				rightHashTable.put(rightHashKey, new ArrayList<Tuple>(2));
-			}
-			rightHashTable.get(rightHashKey).add(relationTuple);
-
-		}
-		if (rightHashTable.containsKey(leftHashKey)) {
-			for (Tuple outerTuple : rightHashTable.get(leftHashKey)) {
-				Tuple joinTuple = generateJoinTuple(tuple, outerTuple);
-				resultItems.add(new TaggedTuple(joinTuple));
-			}
-		}
-
-		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN processTuple() #resultItems="
-					+ resultItems.size());
-		}
-	}
 	
 
 	private Tuple generateJoinTuple(Tuple tuple1, Tuple tuple2)
@@ -466,5 +493,7 @@ public class HashJoinOperatorImpl extends EvaluationOperator {
 		}
 		return evalAttr;
 	}
+
+	
 
 }
