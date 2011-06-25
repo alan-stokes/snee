@@ -57,6 +57,7 @@ public class ProjectOperator extends PredicateOperator {
 //		this.setNesCTemplateName("project");
 		setOperatorDataType(input.getOperatorDataType());
 		this.setOperatorSourceType(input.getOperatorSourceType());
+		this.setSourceRate(input.getSourceRate());
 		setParamStr(expressions.toString());
 	}
 

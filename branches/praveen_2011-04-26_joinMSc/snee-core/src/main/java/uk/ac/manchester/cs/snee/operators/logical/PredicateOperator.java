@@ -66,6 +66,7 @@ public abstract class PredicateOperator extends LogicalOperatorImpl {
 		setChildren(new LogicalOperator[] {inputOperator});
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
+		this.setSourceRate(inputOperator.getSourceRate());
 	}
 
 	/**

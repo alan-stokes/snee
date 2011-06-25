@@ -107,6 +107,7 @@ public class WindowOperator extends LogicalOperatorImpl {
 //		setNesCTemplateName("window");
 		setOperatorDataType(OperatorDataType.WINDOWS);
 		this.setOperatorSourceType(child.getOperatorSourceType());
+		this.setSourceRate(child.getSourceRate());
 		this.from = from;
 		this.to = to;
 		if (timeSlide > 0 && rowSlide > 0) {

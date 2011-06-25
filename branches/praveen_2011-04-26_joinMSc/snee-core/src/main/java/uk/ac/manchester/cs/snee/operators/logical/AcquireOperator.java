@@ -47,7 +47,9 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 
 public class AcquireOperator extends InputOperator {
 
@@ -81,12 +83,13 @@ public class AcquireOperator extends InputOperator {
 	 * @param boolType type used for booleans
 	 * @throws SchemaMetadataException
 	 * @throws TypeMappingException
+	 * @throws SourceMetadataException 
 	 */
 	public AcquireOperator(ExtentMetadata extentMetadata, 
 			Types types, 
 			SourceMetadataAbstract source,
 			AttributeType boolType) 
-	throws SchemaMetadataException, TypeMappingException {
+	throws SchemaMetadataException, TypeMappingException, SourceMetadataException {
 		super(extentMetadata, source, boolType);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER AcquireOperator() with " + 
@@ -95,6 +98,7 @@ public class AcquireOperator extends InputOperator {
 		this.setOperatorName("ACQUIRE");
 		this.setOperatorDataType(OperatorDataType.STREAM);
 		this.setOperatorSourceType(source.getSourceType());
+		this.setSourceRate(((SourceMetadata)source).getRate(extentName));
 		this._types=types;
 		updateSensedAttributes(); 
 		updateMetadataInfo(extentMetadata);

@@ -84,6 +84,7 @@ public class DeliverOperator extends LogicalOperatorImpl {
 //		this.setNesCTemplateName("deliver");
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
+		this.setSourceRate(inputOperator.getSourceRate());
 		this.setParamStr("");
 
 		setChildren(new LogicalOperator[] {inputOperator});

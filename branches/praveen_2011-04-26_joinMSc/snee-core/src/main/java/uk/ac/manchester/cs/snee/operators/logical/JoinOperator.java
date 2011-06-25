@@ -45,7 +45,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 /** 
  * A Join or Cross product operator.
@@ -56,6 +55,29 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator {
 
    private Logger logger = Logger.getLogger(JoinOperator.class.getName());
+   
+   /**
+    * operator to work in Nested Loop Join Mode
+    */
+   public static String NLJ_MODE = "NLJ_MODE";
+   /**
+    * operator to work in Symmetric Hash Join Mode
+    */
+   public static String SHJ_MODE = "SHJ_MODE";
+   /**
+    * operator to work in Simple Hash Join Mode
+    */
+   public static String HJ_MODE = "HJ_MODE";
+   /**
+    * operator to work in Simple Hash Join Mode
+    * with the left operand being hashed
+    */
+   public static String LHJ_MODE = "LHJ_MODE";
+   /**
+    * operator to work in Simple Hash Join Mode
+    * with the right operand being hashed
+    */
+   public static String RHJ_MODE = "RHJ_MODE";
 
    /** 
 	 * List of the expressions to create the output attributes.
@@ -72,6 +94,10 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 	private boolean rightChildIsRelation = false;
 	
 	private boolean leftChildIsRelation = false;
+	
+	private String joinMode;
+	
+	
 	
 //	/**
 //	 * Constructor that creates a new operator
@@ -108,6 +134,9 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 
 		setChildren(left, right);
 		setOperatorSourceType(getOperatorSourceType(left, right));
+		this.setSourceRate(getSourceRate(left, right));
+		setAlgorithm(NLJ_MODE);
+		setGetDataByPullModeOperator(false);
 		getIncomingAttributes();
 	}
 
@@ -472,6 +501,25 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 			return false;
 		}
 	}
+
+
+	/**
+	 * Method to set the mode in which the join operator is supposed to work
+	 * @param mode
+	 */
+	public void setAlgorithm(String mode) {
+		joinMode = mode;
+	}
+	
+	/**
+	 * Method to get the mode in which the operator is set to work
+	 * @return
+	 */
+	public String getAlgorithm() {
+		return joinMode;
+	}	
+	
+	
 	
 	//Call to default methods in OperatorImplementation
 

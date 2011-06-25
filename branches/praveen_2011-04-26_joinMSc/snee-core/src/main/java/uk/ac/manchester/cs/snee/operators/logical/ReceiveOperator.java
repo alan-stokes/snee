@@ -44,7 +44,9 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 
 public class ReceiveOperator extends InputOperator {
 
@@ -62,11 +64,12 @@ public class ReceiveOperator extends InputOperator {
 	 * @param boolType type used for booleans
 	 * @throws SchemaMetadataException
 	 * @throws TypeMappingException
+	 * @throws SourceMetadataException 
 	 */
 	public ReceiveOperator(ExtentMetadata extentMetaData, 
 			SourceMetadataAbstract source, 
 			AttributeType boolType) 
-	throws SchemaMetadataException, TypeMappingException {
+	throws SchemaMetadataException, TypeMappingException, SourceMetadataException {
 		super(extentMetaData, source, boolType);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ReceiveOperator() with " +
@@ -75,6 +78,7 @@ public class ReceiveOperator extends InputOperator {
 		this.setOperatorName("RECEIVE");
 		this.setOperatorDataType(OperatorDataType.STREAM);	
 		this.setOperatorSourceType(source.getSourceType());
+		this.setSourceRate(((SourceMetadata)source).getRate(extentName));
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN ReceiveOperator()");
 	} 		 

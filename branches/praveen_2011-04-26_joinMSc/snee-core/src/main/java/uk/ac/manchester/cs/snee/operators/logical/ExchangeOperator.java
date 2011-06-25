@@ -23,6 +23,7 @@ public class ExchangeOperator extends LogicalOperatorImpl {
 		setChildren(new LogicalOperator[] {inputOperator});
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
+		this.setSourceRate(inputOperator.getSourceRate());
 		this.setParamStr("");
 		
 		// TODO Auto-generated constructor stub

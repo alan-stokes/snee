@@ -56,6 +56,7 @@ implements LogicalOperator {
 		setOperatorDataType(OperatorDataType.STREAM);
 		setChildren(new LogicalOperator[] {left, right});
 		this.setOperatorSourceType(getOperatorSourceType(left, right));
+		this.setSourceRate(getSourceRate(left, right));
 	}
 
 	@Override
@@ -145,6 +146,17 @@ implements LogicalOperator {
 	/** {@inheritDoc} */    
 	public List<Expression> getExpressions() {
 		return super.defaultGetExpressions();
+	}
+	
+	/**
+	 * This method compares the left and right operator based on its source type
+	 * and returns the rate based on the precedence Pushed>pulled>Scanned
+	 * @param left
+	 * @param right
+	 * @return
+	 */
+	protected double getSourceRate(LogicalOperator left, LogicalOperator right) {
+		return left.getSourceRate() + right.getSourceRate();
 	}
 
 }

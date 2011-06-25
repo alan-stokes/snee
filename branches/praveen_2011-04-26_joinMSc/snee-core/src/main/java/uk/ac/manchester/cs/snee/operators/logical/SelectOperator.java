@@ -79,6 +79,7 @@ public class SelectOperator extends LogicalOperatorImpl {
 //		this.setNesCTemplateName("select");
 		setOperatorDataType(inputOperator.getOperatorDataType());
 		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
+		this.setSourceRate(inputOperator.getSourceRate());
 
 		setChildren(new LogicalOperator[] {inputOperator});
 
