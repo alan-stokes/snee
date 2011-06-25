@@ -17,6 +17,9 @@ public class CircularArray<E> implements Iterable<E> {
 	private int lastIndex;
 	private int capacity;
 	private int numberElements = 0;
+	//This variable holds the total number of objects that has ever 
+	//been inserted into this array
+	private int totalNumberOfObjects = 0;
 
 	/**
 	 * Constructs a new instance of {@code ArrayList} with the specified
@@ -79,9 +82,12 @@ public class CircularArray<E> implements Iterable<E> {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER add() with " + object);
 		}
+		//System.out.println("Add begin");		
+		//printIndexes();
 		// Insert then increment
 		array[lastIndex] = object;
 		numberElements++;
+		totalNumberOfObjects++;
 		if (logger.isTraceEnabled()) {
 			logger.trace("Inserted object at index " + lastIndex +
 					"\n\tTotal number of inserted objects " + 
@@ -95,6 +101,7 @@ public class CircularArray<E> implements Iterable<E> {
 		 */
 		if (lastIndex == firstIndex) {
 			firstIndex = incrementPointer(firstIndex);
+			numberElements--;
 		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("Next insert index " + lastIndex +
@@ -103,9 +110,16 @@ public class CircularArray<E> implements Iterable<E> {
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN add() with true");
 		}
+		//System.out.println("Add begin");		
+		//printIndexes();
 		return true;
 	}
 	
+	public void printIndexes() {
+		System.out.println("Last Index: "+ lastIndex);
+		System.out.println("First Index: "+ firstIndex);
+	}
+
 	/**
 	 * Adds the objects in the specified collection to this {@code CircularArray}.
 	 * @param collection
@@ -167,12 +181,49 @@ public class CircularArray<E> implements Iterable<E> {
 	}
 	
 	/**
+	 * This method retrieves the head of the queue and
+	 * removes the item from the head of the queue. If
+	 * there are no items in the queue, then it  returns
+	 * null
+	 * 
+	 * @return 
+	 */
+	public E poll() {
+		E object = null;
+		//System.out.println("Polling begin");
+		//printIndexes();
+		if (!isEmpty()) {
+			object = getOldest();
+			numberElements--;
+			firstIndex = incrementPointer(firstIndex);
+			//If the first index has incremented it to be equal to
+			//the last index, then it means there are no more elements
+			//in the queue and hence the pointers can be reset to 0
+			if (lastIndex == firstIndex) {
+				firstIndex = lastIndex = numberElements = 0;
+			}
+		}
+		//System.out.println("Polling end");
+		//printIndexes();
+		return object;
+	}
+	
+	/**
+	 * Returns the number of elements that are currently present in this {@code CircularArray}.
+	 * 
+	 * @return the number of elements that are currently present in this {@code CircularArray}.
+	 */
+	public int size() {
+		return numberElements;
+	}
+	
+	/**
 	 * Returns the number of elements that have been inserted in this {@code CircularArray}.
 	 * 
 	 * @return the number of elements that have been inserted in this {@code CircularArray}.
 	 */
-	public int size() {
-		return numberElements;
+	public int totalObjectsInserted() {
+		return totalNumberOfObjects;
 	}
 	
 	/**
