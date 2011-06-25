@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
+import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -110,6 +111,19 @@ public class DLAF extends SNEEAlgebraicForm {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getRootOperator() " + rootOperator);		
 		return rootOperator;
+	}
+	
+	/**
+	 * Creates an iterator to traverse the operator tree.
+	 * @param order
+	 * @return
+	 */
+	public Iterator<LogicalOperator> operatorIterator(TraversalOrder order) {
+//		if (logger.isDebugEnabled())
+//			logger.debug("ENTER operatorIterator()");
+//		if (logger.isDebugEnabled())
+//			logger.debug("RETURN operatorIterator()");		
+		return this.getLAF().operatorIterator(order);
 	}
 
 	/**
