@@ -239,4 +239,22 @@ public interface LogicalOperator extends Node {
 	 * @return the source type of the operator
 	 */
 	SourceType getOperatorSourceType();
+	
+	/**
+	 * 
+	 * @return the rate of the operator
+	 */
+	double getSourceRate();
+
+	/**
+	 * Method to set the mode of the operator to get
+	 * the next record from child. If it is pull based
+	 * then it has to use the getNext() method from child
+	 * to get the next data
+	 * 
+	 * @param isPullBased
+	 */
+	boolean isGetDataByPullModeOperator();
+	
+	void setGetDataByPullModeOperator(boolean isPullModeOperator);
 }
