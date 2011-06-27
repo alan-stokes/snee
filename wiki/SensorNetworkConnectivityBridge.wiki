@@ -70,10 +70,10 @@ tos-ota $BASESTATION:115200 2 -i 1 $SNEEROOT/SNEE/sncb/target/classes/etc/sncb/t
     * Installs an image to a specific node.
     {{{ register <image absoulute path>  <dest node id>  <basestation_id> }}}
   * start
-    * Initiates query execution.
+    * Boots nodes into the query plan image, and Initiates query execution.
     {{{ start }}}
   * stop
-    * Stops query execution.
+    * Stops query execution, and reboots nodes back into OTA mode.
     {{{ stop <basestation id> }}}
   * deregister
     * Uninstalls a query image on a specific node.
