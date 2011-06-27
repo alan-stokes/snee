@@ -21,13 +21,13 @@ The code for these programs is located at {{{$SNEEROOT/SNEE/sncb/target/classes/
 
 == Install the OTA tool into the Nodes' External Flash Memory (Slot 1) ==
 
-  * First, manually with a USB cable, add OTAServer to each non-basestation mote (from within the OtaServer directory):
+  * First, manually with a USB cable, add OTAServer to each non-basestation mote (from within the {{{OtaServer}}} directory):
   {{{ make telosb install,<node_id> }}}
 
-  * Then, manually with a USB cable, install OTABasestation on the basestation mote (from within the OtaBasestation directory)
+  * Then, manually with a USB cable, install OTABasestation on the basestation mote (from within the {{{OtaBasestation}}} directory)
   {{{ make telosb install,<node_id> }}}
 
-  * Then, with the basestation plugged in, install the OTA image into each node except the basestation at slot 1
+  * Then, with the basestation plugged in, install the OTAServer image into each node except the basestation at slot 1 (back in the {{{OtaServer}}} directory)
   {{{ tos-ota <source> <destination> -i 1 <tos_image.xml>  }}}
     * {{{<source>}}} is the serial port that the basestation is attached to.  NOTE, you must include the speed of the port, e.g., {{{serial@/dev/tty.usbserial-USB0:115200}}}
     * {{{<destination>}}} is the id of the node.
