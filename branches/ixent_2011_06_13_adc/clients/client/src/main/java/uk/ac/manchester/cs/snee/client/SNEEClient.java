@@ -166,21 +166,15 @@ public abstract class SNEEClient implements Observer {
 		//		int queryId2 = controller.addQuery(query);
 
 		long startTime = System.currentTimeMillis();
-		long endTime = (long) (startTime + (_duration * 1000));
-
-		System.out.println("Running query for " + _duration + " seconds. Scheduled end time " + new Date(endTime));
-
 		ResultStoreImpl resultStore = 
 			(ResultStoreImpl) controller.getResultStore(queryId1);
 		resultStore.addObserver(this);
+
 		
-		try {			
-			Thread.currentThread().sleep((long)_duration * 1000);
-		} catch (InterruptedException e) {
-		}
-		
-		while (System.currentTimeMillis() < endTime) {
-			Thread.currentThread().yield();
+		if (_duration == Double.POSITIVE_INFINITY) {
+			runQueryIndefinitely();
+		} else {
+			runQueryForFixedPeriod(startTime);
 		}
 		
 		List<ResultSet> results1 = resultStore.getResults();
@@ -200,6 +194,34 @@ public abstract class SNEEClient implements Observer {
 		//		printResults(results2, queryId2);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN");
+	}
+
+	private void runQueryIndefinitely() throws SNEEException {
+		System.out.println("Running query indefinitely. Press CTRL+C to exit.");
+
+		while (true) {
+			try {
+				Thread.currentThread().sleep(10000);
+			} catch (InterruptedException e) {
+			}
+			Thread.currentThread().yield();
+		}
+
+	}
+
+	private void runQueryForFixedPeriod(long startTime) 
+	throws SNEEException {
+		long endTime = (long) (startTime + (_duration * 1000));
+		System.out.println("Running query for " + _duration + " seconds. Scheduled end time " + new Date(endTime));
+		
+		try {			
+			Thread.currentThread().sleep((long)_duration * 1000);
+		} catch (InterruptedException e) {
+		}
+		
+		while (System.currentTimeMillis() < endTime) {
+			Thread.currentThread().yield();
+		}
 	}
 
 }

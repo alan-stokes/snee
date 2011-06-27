@@ -33,23 +33,27 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 				SNEEClientUsingInNetworkSource.class.
 				getClassLoader().getResource("etc/log4j.properties"));
 		String query;
-		Long duration;
+		Double duration;
 		String queryParams;
 		if (args.length != 3) {
 			System.out.println("Usage: \n" +
 					"\t\"query statement\"\n" +
-					"\t\"query duration in seconds\"\n" +
+					"\t\"query duration in seconds ('inf' for indefinite)\"\n" +
 					"\t\"query parameters file\"\n");
 			//XXX: Use default query
 			query = "SELECT * FROM SeaDefence;";
 //			query = "SELECT seaLevel, \'East\' FROM SeaDefence;";
 			//query = "SELECT avg(seaLevel) FROM SeaDefence;";
 			//query = "SELECT e.seaLevel FROM SeaDefenceEast[NOW] e, SeaDefenceWest[NOW] w WHERE e.seaLevel > w.seaLevel;";
-			duration = Long.valueOf("120");
+			duration = Double.valueOf("120");
 			queryParams= "etc/query-parameters.xml";
 		} else {	
 			query = args[0];
-			duration = Long.valueOf(args[1]);
+			if (args[1].equalsIgnoreCase("inf") || args[1].equalsIgnoreCase("ind")) {
+				duration = Double.POSITIVE_INFINITY;
+			} else {
+				duration = Double.valueOf(args[1]);
+			}
 			queryParams = args[2];
 		}
 			
