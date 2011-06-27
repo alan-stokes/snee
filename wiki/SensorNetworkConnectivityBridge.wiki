@@ -35,18 +35,12 @@ The code for these programs is located at {{{$SNEEROOT/SNEE/sncb/target/classes/
 
 ===Example===
 If you have a 2 node network, with node 1 as the basestation and node 2 as a sensing node, the sequence of commands is:
-
-{{{cd OtaServer}}}
-
-{{{make telosb Install,2}}}
-
-{{{cd ../OtaBasestation}}}
-
-{{{make telosb Install,1}}}
-
-{{{cd ../OtaServer}}}
-
-{{{tos-ota serial@/dev/tty.usbserial-XBTFSN2Q 2 -i 1 build/telosb/tos_image.xml}}}
+ {{{cd OtaServer
+make telosb Install,2
+cd ../OtaBasestation
+make telosb Install,1
+cd ../OtaServer
+tos-ota serial@/dev/tty.usbserial-XBTFSN2Q 2 -i 1 build/telosb/tos_image.xml}}}
 
 == Installing the Metadata Collector Image on the Nodes' External Flash Memory (slot 0) ==
   * For each non-basestation node:
