@@ -10,6 +10,7 @@ This page describes the commands used by the Sensor Network Connectivity Bridge.
   * SNEE set up according to [SettingUpDeveloperEnvironment these instructions]
   * Set $SNEEROOT to point to the root directory of the SNEE workspace you are using.
   * Add {{{$SNEEROOT/SNEE/sncb/target/classes/etc/sncb/tools/python}}} and {{{$SNEEROOT/SNEE/sncb/target/classes/etc/sncb/tools/python/utils}}} directories to your PATH.
+  * Set BASESTATION to be your basestation id (e.g., serial@/dev/tty.usbserial-XBTFSN2Q) -- find this out by running a motelist command.
 
 = Setting up the Nodes =
 
@@ -41,7 +42,7 @@ make telosb Install,2
 cd ../OtaBasestation
 make telosb Install,1
 cd ../OtaServer
-tos-ota serial@/dev/tty.usbserial-XBTFSN2Q 2 -i 1 $SNEEROOT/SNEE/sncb/target/classes/etc/sncb/tools/nesC/OtaServer/build/telosb/tos_image.xml
+tos-ota $BASESTATION:115200 2 -i 1 $SNEEROOT/SNEE/sncb/target/classes/etc/sncb/tools/nesC/OtaServer/build/telosb/tos_image.xml
 }}}
 
 == Installing the Metadata Collector Image on the Nodes' External Flash Memory (slot 0) ==
