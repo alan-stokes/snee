@@ -51,6 +51,8 @@ public class AutonomicManager
     Logger.getLogger("results.autonomicManager");
   // folder for autonomic data
   private File outputFolder = new File("AutonomicManagerData");;
+  //fixed parameters of autonomic calculations
+  private final int numberOfTreesToUse = 10;
   
   public AutonomicManager()
   {
@@ -69,7 +71,7 @@ public class AutonomicManager
 	  SensorNetworkQueryPlan sQep = (SensorNetworkQueryPlan) qep;
     setupOutputFolder();
 	  //Initialise other components
-	  anyliser.initilise(qep);
+	  anyliser.initilise(qep, numberOfTreesToUse);
 	  monitor.setQueryPlan(qep);
   }
 

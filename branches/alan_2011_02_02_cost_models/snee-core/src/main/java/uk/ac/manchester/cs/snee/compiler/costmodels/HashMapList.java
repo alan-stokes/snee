@@ -36,7 +36,10 @@ package uk.ac.manchester.cs.snee.compiler.costmodels;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Set;
+
+import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 
 public class HashMapList<K,V> {
 
@@ -79,6 +82,16 @@ public class HashMapList<K,V> {
     
   public Set<K> keySet() {
     return this.mapping.keySet();
+  }
+
+  public void addAll(K key, ArrayList<V> valueArray)
+  {
+    Iterator<V> valueIterator = valueArray.iterator();
+    while(valueIterator.hasNext())
+    {
+      V value = valueIterator.next();
+      this.add(key, value);
+    }
   }
   
 }

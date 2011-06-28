@@ -47,12 +47,12 @@ public class Anaylsiser
     deadNodeSimulator = new DeadNodeSimulator();
   }
 
-  public void initilise(QueryExecutionPlan qep) throws SchemaMetadataException 
+  public void initilise(QueryExecutionPlan qep, Integer noOfTrees) throws SchemaMetadataException 
   {//sets ECMs with correct query execution plan
 	  this.qep = (SensorNetworkQueryPlan) qep;
 	  cardECM = new CardinalityEstimatedCostModel(qep);
-	  adapatationStrategyIntermediateSpaceAndTimePinned.initilise(qep);
-	  adapatationStrategyIntermediateSpacePinned.initilise(qep);
+	  adapatationStrategyIntermediateSpaceAndTimePinned.initilise(qep, noOfTrees);
+	  adapatationStrategyIntermediateSpacePinned.initilise(qep, noOfTrees);
 	  deadNodeSimulator.initilise(qep, cardECM);  
   }
    

@@ -6,6 +6,7 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.autonomicmanager.Adapatation;
 import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
 import uk.ac.manchester.cs.snee.autonomicmanager.TemporalAdjustment;
+import uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.router.CandiateRouter;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
@@ -71,6 +72,7 @@ public class AdapatationStrategyIntermediate
   private AgendaIOT agenda;
   private File outputFolder;
   private String sep = System.getProperty("file.separator");
+  private Integer numberOfRoutingTreesToWorkOn = 0;
   /**
    * @param autonomicManager
    * the parent of this class.
@@ -84,7 +86,7 @@ public class AdapatationStrategyIntermediate
     
   }
   
-  public void initilise(QueryExecutionPlan oldQep) throws SchemaMetadataException 
+  public void initilise(QueryExecutionPlan oldQep, Integer numberOfTrees) throws SchemaMetadataException 
   {
     this.qep = (SensorNetworkQueryPlan) oldQep;
     outputFolder = manager.getOutputFolder();
@@ -92,6 +94,7 @@ public class AdapatationStrategyIntermediate
     this.oldIOT = qep.getIOT();
     oldIOT.setID("OldIOT");
     this.agenda = this.qep.getAgendaIOT();
+    this.numberOfRoutingTreesToWorkOn = numberOfTrees;
   }
   
   /**
@@ -120,43 +123,51 @@ public class AdapatationStrategyIntermediate
     //generate topology file
     new AdapatationStrategyIntermediateUtils(this).outputTopologyAsDotFile(outputFolder, sep + "topologyAfterNodeLoss.dot");
     //setup collectors
-    PAF paf = null; 
+    PAF paf = oldIOT.getPAF(); 
     ArrayList<RT> routingTrees = new ArrayList<RT>();
-    
-    while(routingTrees.size() == 0)
-    {
-      //create pinned paf
-      paf = pinPhysicalOperators(oldIOT, failedNodes);
-      //create new routing tree
-      routingTrees = createNewRoutingTrees(failedNodes, paf);
-      if(routingTrees.size() == 0)
-      {
-        chooseDisconnectedNode(oldIOT, failedNodes);
-      }
-    }
+    ArrayList<String> disconnectedNodes = new ArrayList<String>();
+    //create new routing tree
+    routingTrees = createNewRoutingTrees(failedNodes, disconnectedNodes, paf, oldIOT.getRT());
+
     //create store for all adapatations
     ArrayList<Adapatation> totalAdapatations = new ArrayList<Adapatation>();
     Iterator<RT> routeIterator = routingTrees.iterator();
     
     try
     {
-      tryGoingThoughRoutes(routeIterator, paf, failedNodes, totalAdapatations);
+      tryGoingThoughRoutes(routeIterator, failedNodes, disconnectedNodes, totalAdapatations);
     }
     catch(Exception e)
     {
-      tryGoingThoughRoutes(routeIterator, paf, failedNodes, totalAdapatations);
+      tryGoingThoughRoutes(routeIterator, failedNodes, disconnectedNodes, totalAdapatations);
     }
     return totalAdapatations;
   }
 
-  private void chooseDisconnectedNode(IOT oldIOT2, ArrayList<String> failedNodes)
+  private void chooseDisconnectedNode(IOT oldIOT2, ArrayList<String> failedNodes,
+                                      ArrayList<String> disconnectedNodes)
   {
     // TODO Auto-generated method stub
     
   }
 
-  private void tryGoingThoughRoutes(Iterator<RT> routeIterator, PAF paf,
-      ArrayList<String> failedNodes, ArrayList<Adapatation> totalAdapatations) throws SNEEException, SchemaMetadataException, OptimizationException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, TypeMappingException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
+  private void tryGoingThoughRoutes(Iterator<RT> routeIterator, ArrayList<String> failedNodes, 
+                                    ArrayList<String> disconnectedNodes, 
+                                    ArrayList<Adapatation> totalAdapatations)
+  throws SNEEException, 
+         SchemaMetadataException, 
+         OptimizationException, 
+         SNEEConfigurationException, 
+         MalformedURLException, 
+         WhenSchedulerException, 
+         TypeMappingException, 
+         MetadataException, 
+         UnsupportedAttributeTypeException, 
+         SourceMetadataException, 
+         TopologyReaderException, 
+         SNEEDataSourceException,
+         CostParametersException, 
+         SNCBException
   {
     while(routeIterator.hasNext())
     {
@@ -164,6 +175,8 @@ public class AdapatationStrategyIntermediate
       RT routingTree =  routeIterator.next();
       Adapatation currentAdapatation = new Adapatation(qep);
       
+      //create pinned paf
+      PAF paf = pinPhysicalOperators(oldIOT, failedNodes, disconnectedNodes);
       //run fragment paf though where scheduler.
       InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), outputFolder.toString());
       IOT newIOT = instanceWhere.getIOT();
@@ -495,18 +508,30 @@ public class AdapatationStrategyIntermediate
    * @param agenda2
    * @param iot2
    * @param failedNodes
+   * @param disconnectedNodes 
    * @param paf 
    * @throws SNEEConfigurationException 
    * @throws NumberFormatException 
    */
-  private ArrayList<RT> createNewRoutingTrees(ArrayList<String> failedNodes, PAF paf) throws NumberFormatException, SNEEConfigurationException
+  private ArrayList<RT> createNewRoutingTrees(ArrayList<String> failedNodes, ArrayList<String> disconnectedNodes, PAF paf, RT oldRoutingTree) throws NumberFormatException, SNEEConfigurationException
   {
     ArrayList<RT> routes = new ArrayList<RT>();
-    Router router = new Router();
-    RT route = router.doRouting(paf, "");
-    route.setID("newRoute" + routes.size()+1);
-    routes.add(route);
-    new AdapatationStrategyIntermediateUtils(this).outputRouteAsDotFile(outputFolder, "newRoute" + route.getID(), route);
+    //Router router = new Router();
+    CandiateRouter router = new CandiateRouter();
+    while(routes.size() == 0)
+    {
+      //RT route = router.doRouting(paf, "");
+      //route.setID("newRoute" + routes.size()+1);
+      //new AdapatationStrategyIntermediateUtils(this).outputRouteAsDotFile(outputFolder, "newRoute" + route.getID(), route);
+      //routes.add(route);
+      
+      routes = router.findAllRoutes(oldRoutingTree, failedNodes, "", numberOfRoutingTreesToWorkOn);
+      if(routes.size() == 0)
+      {
+        chooseDisconnectedNode(oldIOT, failedNodes, disconnectedNodes);
+      }
+    }
+   
     return routes;
   }
 
@@ -515,12 +540,18 @@ public class AdapatationStrategyIntermediate
    * @param agenda2
    * @param iot
    * @param failedNodes
+   * @param disconnectedNodes 
    * @throws SNEEException
    * @throws SchemaMetadataException
    * @throws SNEEConfigurationException
    * @throws OptimizationException 
    */
-  private PAF pinPhysicalOperators(IOT iot, ArrayList<String> failedNodes) throws SNEEException, SchemaMetadataException, SNEEConfigurationException, OptimizationException
+  private PAF pinPhysicalOperators(IOT iot, ArrayList<String> failedNodes, 
+                                   ArrayList<String> disconnectedNodes) 
+  throws SNEEException, 
+         SchemaMetadataException, 
+         SNEEConfigurationException, 
+         OptimizationException
   {
     //get paf 
     Cloner cloner = new Cloner();
@@ -534,14 +565,8 @@ public class AdapatationStrategyIntermediate
       InstanceOperator instanceOperator = iotInstanceOperatorIterator.next();
       SensornetOperator physicalOperator = instanceOperator.getSensornetOperator();
       SensornetOperatorImpl physicalOperatorImpl = (SensornetOperatorImpl) physicalOperator;
-      boolean locatedOnAFailedNode = false;
-      Iterator<String> failedNodeIterator = failedNodes.iterator();
-      while(failedNodeIterator.hasNext() && !locatedOnAFailedNode)
-      {
-        if(instanceOperator.getSite().getID().equals(failedNodeIterator.next()))
-          locatedOnAFailedNode = true;
-      }
-      if(!locatedOnAFailedNode)
+      if(!failedNodes.contains(instanceOperator.getSite().getID()) && 
+         !disconnectedNodes.contains(instanceOperator.getSite().getID()))
       {
         ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).setIsPinned(true);
         ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).addSiteToPinnedList(instanceOperator.getSite().getID());
