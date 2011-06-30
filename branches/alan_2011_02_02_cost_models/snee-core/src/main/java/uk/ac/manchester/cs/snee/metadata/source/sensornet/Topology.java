@@ -33,24 +33,17 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.metadata.source.sensornet;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Random;
-import java.util.TreeMap;
+
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.Utils;
-import uk.ac.manchester.cs.snee.common.graph.Edge;
+
 import uk.ac.manchester.cs.snee.common.graph.Graph;
 import uk.ac.manchester.cs.snee.common.graph.Node;
-import uk.ac.manchester.cs.snee.metadata.MetadataManager;
+
 
 /**
  * Represents a network connectivity graph for a sensor network.
@@ -106,7 +99,7 @@ public class Topology extends Graph {
     /*
      * Used by dijkstra's shortest path algorithm 
      */
-    private String dijkstra_getNextClosestNodeID(
+    public String dijkstra_getNextClosestNodeID(
 	    final HashSet<String> shortestDistanceNotFound,
 	    final HashMap<String, Double> distance) {
 	Double nextClosestDist = new Double(Double.POSITIVE_INFINITY);
@@ -448,6 +441,8 @@ public class Topology extends Graph {
 	public Iterator<Node> siteIterator() {
 		return this.nodes.values().iterator();
 	}
+
+
     
     /**
      * TODO: make this a unit test

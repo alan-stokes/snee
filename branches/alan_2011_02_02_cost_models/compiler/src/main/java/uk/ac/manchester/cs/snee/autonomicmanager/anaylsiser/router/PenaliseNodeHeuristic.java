@@ -2,13 +2,13 @@ package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.router;
 
 import java.util.Random;
 
-public enum Omega
+public enum PenaliseNodeHeuristic
 {
   TRUE, FALSE;
   
-  public static Omega RandomEnum()
+  public static PenaliseNodeHeuristic RandomEnum()
   { 
-    Omega[] values = (Omega[]) values();
+    PenaliseNodeHeuristic[] values = (PenaliseNodeHeuristic[]) values();
     return values[new Random().nextInt(values.length)];
   }
 }

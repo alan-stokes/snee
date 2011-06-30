@@ -6,8 +6,6 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;

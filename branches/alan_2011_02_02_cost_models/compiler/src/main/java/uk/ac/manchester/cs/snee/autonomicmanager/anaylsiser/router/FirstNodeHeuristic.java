@@ -2,13 +2,13 @@ package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.router;
 
 import java.util.Random;
 
-public enum Psi
+public enum FirstNodeHeuristic
 {
-  ENERGY, LATENCY, RANDOM, MIXED;
+  SINK,RANDOM;
   
-  public static Psi RandomEnum()
+  public static FirstNodeHeuristic RandomEnum()
   { 
-    Psi[] values = (Psi[]) values();
+    FirstNodeHeuristic[] values = (FirstNodeHeuristic[]) values();
     return values[new Random().nextInt(values.length)];
   }
 }

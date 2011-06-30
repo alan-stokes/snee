@@ -29,9 +29,7 @@ import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
-import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
@@ -161,8 +159,6 @@ public class Monitor implements Observer
   //Temporary code to allow notation tests without a failed node
   public void chooseFakeNodeFailure() throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException, SNEEException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
   {
-    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) qep.getDLAF().getSource();
-    Topology network = sm.getTopology();
     ArrayList<String> failedNodes = new ArrayList<String>();
     Node failedNode = qep.getIOT().getNode(3);
     failedNodes.add(failedNode.getID());

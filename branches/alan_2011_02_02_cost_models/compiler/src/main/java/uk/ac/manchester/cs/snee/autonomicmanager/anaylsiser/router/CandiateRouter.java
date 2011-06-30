@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.router;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -9,14 +10,18 @@ import org.apache.log4j.Logger;
 import com.rits.cloning.Cloner;
 
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.graph.Edge;
+import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
+import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
@@ -49,7 +54,6 @@ public class CandiateRouter extends Router
     //container for new routeing trees
     ArrayList<RT> newRoutingTrees = new ArrayList<RT>();
     HashMapList<Integer ,Tree> failedNodeToRoutingTreeMapping = new HashMapList<Integer,Tree>();
-    
     //get connectivity graph
     SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) oldRoutingTree.getPAF().getDLAF().getSource();
     Topology network = sm.getTopology();
@@ -79,31 +83,36 @@ public class CandiateRouter extends Router
         e.printStackTrace();
       }
       //calculate different routes around linked failed site.
-      ArrayList<Tree> routesForFailedNode = createRoutes(workingTopology, numberOfRoutingTreesToWorkOn, sources, sink);
+      ArrayList<Tree> routesForFailedNode = createRoutes(workingTopology, numberOfRoutingTreesToWorkOn, sources, sink, oldRoutingTree.getPAF());
       failedNodeToRoutingTreeMapping.addAll(key, routesForFailedNode);
     }
     //merges new routes to create whole entire routingTrees
 
     //score them and place in descending order.
-    return new ArrayList<RT>(newRoutingTrees.subList(0, numberOfRoutingTreesToWorkOn));
+    if(newRoutingTrees.size() > numberOfRoutingTreesToWorkOn)
+      return new ArrayList<RT>(newRoutingTrees.subList(0, numberOfRoutingTreesToWorkOn));
+    else
+      return newRoutingTrees;
   }
 
   /**
    * method which creates at maximum numberOfRoutingTreesToWorkOn routes if possible. 
-   * First uses basic steiner-tree algorithm to determine if a route exists between sources and sink.
-   * if a route exists then, try for numberOfRoutingTreesToWorkOn iterations with different heuristics. 
-   * if no route after basic, then returns null. 
+   * First uses basic steiner-tree algorithm to determine if a route exists between 
+   * sources and sink. if a route exists then, try for numberOfRoutingTreesToWorkOn 
+   * iterations with different heuristics. if no route after basic, then returns null. 
    * @param workingTopology
    * @param numberOfRoutingTreesToWorkOn
    * @param sources
    * @param sink
+   * @param paf 
    * @return
    */
   private ArrayList<Tree> createRoutes(Topology workingTopology,
-      Integer numberOfRoutingTreesToWorkOn, ArrayList<String> sources, String sink)
+      Integer numberOfRoutingTreesToWorkOn, ArrayList<String> sources, String sink, PAF paf)
   {
     ArrayList<Tree> routes = new ArrayList<Tree>();
     Tree steinerTree = computeSteinerTree(workingTopology, sink, sources); 
+    ArrayList<HeuristicSet> testedHeuristics = new ArrayList<HeuristicSet>();
     //if no route exists between sink and childs. return empty array.
     if(steinerTree == null)
       return routes;
@@ -111,21 +120,53 @@ public class CandiateRouter extends Router
       
     while(routes.size() < numberOfRoutingTreesToWorkOn)
     {
-      Phi phi = Phi.RandomEnum();
-      Chi chi = Chi.RandomEnum();
-      Psi psi = Psi.RandomEnum();
-      Omega omega = Omega.RandomEnum();
-
-      Tree currentTree = metaSteinerTree(phi, chi, psi, omega, sources, sink, workingTopology);
+      HeuristicSet set = null;
+      boolean alreadyDone = false;
+      //get new set of heuristics
+      do
+      {
+        FirstNodeHeuristic phi = FirstNodeHeuristic.RandomEnum();
+        SecondNodeHeuristic chi = SecondNodeHeuristic.RandomEnum();
+        LinkMatrexChoiceHeuristic psi = LinkMatrexChoiceHeuristic.RandomEnum();
+        PenaliseNodeHeuristic omega = PenaliseNodeHeuristic.RandomEnum();
+        set = new HeuristicSet(chi, phi, psi, omega, workingTopology);
+        alreadyDone = comparison(testedHeuristics, set);
+      }while(alreadyDone);
+      testedHeuristics.add(set);
+      //produce tree for set of heuristics
+      MetaSteinerTree treeGenerator = new MetaSteinerTree();
+      
+      Tree currentTree = treeGenerator.produceTree(set, sources, sink, workingTopology, paf);
       routes.add(currentTree);
     }
     removeDuplicates(routes);
     return routes;
   }
 
+  /**
+   * searches though already chosen heuristics and looks to see if set has been used before
+   * @param testedHeuristics
+   * @param set
+   * @return
+   */
+  private boolean comparison(ArrayList<HeuristicSet> testedHeuristics,
+      HeuristicSet set)
+  {
+    Iterator<HeuristicSet> setIterator = testedHeuristics.iterator();
+    while(setIterator.hasNext())
+    {
+      HeuristicSet usedSet= setIterator.next();
+      if(usedSet.getFirstNodeHeuristic() == set.getFirstNodeHeuristic() &&
+         usedSet.getLinkMatrexChoiceHeuristic() == set.getLinkMatrexChoiceHeuristic() &&
+         usedSet.getPenaliseNodeHeuristic() == set.getPenaliseNodeHeuristic() &&
+         usedSet.getSecondNodeHeuristic() == set.getSecondNodeHeuristic())
+        return true;
+    }
+    return false;
+  }
 
   /**
-   * remvoes all routes which are duplicates from routes.
+   * removes all routes which are duplicates from routes.
    * @param routes
    */
   private void removeDuplicates(ArrayList<Tree> routes)
@@ -133,48 +174,6 @@ public class CandiateRouter extends Router
     // TODO Auto-generated method stub
     
   }
-
-  /**
-   * creates a route based off heuristics phi,chi,psi,omega linking sources with sink 
-   * based off the topology working topology.
-   * @param phi
-   * @param chi
-   * @param psi
-   * @param omega
-   * @param sources
-   * @param sink
-   * @param workingTopology
-   * @return
-   */
-  private Tree metaSteinerTree(Phi phi, Chi chi, Psi psi, Omega omega,
-      ArrayList<String> sources, String sink, Topology workingTopology)
-  {
-    //create randomiser
-    Random randomiser = new Random();
-    //create a array which holds all steiner nodes.
-    ArrayList<String> bucket = new ArrayList<String>(sources);
-    bucket.add(sink);
-    //create pointer for tree
-    Tree steinerTree = null;
-    //choose first node to add as root 
-    switch(phi)
-    {
-      case SINK:
-        Site sinkSite = workingTopology.getSite(sink);
-        steinerTree = new Tree(sinkSite, true);
-        bucket.remove(sink);
-      break;
-      case RANDOM:
-        int  randomIndex = randomiser.nextInt(bucket.size());
-        Site randomSink = workingTopology.getSite(bucket.get(randomIndex));
-        steinerTree = new Tree(randomSink, true);
-        bucket.remove(randomIndex);
-      break;
-    }
-    
-    return null;
-  }
-
   /**
    * method used to convert between string input and int input used by basic router method
    * @param workingTopology

@@ -2,13 +2,13 @@ package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.router;
 
 import java.util.Random;
 
-public enum Chi
+public enum SecondNodeHeuristic
 {
   CLOSEST_SINK, CLOSEST_ANY, RANDOM;
   
-  public static Chi RandomEnum()
+  public static SecondNodeHeuristic RandomEnum()
   { 
-    Chi[] values = (Chi[]) values();
+    SecondNodeHeuristic[] values = (SecondNodeHeuristic[]) values();
     return values[new Random().nextInt(values.length)];
   }
 }

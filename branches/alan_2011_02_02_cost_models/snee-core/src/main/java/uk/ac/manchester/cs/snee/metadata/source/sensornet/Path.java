@@ -36,6 +36,8 @@ package uk.ac.manchester.cs.snee.metadata.source.sensornet;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import uk.ac.manchester.cs.snee.common.graph.Node;
+
 /**
  * Represents a linear path from the network topology.
  * 
@@ -125,5 +127,18 @@ public class Path {
 			return null;
 		}
 	}
+
+  public Node[] getNodes()
+  {
+    Node[] nodeArray = new Node[this.path.size()];
+    Iterator<Site> siteIterator = this.iterator();
+    int counter = 0;
+    while(siteIterator.hasNext())
+    {
+      nodeArray[counter] = siteIterator.next();
+      counter++;
+    }
+    return nodeArray;
+  }
 	
 }
