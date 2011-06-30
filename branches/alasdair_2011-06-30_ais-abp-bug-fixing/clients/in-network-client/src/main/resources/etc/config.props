@@ -1,0 +1,1 @@
+"(SELECT timestamp AS Time, Tz FROM HerneBay_Tide) UNION (SELECT timestamp AS Time, TAir FROM HerneBay_Met);" 30

@@ -1,0 +1,1 @@
+"SELECT id, location, latitude, longitude, waves, tides, met FROM locations;" 900
