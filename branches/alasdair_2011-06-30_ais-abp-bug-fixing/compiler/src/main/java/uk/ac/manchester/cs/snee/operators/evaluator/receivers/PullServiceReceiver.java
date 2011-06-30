@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.operators.evaluator.receivers;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -74,25 +75,9 @@ public class PullServiceReceiver implements SourceReceiver {
 			logger.debug("ENTER receive()");
 		Tuple tuple = null;
 		if (lastTs == null) {
-			List<Tuple> tuples = 
-				_pullSource.getNewestData(_resourceName, 1);
-			//XXX: Hack here as CCO returns table name as temp!
-			tuple = correctTableName(tuples.get(0));
+			tuple = getNewestTuple();
 		} else {
-			List<Tuple> tuples = 
-				_pullSource.getData(_resourceName, 2, lastTs);
-			while (tuples.size() < 2) {
-				try {
-					logger.trace("No new tuple yet. Sleep for " + 
-							_sleep);
-					//Sleep for 10s before trying again
-					Thread.sleep(_sleep);
-				} catch (InterruptedException e1) {
-					logger.warn("InterruptionException " + e1);
-				}
-				tuples = _pullSource.getData(_resourceName, 2, lastTs);
-			}
-			tuple = correctTableName(tuples.get(1));
+			tuple = getNextTuple();
 		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("Received tuple: \n" + tuple);
@@ -116,6 +101,54 @@ public class PullServiceReceiver implements SourceReceiver {
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN receive() with " + tuple);
+		return tuple;
+	}
+
+	private Tuple getNextTuple() throws SNEEDataSourceException,
+			TypeMappingException, SchemaMetadataException, SNEEException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER getNextTuple()");
+		}
+		Tuple tuple;
+		List<Tuple> tuples = 
+			_pullSource.getData(_resourceName, 2, lastTs);
+		while (tuples.isEmpty() || tuples.size() < 2) {
+			try {
+				logger.trace("No new tuple yet. Sleep for " + _sleep);
+				Thread.sleep(_sleep);
+			} catch (InterruptedException e1) {
+				logger.warn("InterruptionException " + e1);
+			}
+			tuples = _pullSource.getData(_resourceName, 2, lastTs);
+		}
+		tuple = correctTableName(tuples.get(1));
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN getNextTuple() with " + tuple);
+		}
+		return tuple;
+	}
+
+	private Tuple getNewestTuple() throws SNEEDataSourceException,
+			TypeMappingException, SchemaMetadataException, SNEEException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER getNewestTuple()");
+		}
+		Tuple tuple;
+		List<Tuple> tuples = _pullSource.getNewestData(_resourceName, 1);
+		while (tuples.isEmpty()) {
+			try {
+				logger.trace("No tuple yet. Sleep for " + _sleep);
+				Thread.sleep(_sleep);
+			} catch (InterruptedException e1) {
+				logger.warn("InterruptionException " + e1);
+			}
+			tuples = _pullSource.getNewestData(_resourceName, 1);
+		}
+		//XXX: Hack here as CCO returns table name as temp!
+		tuple = correctTableName(tuples.get(0));
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN getNewestTuple() with " + tuple);
+		}
 		return tuple;
 	}
 
