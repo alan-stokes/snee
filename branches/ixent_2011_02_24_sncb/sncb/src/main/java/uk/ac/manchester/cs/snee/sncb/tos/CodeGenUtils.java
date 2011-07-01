@@ -49,6 +49,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IncrementalAggregationAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
@@ -346,12 +347,15 @@ public final class CodeGenUtils {
 		if (expression instanceof MultiExpression) {
 			MultiExpression multi = (MultiExpression) expression;
 			Expression[] expressions = multi.getExpressions(); 
-			String output = "(" + getNescText(expressions[0],
+			StringBuffer output = new StringBuffer("(");
+			String leftOperand = getNescText(expressions[0],
 				leftHead, rightHead, input, rightAttributes);
 			for (int i = 1; i < expressions.length; i++) {
-				output = output + multi.getMultiType().getNesC() 
-					+ getNescText(expressions[i],
-					leftHead, rightHead, input, rightAttributes);
+				String rightOperand = getNescText(expressions[i],
+						leftHead, rightHead, input, rightAttributes);
+				MultiType exprOperator = multi.getMultiType();
+				String expr = getNesCExpressionText(exprOperator,leftOperand, rightOperand);
+				output.append(expr);
 			}
 			return output + ")";
 		}
@@ -378,6 +382,12 @@ public final class CodeGenUtils {
 			+ expression);	
 	}
 	
+	public static String getNesCExpressionText(MultiType exprOperator,
+			String leftOperand, String rightOperand) {
+		String nesCSymbol = exprOperator.getNesCSymbol();
+		return leftOperand + " " + nesCSymbol + " " + rightOperand;
+	}
+
 	/**
 	 * Generates the name Nesc should use for this attribute. 
 	 * @param attr The Attribute a name should be generated for.

@@ -105,10 +105,10 @@ public enum MultiType {
 	 * The nesc symbols required for this combination.
 	 * @return The symbols to be used in the ensc code.
 	 */
-	public String getNesC() {
+	public String getNesCSymbol() {
 		return nesC;
 	}
-
+	
 	/**
 	 * checks if this type results in Boolean data.
 	 * @return True if expression evaluates to a boolean.

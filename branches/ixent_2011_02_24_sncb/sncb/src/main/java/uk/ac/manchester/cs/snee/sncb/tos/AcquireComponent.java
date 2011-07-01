@@ -51,6 +51,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
@@ -278,10 +279,13 @@ public class AcquireComponent extends NesCComponent {
 		if (expression instanceof MultiExpression) {
 			MultiExpression multi = (MultiExpression) expression;
 			Expression[] expressions = multi.getExpressions(); 
-			String output = "(" + getNescText(expressions[0]);
+			StringBuffer output = new StringBuffer("(");
+			String leftOperand = getNescText(expressions[0]);
 			for (int i = 1; i < expressions.length; i++) {
-				output = output + multi.getMultiType().getNesC() 
-					+ getNescText(expressions[i]);
+				String rightOperand = getNescText(expressions[i]);
+				MultiType exprOperator = multi.getMultiType();
+				String expr = CodeGenUtils.getNesCExpressionText(exprOperator,leftOperand, rightOperand);
+				output.append(expr);
 			}
 			return output + ")";
 		}
