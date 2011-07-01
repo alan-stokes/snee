@@ -70,7 +70,8 @@ public class MultiExpression implements Expression {
 	public MultiExpression(Expression[] newExpressions, 
 			MultiType type, AttributeType booleanType) {
 		this.expressions = newExpressions;
-		assert (type == MultiType.SQUAREROOT || expressions.length >= 2);
+		assert (type == MultiType.SQUAREROOT || type == MultiType.ABS
+				|| expressions.length >= 2);
 		assert (type != null);
 		this.multiType = type;
 		_booleanType = booleanType;

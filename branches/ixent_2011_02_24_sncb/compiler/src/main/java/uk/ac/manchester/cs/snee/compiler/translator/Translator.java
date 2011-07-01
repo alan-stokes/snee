@@ -1408,7 +1408,15 @@ public class Translator {
 		Expression inner = 
 			translateExpression(ast.getFirstChild(), input);
 		Expression expression;
-		if ((ast.getText().equalsIgnoreCase("avg")) || 
+		if (ast.getText().equalsIgnoreCase("abs")) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Absolute value function");
+			}
+			expression = new MultiExpression(
+					new Expression[] {inner}, 
+					MultiType.ABS, 
+					_types.getType("float"));
+		} else if ((ast.getText().equalsIgnoreCase("avg")) || 
 				(ast.getText().equalsIgnoreCase("average"))) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate average");

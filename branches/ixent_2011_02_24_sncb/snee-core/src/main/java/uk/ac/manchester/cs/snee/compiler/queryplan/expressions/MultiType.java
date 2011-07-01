@@ -44,6 +44,8 @@ public enum MultiType {
 	//Mathematical types
 	/** Addition. */
 	ADD (" + ", false),
+	/** Absolute value */
+	ABS (null, false),
 	/** Boolean and. */
 	AND (" && ", true),
 	/** Dision. */
@@ -70,8 +72,7 @@ public enum MultiType {
 	OR (" || ", true),
 	/** Power. */
 	POWER (null, false),
-	/** SquareRoot. 
-	 * Nsec code generation to do. */
+	/** SquareRoot. */
 	SQUAREROOT (null, false);
 
 	/** Hold the nesC string representation of the selected value. */

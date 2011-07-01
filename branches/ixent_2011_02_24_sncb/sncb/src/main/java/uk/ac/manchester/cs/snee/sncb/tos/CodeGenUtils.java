@@ -398,9 +398,15 @@ public final class CodeGenUtils {
 			if (exprOperator == MultiType.SQUAREROOT) {
 				return "(float)sqrt( (double)"+operand+" )";
 			}
+			if (exprOperator == MultiType.ABS) {
+				return "(float)fabs( (double)"+operand+" )";
+			}
 		} else {
 			if (exprOperator == MultiType.SQUAREROOT) {
 				return "sqrtf("+operand+" )";
+			}
+			if (exprOperator == MultiType.ABS) {
+				return "fabsf("+operand+" )";
 			}
 		}
 		
