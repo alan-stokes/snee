@@ -41,6 +41,7 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class ExchangeProducerComponent extends NesCComponent {
@@ -52,8 +53,8 @@ public class ExchangeProducerComponent extends NesCComponent {
     public ExchangeProducerComponent(final SensornetExchangeOperator op,
 	    final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    boolean tossimFlag, boolean debugLeds) {
-		super(fragConfig, tossimFlag, debugLeds);
+	    boolean tossimFlag, boolean debugLeds, CodeGenTarget target) {
+		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
 		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);

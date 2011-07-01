@@ -40,6 +40,7 @@ import java.util.HashMap;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class RXComponent extends NesCComponent {
@@ -80,8 +81,9 @@ public class RXComponent extends NesCComponent {
     	    final Fragment destFrag, final Site destSite,
     	    final Site txSite, final NesCConfiguration config, 
     	    final SensorNetworkQueryPlan plan,
-    	    boolean tossimFlag, boolean debugLeds) {
-		super(config, tossimFlag, debugLeds);
+    	    boolean tossimFlag, boolean debugLeds,
+    	    CodeGenTarget target) {
+		super(config, tossimFlag, debugLeds, target);
 		this.instanceOfGeneric = true;
 		this.sourceFrag = sourceFrag;
 		this.destSite = destSite;

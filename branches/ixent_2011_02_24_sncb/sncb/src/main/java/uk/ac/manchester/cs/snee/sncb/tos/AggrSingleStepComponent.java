@@ -52,6 +52,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregationOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSingleStepAggregationOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class AggrSingleStepComponent extends NesCComponent {
@@ -62,9 +63,9 @@ public class AggrSingleStepComponent extends NesCComponent {
 
     public AggrSingleStepComponent(final SensornetSingleStepAggregationOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    boolean tossimFlag, boolean debugLeds) {
+	    boolean tossimFlag, boolean debugLeds, CodeGenTarget target) {
     	
-		super(fragConfig, tossimFlag, debugLeds);
+		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
 		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);

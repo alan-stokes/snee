@@ -40,6 +40,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSelectOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class SelectComponent extends NesCComponent {
@@ -52,8 +53,9 @@ public class SelectComponent extends NesCComponent {
 
     public SelectComponent(final SensornetSelectOperator op, final SensorNetworkQueryPlan plan,
     final NesCConfiguration fragConfig,
-    boolean tossimFlag, boolean debugLeds) {
-		super(fragConfig, tossimFlag, debugLeds);
+    boolean tossimFlag, boolean debugLeds, 
+    CodeGenTarget target) {
+		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
 		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
@@ -83,10 +85,10 @@ public class SelectComponent extends NesCComponent {
 				.generateOutputTuplePtrType(this.op.getLeftChild()));
 		    replacements.put("__SELECT_PREDICATES__", CodeGenUtils.getNescText(
 		    		((SelectOperator)op.getLogicalOperator()).getPredicate(),
-		    		"inQueue[inHead].", null, op.getAttributes(), null));
+		    		"inQueue[inHead].", null, op.getAttributes(), null, target));
 		    
 			final StringBuffer tupleConstructionBuff 
-				= CodeGenUtils.generateTupleConstruction(op, false);
+				= CodeGenUtils.generateTupleConstruction(op, false, target);
 			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff
 				.toString());
 		

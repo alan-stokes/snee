@@ -42,6 +42,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class ProjectComponent extends NesCComponent {
@@ -52,8 +53,8 @@ public class ProjectComponent extends NesCComponent {
 
     public ProjectComponent(final SensornetProjectOperator op, final SensorNetworkQueryPlan plan,
     final NesCConfiguration fragConfig, 
-    boolean tossimFlag, boolean debugLeds) {
-		super(fragConfig, tossimFlag, debugLeds);
+    boolean tossimFlag, boolean debugLeds, CodeGenTarget target) {
+		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
 		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
@@ -82,7 +83,7 @@ public class ProjectComponent extends NesCComponent {
 				.generateOutputTuplePtrType(this.op.getLeftChild()));
 		
 			final StringBuffer tupleConstructionBuff 
-				= CodeGenUtils.generateTupleConstruction(op, false);
+				= CodeGenUtils.generateTupleConstruction(op, false, target);
 			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff
 				.toString());
 		

@@ -56,6 +56,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 /**
@@ -73,8 +74,9 @@ public class AcquireComponent extends NesCComponent {
 
     public AcquireComponent(final SensornetAcquireOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    boolean tossimFlag, boolean debugLeds) {
-		super(fragConfig, tossimFlag, debugLeds);
+	    boolean tossimFlag, boolean debugLeds,
+	    CodeGenTarget target) {
+		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
 		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
@@ -100,10 +102,10 @@ public class AcquireComponent extends NesCComponent {
 					this.plan.getRT().getSite(
 						this.site.getID()), this.plan.getDAF())).toString());
 		    replacements.put("__FULL_ACQUIRE_PREDICATES__", 
-		    		getNescText(op.getLogicalOperator().getPredicate()));
+		    		getNescText(op.getLogicalOperator().getPredicate(), target));
 		    replacements.put("__ACQUIRE_PREDICATES__", CodeGenUtils.getNescText(
 		    		op.getLogicalOperator().getPredicate(), "", null,
-		    		((AcquireOperator)op.getLogicalOperator()).getAcquiredAttributes(), null));
+		    		((AcquireOperator)op.getLogicalOperator()).getAcquiredAttributes(), null, target));
 		    
 		    if (this.debugLeds) {
 				replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led0Toggle();");		
@@ -227,7 +229,7 @@ public class AcquireComponent extends NesCComponent {
     		String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
 
   			tupleConstructionBuff.append("\t\t\t\toutQueue[outTail]." 
-        			+ attrName + "=" + getNescText(expression) + ";\n");
+        			+ attrName + "=" + getNescText(expression, target) + ";\n");
   
 	  		if (attributes.get(i) instanceof EvalTimeAttribute ||
 	  				attributes.get(i) instanceof IDAttribute
@@ -253,7 +255,7 @@ public class AcquireComponent extends NesCComponent {
      * 
      * See also CodeGenUtils.getNescTExt
      */
-	private String getNescText(final Expression expression)
+	private String getNescText(final Expression expression, CodeGenTarget target)
 			throws CodeGenerationException {
 	    if (expression instanceof EvalTimeAttribute) {
 	    	return "currentEvalEpoch";
@@ -280,11 +282,11 @@ public class AcquireComponent extends NesCComponent {
 			MultiExpression multi = (MultiExpression) expression;
 			Expression[] expressions = multi.getExpressions(); 
 			StringBuffer output = new StringBuffer("(");
-			String leftOperand = getNescText(expressions[0]);
+			String leftOperand = getNescText(expressions[0], target);
 			for (int i = 1; i < expressions.length; i++) {
-				String rightOperand = getNescText(expressions[i]);
+				String rightOperand = getNescText(expressions[i], target);
 				MultiType exprOperator = multi.getMultiType();
-				String expr = CodeGenUtils.getNesCExpressionText(exprOperator,leftOperand, rightOperand);
+				String expr = CodeGenUtils.getNesCExpressionText(exprOperator,leftOperand, rightOperand, target);
 				output.append(expr);
 			}
 			return output + ")";

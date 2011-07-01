@@ -43,6 +43,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class TXComponent extends NesCComponent {
@@ -85,9 +86,10 @@ public class TXComponent extends NesCComponent {
 	    final Fragment destFrag, final Site destSite,
 	    final Site rxSite, final NesCConfiguration config, 
 	    final SensorNetworkQueryPlan plan,
-	    boolean tossimFlag, CostParameters costParams, boolean ledsDebug) {
+	    boolean tossimFlag, CostParameters costParams, boolean ledsDebug,
+	    CodeGenTarget target) {
 	
-    	super(config, tossimFlag, ledsDebug);
+    	super(config, tossimFlag, ledsDebug, target);
 		this.instanceOfGeneric = true;
 		this.sourceFrag = sourceFrag;
 		this.destSite = destSite;

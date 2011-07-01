@@ -45,6 +45,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregationOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class AggrEvalComponent extends NesCComponent {
@@ -55,9 +56,10 @@ public class AggrEvalComponent extends NesCComponent {
 
     public AggrEvalComponent(final SensornetAggrEvalOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    boolean tossimFlag, boolean debugLeds) {
+	    boolean tossimFlag, boolean debugLeds,
+	    CodeGenTarget target) {
     	
-		super(fragConfig, tossimFlag, debugLeds);
+		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
 		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);

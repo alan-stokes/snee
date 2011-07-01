@@ -67,12 +67,12 @@ public enum MultiType {
 	/** Not equals. */
 	NOTEQUALS (" ! =", true),
 	/** Boolean or. */
-	OR (" || ", true), // Nesc To be confirmed
+	OR (" || ", true),
 	/** Power. */
-	POWER (" ^ ", false),// Nesc To be confirmed
+	POWER (null, false),
 	/** SquareRoot. 
 	 * Nsec code generation to do. */
-	SQUAREROOT (" SQUAREROOT ",false);
+	SQUAREROOT (null, false);
 
 	/** Hold the nesC string representation of the selected value. */
 	private String nesC;

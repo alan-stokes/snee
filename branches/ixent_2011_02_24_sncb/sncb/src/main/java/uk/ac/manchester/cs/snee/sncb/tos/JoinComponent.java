@@ -42,6 +42,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class JoinComponent extends NesCComponent {
@@ -52,8 +53,8 @@ public class JoinComponent extends NesCComponent {
 
     public JoinComponent(final SensornetNestedLoopJoinOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    boolean tossimFlag, boolean debugLeds) {
-	super(fragConfig, tossimFlag, debugLeds);
+	    boolean tossimFlag, boolean debugLeds, CodeGenTarget target) {
+	super(fragConfig, tossimFlag, debugLeds, target);
 	this.op = op;
 	this.plan = plan;
 	this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
@@ -90,7 +91,7 @@ public class JoinComponent extends NesCComponent {
 		    		"leftInQueue[leftInHead].",
 		    		"rightInQueue[tmpRightInHead].", 
 		    		op.getLeftChild().getAttributes(), 
-		    		op.getRightChild().getAttributes()));
+		    		op.getRightChild().getAttributes(), target));
 			
 			final StringBuffer tupleConstructionBuff = generateTupleConstruction();
 			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff.toString());
@@ -123,7 +124,7 @@ public class JoinComponent extends NesCComponent {
 				expressionText = CodeGenUtils.getNescText(
 					expressions.get(i), "leftInQueue[leftInHead].", 
 					"rightInQueue[tmpRightInHead].", 
-					leftInput, rightInput);
+					leftInput, rightInput, target);
 				
 				//IG: Yuck - Christian I need you to sort this out!
 				//I did this to make the nesc code compile with epochs

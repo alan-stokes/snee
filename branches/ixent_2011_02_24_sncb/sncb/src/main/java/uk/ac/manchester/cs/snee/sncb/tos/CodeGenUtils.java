@@ -56,6 +56,7 @@ import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregationOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 /**
@@ -268,7 +269,8 @@ public final class CodeGenUtils {
      */
     public static StringBuffer generateTupleConstruction(
     	final SensornetOperator op, boolean ignore, String inputArrayName,
-    	String inputPosVarName, String outputArrayName, String outputPosVarName) throws CodeGenerationException {
+    	String inputPosVarName, String outputArrayName, String outputPosVarName,
+    	CodeGenTarget target) throws CodeGenerationException {
     	
     	final StringBuffer tupleConstructionBuff = new StringBuffer();
     	final List <Attribute> attributes = 
@@ -283,7 +285,7 @@ public final class CodeGenUtils {
 					= CodeGenUtils.getNescAttrName(attributes.get(i));
 				String expressionText;
 				expressionText = CodeGenUtils.getNescText(expressions.get(i), 
-					inputArrayName+"["+inputPosVarName+"].", null, input, null);
+					inputArrayName+"["+inputPosVarName+"].", null, input, null, target);
 				if (ignore && attrName.contains("ignore")) {
 					tupleConstructionBuff.append("\t\t\t\t\t//SKIPPING outQueue[outTail]."
 	    				+ attrName + "=" + expressionText + ";\n");
@@ -296,8 +298,8 @@ public final class CodeGenUtils {
     	}
 
     public static StringBuffer generateTupleConstruction(
-        	final SensornetOperator op, boolean ignore) throws CodeGenerationException {
-    	return generateTupleConstruction(op, ignore, "inQueue", "inHead", "outQueue", "outTail");
+        	final SensornetOperator op, boolean ignore, CodeGenTarget target) throws CodeGenerationException {
+    	return generateTupleConstruction(op, ignore, "inQueue", "inHead", "outQueue", "outTail", target);
     }
     
     /**
@@ -318,7 +320,8 @@ public final class CodeGenUtils {
 	public static String getNescText(final Expression expression, 
 			final String leftHead, final String rightHead, 
 			final List<Attribute> input, 
-			final List<Attribute>rightAttributes) 
+			final List<Attribute>rightAttributes,
+			CodeGenTarget target) 
 			throws CodeGenerationException {
 		if (expression instanceof EvalTimeAttribute) {
 			return "currentEvalEpoch";
@@ -349,12 +352,12 @@ public final class CodeGenUtils {
 			Expression[] expressions = multi.getExpressions(); 
 			StringBuffer output = new StringBuffer("(");
 			String leftOperand = getNescText(expressions[0],
-				leftHead, rightHead, input, rightAttributes);
+				leftHead, rightHead, input, rightAttributes, target);
 			for (int i = 1; i < expressions.length; i++) {
 				String rightOperand = getNescText(expressions[i],
-						leftHead, rightHead, input, rightAttributes);
+						leftHead, rightHead, input, rightAttributes, target);
 				MultiType exprOperator = multi.getMultiType();
-				String expr = getNesCExpressionText(exprOperator,leftOperand, rightOperand);
+				String expr = getNesCExpressionText(exprOperator,leftOperand, rightOperand,target);
 				output.append(expr);
 			}
 			return output + ")";
@@ -383,7 +386,19 @@ public final class CodeGenUtils {
 	}
 	
 	public static String getNesCExpressionText(MultiType exprOperator,
-			String leftOperand, String rightOperand) {
+			String leftOperand, String rightOperand, CodeGenTarget target) {
+
+		if (target == CodeGenTarget.AVRORA_MICA2_T2 || 
+				target == CodeGenTarget.AVRORA_MICAZ_T2) {
+			if (exprOperator == MultiType.POWER) {
+				return "(float)pow( (double)"+leftOperand+" , (double)"+rightOperand+" )";
+			}			
+		} else {
+			if (exprOperator == MultiType.POWER) {
+				return "powf("+leftOperand+" , "+rightOperand+" )";
+			}
+		}
+		
 		String nesCSymbol = exprOperator.getNesCSymbol();
 		return leftOperand + " " + nesCSymbol + " " + rightOperand;
 	}

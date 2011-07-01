@@ -53,6 +53,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 
@@ -94,8 +95,9 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    String targetName, CostParameters costParams, boolean controlRadioOff,
 	    boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
 	    boolean debugLeds, boolean usePowerManagement, boolean deliverLast, 
-	    boolean adjustRadioPower, boolean useControllerComponent) {
-		super(config, tossimFlag, debugLeds);
+	    boolean adjustRadioPower, boolean useControllerComponent,
+	    CodeGenTarget target) {
+		super(config, tossimFlag, debugLeds, target);
 		this.id = name;
 		this.plan = plan;
 		this.agenda = plan.getAgenda();
