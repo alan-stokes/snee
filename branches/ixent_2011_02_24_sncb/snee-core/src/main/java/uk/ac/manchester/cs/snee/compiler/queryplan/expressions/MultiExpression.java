@@ -61,6 +61,19 @@ public class MultiExpression implements Expression {
 	private boolean isConstant = false;
 
 	/**
+	 * Used to give a unique name to each multiexpression, 
+	 * to avoid naming conflicts in code generator.
+	 */
+	private static int counter = 0;
+	
+	/**
+	 * The Id of this multiexpression.  This becomes the display name of 
+	 * the attribute if an alias is not given.  This is done to avoid
+	 * naming conflicts in code generator.
+	 */
+	private int multiExprId;
+	
+	/**
 	 * Constuctor.
 	 * 
 	 * @param newExpressions Expressions inside the AND
@@ -76,6 +89,9 @@ public class MultiExpression implements Expression {
 		this.multiType = type;
 		_booleanType = booleanType;
 		calculateIsConstant();
+		multiExprId = counter;
+		counter++;
+		
 	}
 	
 	private void calculateIsConstant() {
@@ -421,6 +437,7 @@ public class MultiExpression implements Expression {
 		DataAttribute attribute = 
 			new DataAttribute("", this.toString(), getType());
 		attribute.setIsConstant(isConstant);
+		attribute.setAttributeDisplayName("expr"+this.multiExprId);
 		return attribute; 
 	}
 
