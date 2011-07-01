@@ -320,6 +320,11 @@ public class Site extends NodeImplementation implements Comparable{
         return -1;
     }
 
+    public void setNoSources(int newNumSources)
+    {
+      this.numSources = newNumSources;    
+    }
+
 //    /**
 //     * Remove the given exchange components for this site.
 //     * @param exchOp The exchange operator whose exchange components are to be removed.

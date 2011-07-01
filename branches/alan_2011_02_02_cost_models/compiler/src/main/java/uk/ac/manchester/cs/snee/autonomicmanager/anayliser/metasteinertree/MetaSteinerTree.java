@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.router;
+package uk.ac.manchester.cs.snee.autonomicmanager.anayliser.metasteinertree;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,12 +9,14 @@ import org.apache.log4j.Logger;
 
 import com.rits.cloning.Cloner;
 
+import uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.router.HeuristicSet;
 import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
+import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -22,8 +24,6 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
 public class MetaSteinerTree
 {
-
-  private static int counter = 0;
   
   public MetaSteinerTree()
   {
@@ -38,12 +38,12 @@ public class MetaSteinerTree
    * @param desiredSinkID
    * @param workingTopology
    * @param paf 
+   * @param oldRoutingTree 
    * @return
    */
-  public Tree produceTree(HeuristicSet set,
-      ArrayList<String> sources, String desiredSinkID, Topology workingTopology, PAF paf)
+  public Tree produceTree(HeuristicSet set, ArrayList<String> sources, 
+      String desiredSinkID, Topology workingTopology, PAF paf, RT oldRoutingTree)
   {
-    System.out.println(counter + " " + set.toString());
     //create randomiser
     Random randomiser = new Random();
     //create a array which holds all steiner nodes.
@@ -63,6 +63,8 @@ public class MetaSteinerTree
       Path finalPath = weightedTopology.getShortestPath(container.getChildID(), container.getParentID(), set);
       //link path into tree
       mergePathIntoTree(finalPath, bucket, container);
+      //update number of sources in all nodes in steiner tree
+      updateNoSources(container.getSteinerTree(), oldRoutingTree);
     }
     if(!container.getSteinerTree().getRoot().getID().equals(desiredSinkID))
     {
@@ -70,11 +72,40 @@ public class MetaSteinerTree
       rotateTree(container.getSteinerTree().getNode(desiredSinkID), container.getSteinerTree().getNode(desiredSinkID), container.getSteinerTree());
       container.getSteinerTree().setRoot(container.getSteinerTree().getNode(desiredSinkID));
     }
-    new RTUtils(new RT(paf, "", container.getSteinerTree())).exportAsDotFile("currentpossibleroute" + counter); 
-    counter++;
     return container.getSteinerTree();
   }
   
+  /**
+   * update all nodes in tree in post order so that correct values used.
+   * @param steinerTree
+   * @param oldRoutingTree 
+   */
+  private void updateNoSources(Tree steinerTree, RT oldRoutingTree)
+  {
+    Iterator<Site> siteIterator = steinerTree.nodeIterator(TraversalOrder.POST_ORDER);
+    while(siteIterator.hasNext())
+    {
+      Site currentSite = siteIterator.next();
+      if(!(currentSite.getInDegree() == 0))
+      {
+        int runningTotal = 0;
+        Iterator<Node> inputIterator = currentSite.getInputsList().iterator();
+        while(inputIterator.hasNext())
+        {
+          Site input = (Site) inputIterator.next();
+          Site oldInput = oldRoutingTree.getSite(input.getID());
+          if(oldInput == null)
+            runningTotal += input.getNumSources();
+          else
+            runningTotal += oldInput.getNumSources();
+        }
+        currentSite.setNoSources(runningTotal);
+      }
+      
+    }
+    
+  }
+
   /**
    * if the tree is rooted at a node not the sink, change edges so that they make sink the root
    * @param tree 
@@ -337,7 +368,14 @@ public class MetaSteinerTree
       while(nodeIterator.hasNext())
       {
         Site node = (Site) nodeIterator.next();
-        double noSources = node.getNumSources();
+        Site steinerTreeNode = (Site) container.getSteinerTree().getNode(node.getID());
+        double noSources = 0;
+        //get correct count of sources
+        if(steinerTreeNode == null)
+          noSources = node.getNumSources();
+        else
+          noSources = steinerTreeNode.getNumSources();
+        
         HashSet<EdgeImplementation> edges = weightedTopology.getNodeEdges(node.getID());
         Iterator<EdgeImplementation> edgeIterator = edges.iterator();
         while(edgeIterator.hasNext())
@@ -349,10 +387,10 @@ public class MetaSteinerTree
           switch(set.getEdgeChoice(edgeImp.getID()))
           {
             case ENERGY:
-              link.setEnergyCost(Math.pow(link.getEnergyCost() + 1, noSources));
+              link.setEnergyCost(Math.pow(link.getEnergyCost() + 1, noSources + 4));
             break;
             case LATENCY:
-              link.setLatencyCost(Math.pow(link.getLatencyCost() + 1, noSources));
+              link.setLatencyCost(Math.pow(link.getLatencyCost() + 1, noSources + 4));
           }    
         }
       }

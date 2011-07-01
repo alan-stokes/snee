@@ -125,7 +125,7 @@ public class AdapatationStrategyIntermediate
     ArrayList<RT> routingTrees = new ArrayList<RT>();
     ArrayList<String> disconnectedNodes = new ArrayList<String>();
     //create new routing tree
-    routingTrees = createNewRoutingTrees(failedNodes, disconnectedNodes, paf, oldIOT.getRT());
+    routingTrees = createNewRoutingTrees(failedNodes, disconnectedNodes, paf, oldIOT.getRT(), outputFolder );
 
     //create store for all adapatations
     ArrayList<Adapatation> totalAdapatations = new ArrayList<Adapatation>();
@@ -508,28 +508,25 @@ public class AdapatationStrategyIntermediate
    * @param failedNodes
    * @param disconnectedNodes 
    * @param paf 
+   * @param outputFolder2 
    * @throws SNEEConfigurationException 
    * @throws NumberFormatException 
    */
-  private ArrayList<RT> createNewRoutingTrees(ArrayList<String> failedNodes, ArrayList<String> disconnectedNodes, PAF paf, RT oldRoutingTree) throws NumberFormatException, SNEEConfigurationException
+  private ArrayList<RT> createNewRoutingTrees(ArrayList<String> failedNodes, 
+      ArrayList<String> disconnectedNodes, PAF paf, RT oldRoutingTree, File outputFolder) 
+  throws NumberFormatException, 
+         SNEEConfigurationException
   {
     ArrayList<RT> routes = new ArrayList<RT>();
-    //Router router = new Router();
     CandiateRouter router = new CandiateRouter();
     while(routes.size() == 0)
-    {
-      //RT route = router.doRouting(paf, "");
-      //route.setID("newRoute" + routes.size()+1);
-      //new AdapatationStrategyIntermediateUtils(this).outputRouteAsDotFile(outputFolder, "newRoute" + route.getID(), route);
-      //routes.add(route);
-      
-      routes = router.findAllRoutes(oldRoutingTree, failedNodes, "", numberOfRoutingTreesToWorkOn);
+    {  
+      routes = router.findAllRoutes(oldRoutingTree, failedNodes, "", numberOfRoutingTreesToWorkOn, outputFolder);
       if(routes.size() == 0)
       {
         chooseDisconnectedNode(oldIOT, failedNodes, disconnectedNodes);
       }
     }
-   
     return routes;
   }
 

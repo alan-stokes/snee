@@ -83,6 +83,8 @@ public class RT extends SNEEAlgebraicForm {
 			logger.debug("ENTER RT()"); 
 		this.paf = paf;
 		this.siteTree = rt;
+		Site root = (Site) this.siteTree.getRoot();
+		root.updateNumSources();
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER RT()"); 
 	}

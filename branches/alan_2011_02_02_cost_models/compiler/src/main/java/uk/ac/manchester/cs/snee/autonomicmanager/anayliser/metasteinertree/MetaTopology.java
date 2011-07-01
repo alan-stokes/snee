@@ -1,9 +1,11 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.router;
+package uk.ac.manchester.cs.snee.autonomicmanager.anayliser.metasteinertree;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Random;
 
+import uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.router.HeuristicSet;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
@@ -45,8 +47,7 @@ public class MetaTopology
     //find the next closest node
     while (!shortestDistanceNotFound.isEmpty()) {
 
-        final String nextClosestVertexID = basicTopology
-          .dijkstra_getNextClosestNodeID(shortestDistanceNotFound,
+        final String nextClosestVertexID = dijkstra_getNextClosestNodeID(shortestDistanceNotFound,
             distance);
         if (nextClosestVertexID == null) {
       break;
@@ -91,6 +92,40 @@ public class MetaTopology
     return path;
   }
   
+  /**
+   * calculates next node to use
+   * @param shortestDistanceNotFound
+   * @param distance
+   * @return
+   */
+  private String dijkstra_getNextClosestNodeID(
+      HashSet<String> shortestDistanceNotFound, HashMap<String, Double> distance)
+  {
+    Double nextClosestDist = new Double(Double.POSITIVE_INFINITY);
+    String nextClosestNodeID = null;
+    final Iterator<String> j = shortestDistanceNotFound.iterator();
+    while (j.hasNext()) 
+    {
+      final String jid = (String) j.next();
+      if ((distance.get(jid)).compareTo(nextClosestDist) < 0) 
+      {
+        nextClosestDist = distance.get(jid);
+        nextClosestNodeID = jid;
+      }
+      if((distance.get(jid)).compareTo(nextClosestDist) == 0)
+      {
+        Random random = new Random();
+        int choice = random.nextInt(100);
+        if(choice <= 50)
+        {
+          nextClosestDist = distance.get(jid);
+          nextClosestNodeID = jid;
+        }
+      }
+    }
+    return nextClosestNodeID;
+  }
+
   /**
    * get cost of edge in relation to some cost defined in heuristicSet
    * @param sourceSite

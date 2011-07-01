@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.router;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,6 +10,7 @@ import org.apache.log4j.Logger;
 
 import com.rits.cloning.Cloner;
 
+import uk.ac.manchester.cs.snee.autonomicmanager.anayliser.metasteinertree.MetaSteinerTree;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
 import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
@@ -17,6 +19,7 @@ import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -27,7 +30,8 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
 public class CandiateRouter extends Router
 {
-
+  private String sep = System.getProperty("file.separator");
+  
   /**
    * constructor
    * @throws NumberFormatException
@@ -45,11 +49,13 @@ public class CandiateRouter extends Router
    * @param paf
    * @param queryName
    * @param numberOfRoutingTreesToWorkOn 
+   * @param outputFolder 
    * @return
    */
   
   public ArrayList<RT> findAllRoutes(RT oldRoutingTree, ArrayList<String> failedNodes, 
-                                     String queryName, Integer numberOfRoutingTreesToWorkOn)
+                                     String queryName, Integer numberOfRoutingTreesToWorkOn,
+                                     File outputFolder)
   {
     //container for new routeing trees
     ArrayList<RT> newRoutingTrees = new ArrayList<RT>();
@@ -73,9 +79,10 @@ public class CandiateRouter extends Router
       ArrayList<String> setofLinkedFailedNodes = failedNodeLinks.get(key);
       ArrayList<String> sources = new ArrayList<String>();
       String sink = removeExcessNodesAndEdges(workingTopology, oldRoutingTree, setofLinkedFailedNodes, sources);
+      
       try
       {
-        workingTopology.exportAsDOTFile("workingtopology");
+        workingTopology.exportAsDOTFile(outputFolder + sep + "workingtopology");
       }
       catch (SchemaMetadataException e)
       {
@@ -83,7 +90,9 @@ public class CandiateRouter extends Router
         e.printStackTrace();
       }
       //calculate different routes around linked failed site.
-      ArrayList<Tree> routesForFailedNode = createRoutes(workingTopology, numberOfRoutingTreesToWorkOn, sources, sink, oldRoutingTree.getPAF());
+      ArrayList<Tree> routesForFailedNode = 
+        createRoutes(workingTopology, numberOfRoutingTreesToWorkOn, sources, 
+                     sink, oldRoutingTree.getPAF(), oldRoutingTree, outputFolder);
       failedNodeToRoutingTreeMapping.addAll(key, routesForFailedNode);
     }
     //merges new routes to create whole entire routingTrees
@@ -105,11 +114,18 @@ public class CandiateRouter extends Router
    * @param sources
    * @param sink
    * @param paf 
+   * @param oldRoutingTree 
+   * @param outputFolder 
    * @return
    */
   private ArrayList<Tree> createRoutes(Topology workingTopology,
-      Integer numberOfRoutingTreesToWorkOn, ArrayList<String> sources, String sink, PAF paf)
+      Integer numberOfRoutingTreesToWorkOn, ArrayList<String> sources, String sink, PAF paf, 
+      RT oldRoutingTree, File outputFolder)
   {
+    //set up folder to hold alternative routes
+    File desintatedOutputFolder = new File(outputFolder.toString() + sep + "AllAlternatives");
+    desintatedOutputFolder.mkdir();
+    
     ArrayList<Tree> routes = new ArrayList<Tree>();
     Tree steinerTree = computeSteinerTree(workingTopology, sink, sources); 
     ArrayList<HeuristicSet> testedHeuristics = new ArrayList<HeuristicSet>();
@@ -136,10 +152,11 @@ public class CandiateRouter extends Router
       //produce tree for set of heuristics
       MetaSteinerTree treeGenerator = new MetaSteinerTree();
       
-      Tree currentTree = treeGenerator.produceTree(set, sources, sink, workingTopology, paf);
+      Tree currentTree = treeGenerator.produceTree(set, sources, sink, workingTopology, paf, oldRoutingTree);
+      new RTUtils(new RT(paf, "", currentTree)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
       routes.add(currentTree);
     }
-    removeDuplicates(routes);
+    routes = removeDuplicates(routes);
     return routes;
   }
 
@@ -169,10 +186,48 @@ public class CandiateRouter extends Router
    * removes all routes which are duplicates from routes.
    * @param routes
    */
-  private void removeDuplicates(ArrayList<Tree> routes)
+  private ArrayList<Tree> removeDuplicates(ArrayList<Tree> routes)
   {
-    // TODO Auto-generated method stub
-    
+    Tree [] temporaryArray = new Tree[routes.size()];
+    routes.toArray(temporaryArray);
+    for(int templateIndex = 0; templateIndex < routes.size(); templateIndex++)
+    {
+      Tree template = temporaryArray[templateIndex];
+      if(template != null)
+      {
+        for(int compareIndex = 0; compareIndex < routes.size(); compareIndex++)
+        {
+          if(compareIndex != templateIndex)
+          {
+            Tree compare = temporaryArray[compareIndex];
+            if(compare != null)
+            {
+              Iterator<Site> templateIterator = template.nodeIterator(TraversalOrder.POST_ORDER);
+              Iterator<Site> compareIterator = compare.nodeIterator(TraversalOrder.POST_ORDER);
+              boolean equal = true;
+              while(templateIterator.hasNext() && compareIterator.hasNext() && equal)
+              {
+                Site templateSite = templateIterator.next();
+                Site compareSite = compareIterator.next();
+                if(!templateSite.getID().equals(compareSite.getID()))
+                  equal = false;
+              }
+              if(equal)
+              {
+                temporaryArray[compareIndex] = null; 
+              }
+            } 
+          }
+        }
+      }
+    }   
+    routes = new ArrayList<Tree>();
+    for(int tempIndex = 0; tempIndex < temporaryArray.length; tempIndex++)
+    {
+      if(temporaryArray[tempIndex] != null)
+        routes.add(temporaryArray[tempIndex]);
+    }
+    return routes;
   }
   /**
    * method used to convert between string input and int input used by basic router method
