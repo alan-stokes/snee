@@ -349,16 +349,22 @@ public final class CodeGenUtils {
 		}	
 		if (expression instanceof MultiExpression) {
 			MultiExpression multi = (MultiExpression) expression;
+			MultiType exprOperator = multi.getMultiType();
 			Expression[] expressions = multi.getExpressions(); 
 			StringBuffer output = new StringBuffer("(");
 			String leftOperand = getNescText(expressions[0],
 				leftHead, rightHead, input, rightAttributes, target);
-			for (int i = 1; i < expressions.length; i++) {
-				String rightOperand = getNescText(expressions[i],
-						leftHead, rightHead, input, rightAttributes, target);
-				MultiType exprOperator = multi.getMultiType();
-				String expr = getNesCExpressionText(exprOperator,leftOperand, rightOperand,target);
+			if (expressions.length ==1) {
+				//unary functions
+				String expr = CodeGenUtils.getNesCExpressionText(exprOperator,leftOperand, target);
 				output.append(expr);
+			} else {
+				for (int i = 1; i < expressions.length; i++) {
+					String rightOperand = getNescText(expressions[i],
+							leftHead, rightHead, input, rightAttributes, target);
+					String expr = getNesCExpressionText(exprOperator,leftOperand, rightOperand,target);
+					output.append(expr);
+				}
 			}
 			return output + ")";
 		}
@@ -385,6 +391,23 @@ public final class CodeGenUtils {
 			+ expression);	
 	}
 	
+	public static String getNesCExpressionText(MultiType exprOperator,
+			String operand, CodeGenTarget target) {
+		if (target == CodeGenTarget.AVRORA_MICA2_T2 || 
+				target == CodeGenTarget.AVRORA_MICAZ_T2) {
+			if (exprOperator == MultiType.SQUAREROOT) {
+				return "(float)sqrt( (double)"+operand+" )";
+			}
+		} else {
+			if (exprOperator == MultiType.SQUAREROOT) {
+				return "sqrtf("+operand+" )";
+			}
+		}
+		
+		String nesCSymbol = exprOperator.getNesCSymbol();
+		return operand + "( " + nesCSymbol + " )";
+	}
+
 	public static String getNesCExpressionText(MultiType exprOperator,
 			String leftOperand, String rightOperand, CodeGenTarget target) {
 

@@ -280,14 +280,20 @@ public class AcquireComponent extends NesCComponent {
 		}	
 		if (expression instanceof MultiExpression) {
 			MultiExpression multi = (MultiExpression) expression;
+			MultiType exprOperator = multi.getMultiType();
 			Expression[] expressions = multi.getExpressions(); 
 			StringBuffer output = new StringBuffer("(");
-			String leftOperand = getNescText(expressions[0], target);
-			for (int i = 1; i < expressions.length; i++) {
-				String rightOperand = getNescText(expressions[i], target);
-				MultiType exprOperator = multi.getMultiType();
-				String expr = CodeGenUtils.getNesCExpressionText(exprOperator,leftOperand, rightOperand, target);
+			String leftOperand = getNescText(expressions[0], target);			
+			if (expressions.length ==1) {
+				//unary functions
+				String expr = CodeGenUtils.getNesCExpressionText(exprOperator,leftOperand, target);
 				output.append(expr);
+			} else {
+				for (int i = 1; i < expressions.length; i++) {
+					String rightOperand = getNescText(expressions[i], target);
+					String expr = CodeGenUtils.getNesCExpressionText(exprOperator,leftOperand, rightOperand, target);
+					output.append(expr);
+				}
 			}
 			return output + ")";
 		}
