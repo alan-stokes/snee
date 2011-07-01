@@ -245,7 +245,7 @@ implements PullSourceWrapper {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getData() with " + resourceName);
 		GetStreamItemRequest request = 
-			createGetStreamItemRequest(resourceName, null, null);
+			createGetStreamItemRequest(resourceName, null);
 		GenericQueryResponse response = _pullClient.getStreamItems(request);;
 		List<Tuple> tuples = processGenericQueryResponse(response);
 		if (logger.isDebugEnabled())
@@ -253,16 +253,15 @@ implements PullSourceWrapper {
 		return tuples;
 	}
 
-	public List<Tuple> getData(String resourceName, int numItems, 
+	public List<Tuple> getData(String resourceName,  
 			Timestamp timestamp) 
 	throws SNEEDataSourceException, TypeMappingException,
 	SchemaMetadataException, SNEEException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getData() with " + resourceName + 
-					" #items=" + numItems +
 					" timestamp=" + timestamp);
 		GetStreamItemRequest request = 
-			createGetStreamItemRequest(resourceName, numItems, 
+			createGetStreamItemRequest(resourceName, 
 					timestamp);
 			GenericQueryResponse response = 
 				_pullClient.getStreamItems(request);
@@ -319,18 +318,14 @@ implements PullSourceWrapper {
 	 * @return request document
 	 */
 	private GetStreamItemRequest createGetStreamItemRequest(
-			String resourceName, Integer numItems, Timestamp timestamp) {
+			String resourceName, Timestamp timestamp) {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER createGetStreamItemRequest() with " +
 					resourceName +
-					" #items=" + numItems +
 					" timestamp=" + timestamp);
 		GetStreamItemRequest request = new GetStreamItemRequest();
 		request.setDataResourceAbstractName(resourceName);
 		request.setDatasetFormatURI(DATASET_FORMAT);
-		if (numItems != null) {
-			request.setCount(numItems.toString());
-		}
 		if (timestamp != null) {
 			long timeMillis = timestamp.getTime();
 			request.setPosition(dateFormat.format(new Date(timeMillis)));

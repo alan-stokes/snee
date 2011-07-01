@@ -13,10 +13,9 @@ public interface PullSourceWrapper extends SourceWrapper {
 
 	/**
 	 * Retrieve data for a given {@code PullSource} resource from a specified 
-	 * point of time ranging forward a specified number of tuples.
+	 * point of time ranging forward.
 	 * 
 	 * @param resourceName name of the resource to retrieve values from
-	 * @param numItems number of items to retrieve
 	 * @param timestamp point in time from which to gather tuples
 	 * @return A tuple list with the returned data values
 	 * @throws SNEEDataSourceException
@@ -24,7 +23,7 @@ public interface PullSourceWrapper extends SourceWrapper {
 	 * @throws SchemaMetadataException
 	 * @throws SNEEException
 	 */
-	public List<Tuple> getData(String resourceName, int numItems, 
+	public List<Tuple> getData(String resourceName,  
 		Timestamp timestamp) 
 	throws SNEEDataSourceException, TypeMappingException,
 		SchemaMetadataException, SNEEException;
