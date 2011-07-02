@@ -146,5 +146,33 @@ public class Tree extends Graph {
       logger.debug("RETURN nodeIterator()");
     return nodeList.iterator();
   }
+  
+  /**
+   * returns all nodes in the tree which have no inputs (leaf nodes)
+   * @return
+   */
+  public ArrayList<Node> getLeafNodes()
+  {
+    ArrayList<Node> leafNodes = new ArrayList<Node>();
+    this.doLeafNodeIterator(this.getRoot(), leafNodes); 
+    return leafNodes;
+  }
 
+  /**
+   * helper method for get leaf nodes
+   * @param root2
+   * @param leafNodes
+   */
+  private void doLeafNodeIterator(Node node, ArrayList<Node> leafNodes)
+  {
+    if(node.isLeaf())
+      leafNodes.add(node);
+    else
+    {
+      for (int n = 0; n < node.getInDegree(); n++) 
+      {
+        this.doLeafNodeIterator(node.getInput(n), leafNodes);
+      }
+    }
+  }
 }

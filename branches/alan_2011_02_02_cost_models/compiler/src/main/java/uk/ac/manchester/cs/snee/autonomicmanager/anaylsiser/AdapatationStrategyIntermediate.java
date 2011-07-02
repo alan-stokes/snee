@@ -118,8 +118,6 @@ public class AdapatationStrategyIntermediate
   public ArrayList<Adapatation> calculateNewQEP(ArrayList<String> failedNodes) throws OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException, SNEEException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
   { 
     System.out.println("Running fake Adapatation "); 
-    //generate topology file
-    new AdapatationStrategyIntermediateUtils(this).outputTopologyAsDotFile(outputFolder, sep + "topologyAfterNodeLoss.dot");
     //setup collectors
     PAF paf = oldIOT.getPAF(); 
     ArrayList<RT> routingTrees = new ArrayList<RT>();
@@ -167,21 +165,23 @@ public class AdapatationStrategyIntermediate
          CostParametersException, 
          SNCBException
   {
+    int choice = 1;
     while(routeIterator.hasNext())
     {
       //set up current objects
       RT routingTree =  routeIterator.next();
       Adapatation currentAdapatation = new Adapatation(qep);
-      
+      File choiceFolder = new File(outputFolder.toString() + sep + "choice" + choice);
+      choiceFolder.mkdir();
       //create pinned paf
       PAF paf = pinPhysicalOperators(oldIOT, failedNodes, disconnectedNodes);
       //run fragment paf though where scheduler.
-      InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), outputFolder.toString());
+      InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), choiceFolder.toString());
       IOT newIOT = instanceWhere.getIOT();
       //run new iot though when scheduler and locate changes
       AgendaIOT newAgenda = doSNWhenScheduling(newIOT, qep.getQos(), qep.getID(), qep.getCostParameters());
       //output new and old agendas
-      new AdapatationStrategyIntermediateUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), oldIOT, newIOT, outputFolder);
+      new AdapatationStrategyIntermediateUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), oldIOT, newIOT, choiceFolder);
       //analysis newIOT for interesting nodes
       checkIOT(newIOT, oldIOT, failedNodes, currentAdapatation);
       //check if agenda agrees to constraints.
@@ -194,6 +194,7 @@ public class AdapatationStrategyIntermediate
         currentAdapatation.setNewQep(newQep);
         totalAdapatations.add(currentAdapatation);
       }
+      choice++;
     }
     
   }
@@ -511,11 +512,12 @@ public class AdapatationStrategyIntermediate
    * @param outputFolder2 
    * @throws SNEEConfigurationException 
    * @throws NumberFormatException 
+   * @throws SchemaMetadataException 
    */
   private ArrayList<RT> createNewRoutingTrees(ArrayList<String> failedNodes, 
       ArrayList<String> disconnectedNodes, PAF paf, RT oldRoutingTree, File outputFolder) 
   throws NumberFormatException, 
-         SNEEConfigurationException
+         SNEEConfigurationException, SchemaMetadataException
   {
     ArrayList<RT> routes = new ArrayList<RT>();
     CandiateRouter router = new CandiateRouter();

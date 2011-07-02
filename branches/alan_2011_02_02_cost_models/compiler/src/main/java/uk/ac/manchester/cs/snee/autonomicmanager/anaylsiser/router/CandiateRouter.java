@@ -51,11 +51,12 @@ public class CandiateRouter extends Router
    * @param numberOfRoutingTreesToWorkOn 
    * @param outputFolder 
    * @return
+   * @throws SchemaMetadataException 
    */
   
   public ArrayList<RT> findAllRoutes(RT oldRoutingTree, ArrayList<String> failedNodes, 
                                      String queryName, Integer numberOfRoutingTreesToWorkOn,
-                                     File outputFolder)
+                                     File outputFolder) throws SchemaMetadataException
   {
     //container for new routeing trees
     ArrayList<RT> newRoutingTrees = new ArrayList<RT>();
@@ -79,31 +80,167 @@ public class CandiateRouter extends Router
       ArrayList<String> setofLinkedFailedNodes = failedNodeLinks.get(key);
       ArrayList<String> sources = new ArrayList<String>();
       String sink = removeExcessNodesAndEdges(workingTopology, oldRoutingTree, setofLinkedFailedNodes, sources);
+      File failedChain = new File(outputFolder.toString() + sep + "chain1");
+      failedChain.mkdir();
       
-      try
-      {
-        workingTopology.exportAsDOTFile(outputFolder + sep + "workingtopology");
-      }
-      catch (SchemaMetadataException e)
-      {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }
+      workingTopology.exportAsDOTFile(failedChain.toString() + sep + "workingtopology");
+
       //calculate different routes around linked failed site.
       ArrayList<Tree> routesForFailedNode = 
         createRoutes(workingTopology, numberOfRoutingTreesToWorkOn, sources, 
-                     sink, oldRoutingTree.getPAF(), oldRoutingTree, outputFolder);
+                     sink, oldRoutingTree.getPAF(), oldRoutingTree, failedChain);
       failedNodeToRoutingTreeMapping.addAll(key, routesForFailedNode);
     }
     //merges new routes to create whole entire routingTrees
-
-    //score them and place in descending order.
-    if(newRoutingTrees.size() > numberOfRoutingTreesToWorkOn)
-      return new ArrayList<RT>(newRoutingTrees.subList(0, numberOfRoutingTreesToWorkOn));
-    else
-      return newRoutingTrees;
+    newRoutingTrees =  mergeSections(failedNodeToRoutingTreeMapping, oldRoutingTree, 
+                                     failedNodes, numberOfRoutingTreesToWorkOn);
+    outputcompleteTrees(newRoutingTrees, outputFolder);
+    return newRoutingTrees;
   }
 
+  /**
+   * outputs all routing trees to autonomic folder
+   * @param newRoutingTrees
+   * @param outputFolder 
+   */
+  private void outputcompleteTrees(ArrayList<RT> newRoutingTrees, File outputFolder)
+  {
+    File output = new File(outputFolder.toString() + sep + "completeRoutingTrees");
+    output.mkdir();
+    Iterator<RT> routes = newRoutingTrees.iterator();
+    int counter = 1;
+    while(routes.hasNext())
+    {
+      new RTUtils(routes.next()).exportAsDotFile(output.toString() + sep + "completeRoute" + counter);
+      counter ++;
+    }
+    
+  }
+
+  /**
+   * merges sections of trees to make full routing trees.
+   * @param failedNodeToRoutingTreeMapping
+   * @param oldRoutingTree
+   * @param failedNodes 
+   * @param numberOfRoutingTreesToWorkOn 
+   * @return
+   */
+  private ArrayList<RT> mergeSections(
+      HashMapList<Integer, Tree> failedNodeToRoutingTreeMapping,
+      RT oldRoutingTree, ArrayList<String> failedNodes, Integer numberOfRoutingTreesToWorkOn)
+  {
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    int counter = 0;
+    ArrayList<RT> newRoutingTrees = new ArrayList<RT>();
+    boolean first = true;
+    Random randomiser = new Random();
+    long max = calcuateMaxTrees(failedNodeToRoutingTreeMapping);
+    removeFailedNodesFromOldRT(oldRoutingTree, failedNodes);
+    while(counter < numberOfRoutingTreesToWorkOn && counter < max)
+    {
+
+      Iterator<Integer> keyIterator = failedNodeToRoutingTreeMapping.keySet().iterator();
+      //get new routing tree
+      RT newRoutingTree = cloner.deepClone(oldRoutingTree);
+      //for each chain, connect a tree to complete it.
+      while(keyIterator.hasNext())
+      {
+        Integer key = keyIterator.next();
+        ArrayList<Tree> choices = failedNodeToRoutingTreeMapping.get(key);
+        Tree choice = null;
+        if(first)
+          choice = choices.get(0);
+        else
+          choice = choices.get(randomiser.nextInt(choices.size()));
+        //connect parent
+        Site treeParent =  newRoutingTree.getSite(choice.getRoot().getID());
+        Iterator<Node> choiceInputIterator = choice.getRoot().getInputsList().iterator();
+        while(choiceInputIterator.hasNext())
+        {
+          Node choiceParent = choiceInputIterator.next();
+          treeParent.addInput(choiceParent);
+          choiceParent.addOutput(treeParent);
+        }
+        //get children of choice.
+        Iterator<Node> choiceChildrenIterator = choice.getLeafNodes().iterator();
+        //connect children
+        while(choiceChildrenIterator.hasNext())
+        {
+          Site choiceChild = (Site) choiceChildrenIterator.next();
+          Site treeChild =  newRoutingTree.getSite(choiceChild.getID());
+          treeChild.addOutput(choiceChild.getOutput(0));
+          choiceChild.addInput(treeChild);
+        }
+      }
+      //store new routingTree
+      newRoutingTrees.add(newRoutingTree);
+      first = false;
+      counter ++;
+    }
+    return newRoutingTrees;
+  }
+
+  /**
+   * creates a disconnected routing tree, leaving holes to be filled in with calculated trees.
+   * @param oldRoutingTree
+   * @param failedNodes
+   */
+  private void removeFailedNodesFromOldRT(RT oldRoutingTree,
+      ArrayList<String> failedNodes)
+  {
+    //iterate over failed nodes removing one by one
+    Iterator<String> failedNodeIterator = failedNodes.iterator();
+    while(failedNodeIterator.hasNext())
+    {
+      //get failed node
+      Node toRemove = oldRoutingTree.getSite(failedNodeIterator.next());
+      //remove input link off parent
+      toRemove.getOutput(0).removeInput(toRemove);
+      //remove output link off each child
+      Iterator<Node> childIterator = toRemove.getInputsList().iterator();
+      while(childIterator.hasNext())
+      {
+        childIterator.next().removeOutput(toRemove);
+      }
+      oldRoutingTree.getSiteTree().removeNode(toRemove.getID());
+    }
+  }
+
+  /**
+   * calculates what the maxiumum number of rotuign trees can be calculated from the sections.
+   * @param failedNodeToRoutingTreeMapping
+   * @return
+   */
+  private long calcuateMaxTrees(
+      HashMapList<Integer, Tree> failedNodeToRoutingTreeMapping)
+  {
+    int items = 0;
+    long max = 0;
+    int r = failedNodeToRoutingTreeMapping.keySet().size();
+    Iterator<Integer> keyIterator = failedNodeToRoutingTreeMapping.keySet().iterator();
+    while(keyIterator.hasNext())
+    {
+      Integer key = keyIterator.next();
+      ArrayList<Tree> choices = failedNodeToRoutingTreeMapping.get(key);
+      items += choices.size();
+    }
+    max = (factorial(items) / (factorial(r) * factorial(items - r)));
+    return max;
+  }
+
+  /**
+   * basic factorial formula (as no built in java function)
+   * @param n
+   * @return
+   */
+  private long factorial( int n )
+  {
+      if( n <= 1 )     // base case
+          return 1;
+      else
+          return n * factorial( n - 1 );
+  }
   /**
    * method which creates at maximum numberOfRoutingTreesToWorkOn routes if possible. 
    * First uses basic steiner-tree algorithm to determine if a route exists between 
@@ -157,7 +294,22 @@ public class CandiateRouter extends Router
       routes.add(currentTree);
     }
     routes = removeDuplicates(routes);
+    outputCleanedRoutes(routes, outputFolder, paf);
     return routes;
+  }
+
+  private void outputCleanedRoutes(ArrayList<Tree> routes, File outputFolder, PAF paf)
+  {
+    Iterator<Tree> routeIterator = routes.iterator();
+    File cleaned = new File(outputFolder.toString() + sep + "reducedPossible");
+    cleaned.mkdir();
+    int counter = 0;
+    while(routeIterator.hasNext())
+    {
+      Tree currentTree = routeIterator.next();
+      new RTUtils(new RT(paf, "", currentTree)).exportAsDotFile(cleaned.toString() + sep + "route" + counter); 
+      counter++;
+    }
   }
 
   /**
@@ -202,19 +354,33 @@ public class CandiateRouter extends Router
             Tree compare = temporaryArray[compareIndex];
             if(compare != null)
             {
-              Iterator<Site> templateIterator = template.nodeIterator(TraversalOrder.POST_ORDER);
-              Iterator<Site> compareIterator = compare.nodeIterator(TraversalOrder.POST_ORDER);
-              boolean equal = true;
-              while(templateIterator.hasNext() && compareIterator.hasNext() && equal)
+              ArrayList<Node> templateNodes = new ArrayList<Node>(template.getNodes());
+              ArrayList<Node> compareNodes = new ArrayList<Node>(compare.getNodes());
+              if(templateNodes.size() == compareNodes.size())
               {
-                Site templateSite = templateIterator.next();
-                Site compareSite = compareIterator.next();
-                if(!templateSite.getID().equals(compareSite.getID()))
-                  equal = false;
-              }
-              if(equal)
-              {
-                temporaryArray[compareIndex] = null; 
+                boolean equal = true;
+                Iterator<Node> templateIterator = templateNodes.iterator();
+                Iterator<Node> compareIterator = compareNodes.iterator();
+                while(templateIterator.hasNext())
+                {
+                  Node currentNode = templateIterator.next();
+                  if(!compareNodeToArray(currentNode, compareNodes))
+                    equal = false;
+                    
+                }
+                if(equal)
+                {
+                  while(compareIterator.hasNext())
+                  {
+                    Node currentNode = compareIterator.next();
+                    if(!compareNodeToArray(currentNode, templateNodes))
+                      equal = false;
+                  }
+                  if(equal)
+                  {
+                    temporaryArray[compareIndex] = null; 
+                  }
+                }
               }
             } 
           }
@@ -229,6 +395,24 @@ public class CandiateRouter extends Router
     }
     return routes;
   }
+  
+  /**
+   * compares a node with an array of nodes, if the node exists, return true
+   * @param currentNode
+   * @param compareNodes
+   * @return
+   */
+  private boolean compareNodeToArray(Node currentNode,
+      ArrayList<Node> compareNodes)
+  {
+    for(int index = 0; index < compareNodes.size(); index++)
+    {
+      if(currentNode.getID().equals(compareNodes.get(index).getID()))
+        return true;
+    }
+    return false;
+  }
+
   /**
    * method used to convert between string input and int input used by basic router method
    * @param workingTopology

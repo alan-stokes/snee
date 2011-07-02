@@ -86,21 +86,30 @@ public class AutonomicManager
         sep + sQep.getAgendaIOT().getQueryName();
     File firstOutputFolder = new File(outputDir + sep + "AutonomicManData");
     
+    deleteFileContents(firstOutputFolder);
+    outputFolder = new File(firstOutputFolder.toString() + sep + "Adaption" + adaptionCount);
+    outputFolder.mkdir();
+  }
+
+  private void deleteFileContents(File firstOutputFolder)
+  {
     if(firstOutputFolder.exists())
     {
       File[] contents = firstOutputFolder.listFiles();
       for(int index = 0; index < contents.length; index++)
       {
         File delete = contents[index];
-        delete.delete();
+        if(delete != null && delete.listFiles().length > 0)
+          deleteFileContents(delete);
+        else
+          delete.delete();
       }
     }
     else
     {
       firstOutputFolder.mkdir();
-    }
-    outputFolder = new File(firstOutputFolder.toString() + sep + "Adaption" + adaptionCount);
-    outputFolder.mkdir();
+    } 
+    
   }
 
   public void runStragity2(ArrayList<String> failedNodes) 
