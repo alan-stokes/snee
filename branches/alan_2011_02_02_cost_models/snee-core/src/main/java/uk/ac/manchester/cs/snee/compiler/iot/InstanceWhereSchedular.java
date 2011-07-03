@@ -77,6 +77,7 @@ public class InstanceWhereSchedular
     boolean success = new File(fileDirectory).mkdir();
     if(success)
     {
+      new RTUtils(routingTree).exportAsDotFile(fileDirectory + fileSeparator + "RT.dot");
       //output paf
       new PAFUtils(paf).exportAsDotFile(fileDirectory + fileSeparator + "PAF.dot");
       //generate floating operators / fixed locations
@@ -91,7 +92,14 @@ public class InstanceWhereSchedular
       new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "cleanedSiteAssignment.dot", "", true);
       startFragmentation();
       new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "fragmentedIOT.dot", "", false);
+      try
+      {
       addExchangeParts();
+      }
+      catch(Exception e)
+      {
+        e.printStackTrace();
+      }
       //needs to be placed here, as updating links breaks the cDAF manufacture
       cDAF = new IOTUtils(iot, costs).convertToDAF();
       iot.setDAF(cDAF);

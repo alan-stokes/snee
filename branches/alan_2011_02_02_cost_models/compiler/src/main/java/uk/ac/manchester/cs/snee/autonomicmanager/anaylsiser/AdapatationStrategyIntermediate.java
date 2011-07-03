@@ -71,6 +71,7 @@ public class AdapatationStrategyIntermediate
   private File outputFolder;
   private String sep = System.getProperty("file.separator");
   private Integer numberOfRoutingTreesToWorkOn = 0;
+  private static int choice;
   /**
    * @param autonomicManager
    * the parent of this class.
@@ -128,6 +129,7 @@ public class AdapatationStrategyIntermediate
     //create store for all adapatations
     ArrayList<Adapatation> totalAdapatations = new ArrayList<Adapatation>();
     Iterator<RT> routeIterator = routingTrees.iterator();
+    choice = 0;
     
     try
     {
@@ -135,6 +137,7 @@ public class AdapatationStrategyIntermediate
     }
     catch(Exception e)
     {
+      e.printStackTrace();
       tryGoingThoughRoutes(routeIterator, failedNodes, disconnectedNodes, totalAdapatations);
     }
     return totalAdapatations;
@@ -165,7 +168,7 @@ public class AdapatationStrategyIntermediate
          CostParametersException, 
          SNCBException
   {
-    int choice = 1;
+    choice++;
     while(routeIterator.hasNext())
     {
       //set up current objects

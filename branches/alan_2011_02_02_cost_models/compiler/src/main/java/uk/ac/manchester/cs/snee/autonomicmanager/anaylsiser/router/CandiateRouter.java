@@ -170,7 +170,21 @@ public class CandiateRouter extends Router
           Site choiceChild = (Site) choiceChildrenIterator.next();
           Site treeChild =  newRoutingTree.getSite(choiceChild.getID());
           treeChild.addOutput(choiceChild.getOutput(0));
-          choiceChild.addInput(treeChild);
+          Iterator<Node> treeChildInputIterator = treeChild.getInputsList().iterator();
+          while(treeChildInputIterator.hasNext())
+          {
+            choiceChild.addInput(treeChildInputIterator.next());
+          }
+        }
+        //add extra nodes to new routing table nodes storage, with correct edges
+        Iterator<Node> choiceNodeIterator = choice.getNodes().iterator();
+        while(choiceNodeIterator.hasNext())
+        {
+          Node choiceNode = choiceNodeIterator.next();
+          if(!this.compareNodeToArray(choiceNode, new ArrayList<Node>(newRoutingTree.getSiteTree().getNodes())))
+          {
+            newRoutingTree.getSiteTree().addNode(choiceNode);
+          }
         }
       }
       //store new routingTree
@@ -204,6 +218,13 @@ public class CandiateRouter extends Router
         childIterator.next().removeOutput(toRemove);
       }
       oldRoutingTree.getSiteTree().removeNode(toRemove.getID());
+    }
+    //clear all operaotrs off sites
+    Iterator<Node> nodeIterator = oldRoutingTree.getSiteTree().getNodes().iterator();
+    while(nodeIterator.hasNext())
+    {
+      Site node = (Site) nodeIterator.next();
+      node.clearInstanceExchangeComponents();
     }
   }
 

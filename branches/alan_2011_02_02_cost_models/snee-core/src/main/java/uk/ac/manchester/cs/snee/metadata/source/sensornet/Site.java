@@ -306,10 +306,17 @@ public class Site extends NodeImplementation implements Comparable{
     {
       return instanceExchangeComponents.add(exchangePart);
     }
-    public HashSet<InstanceExchangePart> getInstanceExchangeComponents() {
-		return instanceExchangeComponents;
-	}
+    
+    public HashSet<InstanceExchangePart> getInstanceExchangeComponents()
+    {
+		  return instanceExchangeComponents;
+	  }
 
+    public void clearInstanceExchangeComponents()
+    {
+      this.instanceExchangeComponents.clear();
+    }
+    
     @Override
     public int compareTo(Object arg0)
     {

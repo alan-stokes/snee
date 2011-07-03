@@ -46,7 +46,7 @@ public class AutonomicManager
   private QueryExecutionPlan qep;
   private ArrayList<Integer> deadNodes = null;
   private int noDeadNodes = 0;
-  private int adaptionCount = 0;
+  private int adaptionCount = 1;
   private static Logger resultsLogger = 
     Logger.getLogger("results.autonomicManager");
   // folder for autonomic data
