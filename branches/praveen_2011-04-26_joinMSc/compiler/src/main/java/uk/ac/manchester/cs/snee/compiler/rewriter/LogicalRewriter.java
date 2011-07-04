@@ -69,7 +69,11 @@ public class LogicalRewriter {
 	    	combineSelectandJoin(laf);
 	    }
 	    insertExchangeOperators(laf);
-	    insertValveOperator(laf);
+	    if (SNEEProperties.getBoolSetting(SNEEPropertyNames.
+	    		LOGICAL_REWRITER_INSERT_VALVE_OPS)) {
+	    	insertValveOperator(laf);
+	    }
+	    
 	    //Praveen Code Ends
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN doLogicalRewriting()");
@@ -120,30 +124,64 @@ public class LogicalRewriter {
 	 * 
 	 * @param laf
 	 */
+//	private void insertValveOperator(LAF laf) {
+//		Iterator<LogicalOperator> opIter = laf
+//				.operatorIterator(TraversalOrder.POST_ORDER);
+//		LogicalOperator childOperator;
+//		LogicalOperator op;
+//		Iterator<LogicalOperator> iter;
+//		while (opIter.hasNext()) {
+//			op = opIter.next();
+//			iter = op.childOperatorIterator();
+//			if (!(op instanceof WindowOperator) && iter.hasNext()) {
+//				do {
+//					childOperator = iter.next();
+//					SourceType opSourceType = childOperator
+//							.getOperatorSourceType();
+//					if ((opSourceType == SourceType.PULL_STREAM_SERVICE
+//							|| opSourceType == SourceType.UDP_SOURCE 
+//							|| opSourceType == SourceType.PUSH_STREAM_SERVICE)) {
+//
+//						laf.getOperatorTree().insertNode(childOperator, op,
+//								new ValveOperator(childOperator, _boolType));
+//
+//					}
+//				} while (iter.hasNext());
+//
+//			}
+//
+//		}
+//
+//	}
+	
+	/**
+	 * This method accepts the laf tree. It does a post order traversal
+	 * on it. During the traversal, all the join operators that fall outside
+	 * the sensor network are buffered with a valve operator
+	 * 
+	 * @param laf
+	 */
 	private void insertValveOperator(LAF laf) {
 		Iterator<LogicalOperator> opIter = laf
-				.operatorIterator(TraversalOrder.POST_ORDER);
+				.operatorIterator(TraversalOrder.PRE_ORDER);
 		LogicalOperator childOperator;
 		LogicalOperator op;
 		Iterator<LogicalOperator> iter;
 		while (opIter.hasNext()) {
 			op = opIter.next();
-			iter = op.childOperatorIterator();
-			if (!(op instanceof WindowOperator) && iter.hasNext()) {
-				do {
-					childOperator = iter.next();
-					SourceType opSourceType = childOperator
-							.getOperatorSourceType();
-					if ((opSourceType == SourceType.PULL_STREAM_SERVICE
-							|| opSourceType == SourceType.UDP_SOURCE 
-							|| opSourceType == SourceType.PUSH_STREAM_SERVICE)) {
+			if (op instanceof JoinOperator
+					&& SourceType.SENSOR_NETWORK != op.getOperatorSourceType()) {
+				iter = op.childOperatorIterator();
+				if (iter.hasNext()) {
+					do {
+						childOperator = iter.next();
 
 						laf.getOperatorTree().insertNode(childOperator, op,
 								new ValveOperator(childOperator, _boolType));
 
-					}
-				} while (iter.hasNext());
+					} while (iter.hasNext());
 
+				}
 			}
 
 		}
