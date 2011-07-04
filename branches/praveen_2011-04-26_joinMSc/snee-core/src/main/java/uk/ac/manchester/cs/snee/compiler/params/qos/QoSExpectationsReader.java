@@ -167,6 +167,11 @@ public class QoSExpectationsReader extends QoSExpectations {
 					xQoS+"/snee:delivery-time");
 			this.setDeliveryTimeRange(delta);
 			logger.trace(delta.getMinValue()+"<=delta<="+delta.getMaxValue());
+			String lossyValue = Utils.doXPathStrQuery(this._queryParamsFile,
+					xQoS + "/snee:tuple-loss-allowed");
+			if ("TRUE".equalsIgnoreCase(lossyValue)) {
+				this.setTupleLossAllowed(true);
+			}
 			//TODO: Weightings, total energy, lifetime not parsed
 		} catch (Exception e) {
 			throw new QoSException("Error parsing QoS in parameters file :"+

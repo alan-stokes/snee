@@ -78,6 +78,8 @@ public class QoSExpectations {
     private int bufferingFactorConstraintWeighting = 1;
 
     private long queryDuration = 60; // Default, run nesC queries for 60 secs
+    
+    private boolean isTupleLossAllowed = false; 
 
     public void setOptimizationType(final QoSOptimizationType  
     optimizationType) {
@@ -328,7 +330,21 @@ public class QoSExpectations {
     	this.queryDuration = queryDuration;
     }
 
-    @Override
+    /**
+	 * @param isTupleLossAllowed the isTupleLossAllowed to set
+	 */
+	public void setTupleLossAllowed(boolean isTupleLossAllowed) {
+		this.isTupleLossAllowed = isTupleLossAllowed;
+	}
+
+	/**
+	 * @return the isTupleLossAllowed
+	 */
+	public boolean isTupleLossAllowed() {
+		return isTupleLossAllowed;
+	}
+
+	@Override
     public String toString() {
 		final StringBuffer sb = new StringBuffer(
 			"Quality of Service Specification\n");
