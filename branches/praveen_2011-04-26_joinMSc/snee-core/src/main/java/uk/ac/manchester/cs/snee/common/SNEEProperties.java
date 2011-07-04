@@ -257,6 +257,27 @@ public class SNEEProperties {
 		return property;
 	}
 	
+	public static double getDoubleSetting(String propName) 
+	throws SNEEConfigurationException 
+	{
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER getIntSetting() with " + propName);
+		}
+		double property;
+		try {
+			property = new Double(getSetting(propName));
+		} catch (NumberFormatException e) {
+			String message = "Problem converting property " +
+					"value to an integer.";
+			logger.warn(message, e);
+			throw new SNEEConfigurationException(message, e);
+		}
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN getIntSetting() " + propName + 
+					" = " + property);
+		return property;
+	}
+	
 	/**
 	 * Returns the property value for a boolean property
 	 * @param propName name of the property to retrieve the value for

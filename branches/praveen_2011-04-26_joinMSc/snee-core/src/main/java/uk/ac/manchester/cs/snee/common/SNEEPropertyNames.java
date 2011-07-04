@@ -105,6 +105,9 @@ public final class SNEEPropertyNames {
      */
     public static final String LOGICAL_REWRITER_COMBINE_LEAF_SELECT =
     	"compiler.logicalrewriter.combine_leaf_and_select";
+    
+    public static final String LOGICAL_REWRITER_INSERT_VALVE_OPS =
+    	"compiler.logical_rewriter.insert_valve_operators";
  
     /**
      * Sets the random seed used for generating routing trees.
@@ -160,6 +163,9 @@ public final class SNEEPropertyNames {
 	
 	public static String RESULTS_HISTORY_SIZE_TUPLES =
 		"results.history_size.tuples";
+	
+	public static String COMPILER_ALGORTHM_SELECTION_THRESHOLD_RATE =
+		"compiler.algorithm_selection.threshold_rate";
 
 	/**
 	 * Specifies whether the metadata collection program should be invoked, 
