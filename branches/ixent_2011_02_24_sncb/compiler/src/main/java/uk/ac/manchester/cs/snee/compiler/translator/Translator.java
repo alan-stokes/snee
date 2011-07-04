@@ -1126,13 +1126,13 @@ public class Translator {
 				expression = 
 					translateExpression(expressionAST, input);
 				attribute = expression.toAttribute();
-				if (!expression.allowedInProjectOperator()) {
-					allowedInProjectOperator = false;
-				}
-				if (!expression.allowedInAggregationOperator()) {
-					allowedInAggregationOperator = false;
-				}
 				break;
+			}
+			if (!expression.allowedInProjectOperator()) {
+				allowedInProjectOperator = false;
+			}
+			if (!expression.allowedInAggregationOperator()) {
+				allowedInAggregationOperator = false;
 			}
 			expressions.add(expression);
 			attributes.add(attribute);
