@@ -248,8 +248,10 @@ public class AggrUtils {
     public static StringBuffer generateTuple(
     		List <Attribute> outputAttributes, List<AggregationExpression> aggregates) {
     	final StringBuffer tupleBuffer = new StringBuffer();
+		tupleBuffer.append("\t\toutQueue[outTail]." 
+				+ "evalEpoch = currentEvalEpoch;\n");
     	
-    	int i = 0;
+    	int i = 1;
 		for (AggregationExpression aggr : aggregates) {
 			//works because there is one required attribute per aggregate expression
 			List<Attribute> aggrAttributes = aggr.getRequiredAttributes();
@@ -263,15 +265,9 @@ public class AggrUtils {
 				String outputAttrDisplayName = outputAttribute.
 					getAttributeDisplayName().replace('.', '_');
 
-				if (outputAttribute instanceof EvalTimeAttribute) {
-					tupleBuffer.append("\t\toutQueue[outTail]." 
-							+ "evalEpoch = currentEvalEpoch;\n");
-				}
-				else
-				{
-					tupleBuffer.append("\t\toutQueue[outTail]." 
-							+ outputAttrDisplayName + " = " + aggrAttrDisplayName + ";\n");					
-				}
+
+				tupleBuffer.append("\t\toutQueue[outTail]." 
+						+ outputAttrDisplayName + " = " + aggrAttrDisplayName + ";\n");	
 				
 				i++;
 			}

@@ -101,7 +101,7 @@ public class AggrEvalComponent extends NesCComponent {
 			replacements.put("__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__", 
 					AggrUtils.computeDerivedIncrAggregates(op.getAggregates()).toString());
 			replacements.put("__CONSTRUCT_TUPLE__", 
-					AggrUtils.generateTuple(op.getAttributes()).toString());
+					AggrUtils.generateTuple(op.getAttributes(), op.getAggregates()).toString());
 		
 			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/aggrPart.nc",
