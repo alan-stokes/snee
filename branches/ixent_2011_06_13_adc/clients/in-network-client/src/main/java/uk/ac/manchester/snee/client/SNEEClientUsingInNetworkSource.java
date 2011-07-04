@@ -11,9 +11,9 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 public class SNEEClientUsingInNetworkSource extends SNEEClient {
 
 	public SNEEClientUsingInNetworkSource(String query, 
-			double duration, String queryParams) 
+			double duration, String queryParams, String csvFile) 
 	throws SNEEException, IOException, SNEEConfigurationException {
-		super(query, duration, queryParams);
+		super(query, duration, queryParams, csvFile);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClientUsingInNetworkSource()");		
 		if (logger.isDebugEnabled())
@@ -35,11 +35,13 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 		String query;
 		Double duration;
 		String queryParams;
-		if (args.length != 3) {
+		String csvFile=null;
+		if (args.length != 3 && args.length!=4) {
 			System.out.println("Usage: \n" +
 					"\t\"query statement\"\n" +
 					"\t\"query duration in seconds ('inf' for indefinite)\"\n" +
-					"\t\"query parameters file\"\n");
+					"\t\"query parameters file\"\n" +
+					"\t[\"csv file to log results\"]\n");
 			//XXX: Use default query
 			query = "SELECT * FROM SeaDefence;";
 //			query = "SELECT seaLevel, \'East\' FROM SeaDefence;";
@@ -55,12 +57,15 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 				duration = Double.valueOf(args[1]);
 			}
 			queryParams = args[2];
+			if (args.length==4) {
+				csvFile=args[3];
+			}
 		}
 			
 		try {
 			/* Initialise SNEEClient */
 			SNEEClientUsingInNetworkSource client = 
-				new SNEEClientUsingInNetworkSource(query, duration, queryParams);
+				new SNEEClientUsingInNetworkSource(query, duration, queryParams, csvFile);
 			/* Run SNEEClient */
 			client.run();
 		} catch (Exception e) {
