@@ -45,6 +45,7 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.compiler.algorithm.AlgorithmSelector;
 import uk.ac.manchester.cs.snee.compiler.allocator.SourceAllocator;
 import uk.ac.manchester.cs.snee.compiler.allocator.SourceAllocatorException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
@@ -66,6 +67,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import antlr.CommonAST;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -116,7 +118,7 @@ public class QueryCompiler {
 	throws TypeMappingException, SourceDoesNotExistException, 
 	SchemaMetadataException, 
 	OptimizationException, ParserException, ExtentDoesNotExistException,
-	RecognitionException, SNEEConfigurationException, ExpressionException 
+	RecognitionException, SNEEConfigurationException, ExpressionException, SourceMetadataException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doTranslation() queryID: " + 
@@ -165,14 +167,29 @@ public class QueryCompiler {
 		return dlaf;
 	}
 	
-	private QueryExecutionPlan doSourcePlanning(DLAF dlaf, QoSExpectations qos, 
+	private DLAF doAlgorithmSelection(DLAF dlaf, QoSExpectations qos,
+			int queryID) throws SNEEConfigurationException {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER doSourceAllocation: " + dlaf);
+		AlgorithmSelector algorithmSelector = new AlgorithmSelector();
+		DLAF dlafPrime = algorithmSelector.doAlgorithmSelection(dlaf, qos);
+		if (SNEEProperties
+				.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
+			new DLAFUtils(dlafPrime).generateGraphImage();
+		}
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN doSourceAllocation: " + dlafPrime);
+		return dlafPrime;
+	}
+	
+	private QueryExecutionPlan doSourcePlanning(DLAF dlafPrime, QoSExpectations qos, 
 	int queryID) 
 	throws SNEEException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException,
 	OptimizationException, WhenSchedulerException {
 		if (logger.isTraceEnabled())
-			logger.trace("ENTER doSourcePlanning: " + dlaf);
+			logger.trace("ENTER doSourcePlanning: " + dlafPrime);
 		SourcePlanner planner = new SourcePlanner(metadata);
-		QueryExecutionPlan qep = planner.doSourcePlanning(dlaf, qos,
+		QueryExecutionPlan qep = planner.doSourcePlanning(dlafPrime, qos,
 			metadata.getCostParameters(), queryID);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN doSourcePlanning");
@@ -202,6 +219,7 @@ public class QueryCompiler {
 	 * @throws SourceAllocatorException 
 	 * @throws WhenSchedulerException 
 	 * @throws ExpressionException 
+	 * @throws SourceMetadataException 
 	 */
 	public QueryExecutionPlan compileQuery(int queryID, String query, 
 			QoSExpectations qos) 
@@ -210,7 +228,7 @@ public class QueryCompiler {
 	ParserException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException, 
 	SNEEConfigurationException, SourceAllocatorException, WhenSchedulerException,
-	ExpressionException 
+	ExpressionException, SourceMetadataException 
 	 {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER: queryID: " + queryID + "\n\tquery: " + query);
@@ -238,13 +256,17 @@ public class QueryCompiler {
 		DLAF dlaf = doSourceAllocation(lafPrime, queryID);
 		
 		if (logger.isInfoEnabled()) 
+			logger.info("Starting Source Allocation for query " + queryID);
+		DLAF dlafPrime = doAlgorithmSelection(dlaf, qos, queryID);
+		
+		if (logger.isInfoEnabled()) 
 			logger.info("Starting Source Planner for query " + queryID);
-		QueryExecutionPlan qep = doSourcePlanning(dlaf, qos, queryID);
+		QueryExecutionPlan qep = doSourcePlanning(dlafPrime, qos, queryID);
 
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN: " + qep.getID());
 		return qep;
-	}
+	}	
 
 	private String createQueryDirectory(int queryID) 
 	throws SNEEException, SNEEConfigurationException {
