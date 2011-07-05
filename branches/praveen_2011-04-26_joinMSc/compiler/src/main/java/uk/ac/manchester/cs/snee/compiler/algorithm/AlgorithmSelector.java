@@ -20,9 +20,14 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+import uk.ac.manchester.cs.snee.operators.logical.OperatorDataType;
 import uk.ac.manchester.cs.snee.operators.logical.ValveOperator;
 
 /**
+ * This class is intended for purely assigning algorithm to operators that fall
+ * out of the sensor network. The in-sensor-network algorithm selection is a
+ * separate process and happens further down the SNEE stack
+ * 
  * @author Praveen
  * 
  */
@@ -71,7 +76,10 @@ public class AlgorithmSelector {
 	 * This method iterates the dlaf and assigns the specific operator with its
 	 * associated algorithms, by routing the calls to appropriate methods This
 	 * algorithm selection is performed only for out of SN operators, and in
-	 * network algorithm selection is a separate process
+	 * network algorithm selection is a separate process.
+	 * 
+	 * The join algorithm selection should be performed before valve operator
+	 * algorithm selection
 	 * 
 	 * @param dlaf
 	 * @param qos
@@ -96,14 +104,44 @@ public class AlgorithmSelector {
 	/**
 	 * Set the algorithm with which the valve operator would work
 	 * 
+	 * Valve operators will be placed to buffer the join operations from getting
+	 * overloaded. So valve operators would be placed between each join operator
+	 * and its children in an out-SN setting. The join operators would then have
+	 * to be changed to work in a pull mode or the conventional iterator model
+	 * rather than the current subscribe mode. The data from the join operator
+	 * would then be pubished as it is being done now and the rest of the
+	 * operators would operate in the same Publish-Subscribe model.
+	 * 
+	 * Implementation
+	 * 
+	 * 1. If the parent join operator has the algorithm selected as Hash join,
+	 * the valve operator will subscribe to the data from its child, and hold on
+	 * to it until pulled by the join operator above. So the parent join
+	 * operator is informed to work in this mode.
+	 * 
+	 * 2. If the source rate of the child operator for the valve is above a
+	 * particular threshold value as defined in the SNEE.properties file, enable
+	 * the valve operator to subscribe to the data from its child, and hold on
+	 * to it until pulled by the join operator above. So the parent join
+	 * operator is informed to work in this mode.
+	 * 
+	 * 3. If the source rate of the child operator for the valve is below a
+	 * particular threshold value as defined in the SNEE.properties file, the
+	 * valve operator works in the traditional publish mode and the join
+	 * operator above will also work in the publish-subscribe mode, i.e. no
+	 * change from the current mode
+	 * 
 	 * @param valveOperator
 	 * @param qos
 	 */
 	private void setValveOperatorAlgorithm(ValveOperator valveOperator,
 			QoSExpectations qos) {
-		// TODO set it via property
 
-		if (valveOperator.getInput(0).getSourceRate() > thresholdRate) {
+		if (valveOperator.getInput(0).getSourceRate() > thresholdRate
+				|| (JoinOperator.LHJ_MODE.equals(((JoinOperator) valveOperator
+						.getParent()).getAlgorithm()))
+				|| (JoinOperator.RHJ_MODE.equals(((JoinOperator) valveOperator
+						.getParent()).getAlgorithm()))) {
 			valveOperator.setPushBasedOperator(false);
 
 			// This following code sets the parent operator which is a
@@ -117,6 +155,8 @@ public class AlgorithmSelector {
 		if (qos.isTupleLossAllowed()) {
 			valveOperator.setAlgorithm(ValveOperator.TUPLE_DROP_MODE);
 		} else {
+			// TODO this has to replaced with TUPLE_OFFLOAD_MODE, once that
+			// implementation is done
 			valveOperator.setAlgorithm(ValveOperator.GROW_SIZE_MODE);
 		}
 	}
@@ -137,11 +177,53 @@ public class AlgorithmSelector {
 			// equality type and only in such cases perform HashJoin
 			if (isEqualityTypePred(predicate)) {
 				// joinOperatorImpl = new HashJoinOperatorImpl(op, qid);
-				joinOperator.setAlgorithm(JoinOperator.SHJ_MODE);
+				setHashJoinAlgorithm(joinOperator);// joinOperator.setAlgorithm(JoinOperator.SHJ_MODE);
 			} else {
 				// joinOperatorImpl = new JoinOperatorImpl(op, qid);
 				joinOperator.setAlgorithm(JoinOperator.NLJ_MODE);
 			}
+		}
+
+	}
+
+	/**
+	 * 
+	 * If there is a join between stream & relation - relation is hashed window
+	 * & relation - relation is hashed window & window - one of the windows
+	 * which has the lowest source rate is hashed
+	 * 
+	 * @param joinOperator
+	 */
+	private void setHashJoinAlgorithm(JoinOperator joinOperator) {
+		LogicalOperator leftOperator = joinOperator.getInput(0);
+		LogicalOperator rightOperator = joinOperator.getInput(1);
+		OperatorDataType leftOperatorDataType = leftOperator
+				.getOperatorDataType();
+		OperatorDataType rightOperatorDataType = rightOperator
+				.getOperatorDataType();
+
+		if (leftOperatorDataType == OperatorDataType.STREAM
+				&& rightOperatorDataType == OperatorDataType.RELATION) {
+			joinOperator.setAlgorithm(JoinOperator.RHJ_MODE);
+		} else if (leftOperatorDataType == OperatorDataType.WINDOWS
+				&& rightOperatorDataType == OperatorDataType.RELATION) {
+			joinOperator.setAlgorithm(JoinOperator.RHJ_MODE);
+		} else if (leftOperatorDataType == OperatorDataType.WINDOWS
+				&& rightOperatorDataType == OperatorDataType.WINDOWS) {
+			if (leftOperator.getSourceRate() > rightOperator.getSourceRate()) {
+				joinOperator.setAlgorithm(JoinOperator.RHJ_MODE);
+			} else {
+				joinOperator.setAlgorithm(JoinOperator.LHJ_MODE);
+			}
+		} else {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Should never be here");
+			}
+			joinOperator.setAlgorithm(JoinOperator.LHJ_MODE);
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("The Algorithm Chosen is"
+					+ joinOperator.getAlgorithm());
 		}
 
 	}
