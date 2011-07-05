@@ -155,7 +155,7 @@ implements LogicalOperator {
 	 * @param right
 	 * @return
 	 */
-	protected double getSourceRate(LogicalOperator left, LogicalOperator right) {
+	public double getSourceRate(LogicalOperator left, LogicalOperator right) {
 		return left.getSourceRate() + right.getSourceRate();
 	}
 
