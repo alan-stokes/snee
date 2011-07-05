@@ -49,8 +49,10 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.operators.factory.JoinOperatorImplAbstractFactory;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.logical.ExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
@@ -59,6 +61,7 @@ import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ScanOperator;
 import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
+import uk.ac.manchester.cs.snee.operators.logical.ValveOperator;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
 public abstract class EvaluatorPhysicalOperator 
@@ -179,15 +182,36 @@ implements Observer
 			phyOp = new AggregationOperatorImpl(op, m_qid);
 		} else if (op instanceof JoinOperator) {
 			JoinOperator joinOp = (JoinOperator) op;
+			if (JoinOperator.NLJ_MODE.equals(joinOp.getAlgorithm())) {
+				phyOp = new NestedLoopJoinImpl(joinOp, m_qid);
+			} else if (JoinOperator.RHJ_MODE.equals(joinOp.getAlgorithm()) ||
+					JoinOperator.LHJ_MODE.equals(joinOp.getAlgorithm())) {
+				phyOp = new HashJoinOperatorImpl(joinOp, m_qid);
+			} else{
 //			if (joinOp.isRelationJoin()) {
 //				String msg = "Relation join not implemented!";
 //				logger.warn(msg);
 //				throw new SNEEException(msg);
 //			} else {
 				phyOp = new JoinOperatorImpl(op, m_qid);
+			}
+			//phyOp = new HashJoinOperatorImpl(op, m_qid);
+			//phyOp = JoinOperatorImplAbstractFactory.getJoinOperatorImpl(op, m_qid);
 //			}
 		} else if (op instanceof UnionOperator) {
 			phyOp = new UnionOperatorImpl(op, m_qid);
+		} else if (op instanceof ValveOperator) {
+			//phyOp = new ValveOperatorImpl(op, m_qid);
+			if (ValveOperator.GROW_SIZE_MODE.equals(((ValveOperator) op).getAlgorithm())) {
+				phyOp = new LosslessValveOperatorImpl(op, m_qid);
+			} else if (ValveOperator.TUPLE_DROP_MODE.equals(((ValveOperator) op).getAlgorithm())) {
+				//System.out.println("Running Lossy Stuff****************");
+				phyOp = new LossyValveOperatorImpl(op, m_qid);				
+			} else {
+				phyOp = new LosslessValveOperatorImpl(op, m_qid);
+			}
+		} else if (op instanceof ExchangeOperator) {
+			phyOp = new ExchangeOperatorImpl(op, m_qid);
 		} else {
 			String msg = "Unsupported operator " + op.getOperatorName();
 			logger.warn(msg);
