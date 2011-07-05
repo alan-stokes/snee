@@ -73,7 +73,6 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 			logger.fatal(e);
 			System.exit(1);
 		}
-		System.out.println("Success!");
 		System.exit(0);
 	}
 	

@@ -1,6 +1,9 @@
 package uk.ac.manchester.cs.snee.client;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -32,6 +35,15 @@ public class SampleClient implements Observer {
 		Logger.getLogger(SampleClient.class.getName());
 	
 	private SNEEController controller;
+	protected String _propertiesFile;
+	protected String _query = null;
+	protected double _duration;
+	protected String _queryParams = null;
+	private String _csvFilename = null;
+	
+	private boolean firstTime = true;
+	private boolean keepOn = true;
+	public boolean displayResultsAtEnd = false;
 	
 	/**
 	 * Configures the SNEE query engine according to the properties
@@ -44,13 +56,19 @@ public class SampleClient implements Observer {
 	 * @throws MetadataException
 	 * @throws SNEEDataSourceException 
 	 */
-	public SampleClient(String propertiesFile)
+	public SampleClient(String propertiesFile, String query, double duration, 
+						String queryParameters, String csvFilename)
 	throws SNEEException, IOException, SNEEConfigurationException,
 	MetadataException, SNEEDataSourceException 
 	{
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SampleClient()");
-		controller = new SNEEController(propertiesFile);		
+		controller = new SNEEController(propertiesFile);
+		this._propertiesFile = propertiesFile;
+		this._query = query;
+		this._duration = duration;
+		this._queryParams = queryParameters;
+		this._csvFilename = csvFilename;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN");
 	}
@@ -83,69 +101,82 @@ public class SampleClient implements Observer {
 		System.out.println();
 	}
 	
+	private void printRow(ResultSet rs, ResultSetMetaData metaData,
+			int numCols, String sep, PrintStream out) throws SQLException {
+		StringBuffer buffer = new StringBuffer();
+		for (int i = 1; i <= numCols; i++) {
+			Object value = rs.getObject(i);
+			if (metaData.getColumnType(i) == 
+				Types.TIMESTAMP && value instanceof Long) {
+				buffer.append(
+						new Date(((Long) value).longValue()));
+			} else {
+				buffer.append(value);
+			}
+			buffer.append(sep);
+		}
+		out.println(buffer.toString());
+	}
+	
 	private void printResults(List<ResultSet> results, 
-									 int queryId) 
-	throws SQLException {
+			int queryId, String csvFilename) 
+	throws SQLException, FileNotFoundException {
+    	PrintStream out = null;
+    	if (csvFilename != null)
+    		out = new PrintStream(new FileOutputStream(csvFilename, true));
+		
 		System.out.println("************ Results for query " + 
-						   queryId + " ************");
+				queryId + " ************");
 		for (ResultSet rs : results) {
 			ResultSetMetaData metaData = rs.getMetaData();
 			int numCols = metaData.getColumnCount();
-			printColumnHeadings(metaData, numCols);
+			if (firstTime && csvFilename != null) {
+				printColumnHeadings(metaData, numCols, ",", out);
+				firstTime = false;
+			}
+			
+			printColumnHeadings(metaData, numCols, "\t", System.out);
 			while (rs.next()) {
-				StringBuffer buffer = new StringBuffer();
-				for (int i = 1; i <= numCols; i++) {
-					Object value = rs.getObject(i);
-					if (metaData.getColumnType(i) == 
-						Types.TIMESTAMP && value instanceof Long) {
-						buffer.append(
-									  new Date(((Long) value).longValue()));
-					} else {
-						buffer.append(value);
-					}
-					buffer.append("\t");
-				}
-				System.out.println(buffer.toString());
+				printRow(rs, metaData, numCols, "\t", System.out);
+				if (csvFilename != null)
+					printRow(rs, metaData, numCols, ",", out);
 			}
 		}
 		System.out.println("*********************************");
 	}
 	
 	private void printColumnHeadings(ResultSetMetaData metaData,
-											int numCols) throws SQLException {
+			int numCols, String sep, PrintStream out) throws SQLException {
 		StringBuffer buffer = new StringBuffer();
 		for (int i = 1; i <= numCols; i++) {
 			buffer.append(metaData.getColumnLabel(i));
-			//			buffer.append(":" + metaData.getColumnTypeName(i));
-			buffer.append("\t");
+//			buffer.append(":" + metaData.getColumnTypeName(i));
+			buffer.append(sep);
 		}
-		System.out.println(buffer.toString());
+		out.println(buffer.toString());
 	}
+
 	
-	/**
-	 * Callback mechanism for reacting to new query results
-	 * 
-	 * @param observation 
-	 * @param arg the new query result 
-	 */
 	public void update (Observable observation, Object arg) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER update() with " + observation + " " + 
-						 arg);
+					arg);
 		}
-		//		logger.trace("arg type: " + arg.getClass());
 		if (arg instanceof List<?>) {
 			List<ResultSet> results = (List<ResultSet>) arg; 
 			try {
-				printResults(results, 1);
+				printResults(results, 1, _csvFilename);
 			} catch (SQLException e) {
 				logger.error("Problem printing result set. ", e);
+			} catch (FileNotFoundException e) {
+				logger.error("Problem writing results to csv file. ", e);				
 			}
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN update()");
 		}
 	}
+	
 	
 	/**
 	 * Execute a SNEEql query using the configured SNEE query execution
@@ -155,47 +186,102 @@ public class SampleClient implements Observer {
 	 * @param duration length in seconds to execute the query 
 	 * @param queryParams location of the parameters file associated with the query
 	 */
-	public void executeQuery(String query, String queryParameters, 
-			double duration) 
+	public void executeQuery() 
 	throws SNEECompilerException, MetadataException, EvaluatorException,
 	SNEEException, SQLException, SNEEConfigurationException {
 		if (logger.isDebugEnabled()) 
-			logger.debug("ENTER executeQuery() with query " + query +
-					" parameters " + queryParameters + 
-					" duration " + duration);
+			logger.debug("ENTER executeQuery() with query " + _query +
+					" parameters " + _queryParams + 
+					" duration " + _duration);
 		
-		System.out.println("Query: " + query);
-		
-		int queryId = controller.addQuery(query, queryParameters);
-		
+		System.out.println("Query: " + this._query);
+
+		int queryId1 = controller.addQuery(_query, _queryParams);
+
 		long startTime = System.currentTimeMillis();
-		long endTime = (long) (startTime + (duration * 1000));
-		
-		System.out.println("Running query for " + duration + 
-						   " seconds. Scheduled end time " + new Date(endTime));
-		
 		ResultStoreImpl resultStore = 
-		(ResultStoreImpl) controller.getResultStore(queryId);
+			(ResultStoreImpl) controller.getResultStore(queryId1);
 		resultStore.addObserver(this);
+
+		Runtime.getRuntime().addShutdownHook(new RunWhenShuttingDown(queryId1, 
+				resultStore));		
+		if (_duration == Double.POSITIVE_INFINITY) {
+			runQueryIndefinitely();
+		} else {
+			runQueryForFixedPeriod(startTime);
+		}
+		displayResultsAtEnd = true;
+		
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN executeQuery()");
+	}
+	
+	private void runQueryIndefinitely() throws SNEEException {
+		System.out.println("Running query indefinitely. Press CTRL+C to exit.");
+
+		while (keepOn) {
+			try {
+				Thread.currentThread().sleep(10000);
+			} catch (InterruptedException e) {
+			}
+			Thread.currentThread().yield();
+		}
+		
+		System.err.println("You should never see this");
+
+	}
+
+	private void runQueryForFixedPeriod(long startTime) 
+	throws SNEEException {
+		long endTime = (long) (startTime + (_duration * 1000));
+		System.out.println("Running query for " + _duration + " seconds. Scheduled end time " + new Date(endTime));
 		
 		try {			
-			Thread.currentThread().sleep((long)duration * 1000);
+			Thread.currentThread().sleep((long)_duration * 1000);
 		} catch (InterruptedException e) {
 		}
 		
 		while (System.currentTimeMillis() < endTime) {
 			Thread.currentThread().yield();
 		}
-		
-		List<ResultSet> results = resultStore.getResults();
-		System.out.println("Stopping query " + queryId + ".");
-		controller.removeQuery(queryId);
-		
-		controller.close();
-		printResults(results, queryId);
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN executeQuery()");
 	}
+
+	public class RunWhenShuttingDown extends Thread {
+        private int _queryId;
+        private ResultStoreImpl _resultStore;
+        
+        public RunWhenShuttingDown(int queryId, ResultStoreImpl resultStore) {
+        	_queryId = queryId;
+        	_resultStore = resultStore;
+        }
+        
+		public void run() {
+            keepOn = false;
+    		System.out.println("Stopping query " + _queryId + ".");
+    		try {
+    			List<ResultSet> results1 = _resultStore.getResults();
+				controller.removeQuery(_queryId);
+
+				//XXX: Sleep included to highlight evaluator not ending bug 
+				//Thread.currentThread().sleep((long) ((_duration/2) * 1000));
+				Thread.sleep(2000);
+				
+				controller.close();				
+				if (displayResultsAtEnd)
+					printResults(results1, _queryId, null);
+   
+    		} catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (SNEEException e1) {
+				e1.printStackTrace();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			System.out.println("Success!");
+        }
+    }
 	
 	/**
 	 * The main entry point for the Sample Client
@@ -204,46 +290,55 @@ public class SampleClient implements Observer {
 	 * @throws InterruptedException 
 	 */
 	public static void main(String[] args) {
+		String propertiesFile = null;
+		String query = null;
+		Double duration = null;
+		String params = null;
+		String csvFile = null;
+		
 		// Configure logging
 		PropertyConfigurator.configure(
 				SampleClient.class.getClassLoader().
 				getResource("etc/log4j.properties"));
-		String propertiesFile = null;
-		String query = null;
-		Long duration = null;
-		String params = null;
 		//This method represents the web server wrapper
-		if (args.length < 3 || args.length > 4) {
+		if (args.length != 5) {
 			System.out.println("Usage: \n" +
 					"\t\"location of SNEE properties file\"\n" +
 					"\t\"query statement\"\n" +
-					"\t\"query duration in seconds\"\n" +
-					"\t\"optional third argument stating location of query parameters file\"");
+					"\t\"query duration in seconds, or 'ind' for indefinite\"\n" +
+					"\t\"location of query parameters file, or null\"" +
+					"\t\"csv file to log results, or null\"\n");
 			System.exit(1);
 		} else {
 			propertiesFile = args[0];
 			query = args[1];
-			duration = Long.valueOf(args[2]);
-			if (args.length == 4) {
+			if (args[2].equalsIgnoreCase("inf") || args[2].equalsIgnoreCase("ind")) {
+				duration = Double.POSITIVE_INFINITY;
+			} else {
+				duration = Double.valueOf(args[2]);
+			}
+			if (!(args[3].equalsIgnoreCase("null"))) {
 				params = args[3];
+			}
+			if (!(args[4].equalsIgnoreCase("null"))) {
+				csvFile = args[4];
 			}
 		}
 			
 		try {
 			/* Initialise the Client */
 			SampleClient client = 
-				new SampleClient(propertiesFile);
+				new SampleClient(propertiesFile, query, duration, params, csvFile);
 			/* Print the available extents */
 			client.displayExtents();
 			/* Execute the query */
-			client.executeQuery(query, params, duration);
+			client.executeQuery();
 		} catch (Exception e) {
 			System.out.println("Execution failed. See logs for detail.");
 			logger.fatal(e);
 			System.exit(1);
 		}
 
-		System.out.println("Success!");
 		System.exit(0);
 	}
 	

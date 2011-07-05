@@ -182,12 +182,10 @@ public abstract class SNEEClient implements Observer {
 			logger.debug("ENTER update() with " + observation + " " + 
 					arg);
 		}
-//		logger.trace("arg type: " + arg.getClass());
 		if (arg instanceof List<?>) {
 			List<ResultSet> results = (List<ResultSet>) arg; 
 			try {
 				printResults(results, 1, _csvFilename);
-				//logResultsToCSVFile(results, 1);
 			} catch (SQLException e) {
 				logger.error("Problem printing result set. ", e);
 			} catch (FileNotFoundException e) {
@@ -291,6 +289,7 @@ public abstract class SNEEClient implements Observer {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
+			System.out.println("Success!");
         }
     }
 }
