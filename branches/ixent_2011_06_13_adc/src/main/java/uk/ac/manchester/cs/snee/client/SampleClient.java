@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Collection;
 import java.util.Date;
@@ -104,6 +105,12 @@ public class SampleClient implements Observer {
 	private void printRow(ResultSet rs, ResultSetMetaData metaData,
 			int numCols, String sep, PrintStream out) throws SQLException {
 		StringBuffer buffer = new StringBuffer();
+	  	
+		java.util.Date date= new java.util.Date();
+	    String time = new Timestamp(date.getTime()).toString();	
+	    buffer.append(time);
+	    buffer.append(sep);
+
 		for (int i = 1; i <= numCols; i++) {
 			Object value = rs.getObject(i);
 			if (metaData.getColumnType(i) == 
@@ -148,6 +155,8 @@ public class SampleClient implements Observer {
 	private void printColumnHeadings(ResultSetMetaData metaData,
 			int numCols, String sep, PrintStream out) throws SQLException {
 		StringBuffer buffer = new StringBuffer();
+		buffer.append("deliver_time");
+		buffer.append(sep);
 		for (int i = 1; i <= numCols; i++) {
 			buffer.append(metaData.getColumnLabel(i));
 //			buffer.append(":" + metaData.getColumnTypeName(i));
