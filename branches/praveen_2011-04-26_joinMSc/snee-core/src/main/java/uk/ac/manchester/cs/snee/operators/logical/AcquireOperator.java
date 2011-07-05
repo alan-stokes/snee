@@ -39,6 +39,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -98,7 +99,7 @@ public class AcquireOperator extends InputOperator {
 		this.setOperatorName("ACQUIRE");
 		this.setOperatorDataType(OperatorDataType.STREAM);
 		this.setOperatorSourceType(source.getSourceType());
-		this.setSourceRate(((SourceMetadata)source).getRate(extentName));
+		//this.setSourceRate(((SourceMetadata)source).getRate(extentName));
 		this._types=types;
 		updateSensedAttributes(); 
 		updateMetadataInfo(extentMetadata);
