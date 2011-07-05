@@ -501,7 +501,7 @@ implements LogicalOperator {
 	 * @param right
 	 * @return
 	 */
-	protected double getSourceRate(LogicalOperator left, LogicalOperator right) {
+	public double getSourceRate(LogicalOperator left, LogicalOperator right) {
 		double returnSourceRate = 1.0;
 		returnSourceRate = getHigherPrecedenceOp(left, right).getSourceRate();
 		return returnSourceRate;
