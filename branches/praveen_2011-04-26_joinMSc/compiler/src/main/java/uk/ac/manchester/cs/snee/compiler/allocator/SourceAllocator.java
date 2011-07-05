@@ -6,15 +6,22 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
+import uk.ac.manchester.cs.snee.operators.logical.InputOperator;
+import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ScanOperator;
+import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
+import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
 public class SourceAllocator {
 
@@ -31,20 +38,64 @@ public class SourceAllocator {
 		}
 	}
 
-	public DLAF allocateSources (LAF laf) 
-	throws SourceAllocatorException
+	public DLAF allocateSources (LAF laf, QoSExpectations qos) 
+	throws SourceAllocatorException, SourceMetadataException
 	{
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER allocateSources() laf="+laf.getID());
 		DLAF dlaf = new DLAF(laf, laf.getQueryName());
 		Set<SourceMetadataAbstract> sources = retrieveSources(laf);
 		//currently one source is supported
-		validateSources(sources);
+		validateSources(sources);		
 		dlaf.setSource(sources);
+		setSourceRates(laf, qos);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN allocateSources()");
 		}
 		return dlaf;
+	}
+
+	private void setSourceRates(LAF laf, QoSExpectations qos)
+			throws SourceMetadataException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER setSourceRates()");
+		}
+		Iterator<LogicalOperator> opIter = laf
+				.operatorIterator(TraversalOrder.POST_ORDER);
+		while (opIter.hasNext()) {
+			LogicalOperator op = opIter.next();
+			if (op instanceof AcquireOperator) {
+				AcquireOperator acquireOp = (AcquireOperator) op;
+				acquireOp.setSourceRate(qos.getMinAcquisitionInterval());
+
+			} else if (op instanceof InputOperator) {
+				InputOperator inputOperator = (InputOperator) op;
+				SourceMetadata inputSource = ((SourceMetadata) inputOperator
+						.getSource());
+				double rate = inputSource
+						.getRate(inputOperator.getExtentName());
+				((InputOperator) op).setSourceRate(rate);
+			} else if (op instanceof JoinOperator) {
+				JoinOperator joinOperator = (JoinOperator) op;
+				joinOperator.setSourceRate(joinOperator.getSourceRate(
+						op.getInput(0), op.getInput(1)));
+			} else if (op instanceof UnionOperator) {
+				UnionOperator unionOperator = (UnionOperator) op;
+				unionOperator.setSourceRate(unionOperator.getSourceRate(
+						op.getInput(0), op.getInput(1)));
+			} else if (op instanceof WindowOperator) {
+				//TODO need to implement the logic for calculating
+				//the source rate with respect to the window 
+				//re-evaluation
+				WindowOperator windowOperator = (WindowOperator)op;
+				windowOperator.setSourceRate(op.getInput(0).getSourceRate());
+			} else {
+				op.setSourceRate(op.getInput(0).getSourceRate());
+			}
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN setSourceRates()");
+		}
 	}
 
 	private Set<SourceMetadataAbstract> retrieveSources(LAF laf)
