@@ -153,12 +153,12 @@ public class QueryCompiler {
 	}
 	
 		
-	private DLAF doSourceAllocation(LAF lafPrime, int queryID) throws 
-	SourceAllocatorException, SNEEConfigurationException {
+	private DLAF doSourceAllocation(LAF lafPrime, int queryID, QoSExpectations qos) throws 
+	SourceAllocatorException, SNEEConfigurationException, SourceMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSourceAllocation: " + lafPrime);
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(lafPrime);
+		DLAF dlaf = allocator.allocateSources(lafPrime, qos);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new DLAFUtils(dlaf).generateGraphImage();
 		}
@@ -167,7 +167,7 @@ public class QueryCompiler {
 		return dlaf;
 	}
 	
-	private DLAF doAlgorithmSelection(DLAF dlaf, QoSExpectations qos,
+	private DLAF doOutSNAlgorithmSelection(DLAF dlaf, QoSExpectations qos,
 			int queryID) throws SNEEConfigurationException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSourceAllocation: " + dlaf);
@@ -253,11 +253,11 @@ public class QueryCompiler {
 		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Source Allocation for query " + queryID);
-		DLAF dlaf = doSourceAllocation(lafPrime, queryID);
+		DLAF dlaf = doSourceAllocation(lafPrime, queryID, qos);
 		
 		if (logger.isInfoEnabled()) 
-			logger.info("Starting Source Allocation for query " + queryID);
-		DLAF dlafPrime = doAlgorithmSelection(dlaf, qos, queryID);
+			logger.info("Starting Out of SN Source Allocation for query " + queryID);
+		DLAF dlafPrime = doOutSNAlgorithmSelection(dlaf, qos, queryID);
 		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Source Planner for query " + queryID);
