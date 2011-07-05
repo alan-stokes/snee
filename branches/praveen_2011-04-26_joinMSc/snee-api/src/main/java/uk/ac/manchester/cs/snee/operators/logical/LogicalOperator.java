@@ -241,6 +241,14 @@ public interface LogicalOperator extends Node {
 	SourceType getOperatorSourceType();
 	
 	/**
+	 * This method sets the source rate 
+	 * for the operator
+	 * 
+	 * @param rate
+	 */
+	void setSourceRate(double rate);
+	
+	/**
 	 * 
 	 * @return the rate of the operator
 	 */
