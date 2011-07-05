@@ -225,10 +225,7 @@ public class SampleClient implements Observer {
 			} catch (InterruptedException e) {
 			}
 			Thread.currentThread().yield();
-		}
-		
-		System.err.println("You should never see this");
-
+		}		
 	}
 
 	private void runQueryForFixedPeriod(long startTime) 
@@ -269,7 +266,7 @@ public class SampleClient implements Observer {
 				controller.close();				
 				if (displayResultsAtEnd)
 					printResults(results1, _queryId, null);
-   
+    		
     		} catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (SNEEException e1) {
@@ -279,7 +276,6 @@ public class SampleClient implements Observer {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-			System.out.println("Success!");
         }
     }
 	
@@ -339,6 +335,7 @@ public class SampleClient implements Observer {
 			System.exit(1);
 		}
 
+		System.out.println("Success!");
 		System.exit(0);
 	}
 	
