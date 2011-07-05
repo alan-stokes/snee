@@ -54,6 +54,17 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 		}
 	}	
 
+	//TODO Implement the following selection criteria in the algorithm
+	//selection stage
+	/**
+	 *
+	 * This mode of subscribe to the data published from the child
+	 * below is not implemented for the Simple Hash join algorithm
+	 * and hence is left blank. So in case there is no valve operator
+	 * for the join operator to pull the data from, this algorithm
+	 * should not be used. This decision is to be made in the 
+	 * Algorithm Selection stage
+	 */
 	@Override
 	public void update(Observable obj, Object observed) {
 		/*if (logger.isDebugEnabled()) {
@@ -130,39 +141,49 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 			i. Generate the hash value for the right operand
 			ii. perform join of right hash value over the left hash table
 		6. Goto Step 1
-	 * @throws SNEEException 
+	 *
 
 	 */
 	@Override
-	public void generateAndUpdate() {
+	public void generateAndUpdate(List<Output> resultItems) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER generateAndUpdate() for query " + m_qid);
 		}		
-
-		List<Output> resultItems = new ArrayList<Output>(1);
+		
+		//List<Output> resultItems = new ArrayList<Output>(1);
 
 		Output operand;
 		try {
 			operand = getNextFromChild(hashableOperator);
+			if (logger.isDebugEnabled()) {
+				logger.debug("generateAndUpdate() Got the first operand" + operand);
+			}
+			//System.out.println(operand);
 			if (operand != null) {
 				if (operandHashTable != null && operandHashTable.size() > 0) {
 					operandHashTable.clear();
 				} 
 				operandHashTable = buildHashTable(operand);
 			}
-			if (operandHashTable != null) {
+			if (operandHashTable != null && operandHashTable.size() > 0) {
 				operand = getNextFromChild(otherOperator);
+				if (logger.isDebugEnabled()) {
+					logger.debug("generateAndUpdate() Got the second operand" + operand);
+				}
 				if (operand != null) {
 					computeJoin(operandHashTable, operand, resultItems);
 				}
 			}
 
-			if (!resultItems.isEmpty()) {
+			/*if (!resultItems.isEmpty()) {
 				setChanged();
 				notifyObservers(resultItems);
-			}
+			}*/
 		} catch (SNEEException sneeException) {
 			logger.warn("Error processing join.", sneeException);
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("Exit generateAndUpdate()");
 		}
 	}	
 	
@@ -178,7 +199,9 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 	 */
 	private void computeJoin(Hashtable<Integer, List<Tuple>> hashTable,
 			Output output, List<Output> resultItems) throws SNEEException {
-		
+		if (logger.isDebugEnabled()) {
+			logger.debug("Enter computeJoin()");
+		}
 		if (output instanceof Window)  {
 			Window joinTuple = processWindowJoin(hashTable, (Window)output);
 			if (joinTuple != null) {
@@ -186,6 +209,9 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 			}
 		} else if (output instanceof TaggedTuple) {
 			processTaggedTupleJoin(hashTable, (TaggedTuple)output, resultItems);			
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("Exit computeJoin()");
 		}
 		
 	}
@@ -210,7 +236,10 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 			Window window) throws SNEEException {
 		List<Tuple> joinTuples = null;
 		for (Tuple outerTuple: window.getTuples()) {
+			System.out.println("Outer Tuple: " +outerTuple);
 			int hashKey = generateHashKey(joinPredicate, outerTuple);
+			System.out.println("Hash Key for outer tuple: "+hashKey);
+			outputHashTable(hashTable);
 			List<Tuple> hashedTuples = hashTable.get(hashKey); 
 			if (hashedTuples != null && hashedTuples.size() > 0) {
 				for (Tuple innerTuple: hashedTuples) {
@@ -293,8 +322,10 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 				hashTable.put(hashKey, new ArrayList<Tuple>(1));
 			}
 			hashTable.get(hashKey).add(innerTuple);
-			System.out.println("Parent: ");
-			outputHashTable(hashTable);			
+			System.out.println("Parent: ");					
+		}
+		if (hashTable != null) {
+			outputHashTable(hashTable);
 		}
 		return hashTable;
 	}
@@ -305,16 +336,17 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 	 * for the join and is also a part of the join operation, but maintained 
 	 * separately
 	 * 
-	 * @param leftOperator
+	 * @param operator
 	 * @return
 	 */
-	private Output getNextFromChild(EvaluatorPhysicalOperator leftOperator) {
-		return ((ValveOperatorAbstractImpl)leftOperator).getNext();
+	private Output getNextFromChild(EvaluatorPhysicalOperator operator) {
+		return ((ValveOperatorAbstractImpl)operator).getNext();
 	}
 
 	
 	
 	private void outputHashTable (Hashtable<Integer, List<Tuple>> currOperatorHT) {
+		System.out.println("Printing out the hash table");
 		for (Map.Entry<Integer, List<Tuple>> curEntry: currOperatorHT.entrySet()) {
 			System.out.println("Key: "+curEntry.getKey());
 			for (Tuple tuple: curEntry.getValue()) {

@@ -1,9 +1,11 @@
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
 
@@ -34,6 +36,8 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 	protected List<Attribute> returnAttrs;
 	protected int maxBufferSize;
 	protected double leftOperatorRate, rightOperatorRate;
+	private long nextEvalTime;
+	private Timer timer;
 
 	/**
 	 * This abstract constructor would initialise all the needed
@@ -100,10 +104,11 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 	 * the iterator model of join operator. This would be a simple hash join
 	 * for now. So for the Hash join implementation, there would be only
 	 * this method implemented, and not update method
+	 * @param resultItems 
 	 * 
 	 * @return 
 	 */
-	public abstract void generateAndUpdate();
+	public abstract void generateAndUpdate(List<Output> resultItems);
 	
 	@Override
 	public void open() throws EvaluatorException {
@@ -118,8 +123,16 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN open()");
 		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("Is Pull Mode operator"+join.isGetDataByPullModeOperator());
+		}
 		if (join.isGetDataByPullModeOperator()) {
-			evaluateJoinForIntervals();
+			timer = new Timer();
+			EvaluateTask evaluateTask = new EvaluateTask();
+			long currentTime = System.currentTimeMillis();
+			nextEvalTime = getNextEvalTime(currentTime);
+			timer.schedule(evaluateTask, 0, nextEvalTime);
+			//evaluateJoinForIntervals();
 		}
 	}
 
@@ -128,19 +141,22 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 	 * the generateAndUpdate method in a timely manner. The time to evoke
 	 * is determined by the source rates of both inputs
 	 */
-	private void evaluateJoinForIntervals() {
+	/*private void evaluateJoinForIntervals() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("Enter evaluateJoinForIntervals()");
+		}
 		long currentTime = System.currentTimeMillis();
 		long nextEvalTime = getNextEvalTime(currentTime);
 		
 		do {
 			currentTime = System.currentTimeMillis();
+			
 			if (nextEvalTime <= currentTime) {
 				generateAndUpdate();
 				nextEvalTime = getNextEvalTime(currentTime);
 			}
 		} while (true);
-		
-	}
+	}*/
 
 	private long getNextEvalTime(long currentTime) {
 		if ((currentTime + leftOperatorRate) < (currentTime + rightOperatorRate)) {
@@ -172,6 +188,30 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN close()");
 		}
+	}
+	
+	/**
+	 * This class runs the Timer for the running the join operation
+	 * at regular intervals
+	 * 
+	 * @author Praveen
+	 * 
+	 */
+	private class EvaluateTask extends TimerTask {
+
+		@Override
+		public void run() {
+			List<Output> resultItems = new ArrayList<Output>(1);
+			generateAndUpdate(resultItems);
+			long currentTime = System.currentTimeMillis();
+			nextEvalTime = getNextEvalTime(currentTime);
+			timer.schedule(new EvaluateTask(), 0, nextEvalTime);
+			if (!resultItems.isEmpty()) {
+				setChanged();
+				notifyObservers(resultItems);
+			}
+		}
+
 	}
 
 }

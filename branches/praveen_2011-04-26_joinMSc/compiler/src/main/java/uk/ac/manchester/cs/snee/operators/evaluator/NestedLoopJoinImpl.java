@@ -122,11 +122,11 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 	}
 
 	@Override
-	public void generateAndUpdate() {
+	public void generateAndUpdate(List<Output> resultItems) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER generateAndUpdate() for query " + m_qid);
 		}
-		List<Output> resultItems = new ArrayList<Output>(1);
+		//List<Output> resultItems = new ArrayList<Output>(1);
 
 		try {
 			//
@@ -171,10 +171,10 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 			 * null; }
 			 */
 
-			if (!resultItems.isEmpty()) {
+			/*if (!resultItems.isEmpty()) {
 				setChanged();
 				notifyObservers(resultItems);
-			}
+			}*/
 		} catch (SNEEException sneeException) {
 			logger.warn("Error processing join.", sneeException);
 		}
