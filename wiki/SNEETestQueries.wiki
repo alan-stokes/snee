@@ -7,7 +7,7 @@ Add your content here.
 
 = Details =
 
-===SELECT * Query===
+===SELECT ** Query===
 
 {{{
 "SELECT * FROM SeaDefence[NOW];" 120 "etc/query-parameters.xml"
