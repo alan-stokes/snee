@@ -28,6 +28,20 @@ Add your content here.
 }}}
 
 
+===Select attribute without alias and expression with alias Query===
+
+{{{
+"SELECT seaLevel, (s.seaLevel + 2) as sl FROM SeaDefence[NOW] s;" 120
+"etc/query-parameters.xml"
+}}}
+
+===Select attribute without alias and expression without alias Query===
+
+{{{
+"SELECT seaLevel, (s.seaLevel + 2) FROM SeaDefence[NOW] s;" 120
+"etc/query-parameters.xml"
+}}}
+
 ===Join Query with alias in SELECT clause===
 
 {{{
