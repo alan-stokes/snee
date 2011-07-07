@@ -7,20 +7,26 @@ Add your content here.
 
 = Details =
 
-===Linear Regression Query===
+===Select * Query===
 
 {{{
-"SELECT sd.sealevel, lr.a * sd.sealevel + lr.b FROM
-   (SELECT    (T.n*S.sum_xy - T.sum_y * T.sum_x ) / ( T.n * T.sum_sqr_x - T.sum_x * T.sum_x ) as a,        
-      ( T.sum_y * T.sum_sqr_x - T.sum_x * T.sum_xy ) / ( T.n * T.sum_sqr_x - T.sum_x * T.sum_x ) as b 
-   FROM (SELECT COUNT( S.sealevel) as n, SUM( S.sv ) as sum_xy, 
-      SUM( S.sealevel ) as sum_x, SUM(S.voltage ) as sum_y, SUM(S.sealevel * S.sealevel ) as sum_sqr_x    
-         FROM ( SELECT seaLevel, voltage, seaLevel*voltage as sv 
-            FROM SeaDefenceEast[FROM NOW TO NOW SLIDE 5000 seconds] ) S ) T ) lr, 
-   seadefence[now] sd;" 120 "etc/query-parameters.xml"
+"SELECT * FROM SeaDefence[NOW];" 120 "etc/query-parameters.xml"
 }}}
 
-Doesn't work with alias on outer query due to issue 28.
+===Select attributes without aliases Query===
+
+{{{
+"SELECT s.seaLevel FROM SeaDefence[NOW] s;" 120
+"etc/query-parameters.xml"
+}}}
+
+===Select attributes with aliases Query===
+
+{{{
+"SELECT s.seaLevel as sl FROM SeaDefence[NOW] s;" 120
+"etc/query-parameters.xml"
+}}}
+
 
 ===Join Query with alias in SELECT clause===
 
@@ -39,3 +45,18 @@ Doesn't work with alias on outer query due to issue 28.
 }}}
 
 works!
+
+===Linear Regression Query===
+
+{{{
+"SELECT sd.sealevel, lr.a * sd.sealevel + lr.b FROM
+   (SELECT    (T.n*S.sum_xy - T.sum_y * T.sum_x ) / ( T.n * T.sum_sqr_x - T.sum_x * T.sum_x ) as a,        
+      ( T.sum_y * T.sum_sqr_x - T.sum_x * T.sum_xy ) / ( T.n * T.sum_sqr_x - T.sum_x * T.sum_x ) as b 
+   FROM (SELECT COUNT( S.sealevel) as n, SUM( S.sv ) as sum_xy, 
+      SUM( S.sealevel ) as sum_x, SUM(S.voltage ) as sum_y, SUM(S.sealevel * S.sealevel ) as sum_sqr_x    
+         FROM ( SELECT seaLevel, voltage, seaLevel*voltage as sv 
+            FROM SeaDefenceEast[FROM NOW TO NOW SLIDE 5000 seconds] ) S ) T ) lr, 
+   seadefence[now] sd;" 120 "etc/query-parameters.xml"
+}}}
+
+Doesn't work with alias on outer query due to issue 28.
