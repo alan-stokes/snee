@@ -147,7 +147,7 @@ works!
 ===Linear Regression Query===
 
 {{{
-""select sd.sealevel, lr.a * sd.sealevel + lr.b
+"SELECT sd.sealevel, lr.a * sd.sealevel + lr.b
 from (
 	SELECT	( U.n*U.sum_xy - U.sum_y * U.sum_x ) / ( U.n * U.sum_xx - U.sum_x * U.sum_x ) as a,
 		( U.sum_y * U.sum_xx - U.sum_x * U.sum_xy ) / ( U.n * U.sum_xx - U.sum_x * U.sum_x ) as b 
