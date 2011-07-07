@@ -77,7 +77,7 @@ Add your content here.
 "etc/query-parameters.xml"
 }}}
 
-===Several aggregation functions***
+===Several aggregation functions===
 
 {{{
 "SELECT avg(s.seaLevel) as savg, min(seaLevel), max(seaLevel), count(seaLevel) FROM SeaDefence[NOW] s;" 120
