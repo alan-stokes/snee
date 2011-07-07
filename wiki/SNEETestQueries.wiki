@@ -1,0 +1,16 @@
+#summary SNEE test query suite
+
+= Introduction =
+
+Add your content here.
+
+
+= Details =
+
+{{{
+"SELECT sd.sealevel, lr.a * sd.sealevel + lr.b FROM
+       (SELECT    (S.n*S.sum_xy - S.sum_y * S.sum_x ) / ( S.n * S.sum_sqr_x - S.sum_x * S.sum_x ) as a,        
+       		  	( S.sum_y * S.sum_sqr_x - S.sum_x * S.sum_xy ) / ( S.n * S.sum_sqr_x - S.sum_x * S.sum_x ) as b 
+			FROM ( 	  SELECT COUNT( S.sealevel) as n, SUM( S.sv ) as sum_xy, SUM( S.sealevel ) as sum_x, SUM(S.voltage ) as sum_y, SUM(S.sealevel * S.sealevel ) as sum_sqr_x    
+			       	      	 FROM ( SELECT seaLevel, voltage, seaLevel*voltage FROM SeaDefenceEast[FROM NOW TO NOW SLIDE 5000 seconds] ) S ) S ) lr, seadefence[now] sd;" 120 "etc/query-parameters.xml"
+}}}
