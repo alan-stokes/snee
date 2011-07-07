@@ -148,11 +148,11 @@ works!
 
 {{{
 "SELECT sd.sealevel, lr.a * sd.sealevel + lr.b FROM
-   (SELECT    (T.n*S.sum_xy - T.sum_y * T.sum_x ) / ( T.n * T.sum_sqr_x - T.sum_x * T.sum_x ) as a,        
+   (SELECT    (T.n*T.sum_xy - T.sum_y * T.sum_x ) / ( T.n * T.sum_sqr_x - T.sum_x * T.sum_x ) as a,        
       ( T.sum_y * T.sum_sqr_x - T.sum_x * T.sum_xy ) / ( T.n * T.sum_sqr_x - T.sum_x * T.sum_x ) as b 
-   FROM (SELECT COUNT( S.sealevel) as n, SUM( S.sv ) as sum_xy, 
-      SUM( S.sealevel ) as sum_x, SUM(S.voltage ) as sum_y, SUM(S.sealevel * S.sealevel ) as sum_sqr_x    
-         FROM ( SELECT seaLevel, voltage, seaLevel*voltage as sv 
+   FROM (SELECT COUNT( S.x) as n, SUM( S.xy ) as sum_xy, 
+      SUM( S.x ) as sum_x, SUM(S.y ) as sum_y, SUM(S.sqr_x) as sum_sqr_x    
+         FROM ( SELECT seaLevel as x, voltage as y, seaLevel*voltage as xy, seaLevel^2 as sqr_x 
             FROM SeaDefenceEast[FROM NOW TO NOW SLIDE 5000 seconds] ) S ) T ) lr, 
    seadefence[now] sd;" 120 "etc/query-parameters.xml"
 }}}
