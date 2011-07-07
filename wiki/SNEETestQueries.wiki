@@ -19,3 +19,17 @@ Add your content here.
             FROM SeaDefenceEast[FROM NOW TO NOW SLIDE 5000 seconds] ) S ) T ) lr, 
    seadefence[now] sd;" 120 "etc/query-parameters.xml"
 }}}
+
+Doesn't work with alias on outer query due to issue 28.
+
+===Join Query with alias in SELECT clause===
+
+"SELECT e.sealevel as x, w.sealevel as y FROM SeaDefenceEast[NOW] e, SeaDefenceWest[NOW] w;" 120 "etc/query-parameters.xml"
+
+Doesn't work with alias on outer query due to issue 28.
+
+===Join Query without alias in SELECT clause===
+
+"SELECT e.sealevel, w.sealevel FROM SeaDefenceEast[NOW] e, SeaDefenceWest[NOW] w;" 120 "etc/query-parameters.xml"
+
+works!
