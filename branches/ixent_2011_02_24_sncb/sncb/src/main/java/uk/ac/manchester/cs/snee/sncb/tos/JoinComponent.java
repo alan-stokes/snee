@@ -126,11 +126,6 @@ public class JoinComponent extends NesCComponent {
 					"rightInQueue[tmpRightInHead].", 
 					leftInput, rightInput, target);
 				
-				//IG: Yuck - Christian I need you to sort this out!
-				//I did this to make the nesc code compile with epochs
-				expressionText = expressionText.replace(".evalTime", ".evalEpoch");
-				expressionText = expressionText.replace("_time", "_epoch");
-				
 				tupleConstructionBuff.append("\t\t\t\t\toutQueue[outTail]."
     				+ attrName + "=" + expressionText + ";\n");
 		}		
