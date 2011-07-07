@@ -7,7 +7,7 @@ Add your content here.
 
 = Details =
 
-===Select * Query===
+===SELECT * Query===
 
 {{{
 "SELECT * FROM SeaDefence[NOW];" 120 "etc/query-parameters.xml"
@@ -28,17 +28,38 @@ Add your content here.
 }}}
 
 
-===Select attribute without alias and expression with alias Query===
+===SELECT attribute without alias and expression with alias Query===
 
 {{{
 "SELECT seaLevel, (s.seaLevel + 2) as sl FROM SeaDefence[NOW] s;" 120
 "etc/query-parameters.xml"
 }}}
 
-===Select attribute without alias and expression without alias Query===
+===SELECT attribute without alias and expression without alias Query===
 
 {{{
 "SELECT seaLevel, (s.seaLevel + 2) FROM SeaDefence[NOW] s;" 120
+"etc/query-parameters.xml"
+}}}
+
+===SELECT query with power function===
+
+{{{
+"SELECT s.seaLevel, s.voltage^ 2 FROM SeaDefence[NOW] s;" 120
+"etc/query-parameters.xml"
+}}}
+
+===SELECT query with square root function===
+
+{{{
+"SELECT s.seaLevel, sqrt(s.seaLevel) FROM SeaDefence[NOW] s;" 120
+"etc/query-parameters.xml"
+}}}
+
+===SELECT with ABS function===
+
+{{{
+"SELECT (s.seaLevel - s.voltage), abs(s.seaLevel - s.voltage)FROM SeaDefence[NOW] s;" 120
 "etc/query-parameters.xml"
 }}}
 
