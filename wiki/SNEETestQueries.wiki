@@ -63,6 +63,44 @@ Add your content here.
 "etc/query-parameters.xml"
 }}}
 
+===Average query without alias===
+
+{{{
+"SELECT avg(s.seaLevel) FROM SeaDefence[NOW] s;" 120
+"etc/query-parameters.xml"
+}}}
+
+===Average query with alias===
+
+{{{
+"SELECT avg(s.seaLevel) as savg FROM SeaDefence[NOW] s;" 120
+"etc/query-parameters.xml"
+}}}
+
+===Several aggregation functions***
+
+{{{
+"SELECT avg(s.seaLevel) as savg, min(seaLevel), max(seaLevel), count(seaLevel) FROM SeaDefence[NOW] s;" 120
+"etc/query-parameters.xml"
+}}}
+
+===Standard deviation query===
+
+{{{
+"SELECT stdev(s.seaLevel) FROM SeaDefence[NOW] s;" 120
+"etc/query-parameters.xml"
+}}}
+
+===Overtopping query over NOW===
+
+{{{
+"SELECT stdev(s.seaLevel) as sstdev, avg(seaLevel) as savg, 
+   max(seaLevel) as smax FROM SeaDefence[NOW] s;" 120
+"etc/query-parameters.xml"
+}}}
+
+===TODO: some time window test queries===
+
 ===Join Query with alias in SELECT clause===
 
 {{{
