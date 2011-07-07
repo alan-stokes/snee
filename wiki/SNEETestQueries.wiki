@@ -91,6 +91,31 @@ Add your content here.
 "etc/query-parameters.xml"
 }}}
 
+===Aggregation containing simple mathematical expression===
+
+{{{
+"SELECT avg(seaLevel * 3) as savg FROM SeaDefence[NOW] s;"
+120 "etc/query-parameters.xml"
+}}}
+
+Doesn't work due to issue 29.
+
+===Aggregation containing mathematical expression with more than one attribute===
+
+{{{
+"SELECT avg(seaLevel + voltage) as savg FROM SeaDefence[NOW] s;"
+120 "etc/query-parameters.xml"
+}}}
+
+Doesn't work due to issue 29.
+
+{{{
+"SELECT avg(seaLevel * seaLevel) as savg FROM SeaDefence[NOW] s;"
+120 "etc/query-parameters.xml"
+}}}
+
+Doesn't work due to issue 29.
+
 ===Overtopping query over NOW===
 
 {{{
