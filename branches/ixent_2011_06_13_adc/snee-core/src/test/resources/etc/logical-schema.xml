@@ -93,5 +93,50 @@
           	<type class ="boolean"/>
          </column>
      </table>
+	
+	  <stream name="HerneBay_Tide" type="push">
+	  	<column name="Timestamp">
+	  		<type class="integer"/>
+	  	</column>
+	  	<column name="DateTime">
+	  		<type class="timestamp"/>
+	  	</column>
+	  	<column name="observed">
+	  		<type class="decimal"/>
+	  	</column>
+	  	<column name="Tz">
+	  		<type class="decimal"/>
+	  	</column>
+	  	<column name="Hs">
+	  		<type class="decimal"/>
+	  	</column>
+	  	<column name="Hmax">
+	  		<type class="decimal"/>
+	  	</column>
+	  	<column name="Tp">
+	  		<type class="decimal"/>
+	  	</column>
+	  </stream>
+     
+     <stream name="HerneBay_Met" type="push">
+     	<column name="timestamp">
+     		<type class="timestamp"/>
+     	</column>
+         <column name="Air_pressure">
+          	<type class ="float"/>
+         </column>
+         <column name="Wind_speed">
+          	<type class ="integer"/>
+         </column>
+         <column name="Gust_speed">
+          	<type class ="boolean"/>
+         </column>
+         <column name="WDir">
+          	<type class ="string"/>
+         </column>
+         <column name="TAir">
+          	<type class ="decimal"/>
+         </column>
+     </stream>
 
 </schema>

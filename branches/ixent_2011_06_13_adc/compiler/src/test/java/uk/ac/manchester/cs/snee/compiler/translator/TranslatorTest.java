@@ -488,7 +488,7 @@ public class TranslatorTest {
 		assertEquals(1, op.getAttributes().size());
 		Attribute attribute = op.getAttributes().get(0);
 		assertTrue(attribute.getAttributeDisplayName().
-				equalsIgnoreCase(".4523 + 60"));
+				equalsIgnoreCase("expr1"));
 		assertTrue(attribute.getAttributeSchemaName().
 				equalsIgnoreCase("4523 + 60"));
 		assertTrue(attribute.isConstant());
