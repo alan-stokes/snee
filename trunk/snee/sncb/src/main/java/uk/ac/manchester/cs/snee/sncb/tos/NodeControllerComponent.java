@@ -35,13 +35,12 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 
-public class NodeControllerComponent extends NesCComponent implements
-	TinyOS2Component {
+public class NodeControllerComponent extends NesCComponent {
 
     public NodeControllerComponent(final String name, final NesCConfiguration config,
-    		int tosVersion, boolean tossimFlag) {
+    		boolean tossimFlag) {
 	    
-    	super(config, tosVersion, tossimFlag);
+    	super(config, tossimFlag);
     	this.id = name;
     	this.systemComponent = true;
     }

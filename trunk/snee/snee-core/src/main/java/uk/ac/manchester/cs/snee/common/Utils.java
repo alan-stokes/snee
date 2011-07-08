@@ -46,6 +46,8 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
@@ -378,6 +380,19 @@ public class Utils {
 	    	System.out.println(line);
 	    	output.append(line + "\n");
 	    }
+	    
+
+	    try {
+			proc.waitFor();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    if (proc.exitValue()!=0) {
+	    	System.err.println("an error has occurred");
+	    	System.exit(-1);
+	    }
+	    
 	    if (logger.isDebugEnabled())
 			logger.debug("RETURN runExternalProgram()");
 	    return output.toString();
@@ -419,5 +434,21 @@ public class Utils {
 		    stream.close();
 		  }
 		}
+
+	//http://scriptche.blogspot.com/2011/04/add-hashset-integers-to-int-array-in.html
+	public static int [] hashset_to_int_array(HashSet<Integer> hs){  
+	    
+		  int array[] = new int[hs.size()];  
+		    
+		  Iterator itr = hs.iterator();  
+		  
+		  int i=0;  
+		  
+		  while(itr.hasNext()){  
+		  array[i++] = Integer.parseInt(itr.next().toString());  
+		  }  
+		  
+		  return array;  
+		 }  
 	
 }

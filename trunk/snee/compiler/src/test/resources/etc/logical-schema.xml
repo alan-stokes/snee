@@ -58,6 +58,42 @@
          </column>
      </stream>
 
+      <stream name="PushStream2" type="push">
+    	<column name="timestamp">
+        	<type class ="integer"/>
+         </column>
+         <column name="integerColumn">
+          	<type class ="integer"/>
+         </column>
+         <column name="floatColumn">
+          	<type class ="float"/>
+         </column>
+         <column name="stringColumn">
+          	<type class ="string"/>
+         </column>
+         <column name="boolColumn">
+          	<type class ="boolean"/>
+         </column>
+     </stream>
+
+      <stream name="PushStream3" type="push">
+    	<column name="timestamp">
+        	<type class ="integer"/>
+         </column>
+         <column name="integerColumn">
+          	<type class ="integer"/>
+         </column>
+         <column name="floatColumn">
+          	<type class ="float"/>
+         </column>
+         <column name="stringColumn">
+          	<type class ="string"/>
+         </column>
+         <column name="boolColumn">
+          	<type class ="boolean"/>
+         </column>
+     </stream>
+
       <stream name="SensorStream" type="pull">
     	<column name="timestamp">
         	<type class ="integer"/>

@@ -120,7 +120,10 @@ public class AgendaUtils {
 
 		    Long sTime;
 		    do {
-			sTime = startTimeIter.next();
+		    	sTime = startTimeIter.next();
+		    	if (sTime==null) {
+		    		System.err.println("Corrupt agenda.\n");
+		    	}
 			ypos += CELL_HEIGHT;
 		    } while (sTime.intValue() != task.getStartTime());
 

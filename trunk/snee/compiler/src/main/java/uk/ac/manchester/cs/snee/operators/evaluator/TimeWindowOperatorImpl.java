@@ -46,10 +46,8 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 			logger.debug("ENTER TimeWindowOperatorImpl() " + op);
 		}
 		// Set the size of the slide in milliseconds
-		slide = windowOp.getTimeSlide() * 1000;
+		slide = windowOp.getTimeSlide();
 		slideWindowUnits = calculateWindowUnit();
-		windowStart = windowStart * 1000;
-		windowEnd = windowEnd * 1000;
 
 		// Instantiate the buffer for storing tuples
 		int maxBufferSize = SNEEProperties.getIntSetting(

@@ -16,12 +16,15 @@ import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 public class TinyOS_SNCB implements SNCB {
@@ -40,8 +43,10 @@ public class TinyOS_SNCB implements SNCB {
 
 	private boolean useNodeController = true;
 
-	private CodeGenTarget target = CodeGenTarget.TMOTESKY_T2;
+	private CodeGenTarget target = CodeGenTarget.TELOSB_T2; //default
 	
+	private String targetDirName; 
+
 	// Is the network running?
 	private static boolean isStarted = false;
 	private SerialPortMessageReceiver mr;
@@ -76,11 +81,12 @@ public class TinyOS_SNCB implements SNCB {
 					.getSetting(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET));
 			}
 			// Node controller is only compatible with Tmote Sky/Tiny OS2
-			if (this.target != CodeGenTarget.TMOTESKY_T2 && useNodeController) {
+			if (this.target != CodeGenTarget.TELOSB_T2 && useNodeController) {
 				logger.warn("Node controller is only compatible with Tmote Sky/Tiny OS2. " +
 						"Excluding controller from generated code.");
 				useNodeController = false;
 			}
+			targetDirName = target.toString().toLowerCase();
 			
 			//More TinyOS environment variables
 			if (serialPort != null) {
@@ -90,7 +96,7 @@ public class TinyOS_SNCB implements SNCB {
 		} catch (Exception e) {
 			//If an error occurs (e.g., TinyOS is not installed so motelist command fails) serialPort is null.
 			this.serialPort = null;
-			this.target = CodeGenTarget.TMOTESKY_T2;
+			this.target = CodeGenTarget.TELOSB_T2;
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN TinyOS_SNCB()");
@@ -150,7 +156,7 @@ public class TinyOS_SNCB implements SNCB {
 
 	@Override
 	public SerialPortMessageReceiver register(SensorNetworkQueryPlan qep,
-			String queryOutputDir, CostParameters costParams)
+			String queryOutputDir, MetadataManager metadata)
 			throws SNCBException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER register()");
@@ -163,7 +169,7 @@ public class TinyOS_SNCB implements SNCB {
 
 			logger.trace("Generating TinyOS/nesC code for query plan.");
 			System.out.println("Generating TinyOS/nesC code for query plan.");
-			generateNesCCode(qep, queryOutputDir, costParams);
+			generateNesCCode(qep, queryOutputDir, metadata);
 
 			if (demoMode) {
 				System.out.println("nesC code generation complete.\n");
@@ -181,9 +187,21 @@ public class TinyOS_SNCB implements SNCB {
 			}
 
 			if (!this.useNodeController || this.serialPort==null) {
-				System.out
-						.println("Not using node controller, or no mote plugged in, so unable to disseminate query plan; ");
-				System.out.println("Please proceed manually.  ");
+				System.out.println("Not using node controller, or no mote "+
+						"plugged in, so unable to send query plan using" +
+						"Over-the-air Programmer. ");
+				System.out.println("Please proceed using manual commands.\n");
+				if (this.target == CodeGenTarget.TELOSB_T2) {
+					TinyOS_SNCB_Utils.printTelosBCommands(queryOutputDir, qep,
+							this.targetDirName, this.serialPort);
+				} else if (this.target == CodeGenTarget.TOSSIM_T2) {
+					TinyOS_SNCB_Utils.printTossimCommands(queryOutputDir,
+							this.targetDirName);
+				} else if (this.target == CodeGenTarget.AVRORA_MICA2_T2 ||
+						this.target == CodeGenTarget.AVRORA_MICAZ_T2) {
+					TinyOS_SNCB_Utils.printAvroraCommands(queryOutputDir, qep, 
+							this.targetDirName, this.target);					
+				}
 				System.exit(0);
 			}
 
@@ -215,8 +233,9 @@ public class TinyOS_SNCB implements SNCB {
 		return mr;
 	}
 
+	
 	private void generateNesCCode(SensorNetworkQueryPlan qep,
-			String queryOutputDir, CostParameters costParams)
+			String queryOutputDir, MetadataManager metadata)
 			throws IOException, SchemaMetadataException, TypeMappingException,
 			OptimizationException, CodeGenerationException {
 		// TODO: move some of these to an sncb .properties file
@@ -232,7 +251,7 @@ public class TinyOS_SNCB implements SNCB {
 		boolean showLocalTime = false;
 
 		TinyOSGenerator codeGenerator = new TinyOSGenerator(target, combinedImage, queryOutputDir,
-				costParams, controlRadioOff, enablePrintf, useStartUpProtocol,
+				metadata, controlRadioOff, enablePrintf, useStartUpProtocol,
 				enableLeds, usePowerManagement, deliverLast, adjustRadioPower,
 				includeDeluge, debugLeds, showLocalTime, useNodeController);
 		// TODO: in the code generator, need to connect controller components to
@@ -244,11 +263,12 @@ public class TinyOS_SNCB implements SNCB {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER compileNesCCode()");
 		String nescOutputDir = System.getProperty("user.dir") + "/"
-				+ queryOutputDir + "tmotesky_t2";
+				+ queryOutputDir + targetDirName;
 		String pythonScript = Utils
 				.getResourcePath("etc/sncb/tools/python/utils/compileNesCCode.py");
 		String nescDirParam = "--nesc-dir=" + nescOutputDir;
-		String params[] = { pythonScript, nescDirParam };
+		String targetDirNameParam = "--compile-target=" + targetDirName;
+		String params[] = { pythonScript, nescDirParam, targetDirNameParam };
 		Utils.runExternalProgram("python", params, this.tinyOSEnvVars,
 				workingDir);
 		if (logger.isTraceEnabled())
@@ -262,13 +282,13 @@ public class TinyOS_SNCB implements SNCB {
 		// TODO: need to set up plumbing for query result collection (using
 		// mig?)
 		String nescOutputDir = System.getProperty("user.dir") + "/"
-				+ queryOutputDir + "tmotesky_t2";
+				+ queryOutputDir + targetDirName;
 		String nesCHeaderFile = nescOutputDir + "/mote" + qep.getGateway()
 				+ "/QueryPlan.h";
 		System.out.println(nesCHeaderFile);
 		String outputJavaFile = System.getProperty("user.dir") + "/"
 				+ queryOutputDir + "DeliverMessage.java";
-		String params[] = { "java", "-target=null",
+		String params[] = { "java", "-target=telosb",
 				"-java-classname=DeliverMessage", nesCHeaderFile,
 				"DeliverMessage", "-o", outputJavaFile };
 		Utils.runExternalProgram("mig", params, this.tinyOSEnvVars, workingDir);
@@ -295,7 +315,7 @@ public class TinyOS_SNCB implements SNCB {
 		// Message msg = new DeliverMessage(); // needed for web service, for
 		// now.
 		Message msg = (Message) msgObj;
-		DeliverOperator delOp = (DeliverOperator) qep.getLAF()
+		SensornetDeliverOperator delOp = (SensornetDeliverOperator) qep.getDAF()
 				.getRootOperator();
 		mr = new SerialPortMessageReceiver("serial@"
 				+ this.serialPort + ":telos", delOp);
@@ -310,7 +330,7 @@ public class TinyOS_SNCB implements SNCB {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER disseminateQueryPlanImages()");
 		String nescOutputDir = System.getProperty("user.dir") + "/"
-				+ queryOutputDir + "tmotesky_t2";
+				+ queryOutputDir + targetDirName;
 		String gatewayID = "" + qep.getGateway();
 		Iterator<Site> siteIter = qep.siteIterator(TraversalOrder.POST_ORDER);
 		while (siteIter.hasNext()) {

@@ -34,12 +34,15 @@ public class WhereScheduler {
 	private Logger logger = 
 		Logger.getLogger(WhereScheduler.class.getName());
 
+	private boolean removeRedundantExchanges;
+	
 	/**
 	 * Constructor for Sensor Network Where-Scheduling Decision Maker.
 	 */
-	public WhereScheduler() {
+	public WhereScheduler(boolean removeRedundantExchanges) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER WhereScheduler()");
+		this.removeRedundantExchanges = removeRedundantExchanges;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN WhereScheduler()");
 	}
@@ -59,11 +62,15 @@ public class WhereScheduler {
 	throws SNEEException, SchemaMetadataException, OptimizationException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER doWhereScheduling() with " + paf.getID());
-		DAF faf = partitionPAF(paf, rt, costParams, queryName);
-		placeFragments(queryName, faf, rt);
+		DAF daf = partitionPAF(paf, rt, costParams, queryName);
+		placeFragments(queryName, daf, rt);
+    	if (this.removeRedundantExchanges) {
+		    daf.removeRedundantRecursiveFragments();
+	    	daf.removeRedundantExchanges();
+	    }
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN doWhereScheduling()");
-		return faf; //DAF
+		return daf;
 	}
 	
 	

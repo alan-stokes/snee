@@ -77,10 +77,6 @@ implements LogicalOperator {
 		return false;
 	}
 
-	public boolean isRecursive() {
-		return false;
-	}
-
 	/** {@inheritDoc}
 	 * @return false;
 	 */

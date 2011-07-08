@@ -33,22 +33,22 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.metadata.CostParameters;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
+import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class DeliverComponent extends NesCComponent implements
-	TinyOS1Component, TinyOS2Component {
+public class DeliverComponent extends NesCComponent {
 
 	SensornetDeliverOperator op;
 
@@ -57,12 +57,13 @@ public class DeliverComponent extends NesCComponent implements
     CostParameters costParams;
 
     public DeliverComponent(final SensornetDeliverOperator op, final SensorNetworkQueryPlan plan, 
-    final NesCConfiguration fragConfig, int tosVersion, boolean tossimFlag, boolean debugLeds, CostParameters costParams) {
+    final NesCConfiguration fragConfig, boolean tossimFlag, boolean debugLeds, CostParameters costParams,
+    CodeGenTarget target) {
 
-		super(fragConfig, tosVersion, tossimFlag, debugLeds);
+		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
 		this.costParams = costParams;
     }
 
@@ -78,9 +79,6 @@ public class DeliverComponent extends NesCComponent implements
     	try {
 			final HashMap<String, String> replacements = new HashMap<String, String>();
 		
-			if (tosVersion==1) {
-				replacements.put("__ITOA_DECL__", "#include \"itoa.h\"");
-			}
 			replacements.put("__OPERATOR_DESCRIPTION__", this.op.toString()
 				.replace("\"", ""));
 			replacements.put("__OUTPUT_TUPLE_TYPE__", CodeGenUtils
@@ -117,11 +115,18 @@ public class DeliverComponent extends NesCComponent implements
 		
 			final List<Attribute> attributes = this.op.getAttributes();
 		    String comma = "";
-			for (int i = 0; i < attributes.size(); i++) {
-				String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
-				String deliverName = CodeGenUtils.getDeliverName(attributes.get(i));
+			for (Attribute attr : attributes) {
+				String attrName = CodeGenUtils.getNescAttrName(attr);
+				String deliverName = attr.getAttributeDisplayName();
 		
-			    displayTupleBuff3.append(comma+deliverName+"=%d");
+			    displayTupleBuff3.append(comma+deliverName);
+	  			if (attr instanceof EvalTimeAttribute || attr instanceof IDAttribute
+	  					|| attr instanceof TimeAttribute ) {
+	  				displayTupleBuff3.append("=%d"); 
+	  			} else {
+	  				displayTupleBuff3.append("=%g");
+	  			}
+	  			
 			    displayTupleBuff4.append(comma+"inQueue[inHead]."+attrName);
 		
 			    displayTupleBuff5.append("\t\t\t\tstrcat(deliverStr, \""

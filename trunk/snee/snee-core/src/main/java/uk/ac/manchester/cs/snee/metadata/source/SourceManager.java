@@ -23,6 +23,7 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapper;
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapperImpl;
 import uk.ac.manchester.cs.snee.datasource.webservice.SourceWrapper;
@@ -35,6 +36,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
+import uk.ac.manchester.cs.snee.sncb.SensorType;
 
 public class SourceManager {
 
@@ -50,6 +52,9 @@ public class SourceManager {
 	private Map<String, ExtentMetadata> _schema;
 
 	private Types _types;
+
+	private Map<String, SensorType> _sensorTypes = 
+		new HashMap<String, SensorType>();
 	
 	public SourceManager(Map<String, ExtentMetadata> schema, Types types) {
 		_schema = schema;
@@ -165,9 +170,51 @@ public class SourceManager {
 					sourceName, extentNames, extentsElem, topologyFile, 
 					resFile, gateways, sncb);
 			_sources.add(source);
+			
+			parseAttributeSensorTypes(wsnElem);
+			
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN addSensorNetworkSources()");
+	}
+
+	private void parseAttributeSensorTypes(Element wsnElem) 
+	throws MetadataException {
+		NodeList extentElems = wsnElem.getElementsByTagName("extent");
+		for (int j=0; j<extentElems.getLength(); j++) {
+			Element extentElem = (Element)extentElems.item(j);
+			String extentName = ""+extentElem.getAttributeNode("name").getNodeValue().toLowerCase();
+			if (!_schema.containsKey(extentName)) {
+				throw new MetadataException("Physical schema refers "+
+						"to extent '"+extentName+"' which is not "+
+				"present in the logical schema.");
+			}
+			ExtentMetadata em = this._schema.get(extentName);
+			
+			NodeList sensorAttrsElems = extentElem.getElementsByTagName("attribute");
+			for (int k=0; k<sensorAttrsElems.getLength(); k++) {
+				Element attrSensorTypeElem = (Element)sensorAttrsElems.item(k);
+				
+				String attrName = ""+attrSensorTypeElem.getAttributeNode("name").getNodeValue().toLowerCase();
+				if (!em.hasAttribute(attrName)) {
+					throw new MetadataException("Physical schema refers "+
+							"to attribute '"+attrName+"' in extent '"+extentName+
+							"' which is not present in the logical schema.");					
+				}
+				Attribute attr = em.getAttribute(attrName);
+				
+				String attrSensorType = ""+attrSensorTypeElem.getAttributeNode("sensorType").getNodeValue().toLowerCase();
+				SensorType sensorType = SensorType.parseSensorType(attrSensorType);
+				if (sensorType == null) {
+					throw new MetadataException("Physical schema refers "+
+							"to invalid sensor type '"+attrSensorType+
+							"' for attribute '"+attrName+"' in extent '"+extentName+
+							"'.");
+				}
+				
+				_sensorTypes.put(generateAttributeKey(attr), sensorType);
+			}
+		}
 	}
 
 	private Element parseSensorNetworkExtentNames(Element wsnElem,
@@ -496,4 +543,16 @@ public class SourceManager {
 		throw new SourceDoesNotExistException(msg);
 	}
 	
+	/**
+	 * Given an attribute, returns the corresponding sensor type it is mapped to.
+	 * @param attr
+	 * @return
+	 */
+	public SensorType getAttributeSensorType(Attribute attr) {
+		return this._sensorTypes.get(generateAttributeKey(attr));
+	}
+	
+	private String generateAttributeKey(Attribute attr) {
+		return attr.getExtentName()+ "_"+ attr.getAttributeSchemaName();
+	}
 }

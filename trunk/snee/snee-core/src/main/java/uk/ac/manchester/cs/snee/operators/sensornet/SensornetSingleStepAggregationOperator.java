@@ -1,11 +1,16 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -22,6 +27,8 @@ public class SensornetSingleStepAggregationOperator extends SensornetOperatorImp
 	
 	AggregationOperator aggrOp;
 	
+	ArrayList<Attribute> incrAggrAttributes;
+
 	public SensornetSingleStepAggregationOperator(LogicalOperator op, CostParameters costParams) 
 	throws SNEEException, SchemaMetadataException {
 		super(op, costParams);
@@ -32,6 +39,7 @@ public class SensornetSingleStepAggregationOperator extends SensornetOperatorImp
 		}
 		aggrOp = (AggregationOperator) op;
 		this.setNesCTemplateName("aggregation");
+		incrAggrAttributes = SensornetAggrInitOperator.getIncrementalAggregationAttributes(aggrOp);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SensornetSingleStepAggregationOperator()");
 		}		
@@ -71,5 +79,24 @@ public class SensornetSingleStepAggregationOperator extends SensornetOperatorImp
 		return getOverheadTimeCost()
 				+ costParams.getCopyTuple() 
 				+ costParams.getDoCalculation() * tuples;
+	}
+
+	public boolean isSplittable() {
+		return aggrOp.isSplittable();
+	}
+	
+	//delegate except for exchange operators or aggregates
+	public List<Attribute> getAttributes() {
+		ArrayList<Attribute> outputAttributes = new ArrayList<Attribute>();
+		
+		for (Attribute attr : this.getLogicalOperator().getAttributes()) {
+			outputAttributes.add(attr);
+		}
+		return outputAttributes;
+	}
+	
+	
+	public ArrayList<Attribute> getIncrAggrAttributes() {
+		return incrAggrAttributes;
 	}
 }

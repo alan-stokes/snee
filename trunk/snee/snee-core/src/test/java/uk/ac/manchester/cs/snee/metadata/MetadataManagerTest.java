@@ -192,6 +192,9 @@ public class MetadataManagerTest extends EasyMockSupport {
 	UnsupportedAttributeTypeException, SourceMetadataException, 
 	TopologyReaderException, CostParametersException, SNCBException 
 	{
+		props.setProperty(SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION, "false");
+		SNEEProperties.initialise(props);
+		
 		MetadataManager schema = new MetadataManager(null);//{
 //			private SourceManager createSourceManager() {
 //				return mockSourceManager;

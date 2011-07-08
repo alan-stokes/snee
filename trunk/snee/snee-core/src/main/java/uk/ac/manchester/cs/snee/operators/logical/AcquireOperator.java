@@ -41,6 +41,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
@@ -66,7 +67,7 @@ public class AcquireOperator extends InputOperator {
      * before any expressions are applied.
      */
     private List<Attribute> acquiredAttributes;
-	
+
 	/**
 	 * Metadata about the types supported.
 	 */
@@ -76,8 +77,7 @@ public class AcquireOperator extends InputOperator {
 	 * Constructs a new Acquire operator.
 	 * 
 	 * @param extentMetaData Schema data about the extent
-	 * @param types type information as read in from the types file
-	 * @param source Metadata about data sources for the acquire extent
+	 * @param sources Metadata about data sources for the acquire extent
 	 * @param boolType type used for booleans
 	 * @throws SchemaMetadataException
 	 * @throws TypeMappingException
@@ -90,16 +90,20 @@ public class AcquireOperator extends InputOperator {
 		super(extentMetadata, source, boolType);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER AcquireOperator() with " + 
-					extentMetadata + " source=" + source.getSourceName());
+					extentMetadata + " #source=" + source.getSourceName());
 		}
 		this.setOperatorName("ACQUIRE");
 		this.setOperatorDataType(OperatorDataType.STREAM);
 		this._types=types;
+
+		this.extentName = extentMetadata.getExtentName();
+
 		updateSensedAttributes(); 
-		updateMetadataInfo(extentMetadata);
+		updateMetadataInfo(extentMetadata); //WHICH ORDER??
+		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN AcquireOperator()");
-	}
+	} 
 
 	/**
 	 * Sets up the attribute based on the schema.
@@ -107,24 +111,28 @@ public class AcquireOperator extends InputOperator {
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
 	 */
-	private void updateMetadataInfo(ExtentMetadata extentMetaData) 
+	private void updateMetadataInfo(ExtentMetadata extentMetadata) 
 	throws SchemaMetadataException, TypeMappingException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER addMetaDataInfo() with " +
-					extentMetaData);
+					extentMetadata);
 		}
 		outputAttributes = new ArrayList<Attribute>();
-//TODO: Localtime
-//		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
-//			outputAttributes.add(new LocalTimeAttribute()); //Ixent added this
-//		}		
-		inputAttributes = extentMetaData.getAttributes();
+		inputAttributes = extentMetadata.getAttributes();
 		outputAttributes.addAll(inputAttributes);
 //		sites =  sourceMetaData.getSourceNodes();
 		copyExpressions(outputAttributes);
 		acquiredAttributes = (ArrayList<Attribute>) outputAttributes;
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN addMetaDataInfo()");
+	}
+
+	/**
+	 * Returns a string representation of the operator.
+	 * @return Operator as a String.
+	 */
+	public String toString() {
+		return this.getText();
 	}
 
 	/** {@inheritDoc} */
@@ -134,14 +142,14 @@ public class AcquireOperator extends InputOperator {
 //		return Settings.LOGICAL_OPTIMIZATION_COMBINE_ACQUIRE_AND_SELECT;
 		return true;
 	}
-
+	
 	/** 
 	 * Updates the sensed Attributes.
 	 * Extracts the attributes from the expressions.
 	 * Those that are data attributes become the sensed attributes.
 	 */	
 	private void updateSensedAttributes() {
-		inputAttributes = new ArrayList<Attribute>();
+		inputAttributes  = new ArrayList<Attribute>();
 		for (int i = 0; i < expressions.size(); i++) {
 			//DataAttribute sensed =  sensedAttributes.get(i);
 			Expression expression = expressions.get(i);
@@ -175,14 +183,15 @@ public class AcquireOperator extends InputOperator {
 			List<Attribute> projectAttributes) 
 	throws OptimizationException {
 		//if no project to push down Do nothing.
-		if (projectAttributes.isEmpty()) {
+		if (projectAttributes.size() == 0) {
 			return false;
 		}
 
-		if (projectExpressions.isEmpty()) {
+		if (projectExpressions.size() == 0) {
 			//remove unrequired attributes. No expressions to accept
 			for (int i = 0; i < outputAttributes.size(); ) {
-				if (projectAttributes.contains(outputAttributes.get(i)))
+				if (projectAttributes.contains(outputAttributes.get(i)) ||
+						(outputAttributes.get(i) instanceof EvalTimeAttribute))
 					i++;
 				else {
 					outputAttributes.remove(i);

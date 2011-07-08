@@ -40,6 +40,7 @@ import java.util.logging.Logger;
 import uk.ac.manchester.cs.snee.common.graph.NodeImplementation;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 
 public class Site extends NodeImplementation {
 
@@ -246,6 +247,45 @@ public class Site extends NodeImplementation {
     	return this.numSources;
     }
 
+    /**
+     * Remove the given exchange components for this site.
+     * @param exchOp The exchange operator whose exchange components are to be removed.
+     */
+	public void removeExchangeComponents(SensornetExchangeOperator exchOp) {
+		HashSet<ExchangePart> exchCompsToRemove = new HashSet<ExchangePart>();		
+		Fragment sourceFrag = exchOp.getSourceFragment();
+		Fragment destFrag = exchOp.getDestFragment();
+		
+		//First identify the exchange components to be removed
+		//We assume that an exchange is uniquely identified by its source fragment and 
+		//destination fragment, which seems to be a reasonable assumption
+		Iterator<ExchangePart> exchCompIter = this.exchangeComponents.iterator();
+		while (exchCompIter.hasNext()) {
+			ExchangePart exchComp = exchCompIter.next();
+			if (exchComp.getSourceFrag()==sourceFrag && 
+					exchComp.getDestFrag()==destFrag) {
+				exchCompsToRemove.add(exchComp);
+			}
+		}
+		
+		//Now remove the exchange components which were previously identified
+		exchCompIter = exchCompsToRemove.iterator();
+		while (exchCompIter.hasNext()) {
+			ExchangePart exchComp = exchCompIter.next();
+			this.exchangeComponents.remove(exchComp);
+		}
+	}
+
+	
+	/**
+	 * Removes a given fragment which has been placed on this site.
+	 * @param frag The fragment to be removed
+	 */
+	public void removeFragment(Fragment frag) {
+		this.fragments.remove(frag);
+	}
+
+    
 //    /**
 //     * Remove the given exchange components for this site.
 //     * @param exchOp The exchange operator whose exchange components are to be removed.

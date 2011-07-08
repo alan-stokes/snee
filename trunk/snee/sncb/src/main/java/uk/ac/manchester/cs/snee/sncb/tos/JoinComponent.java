@@ -33,22 +33,19 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
-import uk.ac.manchester.cs.snee.operators.logical.PredicateOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class JoinComponent extends NesCComponent implements TinyOS1Component,
-	TinyOS2Component {
+public class JoinComponent extends NesCComponent {
 
     SensornetNestedLoopJoinOperator op;
 
@@ -56,11 +53,11 @@ public class JoinComponent extends NesCComponent implements TinyOS1Component,
 
     public JoinComponent(final SensornetNestedLoopJoinOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    int tosVersion, boolean tossimFlag, boolean debugLeds) {
-	super(fragConfig, tosVersion, tossimFlag, debugLeds);
+	    boolean tossimFlag, boolean debugLeds, CodeGenTarget target) {
+	super(fragConfig, tossimFlag, debugLeds, target);
 	this.op = op;
 	this.plan = plan;
-	this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
+	this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
     }
 
     @Override
@@ -94,7 +91,7 @@ public class JoinComponent extends NesCComponent implements TinyOS1Component,
 		    		"leftInQueue[leftInHead].",
 		    		"rightInQueue[tmpRightInHead].", 
 		    		op.getLeftChild().getAttributes(), 
-		    		op.getRightChild().getAttributes()));
+		    		op.getRightChild().getAttributes(), target));
 			
 			final StringBuffer tupleConstructionBuff = generateTupleConstruction();
 			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff.toString());
@@ -127,12 +124,7 @@ public class JoinComponent extends NesCComponent implements TinyOS1Component,
 				expressionText = CodeGenUtils.getNescText(
 					expressions.get(i), "leftInQueue[leftInHead].", 
 					"rightInQueue[tmpRightInHead].", 
-					leftInput, rightInput);
-				
-				//IG: Yuck - Christian I need you to sort this out!
-				//I did this to make the nesc code compile with epochs
-				expressionText = expressionText.replace(".evalTime", ".evalEpoch");
-				expressionText = expressionText.replace("_time", "_epoch");
+					leftInput, rightInput, target);
 				
 				tupleConstructionBuff.append("\t\t\t\t\toutQueue[outTail]."
     				+ attrName + "=" + expressionText + ";\n");

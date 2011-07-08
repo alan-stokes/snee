@@ -38,8 +38,7 @@ import java.io.IOException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 
-public class SerialAMSendComponent extends GenericNesCComponent implements
-	TinyOS2Component {
+public class SerialAMSendComponent extends GenericNesCComponent {
 
     public static String TYPE_NAME = "SerialAMSenderC";
 
@@ -58,7 +57,7 @@ public class SerialAMSendComponent extends GenericNesCComponent implements
 	    final NesCConfiguration config, final String activeMessageID,
 	    boolean tossimFlag) {
 	    	
-		super(config, TYPE_NAME, activeMessageID, 2, tossimFlag);
+		super(config, TYPE_NAME, activeMessageID, tossimFlag);
 		this.sourceSite = sourceSite;
 		this.sourceFrag = sourceFrag;
 		this.destSite = destSite;

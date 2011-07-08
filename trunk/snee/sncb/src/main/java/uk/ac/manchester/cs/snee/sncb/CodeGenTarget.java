@@ -36,12 +36,12 @@ package uk.ac.manchester.cs.snee.sncb;
 
 public enum CodeGenTarget {
 
-	TMOTESKY_T2, AVRORA_MICA2_T2, AVRORA_MICAZ_T2, TOSSIM_T2;
+	TELOSB_T2, AVRORA_MICA2_T2, AVRORA_MICAZ_T2, TOSSIM_T2;
 
 	public static CodeGenTarget parseCodeTarget(String s) {
 
-		if (s.equalsIgnoreCase("tmotesky_t2")) {
-			return TMOTESKY_T2;
+		if (s.equalsIgnoreCase("tmotesky_t2") || s.equalsIgnoreCase("telosb_t2")) {
+			return TELOSB_T2;
 		}
 		if (s.equalsIgnoreCase("avrora_mica2_t2")) {
 			return AVRORA_MICA2_T2;

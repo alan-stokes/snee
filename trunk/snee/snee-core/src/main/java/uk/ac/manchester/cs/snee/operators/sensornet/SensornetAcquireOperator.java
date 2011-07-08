@@ -58,12 +58,6 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 		return this.getCardinality(CardinalityType.PHYSICAL_MAX, node, daf);
 	}
 
-//	/** {@inheritDoc} */
-//	public int getOutputQueueCardinality(int numberOfInstances) {
-//		assert(numberOfInstances == sites.length);
-//		return this.getCardinality(CardinalityType.PHYSICAL_MAX);
-//	}
-
 	/**
 	 * The physical maximum size of the output.
 	 * 
@@ -88,18 +82,6 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 	throws SchemaMetadataException, TypeMappingException, OptimizationException {
 		return super.defaultGetDataMemoryCost(node, daf);
 	}
-	
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getCardinality(CardinalityType card, 
-//			Site node, DAF daf, boolean round) {
-//		AlphaBetaExpression result = new AlphaBetaExpression();
-//		if (Settings.MEASUREMENTS_MULTI_ACQUIRE >= 0) {
-//			result.addBetaTerm(Settings.MEASUREMENTS_MULTI_ACQUIRE);
-//		} else {
-//			result.addBetaTerm(1);
-//		}
-//		return result;
-//	}
 
 	/** {@inheritDoc} */
 	private double getTimeCost() {
@@ -117,18 +99,15 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 		return getTimeCost();
 	}
 
-//	/** {@inheritDoc} */
-//	public double getTimeCost(CardinalityType card, int numberOfInstances){
-//		assert(numberOfInstances == sites.length);
-//		return getTimeCost();		
-//	}
-
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getTimeExpression(
-//			CardinalityType card, Site node, 
-//			DAF daf, boolean round) {
-//		return new AlphaBetaExpression(getTimeCost(card, node, daf),0);
-//	}
+	//delegate except for exchange operators or incremental aggregates
+	public List<Attribute> getAttributes() {
+		return this.getLogicalOperator().getAttributes();
+	}
+	
+	//delegate
+	public String getExtentName() {
+		return acqOp.getExtentName();
+	}
 
 
 }

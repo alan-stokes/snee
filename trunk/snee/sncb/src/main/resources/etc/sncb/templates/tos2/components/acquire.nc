@@ -7,9 +7,21 @@ __HEADER__
 
 	__OUTPUT_TUPLE_TYPE__ outQueue[OUT_QUEUE_CARD];
 __READING_VAR_DECLS__
-  	int8_t outHead=-1;
-	int8_t outTail=0;
+  	int outHead=-1;
+	int outTail=0;
 	nx_int32_t currentEvalEpoch;
+
+	void task constructTupleTask();
+	void task signalDoneTask();
+
+	command error_t Parent.open()
+	{
+		acquiring0 = FALSE;
+		//Return from this ADC call will be ignored; 
+		call Read0.read();
+		//calls to other ADC to be added as required.
+		return SUCCESS;
+	}
 
 	command error_t Parent.requestData(nx_int32_t evalEpoch)
   	{
@@ -24,23 +36,7 @@ __READING_VAR_DECLS__
 	   	return SUCCESS;
   	}
 
-	command error_t Parent.open()
-	{
-		acquiring0 = FALSE;
-		//Return from this ADC call will be ignored; 
-		call Read0.read();
-		//calls to other ADC to be added as required.
-		return SUCCESS;
-	}	
-
-
-	void task signalDoneTask()
-	{
-		dbg("__DBG_CHANNEL__","__MODULE_NAME__ __OPERATOR_DESCRIPTION__ requestDataDone() entered\n");
-		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
-	}
-
-
+__GET_DATA_METHODS__
 
 	void task constructTupleTask()
 	{
@@ -66,6 +62,9 @@ __CONSTRUCT_TUPLE__
 		post signalDoneTask();
 	}
 
-__GET_DATA_METHODS__
-
+	void task signalDoneTask()
+	{
+		dbg("__DBG_CHANNEL__","__MODULE_NAME__ __OPERATOR_DESCRIPTION__ requestDataDone() entered\n");
+		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
+	}
 }

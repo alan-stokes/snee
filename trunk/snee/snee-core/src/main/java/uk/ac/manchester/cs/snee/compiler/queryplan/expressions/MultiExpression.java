@@ -50,7 +50,7 @@ public class MultiExpression implements Expression {
 	/** List of the expression.*/
 	private Expression[] expressions;
 
-	/** The method of combining the expressions.*/
+	/** The operator used to combining the expressions.*/
 	private MultiType multiType;
 
 	private AttributeType _booleanType;
@@ -61,6 +61,19 @@ public class MultiExpression implements Expression {
 	private boolean isConstant = false;
 
 	/**
+	 * Used to give a unique name to each multiexpression, 
+	 * to avoid naming conflicts in code generator.
+	 */
+	private static int counter = 0;
+	
+	/**
+	 * The Id of this multiexpression.  This becomes the display name of 
+	 * the attribute if an alias is not given.  This is done to avoid
+	 * naming conflicts in code generator.
+	 */
+	private int multiExprId;
+	
+	/**
 	 * Constuctor.
 	 * 
 	 * @param newExpressions Expressions inside the AND
@@ -70,11 +83,15 @@ public class MultiExpression implements Expression {
 	public MultiExpression(Expression[] newExpressions, 
 			MultiType type, AttributeType booleanType) {
 		this.expressions = newExpressions;
-		assert (type == MultiType.SQUAREROOT || expressions.length >= 2);
+		assert (type == MultiType.SQUAREROOT || type == MultiType.ABS
+				|| expressions.length >= 2);
 		assert (type != null);
 		this.multiType = type;
 		_booleanType = booleanType;
 		calculateIsConstant();
+		multiExprId = counter;
+		counter++;
+		
 	}
 	
 	private void calculateIsConstant() {
@@ -125,69 +142,6 @@ public class MultiExpression implements Expression {
 		combine[1] = second;
 		return new MultiExpression (combine, MultiType.AND, _booleanType);
 	}
-
-//	/**
-//	 * Converts an AST token into a multiType.
-//	 * @param token The AST token of how the expressions are combined.
-//	 */
-//	private void convertMultiType(AST token) {
-//		//FIXME: Method never used locally
-//        switch (token.getType()) {
-//        	case SNEEqlOperatorParserTokenTypes.ADD: 
-//        		multiType = MultiType.ADD;
-//        		assert (expressions.length >= 2);
-//        		return;
-//        	case SNEEqlOperatorParserTokenTypes.AND: 
-//    			multiType = MultiType.AND;
-//        		assert (expressions.length >= 2);
-//    			return;
-//        	case SNEEqlOperatorParserTokenTypes.OR: 
-//    			multiType = MultiType.OR;
-//        		assert (expressions.length >= 2);
-//    			return;
-//        	case SNEEqlOperatorParserTokenTypes.DIVIDE: 
-//				multiType = MultiType.DIVIDE;
-//        		assert (expressions.length == 2);
-//				return;
-//        	case SNEEqlOperatorParserTokenTypes.EQUALS:
-//    			multiType = MultiType.EQUALS;
-//        		assert (expressions.length == 2);
-//    			return;
-//        	case SNEEqlOperatorParserTokenTypes.GREATERTHAN:
-//        		assert (expressions.length == 2);
-//				multiType = MultiType.GREATERTHAN;
-//				return;
-//        	case SNEEqlOperatorParserTokenTypes.GREATERTHANOREQUALS: 
-//				multiType = MultiType.GREATERTHANEQUALS;
-//        		assert (expressions.length == 2);
-//				return;
-//        	case SNEEqlOperatorParserTokenTypes.LESSTHAN:
-//				multiType = MultiType.LESSTHAN;
-//        		assert (expressions.length == 2);
-//				return;
-//        	case SNEEqlOperatorParserTokenTypes.LESSTHANOREQUALS:
-//				multiType = MultiType.LESSTHANEQUALS;
-//        		assert (expressions.length == 2);
-//				return;
-//        	case SNEEqlOperatorParserTokenTypes.MULTIPLY:
-//				multiType = MultiType.MULTIPLY;
-//        		assert (expressions.length >= 2);
-//        		return;
-//        	case SNEEqlOperatorParserTokenTypes.MINUS:
-//				multiType = MultiType.MINUS;
-//        		assert (expressions.length >= 2);
-//        		return;
-//        	case SNEEqlOperatorParserTokenTypes.POWER:
-//				multiType = MultiType.POWER;
-//        		assert (expressions.length == 2);
-//        		return;
-//        	case SNEEqlOperatorParserTokenTypes.SQUAREROOT:
-//				multiType = MultiType.SQUAREROOT;
-//        		assert (expressions.length == 1);
-//        		return;
-//        	default: throw new AssertionError("Unexpected AST token " + token); 
-//        }
-//	}
 	
 	/** {@inheritDoc} */
 	public String toString() {
@@ -483,6 +437,7 @@ public class MultiExpression implements Expression {
 		DataAttribute attribute = 
 			new DataAttribute("", this.toString(), getType());
 		attribute.setIsConstant(isConstant);
+		attribute.setAttributeDisplayName("expr"+this.multiExprId);
 		return attribute; 
 	}
 

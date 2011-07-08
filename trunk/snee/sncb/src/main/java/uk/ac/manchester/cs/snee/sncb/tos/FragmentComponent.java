@@ -42,8 +42,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 
-public class FragmentComponent extends NesCComponent implements
-	TinyOS1Component, TinyOS2Component {
+public class FragmentComponent extends NesCComponent {
 
     Fragment frag;
 
@@ -51,11 +50,11 @@ public class FragmentComponent extends NesCComponent implements
 
     public FragmentComponent(final Fragment frag,
 	    final NesCConfiguration outerConfig,
-	    int tosVersion, boolean tossimFlag) {
+	    boolean tossimFlag) {
     	
-		super(outerConfig, tosVersion, tossimFlag);
+		super(outerConfig, tossimFlag);
 		this.frag = frag;
-		this.id = generateName(frag, this.site, tosVersion);
+		this.id = generateName(frag, this.site);
     }
 
     @Override
@@ -64,12 +63,9 @@ public class FragmentComponent extends NesCComponent implements
     }
 
     public static String generateName(final Fragment frag,
-	    final Site currentSite, int tosVersion) {
-	if (tosVersion == 1) {
-	    return "Frag" + frag.getID() + "n" + currentSite.getID() + "C";
-	} else {
-	    return "Frag" + frag.getID() + "n" + currentSite.getID() + "P";
-	}
+	    final Site currentSite) {
+
+    	return "Frag" + frag.getID() + "n" + currentSite.getID() + "P";
     }
 
     public void setInnerConfig(final NesCConfiguration fragConfig) {

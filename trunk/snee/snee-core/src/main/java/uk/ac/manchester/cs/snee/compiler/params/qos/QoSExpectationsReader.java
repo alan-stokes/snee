@@ -99,8 +99,7 @@ public class QoSExpectationsReader extends QoSExpectations {
 				this._queryParamsFile, queryRoot
 				+ "/snee:constraint/snee:less-equals");
 		if (lessEquals != null) {
-		    return new QoSVariableRange(-1, new Long(lessEquals).longValue()
-			    * scalingFactor);
+		    return new QoSVariableRange(-1, (long)(new Double(lessEquals) * scalingFactor));
 		}
 	
 		//greater-equals
@@ -108,16 +107,15 @@ public class QoSExpectationsReader extends QoSExpectations {
 				this._queryParamsFile, queryRoot
 				+ "/snee:constraint/snee:greater-equals");
 		if (greaterEquals != null) {
-		    return new QoSVariableRange(new Long(greaterEquals).longValue()
-			    * scalingFactor, -1);
+		    return new QoSVariableRange((long)(new Double(greaterEquals) * scalingFactor), -1);
 		}
 	
 		//equals
 		final String equals = Utils.doXPathStrQuery(this._queryParamsFile,
 			queryRoot + "/snee:constraint/snee:equals");
 		if (equals != null) {
-		    return new QoSVariableRange(new Long(equals).longValue() * scalingFactor,
-			    new Long(equals).longValue() * scalingFactor);
+		    return new QoSVariableRange((long)(new Double(equals) * scalingFactor),
+		    		(long)(new Double(equals) * scalingFactor));
 		}
 	
 		//range
@@ -126,8 +124,8 @@ public class QoSExpectationsReader extends QoSExpectations {
 		final String maxVal = Utils.doXPathStrQuery(this._queryParamsFile,
 			queryRoot + "/snee:constraint/snee:range/snee:max-val");
 		if (minVal != null) {
-		    return new QoSVariableRange(new Long(minVal).longValue() * scalingFactor,
-			    new Long(maxVal).longValue() * scalingFactor);
+		    return new QoSVariableRange((long)(new Double(minVal) * scalingFactor),
+		    		(long)(new Double(maxVal) * scalingFactor));
 		}
     	if (logger.isTraceEnabled()) {
             logger.trace("RETURN getQoSVariableRange()");

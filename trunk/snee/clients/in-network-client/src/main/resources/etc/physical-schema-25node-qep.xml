@@ -10,12 +10,24 @@
 		<extents>
 			<extent name="SeaDefence">
 				<sites>2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25</sites>
+				<sensorTypes>
+					<attribute name="seaLevel" sensorType="seaLevel"/>
+					<attribute name="voltage" sensorType="voltage"/>		
+				</sensorTypes>						
 			</extent>
  			<extent name="SeaDefenceEast">
 				<sites>2,3,4,5,6,7,8,9,10,11,12,13,14,15</sites>
+				<sensorTypes>
+					<attribute name="seaLevel" sensorType="seaLevel"/>
+					<attribute name="voltage" sensorType="voltage"/>		
+				</sensorTypes>						
 			</extent>
 			<extent name="SeaDefenceWest">
 				<sites>16,17,18,19,20,21,22,23,24,25</sites>
+				<sensorTypes>
+					<attribute name="seaLevel" sensorType="seaLevel"/>
+					<attribute name="voltage" sensorType="voltage"/>		
+				</sensorTypes>				
 			</extent>	
 		</extents>
 	</sensor_network>

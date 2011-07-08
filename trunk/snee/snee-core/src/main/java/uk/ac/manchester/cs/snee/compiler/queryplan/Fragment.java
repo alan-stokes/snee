@@ -46,6 +46,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
  
@@ -98,12 +99,6 @@ public class Fragment {
      */
     public ArrayList<String> desiredSites = new ArrayList<String>();
 
-//    //used by clone method
-//    //doesn't automatically generate the fragmentID
-//    private Fragment(final int fragID) {
-//	this.fragID = fragID;
-//	logger.finest("Fragment " + fragID + " created");
-//    }
 
     public Fragment() {
     	fragmentCount++;
@@ -235,7 +230,7 @@ public class Fragment {
 		final Iterator<SensornetOperator> ops = this
 			.operatorIterator(TraversalOrder.PRE_ORDER);
 		while (ops.hasNext()) {
-		    if (ops.next().getLogicalOperator().isLocationSensitive()) {
+		    if (ops.next().isLocationSensitive()) {
 			found = true;
 			break;
 		    }
@@ -247,7 +242,7 @@ public class Fragment {
 		boolean found = false;
 		final Iterator<SensornetOperator> ops = this.operators.iterator();
 		while (ops.hasNext()) {
-		    if (ops.next().getLogicalOperator().isRecursive()) {
+		    if (ops.next().isRecursive()) {
 			found = true;
 			break;
 		    }
@@ -260,7 +255,7 @@ public class Fragment {
 	final Iterator<SensornetOperator> ops = this
 		.operatorIterator(TraversalOrder.PRE_ORDER);
 	while (ops.hasNext()) {
-	    if (ops.next().getLogicalOperator().isAttributeSensitive()) {
+	    if (ops.next().isAttributeSensitive()) {
 		found = true;
 		break;
 	    }
@@ -273,7 +268,7 @@ public class Fragment {
      * @return True if the fragment ends in a deliver and therefor does not output tuples to a tray.
      */
     public final boolean isDeliverFragment() {
-    	if (this.getRootOperator() instanceof DeliverOperator) {
+    	if (this.getRootOperator() instanceof SensornetDeliverOperator) {
     		return true;
     	}
     	return false;
@@ -353,10 +348,6 @@ public class Fragment {
 	return total;
     }
 
-//    public final AlphaBetaExpression getMemoryExpression(final Site node,
-//	    final DAF daf) {
-//    	return new AlphaBetaExpression(this.getDataMemoryCost(node, daf), 0);
-//    }
 
     /**
      * Calculates the time cost for a single evaluation of all the operators 
@@ -393,44 +384,6 @@ public class Fragment {
 		}
 		return total;
     }
-
-//    /**
-//     * Calculates the time cost for a single evaluation of all the operators 
-//     * in this fragment.  The time cost is based on the maximum cardinality 
-//     * not the average cardinality.  Does not include the time of the exchange 
-//     * components including the consumers and producers
-//     * 
-//     * Based on the time estimates provided in the OperatorsMetaData file.
-//     * Includes the cost of copying the tuples to the tray.
-//     * 
-// 	 * @param card Type of cardinality to be considered.
-//     * @param node The site the operator has been placed on
-//     * @param daf The distributed-algebraic form of the corresponding 
-//     * operator tree.
-//	 * @param round Defines if rounding reserves should be included or not
-//     * @return Sum of the cost of each of the operators' expression.
-//     */
-//    public final AlphaBetaExpression getTimeExpression(
-//    		final CardinalityType card, final Site node, final DAF daf, 
-//    		final boolean round) {
-//   		AlphaBetaExpression result = new AlphaBetaExpression();
-//    	final Iterator<SensornetOperator> ops = this
-//    		.operatorIterator(TraversalOrder.PRE_ORDER);
-//    	while (ops.hasNext()) {
-//    	    final SensornetOperator op = ops.next();
-//    	    logger.finest("op: " + op.getText());
-//    	    result.add(op.getTimeExpression(card, node, daf, round));
-//   		}
-//   		if (!this.isDeliverFragment()) {
-//   		    final AlphaBetaExpression cardinality = this.getRootOperator()
-//   			    .getCardinality(card, node, daf, round);
-//   		    result.add(AlphaBetaExpression.multiplyBy(
-//   		    	cardinality, CostParameters.getCopyTuple()));
-//		} else {
-//			result.add(CommunicationTask.getTimeCostOverhead());
-//		}
-//    	return result;
-//    }
 
     public final void setParentExchange(final SensornetExchangeOperator p) {
 	this.parentExchange = p;
@@ -521,56 +474,6 @@ public class Fragment {
     public final int getNumChildFragments() {
 	return this.getChildFragments().size();
     }
-
-
-//    public final Fragment clone(FAF clonedFAF) {
-//
-//    	final Fragment clone = new Fragment(this.fragID);
-//
-//    	clone.rootOperator = (SensornetOperator) clonedFAF.getNode(this
-//    		.getRootOperator().getID());
-//
-//    	if (this.getParentExchangeOperator() != null) {
-//    	    clone.parentExchange = (SensornetExchangeOperator) clonedFAF
-//    		    .getNode(this.getParentExchangeOperator().getID());
-//    	}
-//
-//    	for (int i = 0; i < this.getNumChildExchangeOperators(); i++) {
-//    		SensornetExchangeOperator clonedExchOp = 
-//    			(SensornetExchangeOperator) clonedFAF.getNode(
-//    			this.getChildExchangeOperator(i).getID());
-//    	    clone.childExchanges.add(clonedExchOp);
-//    	}
-//
-//    	final Iterator<SensornetOperator> opIter = this.operators.iterator();
-//    	while (opIter.hasNext()) {
-//    	    final SensornetOperator clonedOp = (SensornetOperator) clonedFAF
-//    		    .getNode(opIter.next().getID());
-//    	    clone.operators.add(clonedOp);
-//    	    clonedOp.setContainingFragment(clone);
-//    	}
-//
-//    	Iterator<String> siteIDIter = this.desiredSites.iterator();
-//    	while (siteIDIter.hasNext()) {
-//    	    final String siteID = siteIDIter.next();
-//    	    clone.desiredSites.add(siteID);
-//    	}
-//    	
-//    	return clone;
-//    }
-//
-//    public final Fragment clone(FAF clonedFAF, RT clonedRT) {
-//    	Fragment clone = clone(clonedFAF);
-//    	
-//    	Iterator<Site> siteIter = this.sites.iterator();
-//    	while (siteIter.hasNext()) {
-//    	    final Site site = siteIter.next();
-//    	    final Site clonedSite = (Site) clonedRT.getNode(site.getID());
-//    	    clone.sites.add(clonedSite);
-//    	}
-//    	
-//    	return clone;
-//    }
    
     
     /**
@@ -627,6 +530,10 @@ public class Fragment {
      */
     public int getNumSites() {
 		return this.sites.size();
+	}
+    
+	public void removeOperator(SensornetOperator op) {
+		this.operators.remove(op);
 	}
     
 }

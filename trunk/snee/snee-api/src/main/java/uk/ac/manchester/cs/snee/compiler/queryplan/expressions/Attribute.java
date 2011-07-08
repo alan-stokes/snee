@@ -36,9 +36,11 @@ package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SQLTypes;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.Types;
 
 public abstract class Attribute implements Expression {
 

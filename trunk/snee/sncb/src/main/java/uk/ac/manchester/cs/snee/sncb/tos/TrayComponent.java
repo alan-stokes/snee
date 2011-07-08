@@ -50,6 +50,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class TrayComponent extends NesCComponent {
@@ -69,13 +70,14 @@ public class TrayComponent extends NesCComponent {
     public TrayComponent(final Fragment sourceFrag, final Fragment destFrag,
     final String destSiteID, final Site currentSite, 
     final NesCConfiguration config, final SensorNetworkQueryPlan plan,
-    int tosVersion, boolean tossimFlag, CostParameters costParams, boolean ledsDebug) {
-		super(config, tosVersion, tossimFlag, ledsDebug);
+    boolean tossimFlag, CostParameters costParams, boolean ledsDebug,
+    CodeGenTarget target) {
+		super(config, tossimFlag, ledsDebug, target);
 		this.sourceFrag = sourceFrag;
 		this.destFrag = destFrag;
 		this.destSiteID = destSiteID;
 		this.currentSite = currentSite;
-		this.id = generateName(sourceFrag, destFrag, this.site.getID(), destSiteID, tosVersion);
+		this.id = generateName(sourceFrag, destFrag, this.site.getID(), destSiteID);
 		this.plan = plan;
 		this.costParams = costParams;
     }
@@ -95,25 +97,14 @@ public class TrayComponent extends NesCComponent {
      */
     public static String generateName(final Fragment sourceFrag,
 	    final Fragment destFrag, final String currentSiteID,
-	    final String destSiteID, int tosVersion) {
+	    final String destSiteID) {
 	if (sourceFrag.isRecursive()) {
-	    if (tosVersion == 1) {
-		return "trayF" + sourceFrag.getChildFragments().get(0).getID()
-			+ "_F" + destFrag.getID() + "n" + destSiteID + "_n"
-			+ currentSiteID + "M";
-	    } else {
 		return "trayF" + sourceFrag.getChildFragments().get(0).getID()
 			+ "_F" + destFrag.getID() + "n" + destSiteID + "_n"
 			+ currentSiteID + "P";
-	    }
 	} else {
-	    if (tosVersion == 1) {
-		return "trayF" + sourceFrag.getID() + "_F" + destFrag.getID()
-			+ "n" + destSiteID + "_n" + currentSiteID + "M";
-	    } else {
 		return "trayF" + sourceFrag.getID() + "_F" + destFrag.getID()
 			+ "n" + destSiteID + "_n" + currentSiteID + "P";
-	    }
 	}
     }
 
