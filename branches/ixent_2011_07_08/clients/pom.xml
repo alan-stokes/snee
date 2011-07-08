@@ -26,6 +26,7 @@
 		<module>cco-client</module>
 		<module>test-client</module>
 		<module>in-network-client</module>
+		<module>tossim-client</module>		
 		<module>cco-stored-client</module>
 		<module>cco-both</module>
 	</modules>
