@@ -487,7 +487,6 @@ public class TranslatorTest {
 		LogicalOperator op = testOperator(iterator, "PROJECT");
 		assertEquals(1, op.getAttributes().size());
 		Attribute attribute = op.getAttributes().get(0);
-		System.err.println(attribute.getAttributeDisplayName());
 		assertTrue(attribute.getAttributeDisplayName().
 				equalsIgnoreCase("expr1"));
 		assertTrue(attribute.getAttributeSchemaName().

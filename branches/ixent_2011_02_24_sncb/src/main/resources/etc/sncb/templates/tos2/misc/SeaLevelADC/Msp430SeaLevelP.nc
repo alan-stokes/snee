@@ -32,14 +32,21 @@
 #include "Msp430Adc12.h"
 
 module Msp430SeaLevelP {
-  provides interface AdcConfigure<const msp430adc12_channel_config_t*>;
+  uses { 
+       interface Boot as Boot;
+       interface HplMsp430GeneralIO as ADC2;
+       interface Timer<TMilli> as PowerUpDelayTimer;
+  }
+  provides { 
+       interface AdcConfigure<const msp430adc12_channel_config_t*>;
+  }
 }
 implementation {
 
   const msp430adc12_channel_config_t config = {
       inch: INPUT_CHANNEL_A0,
       sref: REFERENCE_VREFplus_AVss,
-      ref2_5v: REFVOLT_LEVEL_1_5,
+      ref2_5v: REFVOLT_LEVEL_2_5,
       adc12ssel: SHT_SOURCE_ACLK,
       adc12div: SHT_CLOCK_DIV_1,
       sht: SAMPLE_HOLD_4_CYCLES,
@@ -51,4 +58,26 @@ implementation {
   {
     return &config;
   }
+
+  task void powerUpDelayTask();
+
+  event void Boot.booted()
+  {
+     call ADC2.makeOutput();
+     call ADC2.set();
+     //post powerUpDelayTask();
+  }
+
+  //This task gives the sensor time to power up to avoid getting a spurious reading
+  //Doesn't seem to work though, so commented out
+  task void powerUpDelayTask()
+  {
+     call PowerUpDelayTimer.startOneShot(60000);
+  }
+
+  event void PowerUpDelayTimer.fired()
+  {
+     //do nothing!
+  }
+
 }

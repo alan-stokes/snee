@@ -37,6 +37,7 @@ generic configuration Msp430SeaLevelC() {
   provides interface ReadNow<uint16_t>;
 }
 implementation {
+
   components new AdcReadClientC();
   Read = AdcReadClientC;
 
@@ -52,4 +53,12 @@ implementation {
   ReadNow = AdcReadNowClientC;
   
   AdcReadNowClientC.AdcConfigure -> Msp430SeaLevelP;
+
+  components MainC;
+  components HplMsp430GeneralIOC;
+  Msp430SeaLevelP.Boot -> MainC.Boot;
+  Msp430SeaLevelP.ADC2 -> HplMsp430GeneralIOC.ADC2;
+
+  components new TimerMilliC() as PowerUpDelayTimer;
+  Msp430SeaLevelP.PowerUpDelayTimer -> PowerUpDelayTimer.Timer;
 }
