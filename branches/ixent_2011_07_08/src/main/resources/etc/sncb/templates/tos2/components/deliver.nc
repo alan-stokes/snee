@@ -73,7 +73,7 @@ __HEADER__
 		payload = (DeliverMessagePtr)(call Packet.getPayload(&packet, sizeof(DeliverMessage)));
 		if (call Packet.maxPayloadLength() < sizeof(DeliverMessage) || payload == NULL)
 		{
-			dbg("DBG_CHANNEL","Message type  too big for packet payload.\n");
+			dbg("DBG_USR1","Message type DeliverMessage size=%d, too big for packet payload=%d.\n",sizeof(DeliverMessage),payload);
 			return;
       		}
 
