@@ -193,8 +193,6 @@ public class QueryCompiler {
 	 * @throws ParserValidationException 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
-	 * @throws SourceDoesNotExistException 
-	 * @throws ExtentDoesNotExistException 
 	 * @throws TokenStreamException 
 	 * @throws RecognitionException 
 	 * @throws SNEEConfigurationException 
@@ -202,15 +200,15 @@ public class QueryCompiler {
 	 * @throws SourceAllocatorException 
 	 * @throws WhenSchedulerException 
 	 * @throws ExpressionException 
+	 * @throws ExtentDoesNotExistException 
+	 * @throws SourceDoesNotExistException 
 	 */
 	public QueryExecutionPlan compileQuery(int queryID, String query, 
 			QoSExpectations qos) 
-	throws SNEEException, SourceDoesNotExistException, 
-	TypeMappingException, SchemaMetadataException, OptimizationException, 
-	ParserException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException, 
+	throws SNEEException, TypeMappingException, SchemaMetadataException, OptimizationException, 
+	ParserException, RecognitionException, TokenStreamException, 
 	SNEEConfigurationException, SourceAllocatorException, WhenSchedulerException,
-	ExpressionException 
+	ExpressionException, SourceDoesNotExistException, ExtentDoesNotExistException 
 	 {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER: queryID: " + queryID + "\n\tquery: " + query);

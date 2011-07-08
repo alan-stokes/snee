@@ -97,15 +97,18 @@ public class PullServiceReceiver implements SourceReceiver {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Received tuple: \n" + tuple);
 		}
-		//TODO: This is very CCO dependent!!!
-		/* 
-		 * In the CCO schema, the 'timestamp' attribute is declared
-		 * to be of type integer!
-		 * This is why the cast below is to type Integer.
-		 */
-		long sqlTsValue = 
-			((Integer) tuple.getAttributeValue(extentName, 
+		long sqlTsValue;
+		Object value = tuple.getAttributeValue(extentName, "timestamp");
+		if (value instanceof Long) {
+			sqlTsValue = (Long) value;
+		} else if (value instanceof Integer) {
+			sqlTsValue = ((Integer) tuple.getAttributeValue(extentName, 
 					"timestamp")).longValue();
+		} else {
+			logger.error("Unsupported object type for timestamp: " + 
+					value.getClass());
+			throw new AssertionError();
+		}
 		lastTs =  new Timestamp(sqlTsValue*1000);
 		if (logger.isTraceEnabled()) {
 			logger.trace(extentName + ".timestamp " + lastTs + " " +

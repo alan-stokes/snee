@@ -149,7 +149,8 @@ public class ConstantRatePushStreamGenerator {
 
 	private void initialiseSource(ExtentMetadata stream, 
 			String streamName, SourceMetadataAbstract source) 
-	throws ExtentDoesNotExistException, SourceMetadataException {
+	throws ExtentDoesNotExistException, SourceMetadataException,
+	SchemaMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseSource() for " + streamName +
 					" source=" + source.getSourceName());
@@ -184,7 +185,8 @@ public class ConstantRatePushStreamGenerator {
 
 	private BroadcastTask createBroadcastTask(ExtentMetadata stream, 
 			UDPSourceMetadata udpSource) 
-	throws ExtentDoesNotExistException, SourceMetadataException {
+	throws ExtentDoesNotExistException, SourceMetadataException,
+	SchemaMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER createBroadcastTask() for " + 
 					stream.getExtentName());
@@ -209,7 +211,7 @@ public class ConstantRatePushStreamGenerator {
 		task.tupleGenerator = generators.get(streamName);
 		task.timer = timer;
 		task.sleepInterval = 
-			calculateSleepInterval(udpSource.getRate(streamName));		
+			calculateSleepInterval(stream.getRate());		
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN createBroadcastTask()");
 		return task;

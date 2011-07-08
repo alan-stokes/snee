@@ -6,36 +6,9 @@ import java.util.Map;
 
 public abstract class SourceMetadata extends SourceMetadataAbstract {
 
-	/**
-	 * Publication rate for each extent
-	 */
-	protected Map<String, Double> _extentRates = 
-		new HashMap<String, Double>();
-
 	public SourceMetadata(String sourceName, List<String> extentNames,
 			SourceType sourceType) {
 		super(sourceName, extentNames, sourceType);
-	}
-
-	public void setRate(String extentName, double rate) {
-		if (logger.isTraceEnabled())
-			logger.trace("Rate set to " + rate + " for extent " + extentName);
-		_extentRates.put(extentName, rate);
-	}
-
-	public double getRate(String extentName) 
-	throws SourceMetadataException {
-		double rate;
-		if (_extentRates.containsKey(extentName)) {
-			rate = _extentRates.get(extentName);
-		} else if (_extentNames.contains(extentName)) {
-			rate = 1.0;
-		} else {	
-			String msg = "Unknown extent name " + extentName;
-			logger.warn(msg);
-			throw new SourceMetadataException(msg);
-		}
-		return rate;
 	}
 	
 	public String toString() {
