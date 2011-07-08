@@ -648,7 +648,7 @@ public class TinyOSGenerator {
 			throws CodeGenerationException {
 		TrayComponent trayComp = new TrayComponent(sourceFrag, destFrag, 
 				destSiteID, currentSite, config, plan, 
-				tossimFlag, costParams, debugLeds);
+				tossimFlag, costParams, debugLeds, target);
 		
 		trayComp = (TrayComponent) config.addComponent(trayComp);
 		// tray may already exist
@@ -726,7 +726,7 @@ public class TinyOSGenerator {
 			plan, sink, (tossimFlag || combinedImage), targetDirName,
 			costParams, controlRadioOff, enablePrintf, useStartUpProtocol, enableLeds,
 			debugLeds, usePowerManagement, deliverLast, adjustRadioPower,
-			useNodeController);
+			useNodeController, target);
 		config.addComponent(queryPlanModuleComp);
 
 		TimerComponent timerComp = new TimerComponent(		//$
@@ -965,7 +965,7 @@ public class TinyOSGenerator {
 				sourceFrag, destFrag,
 				exchPart.getDestSite(),
 				exchPart.getNext().getCurrentSite(),
-				config, plan, tossimFlag, costParams, debugLeds);
+				config, plan, tossimFlag, costParams, debugLeds, target);
 
 		config.addComponent(txComp);
 		final String txCompName = txComp.getID();
@@ -1007,7 +1007,7 @@ public class TinyOSGenerator {
 			sourceFrag, destFrag,
 			exchPart.getDestSite(),
 			exchPart.getPrevious().getCurrentSite(),
-			config, plan, tossimFlag, debugLeds);
+			config, plan, tossimFlag, debugLeds, target);
 		config.addComponent(rxComp);
 		final String rxCompName = rxComp.getID();
 
@@ -1103,37 +1103,37 @@ public class TinyOSGenerator {
 
 		if (op instanceof SensornetAcquireOperator) {
 		    return new AcquireComponent((SensornetAcquireOperator) op, plan,
-		    		config, tossimFlag, debugLeds);
+		    		config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetSingleStepAggregationOperator) {    
 		    return new AggrSingleStepComponent((SensornetSingleStepAggregationOperator) op, plan,
-		    		config, tossimFlag, debugLeds);
+		    		config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetAggrEvalOperator) {
 		    return new AggrEvalComponent((SensornetAggrEvalOperator) op, plan,
-		    		config, tossimFlag, debugLeds);
+		    		config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetAggrInitOperator) {
 		    return new AggrInitComponent((SensornetAggrInitOperator) op, plan,
-		    		config, tossimFlag, debugLeds);
+		    		config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetAggrMergeOperator) {
 		    return new AggrMergeComponent((SensornetAggrMergeOperator) op, plan,
-		    		config, tossimFlag, debugLeds);
+		    		config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetDeliverOperator) {
 		    return new DeliverComponent((SensornetDeliverOperator) op, plan,
-		    		config, tossimFlag, debugLeds, costParams);
+		    		config, tossimFlag, debugLeds, costParams, target);
 		} else if (op instanceof SensornetExchangeOperator) {
 		    return new ExchangeProducerComponent((SensornetExchangeOperator) op, plan,
-			    config, tossimFlag, debugLeds);
+			    config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetNestedLoopJoinOperator) {
 		    return new JoinComponent((SensornetNestedLoopJoinOperator) op, plan, config,
-		    		tossimFlag, debugLeds);
+		    		tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetProjectOperator) {
 		    return new ProjectComponent((SensornetProjectOperator) op, plan,
-		    		config, tossimFlag, debugLeds);
+		    		config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetSelectOperator) {
 		    return new SelectComponent((SensornetSelectOperator) op, plan, config,
-		    		tossimFlag, debugLeds);
+		    		tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetWindowOperator) {
 		    return new WindowComponent((SensornetWindowOperator) op, plan, config,
-		    		tossimFlag, debugLeds);
+		    		tossimFlag, debugLeds, target);
 		} else {
 		    throw new CodeGenerationException(
 			    "No NesC Component found for operator type="
@@ -1369,7 +1369,7 @@ public class TinyOSGenerator {
 			final String fragID, final String rootOpName,
 			final SensornetExchangeOperator producerOp) throws CodeGenerationException {
 		final ExchangeProducerComponent producerComp = new ExchangeProducerComponent(
-		    producerOp, plan, fragConfig, tossimFlag, debugLeds);
+		    producerOp, plan, fragConfig, tossimFlag, debugLeds, target);
 		fragConfig.addComponent(producerComp);
 		final String producerOpID = producerComp.getID();
 		fragConfig.addWiring(producerOpID, rootOpName, CodeGenUtils

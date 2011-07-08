@@ -46,12 +46,15 @@ import uk.ac.manchester.cs.snee.common.graph.NodeImplementation;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 
 public abstract class NesCComponent extends NodeImplementation implements Node {
 
     String description;
     
     boolean tossimFlag;
+    
+    CodeGenTarget target;
 
     boolean systemComponent = false;
 
@@ -62,11 +65,12 @@ public abstract class NesCComponent extends NodeImplementation implements Node {
 	this.configuration = null;
     }
 
-    protected NesCComponent(final NesCConfiguration config, boolean tossimFlag, boolean debugLeds) {
+    protected NesCComponent(final NesCConfiguration config, boolean tossimFlag, boolean debugLeds, CodeGenTarget target) {
 		super();
 		this.configuration = config;
 		this.site = config.getSite();
 		this.tossimFlag = tossimFlag;
+		this.target = target;
 		this.debugLeds = debugLeds;
     }
 

@@ -45,6 +45,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class DeliverComponent extends NesCComponent {
@@ -56,9 +57,10 @@ public class DeliverComponent extends NesCComponent {
     CostParameters costParams;
 
     public DeliverComponent(final SensornetDeliverOperator op, final SensorNetworkQueryPlan plan, 
-    final NesCConfiguration fragConfig, boolean tossimFlag, boolean debugLeds, CostParameters costParams) {
+    final NesCConfiguration fragConfig, boolean tossimFlag, boolean debugLeds, CostParameters costParams,
+    CodeGenTarget target) {
 
-		super(fragConfig, tossimFlag, debugLeds);
+		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
 		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
