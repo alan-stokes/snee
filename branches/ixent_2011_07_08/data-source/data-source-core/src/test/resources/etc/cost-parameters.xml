@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OperatorMetaData>
+	<Time>
+		<CopyTuple time="0.1"/>
+		<ApplyPredicate time="0.15"/>
+		<CheckTuple time="0.05"/>
+		<DoCalculation time="0.05"/>
+		<Concatenate time="0.3"/>
+		<CallMethod time="0.1"/>
+		<SignalEvent time="2"/>
+		<AcquireData time="30"/>
+		<ScanTuple time="0.1"/>
+		<TurnOnRadio time="30"/>
+		<TurnOffRadio time="15"/>
+		<RadioSyncWindow time ="5"/>
+		<SendPacket time = "30"/> <!-- Tested as 28 set to 30 for safety -->
+		<SetAValue time = "0.02"/>
+		<DeliverTuple time = "50"/>  
+	</Time>
+	<MinimumTimerInterval time = "10"/>
+	<Space>
+		<!-- The maximum size, in bytes, of data (i.e., payload) in message 
+		that can be sent across the radio -->
+		<MaxMessagePayloadSize bytes="29"/>
+		
+		<!-- The overhead incurred, in bytes, with each message in the payload
+		 of the message, e.g., for sending previous fragment information-->
+		<PayloadOverhead bytes="6"/>
+	</Space>	
+</OperatorMetaData>
