@@ -9,7 +9,7 @@ This page describes the commands used by the Sensor Network Connectivity Bridge.
   * TinyOS 2.1.1
   * SNEE unzipped and compiled according to these instructions (TODO).
   * Set $SNEEROOT to point to the root directory of SNEE.
-  * Add {{{$SNEEROOT/etc/sncb/sncb/tools/python}}} and {{{$SNEEROOT/etc/sncb/tools/python/utils}}} directories to your PATH.
+  * Add {{{$SNEEROOT/etc/sncb/tools/python}}} and {{{$SNEEROOT/etc/sncb/tools/python/utils}}} directories to your PATH.
   * Set BASESTATION to be your basestation id (e.g., serial@/dev/tty.usbserial-XBTFSN2Q) -- find this out by running a motelist command.
 
 = Setting up the Nodes =
