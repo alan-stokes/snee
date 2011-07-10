@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Types>
 	<type name="boolean" size = "1" math = "1" nesCName="bool"/>
-	<type name="decimal" size="8" math ="5" nesCName = "float"/>
+	<type name="decimal" size="4" math ="5" nesCName = "float"/>
     <type name="float" size="4" math="5" nesCName = "float"/>
-	<type name="integer" size="2" math="5" nesCName = "uint16_t"/>
+	<type name="integer" size="4" math="5" nesCName = "uint32_t"/>
     <type name="string" size="4" math="2"/>
 	<type name="timestamp" size="4" math ="3" nesCName = "unint32_t"/>
     <!--	
