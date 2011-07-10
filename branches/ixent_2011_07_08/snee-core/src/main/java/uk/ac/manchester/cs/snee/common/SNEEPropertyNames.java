@@ -107,6 +107,12 @@ public final class SNEEPropertyNames {
     	"compiler.logicalrewriter.combine_leaf_and_select";
  
     /**
+     * 
+     */
+	public static final String ALGORITHM_SELECTOR_ENABLE_INCREMENTAL_AGGREGATION = 
+		"compiler.algorithmselector.enable_incremental_aggregation";
+    
+    /**
      * Sets the random seed used for generating routing trees.
      */
     public static final String ROUTER_RANDOM_SEED =
@@ -186,8 +192,6 @@ public final class SNEEPropertyNames {
 	 */
 	public static final String SNCB_CODE_GENERATION_TARGET = 
 		"sncb.code_generation_target";
-    
-
 }
 
 

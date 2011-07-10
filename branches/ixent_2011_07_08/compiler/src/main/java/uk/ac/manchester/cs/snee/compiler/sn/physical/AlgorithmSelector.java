@@ -5,6 +5,9 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
@@ -50,7 +53,22 @@ public class AlgorithmSelector {
 			throw new SNEEException(msg);
 		}
 		PAF paf = new PAF(deliverPhyOp, dlaf, costParams, queryName);
-		splitAggregationOperators(paf, costParams);
+		
+		if (SNEEProperties.isSet(SNEEPropertyNames.
+	    	    ALGORITHM_SELECTOR_ENABLE_INCREMENTAL_AGGREGATION)) {
+		    try {
+				if (SNEEProperties.getBoolSetting(SNEEPropertyNames.
+					   ALGORITHM_SELECTOR_ENABLE_INCREMENTAL_AGGREGATION)) {
+					splitAggregationOperators(paf, costParams);	
+				}
+			} catch (SNEEConfigurationException e) {
+				//should never see this
+				e.printStackTrace();
+			}
+		} else {
+			splitAggregationOperators(paf, costParams);
+	    }
+
 		removeNOWwindows(paf);
 		checkConsistentSlide(paf, qos);
 		return paf;
