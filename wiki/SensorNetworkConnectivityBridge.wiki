@@ -7,9 +7,9 @@ This page describes the commands used by the Sensor Network Connectivity Bridge.
 = Dependencies =
 
   * TinyOS 2.1.1
-  * SNEE set up according to [SettingUpDeveloperEnvironment these instructions]
-  * Set $SNEEROOT to point to the root directory of the SNEE workspace you are using.
-  * Add {{{$SNEEROOT/SNEE/sncb/target/classes/etc/sncb/tools/python}}} and {{{$SNEEROOT/SNEE/sncb/target/classes/etc/sncb/tools/python/utils}}} directories to your PATH.
+  * SNEE unzipped and compiled according to these instructions (TODO).
+  * Set $SNEEROOT to point to the root directory of SNEE.
+  * Add {{{$SNEEROOT/etc/sncb/sncb/tools/python}}} and {{{$SNEEROOT/etc/sncb/tools/python/utils}}} directories to your PATH.
   * Set BASESTATION to be your basestation id (e.g., serial@/dev/tty.usbserial-XBTFSN2Q) -- find this out by running a motelist command.
 
 = Setting up the Nodes =
@@ -18,7 +18,7 @@ The first thing that you need to do is install the Over-the-Air Programmer and M
 
 Slot 2 is reserved for the SNEE query plan that will be disseminated.
 
-The code for these programs is located at {{{$SNEEROOT/SNEE/sncb/target/classes/etc/sncb/tools/nesC}}}.
+The code for these programs is located at {{{$SNEEROOT/etc/sncb/tools/nesC}}}.
 
 == Install the OTA tool into the Nodes' External Flash Memory (Slot 1) ==
 
@@ -32,7 +32,7 @@ The code for these programs is located at {{{$SNEEROOT/SNEE/sncb/target/classes/
   {{{ tos-ota <source> <destination> -i 1 <tos_image.xml>  }}}
     * {{{<source>}}} is the serial port that the basestation is attached to.  NOTE, you must include the speed of the port, e.g., {{{serial@/dev/tty.usbserial-USB0:115200}}}
     * {{{<destination>}}} is the id of the node.
-    * {{{<tos_image.xml>}}} is located at {{{$SNEEROOT/SNEE/sncb/target/classes/etc/sncb/tools/nesC/OtaServer/build/telosb/tos_image.xml}}}.
+    * {{{<tos_image.xml>}}} is located at {{{$SNEEROOT/etc/sncb/tools/nesC/OtaServer/build/telosb/tos_image.xml}}}.
 
 ===Example===
 If you have a 2 node network, with node 1 as the basestation and node 2 as a sensing node, the sequence of commands is:
@@ -42,7 +42,7 @@ make telosb Install,2
 cd ../OtaBasestation
 make telosb Install,1
 cd ../OtaServer
-tos-ota $BASESTATION:115200 2 -i 1 $SNEEROOT/SNEE/sncb/target/classes/etc/sncb/tools/nesC/OtaServer/build/telosb/tos_image.xml
+tos-ota $BASESTATION:115200 2 -i 1 $SNEEROOT/SNEE/etc/sncb/tools/nesC/OtaServer/build/telosb/tos_image.xml
 }}}
 
 == Installing the Metadata Collector Image on the Nodes' External Flash Memory (slot 0) ==
