@@ -1628,12 +1628,21 @@ public class TinyOSGenerator {
 			tupleTypeBuff.append(CodeGenUtils.generateOutputTupleType(op) + " {\n");
 		}
 		
+		boolean evalTimeDone = false;
 		final List <Attribute> attributes = op.getAttributes();
 		for (int i = 0; i < attributes.size(); i++) {
 		    String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
 
 			final AttributeType attrType = attributes.get(i).getType();
 
+			//avoid duplicate evalTime attributes
+			if (attributes.get(i) instanceof EvalTimeAttribute) {
+				if (evalTimeDone==true)
+					continue;
+				else
+					evalTimeDone = true;
+			}
+			
 			String nesCType;
 			if (attributes.get(i) instanceof EvalTimeAttribute ||
 					attributes.get(i) instanceof TimeAttribute ||
