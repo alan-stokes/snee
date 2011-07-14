@@ -1,0 +1,34 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>SNEE</artifactId>
+		<groupId>uk.ac.manchester.cs.snee</groupId>
+		<version>1.6.4-SNAPSHOT</version>
+	</parent>
+	<groupId>uk.ac.manchester.cs.snee</groupId>
+	<artifactId>snee-sncb</artifactId>
+	<packaging>jar</packaging>
+	<name>Sensor Network Connectivity Bridge</name>
+	<description>Tools to interface with sensor network.  Includes metadata collection, over the air programming and command dissemination.</description>
+	<dependencies>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-api</artifactId>
+			<version>${snee.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-core</artifactId>
+			<version>${snee.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.tinyos</groupId>
+			<artifactId>tinyos</artifactId>
+			<version>2.1</version>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
+</project>

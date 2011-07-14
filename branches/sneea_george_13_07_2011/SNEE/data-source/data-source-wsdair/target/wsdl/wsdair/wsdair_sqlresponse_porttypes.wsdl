@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SQLResponse WSDL
+
+Web Services Data Access and Integration - The Relational
+Realisation (WS-DAIR) Specification, Version 1.0, 20 July 2006
+
+Copyright (C) Open Grid Forum (2006). All Rights Reserved.
+
+This document and translations of it may be copied and furnished to
+others, and derivative works that comment on or otherwise explain it
+or assist in its implementation may be prepared, copied, published and
+distributed, in whole or in part, without restriction of any kind,
+provided that the above copyright notice and this paragraph are
+included on all such copies and derivative works. However, this
+document itself may not be modified in any way, such as by removing
+the copyright notice or references to the OGF or other organizations,
+except as needed for the purpose of developing Grid Recommendations in
+which case the procedures for copyrights defined in the OGF Document
+process must be followed, or as required to translate it into
+languages other than English. 
+
+The limited permissions granted above are perpetual and will not be
+revoked by the OGF or its successors or assignees. 
+
+This document and the information contained herein is provided on an
+"As Is" basis and the OGF disclaims all warranties, express or
+implied, including but not limited to any warranty that the use of the
+information herein will not infringe any rights or any implied
+warranties of merchantability or fitness for a particular purpose.
+-->
+<wsdl:definitions xmlns:wsdai="http://www.ggf.org/namespaces/2005/12/WS-DAI" xmlns:wsdair="http://www.ggf.org/namespaces/2005/12/WS-DAIR" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="wsdair" targetNamespace="http://www.ggf.org/namespaces/2005/12/WS-DAIR">
+
+  <!-- WSDL IMPORTS ################################################## -->
+
+  <wsdl:import location="../wsdai/wsdai_core_porttypes.wsdl" namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI"/>
+
+  <!-- WSDL TYPES #################################################### -->
+
+  <wsdl:types>
+
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://www.ggf.org/namespaces/2005/12/WS-DAIR">
+
+      <xsd:import namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI" schemaLocation="../wsdai/wsdai_core_types.xsd"/>
+      <xsd:include schemaLocation="./wsdair_sqlaccess_types.xsd"/>
+      <xsd:include schemaLocation="./wsdair_sqlresponse_types.xsd"/>
+      <xsd:include schemaLocation="./wsdair_sqlrowset_types.xsd"/>
+
+      <xsd:complexType name="InvalidPositionFaultType"/>
+      <xsd:element name="InvalidPositionFault" type="wsdair:InvalidPositionFaultType"/>
+
+      <xsd:complexType name="InvalidCountFaultType"/>
+      <xsd:element name="InvalidCountFault" type="wsdair:InvalidCountFaultType"/>
+
+      <!-- ######################################## -->
+      <!-- ### GetSQLResponseItem Message Types ### -->
+      <!-- ######################################## -->
+
+      <xsd:element name="GetSQLResponseItemRequest">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="wsdai:RequestType">
+              <xsd:sequence>
+                <xsd:element maxOccurs="1" minOccurs="1" name="Position" type="xsd:unsignedInt"/>
+                <xsd:element maxOccurs="1" minOccurs="0" name="Count" type="xsd:unsignedInt"/>
+              </xsd:sequence>
+            </xsd:extension>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="GetSQLResponseItemResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element maxOccurs="1" minOccurs="1" ref="wsdair:SQLDataset"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- ################################## -->
+      <!-- ### GetSQLRowset Message Types ### -->
+      <!-- ################################## -->
+
+      <xsd:element name="GetSQLRowsetRequest">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="wsdai:RequestType">
+              <xsd:sequence>
+                <xsd:element maxOccurs="1" minOccurs="1" name="Position" type="xsd:unsignedInt"/>
+                <xsd:element maxOccurs="1" minOccurs="0" name="Count" type="xsd:unsignedInt"/>
+              </xsd:sequence>
+            </xsd:extension>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="GetSQLRowsetResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element maxOccurs="1" minOccurs="1" ref="wsdai:Dataset"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- ######################################### -->
+      <!-- ### GetSQLRowsetFactory Message Types ### -->
+      <!-- ######################################### -->
+
+      <xsd:element name="GetSQLRowsetFactoryRequest">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="wsdai:FactoryRequestType">
+              <xsd:sequence>
+                <xsd:element maxOccurs="1" minOccurs="1" name="Position" type="xsd:unsignedInt"/>
+                <xsd:element maxOccurs="1" minOccurs="0" name="Count" type="xsd:unsignedInt"/>
+              </xsd:sequence>
+            </xsd:extension>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="GetSQLRowsetFactoryResponse" type="wsdai:DataResourceAddressListType"/>
+
+      <!-- ####################################### -->
+      <!-- ### GetSQLUpdateCount Message Types ### -->
+      <!-- ####################################### -->
+
+      <xsd:element name="GetSQLUpdateCountRequest">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="wsdai:BaseRequestType">
+              <xsd:sequence>
+                <xsd:element maxOccurs="1" minOccurs="1" name="Position" type="xsd:unsignedInt"/>
+                <xsd:element maxOccurs="1" minOccurs="0" name="Count" type="xsd:unsignedInt"/>
+              </xsd:sequence>
+            </xsd:extension>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="GetSQLUpdateCountResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="1" name="UpdateCount" type="xsd:int"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- ####################################### -->
+      <!-- ### GetSQLReturnValue Message Types ### -->
+      <!-- ####################################### -->
+
+      <xsd:element name="GetSQLReturnValueRequest">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="wsdai:BaseRequestType"/>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="GetSQLReturnValueResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element maxOccurs="1" minOccurs="0" name="ReturnValue" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- ########################################### -->
+      <!-- ### GetSQLOutputParameter Message Types ### -->
+      <!-- ########################################### -->
+
+      <xsd:element name="GetSQLOutputParameterRequest">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="wsdai:BaseRequestType">
+              <xsd:sequence>
+                <xsd:element maxOccurs="1" minOccurs="1" name="Position" type="xsd:unsignedInt"/>
+                <xsd:element maxOccurs="1" minOccurs="0" name="Count" type="xsd:unsignedInt"/>
+              </xsd:sequence>
+            </xsd:extension>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="GetSQLOutputParameterResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="1" ref="wsdair:SQLOutputParameter"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <!-- ############################################# -->
+      <!-- ### GetSQLCommunicationArea Message Types ### -->
+      <!-- ############################################# -->
+
+      <xsd:element name="GetSQLCommunicationAreaRequest">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="wsdai:BaseRequestType">
+              <xsd:sequence>
+                <xsd:element maxOccurs="1" minOccurs="1" name="Position" type="xsd:unsignedInt"/>
+                <xsd:element maxOccurs="1" minOccurs="0" name="Count" type="xsd:unsignedInt"/>
+              </xsd:sequence>
+            </xsd:extension>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="GetSQLCommunicationAreaResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" ref="wsdair:SQLCommunicationsArea"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+    </xsd:schema>
+
+  </wsdl:types>
+
+  <!-- WSDL MESSAGES ################################################# -->
+
+  <wsdl:message name="InvalidPositionFault">
+    <wsdl:part name="InvalidPositionFault" element="wsdair:InvalidPositionFault"/>
+  </wsdl:message>
+
+  <wsdl:message name="InvalidCountFault">
+    <wsdl:part name="InvalidCountFault" element="wsdair:InvalidCountFault"/>
+  </wsdl:message>
+
+  <!-- ############################################### -->
+  <!-- ### GetSQLResponsePropertyDocument Messages ### -->
+  <!-- ############################################### -->
+
+  <wsdl:message name="GetSQLResponsePropertyDocumentRequest">
+    <wsdl:part element="wsdai:GetDataResourcePropertyDocumentRequest" name="GetSQLResponsePropertyDocumentRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetSQLResponsePropertyDocumentResponse">
+    <wsdl:part element="wsdair:SQLResponsePropertyDocument" name="GetSQLResponsePropertyDocumentResponse"/>
+  </wsdl:message>
+
+  <!-- ################################### -->
+  <!-- ### GetSQLResponseItem Messages ### -->
+  <!-- ################################### -->
+
+  <wsdl:message name="GetSQLResponseItemRequest">
+    <wsdl:part element="wsdair:GetSQLResponseItemRequest" name="GetSQLResponseItemRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetSQLResponseItemResponse">
+    <wsdl:part element="wsdair:GetSQLResponseItemResponse" name="GetSQLResponseItemResponse"/>
+  </wsdl:message>
+
+  <!-- ############################# -->
+  <!-- ### GetSQLRowset Messages ### -->
+  <!-- ############################# -->
+
+  <wsdl:message name="GetSQLRowsetRequest">
+    <wsdl:part element="wsdair:GetSQLRowsetRequest" name="GetSQLRowsetRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetSQLRowsetResponse">
+    <wsdl:part element="wsdair:GetSQLRowsetResponse" name="GetSQLRowsetResponse"/>
+  </wsdl:message>
+
+  <!-- #################################### -->
+  <!-- ### GetSQLRowsetFactory Messages ### -->
+  <!-- #################################### -->
+
+  <wsdl:message name="GetSQLRowsetFactoryRequest">
+    <wsdl:part element="wsdair:GetSQLRowsetFactoryRequest" name="GetSQLRowsetFactoryRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetSQLRowsetFactoryResponse">
+    <wsdl:part element="wsdair:GetSQLRowsetFactoryResponse" name="GetSQLRowsetFactoryResponse"/>
+  </wsdl:message>
+
+  <!-- #################################### -->
+  <!-- ### GetSQLUpdateCount Messages   ### -->
+  <!-- #################################### -->
+
+  <wsdl:message name="GetSQLUpdateCountRequest">
+    <wsdl:part element="wsdair:GetSQLUpdateCountRequest" name="GetSQLUpdateCountRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetSQLUpdateCountResponse">
+    <wsdl:part element="wsdair:GetSQLUpdateCountResponse" name="GetSQLUpdateCountResponse"/>
+  </wsdl:message>
+
+  <!-- #################################### -->
+  <!-- ### GetSQLReturnValue Messages   ### -->
+  <!-- #################################### -->
+
+  <wsdl:message name="GetSQLReturnValueRequest">
+    <wsdl:part element="wsdair:GetSQLReturnValueRequest" name="GetSQLReturnValueRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetSQLReturnValueResponse">
+    <wsdl:part element="wsdair:GetSQLReturnValueResponse" name="GetSQLReturnValueResponse"/>
+  </wsdl:message>
+
+  <!-- ######################################## -->
+  <!-- ### GetSQLOutputParameter Messages   ### -->
+  <!-- ######################################## -->
+
+  <wsdl:message name="GetSQLOutputParameterRequest">
+    <wsdl:part element="wsdair:GetSQLOutputParameterRequest" name="GetSQLOutputParameterRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetSQLOutputParameterResponse">
+    <wsdl:part element="wsdair:GetSQLOutputParameterResponse" name="GetSQLOutputParameterResponse"/>
+  </wsdl:message>
+
+  <!-- ########################################## -->
+  <!-- ### GetSQLCommunicationArea Messages   ### -->
+  <!-- ########################################## -->
+
+  <wsdl:message name="GetSQLCommunicationAreaRequest">
+    <wsdl:part element="wsdair:GetSQLCommunicationAreaRequest" name="GetSQLCommunicationAreaRequest"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetSQLCommunicationAreaResponse">
+    <wsdl:part element="wsdair:GetSQLCommunicationAreaResponse" name="GetSQLCommunicationAreaResponse"/>
+  </wsdl:message>
+
+  <!-- WSDL PORT TYPES ############################################### -->
+
+  <wsdl:portType name="SQLResponsePT">
+    <wsdl:operation name="GetSQLResponsePropertyDocument">
+      <wsdl:input message="wsdair:GetSQLResponsePropertyDocumentRequest" name="GetSQLResponsePropertyDocumentRequest"/>
+      <wsdl:output message="wsdair:GetSQLResponsePropertyDocumentResponse" name="GetSQLResponsePropertyDocumentResponse"/>
+      <wsdl:fault message="wsdai:ServiceBusyFault" name="ServiceBusyFault"/>
+      <wsdl:fault message="wsdai:InvalidResourceNameFault" name="InvalidResourceNameFault"/>
+      <wsdl:fault message="wsdai:NotAuthorizedFault" name="NotAuthorizedFault"/>
+      <wsdl:fault message="wsdai:DataResourceUnavailableFault" name="DataResourceUnavailableFault"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetSQLResponseItem">
+      <wsdl:input message="wsdair:GetSQLResponseItemRequest"/>
+      <wsdl:output message="wsdair:GetSQLResponseItemResponse"/>
+      <wsdl:fault message="wsdai:InvalidResourceNameFault" name="InvalidResourceNameFault"/>
+      <wsdl:fault message="wsdai:InvalidDatasetFormatFault" name="InvalidDatasetFormatFault"/>
+      <wsdl:fault message="wsdai:NotAuthorizedFault" name="NotAuthorizedFault"/>
+      <wsdl:fault message="wsdair:InvalidPositionFault" name="InvalidPositionFault"/>
+      <wsdl:fault message="wsdair:InvalidCountFault" name="InvalidCountFault"/>
+      <wsdl:fault message="wsdai:ServiceBusyFault" name="ServiceBusyFault"/>
+      <wsdl:fault message="wsdai:DataResourceUnavailableFault" name="DataResourceUnavailableFault"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetSQLRowset">
+      <wsdl:input message="wsdair:GetSQLRowsetRequest"/>
+      <wsdl:output message="wsdair:GetSQLRowsetResponse"/>
+      <wsdl:fault message="wsdai:InvalidResourceNameFault" name="InvalidResourceNameFault"/>
+      <wsdl:fault message="wsdai:InvalidDatasetFormatFault" name="InvalidDatasetFormatFault"/>
+      <wsdl:fault message="wsdai:NotAuthorizedFault" name="NotAuthorizedFault"/>
+      <wsdl:fault message="wsdair:InvalidPositionFault" name="InvalidPositionFault"/>
+      <wsdl:fault message="wsdair:InvalidCountFault" name="InvalidCountFault"/>
+      <wsdl:fault message="wsdai:DataResourceUnavailableFault" name="DataResourceUnavailableFault"/>
+      <wsdl:fault message="wsdai:ServiceBusyFault" name="ServiceBusyFault"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetSQLUpdateCount">
+      <wsdl:input message="wsdair:GetSQLUpdateCountRequest"/>
+      <wsdl:output message="wsdair:GetSQLUpdateCountResponse"/>
+      <wsdl:fault message="wsdai:InvalidResourceNameFault" name="InvalidResourceNameFault"/>
+      <wsdl:fault message="wsdai:NotAuthorizedFault" name="NotAuthorizedFault"/>
+      <wsdl:fault message="wsdair:InvalidPositionFault" name="InvalidPositionFault"/>
+      <wsdl:fault message="wsdair:InvalidCountFault" name="InvalidCountFault"/>
+      <wsdl:fault message="wsdai:DataResourceUnavailableFault" name="DataResourceUnavailableFault"/>
+      <wsdl:fault message="wsdai:ServiceBusyFault" name="ServiceBusyFault"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetSQLReturnValue">
+      <wsdl:input message="wsdair:GetSQLReturnValueRequest"/>
+      <wsdl:output message="wsdair:GetSQLReturnValueResponse"/>
+      <wsdl:fault message="wsdai:InvalidResourceNameFault" name="InvalidResourceNameFault"/>
+      <wsdl:fault message="wsdai:NotAuthorizedFault" name="NotAuthorizedFault"/>
+      <wsdl:fault message="wsdair:InvalidPositionFault" name="InvalidPositionFault"/>
+      <wsdl:fault message="wsdair:InvalidCountFault" name="InvalidCountFault"/>
+      <wsdl:fault message="wsdai:DataResourceUnavailableFault" name="DataResourceUnavailableFault"/>
+      <wsdl:fault message="wsdai:ServiceBusyFault" name="ServiceBusyFault"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetSQLOutputParameter">
+      <wsdl:input message="wsdair:GetSQLOutputParameterRequest"/>
+      <wsdl:output message="wsdair:GetSQLOutputParameterResponse"/>
+      <wsdl:fault message="wsdai:InvalidResourceNameFault" name="InvalidResourceNameFault"/>
+      <wsdl:fault message="wsdai:NotAuthorizedFault" name="NotAuthorizedFault"/>
+      <wsdl:fault message="wsdair:InvalidPositionFault" name="InvalidPositionFault"/>
+      <wsdl:fault message="wsdair:InvalidCountFault" name="InvalidCountFault"/>
+      <wsdl:fault message="wsdai:DataResourceUnavailableFault" name="DataResourceUnavailableFault"/>
+      <wsdl:fault message="wsdai:ServiceBusyFault" name="ServiceBusyFault"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetSQLCommunicationArea">
+      <wsdl:input message="wsdair:GetSQLCommunicationAreaRequest"/>
+      <wsdl:output message="wsdair:GetSQLCommunicationAreaResponse"/>
+      <wsdl:fault message="wsdai:InvalidResourceNameFault" name="InvalidResourceNameFault"/>
+      <wsdl:fault message="wsdai:NotAuthorizedFault" name="NotAuthorizedFault"/>
+      <wsdl:fault message="wsdair:InvalidPositionFault" name="InvalidPositionFault"/>
+      <wsdl:fault message="wsdair:InvalidCountFault" name="InvalidCountFault"/>
+      <wsdl:fault message="wsdai:DataResourceUnavailableFault" name="DataResourceUnavailableFault"/>
+      <wsdl:fault message="wsdai:ServiceBusyFault" name="ServiceBusyFault"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:portType name="SQLResponseFactoryPT">
+    <wsdl:operation name="GetSQLRowsetFactory">
+      <wsdl:input message="wsdair:GetSQLRowsetFactoryRequest"/>
+      <wsdl:output message="wsdair:GetSQLRowsetFactoryResponse"/>
+      <wsdl:fault message="wsdai:InvalidResourceNameFault" name="InvalidResourceNameFault"/>
+      <wsdl:fault message="wsdai:NotAuthorizedFault" name="NotAuthorizedFault"/>
+      <wsdl:fault message="wsdair:InvalidPositionFault" name="InvalidPositionFault"/>
+      <wsdl:fault message="wsdair:InvalidCountFault" name="InvalidCountFault"/>
+      <wsdl:fault message="wsdai:DataResourceUnavailableFault" name="DataResourceUnavailableFault"/>
+      <wsdl:fault message="wsdai:ServiceBusyFault" name="ServiceBusyFault"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+</wsdl:definitions>

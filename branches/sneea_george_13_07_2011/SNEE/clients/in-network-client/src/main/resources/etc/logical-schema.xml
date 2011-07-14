@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<schema xmlns="http://snee.cs.man.ac.uk/namespace/logical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/logical-schema ../schema/logical-schema.xsd">
+
+      <stream name="SeaDefence" type="pull">
+         <column name="seaLevel">
+          	<type class ="integer"/>
+         </column>
+         <column name="voltage">
+          	<type class ="integer"/>
+         </column>         
+     </stream>
+
+     <stream name="SeaDefenceEast" type="pull">
+         <column name="seaLevel">
+          	<type class ="integer"/>
+         </column>
+         <column name="voltage">
+          	<type class ="integer"/>
+         </column>                   
+     </stream>
+
+      <stream name="SeaDefenceWest" type="pull">
+         <column name="seaLevel">
+          	<type class ="integer"/>
+         </column>
+         <column name="voltage">
+          	<type class ="integer"/>
+         </column>                  
+     </stream>
+
+	<!-- Testing for the newly created schema, that takes DATs into account. This is a testing
+	table for the Linear Regression, so we only have 2 columns. -->
+      <stream name="SeaDefenceLRF" isIntensional="true" type="push">
+         <column name="seaLevel">
+          	<type class ="integer"/>
+         </column>
+         <column name="voltage">
+          	<type class ="integer"/>
+         </column>
+         <datParams type="CLASSIFIER" subtype="LinearRegressionFunction">
+			<derivedAttribute name="voltage"/>
+			<source>SELECT seaLevel, voltage FROM SeaDefenceEast[FROM NOW-10 seconds TO NOW SLIDE 10 seconds]</source>
+         </datParams>
+     </stream>     
+
+
+	<!-- 
+	<stream name="forestMoisture" type="push">
+		<column name="ts">
+			<type class ="timestamp"/>
+		</column>
+		<column name="moisture">
+			<type class ="integer"/>
+		</column>
+	</stream>
+	 -->
+
+	<!-- Testing for the newly created schema, that takes DATs into account. This is a testing
+	table for the Linear Regression, so we only have 2 columns. -->
+     	<!--column name="ts">
+     		<type class="timestamp"/>
+     	</column>
+      <stream name="forestLRF" isIntensional="true" type="push">
+         <column name="temperature">
+          	<type class ="float"/>
+         </column>
+         <column name="moisture">
+          	<type class ="float"/>
+         </column>
+         <datParams type="CLASSIFIER" subtype="LinearRegressionFunction">
+			<derivedAttribute name="temperature"/>
+			<source>SELECT moisture, temperature FROM Forest[FROM NOW-10 MINUTES TO NOW SLIDE 1 MINUTE]</source>
+         </datParams>
+     </stream>     
+     -->
+
+      <stream name="flood" type="pull">
+    	<column name="timestamp">
+        	<type class ="integer"/>
+         </column>
+         <column name="temperature">
+          	<type class ="integer"/>
+         </column>
+     </stream>
+
+
+	<!-- Testing table for D3 algorithm. Example taken from the Design Document (Upd. Grammar) -->
+      <table name="d3e" isIntensional="true">
+    	<column name="voltage">
+        	<type class ="integer"/>
+         </column>
+         <column name="probability">
+          	<type class ="float"/>
+         </column>
+         <datParams type="OUTLIER_DETECTION" subtype="d3">
+			<derivedAttribute name="probability"/>
+			<parameters>
+				<parameter value="5"/>
+			</parameters>
+			<source>SELECT s.voltage FROM SeaDefenceWest[FROM NOW-20 seconds TO NOW] s</source>
+			<!-- <source>SELECT ts.pressure, ts.temperature FROM TestStream ts</source> -->
+         </datParams>
+     </table>
+     
+</schema>

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: uk.ac.manchester.cs.snee.metadata.MetadataManagerTest
+-------------------------------------------------------------------------------
+Tests run: 14, Failures: 0, Errors: 0, Skipped: 2, Time elapsed: 1.264 sec

@@ -1,0 +1,70 @@
+// $ANTLR 2.7.4: "SNEEql.g" -> "SNEEqlLexer.java"$
+
+//updated grammar which includes CREATE statements for Data Analysis Techniques
+package uk.ac.manchester.cs.snee.compiler.parser;
+
+public interface SNEEqlParserTokenTypes {
+	int EOF = 1;
+	int NULL_TREE_LOOKAHEAD = 3;
+	int SEMI = 4;
+	int UNION = 5;
+	int LPAREN = 6;
+	int RPAREN = 7;
+	int DSTREAM = 8;
+	int SELECT = 9;
+	int ISTREAM = 10;
+	int RSTREAM = 11;
+	int FROM = 12;
+	int WHERE = 13;
+	int MUL = 14;
+	int COMMA = 15;
+	int AS = 16;
+	int Identifier = 17;
+	int PLUS = 18;
+	int MINUS = 19;
+	int DIV = 20;
+	int MOD = 21;
+	int POW = 22;
+	int MIN = 23;
+	int Int = 24;
+	int Flt = 25;
+	int Attribute = 26;
+	int QuotedString = 27;
+	int LSQUARE = 28;
+	int NOW = 29;
+	int RSQUARE = 30;
+	int SLIDE = 31;
+	int UNBOUNDED = 32;
+	int RESCAN = 33;
+	int TO = 34;
+	int AT = 35;
+	int RANGE = 36;
+	int AND = 37;
+	int OR = 38;
+	int PRED = 39;
+	int NOT = 40;
+	int CREATE = 41;
+	int CLASSIFIER = 42;
+	int LRF = 43;
+	int CLUSTER = 44;
+	int NHC = 45;
+	int ASSOCIATIONRULE = 46;
+	int APRIORI = 47;
+	int OUTLIER_DETECTION = 48;
+	int D3 = 49;
+	int SAMPLE = 50;
+	int RND = 51;
+	int PROBFN = 52;
+	int KDE = 53;
+	int VIEW = 54;
+	int VIEW_SUBTYPE = 55;
+	int BOOLEXPR = 56;
+	int QUERY = 57;
+	int FROM_OR_RANGE = 58;
+	int UNIT_NAME = 59;
+	int SOURCE = 60;
+	int STAR = 61;
+	int ATTRIBUTE_NAME = 62;
+	int LOCAL_NAME = 63;
+	int FUNCTION_NAME = 64;
+}

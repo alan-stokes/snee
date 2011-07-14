@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: uk.ac.manchester.cs.snee.compiler.translator.TranslatorTest
+-------------------------------------------------------------------------------
+Tests run: 117, Failures: 0, Errors: 0, Skipped: 9, Time elapsed: 18.925 sec

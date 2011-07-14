@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema 
+	targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:wrs="http://java.sun.com/xml/ns/jdbc"
+	xmlns:wsdai="http://www.ggf.org/namespaces/2005/12/WS-DAI" 
+	xmlns:sds="http://www.semsorgrid4env.eu/namespace/2009/10/SDS">
+	
+	<xsd:import schemaLocation="wsdai/wsdai_core_types.xsd" 
+		namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI" />
+
+	<xsd:import namespace="http://java.sun.com/xml/ns/jdbc" 
+		schemaLocation="webrowset/webrowset-jdbc150.xsd"/>
+
+	<!-- General types -->
+	
+	<xsd:simpleType name="AbsoluteOrRelativeTimeType">
+    	<xsd:union memberTypes="xsd:dateTime xsd:duration" />
+    </xsd:simpleType>
+  	<xsd:element name="AbsoluteOrRelativeTime" type="sds:AbsoluteOrRelativeTimeType"/>
+  	
+  	<xsd:simpleType name="DurationOrTuplesType">
+  		<xsd:union memberTypes="xsd:duration xsd:int"/>
+  	</xsd:simpleType>
+  	<xsd:element name="DurationOrTuples" type="sds:DurationOrTuplesType"/>
+  	
+  	<xsd:simpleType name="TimeOrSequenceNumberType">
+  		<xsd:union memberTypes="xsd:dateTime xsd:int" />
+  	</xsd:simpleType>
+  	<xsd:element name="TimeOrSequenceNumber" type="sds:TimeOrSequenceNumberType"/>
+
+	<!-- Stream rate details -->
+	<xsd:complexType name="StreamRateType">
+		<xsd:sequence>
+			<xsd:element name="StreamQName" type="xsd:QName" 
+				minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="MinimumFlowRate" type="xsd:double"
+				minOccurs="0" maxOccurs="1" />
+			<xsd:element name="AverageFlowRate" type="xsd:double"
+				minOccurs="0" maxOccurs="1" />
+			<xsd:element name="MaximumFlowRate" type="xsd:double"
+				minOccurs="0" maxOccurs="1" />
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="StreamRate" type="sds:StreamRateType"/>
+
+	<!-- Stream Item -->
+	<xsd:complexType name="StreamItemType">
+		<xsd:sequence minOccurs="0" maxOccurs="unbounded">
+			<xsd:element name="StreamItemValue" type="xsd:anyType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="StreamItem" type="sds:StreamItemType"/>
+	
+	<!-- Stream Description -->
+
+    <xsd:complexType name="StreamDescriptionType">
+		<xsd:sequence>
+			<xsd:element name="StreamDescriptionFormatURI" type="xsd:anyURI"/>
+			<xsd:element name="StreamDescriptionDocument" type="xsd:anyType"/>
+		</xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="StreamDescription" type="sds:StreamDescriptionType" />
+
+	<!-- Stream Property Document -->
+	<xsd:complexType name="StreamPropertyDocumentType">
+		<xsd:complexContent>
+			<xsd:extension base="wsdai:PropertyDocumentType">
+				<xsd:sequence>
+					<xsd:element name="StreamDescription" type="sds:StreamDescriptionType" 
+						minOccurs="1" maxOccurs="1"/>
+					<xsd:element name="StreamRate" type="sds:StreamRateType"
+						minOccurs="0" maxOccurs="unbounded"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:element name="StreamPropertyDocument" type="sds:StreamPropertyDocumentType"/>
+</xsd:schema>
