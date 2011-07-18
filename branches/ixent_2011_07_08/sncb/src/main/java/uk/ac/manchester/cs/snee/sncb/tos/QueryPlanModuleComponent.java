@@ -572,15 +572,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 			    + "\t\t\t\tcall AgendaTimer.startOneShot(nextDelta);\n");
     }
 
-    private void doInvokeCommunicationTask(
-	    final StringBuffer firedTimerTaskBuff,
-	    final StringBuffer agendaCheckingBuff, final boolean lastTime,
-	    final boolean first, final Task task, final int ind,
-	    boolean tossimFlag, StringBuffer radioOnTaskBuff) {
-	    this.doInvokeT2CommunicationTask(firedTimerTaskBuff,
-		    agendaCheckingBuff, lastTime, first, task, ind); //TODO: ?tossimFlag?, radioOnTaskBuff?
-    }
-
     private String generateTaskName(final String commWiringName) {
 	return commWiringName.substring(6) + "Task()";
     }
@@ -598,10 +589,11 @@ public class QueryPlanModuleComponent extends NesCComponent {
 
 	}
 
-    private void doInvokeT2CommunicationTask(
+    private void doInvokeCommunicationTask(
 	    final StringBuffer firedTimerTaskBuff,
 	    final StringBuffer agendaCheckingBuff, final boolean lastTime,
-	    final boolean first, final Task task, final int ind) {
+	    final boolean first, final Task task, final int ind,
+	    boolean tossimFlag, StringBuffer radioOnTaskBuff) {
 	final CommunicationTask commTask = (CommunicationTask) task;
 	final int mode = commTask.getMode();
 
