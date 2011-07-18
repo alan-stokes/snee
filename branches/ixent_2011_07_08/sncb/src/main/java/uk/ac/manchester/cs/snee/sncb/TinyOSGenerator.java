@@ -251,8 +251,6 @@ public class TinyOSGenerator {
 	private boolean enableLeds;
 
 	private boolean usePowerManagement;
-
-	private boolean deliverLast;
 	
 	private boolean includeDeluge;
 
@@ -267,9 +265,8 @@ public class TinyOSGenerator {
     public TinyOSGenerator(CodeGenTarget codeGenTarget,
     boolean combinedImage, String nescOutputDir, MetadataManager metadata, boolean controlRadioOff,
     boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
-    boolean usePowerManagement, boolean deliverLast,
-    boolean includeDeluge, boolean debugLeds, boolean showLocalTime,
-    boolean useNodeController)
+    boolean usePowerManagement, boolean includeDeluge, boolean debugLeds, 
+    boolean showLocalTime, boolean useNodeController)
     throws IOException, SchemaMetadataException, TypeMappingException {
 		this.target = codeGenTarget;
 		this.targetDirName = codeGenTarget.toString().toLowerCase();
@@ -304,7 +301,6 @@ public class TinyOSGenerator {
 		this.useStartUpProtocol = useStartUpProtocol;
 		this.enableLeds = enableLeds;
 		this.usePowerManagement = usePowerManagement;
-		this.deliverLast = deliverLast;
 		this.includeDeluge = includeDeluge;
 		this.debugLeds = debugLeds;
 		this.showLocalTime = showLocalTime;
@@ -722,8 +718,7 @@ public class TinyOSGenerator {
 			new QueryPlanModuleComponent(COMPONENT_QUERY_PLAN, config,
 			plan, sink, (tossimFlag || combinedImage), targetDirName,
 			costParams, controlRadioOff, enablePrintf, useStartUpProtocol, enableLeds,
-			debugLeds, usePowerManagement, deliverLast,
-			useNodeController, target);
+			debugLeds, usePowerManagement, useNodeController, target);
 		config.addComponent(queryPlanModuleComp);
 
 		TimerComponent timerComp = new TimerComponent(		//$

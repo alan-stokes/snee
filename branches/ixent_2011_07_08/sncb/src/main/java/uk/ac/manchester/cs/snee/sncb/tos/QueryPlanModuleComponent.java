@@ -82,8 +82,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	private boolean enableLeds;
 
 	private boolean usePowerManagement;
-
-	private boolean deliverLast;
 	
 	private boolean useControllerComponent;
     
@@ -92,7 +90,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    final int sink, boolean tossimFlag, 
 	    String targetName, CostParameters costParams, boolean controlRadioOff,
 	    boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
-	    boolean debugLeds, boolean usePowerManagement, boolean deliverLast, 
+	    boolean debugLeds, boolean usePowerManagement,  
 	    boolean useControllerComponent,
 	    CodeGenTarget target) {
 		super(config, tossimFlag, debugLeds, target);
@@ -107,7 +105,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		this.useStartUpProtocol = useStartUpProtocol;
 		this.enableLeds = enableLeds;
 		this.usePowerManagement = usePowerManagement;
-		this.deliverLast = deliverLast;
 		this.useControllerComponent = useControllerComponent;
 		
 	    tosSiteAddress = "TOS_NODE_ID";
@@ -648,40 +645,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		+ "\t\t\t\t//Sleep done by power management\n");
 	
     agendaCheckingBuff.append(Utils.indent(ind)
-			    + "\t\t\t\tcall AgendaTimer.startOneShot(nextDelta);\n");		
-
-	if (this.deliverLast) {
-	    agendaCheckingBuff.append("\t\t\t\t}\n");
-	    agendaCheckingBuff.append("\t\t\t\telse\n");
-	    agendaCheckingBuff.append("\t\t\t\t{\n");
-	    agendaCheckingBuff
-		    .append(Utils.indent(ind)
-			    + "\t\t\t\tdbg(DBG_USR3,\"AGENDA: Mote %d End of Query Duration at %lld \\n\", NODE_NUM,tos_state.tos_time);\n");
-	    //CB: Better would be to call snooze with max value
-	    agendaCheckingBuff
-		    .append(Utils.indent(ind)
-			    + "\t\t\t\tdbg(DBG_POWER,\"POWER: Mote %d CPU_STATE POWER_SAVE at %lld \\n\", NODE_NUM,tos_state.tos_time);\n");
-	    if (!((SleepTask) task).isLastInAgenda()) {
-		agendaCheckingBuff
-			.append(Utils.indent(ind)
-				+ "\t\t\t\tdbg(DBG_USR3,\"AGENDA: Mote %d Jumping to non leaf start at %lld \\n\", NODE_NUM,tos_state.tos_time);\n");
-		agendaCheckingBuff.append(Utils.indent(ind)
-			+ "\t\t\t\tagendaTime=NON_LEAF_START;\n"); //TODO: change to agendaRow?
-		agendaCheckingBuff.append(Utils.indent(ind)
-			+ "\t\t\t\tnextDelta=NON_LEAF_DELTA;\n");
-		agendaCheckingBuff
-			.append(Utils.indent(ind)
-				+ "\t\t\t\t//Jump straight to buffered task to deliver remaining results without sleeping.;\n");
-		agendaCheckingBuff.append(Utils.indent(ind)
-			+ "\t\t\t\tpost processAgendaItemsTask();\n");
-		agendaCheckingBuff.append(Utils.indent(ind)
-			+ "\t\t\t\treturn;\n");
-	    } else {
-		agendaCheckingBuff.append(Utils.indent(ind)
-			+ "\t\t\t\t//Finished all buffered task.;\n");
-	    }
-	    agendaCheckingBuff.append(Utils.indent(ind) + "\t\t\t}\n");
-	}
+			    + "\t\t\t\tcall AgendaTimer.startOneShot(nextDelta);\n");
     }
 
     private void doInvokeCommunicationTask(
@@ -886,14 +850,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		.generateModuleHeader(TinyOSGenerator.COMPONENT_QUERY_PLAN);
 	out.println(header);
 
-	if (this.deliverLast) {
-	    out.println("\t#define NON_LEAF_START " + agenda.getNonLeafStart()
-		    + "\n");
-	    out.println("\t#define NON_LEAF_DELTA "
-		    + (startTimeList.get(startTimeList.indexOf(agenda
-			    .getNonLeafStart()) + 1)
-			    - agenda.getNonLeafStart() - 1) + "\n");
-	}
 	out.println("\n");
 	out.println("\tuint32_t nextDelta;\n");
 	out.println("\tuint32_t agendaRow;\n");
