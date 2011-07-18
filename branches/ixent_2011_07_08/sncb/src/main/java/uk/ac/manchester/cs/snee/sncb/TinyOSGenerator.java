@@ -89,7 +89,6 @@ import uk.ac.manchester.cs.snee.sncb.tos.AggrSingleStepComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenUtils;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.tos.DeliverComponent;
-import uk.ac.manchester.cs.snee.sncb.tos.DelugeComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.ExchangeProducerComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.FragmentComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.JoinComponent;
@@ -203,8 +202,6 @@ public class TinyOSGenerator {
     
     public static String COMPONENT_SERIAL_STARTER;
 
-    public static String COMPONENT_DELUGE;
-    
     public static String COMPONENT_NODE_CONTROLLER;
     
     private static String INTERFACE_AMPACKET;
@@ -252,8 +249,6 @@ public class TinyOSGenerator {
 
 	private boolean usePowerManagement;
 	
-	private boolean includeDeluge;
-
 	private boolean debugLeds;
 	
 	private boolean showLocalTime; //Not working
@@ -265,7 +260,7 @@ public class TinyOSGenerator {
     public TinyOSGenerator(CodeGenTarget codeGenTarget,
     boolean combinedImage, String nescOutputDir, MetadataManager metadata, boolean controlRadioOff,
     boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
-    boolean usePowerManagement, boolean includeDeluge, boolean debugLeds, 
+    boolean usePowerManagement, boolean debugLeds, 
     boolean showLocalTime, boolean useNodeController)
     throws IOException, SchemaMetadataException, TypeMappingException {
 		this.target = codeGenTarget;
@@ -301,7 +296,6 @@ public class TinyOSGenerator {
 		this.useStartUpProtocol = useStartUpProtocol;
 		this.enableLeds = enableLeds;
 		this.usePowerManagement = usePowerManagement;
-		this.includeDeluge = includeDeluge;
 		this.debugLeds = debugLeds;
 		this.showLocalTime = showLocalTime;
 		
@@ -321,7 +315,6 @@ public class TinyOSGenerator {
      */
     private void initConstants() {
 	    COMPONENT_AGENDA_TIMER = "AgendaTimer";
-	    COMPONENT_DELUGE = "DelugeC";
 	    COMPONENT_LOCAL_TIME = "LocalTimeMilliC";
 	    COMPONENT_MAIN = "MainC";
 	    COMPONENT_NODE_CONTROLLER = "CommandServerAppC";
@@ -413,11 +406,7 @@ public class TinyOSGenerator {
 		LedComponent ledComp = new LedComponent(COMPONENT_LEDS, config, tossimFlag);
 		config.addComponent(ledComp);
 		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_LEDS, INTERFACE_LEDS);
-		
-		if ((this.includeDeluge) && (tossimFlag == false)) {
-			config.addWiring(COMPONENT_DELUGE, COMPONENT_LEDS, INTERFACE_LEDS);
-		}
-		
+				
 		final Iterator<NesCComponent> compIter = config.componentIterator();
 		while (compIter.hasNext()) {
 		    final NesCComponent comp = compIter.next();
@@ -749,10 +738,6 @@ public class TinyOSGenerator {
 //					INTERFACE_TIMER, TYPE_TMILLI, "RadioOnTimer", INTERFACE_TIMER);
 //		}
 		
-		if (this.includeDeluge && tossimFlag == false) {
-			DelugeComponent delugeComp = new DelugeComponent(COMPONENT_DELUGE, config, tossimFlag);
-			config.addComponent(delugeComp);
-		}
 		if (this.useStartUpProtocol) {
 			addStartupProtocolComponents(config);
 		}
@@ -2047,7 +2032,7 @@ public class TinyOSGenerator {
 	    	Template.instantiate(NESC_MISC_FILES_DIR + "/itoa.h",
 					    nescOutputDir + nodeDir + "/itoa.h");
 		    
-		    if (this.includeDeluge || this.useNodeController) {
+		    if (this.useNodeController) {
 		    	Template.instantiate(NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
 					    nescOutputDir + nodeDir +"/volumes-stm25p.xml");	
 		    	
@@ -2094,7 +2079,7 @@ public class TinyOSGenerator {
 					    nescOutputDir + targetDirName +"/itoa.h");
 
 		    
-		    if (this.includeDeluge) {
+		    if (this.useNodeController) {
 		    	Template.instantiate(
 					    NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
 					    nescOutputDir + targetDirName +"/volumes-stm25p.xml");		    	
@@ -2170,8 +2155,7 @@ public class TinyOSGenerator {
 		HashMap<String, String> replacements = new HashMap<String, String>();
 		replacements.put("__MAIN_CONFIG_NAME__", mainConfigName);
 		
-		if (this.includeDeluge && tossimFlag == false ||
-				this.useNodeController) {
+		if (this.useNodeController) {
 			replacements.put("__DELUGE__","BOOTLOADER=tosboot");			
 		} else {
 			replacements.put("__DELUGE__","");
