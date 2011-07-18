@@ -243,8 +243,6 @@ public class TinyOSGenerator {
 
 	private boolean enablePrintf;
 
-	private boolean useStartUpProtocol;
-
 	private boolean enableLeds;
 
 	private boolean usePowerManagement;
@@ -259,7 +257,7 @@ public class TinyOSGenerator {
 	
     public TinyOSGenerator(CodeGenTarget codeGenTarget,
     boolean combinedImage, String nescOutputDir, MetadataManager metadata, boolean controlRadioOff,
-    boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
+    boolean enablePrintf, boolean enableLeds,
     boolean usePowerManagement, boolean debugLeds, 
     boolean showLocalTime, boolean useNodeController)
     throws IOException, SchemaMetadataException, TypeMappingException {
@@ -293,7 +291,6 @@ public class TinyOSGenerator {
 
 		this.controlRadioOff =controlRadioOff;
 		this.enablePrintf = enablePrintf;
-		this.useStartUpProtocol = useStartUpProtocol;
 		this.enableLeds = enableLeds;
 		this.usePowerManagement = usePowerManagement;
 		this.debugLeds = debugLeds;
@@ -706,7 +703,7 @@ public class TinyOSGenerator {
 		QueryPlanModuleComponent queryPlanModuleComp =
 			new QueryPlanModuleComponent(COMPONENT_QUERY_PLAN, config,
 			plan, sink, (tossimFlag || combinedImage), targetDirName,
-			costParams, controlRadioOff, enablePrintf, useStartUpProtocol, enableLeds,
+			costParams, controlRadioOff, enablePrintf, enableLeds,
 			debugLeds, usePowerManagement, useNodeController, target);
 		config.addComponent(queryPlanModuleComp);
 
@@ -738,39 +735,9 @@ public class TinyOSGenerator {
 //					INTERFACE_TIMER, TYPE_TMILLI, "RadioOnTimer", INTERFACE_TIMER);
 //		}
 		
-		if (this.useStartUpProtocol) {
-			addStartupProtocolComponents(config);
-		}
 		if (this.useNodeController) {
 			addNodeControllerComponents(config);
 		}
-	}
-
-	private void addStartupProtocolComponents(final NesCConfiguration config)
-			throws CodeGenerationException {
-		String aid = ActiveMessageIDGenerator.getActiveMessageID("AM_SERIAL_STARTUP_MESSAGE");
-		SerialAMReceiveComponent serialRxComp = 
-			new SerialAMReceiveComponent(COMPONENT_SERIALRX+"StartUp", config, aid, tossimFlag);
-		config.addComponent(serialRxComp);
-		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_SERIALRX+"StartUp", INTERFACE_RECEIVE, "SerialStartUp", "Receive");
-		
-		aid = ActiveMessageIDGenerator.getActiveMessageID("AM_BEACON_MESSAGE");
-		AMSendComponent beaconSender = new AMSendComponent(config, aid, tossimFlag);
-		config.addComponent(beaconSender);
-		config.addWiring(COMPONENT_QUERY_PLAN, beaconSender.getID(),
-				INTERFACE_SEND, "Beacon"+INTERFACE_SEND, INTERFACE_SEND);
-		config.addWiring(COMPONENT_QUERY_PLAN, beaconSender.getID(),
-				INTERFACE_PACKET, "Beacon"+INTERFACE_PACKET,
-				INTERFACE_PACKET);
-		config.addWiring(COMPONENT_QUERY_PLAN, beaconSender.getID(),
-					INTERFACE_AMPACKET, "Beacon"+INTERFACE_AMPACKET,
-					INTERFACE_AMPACKET);
-		
-		AMRecieveComponent beaconReceiver = new AMRecieveComponent(config, aid, tossimFlag);
-		config.addComponent(beaconReceiver);
-		config.addWiring(COMPONENT_QUERY_PLAN, beaconReceiver.getID(),
-				INTERFACE_RECEIVE, "Beacon"+INTERFACE_RECEIVE,
-				INTERFACE_RECEIVE);
 	}
 
 

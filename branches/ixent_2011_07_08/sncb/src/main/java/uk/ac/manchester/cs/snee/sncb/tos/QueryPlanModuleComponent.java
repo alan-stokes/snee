@@ -77,8 +77,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 
 	private boolean enablePrintf;
 
-	private boolean useStartUpProtocol;
-
 	private boolean enableLeds;
 
 	private boolean usePowerManagement;
@@ -89,7 +87,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    final NesCConfiguration config, final SensorNetworkQueryPlan plan,
 	    final int sink, boolean tossimFlag, 
 	    String targetName, CostParameters costParams, boolean controlRadioOff,
-	    boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
+	    boolean enablePrintf, boolean enableLeds,
 	    boolean debugLeds, boolean usePowerManagement,  
 	    boolean useControllerComponent,
 	    CodeGenTarget target) {
@@ -102,7 +100,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 
 		this.controlRadioOff =controlRadioOff;
 		this.enablePrintf = enablePrintf;
-		this.useStartUpProtocol = useStartUpProtocol;
 		this.enableLeds = enableLeds;
 		this.usePowerManagement = usePowerManagement;
 		this.useControllerComponent = useControllerComponent;
@@ -421,56 +418,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		out.println("\t}\n");
 	}
 	
-	private void doT2StartupProtocol(final PrintWriter out, String sinkID) {
-		out.println("\tbool beaconSent = FALSE;");
-		out.println("\tbool beaconReceived = FALSE;");
-		out.println("\tmessage_t pkt;");
-		out.println("\ttypedef nx_struct BeaconMessage { nx_bool beaconMessage; } BeaconMessage;\n\n");
-		
-		out.println("\ttask void doStartUpProtocol()");
-		out.println("\t{");
-		if (this.debugLeds) {
-			out.println("\t\tcall Leds.set(LEDS_LED0 | LEDS_LED1 | LEDS_LED2);");
-		}
-		out.println("\t}\n\n");
-		
-		out.println("\ttask void sendBeaconTask()");
-		out.println("\t{");
-		out.println("\t\tBeaconMessage* bpkt = (BeaconMessage*)(call BeaconPacket.getPayload(&pkt, NULL));");
-		out.println("\t\tcall BeaconAMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMessage));");
-		out.println("\t}\n\n");
-		
-		out.println("\tevent void BeaconAMSend.sendDone(message_t* msg, error_t error)");
-		out.println("\t{");
-		out.println("\tif ( &pkt == msg )");
-		out.println("\t\t{");
-		out.println("\t\t\tbeaconSent = TRUE;");
-		out.println("\t\t\tpost initialize();");
-		out.println("\t\t}");
-		out.println("\t}\n\n");
-		
-		out.println("\tevent message_t* BeaconReceive.receive(message_t* msg, void* payload, uint8_t len)");
-		out.println("\t{");
-		out.println("\t\tif (! beaconReceived && ! beaconSent )");
-		out.println("\t\t{");
-		out.println("\t\t\tbeaconReceived = TRUE;");
-		out.println("\t\t\tpost sendBeaconTask();");
-		if (this.debugLeds) {
-			out.println("\t\t\tcall Leds.set(0);");
-		}
-		out.println("\t\t}");
-		out.println("\t\treturn msg;");
-		out.println("\t}\n\n");
-		
-		out.println("\tevent message_t* SerialStartUp.receive( message_t* msg, void* payload, uint8_t len )");
-		out.println("\t{");
-		if (this.debugLeds) {
-			out.println("\t\tcall Leds.set(0);");
-		}
-		out.println("\t\tpost sendBeaconTask();");
-		out.println("\t\treturn msg;");
-		out.println("\t}\n\n");
-	}
 	
 	//TODO: Add task invocation in firedTasksBuffer... (need to add to agenda too)
 	private void doT2StartupMethodsWithCommandServer(final PrintWriter out,
@@ -587,18 +534,11 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		out.println("\t}\n");
 		
 		if (usesRadio) {
-			if (this.useStartUpProtocol) {
-				doT2StartupProtocol(out, sinkID);
-			}
-			
 			out.println("\tevent void CommControl.startDone(error_t err)");
 			out.println("\t{");
 			out.println("\t\tif (err == SUCCESS) {");
-			if (this.useStartUpProtocol) {
-				out.println("\t\t\tcall SerialControl.start();");
-			} else {
-				out.println("\t\t\tpost initialize();");				
-			}
+			out.println("\t\t\tpost initialize();");				
+			
 			out.println("\t\t} else {");
 			out.println("\t\t\tcall CommControl.start();");			
 			out.println("\t\t}");
@@ -608,22 +548,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 			out.println("\t{");
 			out.println("\t\t//Do nothing");
 			out.println("\t}\n\n");
-
-			if (this.useStartUpProtocol) {
-				out.println("\tevent void SerialControl.startDone(error_t err)");
-				out.println("\t{");
-				out.println("\t\tif (err == SUCCESS) {");
-				out.println("\t\t\tpost doStartUpProtocol();");		
-				out.println("\t\t} else {");
-				out.println("\t\t\tcall SerialControl.start();");			
-				out.println("\t\t}");
-				out.println("\t}\n");			
-				
-				out.println("\tevent void SerialControl.stopDone(error_t err)");
-				out.println("\t{");
-				out.println("\t\t//Do nothing");
-				out.println("\t}\n\n");
-			}
 		}
     }
 

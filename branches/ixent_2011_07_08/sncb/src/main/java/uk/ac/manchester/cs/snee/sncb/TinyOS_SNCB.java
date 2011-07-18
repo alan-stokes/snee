@@ -241,15 +241,14 @@ public class TinyOS_SNCB implements SNCB {
 		// TODO: move some of these to an sncb .properties file
 		boolean controlRadioOff = true;
 		boolean enablePrintf = false;
-		boolean useStartUpProtocol = false;
 		boolean enableLeds = true;
 		boolean usePowerManagement = false;
 		boolean debugLeds = true;
 		boolean showLocalTime = false;
 
 		TinyOSGenerator codeGenerator = new TinyOSGenerator(target, combinedImage, queryOutputDir,
-				metadata, controlRadioOff, enablePrintf, useStartUpProtocol,
-				enableLeds, usePowerManagement, debugLeds, showLocalTime, useNodeController);
+				metadata, controlRadioOff, enablePrintf, enableLeds, usePowerManagement, 
+				debugLeds, showLocalTime, useNodeController);
 		// TODO: in the code generator, need to connect controller components to
 		// query plan components
 		codeGenerator.doNesCGeneration(qep);
