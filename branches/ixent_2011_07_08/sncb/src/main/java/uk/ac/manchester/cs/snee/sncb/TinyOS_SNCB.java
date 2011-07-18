@@ -239,20 +239,19 @@ public class TinyOS_SNCB implements SNCB {
 			throws IOException, SchemaMetadataException, TypeMappingException,
 			OptimizationException, CodeGenerationException {
 		// TODO: move some of these to an sncb .properties file
-		boolean controlRadioOff = false;
+		boolean controlRadioOff = true;
 		boolean enablePrintf = false;
 		boolean useStartUpProtocol = false;
 		boolean enableLeds = true;
 		boolean usePowerManagement = false;
 		boolean deliverLast = false;
-		boolean adjustRadioPower = false;
 		boolean includeDeluge = false;
 		boolean debugLeds = true;
 		boolean showLocalTime = false;
 
 		TinyOSGenerator codeGenerator = new TinyOSGenerator(target, combinedImage, queryOutputDir,
 				metadata, controlRadioOff, enablePrintf, useStartUpProtocol,
-				enableLeds, usePowerManagement, deliverLast, adjustRadioPower,
+				enableLeds, usePowerManagement, deliverLast,
 				includeDeluge, debugLeds, showLocalTime, useNodeController);
 		// TODO: in the code generator, need to connect controller components to
 		// query plan components
