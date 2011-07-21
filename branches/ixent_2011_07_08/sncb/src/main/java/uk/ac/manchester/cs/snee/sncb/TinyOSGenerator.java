@@ -710,7 +710,7 @@ public class TinyOSGenerator {
 		TimerComponent timerComp = new TimerComponent(		//$
 			COMPONENT_AGENDA_TIMER, config, tossimFlag);
 		config.addComponent(timerComp);
-
+		
 		//Radio component and serial component are separate in T2
 		final RadioComponent radioComp = new RadioComponent(
 			COMPONENT_RADIO, config, tossimFlag);
@@ -727,13 +727,13 @@ public class TinyOSGenerator {
 		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_AGENDA_TIMER,
 			INTERFACE_TIMER, TYPE_TMILLI, COMPONENT_AGENDA_TIMER,
 			INTERFACE_TIMER);
-//		if (!tossimFlag) {
-//			TimerT2Component radioOnComp = new TimerT2Component(		//$
-//					"RadioOnTimer", config, tossimFlag);
-//			config.addComponent(radioOnComp);
-//			config.addWiring(COMPONENT_QUERY_PLAN, "RadioOnTimer",
-//					INTERFACE_TIMER, TYPE_TMILLI, "RadioOnTimer", INTERFACE_TIMER);
-//		}
+		if (!tossimFlag && this.controlRadioOff) {
+			TimerComponent radioOnComp = new TimerComponent(		//$
+					"RadioOnTimer", config, tossimFlag);
+			config.addComponent(radioOnComp);
+			config.addWiring(COMPONENT_QUERY_PLAN, "RadioOnTimer",
+					INTERFACE_TIMER, TYPE_TMILLI, "RadioOnTimer", INTERFACE_TIMER);
+		}
 		
 		if (this.useNodeController) {
 			addNodeControllerComponents(config);
