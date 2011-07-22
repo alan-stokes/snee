@@ -727,13 +727,6 @@ public class TinyOSGenerator {
 		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_AGENDA_TIMER,
 			INTERFACE_TIMER, TYPE_TMILLI, COMPONENT_AGENDA_TIMER,
 			INTERFACE_TIMER);
-		if (!tossimFlag && this.controlRadioOff) {
-			TimerComponent radioOnComp = new TimerComponent(		//$
-					"RadioOnTimer", config, tossimFlag);
-			config.addComponent(radioOnComp);
-			config.addWiring(COMPONENT_QUERY_PLAN, "RadioOnTimer",
-					INTERFACE_TIMER, TYPE_TMILLI, "RadioOnTimer", INTERFACE_TIMER);
-		}
 		
 		if (this.useNodeController) {
 			addNodeControllerComponents(config);
