@@ -129,6 +129,8 @@ public class Agenda extends SNEEAlgebraicForm {
 		logger.trace("Scheduling the non-leaf fragments");
 		scheduleNonLeafFragments();
 		logger.trace("Scheduling network management section");
+		logger.trace("add radioOn and radioOff tasks");
+		insertRadioOnOffTasks();
 		logger.trace("Scheduled final sleep task");
 		scheduleFinalSleepTask();
 		
@@ -810,6 +812,182 @@ public class Agenda extends SNEEAlgebraicForm {
 		this.setNonLeafStart(nonLeafStart);
 	}
 
+    /**
+     * Checks if site has been scheduled a task (including sleep tasks) at a given time.
+     * @param site
+     * @param startTime
+     * @return
+     */
+    public final boolean isFree(final Site site, final long startTime, final long endTime) {
+    	final Iterator<Task> taskListIter = this.tasks.get(site).iterator();
+    	while (taskListIter.hasNext()) {
+    	    final Task t = taskListIter.next();
+    	    long taskStartTime = t.getStartTime();
+    	    long taskEndTime = t.getEndTime();
+    	    if (taskStartTime <= startTime && startTime < taskEndTime) {
+    	    	return false;
+    	    }
+    	    if (taskStartTime <= endTime-1 && endTime-1 < taskEndTime) {
+    	    	return false;
+    	    }
+    	}
+    	return true;
+    }
+    
+
+    public final boolean hasRadioOn(final Site site, final long time) {
+    	boolean radioOn = false;
+    	
+    	final Iterator<Task> taskListIter = this.tasks.get(site).iterator();
+    	while (taskListIter.hasNext()) {
+    	    final Task t = taskListIter.next();
+    	    long taskStartTime = t.getStartTime();
+
+    	    if (taskStartTime > time) {
+    	    	return radioOn;
+    	    }
+    	    
+    	    if (t instanceof RadioOnTask) {
+    	    	radioOn = true;
+    	    }
+    	    if (t instanceof RadioOffTask) {
+    	    	radioOn = false;
+    	    }
+    	}
+    	return radioOn;
+    }
+    
+    /**
+     * Shifts all the tasks for all the sites starting on or after a given time by offset.
+     * @param time
+     * @param offset
+     */
+    public final void shift(final long time, final long offset) {
+    	
+    	//update the list of startTimes
+    	for (int i=0; i < this.startTimes.size(); i++) {
+    		if (this.startTimes.get(i)>=time) {
+    			long oldStartTime = this.startTimes.get(i);
+    			long newStartTime = oldStartTime+offset;
+    			this.startTimes.set(i, newStartTime);    			
+    		}
+    	}
+    	
+    	//update the list of tasks at each site
+    	Iterator<Site> siteIter = this.getDAF().getRT().siteIterator(TraversalOrder.POST_ORDER);
+    	while (siteIter.hasNext()) {
+    		Site s = siteIter.next();
+    		
+    		ArrayList<Task> siteTaskList = this.tasks.get(s);
+    		for (int i=0; i < siteTaskList.size(); i++) {
+    			Task t = siteTaskList.get(i);
+    			if (t.startTime>=time) {
+	    			t.startTime += offset;
+			    	t.endTime += offset;
+    			}
+    		}
+    	}
+    }
+
+	
+	private void insertRadioOnOffTasks() {
+		Iterator<Site> siteIter;
+		siteIter = this.daf.getRT().siteIterator(TraversalOrder.POST_ORDER);
+		long radioOnTimeCost = (long) costParams.getTurnOnRadio();
+		long radioOffTimeCost = (long) costParams.getTurnOffRadio();
+		
+		while (siteIter.hasNext()) {
+			Site site = siteIter.next();
+			ArrayList<Task> siteTasks = this.tasks.get(site);
+			for (int i = 0; i<siteTasks.size(); i++) {
+				Task t = siteTasks.get(i);
+				long startTime = t.startTime;
+				if ((t instanceof CommunicationTask || t.isDeliverTask()) && !this.hasRadioOn(site, startTime)) {
+					if (this.isFree(site, startTime - radioOnTimeCost, startTime)) {
+						this.insertTask(startTime - radioOnTimeCost, site, 
+								new RadioOnTask(startTime - radioOnTimeCost, site, costParams));
+					} else {
+						this.shift(startTime, radioOnTimeCost);
+						this.insertTask(startTime, site, new RadioOnTask(startTime, site, costParams));
+					}
+				}
+				if ((t instanceof CommunicationTask || t.isDeliverTask())&& (radioNextNeededTime(siteTasks, i+1)==-1 
+						|| radioNextNeededTime(siteTasks, i+1) > t.endTime + (radioOnTimeCost*1.5))) {
+					
+					if (this.isFree(site, t.endTime, t.endTime+radioOffTimeCost)) {
+						this.insertTask(t.endTime, site, new RadioOffTask(t.endTime, site, costParams));
+					} else {
+						this.shift(t.endTime, radioOffTimeCost);
+						this.insertTask(t.endTime, site, new RadioOffTask(t.endTime, site, costParams));
+					}
+				}
+			}
+		}
+	}
+	
+    public final void insertTask(final long time, final Site site, final Task t) {
+    	boolean found = false;
+    	
+    	for (int i=0; i < this.startTimes.size(); i++) {
+    		if (time == this.startTimes.get(i)) {
+    			found = true;
+    			break;
+    		}
+    		if (time < this.startTimes.get(i)) {
+    			this.startTimes.add(i, new Long(time));
+    			found = true;
+    			break;
+    		}
+    	}
+
+    	//append to the end
+    	if (!found) {
+    		this.startTimes.add(new Long(time));
+    	}
+    	
+    	found = false;
+    	ArrayList<Task> taskList = this.tasks.get(site);
+    	for (int i=0; i < taskList.size(); i++) {
+    		if (time < taskList.get(i).getStartTime()) {
+    			taskList.add(i, t);
+    			found = true;
+    			break;
+    		}
+    	}
+    
+    	//append to end
+    	if (!found) {
+    		taskList.add(t);
+    	}
+    }	
+	
+    /**
+     * Given the list of tasks for a particular site, and a index to start searching, returns
+     * the startTime of the next task which requires use of the radio.
+     * If there is none, returns -1.
+     * @param siteTasks
+     * @param startTaskNum
+     * @return
+     */
+    public static long radioNextNeededTime(ArrayList<Task> siteTasks, int startTaskNum) {
+    	
+    	//startTaskNum is beyond the last task; radio never needed again 
+    	if (startTaskNum >= siteTasks.size()) {
+    		return -1;
+    	}
+    	
+    	for (int i=startTaskNum; i<siteTasks.size(); i++) {
+    		Task t = siteTasks.get(i);
+    		
+    		//check if communication task or deliver task
+    		if (t instanceof CommunicationTask || t.isDeliverTask()) {
+    			return t.startTime;
+    		}    		
+    	}
+    	
+    	return -1;
+    }
+	
 	public CostParameters getCostParameters() {
 		return this.costParams;
 	}    

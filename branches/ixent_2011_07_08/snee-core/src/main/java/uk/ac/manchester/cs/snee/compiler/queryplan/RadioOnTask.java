@@ -33,81 +33,32 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
-import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 
-/**
- * Abstract class to represent a task in the schedule.
- * @author Ixent Galpin
- *
- */
+public class RadioOnTask extends Task {
 
-public abstract class Task {
+	Site site;
+	
+	public RadioOnTask(long startTime, Site site, CostParameters costParams) {
+		super(startTime, costParams);
+		this.site = site;
+		this.endTime = startTime + (long)costParams.getTurnOnRadio();
+	}
 
-    /**
-     * 	The start time of this task.
-     */
-    protected long startTime;
+	public Site getSite() {
+		return this.site;
+	}
 
-    /**
-     *  The end time of this task.
-     */
-    protected long endTime;
+	public String getSiteID() {
+		return this.site.getID();
+	}
 
-    protected CostParameters costParams;
-    
-    /**
-     * Constructs a class with given startTime; endTime is derived using cost functions which 
-     * derive time taken to execute the task. 
-     * @param startTime
-     */
-    public Task(final long startTime, CostParameters costParams) {
-	this.startTime = startTime;
-	this.costParams = costParams;
-    }
-    
-    /**
-     * Returns the end time of this task.
-     * @return
-     */
-    public final long getEndTime() {
-	return this.endTime;
-    }
+	protected long getTimeCost(DAF daf) {
+		return (long)costParams.getTurnOnRadio();
+	}
 
-    /**
-     * Returns the start time of this task.
-     * @return
-     */
-    public final long getStartTime() {
-	return this.startTime;
-    }
-
-    /**
-     * @return False unless overwritten by sleep task
-     */
-    public boolean isSleepTask() {
-	return false;
-    }
-
-    public abstract String getSiteID();
-
-    public abstract Site getSite();
-
-    protected abstract long getTimeCost(DAF daf) 
-    throws OptimizationException, SchemaMetadataException, TypeMappingException;
-
-    public boolean isDeliverTask() {
-    	if (this instanceof FragmentTask) {
-    		FragmentTask ft = (FragmentTask)this;
-			Fragment f = ft.getFragment();
-			if (f.containsOperatorType(SensornetDeliverOperator.class)) {
-				return true;
-			}
-    	}
-    	return false;	
-    }
+	public String toString() {
+		return "Radio On";
+	}
 }
