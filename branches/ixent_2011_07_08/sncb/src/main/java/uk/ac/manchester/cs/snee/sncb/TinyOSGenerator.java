@@ -263,6 +263,7 @@ public class TinyOSGenerator {
     throws IOException, SchemaMetadataException, TypeMappingException {
 		this.target = codeGenTarget;
 		this.targetDirName = codeGenTarget.toString().toLowerCase();
+		this.controlRadioOff =controlRadioOff;
 		
     	if (target==CodeGenTarget.TELOSB_T2) {
         	this.tossimFlag = false;
@@ -283,13 +284,14 @@ public class TinyOSGenerator {
         	this.tossimFlag = true;
     		this.useNodeController = false; // incompatible
         	this.combinedImage = true; // doesn't work otherwise
+    		this.controlRadioOff = false; // incompatible
     	}
     	
     	this.nescOutputDir = nescOutputDir;
 		this.costParams = metadata.getCostParameters();
 		this.metadata = metadata;
 
-		this.controlRadioOff =controlRadioOff;
+
 		this.enablePrintf = enablePrintf;
 		this.enableLeds = enableLeds;
 		this.usePowerManagement = usePowerManagement;
