@@ -23,7 +23,7 @@
 	<Space>
 		<!-- The maximum size, in bytes, of data (i.e., payload) in message 
 		that can be sent across the radio -->
-		<MaxMessagePayloadSize bytes="29"/>
+		<MaxMessagePayloadSize bytes="40"/>
 		
 		<!-- The overhead incurred, in bytes, with each message in the payload
 		 of the message, e.g., for sending previous fragment information-->
