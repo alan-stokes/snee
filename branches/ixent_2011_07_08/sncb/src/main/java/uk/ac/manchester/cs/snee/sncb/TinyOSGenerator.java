@@ -269,6 +269,7 @@ public class TinyOSGenerator {
         	this.tossimFlag = false;
     		this.useNodeController = useNodeController;
         	this.combinedImage = combinedImage;
+    		this.controlRadioOff = false; // leads to too much packet loss, currently
     	}
     	if (target==CodeGenTarget.AVRORA_MICA2_T2) {
         	this.tossimFlag = false;
