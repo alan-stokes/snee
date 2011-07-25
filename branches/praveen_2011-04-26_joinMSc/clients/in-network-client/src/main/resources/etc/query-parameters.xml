@@ -41,6 +41,8 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk query-parameters.xsd">
 			</constraint>
 			<weighting>2</weighting>
 		</delivery-time>
+		
+		<tuple-loss-allowed>true</tuple-loss-allowed>
 	
 	</qos-expectations>
 
