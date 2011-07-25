@@ -57,11 +57,11 @@ public class SNEEClientMixed extends SNEEClient {
 	private static long duration = 900;
 //	private static long duration = 30;
 	
-	public SNEEClientMixed(String query, double duration) 
+	public SNEEClientMixed(String query, double duration,  String queryParams) 
 	throws SNEEException, IOException, SNEEConfigurationException,
 	MetadataException, SNEEDataSourceException 
 	{
-		super(query, duration);
+		super(query, duration, queryParams);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClientMixed()");
 
@@ -101,8 +101,9 @@ public class SNEEClientMixed extends SNEEClient {
 		}			
 		try {
 			/* Initialise SNEEClient */
+			String queryParams= "etc/query-parameters.xml";
 			SNEEClientMixed client = 
-				new SNEEClientMixed(query, duration);
+				new SNEEClientMixed(query, duration, queryParams);
 			/* Initialise and run data source */
 //			_myDataSource = new ConstantRatePushStreamGenerator();
 //			_myDataSource.startTransmission();
