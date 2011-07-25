@@ -106,6 +106,7 @@ public class TranslatorTest {
 	SourceDoesNotExistException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException 
 	{
+		LAF laf = null;
 		SNEEqlLexer lexer = new SNEEqlLexer(new StringReader(query));
 		SNEEqlParser parser = new SNEEqlParser(lexer);
 		try {
@@ -128,7 +129,13 @@ public class TranslatorTest {
 			logger.info(buffer.toString());
 //			System.out.println(query + "\n" + buffer.toString());
 		}
-		return translator.translate(parseTree, 1);
+		try {
+			laf = translator.translate(parseTree, 1);
+		} catch (SourceMetadataException e) {
+			e.printStackTrace();
+			fail();
+		}
+		return laf;
 	}
 	
 	private String displayNode(AST ast, int level) {
@@ -1693,6 +1700,22 @@ public class TranslatorTest {
 	RecognitionException, TokenStreamException {
 		testQuery("SELECT COUNT(integerColumn) FROM PushStream;");
 	}
+	/*******************************************************************
+	 * Praveen Added
+	 *******************************************************************/
+	//@Test
+	/*public void testSimpleProject_math() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException {
+		LAF laf = testQuery("SELECT timestamp * 2 FROM TestStream;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		LogicalOperator op = testOperator(iterator, "PROJECT");
+		assertEquals(1, op.getAttributes().size());
+	}*/
 
 
 	

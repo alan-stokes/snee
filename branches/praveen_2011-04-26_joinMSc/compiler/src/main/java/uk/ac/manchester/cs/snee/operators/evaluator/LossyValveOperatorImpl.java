@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.CircularArray;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.TupleDropPolicy;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
@@ -31,6 +32,7 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 			logger.debug("Enter LossyValveOperatorImpl with query "+qid);
 		}
 		inputBufferQueue = new CircularArray<Output>(maxBufferSize);
+		inputBufferQueue.setTupleDropPolicy(TupleDropPolicy.FIFO);
 		
 		if (logger.isDebugEnabled()) {
 			logger.debug("Exit LossyValveOperatorImpl with query "+qid);

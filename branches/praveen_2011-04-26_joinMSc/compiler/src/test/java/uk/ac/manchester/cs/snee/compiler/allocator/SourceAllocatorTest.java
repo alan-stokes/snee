@@ -14,10 +14,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
@@ -44,6 +47,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	private ReceiveOperator mockReceiveOperator;
 	private ScanOperator mockScanOperator;
 	private SourceMetadataAbstract mockSourceMetadata;
+	private QoSExpectations qos;
 
 	@Before
 	public void setUp() throws Exception {
@@ -53,6 +57,10 @@ public class SourceAllocatorTest extends EasyMockSupport {
 		mockReceiveOperator = createMock(ReceiveOperator.class);
 		mockScanOperator = createMock(ScanOperator.class);
 		mockSourceMetadata = createMock(SourceMetadataAbstract.class);
+		QueryParameters parameters = new QueryParameters(1, "etc/query-parameters.xml");
+		if (parameters != null) {
+			qos = parameters.getQoS();
+		}
 	}
 
 	@After
@@ -64,7 +72,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test(expected=SourceAllocatorException.class)
 	public void testAllocateSources_noOperators() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("noQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("noQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -72,13 +80,13 @@ public class SourceAllocatorTest extends EasyMockSupport {
 		expect(mockIterator.hasNext()).andReturn(false);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		allocator.allocateSources(mockLaf);
+		allocator.allocateSources(mockLaf, qos);
 		verifyAll();
 	}
 	
 	@Test
 	public void testAllocateSources_sensorQuery_oneAcquire() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("sensorQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("sensorQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -88,7 +96,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 		expect(mockAcquireOperator.getSource()).andReturn(mockSourceMetadata);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(1, dlaf.getSources().size());
 		verifyAll();
 	}
@@ -96,10 +104,11 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	/**
 	 * Tests two acquires on the same sensor network source
 	 * @throws SourceAllocatorException
+	 * @throws SourceMetadataException 
 	 */
 	@Test
 	public void testAllocateSources_sensorQuery_twoAcquire() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("sensorQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("sensorQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -111,14 +120,14 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(mockSourceMetadata).times(2);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(1, dlaf.getSources().size());
 		verifyAll();
 	}
 	
 	@Test(expected=SourceAllocatorException.class)
 	public void testAllocateSources_twoSensorQuery() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("twoSensorQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("twoSensorQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -137,13 +146,13 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(SourceType.SENSOR_NETWORK);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		allocator.allocateSources(mockLaf);
+		allocator.allocateSources(mockLaf, qos);
 		verifyAll();
 	}
 	
 	@Test
 	public void testAllocateSources_pullStreamSources() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("pullStream").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("pullStream-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -153,14 +162,14 @@ public class SourceAllocatorTest extends EasyMockSupport {
 		expect(mockReceiveOperator.getSource()).andReturn(mockSourceMetadata);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(1, dlaf.getSources().size());
 		verifyAll();
 	}
 	
 	@Test
 	public void testAllocateSources_twoPullStream() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("twoPullStreamQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("twoPullStreamQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -177,14 +186,14 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(SourceType.PULL_STREAM_SERVICE);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(2, dlaf.getSources().size());
 		verifyAll();
 	}
 	
 	@Test
 	public void testAllocateSources_UDPSource() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("UDPSource").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("UDPSource-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -194,14 +203,14 @@ public class SourceAllocatorTest extends EasyMockSupport {
 		expect(mockReceiveOperator.getSource()).andReturn(mockSourceMetadata);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(1, dlaf.getSources().size());
 		verifyAll();
 	}
 	
 	@Test
 	public void testAllocateSources_twoUDPSources() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("twoUDPSource").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("twoUDPSources-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -218,14 +227,14 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(SourceType.UDP_SOURCE);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(2, dlaf.getSources().size());
 		verifyAll();
 	}
 	
 	@Test
 	public void testAllocateSources_scanRelationalQuery() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("scanQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("scanQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -235,14 +244,14 @@ public class SourceAllocatorTest extends EasyMockSupport {
 		expect(mockScanOperator.getSource()).andReturn(mockSourceMetadata);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(1, dlaf.getSources().size());
 		verifyAll();
 	}
 	
 	@Test
 	public void testAllocateSources_twoRelationalSources() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("scanQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("scanQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -258,14 +267,14 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(SourceType.RELATIONAL);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(2, dlaf.getSources().size());
 		verifyAll();
 	}
 
 	@Test
 	public void testAllocateSources_scanWSDAIRQuery() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("scanQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("scanQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -275,14 +284,14 @@ public class SourceAllocatorTest extends EasyMockSupport {
 		expect(mockScanOperator.getSource()).andReturn(mockSourceMetadata);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(1, dlaf.getSources().size());
 		verifyAll();
 	}
 	
 	@Test
 	public void testAllocateSources_twoWSDAIRSources() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("scanQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("scanQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -297,14 +306,14 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(SourceType.WSDAIR);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(2, dlaf.getSources().size());
 		verifyAll();
 	}
 	
 	@Test
 	public void testAllocateSources_mixedUDPWSDAIRQuery() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("mixedUDPWSDAIRQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("mixedUDPWSDAIRQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -321,14 +330,14 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(SourceType.UDP_SOURCE);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(2, dlaf.getSources().size());
 		verifyAll();
 	}
 	
 	@Test
 	public void testAllocateSources_mixedPushWSDAIRQuery() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("mixedPushWSDAIRQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("mixedPushWSDAIRQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -345,14 +354,14 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(SourceType.PUSH_STREAM_SERVICE);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(2, dlaf.getSources().size());
 		verifyAll();
 	}
 	
 	@Test
 	public void testAllocateSources_mixedPullWSDAIRQuery() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("mixedPullWSDAIRQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("mixedPullWSDAIRQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -369,14 +378,14 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(SourceType.PULL_STREAM_SERVICE);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(2, dlaf.getSources().size());
 		verifyAll();
 	}
 	
 	@Test(expected=SourceAllocatorException.class)
 	public void testAllocateSources_mixedSensorWSDAIRQuery() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("mixedSensorWSDAIRQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("mixedSensorWSDAIRQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -393,14 +402,14 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(SourceType.SENSOR_NETWORK);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(2, dlaf.getSources().size());
 		verifyAll();
 	}
 	
 	@Test(expected=SourceAllocatorException.class)
 	public void testAllocateSources_mixedPushSensorQuery() 
-	throws SourceAllocatorException {
+	throws SourceAllocatorException, SourceMetadataException {
 		expect(mockLaf.getID()).andReturn("mixedPushSensorQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("mixedPushSensorQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -417,7 +426,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 			andReturn(SourceType.PUSH_STREAM_SERVICE);
 		replayAll();
 		SourceAllocator allocator = new SourceAllocator();
-		DLAF dlaf = allocator.allocateSources(mockLaf);
+		DLAF dlaf = allocator.allocateSources(mockLaf, qos);
 		assertEquals(2, dlaf.getSources().size());
 		verifyAll();
 	}

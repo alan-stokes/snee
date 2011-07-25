@@ -9,6 +9,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.OperatorDataType;
@@ -233,5 +234,35 @@ public class MockOperator implements LogicalOperator {
 		public boolean isEquivalentTo(Node other) {
 			// TODO Auto-generated method stub
 			return false;
+		}
+
+		@Override
+		public SourceType getOperatorSourceType() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public double getSourceRate() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		@Override
+		public boolean isGetDataByPullModeOperator() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public void setGetDataByPullModeOperator(boolean isPullModeOperator) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void setSourceRate(double rate) {
+			// TODO Auto-generated method stub
+			
 		}
 }

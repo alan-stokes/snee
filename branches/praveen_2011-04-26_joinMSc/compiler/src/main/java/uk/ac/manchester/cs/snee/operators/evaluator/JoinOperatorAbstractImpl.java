@@ -100,10 +100,11 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 	 * 
 	 * TODO For the current implementation, this mode would be enabled only
 	 * if there is a valve operator between the join operator and the child
-	 * operator. Also there are only going to be a single implementation of
-	 * the iterator model of join operator. This would be a simple hash join
-	 * for now. So for the Hash join implementation, there would be only
-	 * this method implemented, and not update method
+	 * operator. For the Hash join implementation, there would be only
+	 * this method implemented, and not update method as it is defined only
+	 * to work in the iterator model as of now. The NLJ can work in both
+	 * subscribe and pull mode, as per the valve operator settings.
+	 * 
 	 * @param resultItems 
 	 * 
 	 * @return 
@@ -131,7 +132,9 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 			EvaluateTask evaluateTask = new EvaluateTask();
 			long currentTime = System.currentTimeMillis();
 			nextEvalTime = getNextEvalTime(currentTime);
+			//TODO Rescheduling of timer needs to be probed into
 			timer.schedule(evaluateTask, 0, nextEvalTime);
+			//timer.
 			//evaluateJoinForIntervals();
 		}
 	}
@@ -201,10 +204,12 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 
 		@Override
 		public void run() {
+			//System.out.println("Evaluate Task");
 			List<Output> resultItems = new ArrayList<Output>(1);
 			generateAndUpdate(resultItems);
 			long currentTime = System.currentTimeMillis();
 			nextEvalTime = getNextEvalTime(currentTime);
+			//timer.cancel();
 			timer.schedule(new EvaluateTask(), 0, nextEvalTime);
 			if (!resultItems.isEmpty()) {
 				setChanged();

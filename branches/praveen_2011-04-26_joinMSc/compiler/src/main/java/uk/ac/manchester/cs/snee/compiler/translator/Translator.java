@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParserTokenTypes;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlTreeWalker;
@@ -34,6 +35,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
@@ -64,7 +66,7 @@ public class Translator {
 	private Types _types;
 
 	private AttributeType _boolType;
-
+	
 	/** Mappings from the different levels */
 	private List< Map<String, String> > allLevelMappings;
 
@@ -91,7 +93,7 @@ public class Translator {
 	throws ExpressionException, SchemaMetadataException, 
 	SourceDoesNotExistException, OptimizationException, ParserException, 
 	TypeMappingException, ExtentDoesNotExistException, 
-	RecognitionException {
+	RecognitionException, SourceMetadataException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateFrom(): ast " +
 					ast.toStringList());
@@ -109,7 +111,7 @@ public class Translator {
 	throws ExpressionException, SchemaMetadataException, 
 	OptimizationException, SourceDoesNotExistException, ParserException, 
 	TypeMappingException, ExtentDoesNotExistException, 
-	RecognitionException {
+	RecognitionException, SourceMetadataException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateExtents() ast " + 
 					ast);
@@ -876,7 +878,7 @@ public class Translator {
 	throws ExtentDoesNotExistException, SchemaMetadataException, 
 	TypeMappingException, SourceDoesNotExistException, 
 	ExpressionException, OptimizationException, ParserException,
-	RecognitionException  
+	RecognitionException, SourceMetadataException  
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateExtent() " + 
@@ -968,7 +970,7 @@ public class Translator {
 	throws SchemaMetadataException, ExpressionException, 
 	OptimizationException, SourceDoesNotExistException, 
 	ParserException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException {
+	RecognitionException, SourceMetadataException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateQuery() with '" +
 					ast +
@@ -1127,7 +1129,7 @@ public class Translator {
 	throws SchemaMetadataException, ExpressionException, 
 	OptimizationException, SourceDoesNotExistException,
 	ParserException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException {
+	RecognitionException, SourceMetadataException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER translate(): " + 
 					ast.toStringTree() +
@@ -1139,7 +1141,7 @@ public class Translator {
 		extentNameMappings = new HashMap<String, String>();
 
 		allLevelMappings.add(extentNameMappings);
-
+		
 		DeliverOperator operator;
 		if (ast==null) {
 

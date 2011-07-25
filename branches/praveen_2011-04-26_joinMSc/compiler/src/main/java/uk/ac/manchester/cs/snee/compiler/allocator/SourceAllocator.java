@@ -15,12 +15,14 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
+import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.InputOperator;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ScanOperator;
 import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
+import uk.ac.manchester.cs.snee.operators.logical.ValveOperator;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
 public class SourceAllocator {
@@ -55,6 +57,35 @@ public class SourceAllocator {
 		return dlaf;
 	}
 
+	/**
+	 * This method is used to set the source rates for each of the operators 
+	 * in the laf. 
+	 * 
+	 * If the operator is an Acquire operator, the source rate is equivalent 
+	 * to the acquisition interval defined in the QOS parameters.
+	 * 
+	 * If the operator is any other Input Operator, then the source metadata 
+	 * contains the information about its arrival rate.
+	 * 
+	 * If the operator is a Join Operator, the a precedence of Stream>Sensor Network>Relation
+	 * is considered for the left and right operands and for a combination of the
+	 * above mentioned sources, the higher precedence one is taken and the source rate 
+	 * of that operand is set as the source rate
+	 * 
+	 * If the operator is a Union Operator, the sum of the source rates of both
+	 * operands taking part in the union operation is considered as the source rate
+	 * 
+	 * If the operator is a Window Operator,
+	 * If it is a timescope based window operator, then windowOp.getTimeSlide() * 1000 
+	 * If it is a tuple based window operator, then (windowSize / (source rate of child)) 
+	 * 
+	 * For any other operator, the source rate is set as the source rate of its
+	 * child operator
+	 * 
+	 * @param laf
+	 * @param qos
+	 * @throws SourceMetadataException
+	 */
 	private void setSourceRates(LAF laf, QoSExpectations qos)
 			throws SourceMetadataException {
 		if (logger.isTraceEnabled()) {
@@ -83,12 +114,26 @@ public class SourceAllocator {
 				UnionOperator unionOperator = (UnionOperator) op;
 				unionOperator.setSourceRate(unionOperator.getSourceRate(
 						op.getInput(0), op.getInput(1)));
-			} else if (op instanceof WindowOperator) {
-				//TODO need to implement the logic for calculating
-				//the source rate with respect to the window 
-				//re-evaluation
-				WindowOperator windowOperator = (WindowOperator)op;
-				windowOperator.setSourceRate(op.getInput(0).getSourceRate());
+			} else if (op instanceof WindowOperator) {				
+				WindowOperator windowOperator = (WindowOperator) op;
+				if (windowOperator.isTimeScope()) {
+					//This is correct
+					windowOperator
+							.setSourceRate(windowOperator.getTimeSlide() * 1000);
+				} else {
+					//TODO Needs to correct this where case where 
+					//the range of the window is specified in time, 
+					//but the slide is in the number of tuples
+					windowOperator.setSourceRate(windowOperator
+							.getCardinality(CardinalityType.MAX)/op.getInput(0).getSourceRate());
+				}
+				//windowOperator.setSourceRate(op.getInput(0).getSourceRate());
+			} else if (op instanceof ValveOperator) {
+				//TODO Need to find a way to correctly set this rate
+				//in case of pull based valve operator and in case of 
+				//push based valve operator
+				ValveOperator valveOperator = (ValveOperator) op;
+				valveOperator.setSourceRate(op.getInput(0).getSourceRate());
 			} else {
 				op.setSourceRate(op.getInput(0).getSourceRate());
 			}

@@ -1,8 +1,5 @@
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;

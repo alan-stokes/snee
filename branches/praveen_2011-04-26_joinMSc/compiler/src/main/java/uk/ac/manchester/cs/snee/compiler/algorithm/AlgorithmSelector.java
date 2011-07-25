@@ -137,19 +137,32 @@ public class AlgorithmSelector {
 	private void setValveOperatorAlgorithm(ValveOperator valveOperator,
 			QoSExpectations qos) {
 
+		// If atleast one of the valve operators in a join is having a
+		// source rate greater than the threshold rate set the join
+		// operator as Pull based and make both valve operators
+		// of the join to work in Pull mode
+		JoinOperator joinOp = (JoinOperator) valveOperator.getParent();
 		if (valveOperator.getInput(0).getSourceRate() > thresholdRate
-				|| (JoinOperator.LHJ_MODE.equals(((JoinOperator) valveOperator
-						.getParent()).getAlgorithm()))
-				|| (JoinOperator.RHJ_MODE.equals(((JoinOperator) valveOperator
-						.getParent()).getAlgorithm()))) {
-			valveOperator.setPushBasedOperator(false);
+				|| (JoinOperator.LHJ_MODE.equals(joinOp.getAlgorithm()))
+				|| (JoinOperator.RHJ_MODE.equals(joinOp.getAlgorithm()))) {
+			if (valveOperator.isPushBasedOperator()) {
+				// Setting both valve operator to work in Pull mode in case
+				// at least one of the valve operator has to deal with stream
+				// of arrival rate greater than the threshold rate
+				// OR if the join algorithm is of Hash Join
+				((ValveOperator) joinOp.getInput(0))
+						.setPushBasedOperator(false);
+				((ValveOperator) joinOp.getInput(1))
+						.setPushBasedOperator(false);
+				// valveOperator.setPushBasedOperator(false);
 
-			// This following code sets the parent operator which is a
-			// join operator to work in pull mode
-			valveOperator.getParent().setGetDataByPullModeOperator(true);
+				// This following code sets the parent operator which is a
+				// join operator to work in pull mode
+				joinOp.setGetDataByPullModeOperator(true);
+			}
 		} else {
 			valveOperator.setPushBasedOperator(true);
-			valveOperator.getParent().setGetDataByPullModeOperator(false);
+			joinOp.setGetDataByPullModeOperator(false);
 		}
 		// Lossy or Lossless is to be determined via QoS parameters
 		if (qos.isTupleLossAllowed()) {

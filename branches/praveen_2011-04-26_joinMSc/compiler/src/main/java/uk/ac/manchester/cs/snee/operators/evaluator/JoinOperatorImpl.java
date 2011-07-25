@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
@@ -70,6 +71,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		leftBuffer = new CircularArray<Window>(maxBufferSize);
 		rightBuffer = new CircularArray<Window>(maxBufferSize);
 		joinPredicate = join.getPredicate();
+		System.out.println("joinPredicate"+joinPredicate);
 		returnAttrs = join.getAttributes();
 
 		if (logger.isDebugEnabled()) {
@@ -293,6 +295,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 			logger.trace("Joining " + leftWindow + " with " + 
 					rightWindow);
 		}
+		System.out.println("joinPredicate: "+ joinPredicate);
 		List<Tuple> joinTuples = new ArrayList<Tuple>();
 		for (Tuple leftTuple : leftWindow.getTuples()) {
 			for (Tuple rightTuple : rightWindow.getTuples()) {
@@ -318,6 +321,8 @@ public class JoinOperatorImpl extends EvaluationOperator {
 					"[" + tuple1 + 
 					"]\n [" + tuple2 + "]");
 		}
+		System.out.println("Tuple1: "+tuple1);
+		System.out.println("Tuple2: "+tuple2);
 		Tuple tuple = new Tuple();						
 		for (Attribute attr: returnAttrs) {
 			String attrName = attr.getAttributeDisplayName();
@@ -342,6 +347,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 			logger.trace("RETURN generateJoinTuple() with join tuple " + 
 					tuple);
 		}
+		System.out.println("Tuple: "+tuple);
 		return tuple;
 	}
 
@@ -385,6 +391,7 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		}
 		Stack<Object> operands = new Stack<Object>();
 		for (int i=0; i < arrExpr.length;i++){
+			System.out.println("arrExpr[i]: "+ arrExpr[i]);
 			if (arrExpr[i] instanceof DataAttribute){
 				DataAttribute da = (DataAttribute) arrExpr[i];
 				EvaluatorAttribute evalAttr = 
@@ -429,7 +436,9 @@ public class JoinOperatorImpl extends EvaluationOperator {
 		boolean retVal = false;
 		while (operands.size() >= 2){
 			Object op1 = operands.pop();
+			System.out.println("Operand 1: "+op1);
 			Object op2 = operands.pop();
+			System.out.println("Operand 2:"+op2);
 			Object result;
 			if (op1 instanceof StringLiteral && op2 instanceof StringLiteral) {
 				result = evaluateString((String)op1, (String)op2, type);
@@ -439,6 +448,8 @@ public class JoinOperatorImpl extends EvaluationOperator {
 			if (type.isBooleanDataType()){
 				retVal = ((Boolean)result).booleanValue();
 			} 
+			System.out.println("result: "+result);
+			System.out.println("retVal: "+retVal);
 		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN compute() with " + retVal);
@@ -453,6 +464,9 @@ public class JoinOperatorImpl extends EvaluationOperator {
 			logger.trace("ENTER evaluate() with " + expr + ", [" + 
 					tuple1 + "], [" + tuple2 + "]");
 		}
+		System.out.println("Tuple1: "+tuple1);
+		System.out.println("Tuple2: "+tuple2);
+		Collection<Boolean> returnValList = new ArrayList<Boolean>(2);
 		boolean returnValue = false;
 		if (expr instanceof MultiExpression) {
 			if (logger.isTraceEnabled()) {
@@ -464,27 +478,37 @@ public class JoinOperatorImpl extends EvaluationOperator {
 			for (int i=0; i < multiExpr.getExpressions().length;i++){
 				exprTemp = multiExpr.getExpressions()[i];
 				if (exprTemp instanceof MultiExpression) {
+					System.out.println("The MultiExpression Evalute Seaction");
 					mExpr = (MultiExpression)exprTemp;
 					returnValue = evaluate(mExpr, tuple1, tuple2);
 				}	
 				else {
+					System.out.println("The Compute Section");
 					returnValue = compute(multiExpr.getExpressions(), 
 							multiExpr.getMultiType(), tuple1,tuple2);
 				}
+				returnValList.add(returnValue);
 			}
 		} else {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Process Expression: " + expr);
 			}
+			System.out.println("expr: "+ expr);
 			if (expr.toString().equals("TRUE")) {
 				returnValue = true;
 			}
 			//Do something with non-multitype expression
 		}
+		System.out.println("returnValue: "+ returnValue);
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN evaluate() with " + returnValue);
 		}
-		return returnValue;
+		boolean tempRetVal = true;
+		for (Boolean returnVal: returnValList) {
+			tempRetVal = tempRetVal & returnVal;
+		}
+		System.out.println("Correct returnValue: "+ tempRetVal);
+		return tempRetVal;
 	}
 	
 }

@@ -10,10 +10,14 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.types.Duration;
 
 public class ExchangeOperator extends LogicalOperatorImpl {
 
-	private Logger logger = Logger.getLogger(this.getClass().getName());	
+	private Logger logger = Logger.getLogger(this.getClass().getName());
+	//Variable to hold how many objects should be pushed at once
+	private int outputSize;
+	private Duration queueScanInterval;
 	
 
 	public ExchangeOperator(LogicalOperator inputOperator, AttributeType boolType) {
@@ -24,6 +28,12 @@ public class ExchangeOperator extends LogicalOperatorImpl {
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
 		this.setSourceRate(inputOperator.getSourceRate());
+		//TODO To be set through some configuration
+		setOutputSize(5);
+		//TODO setting the queueScannterval needs to be done through
+		//some other intelligent mechanism like say from a property
+		//file or dynamic configurations.
+		setQueueScanInterval(new Duration(10));
 		this.setParamStr("");
 		
 		// TODO Auto-generated constructor stub
@@ -96,6 +106,28 @@ public class ExchangeOperator extends LogicalOperatorImpl {
 		return this.getText() + " [ " + 
 		super.getInput(0).toString() + " ]"; 
 		
-	}	
+	}
+
+	public void setOutputSize(int outputSize) {
+		this.outputSize = outputSize;
+	}
+
+	public int getOutputSize() {
+		return outputSize;
+	}
+	
+	/**
+	 * @param queueScanInterval the queueScanInterval to set
+	 */
+	public void setQueueScanInterval(Duration queueScanInterval) {
+		this.queueScanInterval = queueScanInterval;
+	}
+
+	/**
+	 * @return the queueScanInterval
+	 */
+	public Duration getQueueScanInterval() {
+		return queueScanInterval;
+	}
 
 }

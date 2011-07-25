@@ -240,6 +240,7 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 			int hashKey = generateHashKey(joinPredicate, outerTuple);
 			System.out.println("Hash Key for outer tuple: "+hashKey);
 			outputHashTable(hashTable);
+			System.out.println("Do "+hashTable.keySet()+ " contain "+hashKey + "?");
 			List<Tuple> hashedTuples = hashTable.get(hashKey); 
 			if (hashedTuples != null && hashedTuples.size() > 0) {
 				for (Tuple innerTuple: hashedTuples) {
