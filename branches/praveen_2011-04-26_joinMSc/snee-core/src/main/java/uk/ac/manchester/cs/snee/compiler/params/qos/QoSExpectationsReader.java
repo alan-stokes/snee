@@ -39,6 +39,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.TupleDropPolicy;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.metadata.units.Units;
 import uk.ac.manchester.cs.snee.metadata.units.UnrecognizedUnitException;
@@ -167,11 +168,8 @@ public class QoSExpectationsReader extends QoSExpectations {
 					xQoS+"/snee:delivery-time");
 			this.setDeliveryTimeRange(delta);
 			logger.trace(delta.getMinValue()+"<=delta<="+delta.getMaxValue());
-			String lossyValue = Utils.doXPathStrQuery(this._queryParamsFile,
-					xQoS + "/snee:tuple-loss-allowed");
-			if ("TRUE".equalsIgnoreCase(lossyValue)) {
-				this.setTupleLossAllowed(true);
-			}
+			parseTupleLossParameters(xQoS);
+			
 			//TODO: Weightings, total energy, lifetime not parsed
 		} catch (Exception e) {
 			throw new QoSException("Error parsing QoS in parameters file :"+
@@ -181,6 +179,44 @@ public class QoSExpectationsReader extends QoSExpectations {
             logger.trace("RETURN parseQoSXMLFile()");
     	}
     }
+
+
+    /**
+     * This method parses the Qos Parameter file to fill in the
+     * details of the tuple drop polcies and sampling rates if any
+     * 
+     * @param xQoS
+     * @throws XPathExpressionException
+     * @throws FileNotFoundException
+     */
+	private void parseTupleLossParameters(String xQoS)
+			throws XPathExpressionException, FileNotFoundException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER parseTupleLossParameters() with " + xQoS);
+		}
+		String xValveProps = xQoS + "/snee:tuple-loss";
+		String lossyValue = Utils.doXPathStrQuery(this._queryParamsFile,
+				xValveProps + "/snee:allowed");
+		if ("TRUE".equalsIgnoreCase(lossyValue)) {
+			this.setTupleLossAllowed(true);
+		}
+		if (this.isTupleLossAllowed()) {
+			String xPolicyDetails = xValveProps + "/snee:policy";
+			String tuplePolicy = Utils.doXPathStrQuery(this._queryParamsFile,
+					xPolicyDetails + "/snee:name");
+			this.setTupleDropPolicy(TupleDropPolicy
+					.getPolicyForString(tuplePolicy));
+			if (TupleDropPolicy.SAMPLE == this.getTupleDropPolicy()) {
+				int samplingRate = Utils.doXPathIntQuery(this._queryParamsFile,
+						xPolicyDetails + "/snee:constraints/snee:rate");
+				this.setSamplingRate(samplingRate);
+			}
+
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN parseTupleLossParameters()");
+		}
+	}
 
 
 	private void parseOptimizationGoalInfo(String xQoS)

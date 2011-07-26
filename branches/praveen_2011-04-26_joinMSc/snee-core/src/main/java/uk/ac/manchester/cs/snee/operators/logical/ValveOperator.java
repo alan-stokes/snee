@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.TupleDropPolicy;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -41,6 +42,8 @@ public class ValveOperator extends LogicalOperatorImpl {
 	//This variable holds the algorithm or the mode in which the
 	//valve operator would work
 	private String algorithm;
+	private int samplingRate;
+	private TupleDropPolicy tupleDropPolicy;
 	
 
 	public ValveOperator(LogicalOperator inputOperator, AttributeType boolType) {
@@ -188,5 +191,35 @@ public class ValveOperator extends LogicalOperatorImpl {
 	public String getAlgorithm() {
 		return this.algorithm;
 	}
+
+	/**
+	 * @param samplingRate the samplingRate to set
+	 */
+	public void setSamplingRate(int samplingRate) {
+		this.samplingRate = samplingRate;
+	}
+
+	/**
+	 * @return the samplingRate
+	 */
+	public int getSamplingRate() {
+		return samplingRate;
+	}
+
+	/**
+	 * @param tupleDropPolicy the tupleDropPolicy to set
+	 */
+	public void setTupleDropPolicy(TupleDropPolicy tupleDropPolicy) {
+		this.tupleDropPolicy = tupleDropPolicy;
+	}
+
+	/**
+	 * @return the tupleDropPolicy
+	 */
+	public TupleDropPolicy getTupleDropPolicy() {
+		return tupleDropPolicy;
+	}
+
+	
 
 }

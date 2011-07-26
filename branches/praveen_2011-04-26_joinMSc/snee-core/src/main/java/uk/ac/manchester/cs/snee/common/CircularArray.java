@@ -20,7 +20,6 @@ public class CircularArray<E> implements Iterable<E> {
 	//This variable holds the total number of objects that has ever 
 	//been inserted into this array
 	private int totalNumberOfObjects = 0;
-	private TupleDropPolicy tupleDropPolicy;
 
 	/**
 	 * Constructs a new instance of {@code ArrayList} with the specified
@@ -85,7 +84,7 @@ public class CircularArray<E> implements Iterable<E> {
 		}
 		// System.out.println("Add begin");
 		// printIndexes();
-		// Insert then increment
+		// Insert then increment		
 		array[lastIndex] = object;
 		numberElements++;
 		totalNumberOfObjects++;
@@ -99,22 +98,8 @@ public class CircularArray<E> implements Iterable<E> {
 		 * Check to see if we are over writing first element If we are,
 		 * increment the first element
 		 */
-		if (lastIndex == firstIndex) {
-
-			switch (getTupleDropPolicy()) {
-			case FIFO:
-				dropFirstInsertedObject();
-				break;
-			case LIFO:
-				dropLastInsertedObject();
-				break;
-			case REM_DUP:
-				dropDuplicateObjects(object);
-				break;
-			default:
-				dropFirstInsertedObject();
-			}
-			// firstIndex = incrementPointer(firstIndex);
+		if (lastIndex == firstIndex) {			
+			firstIndex = incrementPointer(firstIndex);
 			numberElements--;
 		}
 		if (logger.isTraceEnabled()) {
@@ -127,15 +112,8 @@ public class CircularArray<E> implements Iterable<E> {
 		// System.out.println("Add begin");
 		// printIndexes();
 		return true;
-	}
+	}	
 	
-	private void dropDuplicateObjects(E object) {
-		// TODO MOre complicated logic goes here, to identify
-		//duplicate tuples/windows in the form of their base object
-		//equals method if they exist in the buffer
-		//to remove them
-		
-	}
 
 	/**
 	 * The last index is decremented to point to where the
@@ -143,18 +121,11 @@ public class CircularArray<E> implements Iterable<E> {
 	 * insertion/add of data comes, the one to be replaced
 	 * will be the last inserted element. 
 	 */
-	private void dropLastInsertedObject() {
-		lastIndex = decrementPointer(lastIndex);
+	public void dropLastInsertedObject() {
+		if (lastIndex == firstIndex) {
+			lastIndex = decrementPointer(lastIndex);
+		}
 		
-	}
-
-	/**
-	 * The first index is incremented to point to the
-	 * next data point, so that the current first element 
-	 * is replaced the next time a data insertion occurs
-	 */
-	private void dropFirstInsertedObject() {
-		firstIndex = incrementPointer(firstIndex);		
 	}
 	
 
@@ -356,15 +327,7 @@ public class CircularArray<E> implements Iterable<E> {
 		logger.warn(message);
 		throw new IndexOutOfBoundsException(message);
 	}
-	
-	public void setTupleDropPolicy (TupleDropPolicy tupleDropPolicy) {
-		this.tupleDropPolicy = tupleDropPolicy;
-	}
-	
-	public TupleDropPolicy getTupleDropPolicy () {
-		return tupleDropPolicy;
-	}
-	
+
 	/**
 	 * A read-only iterator over the {@code CircularArray}.
 	 * 

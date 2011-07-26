@@ -37,6 +37,8 @@ import java.util.Formatter;
 import java.util.Locale;
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.TupleDropPolicy;
+
 public class QoSExpectations {
 
     Logger logger = Logger.getLogger(QoSExpectations.class.getName());
@@ -80,6 +82,10 @@ public class QoSExpectations {
     private long queryDuration = 60; // Default, run nesC queries for 60 secs
     
     private boolean isTupleLossAllowed = false; 
+    
+    private TupleDropPolicy tupleDropPolicy = TupleDropPolicy.FIFO;
+    
+    private int samplingRate = 0;
 
     public void setOptimizationType(final QoSOptimizationType  
     optimizationType) {
@@ -344,6 +350,34 @@ public class QoSExpectations {
 		return isTupleLossAllowed;
 	}
 
+	/**
+	 * @param tupleDropPolicy the tupleDropPolicy to set
+	 */
+	public void setTupleDropPolicy(TupleDropPolicy tupleDropPolicy) {
+		this.tupleDropPolicy = tupleDropPolicy;
+	}
+
+	/**
+	 * @return the tupleDropPolicy
+	 */
+	public TupleDropPolicy getTupleDropPolicy() {
+		return tupleDropPolicy;
+	}
+
+	/**
+	 * @param samplingRate the samplingRate to set
+	 */
+	public void setSamplingRate(int samplingRate) {
+		this.samplingRate = samplingRate;
+	}
+
+	/**
+	 * @return the samplingRate
+	 */
+	public int getSamplingRate() {
+		return samplingRate;
+	}
+
 	@Override
     public String toString() {
 		final StringBuffer sb = new StringBuffer(
@@ -380,6 +414,9 @@ public class QoSExpectations {
 		formatter.format("%1$10s    %2$20s  = %3$20d\n", "", "query duration",
 			new Long(this.queryDuration));
 	
+		sb.append("\nTuple Drop Allowed : " + this.isTupleLossAllowed
+				+ " Tuple Drop Policy" + this.tupleDropPolicy + "[sample rate if applicable=" 
+				+ this.samplingRate + "]\n\n");
 		return sb.toString().replaceAll("-1", "NA");
     }
 
