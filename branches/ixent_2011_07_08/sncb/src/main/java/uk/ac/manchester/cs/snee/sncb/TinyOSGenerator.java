@@ -239,7 +239,7 @@ public class TinyOSGenerator {
     
 	private boolean controlRadio;
 
-	private boolean enablePrintf;
+	private boolean enablePrintf; //not tested
 
 	private boolean enableLeds;
 
@@ -1734,10 +1734,8 @@ public class TinyOSGenerator {
 		out.println("#define __QUERY_PLAN_H__\n");
 		
 		if (this.enablePrintf) {
-			if (targetDirName.equals("tmotesky_t2")) {
+			if (target == CodeGenTarget.TELOSB_T2) {
 				out.println("#include \"printf.h\"\n");
-			} else if (targetDirName.equals("z1")) {
-				out.println("#include \"printfZ1.h\"\n");
 			}
 		}
 		
@@ -2117,10 +2115,8 @@ public class TinyOSGenerator {
 			replacements.put("__DELUGE__","");
 		}
 		
-		if (this.enablePrintf && targetDirName.equals("tmotesky_t2")) {
+		if (this.enablePrintf && target == CodeGenTarget.TELOSB_T2) {
 			replacements.put("__PRINTF__", "CFLAGS += -I$(TOSDIR)/lib/printf");
-		} else if (this.enablePrintf && targetDirName.equals("z1")) {
-			replacements.put("__PRINTF__", "CFLAGS += -DPRINTFUART_ENABLED");
 		} else {
 			replacements.put("__PRINTF__","");			
 		}

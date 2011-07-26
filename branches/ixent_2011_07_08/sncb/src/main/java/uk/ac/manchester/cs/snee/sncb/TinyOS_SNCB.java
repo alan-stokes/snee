@@ -246,7 +246,7 @@ public class TinyOS_SNCB implements SNCB {
 			throws IOException, SchemaMetadataException, TypeMappingException,
 			OptimizationException, CodeGenerationException {
 		// TODO: move some of these to an sncb .properties file
-		boolean enablePrintf = false;
+		boolean enablePrintf = false; //TODO: not tested
 		boolean enableLeds = true;
 		boolean debugLeds = true;
 
