@@ -41,7 +41,7 @@ public class AlgorithmSelector {
 			logger.debug("ENTER AlgorithmSelector()");
 		}
 		thresholdRate = SNEEProperties
-				.getIntSetting(SNEEPropertyNames.RESULTS_HISTORY_SIZE_TUPLES);
+				.getDoubleSetting(SNEEPropertyNames.COMPILER_ALGORTHM_SELECTION_THRESHOLD_RATE);
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN AlgorithmSelector()");
@@ -167,6 +167,8 @@ public class AlgorithmSelector {
 		// Lossy or Lossless is to be determined via QoS parameters
 		if (qos.isTupleLossAllowed()) {
 			valveOperator.setAlgorithm(ValveOperator.TUPLE_DROP_MODE);
+			valveOperator.setSamplingRate(qos.getSamplingRate());
+			valveOperator.setTupleDropPolicy(qos.getTupleDropPolicy());
 		} else {
 			// TODO this has to replaced with TUPLE_OFFLOAD_MODE, once that
 			// implementation is done
