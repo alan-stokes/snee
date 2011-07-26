@@ -254,8 +254,6 @@ public class TinyOS_SNCB implements SNCB {
 		TinyOSGenerator codeGenerator = new TinyOSGenerator(target, combinedImage, queryOutputDir,
 				metadata, controlRadio, enablePrintf, enableLeds,
 				debugLeds, showLocalTime, useNodeController);
-		// TODO: in the code generator, need to connect controller components to
-		// query plan components
 		codeGenerator.doNesCGeneration(qep);
 	}
 
