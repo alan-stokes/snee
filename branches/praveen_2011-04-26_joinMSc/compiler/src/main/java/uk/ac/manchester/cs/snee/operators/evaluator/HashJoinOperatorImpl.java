@@ -158,8 +158,9 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 			if (logger.isDebugEnabled()) {
 				logger.debug("generateAndUpdate() Got the first operand" + operand);
 			}
-			//System.out.println(operand);
+			
 			if (operand != null) {
+				//System.out.println("Hashable operand"+operand);
 				if (operandHashTable != null && operandHashTable.size() > 0) {
 					operandHashTable.clear();
 				} 
@@ -167,6 +168,7 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 			}
 			if (operandHashTable != null && operandHashTable.size() > 0) {
 				operand = getNextFromChild(otherOperator);
+				//System.out.println("Other operand"+operand);
 				if (logger.isDebugEnabled()) {
 					logger.debug("generateAndUpdate() Got the second operand" + operand);
 				}

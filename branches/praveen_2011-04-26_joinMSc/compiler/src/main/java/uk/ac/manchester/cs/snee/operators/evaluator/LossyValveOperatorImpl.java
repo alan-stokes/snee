@@ -23,28 +23,57 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 	Logger logger = Logger.getLogger(LossyValveOperatorImpl.class.getName());
 
 	private CircularArray<Output> inputBufferQueue;
+	private TupleDropPolicy tupleDropPolicy;
+	private int samplingRate = 0;
 
 	public LossyValveOperatorImpl(LogicalOperator op, int qid)
 			throws SNEEException, SchemaMetadataException,
 			SNEEConfigurationException {
 		super(op, qid);
 		if (logger.isDebugEnabled()) {
-			logger.debug("Enter LossyValveOperatorImpl with query "+qid);
+			logger.debug("Enter LossyValveOperatorImpl with query " + qid);
 		}
 		inputBufferQueue = new CircularArray<Output>(maxBufferSize);
-		inputBufferQueue.setTupleDropPolicy(TupleDropPolicy.FIFO);
-		
+		this.tupleDropPolicy = valveOperator.getTupleDropPolicy();
+		this.samplingRate = valveOperator.getSamplingRate();
+
 		if (logger.isDebugEnabled()) {
-			logger.debug("Exit LossyValveOperatorImpl with query "+qid);
+			logger.debug("Exit LossyValveOperatorImpl with query " + qid);
 		}
 	}
 
 	@Override
 	protected boolean runProducer(Output output) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("Adding data "+output);
+			logger.debug("Adding data " + output);
+		}
+		switch (tupleDropPolicy) {
+		case FIFO:
+			break;
+		case LIFO:
+			inputBufferQueue.dropLastInsertedObject();
+			break;
+		case SAMPLE:
+			if (!canDropObject()) {
+				return false;
+			}
+			break;
+		default:
+			break;
 		}
 		return inputBufferQueue.add(output);
+	}
+
+	private boolean canDropObject() {
+		boolean canAdd = true;
+		int randomNumber = (int) (Math.random() * 100);
+		if (randomNumber <= samplingRate) {
+			canAdd = false;
+		}
+		if (canAdd == true) {
+			System.out.println("can add");
+		}
+		return canAdd;
 	}
 
 	@Override
