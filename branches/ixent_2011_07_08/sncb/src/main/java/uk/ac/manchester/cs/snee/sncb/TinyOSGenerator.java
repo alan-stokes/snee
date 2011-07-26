@@ -98,7 +98,6 @@ import uk.ac.manchester.cs.snee.sncb.tos.MainComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.NesCComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.NesCConfiguration;
 import uk.ac.manchester.cs.snee.sncb.tos.NodeControllerComponent;
-import uk.ac.manchester.cs.snee.sncb.tos.PowerManagementComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.ProjectComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.QueryPlanModuleComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.RXComponent;
@@ -255,8 +254,7 @@ public class TinyOSGenerator {
 	
     public TinyOSGenerator(CodeGenTarget codeGenTarget,
     boolean combinedImage, String nescOutputDir, MetadataManager metadata, boolean controlRadio,
-    boolean enablePrintf, boolean enableLeds,
-    boolean usePowerManagement, boolean debugLeds, 
+    boolean enablePrintf, boolean enableLeds, boolean debugLeds, 
     boolean showLocalTime, boolean useNodeController)
     throws IOException, SchemaMetadataException, TypeMappingException {
 		this.target = codeGenTarget;
