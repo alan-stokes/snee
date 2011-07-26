@@ -245,8 +245,6 @@ public class TinyOSGenerator {
 
 	private boolean enableLeds;
 
-	private boolean usePowerManagement;
-	
 	private boolean debugLeds;
 	
 	private boolean showLocalTime; //Not working
@@ -295,7 +293,6 @@ public class TinyOSGenerator {
 
 		this.enablePrintf = enablePrintf;
 		this.enableLeds = enableLeds;
-		this.usePowerManagement = usePowerManagement;
 		this.debugLeds = debugLeds;
 		this.showLocalTime = showLocalTime;
 		
@@ -707,7 +704,7 @@ public class TinyOSGenerator {
 			new QueryPlanModuleComponent(COMPONENT_QUERY_PLAN, config,
 			plan, sink, (tossimFlag || combinedImage), targetDirName,
 			costParams, controlRadio, enablePrintf, enableLeds,
-			debugLeds, usePowerManagement, useNodeController, target);
+			debugLeds, useNodeController, target);
 		config.addComponent(queryPlanModuleComp);
 
 		TimerComponent timerComp = new TimerComponent(		//$

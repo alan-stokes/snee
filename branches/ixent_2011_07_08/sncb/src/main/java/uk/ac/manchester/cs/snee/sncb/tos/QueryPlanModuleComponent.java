@@ -81,8 +81,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 
 	private boolean enableLeds;
 
-	private boolean usePowerManagement;
-	
 	private boolean useControllerComponent;
     
     private static boolean radioOn = false; 
@@ -93,8 +91,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    final int sink, boolean tossimFlag, 
 	    String targetName, CostParameters costParams, boolean controlRadio,
 	    boolean enablePrintf, boolean enableLeds,
-	    boolean debugLeds, boolean usePowerManagement,  
-	    boolean useControllerComponent,
+	    boolean debugLeds, boolean useControllerComponent,
 	    CodeGenTarget target) {
 		super(config, tossimFlag, debugLeds, target);
 		this.id = name;
@@ -106,7 +103,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		this.controlRadio =controlRadio;
 		this.enablePrintf = enablePrintf;
 		this.enableLeds = enableLeds;
-		this.usePowerManagement = usePowerManagement;
 		this.useControllerComponent = useControllerComponent;
 		
 	    tosSiteAddress = "TOS_NODE_ID";
