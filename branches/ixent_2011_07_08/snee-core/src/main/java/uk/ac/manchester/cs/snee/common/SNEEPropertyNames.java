@@ -192,6 +192,14 @@ public final class SNEEPropertyNames {
 	 */
 	public static final String SNCB_CODE_GENERATION_TARGET = 
 		"sncb.code_generation_target";
+
+	/**
+	 * Turns the radio on/off during agenda evalauation, 
+	 * to enable power management to kick in.
+	 * Ignored for tossim and telosb targets.
+	 */
+	public static final String SNCB_CONTROL_RADIO = 
+		"sncb.control_radio";
 }
 
 

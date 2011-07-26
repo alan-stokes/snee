@@ -239,7 +239,7 @@ public class TinyOSGenerator {
     
     private MetadataManager metadata;
     
-	private boolean controlRadioOff;
+	private boolean controlRadio;
 
 	private boolean enablePrintf;
 
@@ -256,20 +256,20 @@ public class TinyOSGenerator {
 	private boolean usesCustomSeaLevelSensor = false;
 	
     public TinyOSGenerator(CodeGenTarget codeGenTarget,
-    boolean combinedImage, String nescOutputDir, MetadataManager metadata, boolean controlRadioOff,
+    boolean combinedImage, String nescOutputDir, MetadataManager metadata, boolean controlRadio,
     boolean enablePrintf, boolean enableLeds,
     boolean usePowerManagement, boolean debugLeds, 
     boolean showLocalTime, boolean useNodeController)
     throws IOException, SchemaMetadataException, TypeMappingException {
 		this.target = codeGenTarget;
 		this.targetDirName = codeGenTarget.toString().toLowerCase();
-		this.controlRadioOff =controlRadioOff;
+		this.controlRadio =controlRadio;
 		
     	if (target==CodeGenTarget.TELOSB_T2) {
         	this.tossimFlag = false;
     		this.useNodeController = useNodeController;
         	this.combinedImage = combinedImage;
-    		this.controlRadioOff = false; // leads to too much packet loss, currently
+    		this.controlRadio = false; // leads to too much packet loss, currently
     	}
     	if (target==CodeGenTarget.AVRORA_MICA2_T2) {
         	this.tossimFlag = false;
@@ -285,7 +285,7 @@ public class TinyOSGenerator {
         	this.tossimFlag = true;
     		this.useNodeController = false; // incompatible
         	this.combinedImage = true; // doesn't work otherwise
-    		this.controlRadioOff = false; // incompatible
+    		this.controlRadio = false; // incompatible
     	}
     	
     	this.nescOutputDir = nescOutputDir;
@@ -706,7 +706,7 @@ public class TinyOSGenerator {
 		QueryPlanModuleComponent queryPlanModuleComp =
 			new QueryPlanModuleComponent(COMPONENT_QUERY_PLAN, config,
 			plan, sink, (tossimFlag || combinedImage), targetDirName,
-			costParams, controlRadioOff, enablePrintf, enableLeds,
+			costParams, controlRadio, enablePrintf, enableLeds,
 			debugLeds, usePowerManagement, useNodeController, target);
 		config.addComponent(queryPlanModuleComp);
 

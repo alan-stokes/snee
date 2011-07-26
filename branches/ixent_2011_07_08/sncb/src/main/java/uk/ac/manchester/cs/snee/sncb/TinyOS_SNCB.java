@@ -47,6 +47,8 @@ public class TinyOS_SNCB implements SNCB {
 	
 	private String targetDirName; 
 
+	private boolean controlRadio = true;
+
 	// Is the network running?
 	private static boolean isStarted = false;
 	private SerialPortMessageReceiver mr;
@@ -87,6 +89,11 @@ public class TinyOS_SNCB implements SNCB {
 				useNodeController = false;
 			}
 			targetDirName = target.toString().toLowerCase();
+			// Turn the radio on/off
+			if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_CONTROL_RADIO)) {
+				this.controlRadio = SNEEProperties
+					.getBoolSetting(SNEEPropertyNames.SNCB_CONTROL_RADIO);
+			}			
 			
 			//More TinyOS environment variables
 			if (serialPort != null) {
@@ -239,7 +246,6 @@ public class TinyOS_SNCB implements SNCB {
 			throws IOException, SchemaMetadataException, TypeMappingException,
 			OptimizationException, CodeGenerationException {
 		// TODO: move some of these to an sncb .properties file
-		boolean controlRadioOff = true;
 		boolean enablePrintf = false;
 		boolean enableLeds = true;
 		boolean usePowerManagement = false;
@@ -247,7 +253,7 @@ public class TinyOS_SNCB implements SNCB {
 		boolean showLocalTime = false;
 
 		TinyOSGenerator codeGenerator = new TinyOSGenerator(target, combinedImage, queryOutputDir,
-				metadata, controlRadioOff, enablePrintf, enableLeds, usePowerManagement, 
+				metadata, controlRadio, enablePrintf, enableLeds, usePowerManagement, 
 				debugLeds, showLocalTime, useNodeController);
 		// TODO: in the code generator, need to connect controller components to
 		// query plan components

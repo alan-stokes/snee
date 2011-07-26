@@ -75,7 +75,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 
     private CostParameters costParams;
     
-	private boolean controlRadioOff;
+	private boolean controlRadio;
 
 	private boolean enablePrintf;
 
@@ -91,7 +91,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
     public QueryPlanModuleComponent(final String name,
 	    final NesCConfiguration config, final SensorNetworkQueryPlan plan,
 	    final int sink, boolean tossimFlag, 
-	    String targetName, CostParameters costParams, boolean controlRadioOff,
+	    String targetName, CostParameters costParams, boolean controlRadio,
 	    boolean enablePrintf, boolean enableLeds,
 	    boolean debugLeds, boolean usePowerManagement,  
 	    boolean useControllerComponent,
@@ -103,7 +103,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		this.sink = sink;
 		this.costParams = costParams;
 
-		this.controlRadioOff =controlRadioOff;
+		this.controlRadio =controlRadio;
 		this.enablePrintf = enablePrintf;
 		this.enableLeds = enableLeds;
 		this.usePowerManagement = usePowerManagement;
@@ -296,7 +296,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 			agendaCheckingBuff.append(Utils.indent(indentation) + "\t\t\t\tdbg(\"DBG_USR2\",\""
 			+ " timer fired at row %d\\n\",agendaRow);\n");		    	
 			
-		if (this.controlRadioOff && radioOn == true && tossimFlag == false) {
+		if (this.controlRadio && radioOn == true && tossimFlag == false) {
 			agendaCheckingBuff.append(Utils.indent(indentation+4) + "call CommControl.stop();\n");
 			radioOn = false;
 		}
@@ -310,7 +310,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		+ " timer fired at row %d\\n\",agendaRow);\n");
 		
 		//For mica2, if radio off, turn it on here!
-		if (tossimFlag==false && radioOn==false && this.controlRadioOff) {
+		if (tossimFlag==false && radioOn==false && this.controlRadio) {
 			agendaCheckingBuff.append(Utils.indent(indentation+4) + "call CommControl.start();\n");
 			radioOn = true;
 		}
@@ -555,7 +555,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 			out.println("\t\tprintfz1_init();");
 		}
 			
-		if (usesRadio && controlRadioOff == false) {
+		if (usesRadio && controlRadio == false) {
 			out.println("\t\tcall CommControl.start();");
 		} else {
 			out.println("\t\tpost initialize();");
