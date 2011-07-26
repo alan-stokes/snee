@@ -105,7 +105,6 @@ import uk.ac.manchester.cs.snee.sncb.tos.RadioComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SelectComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SensorComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SensorComponentUtils;
-import uk.ac.manchester.cs.snee.sncb.tos.SerialAMReceiveComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialAMSendComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialStarterComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.TXComponent;
