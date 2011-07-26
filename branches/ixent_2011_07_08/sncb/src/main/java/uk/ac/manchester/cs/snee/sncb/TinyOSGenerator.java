@@ -245,8 +245,6 @@ public class TinyOSGenerator {
 
 	private boolean debugLeds;
 	
-	private boolean showLocalTime; //Not working
-	
 	private boolean useNodeController;
 	    
 	private boolean usesCustomSeaLevelSensor = false;
@@ -254,7 +252,7 @@ public class TinyOSGenerator {
     public TinyOSGenerator(CodeGenTarget codeGenTarget,
     boolean combinedImage, String nescOutputDir, MetadataManager metadata, boolean controlRadio,
     boolean enablePrintf, boolean enableLeds, boolean debugLeds, 
-    boolean showLocalTime, boolean useNodeController)
+    boolean useNodeController)
     throws IOException, SchemaMetadataException, TypeMappingException {
 		this.target = codeGenTarget;
 		this.targetDirName = codeGenTarget.toString().toLowerCase();
@@ -291,7 +289,6 @@ public class TinyOSGenerator {
 		this.enablePrintf = enablePrintf;
 		this.enableLeds = enableLeds;
 		this.debugLeds = debugLeds;
-		this.showLocalTime = showLocalTime;
 		
     	initConstants();
 
@@ -800,9 +797,10 @@ public class TinyOSGenerator {
 				/* Wire fragment component to the sensor component */
 				wireFragToSensors(currentSite, config, fragComp, op);
 				
-				if (this.showLocalTime) {
-					wireFragToLocalTime(currentSite, config, fragComp, op);
-				}
+//TODO: Should be viewed as another type of sensor in the physical schema				
+//				if (this.showLocalTime) {
+//					wireFragToLocalTime(currentSite, config, fragComp, op);
+//				}
 				
 			} else if (op instanceof SensornetDeliverOperator) {
 				
@@ -1155,9 +1153,10 @@ public class TinyOSGenerator {
 		/* Wire the acquisition operators to the outside world */
 		addExternalSensorWiring(site, frag, fragConfig);
 		
-		if (this.showLocalTime) {
-			addExternalLocalTimeWiring(site, frag, fragConfig);
-		}
+		//TODO: Should be viewed as another type of sensor in the physical schema		
+//		if (this.showLocalTime) {
+//			addExternalLocalTimeWiring(site, frag, fragConfig);
+//		}
 	}
 
 

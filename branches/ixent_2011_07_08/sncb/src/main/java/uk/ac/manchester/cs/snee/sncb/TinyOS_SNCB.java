@@ -249,11 +249,10 @@ public class TinyOS_SNCB implements SNCB {
 		boolean enablePrintf = false;
 		boolean enableLeds = true;
 		boolean debugLeds = true;
-		boolean showLocalTime = false;
 
 		TinyOSGenerator codeGenerator = new TinyOSGenerator(target, combinedImage, queryOutputDir,
 				metadata, controlRadio, enablePrintf, enableLeds,
-				debugLeds, showLocalTime, useNodeController);
+				debugLeds, useNodeController);
 		codeGenerator.doNesCGeneration(qep);
 	}
 
