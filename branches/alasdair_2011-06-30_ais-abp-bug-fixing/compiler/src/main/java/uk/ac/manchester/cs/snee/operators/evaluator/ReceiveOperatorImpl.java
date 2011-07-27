@@ -47,6 +47,8 @@ import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
@@ -55,7 +57,6 @@ import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
@@ -183,7 +184,15 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		}
 		// Code to prevent rates being set to 0.0
 		if (rate == 0.0) {
-			rate = 1.0;
+			try {
+				rate = new Double(SNEEProperties.getSetting(
+						SNEEPropertyNames.EVALUATOR_DEFAULT_POLL_RATE)).doubleValue();
+			} catch (Exception e) {
+				String message = "DEFAULT_POLL_RATE does not contain a double";
+				logger.error(message);
+				// If rate not set or incorrectly set, default to 1 tuple per second
+				rate = 1.0;
+			}
 		}
 		double period = (1 / rate) * 1000;
 		_shortSleepPeriod = (long) (period * 0.1);

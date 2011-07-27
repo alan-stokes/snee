@@ -14,6 +14,9 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentType;
@@ -173,7 +176,8 @@ implements PullSourceWrapper {
 					" #streamRates=" + streamRates.size());
 		}
 		for (ExtentMetadata extent : extents) {
-			double rate = findAverageStreamRate(extent.getExtentName(), streamRates);
+			double rate = findAverageStreamRate(extent.getExtentName(), 
+					streamRates);
 			extent.setRate(rate);
 		}
 		if (logger.isTraceEnabled()) {
@@ -194,7 +198,16 @@ implements PullSourceWrapper {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER findAverageStreamRate() with " + extentName);
 		}
-		double rate = 1.0;
+		double rate;
+		try {
+			rate = new Double(SNEEProperties.getSetting(
+					SNEEPropertyNames.EVALUATOR_DEFAULT_POLL_RATE)).doubleValue();
+		} catch (Exception e) {
+			String message = "DEFAULT_POLL_RATE does not contain a double";
+			logger.error(message);
+			// If rate not set or incorrectly set, default to 1 tuple per second
+			rate = 1.0;
+		}
 		for (StreamRateType streamRate : streamRates) {
 			QName streamQName = streamRate.getStreamQName();
 			logger.debug(streamQName);

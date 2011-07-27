@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>clients</artifactId>
 		<groupId>uk.ac.manchester.cs.snee</groupId>
-		<version>1.6.3-SNAPSHOT</version>
+		<version>1.6.4-SNAPSHOT</version>
 	</parent>
 	<groupId>uk.ac.manchester.cs.snee.client</groupId>
 	<artifactId>cco-stored-client</artifactId>

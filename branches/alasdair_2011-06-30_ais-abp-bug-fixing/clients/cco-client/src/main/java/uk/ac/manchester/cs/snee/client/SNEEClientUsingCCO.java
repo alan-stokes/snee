@@ -40,9 +40,11 @@ public class SNEEClientUsingCCO extends SNEEClient {
 //		"SELECT * FROM shipdata_southampton;";
 
 		//APB-WS queries
-		"SELECT * FROM envdata_chichesterbar;";
+		"SELECT * FROM envdata_southampton;";
+//		"SELECT * FROM envdata_chichesterbar;"; // Problems with chichesterbar
+//		"SELECT wind_gust_speed FROM envdata_southampton;";
 	
-	private static long duration =
+	private static long duration = 
 		//CCO-WS
 //		900;
 		//EMU-WS
@@ -50,7 +52,7 @@ public class SNEEClientUsingCCO extends SNEEClient {
 		//AIS-WS
 //		900;
 		//ABP-WS
-		900;
+		420; //7 minutes
 		
 	public SNEEClientUsingCCO(String query, double duration) 
 	throws SNEEException, IOException, SNEEConfigurationException,

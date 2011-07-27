@@ -161,6 +161,9 @@ public final class SNEEPropertyNames {
 	public static String RESULTS_HISTORY_SIZE_TUPLES =
 		"results.history_size.tuples";
 
+	public static String EVALUATOR_DEFAULT_POLL_RATE =
+		"evaluator.default_poll_rate";
+	
 	/**
 	 * Specifies whether the metadata collection program should be invoked, 
 	 * or default metadata should be used.
