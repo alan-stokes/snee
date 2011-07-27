@@ -838,7 +838,7 @@ public class TinyOSGenerator {
 		int sensorID = 0;
 		for (Attribute attr : attributes) {
 			if ((attr instanceof EvalTimeAttribute) ||
-					(attr instanceof IDAttribute)) {
+					(attr instanceof IDAttribute) || (attr instanceof TimeAttribute)) {
 				continue;
 			}
 
