@@ -29,8 +29,8 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 public class AcquireOperatorTest extends EasyMockSupport {
 
@@ -49,7 +49,7 @@ public class AcquireOperatorTest extends EasyMockSupport {
 	private Types types;
 	private ExtentMetadata mockExtent;
 	private Attribute mockAttribute;
-	private SourceMetadataAbstract mockSource;	
+	private SensorNetworkSourceMetadata mockSource;	
 
 	@Before
 	public void setUp() throws Exception {
@@ -68,6 +68,7 @@ public class AcquireOperatorTest extends EasyMockSupport {
 		mockAttribute = createMock(DataAttribute.class);
 		mockSource = createMock(SensorNetworkSourceMetadata.class);
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
+		expect(mockSource.getSourceType()).andReturn(SourceType.SENSOR_NETWORK);
 	}
 
 	@After

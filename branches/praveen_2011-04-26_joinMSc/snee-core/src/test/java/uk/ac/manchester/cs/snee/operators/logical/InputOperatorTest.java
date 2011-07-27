@@ -25,12 +25,14 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.WebServiceSourceMetadata;
 
 public class InputOperatorTest extends EasyMockSupport {
@@ -69,6 +71,7 @@ public class InputOperatorTest extends EasyMockSupport {
 		mockAttribute = createMock(DataAttribute.class);
 		mockSource = createMock(WebServiceSourceMetadata.class);
 		expect(mockSource.getSourceName()).andReturn("extentName").anyTimes();
+		expect(mockSource.getSourceType()).andReturn(SourceType.RELATIONAL);
 	}
 
 	@After

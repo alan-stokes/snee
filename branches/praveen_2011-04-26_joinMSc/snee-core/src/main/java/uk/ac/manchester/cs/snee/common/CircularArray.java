@@ -90,7 +90,8 @@ public class CircularArray<E> implements Iterable<E> {
 		totalNumberOfObjects++;
 		if (logger.isTraceEnabled()) {
 			logger.trace("Inserted object at index " + lastIndex
-					+ "\n\tTotal number of inserted objects " + numberElements
+					+ "\n\tTotal number of inserted objects " + totalNumberOfObjects +
+					"\n\tNumber of inserted objects " + numberElements
 					+ "\n\tPosition of head " + firstIndex);
 		}
 		lastIndex = incrementPointer(lastIndex);
@@ -167,12 +168,13 @@ public class CircularArray<E> implements Iterable<E> {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER get() with " + index);
 		}
-		int lowerBound = Math.max(0, numberElements - capacity);
-		if (lowerBound <= index && index < numberElements) {
+		int lowerBound = Math.max(0, totalNumberOfObjects - capacity);
+		if (lowerBound <= index && index < totalNumberOfObjects) {
 			int location = index % array.length; 
 			if (logger.isTraceEnabled()) {
 				logger.trace("Retrieve location " + location +
-						"\n\tTotal number of inserted objects " +
+						"\n\tTotal number of inserted objects " + totalNumberOfObjects +
+						"\n\tCurrent number of inserted elements " + numberElements +
 						"\n\tlast index " + lastIndex +
 						"\n\tPosition of head " + firstIndex);
 			}
@@ -182,7 +184,7 @@ public class CircularArray<E> implements Iterable<E> {
 			}
 			return obj;
 		}
-		int upperBound = numberElements - 1;
+		int upperBound = totalNumberOfObjects - 1;
 		String message = index + " out of range. " +
 				"Valid range that can currently be retrieve: " +
 				lowerBound + " to " + upperBound;
@@ -207,9 +209,19 @@ public class CircularArray<E> implements Iterable<E> {
 	 * @return 
 	 */
 	public E poll() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER poll()");
+		}
 		E object = null;
 		//System.out.println("Polling begin");
 		//printIndexes();
+		if (logger.isTraceEnabled()) {
+			logger.trace(
+					"\n\tTotal number of inserted objects " + totalNumberOfObjects +
+					"\n\tCurrent number of inserted elements " + numberElements +
+					"\n\tlast index " + lastIndex +
+					"\n\tPosition of head " + firstIndex);
+		}
 		if (!isEmpty()) {
 			object = getOldest();
 			numberElements--;
@@ -223,6 +235,9 @@ public class CircularArray<E> implements Iterable<E> {
 		}
 		//System.out.println("Polling end");
 		//printIndexes();
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN poll() with " + object.toString());
+		}
 		return object;
 	}
 	
@@ -268,7 +283,7 @@ public class CircularArray<E> implements Iterable<E> {
 	 * @return the newest element stored in this {@code CircularArray}.
 	 */
 	public E getNewest() {
-		return array[numberElements - 1 % array.length];
+		return array[totalNumberOfObjects - 1 % array.length];
 	}
 	
 	/**
@@ -293,8 +308,8 @@ public class CircularArray<E> implements Iterable<E> {
 			logger.debug("ENTER subList() [" + start + 
 					", " + end + ")");
 		}
-		int lowerBound = Math.max(0, numberElements - capacity);
-		if (lowerBound <= start && end <= numberElements) {
+		int lowerBound = Math.max(0, totalNumberOfObjects - capacity);
+		if (lowerBound <= start && end <= totalNumberOfObjects) {
 			List<E> elementList = new ArrayList<E>(end - start);
 			for (int i = start; i < end; i++) {
 				elementList.add(get(i));
@@ -312,16 +327,16 @@ public class CircularArray<E> implements Iterable<E> {
 	}
 	
 	public Iterator<E> iterator() {
-		int lowerBound = Math.max(0, numberElements - capacity);
+		int lowerBound = Math.max(0, totalNumberOfObjects - capacity);
 		return circularIterator(lowerBound);
 	}
 	
 	public Iterator<E> circularIterator(int index) {
-		int lowerBound = Math.max(0, numberElements - capacity);
-		if (lowerBound <= index && index <= numberElements) {
+		int lowerBound = Math.max(0, totalNumberOfObjects - capacity);
+		if (lowerBound <= index && index <= totalNumberOfObjects) {
 			return new CircularIterator(index);
 		}
-		int upperBound = numberElements;
+		int upperBound = totalNumberOfObjects;
 		String message = "Valid range that can currently be retrieve: " +
 				lowerBound + " to " + upperBound;
 		logger.warn(message);
@@ -346,7 +361,7 @@ public class CircularArray<E> implements Iterable<E> {
 		
 		@Override
 		public boolean hasNext() {
-			return lastPosition + 1 < numberElements;
+			return lastPosition + 1 < totalNumberOfObjects;
 		}
 
 		@Override

@@ -46,7 +46,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
 /**
  * Implementation of the metadata imported from a web service source.
  */
-public class WebServiceSourceMetadata extends SourceMetadata {
+public class WebServiceSourceMetadata extends StreamingSourceMetadataAbstract {
 
 	Logger logger = 
 		Logger.getLogger(WebServiceSourceMetadata.class.getName());

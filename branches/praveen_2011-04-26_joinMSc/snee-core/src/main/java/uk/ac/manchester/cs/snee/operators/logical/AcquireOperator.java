@@ -48,7 +48,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.StreamingSourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 

@@ -44,7 +44,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.StreamingSourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.types.Duration;
@@ -68,7 +68,8 @@ public class ScanOperator extends InputOperator {
 		this.setOperatorName("SCAN");
 		this.setOperatorDataType(OperatorDataType.RELATION);
 		this.setOperatorSourceType(source.getSourceType());
-		this.setSourceRate(((SourceMetadata)source).getRate(extentName));
+		// XXX-AG: SCANS do not have a rate associated with them as they are not a stream
+//		this.setSourceRate(((SourceMetadata)source).getRate(extentName));
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN ScanOperator()");
 		}

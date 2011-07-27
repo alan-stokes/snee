@@ -67,14 +67,14 @@ public abstract class SourceMetadataAbstract {
 	public SourceMetadataAbstract(String sourceName, 
 			List<String> extentNames, SourceType sourceType) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER SourceMetadata() with " + sourceName +
+			logger.debug("ENTER SourceMetadataAbstract() with " + sourceName +
 					" extents " + extentNames +
 					" type " + sourceType);
 		_sourceName = sourceName;
 		_extentNames = extentNames;
 		_sourceType = sourceType;
 		if (logger.isDebugEnabled())
-			logger.debug("RETURN SourceMetadata()");
+			logger.debug("RETURN SourceMetadataAbstract()");
 	}
 
 	/* (non-Javadoc)
@@ -127,6 +127,7 @@ public abstract class SourceMetadataAbstract {
 	 */
 	public boolean isStream() {
 		if (_sourceType == SourceType.PULL_STREAM_SERVICE || 
+				_sourceType == SourceType.PUSH_STREAM_SERVICE ||
 				_sourceType == SourceType.UDP_SOURCE ||
 				_sourceType == SourceType.SENSOR_NETWORK) {
 			return true;

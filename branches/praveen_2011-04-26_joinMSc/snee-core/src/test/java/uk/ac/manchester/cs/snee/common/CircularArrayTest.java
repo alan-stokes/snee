@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.PropertyConfigurator;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -17,6 +18,10 @@ public class CircularArrayTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		// Configure logging
+		PropertyConfigurator.configure(
+				SNEEPropertiesTest.class.getClassLoader().getResource(
+						"etc/log4j.properties"));
 	}
 
 	@AfterClass
@@ -92,22 +97,52 @@ public class CircularArrayTest {
 	}
 	
 	@Test
-	public void testCircularWrap() {
+	public void testCircularWrap_get() {
 		CircularArray<Integer> circularArray = 
 			new CircularArray<Integer>(5);
+		assertEquals(0, circularArray.size());
+		assertEquals(0, circularArray.totalObjectsInserted());
+		assertEquals(5, circularArray.capacity());
 		for (int i = 0; i < 5; i++) {
 			circularArray.add(new Integer(i));
 		}
 		assertEquals(5, circularArray.size());
+		assertEquals(5, circularArray.totalObjectsInserted());
 		assertEquals(5, circularArray.capacity());
 		for (int i = 0; i < 5; i++) {
 			assertEquals(i, circularArray.get(i).intValue());
 		}
 		circularArray.add(new Integer(5));
-		assertEquals(6, circularArray.size());
+		assertEquals(5, circularArray.size());
+		assertEquals(6, circularArray.totalObjectsInserted());
 		assertEquals(5, circularArray.capacity());
 		for (int i = 1; i < 6; i++) {
 			assertEquals(i, circularArray.get(i).intValue());
+		}
+	}
+	
+	@Test
+	public void testCircularWrap_poll() {
+		CircularArray<Integer> circularArray = 
+			new CircularArray<Integer>(5);
+		assertEquals(0, circularArray.size());
+		assertEquals(0, circularArray.totalObjectsInserted());
+		assertEquals(5, circularArray.capacity());
+		for (int i = 0; i < 5; i++) {
+			circularArray.add(new Integer(i));
+		}
+		assertEquals(5, circularArray.size());
+		assertEquals(5, circularArray.totalObjectsInserted());
+		assertEquals(5, circularArray.capacity());
+		for (int i = 0; i < 5; i++) {
+			assertEquals(i, circularArray.get(i).intValue());
+		}
+		circularArray.add(new Integer(5));
+		assertEquals(5, circularArray.size());
+		assertEquals(6, circularArray.totalObjectsInserted());
+		assertEquals(5, circularArray.capacity());
+		for (int i = 1; i < 6; i++) {
+			assertEquals(i, circularArray.poll().intValue());
 		}
 	}
 	

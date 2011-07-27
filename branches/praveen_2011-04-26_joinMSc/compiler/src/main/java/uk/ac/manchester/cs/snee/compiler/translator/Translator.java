@@ -36,6 +36,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.StreamingSourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
@@ -933,7 +934,7 @@ public class Translator {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Translate PUSHED stream");
 				}
-				output = new ReceiveOperator(extentMetadata, source, 
+				output = new ReceiveOperator(extentMetadata, (StreamingSourceMetadataAbstract) source, 
 						_boolType);
 				break;
 			case TABLE:
@@ -1195,7 +1196,7 @@ public class Translator {
 				logger.trace("Translate WHERE");
 			}			
 			
-			///Start here			
+			///Start here Fix to allow multiple where conditions			
 			Expression[] expressions = new Expression[ast.getNumberOfChildren()];			
 			int count = 0;
 			AST child = ast.getFirstChild();			
@@ -1204,14 +1205,15 @@ public class Translator {
 				count++;
 				child = child.getNextSibling();
 			}		
-			
-			Expression expression = 
-				new MultiExpression(expressions, MultiType.AND,
+			// If just one expression, then return it, otherwise return conjunction
+			Expression expression;
+			if (count == 1) {
+				expression = expressions[0];
+			} else {
+				expression = new MultiExpression(expressions, MultiType.AND,
 						_boolType);
+			}
 			//End here
-			
-			//Expression expression = 
-				//translateExpression(ast.getFirstChild(), input);
 			
 			if (logger.isTraceEnabled()) {
 				logger.trace("Expression (" + expression + 

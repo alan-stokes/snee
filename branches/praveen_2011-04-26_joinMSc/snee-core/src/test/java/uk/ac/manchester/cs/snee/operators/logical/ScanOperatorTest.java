@@ -32,6 +32,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.WebServiceSourceMetadata;
 import uk.ac.manchester.cs.snee.types.Duration;
 
@@ -71,6 +72,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		mockAttribute = createMock(DataAttribute.class);
 		mockSource = createMock(WebServiceSourceMetadata.class);
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
+		expect(mockSource.getSourceType()).andReturn(SourceType.RELATIONAL);
 	}
 
 	@After

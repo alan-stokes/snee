@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.util.Iterator;
@@ -30,6 +31,7 @@ import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlLexer;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParser;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.LAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
@@ -77,8 +79,8 @@ public class TranslatorTest {
 	throws TypeMappingException, SchemaMetadataException, 
 	SNEEConfigurationException, MetadataException, 
 	UnsupportedAttributeTypeException, SourceMetadataException, 
-	TopologyReaderException, MalformedURLException,
-	SNEEDataSourceException, CostParametersException, UtilsException, SNCBException {
+	TopologyReaderException, SNEEDataSourceException, CostParametersException, 
+	UtilsException, SNCBException, IOException {
 		Properties props = new Properties();
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
@@ -88,6 +90,9 @@ public class TranslatorTest {
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
 		props.setProperty(SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION, "false");
 		props.setProperty(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE, "false");
+//		props.setProperty(SNEEPropertyNames.CONVERT_QEP_IMAGES, "false");
+//		Utils.checkDirectory("output/query1", true);
+//		Utils.checkDirectory("output/query1/query-plan", true);
 		SNEEProperties.initialise(props);
 		MetadataManager schemaMetadata = new MetadataManager(null);
 		translator = new Translator(schemaMetadata);

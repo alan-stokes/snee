@@ -54,7 +54,7 @@ import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.StreamingSourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
@@ -173,7 +173,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			logger.trace("ENTER initializeStreamReceiver()");
 		}
 		SourceMetadataAbstract source = receiveOp.getSource();
-		calculateSleepPeriods((SourceMetadata) source);
+		calculateSleepPeriods((StreamingSourceMetadataAbstract) source);
 		SourceType sourceType = source.getSourceType();
 		switch (sourceType) {
 		case UDP_SOURCE:
@@ -194,7 +194,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		}
 	}
 
-	private void calculateSleepPeriods(SourceMetadata source) 
+	private void calculateSleepPeriods(StreamingSourceMetadataAbstract source) 
 	throws SourceMetadataException 
 	{
 		if (logger.isTraceEnabled()) {

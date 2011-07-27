@@ -28,8 +28,9 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
+import uk.ac.manchester.cs.snee.metadata.source.StreamingSourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.WebServiceSourceMetadata;
 
 public class ReceiveOperatorTest extends EasyMockSupport {
@@ -49,7 +50,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 	private Types types;
 	private ExtentMetadata mockExtent;
 	private Attribute mockAttribute;
-	private SourceMetadataAbstract mockSource;
+	private StreamingSourceMetadataAbstract mockSource;
 
 	@Before
 	public void setUp() throws Exception {
@@ -68,6 +69,8 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		mockAttribute = createMock(DataAttribute.class);
 		mockSource = createMock(WebServiceSourceMetadata.class);
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
+		expect(mockSource.getSourceType()).andReturn(SourceType.PULL_STREAM_SERVICE);
+		expect(mockSource.getRate("Name")).andReturn(1.0);
 	}
 
 	@After
