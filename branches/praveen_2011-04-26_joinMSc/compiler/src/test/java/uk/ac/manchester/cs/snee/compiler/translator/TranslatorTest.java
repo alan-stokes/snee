@@ -6,7 +6,6 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.MalformedURLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -90,9 +89,10 @@ public class TranslatorTest {
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
 		props.setProperty(SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION, "false");
 		props.setProperty(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE, "false");
-//		props.setProperty(SNEEPropertyNames.CONVERT_QEP_IMAGES, "false");
-//		Utils.checkDirectory("output/query1", true);
-//		Utils.checkDirectory("output/query1/query-plan", true);
+		props.setProperty(SNEEPropertyNames.GENERATE_QEP_IMAGES, "true");
+		props.setProperty(SNEEPropertyNames.CONVERT_QEP_IMAGES, "false");
+		Utils.checkDirectory("output/query1", true);
+		Utils.checkDirectory("output/query1/query-plan", true);
 		SNEEProperties.initialise(props);
 		MetadataManager schemaMetadata = new MetadataManager(null);
 		translator = new Translator(schemaMetadata);
@@ -109,7 +109,7 @@ public class TranslatorTest {
 	throws ParserException, SchemaMetadataException,
 	ExpressionException, AssertionError, OptimizationException,
 	SourceDoesNotExistException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException 
+	RecognitionException, SNEEConfigurationException 
 	{
 		LAF laf = null;
 		SNEEqlLexer lexer = new SNEEqlLexer(new StringReader(query));
@@ -139,6 +139,12 @@ public class TranslatorTest {
 		} catch (SourceMetadataException e) {
 			e.printStackTrace();
 			fail();
+		}
+		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Generating graph image " + laf.getID());
+			}
+			new LAFUtils(laf).generateGraphImage();
 		}
 		return laf;
 	}
@@ -193,7 +199,7 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("Some rubbish;");
 	}
 	
@@ -202,7 +208,7 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("Some gibberish that is not a query;");
 	}
 	
@@ -211,7 +217,7 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		LAF laf = testQuery("SELECT * FROM PushStream;");
 		Iterator<LogicalOperator> iterator = 
 			laf.operatorIterator(TraversalOrder.POST_ORDER);
@@ -226,7 +232,7 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		LAF laf = testQuery("SELECT * FROM PullStream;");
 		Iterator<LogicalOperator> iterator = 
 			laf.operatorIterator(TraversalOrder.POST_ORDER);
@@ -241,7 +247,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException,
 	RecognitionException, ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException
+	TypeMappingException, SNEEConfigurationException
 	{
 		LAF laf = testQuery("SELECT * FROM TestTable;");
 		Iterator<LogicalOperator> iterator = 
@@ -254,13 +260,14 @@ public class TranslatorTest {
 	
 	/**
 	 * Exception expected since SCAN is not part of the language
+	 * @throws SNEEConfigurationException 
 	 */
 	@Test(expected=ParserException.class)
 	public void testSimpleQuery_tableScan() 
 	throws SourceDoesNotExistException, ExtentDoesNotExistException,
 	RecognitionException, ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException
+	TypeMappingException, SNEEConfigurationException
 	{
 		LAF laf = testQuery("SELECT * FROM TestTable[SCAN 24 hours];");
 		Iterator<LogicalOperator> iterator = 
@@ -276,7 +283,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException,
 	RecognitionException, ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException
+	TypeMappingException, SNEEConfigurationException
 	{
 		LAF laf = testQuery("SELECT * FROM TestTable[RESCAN 24 hours];");
 		Iterator<LogicalOperator> iterator = 
@@ -292,7 +299,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException,
 	RecognitionException, ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException
+	TypeMappingException, SNEEConfigurationException
 	{
 		LAF laf = testQuery("SELECT * FROM TestTable[RESCAN 24 hours] t;");
 		Iterator<LogicalOperator> iterator = 
@@ -308,7 +315,7 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		LAF laf = testQuery("(SELECT * FROM TestStream);");
 		Iterator<LogicalOperator> iterator = 
 			laf.operatorIterator(TraversalOrder.POST_ORDER);
@@ -323,7 +330,7 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		LAF laf = testQuery("SELECT timestamp FROM TestStream;");
 		Iterator<LogicalOperator> iterator = 
 			laf.operatorIterator(TraversalOrder.PRE_ORDER);
@@ -337,7 +344,7 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		LAF laf = testQuery("SELECT timestamp * 2 FROM TestStream;");
 		Iterator<LogicalOperator> iterator = 
 			laf.operatorIterator(TraversalOrder.PRE_ORDER);
@@ -351,7 +358,7 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT timestamp, * FROM TestStream;");
 	}
 	
@@ -360,7 +367,7 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT *, timestamp FROM TestStream;");
 	}
 	
@@ -369,7 +376,7 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT * AS timestamp FROM TestStream;");
 	}
 		
@@ -378,7 +385,7 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream);");
 		Iterator<LogicalOperator> iterator = 
 			laf.operatorIterator(TraversalOrder.PRE_ORDER);
@@ -393,7 +400,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
+	OptimizationException, TypeMappingException, SNEEConfigurationException 
 	{
 		LAF laf = testQuery("SELECT timestamp AS time " +
 				"FROM TestStream;");
@@ -414,7 +421,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
+	OptimizationException, TypeMappingException, SNEEConfigurationException 
 	{
 		LAF laf = testQuery("SELECT \'constant\' " +
 				"FROM TestStream;");
@@ -439,7 +446,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
+	OptimizationException, TypeMappingException, SNEEConfigurationException 
 	{
 		LAF laf = testQuery("SELECT \'constant\' AS Something " +
 				"FROM TestStream;");
@@ -464,7 +471,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
+	OptimizationException, TypeMappingException, SNEEConfigurationException 
 	{
 		LAF laf = testQuery("SELECT 4523 " +
 				"FROM TestStream;");
@@ -489,7 +496,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
+	OptimizationException, TypeMappingException, SNEEConfigurationException 
 	{
 		LAF laf = testQuery("SELECT 4523 + 60 " +
 				"FROM TestStream;");
@@ -515,7 +522,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
+	OptimizationException, TypeMappingException, SNEEConfigurationException 
 	{
 		LAF laf = testQuery("SELECT 4523 AS ANumber " +
 				"FROM TestStream;");
@@ -540,7 +547,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
+	OptimizationException, TypeMappingException, SNEEConfigurationException 
 	{
 		LAF laf = testQuery("SELECT 4523 + 60 AS NumberConstant " +
 				"FROM TestStream;");
@@ -566,7 +573,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
+	OptimizationException, TypeMappingException, SNEEConfigurationException 
 	{
 		LAF laf = testQuery("SELECT 8.2 " +
 				"FROM TestStream;");
@@ -591,7 +598,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
+	OptimizationException, TypeMappingException, SNEEConfigurationException 
 	{
 		LAF laf = testQuery("SELECT 72.6 AS ANumber " +
 				"FROM TestStream;");
@@ -616,7 +623,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
+	OptimizationException, TypeMappingException, SNEEConfigurationException 
 	{
 		LAF laf = testQuery("SELECT \'constant\' AS Something, * " +
 				"FROM TestStream;");
@@ -628,7 +635,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
+	OptimizationException, TypeMappingException, SNEEConfigurationException 
 	{
 		LAF laf = testQuery("SELECT \'constant\', timestamp " +
 				"FROM TestStream;");
@@ -649,7 +656,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
+	OptimizationException, TypeMappingException, SNEEConfigurationException 
 	{
 		LAF laf = testQuery("SELECT \'constant\' AS Something, timestamp " +
 				"FROM TestStream;");
@@ -670,7 +677,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
+	OptimizationException, TypeMappingException, SNEEConfigurationException 
 	{
 		LAF laf = testQuery("SELECT 4523, timestamp " +
 				"FROM TestStream;");
@@ -691,7 +698,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, 
-	OptimizationException, TypeMappingException 
+	OptimizationException, TypeMappingException, SNEEConfigurationException 
 	{
 		LAF laf = testQuery("SELECT 4523 AS ANumber, timestamp " +
 				"FROM TestStream;");
@@ -711,7 +718,7 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT Timestamp " +
 				"FROM TestStream " +
 				"WHERE Timestamp < 42;");
@@ -722,7 +729,7 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT Timestamp " +
 				"FROM TestStream " +
 				"WHERE StringColumn = \'Some text\';");
@@ -733,10 +740,21 @@ public class TranslatorTest {
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT Timestamp " +
 				"FROM TestStream " +
 				"WHERE Timestamp < integerColumn;");
+	}
+	
+	@Test
+	public void testMultiSelect_integer() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
+		testQuery("SELECT Timestamp " +
+				"FROM TestStream " +
+				"WHERE Timestamp > 6 AND integerColumn < 43;");
 	}
 	
 	@Test
@@ -744,7 +762,7 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT * " +
 				"FROM TestStream[FROM NOW-10 ROWS TO NOW - 0 SLIDE 5 ROWS];");
 	}
@@ -754,7 +772,7 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT * " +
 				"FROM TestStream[FROM NOW-10 ROWS TO NOW SLIDE 5 ROWS];");
 	}
@@ -764,7 +782,7 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT * " +
 				"FROM TestStream[NOW];");
 	}
@@ -774,7 +792,7 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT * " +
 				"FROM TestStream[NOW SLIDE 5 ROWS];");
 	}
@@ -785,7 +803,7 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		//FIXME: Correct parser/translator for FROM NOW TO NOW
 		testQuery("SELECT * " +
 				"FROM TestStream[FROM NOW TO NOW];");
@@ -796,7 +814,7 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT * " +
 				"FROM TestStream[FROM NOW-10 MINUTES TO NOW SLIDE 30 SECONDS];");
 	}
@@ -807,7 +825,7 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		//FIXME: Correct translator
 		testQuery("SELECT * " +
 				"FROM TestStream[FROM NOW-10 MINUTES TO NOW];");
@@ -818,7 +836,7 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT * " +
 				"FROM TestStream[NOW] t, PullStream[NOW] p " +
 				"WHERE t.timestamp = p.timestamp;");
@@ -829,7 +847,7 @@ public class TranslatorTest {
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT * " +
 				"FROM TestStream[FROM NOW - 5 SECONDS TO NOW SLIDE 1 SECOND] t, PullStream[FROM NOW - 5 SECONDS TO NOW SLIDE 1 SECOND] p " +
 				"WHERE t.timestamp = p.timestamp;");
@@ -840,7 +858,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException
+	TypeMappingException, SNEEConfigurationException
 	{
 		// Record result
 		Attribute testTimestampAttr = 
@@ -873,7 +891,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException 
+	TypeMappingException, SNEEConfigurationException 
 	{
 		testQuery("SELECT * " +
 				"FROM TestStream[NOW] t, TestStream[NOW] s " +
@@ -885,7 +903,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException 
+	TypeMappingException, SNEEConfigurationException 
 	{
 		testQuery("SELECT * " +
 				"FROM TestStream[NOW] t, PushStream[NOW] s, PullStream[NOW] p " +
@@ -898,7 +916,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException
+	TypeMappingException, SNEEConfigurationException
 	{
 		testQuery("SELECT * FROM TestStream s, TestTable r " +
 				"WHERE s.integerColumn <= r.integerColumn;");
@@ -909,7 +927,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException
+	TypeMappingException, SNEEConfigurationException
 	{
 		testQuery("SELECT * FROM TestStream[NOW] s, TestTable r " +
 				"WHERE s.integerColumn <= r.integerColumn;");
@@ -920,7 +938,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException
+	TypeMappingException, SNEEConfigurationException
 	{
 		testQuery("SELECT * " +
 				"FROM TestStream[NOW] s, PullStream[NOW] p, TestTable r " +
@@ -932,7 +950,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException
+	TypeMappingException, SNEEConfigurationException
 	{
 		testQuery("SELECT * FROM TestTable t, Relation r " +
 				"WHERE t.integerColumn <= r.integerColumn;");
@@ -944,7 +962,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError,
-	OptimizationException, TypeMappingException
+	OptimizationException, TypeMappingException, SNEEConfigurationException
 	{
 		testQuery("RSTREAM SELECT * FROM TestStream[NOW];");
 	}
@@ -955,7 +973,7 @@ public class TranslatorTest {
 	ExtentDoesNotExistException, RecognitionException, 
 	ParserException, SchemaMetadataException, 
 	ExpressionException, AssertionError,
-	OptimizationException, TypeMappingException
+	OptimizationException, TypeMappingException, SNEEConfigurationException
 	{
 		testQuery("SELECT RSTREAM * FROM TestStream[NOW];");
 	}
@@ -987,7 +1005,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		/* Union queries must contain parentheses around subqueries */
 		testQuery("SELECT timestamp FROM TestStream UNION " +
 				"SELECT timestamp FROM PullStream;");
@@ -998,7 +1016,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) " +
 				"UNION " +
 				"(SELECT timestamp FROM PullStream);");
@@ -1010,7 +1028,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) UNION " +
 				"(SELECT timestamp FROM PullStream) UNION" +
 				"(SELECT timestamp FROM PushStream);");
@@ -1022,7 +1040,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) UNION " +
 				"(SELECT timestamp FROM PullStream) UNION" +
 				"(SELECT timestamp FROM PushStream) UNION " +
@@ -1035,7 +1053,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException,
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException
+	TypeMappingException, SNEEConfigurationException
 	{
 		testQuery("(SELECT timestamp " +
 				"FROM TestStream[FROM NOW - 10 SECONDS TO NOW SLIDE 1 SECOND]) " +
@@ -1049,7 +1067,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
 	RecognitionException, ParserException, SchemaMetadataException,
 	ExpressionException, AssertionError, OptimizationException, 
-	TypeMappingException
+	TypeMappingException, SNEEConfigurationException
 	{
 		testQuery("(SELECT timestamp " +
 				"FROM TestStream) " +
@@ -1063,7 +1081,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) " +
 				"UNION " +
 				"(SELECT integerColumn FROM PullStream);");
@@ -1075,7 +1093,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("(SELECT timestamp FROM TestStream) " +
 				"UNION " +
 				"(SELECT floatColumn FROM PullStream);");
@@ -1086,7 +1104,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("(SELECT timestamp FROM TestStream) " +
 				"UNION " +
 				"(SELECT timestamp, floatColumn FROM PullStream);");
@@ -1097,7 +1115,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT s.Timestamp " +
 				"FROM " +
 				"	(SELECT timestamp " +
@@ -1109,7 +1127,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT timestamp FROM " +
 				"	(SELECT ts.timestamp " +
 				"	FROM TestStream ts)[FROM NOW - 10 SECONDS TO NOW SLIDE 1 SECOND];");
@@ -1120,7 +1138,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ts.timestamp FROM TestStream ts;");
 	}
 
@@ -1129,7 +1147,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("(SELECT ts.timestamp FROM TestStream ts);");
 	}
 
@@ -1138,7 +1156,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ts.timestamp " +
 				"FROM TestStream[FROM NOW - 10 SECONDS TO NOW SLIDE 1 SECOND] ts;");
 	}
@@ -1148,13 +1166,14 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ts.timestamp FROM (SELECT timestamp FROM TestStream) ts;");
 	}
 
 	
 	/********************************************************************************
-	 * 			NEWLY ADDED JUNIT TESTS AFTER CHANGING THE TRANSLATOR				*
+	 * 			NEWLY ADDED JUNIT TESTS AFTER CHANGING THE TRANSLATOR				
+	 * @throws SNEEConfigurationException *
 	 ********************************************************************************/
 
 	@Test
@@ -1162,7 +1181,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("(SELECT integerColumn, floatColumn FROM PushStream);");
 	}
 
@@ -1171,7 +1190,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("(SELECT integerColumn, integerColumn FROM PushStream ps);");
 	}
 	
@@ -1182,7 +1201,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT integerColumn FROM PushStream ps;");
 	}
 	
@@ -1191,7 +1210,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT integerColumn AS int1, integerColumn AS int2 FROM PushStream ps;");
 	}
 
@@ -1201,7 +1220,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn FROM PushStream;");
 	}
 
@@ -1212,7 +1231,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("(SELECT ps.integerColumn FROM PushStream);");
 	}
 
@@ -1224,7 +1243,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn FROM PushStream[NOW];");
 	}
 
@@ -1235,7 +1254,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn, ps.floatColumn FROM PushStream[NOW];");
 	}
 
@@ -1245,7 +1264,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn FROM PushStream ps;");
 	}
 
@@ -1256,7 +1275,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn, ps.floatColumn FROM PushStream ps;");
 	}
 
@@ -1268,7 +1287,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn AS int1, ps.integerColumn AS int2 FROM PushStream ps;");
 	}
 
@@ -1280,7 +1299,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn FROM ( SELECT integerColumn FROM PushStream ps);");
 	}
 
@@ -1292,7 +1311,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("(SELECT ps.integerColumn FROM ( SELECT integerColumn FROM PushStream ps));");
 	}
 
@@ -1305,7 +1324,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn FROM (SELECT ps.integerColumn FROM PushStream[NOW] ps);");
 	}
 
@@ -1318,7 +1337,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn, ps.floatColumn FROM " +
 				"	( SELECT integerColumn, floatColumn FROM PushStream ps);");
 	}
@@ -1332,7 +1351,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn FROM (SELECT * FROM PushStream) ps;");
 	}
 
@@ -1344,7 +1363,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn FROM (SELECT integerColumn FROM PushStream) ps;");
 	}
 
@@ -1356,7 +1375,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn FROM (SELECT integerColumn FROM PushStream[NOW]) ps;");
 	}
 
@@ -1366,7 +1385,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn FROM (SELECT ps.integerColumn FROM PushStream[NOW] ps) ps;");
 	}
 
@@ -1375,7 +1394,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn, ps.floatColumn FROM " +
 				"(SELECT integerColumn, floatColumn FROM PushStream) ps;");
 	}
@@ -1385,7 +1404,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ts.integerColumn FROM (SELECT * FROM PushStream ps) ts;");
 	}
 
@@ -1394,7 +1413,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ts.integerColumn FROM (SELECT integerColumn FROM PushStream ps) ts;");
 	}
 
@@ -1403,7 +1422,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ts.integerColumn FROM (SELECT integerColumn FROM PushStream[NOW]) ts;");
 	}
 
@@ -1412,7 +1431,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn FROM (SELECT ps.integerColumn FROM PushStream ps) ps;");
 	}
 
@@ -1422,7 +1441,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT integerColumn AS intValue FROM PushStream;");
 	}
 
@@ -1431,7 +1450,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT integerColumn AS intValue, floatColumn AS floatValue FROM PushStream;");
 	}
 
@@ -1440,7 +1459,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ts.intvalue FROM (SELECT ps.integerColumn as intvalue FROM PushStream[NOW] ps) ts;");
 	}
 
@@ -1449,7 +1468,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT integerColumn AS intValue FROM PushStream ps;");
 	}
 
@@ -1458,7 +1477,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT integerColumn AS intvalue FROM (SELECT ps.integerColumn FROM PushStream[NOW] ps) ts;");
 	}
 
@@ -1467,7 +1486,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn AS intValue FROM PushStream ps;");
 	}
 
@@ -1476,7 +1495,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ts.integerColumn AS intvalue FROM (SELECT ps.integerColumn FROM PushStream[NOW] ps) ts;");
 	}
 
@@ -1486,7 +1505,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.intvalue FROM (SELECT integerColumn AS intValue FROM PushStream ps);");
 	}
 
@@ -1496,7 +1515,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.intvalue AS intValue, ps.floatColumn AS floatValue " +
 				"FROM (SELECT * FROM PushStream ps);");
 	}
@@ -1509,7 +1528,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn FROM (SELECT integerColumn AS intValue FROM PushStream) ps;");
 	}
 
@@ -1522,7 +1541,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ts.intvalue AS intValue, ts.floatColumn AS floatValue " + 
 				"FROM (SELECT * FROM PushStream) ts;");
 	}
@@ -1533,7 +1552,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.intvalue FROM (SELECT integerColumn AS intValue FROM PushStream) ps;");
 	}
 
@@ -1542,7 +1561,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.int1 AS intval, ps.int2 AS newVal FROM " +
 				"	(SELECT integerColumn AS int1, integerColumn as int2 FROM PushStream) ps;");
 	}
@@ -1554,7 +1573,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ts.integerColumn AS intValue, ts.floatColumn AS floatValue " +
 				"FROM (SELECT * FROM PushStream ps) ts;");
 	}
@@ -1568,7 +1587,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ps.integerColumn AS intValue, ps.floatColumn AS floatValue " +
 				"FROM (SELECT * FROM PushStream ps) ts;");
 	}
@@ -1579,7 +1598,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT ts.floatColumn AS floatValue, ts.intvalue AS intValue " +
 				"FROM (SELECT ps.integerColumn AS intvalue, ps.floatColumn FROM PushStream ps) ts;");
 	}
@@ -1589,7 +1608,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT t1.integerColumn FROM " +
 				"(SELECT integerColumn FROM PushStream[NOW]) t1;");
 	}
@@ -1599,7 +1618,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT t1.integerColumn AS t1, t1.integerColumn AS t2 FROM " +
 				"(SELECT integerColumn FROM PushStream[NOW]) t1;");
 	}
@@ -1609,7 +1628,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT t1.t1 AS int1, t1.t2 AS int2 FROM " +
 				"(SELECT integerColumn AS t1, integerColumn AS t2 FROM PushStream[NOW]) t1;");
 	}
@@ -1619,7 +1638,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT t1.integerColumn AS int1, t2.floatColumn AS float FROM " +
 				"(SELECT integerColumn FROM PushStream[NOW]) t1, PushStream[NOW] t2;");
 	}
@@ -1629,7 +1648,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT p.integerColumn, s.integerColumn, s.floatColumn " +
 				"FROM PushStream[NOW] p, " +
 				"	(SELECT integerColumn, floatColumn FROM PushStream[NOW]) s;");
@@ -1640,6 +1659,7 @@ public class TranslatorTest {
 	 * 					The following queries SHOULD not fail but they do
 	 * 
 	 * FIX the translator to support the following queries
+	 * @throws SNEEConfigurationException 
 	 **********************************************************************************/
 
 	@Test
@@ -1648,7 +1668,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT SUM(*) FROM PushStream;");
 	}
 
@@ -1659,7 +1679,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT AVG(*) FROM PushStream;");
 	}
 
@@ -1670,7 +1690,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT COUNT(*) FROM PushStream;");
 	}
 
@@ -1680,7 +1700,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT SUM(integerColumn) FROM PushStream;");
 	}
 
@@ -1691,7 +1711,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT AVG(integerColumn) FROM PushStream;");
 	}
 
@@ -1702,7 +1722,7 @@ public class TranslatorTest {
 	throws SourceDoesNotExistException, ParserException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, TokenStreamException {
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
 		testQuery("SELECT COUNT(integerColumn) FROM PushStream;");
 	}
 	/*******************************************************************
