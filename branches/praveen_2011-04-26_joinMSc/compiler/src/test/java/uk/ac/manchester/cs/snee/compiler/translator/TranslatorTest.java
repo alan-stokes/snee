@@ -747,7 +747,7 @@ public class TranslatorTest {
 	}
 	
 	@Test
-	public void testMultiSelect_integer() 
+	public void testMultiSelect_twoConjuncts() 
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
@@ -757,6 +757,39 @@ public class TranslatorTest {
 				"WHERE Timestamp > 6 AND integerColumn < 43;");
 	}
 	
+	@Test
+	public void testMultiSelect_threeConjuncts() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
+		testQuery("SELECT Timestamp " +
+				"FROM TestStream " +
+				"WHERE Timestamp > 6 AND integerColumn < 43 AND StringColumn = \'Some text\';");
+	}
+	
+	@Test
+	public void testMultiSelect_disjuncts() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
+		testQuery("SELECT Timestamp " +
+				"FROM TestStream " +
+				"WHERE Timestamp > 6 OR integerColumn < 43;");
+	}
+	
+	@Test
+	public void testMultiSelect_conjunctionAndDisjunction() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
+		testQuery("SELECT Timestamp " +
+				"FROM TestStream " +
+				"WHERE Timestamp > 6 AND integerColumn < 43 OR StringColumn = \'Some text\';");
+	}
+
 	@Test
 	public void testRowWindow() throws ParserException, 
 	SourceDoesNotExistException, SchemaMetadataException, 
@@ -840,6 +873,18 @@ public class TranslatorTest {
 		testQuery("SELECT * " +
 				"FROM TestStream[NOW] t, PullStream[NOW] p " +
 				"WHERE t.timestamp = p.timestamp;");
+	}
+	
+	@Test
+	public void testNowEquiJoinSelect() throws ParserException, 
+	SourceDoesNotExistException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
+		testQuery("SELECT * " +
+				"FROM TestStream[NOW] t, PullStream[NOW] p " +
+				"WHERE t.timestamp = p.timestamp AND " +
+				"t.integerColumn <= 42;");
 	}
 	
 	@Test
