@@ -59,19 +59,11 @@ public class AcquireOperator extends InputOperator {
 		Logger.getLogger(AcquireOperator.class.getName());
 
     /** 
-     * List of the attributes that are acquired by this operator. 
-     * Includes sensed attributes as well as time, id 
-     * and any control attributes such as EvalTime.
+     * List of the attributes that are sensed by this operator. 
+     * Excludes attributes such as time, id, EvalTime.
      * Includes attributes required for predicates.
-     * All attributes are in the original format 
-     * before any expressions are applied.
      */
-    private List<Attribute> acquiredAttributes;
-
-	/**
-	 * Metadata about the types supported.
-	 */
-	Types _types;
+    private List<Attribute> sensedAttributes;
 	
 	/**
 	 * Constructs a new Acquire operator.
@@ -83,7 +75,6 @@ public class AcquireOperator extends InputOperator {
 	 * @throws TypeMappingException
 	 */
 	public AcquireOperator(ExtentMetadata extentMetadata, 
-			Types types, 
 			SourceMetadataAbstract source,
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException {
@@ -94,38 +85,11 @@ public class AcquireOperator extends InputOperator {
 		}
 		this.setOperatorName("ACQUIRE");
 		this.setOperatorDataType(OperatorDataType.STREAM);
-		this._types=types;
-
-		this.extentName = extentMetadata.getExtentName();
-
 		updateSensedAttributes(); 
-		updateMetadataInfo(extentMetadata); //WHICH ORDER??
 		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN AcquireOperator()");
 	} 
-
-	/**
-	 * Sets up the attribute based on the schema.
-	 * @param extentMetadata DDL declaration for this extent.
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
-	 */
-	private void updateMetadataInfo(ExtentMetadata extentMetadata) 
-	throws SchemaMetadataException, TypeMappingException {
-		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER addMetaDataInfo() with " +
-					extentMetadata);
-		}
-		outputAttributes = new ArrayList<Attribute>();
-		inputAttributes = extentMetadata.getAttributes();
-		outputAttributes.addAll(inputAttributes);
-//		sites =  sourceMetaData.getSourceNodes();
-		copyExpressions(outputAttributes);
-		acquiredAttributes = (ArrayList<Attribute>) outputAttributes;
-		if (logger.isTraceEnabled())
-			logger.trace("RETURN addMetaDataInfo()");
-	}
 
 	/**
 	 * Returns a string representation of the operator.
@@ -137,45 +101,9 @@ public class AcquireOperator extends InputOperator {
 
 	/** {@inheritDoc} */
 	public boolean acceptsPredicates() {
-		//logger.warn("Acquire does not yet accept predicates");
-		//return true;
-//		return Settings.LOGICAL_OPTIMIZATION_COMBINE_ACQUIRE_AND_SELECT;
 		return true;
 	}
 	
-	/** 
-	 * Updates the sensed Attributes.
-	 * Extracts the attributes from the expressions.
-	 * Those that are data attributes become the sensed attributes.
-	 */	
-	private void updateSensedAttributes() {
-		inputAttributes  = new ArrayList<Attribute>();
-		for (int i = 0; i < expressions.size(); i++) {
-			//DataAttribute sensed =  sensedAttributes.get(i);
-			Expression expression = expressions.get(i);
-			List<Attribute> attributes = 
-				expression.getRequiredAttributes();
-			for (int j = 0; j < attributes.size(); j++) {
-				Attribute attribute = attributes.get(j);
-				if (attribute instanceof DataAttribute) {
-					if (!inputAttributes.contains(attribute)) {
-						inputAttributes.add((DataAttribute) attribute);
-					}
-				}
-			}
-		}
-		List<Attribute> attributes = 
-			getPredicate().getRequiredAttributes();
-		for (int j = 0; j < attributes.size(); j++) {
-			Attribute attribute = attributes.get(j);
-			if (attribute instanceof DataAttribute) {
-				if (!inputAttributes.contains(attribute)) {
-					inputAttributes.add((DataAttribute) attribute);
-				}
-			}
-		}
-	}
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -204,17 +132,9 @@ public class AcquireOperator extends InputOperator {
 
 		expressions = projectExpressions;
 		outputAttributes = projectAttributes;
+		
+		updateInputAttributes();
 		updateSensedAttributes();
-//		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
-//			try {
-//				outputAttributes.add(new LocalTimeAttribute());
-//				expressions.add(new LocalTimeAttribute());
-//			} catch (SchemaMetadataException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//				System.exit(2);
-//			} //Ixent added this
-//		}		
 		return true;
 	}
 
@@ -229,6 +149,44 @@ public class AcquireOperator extends InputOperator {
 		setPredicate(predicate);
 		return true;
 	}
+	
+	/** 
+	 * Updates the sensed Attributes.
+	 */	
+	private void updateSensedAttributes() {
+		sensedAttributes = new ArrayList<Attribute>();
+		for (Attribute attr : inputAttributes) {
+			if (attr instanceof DataAttribute) {
+				sensedAttributes.add(attr);
+			}
+		}
+	}	
+
+	/**
+	 * 	Extracts the attributes from the expressions or predicates
+	 */
+	private void updateInputAttributes() {
+		for (int i = 0; i < expressions.size(); i++) {
+			//DataAttribute sensed =  sensedAttributes.get(i);
+			Expression expression = expressions.get(i);
+			List<Attribute> attributes = 
+				expression.getRequiredAttributes();
+			for (int j = 0; j < attributes.size(); j++) {
+				Attribute attribute = attributes.get(j);
+				if (!inputAttributes.contains(attribute)) {
+					inputAttributes.add((DataAttribute) attribute);
+				}
+			}
+		}
+		List<Attribute> attributes = 
+			getPredicate().getRequiredAttributes();
+		for (int j = 0; j < attributes.size(); j++) {
+			Attribute attribute = attributes.get(j);
+			if (!inputAttributes.contains(attribute)) {
+				inputAttributes.add((DataAttribute) attribute);
+			}
+		}
+	}
 
 	/**
 	 * Get the list of attributes acquired/ sensed by this operator.
@@ -237,10 +195,30 @@ public class AcquireOperator extends InputOperator {
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
 	 */
-	public List<Attribute> getAcquiredAttributes() 
-	throws SchemaMetadataException, TypeMappingException {
-		assert (acquiredAttributes != null);
-		return acquiredAttributes;
+	public List<Attribute> getSensedAttributes() {
+		assert (sensedAttributes != null);
+		return sensedAttributes;
 	}
 
+	public int getNumSensedAttributes() {
+		return sensedAttributes.size();
+	}
+	
+	/**
+	 * Converts an attribute into a reading number.
+	 * @param attribute An Expression which must be of subtype Attribute
+	 * @return A constant number for this attribute (starting at 0)
+	 * @throws CodeGenerationException 
+	 */
+	public int getSensedAttributeNumber(Expression attribute)
+	throws OptimizationException {
+		assert (attribute instanceof DataAttribute);
+		for (int i = 0; i < sensedAttributes.size(); i++) {
+			if (attribute.equals(sensedAttributes.get(i))) {
+				return i;
+			}
+		}
+		throw new OptimizationException("Unable to find a number for attribute: " + attribute.toString());
+	}
+	
 }
