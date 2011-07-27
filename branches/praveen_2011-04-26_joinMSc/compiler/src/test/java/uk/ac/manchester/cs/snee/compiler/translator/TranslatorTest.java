@@ -741,9 +741,15 @@ public class TranslatorTest {
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException {
-		testQuery("SELECT Timestamp " +
+		LAF laf = testQuery("SELECT Timestamp " +
 				"FROM TestStream " +
 				"WHERE Timestamp < integerColumn;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		testOperator(iterator, "RECEIVE");
+		testOperator(iterator, "SELECT");
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
 	}
 	
 	@Test
@@ -752,9 +758,16 @@ public class TranslatorTest {
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException {
-		testQuery("SELECT Timestamp " +
+		LAF laf = testQuery("SELECT Timestamp " +
 				"FROM TestStream " +
 				"WHERE Timestamp > 6 AND integerColumn < 43;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		testOperator(iterator, "RECEIVE");
+		testOperator(iterator, "SELECT");
+		testOperator(iterator, "SELECT");
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
 	}
 	
 	@Test
@@ -763,9 +776,18 @@ public class TranslatorTest {
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException {
-		testQuery("SELECT Timestamp " +
+		LAF laf = testQuery("SELECT Timestamp " +
 				"FROM TestStream " +
-				"WHERE Timestamp > 6 AND integerColumn < 43 AND StringColumn = \'Some text\';");
+				"WHERE Timestamp > 6 AND integerColumn < 43 AND " +
+				"StringColumn = \'Some text\';");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		testOperator(iterator, "RECEIVE");
+		testOperator(iterator, "SELECT");
+		testOperator(iterator, "SELECT");
+		testOperator(iterator, "SELECT");
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
 	}
 	
 	@Test
@@ -774,9 +796,15 @@ public class TranslatorTest {
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException {
-		testQuery("SELECT Timestamp " +
+		LAF laf = testQuery("SELECT Timestamp " +
 				"FROM TestStream " +
 				"WHERE Timestamp > 6 OR integerColumn < 43;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		testOperator(iterator, "RECEIVE");
+		testOperator(iterator, "SELECT");
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
 	}
 	
 	@Test
@@ -785,9 +813,17 @@ public class TranslatorTest {
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException {
-		testQuery("SELECT Timestamp " +
+		LAF laf = testQuery("SELECT Timestamp " +
 				"FROM TestStream " +
-				"WHERE Timestamp > 6 AND integerColumn < 43 OR StringColumn = \'Some text\';");
+				"WHERE Timestamp > 6 AND integerColumn < 43 OR " +
+				"StringColumn = \'Some text\';");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		testOperator(iterator, "RECEIVE");
+		testOperator(iterator, "SELECT");
+		testOperator(iterator, "SELECT");
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
 	}
 
 	@Test
@@ -881,10 +917,21 @@ public class TranslatorTest {
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException {
-		testQuery("SELECT * " +
+		LAF laf = testQuery("SELECT * " +
 				"FROM TestStream[NOW] t, PullStream[NOW] p " +
 				"WHERE t.timestamp = p.timestamp AND " +
 				"t.integerColumn <= 42;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		testOperator(iterator, "RECEIVE");
+		testOperator(iterator, "WINDOW");
+		testOperator(iterator, "ACQUIRE");
+		testOperator(iterator, "WINDOW");
+		testOperator(iterator, "JOIN");
+		testOperator(iterator, "SELECT");
+		testOperator(iterator, "SELECT");
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
 	}
 	
 	@Test

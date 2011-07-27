@@ -1201,37 +1201,34 @@ public class Translator {
 			int count = 0;
 			AST child = ast.getFirstChild();			
 			while (child != null) {
-				expressions[count] = translateExpression(child, input);
+				Expression expression = translateExpression(child, input);
+				if (logger.isTraceEnabled()) {
+					logger.trace("Expression (" + expression + 
+							") type: " + expression.getType());
+				}
+				if (expression.getType() != _boolType) {
+					String msg = "Illegal attempt to use a none boolean " +
+					"expression in a where clause.";
+					logger.warn(msg);
+					throw new ExpressionException(msg);
+				}
+				expressions[count] = expression;
 				count++;
 				child = child.getNextSibling();
 			}		
-			// If just one expression, then return it, otherwise return conjunction
-			Expression expression;
-			if (count == 1) {
-				expression = expressions[0];
-			} else {
-				expression = new MultiExpression(expressions, MultiType.AND,
-						_boolType);
+			LogicalOperator parentOperator = input;
+			for (int i = 0; i < expressions.length; i++) {
+				SelectOperator selectOperator = 
+					new SelectOperator(expressions[i], parentOperator, _boolType);
+				parentOperator = selectOperator;
 			}
 			//End here
 			
 			if (logger.isTraceEnabled()) {
-				logger.trace("Expression (" + expression + 
-						") type: " + expression.getType());
-			}
-			if (expression.getType() != _boolType) {
-				String msg = "Illegal attempt to use a none boolean " +
-					"expression in a where clause.";
-				logger.warn(msg);
-				throw new ExpressionException(msg);
-			}
-			SelectOperator selectOperator = 
-				new SelectOperator(expression,input, _boolType);
-			if (logger.isTraceEnabled()) {
 				logger.debug("RETURN applyWhereOrGroupBy() " + 
-						selectOperator);
+						parentOperator);
 			}
-			return selectOperator;
+			return parentOperator;
 		}
 		default:
 		{
