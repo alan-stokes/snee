@@ -166,6 +166,9 @@ public final class SNEEPropertyNames {
 	
 	public static String COMPILER_ALGORTHM_SELECTION_THRESHOLD_RATE =
 		"compiler.algorithm_selection.threshold_rate";
+	
+	public static final String COMPILER_ALGORTHM_SELECTION_NLJ_ONLY = 
+		"compiler.algorithm_selection.nlj_join_only";
 
 	/**
 	 * Specifies whether the metadata collection program should be invoked, 
@@ -192,7 +195,7 @@ public final class SNEEPropertyNames {
 	 * Code generation target for code generator
 	 */
 	public static final String SNCB_CODE_GENERATION_TARGET = 
-		"sncb.code_generation_target";
+		"sncb.code_generation_target";	
     
 
 }
