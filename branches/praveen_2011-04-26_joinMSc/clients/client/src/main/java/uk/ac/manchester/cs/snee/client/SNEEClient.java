@@ -187,13 +187,13 @@ public abstract class SNEEClient implements Observer {
 		System.out.println("Stopping query " + queryId1 + ".");
 		controller.removeQuery(queryId1);
 
-		try {
+		/*try {
 			//XXX: Sleep included to highlight evaluator not ending bug 
 			Thread.currentThread().sleep((long) ((_duration/2) * 1000));
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 
 		controller.close();
 		printResults(results1, queryId1);

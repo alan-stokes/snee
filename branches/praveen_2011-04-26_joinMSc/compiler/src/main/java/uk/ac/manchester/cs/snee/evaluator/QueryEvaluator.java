@@ -180,6 +180,7 @@ public class QueryEvaluator implements Observer {
 			_rootOper.setSchema(_schema);
 			_rootOper.addObserver(this);
 			_rootOper.open();
+			executing = true;
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN openQueryPlan()");
