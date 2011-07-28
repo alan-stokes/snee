@@ -13,9 +13,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
-import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
 
@@ -41,8 +38,7 @@ public class LogicalRewriter {
 		logger.trace("renamed "+lafName+" to "+newLafName);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.
 	    LOGICAL_REWRITER_PUSH_PROJECT_DOWN)) {
-	    	pushSelectionDown(laf);
-			pushProjectionDown(laf);
+	    	pushProjectionDown(laf);
 	    }
 	    if (SNEEProperties.getBoolSetting(SNEEPropertyNames.
 	    LOGICAL_REWRITER_REMOVE_UNREQUIRED_OPS)) {
@@ -99,29 +95,6 @@ public class LogicalRewriter {
     }
  	
     /**
-     * Pushes selections down into other operators.
-     * @param laf The Logical algebraic form.
-     * @throws OptimizationException 
-     */
-    private void pushSelectionDown(final LAF laf)     
-    throws OptimizationException {
-		if (logger.isTraceEnabled())
-			logger.debug("ENTER pushProjectionDown() laf="+laf.getID());
-		final LogicalOperator op 
-			= (LogicalOperator) laf.getRootOperator();
-
-		try {
-			op.pushSelectDown(new NoPredicate());
-		} catch (Exception e) {
-			logger.warn(e);
-			throw new OptimizationException(e.getLocalizedMessage());
-		} 
-		
-		if (logger.isTraceEnabled())
-			logger.debug("RETURN pushProjectionDown()");
-    }    
-    
-    /**
      * Pushes projections down into other operators.
      * @param laf The Logical algebraic form.
      * @throws OptimizationException 
@@ -132,11 +105,10 @@ public class LogicalRewriter {
 			logger.debug("ENTER pushProjectionDown() laf="+laf.getID());
 		final LogicalOperator op 
 			= (LogicalOperator) laf.getRootOperator();
-		
 		op.pushProjectionDown(new ArrayList<Expression>(),
 				new ArrayList<Attribute>());
-		
 		if (logger.isTraceEnabled())
 			logger.debug("RETURN pushProjectionDown()");
-    }    
+    }
+    
 }
