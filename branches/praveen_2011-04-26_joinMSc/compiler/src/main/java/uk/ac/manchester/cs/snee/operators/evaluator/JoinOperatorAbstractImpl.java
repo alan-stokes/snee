@@ -38,6 +38,7 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 	protected double leftOperatorRate, rightOperatorRate;
 	private long nextEvalTime;
 	private Timer timer;
+	private EvaluateTask evaluateTask;
 
 	/**
 	 * This abstract constructor would initialise all the needed
@@ -129,10 +130,11 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 		}
 		if (join.isGetDataByPullModeOperator()) {
 			timer = new Timer();
-			EvaluateTask evaluateTask = new EvaluateTask();
+			evaluateTask = new EvaluateTask();
 			long currentTime = System.currentTimeMillis();
 			nextEvalTime = getNextEvalTime(currentTime);
 			//TODO Rescheduling of timer needs to be probed into
+			//timer.sc
 			timer.schedule(evaluateTask, 0, nextEvalTime);
 			//timer.
 			//evaluateJoinForIntervals();
@@ -162,10 +164,15 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 	}*/
 
 	private long getNextEvalTime(long currentTime) {
-		if ((currentTime + leftOperatorRate) < (currentTime + rightOperatorRate)) {
-			return (long) (currentTime + leftOperatorRate);
+		/*if ((currentTime + leftOperatorRate*1000) < (currentTime + rightOperatorRate*1000)) {
+			return (long) (currentTime + leftOperatorRate*1000);
 		} else {
-			return (long) (currentTime + rightOperatorRate);
+			return (long) (currentTime + rightOperatorRate*1000);
+		}*/
+		if (leftOperatorRate < rightOperatorRate) {
+			return (long)((1/leftOperatorRate)*1000);
+		} else {
+			return (long)((1/rightOperatorRate)*1000);
 		}
 	}
 
@@ -188,6 +195,8 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 		}
 		leftOperator.close();
 		rightOperator.close();
+		timer.cancel();
+		timer.purge();
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN close()");
 		}
@@ -207,10 +216,13 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 			//System.out.println("Evaluate Task");
 			List<Output> resultItems = new ArrayList<Output>(1);
 			generateAndUpdate(resultItems);
-			long currentTime = System.currentTimeMillis();
-			nextEvalTime = getNextEvalTime(currentTime);
+			//long currentTime = System.currentTimeMillis();
+			//nextEvalTime = getNextEvalTime(currentTime);
 			//timer.cancel();
-			timer.schedule(new EvaluateTask(), 0, nextEvalTime);
+			//evaluateTask.cancel();		
+			//evaluateTask = null;
+			//evaluateTask = new EvaluateTask();
+			//timer.schedule(evaluateTask, 0, nextEvalTime);
 			if (!resultItems.isEmpty()) {
 				setChanged();
 				notifyObservers(resultItems);

@@ -55,11 +55,19 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 			break;
 		case SAMPLE:
 			if (!canDropObject()) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Object Dropped due to sampling");
+				}
 				return false;
 			}
 			break;
 		default:
 			break;
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("Valve Operator with id: " + valveOperator.getID()
+					+ "has a total number of "
+					+ inputBufferQueue.totalObjectsInserted() + " inserted");
 		}
 		return inputBufferQueue.add(output);
 	}
@@ -69,9 +77,6 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 		int randomNumber = (int) (Math.random() * 100);
 		if (randomNumber <= samplingRate) {
 			canAdd = false;
-		}
-		if (canAdd == true) {
-			System.out.println("can add");
 		}
 		return canAdd;
 	}

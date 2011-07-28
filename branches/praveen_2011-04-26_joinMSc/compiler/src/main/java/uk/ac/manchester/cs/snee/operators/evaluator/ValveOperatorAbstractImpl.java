@@ -76,16 +76,16 @@ public abstract class ValveOperatorAbstractImpl extends EvaluationOperator {
 				//System.out.println("here"+output);
 				if (!runProducer(output)) {
 					
-					if (logger.isTraceEnabled()) {
-						logger.trace("Object dropped: " + output);
+					if (logger.isDebugEnabled()) {
+						logger.debug("Object dropped: " + output);
 					}
 				}
 			}
 		} else if (observed instanceof Output) {
 			//System.out.println("Second");
 			if (!runProducer((Output) observed)) {
-				if (logger.isTraceEnabled()) {
-					logger.trace("Object dropped: " + observed);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Object dropped: " + observed);
 				}
 			}
 

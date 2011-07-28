@@ -146,8 +146,8 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 	 */
 	@Override
 	public void generateAndUpdate(List<Output> resultItems) {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER generateAndUpdate() for query " + m_qid);
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER generateAndUpdate() for query " + m_qid);
 		}		
 		
 		//List<Output> resultItems = new ArrayList<Output>(1);
@@ -155,9 +155,9 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 		Output operand;
 		try {
 			operand = getNextFromChild(hashableOperator);
-			if (logger.isDebugEnabled()) {
+			/*if (logger.isDebugEnabled()) {
 				logger.debug("generateAndUpdate() Got the first operand" + operand);
-			}
+			}*/
 			
 			if (operand != null) {
 				//System.out.println("Hashable operand"+operand);
@@ -169,9 +169,9 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 			if (operandHashTable != null && operandHashTable.size() > 0) {
 				operand = getNextFromChild(otherOperator);
 				//System.out.println("Other operand"+operand);
-				if (logger.isDebugEnabled()) {
+				/*if (logger.isDebugEnabled()) {
 					logger.debug("generateAndUpdate() Got the second operand" + operand);
-				}
+				}*/
 				if (operand != null) {
 					computeJoin(operandHashTable, operand, resultItems);
 				}
@@ -184,8 +184,8 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 		} catch (SNEEException sneeException) {
 			logger.warn("Error processing join.", sneeException);
 		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("Exit generateAndUpdate()");
+		if (logger.isTraceEnabled()) {
+			logger.trace("Exit generateAndUpdate()");
 		}
 	}	
 	
@@ -228,7 +228,7 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 		if (hashedTuples != null && hashedTuples.size() > 0) {
 			for (Tuple innerTuple: hashedTuples) {
 				Tuple joinTuple = generateJoinTuple(innerTuple, tuple);
-				System.out.println("joinTuple: "+ joinTuple);				
+				//System.out.println("joinTuple: "+ joinTuple);				
 				resultItems.add(new TaggedTuple(joinTuple));
 			}
 		}
@@ -238,16 +238,16 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 			Window window) throws SNEEException {
 		List<Tuple> joinTuples = null;
 		for (Tuple outerTuple: window.getTuples()) {
-			System.out.println("Outer Tuple: " +outerTuple);
+			//System.out.println("Outer Tuple: " +outerTuple);
 			int hashKey = generateHashKey(joinPredicate, outerTuple);
-			System.out.println("Hash Key for outer tuple: "+hashKey);
-			outputHashTable(hashTable);
-			System.out.println("Do "+hashTable.keySet()+ " contain "+hashKey + "?");
+			//System.out.println("Hash Key for outer tuple: "+hashKey);
+			//outputHashTable(hashTable);
+			//System.out.println("Do "+hashTable.keySet()+ " contain "+hashKey + "?");
 			List<Tuple> hashedTuples = hashTable.get(hashKey); 
 			if (hashedTuples != null && hashedTuples.size() > 0) {
 				for (Tuple innerTuple: hashedTuples) {
 					Tuple joinTuple = generateJoinTuple(innerTuple, outerTuple);
-					System.out.println("joinTuple: "+ joinTuple);
+					//System.out.println("joinTuple: "+ joinTuple);
 					if (joinTuples == null) {
 						joinTuples = new ArrayList<Tuple>(2);
 					}
@@ -289,7 +289,7 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 		if (hashableOperand instanceof Window) {
 			hashTable = generateHashTableForWindow((Window) hashableOperand);
 		} else if (hashableOperand instanceof TaggedTuple) {
-			System.out.println("Never supposed to be here");
+			//System.out.println("Never supposed to be here");
 			//This is never supposed to happen
 			hashTable = generateHashTableForTaggedTuple((TaggedTuple) hashableOperand);
 		}
@@ -314,9 +314,9 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 			Window window) throws SNEEException {
 		Hashtable<Integer, List<Tuple>> hashTable = null;
 		for (Tuple innerTuple : window.getTuples()) {
-			System.out.println("innerTuple"+innerTuple);
+			//System.out.println("innerTuple"+innerTuple);
 			int hashKey = generateHashKey(joinPredicate, innerTuple);
-			System.out.println("hashKey: "+ hashKey);
+			//System.out.println("hashKey: "+ hashKey);
 			// getHashKey(leftTuple, joinPredicate);
 			if (hashTable == null) {
 				hashTable = new Hashtable<Integer, List<Tuple>>(maxBufferSize);
@@ -325,11 +325,11 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 				hashTable.put(hashKey, new ArrayList<Tuple>(1));
 			}
 			hashTable.get(hashKey).add(innerTuple);
-			System.out.println("Parent: ");					
+			//System.out.println("Parent: ");					
 		}
-		if (hashTable != null) {
+		/*if (hashTable != null) {
 			outputHashTable(hashTable);
-		}
+		}*/
 		return hashTable;
 	}
 
@@ -348,15 +348,15 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 
 	
 	
-	private void outputHashTable (Hashtable<Integer, List<Tuple>> currOperatorHT) {
-		System.out.println("Printing out the hash table");
+	/*private void outputHashTable (Hashtable<Integer, List<Tuple>> currOperatorHT) {
+		//System.out.println("Printing out the hash table");
 		for (Map.Entry<Integer, List<Tuple>> curEntry: currOperatorHT.entrySet()) {
-			System.out.println("Key: "+curEntry.getKey());
+			//System.out.println("Key: "+curEntry.getKey());
 			for (Tuple tuple: curEntry.getValue()) {
 				System.out.println(tuple.toString());
 			}
 		}
-	}
+	}*/
 
 	
 
@@ -367,7 +367,7 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 					+ "]\n [" + tuple2 + "]");
 		}
 		Tuple tuple = new Tuple();
-		System.out.println("generateJoinTuple: ");
+		//System.out.println("generateJoinTuple: ");
 		for (Attribute attr : returnAttrs) {
 			String attrName = attr.getAttributeDisplayName();
 			if (attrName.equalsIgnoreCase("evalTime")
@@ -386,7 +386,7 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 			}
 			tuple.addAttribute(evalAttr);
 		}
-		System.out.println("tuple: "+tuple);
+		//System.out.println("tuple: "+tuple);
 
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN generateJoinTuple() with join tuple " + tuple);
@@ -436,13 +436,13 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER evaluate() with " + expr + ", [" + tuple + "]");
 		}
-		System.out.println("generateHashKey: ");
+		//System.out.println("generateHashKey: ");
 		int returnValue = 1;
 		if (expr instanceof MultiExpression) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Process MultiExpression: " + expr);
 			}
-			System.out.println("expr: "+expr);
+			//System.out.println("expr: "+expr);
 			MultiExpression multiExpr = (MultiExpression) expr;
 			MultiExpression mExpr;
 			Expression exprTemp;
@@ -468,7 +468,7 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN evaluate() with " + returnValue);
 		}
-		System.out.println("returnValue: "+returnValue);
+		//System.out.println("returnValue: "+returnValue);
 		return returnValue;
 	}
 
@@ -484,7 +484,7 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 			throws SNEEException {
 		int hashCode = 1;
 		for (int i = 0; i < expr.length; i++) {
-			System.out.println("expr[i]: "+expr[i]);
+			//System.out.println("expr[i]: "+expr[i]);
 			if (expr[i] instanceof DataAttribute) {
 				DataAttribute da = (DataAttribute) expr[i];
 				EvaluatorAttribute evalAttr;

@@ -58,7 +58,7 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 
 	@Override
 	public void update(Observable obj, Object observed) {
-		System.out.println("My Join*****************************88");
+		//System.out.println("My Join*****************************88");
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER update() for query " + m_qid + " " +
 					" with " + observed + " (" + observed.getClass() + ")");
@@ -123,8 +123,8 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 
 	@Override
 	public void generateAndUpdate(List<Output> resultItems) {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER generateAndUpdate() for query " + m_qid);
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER generateAndUpdate() for query " + m_qid);
 		}
 		//List<Output> resultItems = new ArrayList<Output>(1);
 
@@ -177,6 +177,9 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 			}*/
 		} catch (SNEEException sneeException) {
 			logger.warn("Error processing join.", sneeException);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("EXIT generateAndUpdate() for query " + m_qid);
 		}
 	}
 
@@ -261,7 +264,7 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Joining " + leftWindow + " with " + rightWindow);
 		}
-		System.out.println("joinPredicate: " + joinPredicate);
+		//System.out.println("joinPredicate: " + joinPredicate);
 		List<Tuple> joinTuples = new ArrayList<Tuple>();
 		for (Tuple leftTuple : leftWindow.getTuples()) {
 			for (Tuple rightTuple : rightWindow.getTuples()) {
@@ -285,8 +288,8 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 			logger.trace("ENTER evaluate() with " + expr + ", [" + tuple1
 					+ "], [" + tuple2 + "]");
 		}
-		System.out.println("Tuple1: " + tuple1);
-		System.out.println("Tuple2: " + tuple2);
+		//System.out.println("Tuple1: " + tuple1);
+		//System.out.println("Tuple2: " + tuple2);
 		Collection<Boolean> returnValList = new ArrayList<Boolean>(2);
 		boolean returnValue = false;
 		if (expr instanceof MultiExpression) {
@@ -299,11 +302,11 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 			for (int i = 0; i < multiExpr.getExpressions().length; i++) {
 				exprTemp = multiExpr.getExpressions()[i];
 				if (exprTemp instanceof MultiExpression) {
-					System.out.println("The MultiExpression Evalute Seaction");
+					//System.out.println("The MultiExpression Evalute Seaction");
 					mExpr = (MultiExpression) exprTemp;
 					returnValue = evaluate(mExpr, tuple1, tuple2);
 				} else {
-					System.out.println("The Compute Section");
+					//System.out.println("The Compute Section");
 					returnValue = compute(multiExpr.getExpressions(),
 							multiExpr.getMultiType(), tuple1, tuple2);
 				}
@@ -313,13 +316,13 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Process Expression: " + expr);
 			}
-			System.out.println("expr: " + expr);
+			//System.out.println("expr: " + expr);
 			if (expr.toString().equals("TRUE")) {
 				returnValue = true;
 			}
 			// Do something with non-multitype expression
 		}
-		System.out.println("returnValue: " + returnValue);
+		//System.out.println("returnValue: " + returnValue);
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN evaluate() with " + returnValue);
 		}
@@ -327,7 +330,7 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 		for (Boolean returnVal : returnValList) {
 			tempRetVal = tempRetVal & returnVal;
 		}
-		System.out.println("Correct returnValue: " + tempRetVal);
+		//System.out.println("Correct returnValue: " + tempRetVal);
 		return tempRetVal;
 	}
 
@@ -339,7 +342,7 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 		}
 		Stack<Object> operands = new Stack<Object>();
 		for (int i = 0; i < arrExpr.length; i++) {
-			System.out.println("arrExpr[i]: " + arrExpr[i]);
+			//System.out.println("arrExpr[i]: " + arrExpr[i]);
 			if (arrExpr[i] instanceof DataAttribute) {
 				DataAttribute da = (DataAttribute) arrExpr[i];
 				EvaluatorAttribute evalAttr = retrieveEvalutatorAttribute(t1,
@@ -380,9 +383,9 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 		boolean retVal = false;
 		while (operands.size() >= 2) {
 			Object op1 = operands.pop();
-			System.out.println("Operand 1: " + op1);
+			//System.out.println("Operand 1: " + op1);
 			Object op2 = operands.pop();
-			System.out.println("Operand 2:" + op2);
+			//System.out.println("Operand 2:" + op2);
 			Object result;
 			if (op1 instanceof StringLiteral && op2 instanceof StringLiteral) {
 				result = evaluateString((String) op1, (String) op2, type);
@@ -392,8 +395,8 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 			if (type.isBooleanDataType()) {
 				retVal = ((Boolean) result).booleanValue();
 			}
-			System.out.println("result: " + result);
-			System.out.println("retVal: " + retVal);
+			//System.out.println("result: " + result);
+			//System.out.println("retVal: " + retVal);
 		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN compute() with " + retVal);
@@ -438,8 +441,8 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 			logger.trace("ENTER generateJoinTuple() with \n" + "[" + tuple1
 					+ "]\n [" + tuple2 + "]");
 		}
-		System.out.println("Tuple1: " + tuple1);
-		System.out.println("Tuple2: " + tuple2);
+		//System.out.println("Tuple1: " + tuple1);
+		//System.out.println("Tuple2: " + tuple2);
 		Tuple tuple = new Tuple();
 		for (Attribute attr : returnAttrs) {
 			String attrName = attr.getAttributeDisplayName();
@@ -463,7 +466,7 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN generateJoinTuple() with join tuple " + tuple);
 		}
-		System.out.println("Tuple: " + tuple);
+		//System.out.println("Tuple: " + tuple);
 		return tuple;
 	}
 

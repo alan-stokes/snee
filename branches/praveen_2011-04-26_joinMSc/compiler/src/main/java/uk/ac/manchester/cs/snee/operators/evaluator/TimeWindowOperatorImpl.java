@@ -38,6 +38,8 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 
 	private long nextWindowEvalTime;
 	
+	private TaggedTuple prevTaggedTuple;
+	
 	public TimeWindowOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
 	SNEEConfigurationException{
@@ -272,9 +274,10 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 		while (nextWindowEvalTime < lastTupleReceivedEvalTime) {
 				
 			/* Find the index of the oldest tuple in the window */
-			int nextTupleIndex = findTupleIndex(nextWindowEvalTime + windowStart);
+			//int nextTupleIndex = findTupleIndex(nextWindowEvalTime + windowStart);
 
-			List<Tuple> tupleList = populateWindowTuples(nextTupleIndex, nextWindowEvalTime);
+			//List<Tuple> tupleList = populateWindowTuples(nextTupleIndex, nextWindowEvalTime);
+			List<Tuple> tupleList = populateWindowTuples(0, nextWindowEvalTime);
 
 			Window window = new Window(tupleList);		
 			returnWindows.add(window);
@@ -304,19 +307,38 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 					" next window eval time " + nextWindowEvalTime);
 		}
 		List<Tuple> tupleList = new ArrayList<Tuple>();
-		while (nextTupleIndex < buffer.size()) {
-			TaggedTuple taggedTuple = (TaggedTuple) buffer.get(nextTupleIndex);
+		TaggedTuple taggedTuple;
+		if (prevTaggedTuple != null && prevTaggedTuple.getEvalTime() <= nextWindowEvalTime) {
+			tupleList.add(prevTaggedTuple.getTuple());	
+			nextTupleIndex++;			
+			prevTaggedTuple = null;			
+		}
+		while ((taggedTuple = buffer.poll()) != null) {
 			if (taggedTuple.getEvalTime() <= nextWindowEvalTime) {
 				tupleList.add(taggedTuple.getTuple());
 				nextTupleIndex++;
 			} else {
 				/* Seen a tuple that is newer than the window evaluation time */
+				prevTaggedTuple = taggedTuple;
 				if (logger.isTraceEnabled()) 
 					logger.trace("Tuple has newer timestamp (" + taggedTuple.getEvalTime() +
 							") than window evaluation time (" + nextWindowEvalTime + ").");
 				break;
 			}
 		}
+		/*while (nextTupleIndex < buffer.size()) {
+			TaggedTuple taggedTuple = (TaggedTuple) buffer.get(nextTupleIndex);
+			if (taggedTuple.getEvalTime() <= nextWindowEvalTime) {
+				tupleList.add(taggedTuple.getTuple());
+				nextTupleIndex++;
+			} else {
+				 Seen a tuple that is newer than the window evaluation time 
+				if (logger.isTraceEnabled()) 
+					logger.trace("Tuple has newer timestamp (" + taggedTuple.getEvalTime() +
+							") than window evaluation time (" + nextWindowEvalTime + ").");
+				break;
+			}
+		}*/
 		if (logger.isTraceEnabled()) 
 			logger.trace("RETURN populateWindowTuples() window size " + tupleList.size());
 		return tupleList;

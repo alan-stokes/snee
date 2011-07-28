@@ -35,11 +35,14 @@ public class AlgorithmSelector {
 	Logger logger = Logger.getLogger(this.getClass().getName());
 
 	private double thresholdRate;
+	private boolean isJoinNLJOnly = false;
 
 	public AlgorithmSelector() throws SNEEConfigurationException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER AlgorithmSelector()");
 		}
+		isJoinNLJOnly = SNEEProperties
+				.getBoolSetting(SNEEPropertyNames.COMPILER_ALGORTHM_SELECTION_NLJ_ONLY);
 		thresholdRate = SNEEProperties
 				.getDoubleSetting(SNEEPropertyNames.COMPILER_ALGORTHM_SELECTION_THRESHOLD_RATE);
 
@@ -191,7 +194,7 @@ public class AlgorithmSelector {
 	 * @param joinOperator
 	 */
 	private void setJoinOperatorAlgorithm(JoinOperator joinOperator) {
-		if (joinOperator.getPredicate() instanceof NoPredicate
+		if (isJoinNLJOnly || joinOperator.getPredicate() instanceof NoPredicate
 				|| !(joinOperator.getInput(0) instanceof ValveOperator)) {
 			// joinOperatorImpl = new JoinOperatorImpl(op, qid);
 			joinOperator.setAlgorithm(JoinOperator.NLJ_MODE);

@@ -29,8 +29,7 @@ public class SourceAllocator {
 
 	Logger logger = Logger.getLogger(this.getClass().getName());
 
-	public SourceAllocator () 
-	{
+	public SourceAllocator() {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SourceAllocator()");
 		}
@@ -40,15 +39,14 @@ public class SourceAllocator {
 		}
 	}
 
-	public DLAF allocateSources (LAF laf, QoSExpectations qos) 
-	throws SourceAllocatorException, SourceMetadataException
-	{
+	public DLAF allocateSources(LAF laf, QoSExpectations qos)
+			throws SourceAllocatorException, SourceMetadataException {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER allocateSources() laf="+laf.getID());
+			logger.debug("ENTER allocateSources() laf=" + laf.getID());
 		DLAF dlaf = new DLAF(laf, laf.getQueryName());
 		Set<SourceMetadataAbstract> sources = retrieveSources(laf);
-		//currently one source is supported
-		validateSources(sources);		
+		// currently one source is supported
+		validateSources(sources);
 		dlaf.setSource(sources);
 		setSourceRates(laf, qos);
 		if (logger.isDebugEnabled()) {
@@ -58,26 +56,27 @@ public class SourceAllocator {
 	}
 
 	/**
-	 * This method is used to set the source rates for each of the operators 
-	 * in the laf. 
+	 * This method is used to set the source rates for each of the operators in
+	 * the laf.
 	 * 
-	 * If the operator is an Acquire operator, the source rate is equivalent 
-	 * to the acquisition interval defined in the QOS parameters.
+	 * If the operator is an Acquire operator, the source rate is equivalent to
+	 * the acquisition interval defined in the QOS parameters.
 	 * 
-	 * If the operator is any other Input Operator, then the source metadata 
+	 * If the operator is any other Input Operator, then the source metadata
 	 * contains the information about its arrival rate.
 	 * 
-	 * If the operator is a Join Operator, the a precedence of Stream>Sensor Network>Relation
-	 * is considered for the left and right operands and for a combination of the
-	 * above mentioned sources, the higher precedence one is taken and the source rate 
-	 * of that operand is set as the source rate
+	 * If the operator is a Join Operator, the a precedence of Stream>Sensor
+	 * Network>Relation is considered for the left and right operands and for a
+	 * combination of the above mentioned sources, the higher precedence one is
+	 * taken and the source rate of that operand is set as the source rate
 	 * 
 	 * If the operator is a Union Operator, the sum of the source rates of both
-	 * operands taking part in the union operation is considered as the source rate
+	 * operands taking part in the union operation is considered as the source
+	 * rate
 	 * 
-	 * If the operator is a Window Operator,
-	 * If it is a timescope based window operator, then windowOp.getTimeSlide() * 1000 
-	 * If it is a tuple based window operator, then (windowSize / (source rate of child)) 
+	 * If the operator is a Window Operator, If it is a timescope based window
+	 * operator, then windowOp.getTimeSlide() * 1000 If it is a tuple based
+	 * window operator, then (windowSize / (source rate of child))
 	 * 
 	 * For any other operator, the source rate is set as the source rate of its
 	 * child operator
@@ -87,12 +86,12 @@ public class SourceAllocator {
 	 * @throws SourceMetadataException
 	 */
 	private void setSourceRates(LAF laf, QoSExpectations qos)
-	throws SourceMetadataException {
+			throws SourceMetadataException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER setSourceRates()");
 		}
-		Iterator<LogicalOperator> opIter = laf.operatorIterator(
-				TraversalOrder.POST_ORDER);
+		Iterator<LogicalOperator> opIter = laf
+				.operatorIterator(TraversalOrder.POST_ORDER);
 		while (opIter.hasNext()) {
 			LogicalOperator op = opIter.next();
 			if (op instanceof AcquireOperator) {
@@ -100,12 +99,13 @@ public class SourceAllocator {
 				acquireOp.setSourceRate(qos.getMinAcquisitionInterval());
 			} else if (op instanceof ReceiveOperator) {
 				ReceiveOperator receiveOperator = (ReceiveOperator) op;
-				StreamingSourceMetadataAbstract inputSource = 
-					((StreamingSourceMetadataAbstract) receiveOperator.getSource());
-				double rate = inputSource.getRate(receiveOperator.getExtentName());
+				StreamingSourceMetadataAbstract inputSource = ((StreamingSourceMetadataAbstract) receiveOperator
+						.getSource());
+				double rate = inputSource.getRate(receiveOperator
+						.getExtentName());
 				op.setSourceRate(rate);
 			} else if (op instanceof ScanOperator) {
-				//Do nothing!!!
+				// Do nothing!!!
 			} else if (op instanceof JoinOperator) {
 				JoinOperator joinOperator = (JoinOperator) op;
 				joinOperator.setSourceRate(joinOperator.getSourceRate(
@@ -114,24 +114,27 @@ public class SourceAllocator {
 				UnionOperator unionOperator = (UnionOperator) op;
 				unionOperator.setSourceRate(unionOperator.getSourceRate(
 						op.getInput(0), op.getInput(1)));
-			} else if (op instanceof WindowOperator) {				
+			} else if (op instanceof WindowOperator) {
 				WindowOperator windowOperator = (WindowOperator) op;
 				if (windowOperator.isTimeScope()) {
-					//This is correct
+					// This is correct
 					windowOperator
-					.setSourceRate(windowOperator.getTimeSlide() * 1000);
+							.setSourceRate((windowOperator.getTimeSlide() == 0) ? op
+									.getInput(0).getSourceRate()
+									: windowOperator.getTimeSlide());
 				} else {
-					//TODO Needs to correct this where case where 
-					//the range of the window is specified in time, 
-					//but the slide is in the number of tuples
+					// TODO Needs to correct this where case where
+					// the range of the window is specified in time,
+					// but the slide is in the number of tuples
 					windowOperator.setSourceRate(windowOperator
-							.getCardinality(CardinalityType.MAX)/op.getInput(0).getSourceRate());
+							.getCardinality(CardinalityType.MAX)
+							/ op.getInput(0).getSourceRate());
 				}
-				//windowOperator.setSourceRate(op.getInput(0).getSourceRate());
+				// windowOperator.setSourceRate(op.getInput(0).getSourceRate());
 			} else if (op instanceof ValveOperator) {
-				//TODO Need to find a way to correctly set this rate
-				//in case of pull based valve operator and in case of 
-				//push based valve operator
+				// TODO Need to find a way to correctly set this rate
+				// in case of pull based valve operator and in case of
+				// push based valve operator
 				ValveOperator valveOperator = (ValveOperator) op;
 				valveOperator.setSourceRate(op.getInput(0).getSourceRate());
 			} else {
@@ -144,14 +147,13 @@ public class SourceAllocator {
 	}
 
 	private Set<SourceMetadataAbstract> retrieveSources(LAF laf)
-	throws SourceAllocatorException {
+			throws SourceAllocatorException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER retrieveSources() for " + laf.getID());
 		}
-		Set<SourceMetadataAbstract> sources = 
-			new HashSet<SourceMetadataAbstract>();
-		Iterator<LogicalOperator> opIter =
-			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		Set<SourceMetadataAbstract> sources = new HashSet<SourceMetadataAbstract>();
+		Iterator<LogicalOperator> opIter = laf
+				.operatorIterator(TraversalOrder.PRE_ORDER);
 		while (opIter.hasNext()) {
 			LogicalOperator op = opIter.next();
 			if (op instanceof AcquireOperator) {
@@ -169,23 +171,20 @@ public class SourceAllocator {
 			}
 		}
 		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN retrieveSources() #sources=" + 
-					sources.size());
+			logger.trace("RETURN retrieveSources() #sources=" + sources.size());
 		}
 		return sources;
 	}
 
 	private SourceMetadataAbstract validateSources(
 			Set<SourceMetadataAbstract> sources)
-	throws SourceAllocatorException {
+			throws SourceAllocatorException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER validateSources() #sources=" +
-					sources.size());
+			logger.trace("ENTER validateSources() #sources=" + sources.size());
 		}
-		if (sources.size()>1) {
-			/* 
-			 * Permit more than one pull-stream or push-stream
-			 * source to be used 
+		if (sources.size() > 1) {
+			/*
+			 * Permit more than one pull-stream or push-stream source to be used
 			 */
 			for (SourceMetadataAbstract source : sources) {
 				SourceType sourceType = source.getSourceType();
@@ -198,11 +197,11 @@ public class SourceAllocator {
 				case WSDAIR:
 					break;
 				case SENSOR_NETWORK:
-					String msg = "More than " +
-					"one source in LAF; queries with more " +
-					"than one source are currently not " +
-					"supported by source allocator for " +
-					"queries over a sensor network.";
+					String msg = "More than "
+							+ "one source in LAF; queries with more "
+							+ "than one source are currently not "
+							+ "supported by source allocator for "
+							+ "queries over a sensor network.";
 					logger.warn(msg);
 					throw new SourceAllocatorException(msg);
 				default:
@@ -211,16 +210,16 @@ public class SourceAllocator {
 					throw new SourceAllocatorException(msg);
 				}
 			}
-		} else if (sources.size()==0) {
+		} else if (sources.size() == 0) {
 			String msg = "No sources found in LAF.";
 			logger.warn(msg);
-			throw new SourceAllocatorException(msg);	
+			throw new SourceAllocatorException(msg);
 		}
 		for (SourceMetadataAbstract source : sources) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("RETURN validateSources()");
 			}
-			return source;	
+			return source;
 		}
 		return null;
 	}
