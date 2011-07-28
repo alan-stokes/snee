@@ -236,7 +236,7 @@ public class CircularArray<E> implements Iterable<E> {
 		//System.out.println("Polling end");
 		//printIndexes();
 		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN poll() with " + object.toString());
+			logger.debug("RETURN poll() with " + ((object==null)?object:object.toString()));
 		}
 		return object;
 	}
