@@ -42,7 +42,24 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk query-parameters.xsd">
 			<weighting>2</weighting>
 		</delivery-time>
 		
-		<tuple-loss-allowed>true</tuple-loss-allowed>
+		<tuple-loss>
+			<allowed>true</allowed>
+			 <!-- <policy>
+				<name>FIFO</name>
+				<constraints></constraints>
+			</policy> 
+			<policy>
+				<name>LIFO</name>
+				<constraints></constraints>
+			</policy> -->
+			<policy>
+				<name>SAMPLE</name>
+				<constraints>
+					<rate>30</rate>
+				</constraints>
+			</policy>
+		</tuple-loss>
+		<!-- <tuple-loss-allowed>true</tuple-loss-allowed> -->
 	
 	</qos-expectations>
 

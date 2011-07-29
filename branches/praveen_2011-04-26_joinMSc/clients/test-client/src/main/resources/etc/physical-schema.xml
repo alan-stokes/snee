@@ -15,11 +15,13 @@
 			<extent name="HerneBay_Met">
 				<push_source>
 					<port>6701</port>
+					<rate>2.0</rate>
 				</push_source>
 			</extent>
             <extent name="PushStream">
                 <push_source>
                     <port>6702</port>
+                    <rate>10.0</rate>
                 </push_source>
             </extent>
 		</extents>
