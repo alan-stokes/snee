@@ -46,6 +46,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 
 /** 
  * A Join or Cross product operator.
@@ -285,9 +286,42 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 	 * STUB
 	 * 
 	 * @return False 
+	 * @throws SNEEConfigurationException 
+	 * @throws TypeMappingException 
+	 * @throws AssertionError 
+	 * @throws SchemaMetadataException 
 	 */
-	public boolean pushSelectIntoLeafOp(Expression predicate) {
+	public boolean pushSelectIntoLeafOp(Expression predicate) 
+	throws SchemaMetadataException, AssertionError, TypeMappingException,
+	SNEEConfigurationException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER/RETURN pushSelectIntoLeaf() return with false");
+		}
 		return false;
+		/*
+		 * Below code should work, but has not been tested and the rewriter now
+		 * moves selects down and then tries only at the very bottom to move
+		 * them in, so this is never called.
+		 */
+//		if (predicate.isJoinCondition()) {
+//			if (logger.isDebugEnabled()) {
+//				logger.debug("RETURN pushSelectIntoLeaf() with " +
+//						"false (join condition)");
+//			}
+//			return false;
+//		}
+//		if (getInput(0).pushSelectIntoLeafOp(predicate) ||
+//				getInput(1).pushSelectIntoLeafOp(predicate)) {
+//			if (logger.isDebugEnabled()) {
+//				logger.debug("RETURN pushSelectIntoLeaf() with true");
+//			}
+//			return true;
+//		} else {
+//			if (logger.isDebugEnabled()) {
+//				logger.debug("RETURN pushSelectIntoLeaf() with false");
+//			}
+//			return false;
+//		}
 	}
 
 	/** 

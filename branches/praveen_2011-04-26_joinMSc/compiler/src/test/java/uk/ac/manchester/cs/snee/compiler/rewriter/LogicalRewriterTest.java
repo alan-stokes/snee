@@ -124,11 +124,14 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	 * @throws TypeMappingException 
 	 * @throws SchemaMetadataException 
 	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
+	 * @throws AssertionError 
 	 */
 	@Test
 	public void testPushSelectionDown_selectStarQuery() 
 	throws SourceMetadataException, SchemaMetadataException, 
-	TypeMappingException, OptimizationException {
+	TypeMappingException, OptimizationException, AssertionError,
+	SNEEConfigurationException {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
 		StreamingSourceMetadataAbstract mockSource = 
 			createMock(StreamingSourceMetadataAbstract.class);
@@ -159,50 +162,6 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	}
 
 	/**
-	 * Test on the simplest form of query
-	 * Receive -> deliver
-	 * No affect
-	 * @throws OptimizationException 
-	 * @throws TypeMappingException 
-	 * @throws AssertionError 
-	 * @throws SchemaMetadataException 
-	 * @throws SourceMetadataException 
-	 * @throws SNEEConfigurationException 
-	 */
-	@Test
-	public void testCombineSelections_selectStarQuery() 
-	throws SchemaMetadataException, AssertionError, TypeMappingException, 
-	OptimizationException, SourceMetadataException, SNEEConfigurationException {
-		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
-		List<Attribute> attrList = new ArrayList<Attribute>();
-		
-		expect(mockExtent.getExtentName()).andReturn("streamName").anyTimes();
-		expect(mockExtent.getAttributes()).andReturn(attrList);
-		expect(mockExtent.getCardinality()).andReturn(1);
-				
-		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
-		expect(mockSource.getSourceType()).andReturn(SourceType.PULL_STREAM_SERVICE);
-		expect(mockSource.getRate("streamName")).andReturn(2.0);
-				
-		replayAll();
-
-		LogicalOperator receiveOp = 
-			new ReceiveOperator(mockExtent, mockSource, boolType);
-		LogicalOperator deliverOp = 
-			new DeliverOperator(receiveOp, boolType);
-
-		laf = new LAF(deliverOp, "select-star");
-		rewriter.combineSelections(laf);
-		Iterator<LogicalOperator> opIt = 
-			laf.operatorIterator(TraversalOrder.POST_ORDER);
-		testOperator(opIt, "RECEIVE");
-		testOperator(opIt, "DELIVER");
-		verifyAll();
-	}
-
-	/**
 	 * Test on the simplest form of select query
 	 * Receive -> select -> deliver
 	 * No affect
@@ -211,11 +170,12 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	 * @throws SchemaMetadataException 
 	 * @throws SourceMetadataException 
 	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
 	 */
 	@Test
 	public void testPushSelectionDown_selectQuery() 
 	throws SchemaMetadataException, AssertionError, TypeMappingException,
-	SourceMetadataException, OptimizationException {
+	SourceMetadataException, OptimizationException, SNEEConfigurationException {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
 		StreamingSourceMetadataAbstract mockSource = 
 			createMock(StreamingSourceMetadataAbstract.class);
@@ -243,56 +203,6 @@ public class LogicalRewriterTest extends EasyMockSupport {
 
 		laf = new LAF(deliverOp, "select-query");
 		rewriter.pushSelectionDown(laf);
-		Iterator<LogicalOperator> opIt = 
-			laf.operatorIterator(TraversalOrder.POST_ORDER);
-		testOperator(opIt, "RECEIVE");
-		testOperator(opIt, "SELECT");
-		testOperator(opIt, "DELIVER");
-		verifyAll();
-	}
-
-	/**
-	 * Test on the simplest form of select query
-	 * Receive -> select -> deliver
-	 * No affect
-	 * @throws OptimizationException 
-	 * @throws TypeMappingException 
-	 * @throws AssertionError 
-	 * @throws SchemaMetadataException 
-	 * @throws SourceMetadataException 
-	 * @throws SNEEConfigurationException 
-	 */
-	@Test
-	public void testCombineSelections_selectQuery() 
-	throws SchemaMetadataException, AssertionError, TypeMappingException, 
-	OptimizationException, SourceMetadataException, SNEEConfigurationException {
-		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
-		Expression mockPredicate = createMock(Expression.class);
-		List<Attribute> attrList = new ArrayList<Attribute>();
-		
-		expect(mockExtent.getExtentName()).andReturn("streamName").anyTimes();
-		expect(mockExtent.getAttributes()).andReturn(attrList);
-		expect(mockExtent.getCardinality()).andReturn(1);
-				
-		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
-		expect(mockSource.getSourceType()).andReturn(SourceType.PULL_STREAM_SERVICE);
-		expect(mockSource.getRate("streamName")).andReturn(2.0);
-		
-		expect(mockPredicate.getType()).andReturn(boolType).times(2);
-		
-		replayAll();
-
-		LogicalOperator receiveOp = 
-			new ReceiveOperator(mockExtent, mockSource, boolType);
-		LogicalOperator selectOp = 
-			new SelectOperator(mockPredicate, receiveOp, boolType);
-		LogicalOperator deliverOp = 
-			new DeliverOperator(selectOp, boolType);
-		laf = new LAF(deliverOp, "select-query");
-
-		rewriter.combineSelections(laf);
 		Iterator<LogicalOperator> opIt = 
 			laf.operatorIterator(TraversalOrder.POST_ORDER);
 		testOperator(opIt, "RECEIVE");
@@ -309,11 +219,14 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	 * @throws TypeMappingException 
 	 * @throws SchemaMetadataException 
 	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
+	 * @throws AssertionError 
 	 */
 	@Test
 	public void testPushSelectionDown_receiveTimeWindowSelectQuery()
 	throws SchemaMetadataException, TypeMappingException, 
-	SourceMetadataException, OptimizationException {
+	SourceMetadataException, OptimizationException, AssertionError,
+	SNEEConfigurationException {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
 		StreamingSourceMetadataAbstract mockSource = 
 			createMock(StreamingSourceMetadataAbstract.class);
@@ -373,11 +286,14 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	 * @throws TypeMappingException 
 	 * @throws SchemaMetadataException 
 	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
+	 * @throws AssertionError 
 	 */
 	@Test
 	public void testPushSelectionDown_receiveRowWindowSelectQuery()
 	throws SchemaMetadataException, TypeMappingException, 
-	SourceMetadataException, OptimizationException {
+	SourceMetadataException, OptimizationException, AssertionError, 
+	SNEEConfigurationException {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
 		StreamingSourceMetadataAbstract mockSource = 
 			createMock(StreamingSourceMetadataAbstract.class);
@@ -783,16 +699,19 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	/**
 	 * Test on the simplest form of select query
 	 * Receive -> select -> select -> deliver
-	 * No affect
+	 * Selects should be combined
 	 * @throws SourceMetadataException 
 	 * @throws TypeMappingException 
 	 * @throws SchemaMetadataException 
 	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
+	 * @throws AssertionError 
 	 */
 	@Test
 	public void testPushSelectionDown_multiSelectQuery()
 	throws SchemaMetadataException, TypeMappingException, 
-	SourceMetadataException, OptimizationException {
+	SourceMetadataException, OptimizationException, AssertionError, 
+	SNEEConfigurationException {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
 		StreamingSourceMetadataAbstract mockSource = 
 			createMock(StreamingSourceMetadataAbstract.class);
@@ -830,63 +749,6 @@ public class LogicalRewriterTest extends EasyMockSupport {
 			laf.operatorIterator(TraversalOrder.POST_ORDER);
 		testOperator(opIt, "RECEIVE");
 		testOperator(opIt, "SELECT");
-		testOperator(opIt, "SELECT");
-		testOperator(opIt, "DELIVER");
-		verifyAll();
-	}
-
-	/**
-	 * Test on the simplest form of select query
-	 * Receive -> select -> select -> deliver
-	 * No affect
-	 * @throws OptimizationException 
-	 * @throws TypeMappingException 
-	 * @throws AssertionError 
-	 * @throws SchemaMetadataException 
-	 * @throws SourceMetadataException 
-	 * @throws SNEEConfigurationException 
-	 */
-	@Test
-	public void testCombineSelections_multiSelectQuery() 
-	throws SchemaMetadataException, AssertionError, TypeMappingException,
-	OptimizationException, SourceMetadataException, SNEEConfigurationException {
-		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
-		MultiExpression mockPredicate = createMock(MultiExpression.class);
-		List<Attribute> attrList = new ArrayList<Attribute>();
-		
-		expect(mockExtent.getExtentName()).andReturn("streamName").anyTimes();
-		expect(mockExtent.getAttributes()).andReturn(attrList);
-		expect(mockExtent.getCardinality()).andReturn(1);
-				
-		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
-		expect(mockSource.getSourceType()).andReturn(SourceType.PULL_STREAM_SERVICE);
-		expect(mockSource.getRate("streamName")).andReturn(2.0);
-		
-		expect(mockPredicate.getType()).andReturn(boolType).times(4);
-		expect(mockPredicate.combinePredicates(mockPredicate, mockPredicate))
-			.andReturn(mockPredicate).anyTimes();
-		expect(mockPredicate.getMultiType())
-			.andReturn(MultiType.GREATERTHAN).anyTimes();
-		
-		replayAll();
-
-		LogicalOperator receiveOp = 
-			new ReceiveOperator(mockExtent, mockSource, boolType);
-		LogicalOperator selectOp1 = 
-			new SelectOperator(mockPredicate, receiveOp, boolType);
-		LogicalOperator selectOp2 = 
-			new SelectOperator(mockPredicate, selectOp1, boolType);
-		LogicalOperator deliverOp = 
-			new DeliverOperator(selectOp2, boolType);
-		laf = new LAF(deliverOp, "multi-select");
-
-		rewriter.combineSelections(laf);
-		Iterator<LogicalOperator> opIt = 
-			laf.operatorIterator(TraversalOrder.POST_ORDER);
-		testOperator(opIt, "RECEIVE");
-		testOperator(opIt, "SELECT");
 		testOperator(opIt, "DELIVER");
 		verifyAll();
 	}
@@ -901,11 +763,14 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	 * @throws TypeMappingException 
 	 * @throws SchemaMetadataException 
 	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
+	 * @throws AssertionError 
 	 */
 	@Test
 	public void testPushSelectionDown_timeWindowJoinQuery()
 	throws SchemaMetadataException, TypeMappingException, 
-	SourceMetadataException, OptimizationException {
+	SourceMetadataException, OptimizationException, AssertionError,
+	SNEEConfigurationException {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
 		StreamingSourceMetadataAbstract mockSource = 
 			createMock(StreamingSourceMetadataAbstract.class);
@@ -984,11 +849,14 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	 * @throws TypeMappingException 
 	 * @throws SchemaMetadataException 
 	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
+	 * @throws AssertionError 
 	 */
 	@Test
 	public void testPushSelectionDown_timeWindowJoinLeftSelectQuery()
 	throws SchemaMetadataException, TypeMappingException, 
-	SourceMetadataException, OptimizationException {
+	SourceMetadataException, OptimizationException, AssertionError, 
+	SNEEConfigurationException {
 		ExtentMetadata mockExtentLeft = createMock(ExtentMetadata.class);
 		ExtentMetadata mockExtentRight = createMock(ExtentMetadata.class);
 		StreamingSourceMetadataAbstract mockSource = 
@@ -1085,11 +953,14 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	 * @throws TypeMappingException 
 	 * @throws SchemaMetadataException 
 	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
+	 * @throws AssertionError 
 	 */
 	@Test
 	public void testPushSelectionDown_timeWindowJoinRightSelectQuery()
 	throws SchemaMetadataException, TypeMappingException, 
-	SourceMetadataException, OptimizationException {
+	SourceMetadataException, OptimizationException, AssertionError, 
+	SNEEConfigurationException {
 		ExtentMetadata mockExtent1 = createMock(ExtentMetadata.class);
 		ExtentMetadata mockExtent2 = createMock(ExtentMetadata.class);
 		StreamingSourceMetadataAbstract mockSource = 
@@ -1176,6 +1047,144 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		verifyAll();
 	}
 
-	//FIXME: Write tests for joins with a selection condition to be combined with an acquire
+	/**
+	 * Test on select time window query over an acquire source, combine=true
+	 * Acquire -> window -> 
+	 * Acquire -> window ->
+	 * join -> select -> select -> deliver
+	 * one select moves below join to right child and is combined with acquire
+	 * Acquire -> window -> 
+	 * Acquire -> window ->
+	 * join -> select -> deliver
+	 * @throws SourceMetadataException 
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
+	 * @throws SNCBException 
+	 * @throws CostParametersException 
+	 * @throws SNEEDataSourceException 
+	 * @throws TopologyReaderException 
+	 * @throws UnsupportedAttributeTypeException 
+	 * @throws MetadataException 
+	 * @throws MalformedURLException 
+	 * @throws UtilsException 
+	 */
+	@Test
+	public void testPushSelectionDown_acquireTimeWindowJoinSelectQueryCombine()
+	throws SchemaMetadataException, TypeMappingException, 
+	SourceMetadataException, OptimizationException, SNEEConfigurationException, 
+	MalformedURLException, MetadataException, UnsupportedAttributeTypeException,
+	TopologyReaderException, SNEEDataSourceException, CostParametersException,
+	SNCBException, UtilsException {
+		Properties props = new Properties();
+		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
+		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
+		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
+		props.setProperty(SNEEPropertyNames.GENERAL_DELETE_OLD_FILES, "true");
+		props.setProperty(SNEEPropertyNames.LOGICAL_REWRITER_COMBINE_ACQUIRE_SELECT, "true");
+		props.setProperty(SNEEPropertyNames.GENERATE_QEP_IMAGES, "true");
+		props.setProperty(SNEEPropertyNames.CONVERT_QEP_IMAGES, "false");
+		SNEEProperties.initialise(props);
+		MetadataManager metadata = new MetadataManager(null);
+		String typesFileLoc = 
+			Utils.validateFileLocation("etc/Types.xml");
+		Types types = new Types(typesFileLoc);
+		AttributeType boolType = types.getType("boolean");
+		LogicalRewriter rewriter = new LogicalRewriter(metadata);
+		
+		ExtentMetadata mockExtentLeft = createMock(ExtentMetadata.class);
+		ExtentMetadata mockExtentRight = createMock(ExtentMetadata.class);
+		StreamingSourceMetadataAbstract mockSource = 
+			createMock(StreamingSourceMetadataAbstract.class);
+		Attribute mockAttribute = createMock(Attribute.class);
+		Attribute mockAttribute1 = createMock(Attribute.class); 
+		AttributeType mockType = createMock(AttributeType.class);
+		
+		expect(mockAttribute.getAttributeSchemaName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute.getAttributeDisplayName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute.getExtentName())
+			.andReturn("streamLeft").anyTimes();
+		expect(mockAttribute.getType()).andReturn(mockType).anyTimes();
+		
+		expect(mockAttribute1.getAttributeSchemaName())
+			.andReturn("timestamp").anyTimes();
+		expect(mockAttribute1.getAttributeDisplayName())
+			.andReturn("timestamp").anyTimes();
+		expect(mockAttribute1.getExtentName())
+			.andReturn("streamRight").anyTimes();
+		expect(mockAttribute1.getType()).andReturn(mockType).anyTimes();
+		List<Attribute> leftAttrList = new ArrayList<Attribute>();
+		leftAttrList.add(mockAttribute);
+		List<Attribute> rightAttrList = new ArrayList<Attribute>();
+		rightAttrList.add(mockAttribute1);
+		
+		expect(mockAttribute.getRequiredAttributes())
+			.andReturn((ArrayList<Attribute>) leftAttrList);
+		expect(mockAttribute1.getRequiredAttributes())
+			.andReturn((ArrayList<Attribute>) rightAttrList);
+		
+		expect(mockExtentLeft.getExtentName()).andReturn("streamLeft").anyTimes();
+		expect(mockExtentLeft.getAttributes()).andReturn(leftAttrList).anyTimes();
+		expect(mockExtentLeft.getCardinality()).andReturn(1).anyTimes();
+
+		expect(mockExtentRight.getExtentName()).andReturn("streamRight").anyTimes();
+		expect(mockExtentRight.getAttributes()).andReturn(rightAttrList).anyTimes();
+		expect(mockExtentRight.getCardinality()).andReturn(1).anyTimes();
+				
+		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
+		expect(mockSource.getSourceType())
+			.andReturn(SourceType.SENSOR_NETWORK).times(2);
+
+		expect(mockType.getName()).andReturn("integer").anyTimes();
+
+		replayAll();
+
+		LogicalOperator receiveOpLeft = 
+			new AcquireOperator(mockExtentLeft, types, mockSource, boolType);
+		LogicalOperator windowOpLeft = 
+			new WindowOperator(0, 0, true, 0, 0, receiveOpLeft, boolType);
+		LogicalOperator receiveOpRight = 
+			new AcquireOperator(mockExtentRight, types, mockSource, boolType);
+		LogicalOperator windowOpRight = 
+			new WindowOperator(0, 0, true, 0, 0, receiveOpRight, boolType);
+		LogicalOperator joinOp = 
+			new JoinOperator(windowOpLeft, windowOpRight, boolType);		
+		Expression[] attributes = new Expression[2];
+		attributes[0] = new DataAttribute(mockAttribute);
+		attributes[1] = new DataAttribute(mockAttribute1);
+		Expression joinPredicate = new MultiExpression(attributes, 
+				MultiType.EQUALS, boolType);
+		joinPredicate.setIsJoinCondition(true);
+		LogicalOperator selectOp1 = 
+			new SelectOperator(joinPredicate, joinOp, boolType);
+		Expression[] expressions = new Expression[2];
+		expressions[0] = new DataAttribute(mockAttribute);
+		expressions[1] = new IntLiteral(42, types.getType("integer"));
+		Expression selectPredicate = new MultiExpression(expressions, 
+				MultiType.LESSTHANEQUALS, boolType);
+		selectPredicate.setIsJoinCondition(false);
+		LogicalOperator selectOp2 = 
+			new SelectOperator(selectPredicate, selectOp1, boolType);
+		LogicalOperator deliverOp = 
+			new DeliverOperator(selectOp2, boolType);
+
+		laf = new LAF(deliverOp, "acquire-time-join-select");
+		rewriter.pushSelectionDown(laf);
+		rewriter.removeUnrequiredOperators(laf);
+		Iterator<LogicalOperator> opIt = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		testOperator(opIt, "ACQUIRE");
+		testOperator(opIt, "WINDOW");
+		testOperator(opIt, "ACQUIRE");
+		testOperator(opIt, "WINDOW");
+		testOperator(opIt, "JOIN");
+		testOperator(opIt, "SELECT");
+		testOperator(opIt, "DELIVER");
+		verifyAll();
+	}
+
 	//FIXME: Write tests for multiple joins
 }

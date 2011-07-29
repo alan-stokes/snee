@@ -64,10 +64,6 @@ public class LogicalRewriter {
 		}
 		pushSelectionDown(laf);
 		if (logger.isInfoEnabled()) {
-			logger.info("Combine selections");
-		}
-		combineSelections(laf);
-		if (logger.isInfoEnabled()) {
 			logger.info("Pushing projections down");
 		}
 		pushProjectionDown(laf);
@@ -108,20 +104,19 @@ public class LogicalRewriter {
 	 * 
 	 * @param laf
 	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
+	 * @throws TypeMappingException 
+	 * @throws AssertionError 
+	 * @throws SchemaMetadataException 
 	 */
-	protected void pushSelectionDown(LAF laf) throws OptimizationException {
+	protected void pushSelectionDown(LAF laf) 
+	throws OptimizationException, SchemaMetadataException, AssertionError, 
+	TypeMappingException, SNEEConfigurationException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER pushSelectionDown() with " + laf);
 		}
-		LogicalOperator rootOperator = laf.getRootOperator();
-		try {
-			//FIXME: Doesn't work for combining with acquires below a join
-			rootOperator.pushSelectIntoLeafOp(new NoPredicate());
-		} catch (Exception e) {
-			logger.warn(e);
-			throw new OptimizationException(e.getLocalizedMessage(), e);
-		}
 		moveSelectClauseDown(laf);
+		combineSelections(laf);
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN pushSelectionDown()");
 		}
@@ -136,8 +131,14 @@ public class LogicalRewriter {
 	 * 
 	 * @param laf
 	 * @throws OptimizationException
+	 * @throws SNEEConfigurationException 
+	 * @throws TypeMappingException 
+	 * @throws AssertionError 
+	 * @throws SchemaMetadataException 
 	 */
-	private void moveSelectClauseDown(LAF laf) throws OptimizationException {
+	private void moveSelectClauseDown(LAF laf) 
+	throws OptimizationException, SchemaMetadataException, AssertionError, 
+	TypeMappingException, SNEEConfigurationException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER moveSelectClauseDown()");
 		}
@@ -153,9 +154,15 @@ public class LogicalRewriter {
 					LogicalOperator childOp = op.getInput(0);
 					if (childOp instanceof InputOperator) {
 						if (logger.isTraceEnabled()) {
-							logger.trace("SELECT operator as low as it can go");
+							logger.trace("Try to push SELECT into INPUT Op");
 						}
-						// Do nothing. Select is as low as it can go
+						if (childOp.pushSelectIntoLeafOp(op.getPredicate())) {
+							if (logger.isTraceEnabled()) {
+								logger.trace("INPUT op and SELECT op combined. " +
+										"Remove SELECT op.");
+							}
+							laf.removeOperator(op);
+						}
 						reachedBottom = true;
 					} else if (childOp instanceof WindowOperator) {
 						if (logger.isTraceEnabled()) {
@@ -315,7 +322,7 @@ public class LogicalRewriter {
 	 * @throws OptimizationException 
 	 * @throws SNEEConfigurationException 
 	 */
-	protected void combineSelections(LAF laf) 
+	private void combineSelections(LAF laf) 
 	throws SchemaMetadataException, AssertionError, TypeMappingException,
 	OptimizationException, SNEEConfigurationException {
 		if (logger.isTraceEnabled()) {
