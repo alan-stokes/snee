@@ -38,6 +38,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -176,43 +179,56 @@ public class AcquireOperator extends InputOperator {
 
 	/**
 	 * {@inheritDoc}
+	 * @throws SNEEConfigurationException 
 	 */
 	public boolean pushProjectionDown(List<Expression> projectExpressions, 
 			List<Attribute> projectAttributes) 
 	throws OptimizationException {
-		//if no project to push down Do nothing.
-		if (projectAttributes.isEmpty()) {
-			return false;
+		boolean boolSetting = true;
+		try {
+			boolSetting = SNEEProperties.getBoolSetting(
+					SNEEPropertyNames.LOGICAL_REWRITER_COMBINE_ACQUIRE_SELECT);
+		} catch (SNEEConfigurationException e) {
+			logger.warn(e + " Proceeding with default value true.");
 		}
-
-		if (projectExpressions.isEmpty()) {
-			//remove unrequired attributes. No expressions to accept
-			for (int i = 0; i < outputAttributes.size(); ) {
-				if (projectAttributes.contains(outputAttributes.get(i)))
-					i++;
-				else {
-					outputAttributes.remove(i);
-					expressions.remove(i);		
-				}
+		if (boolSetting) {			
+			//if no project to push down Do nothing.
+			if (projectAttributes.isEmpty()) {
+				return false;
 			}
+
+			if (projectExpressions.isEmpty()) {
+				//remove unrequired attributes. No expressions to accept
+				for (int i = 0; i < outputAttributes.size(); ) {
+					if (projectAttributes.contains(outputAttributes.get(i)))
+						i++;
+					else {
+						outputAttributes.remove(i);
+						expressions.remove(i);		
+					}
+				}
+				updateSensedAttributes();
+				return false;
+			}
+
+			expressions = projectExpressions;
+			outputAttributes = projectAttributes;
 			updateSensedAttributes();
+			//		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
+			//			try {
+			//				outputAttributes.add(new LocalTimeAttribute());
+			//				expressions.add(new LocalTimeAttribute());
+			//			} catch (SchemaMetadataException e) {
+			//				// TODO Auto-generated catch block
+			//				e.printStackTrace();
+			//				System.exit(2);
+			//			} //Ixent added this
+			//		}		
+			return true;
+		} else {
+			// Projection should be kept separate from acquire for debugging
 			return false;
 		}
-
-		expressions = projectExpressions;
-		outputAttributes = projectAttributes;
-		updateSensedAttributes();
-//		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
-//			try {
-//				outputAttributes.add(new LocalTimeAttribute());
-//				expressions.add(new LocalTimeAttribute());
-//			} catch (SchemaMetadataException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//				System.exit(2);
-//			} //Ixent added this
-//		}		
-		return true;
 	}
 
 	/**
@@ -220,11 +236,37 @@ public class AcquireOperator extends InputOperator {
 	 * @throws AssertionError 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
+	 * @throws SNEEConfigurationException 
 	 */
-	public boolean pushSelectDown(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException {
-		setPredicate(predicate);
-		return true;
+	public boolean pushSelectIntoLeafOp(Expression predicate) 
+	throws SchemaMetadataException, AssertionError, TypeMappingException
+	{
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER pushSelectionIntoLeafOp() with " + predicate);
+		}
+		boolean boolSetting = true;
+		try {
+			boolSetting = SNEEProperties.getBoolSetting(
+					SNEEPropertyNames.LOGICAL_REWRITER_COMBINE_ACQUIRE_SELECT);
+		} catch (SNEEConfigurationException e) {
+			logger.warn(e + " Proceeding with default value true.");
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("Combine acquire and select=" + boolSetting);
+		}
+		if (boolSetting) {			
+			setPredicate(predicate);
+			if (logger.isDebugEnabled()) {
+				logger.debug("RETURN pushSelectionIntoLeafOp() with true");
+			}
+			return true;
+		} else {
+			// Selection should be kept separate from acquire for debugging
+			if (logger.isDebugEnabled()) {
+				logger.debug("RETURN pushSelectionIntoLeafOp() with false");
+			}
+			return false;
+		}
 	}
 
 	/**

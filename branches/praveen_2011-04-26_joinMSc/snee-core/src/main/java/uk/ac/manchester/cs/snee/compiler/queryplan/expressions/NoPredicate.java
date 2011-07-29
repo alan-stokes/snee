@@ -45,6 +45,8 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
  */
 public class NoPredicate implements Expression {
 	
+	private boolean isJoinCondition = false;
+	
 	/** 
 	 * Required by interface.
 	 * Causes an error if ever called.
@@ -145,6 +147,16 @@ public class NoPredicate implements Expression {
 	@Override
 	public void setIsConstant(boolean isConstant) {
 		throw new AssertionError ("Unexpected call to setIsConstant");
+	}
+
+	@Override
+	public boolean isJoinCondition() {
+		return isJoinCondition;
+	}
+
+	@Override
+	public void setIsJoinCondition(boolean isJoinCondition) {
+		this.isJoinCondition = isJoinCondition;
 	}
 
 }

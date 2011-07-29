@@ -176,5 +176,15 @@ public class IntLiteral implements Expression {
 	public void setIsConstant(boolean isConstant) {
 		this.isConstant = isConstant;
 	}
+
+	@Override
+	public boolean isJoinCondition() {
+		return false;
+	}
+
+	@Override
+	public void setIsJoinCondition(boolean isJoin) {
+		throw new AssertionError("IntLiteral cannot be a join condition.");
+	}
 	
 }

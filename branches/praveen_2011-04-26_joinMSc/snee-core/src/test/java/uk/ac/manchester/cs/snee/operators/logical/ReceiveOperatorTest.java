@@ -149,7 +149,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
 				types.getType("boolean"));
-		assertFalse(op.pushSelectDown(null));
+		assertFalse(op.pushSelectIntoLeafOp(null));
 		verifyAll();
 	}
 

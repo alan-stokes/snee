@@ -38,6 +38,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.Constants;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -119,16 +120,32 @@ public class SelectOperator extends LogicalOperatorImpl {
 	 * @throws AssertionError 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
+	 * @throws SNEEConfigurationException 
 	 */
-	public boolean pushSelectDown(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException {
-		if (predicate instanceof MultiExpression)
-			return combineSelects(predicate);
+	public boolean pushSelectIntoLeafOp(Expression predicate) 
+	throws SchemaMetadataException, AssertionError, TypeMappingException,
+	SNEEConfigurationException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER pushSelectionIntoLeafOp() with " + predicate);
+		}
+		if (predicate instanceof MultiExpression) {
+			boolean result = combineSelects(predicate);
+			if (logger.isDebugEnabled()) {
+				logger.debug("RETURN pushSelectionIntoLeafOp() with " + result);
+			}
+			return result;
+		}
 		assert(predicate instanceof NoPredicate);
 		Expression oldPredicate = this.getPredicate();
-		if (this.getInput(0).pushSelectDown(oldPredicate)) {
+		if (this.getInput(0).pushSelectIntoLeafOp(oldPredicate)) {
 			setPredicate (new NoPredicate());
+			if (logger.isDebugEnabled()) {
+				logger.debug("RETURN pushSelectionIntoLeafOp() with true");
+			}
 			return true;
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN pushSelectionIntoLeafOp() with false");
 		}
 		return false;
 	}
@@ -140,9 +157,11 @@ public class SelectOperator extends LogicalOperatorImpl {
 	 * @throws AssertionError 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
+	 * @throws SNEEConfigurationException 
 	 */
-	private boolean combineSelects(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException 
+	public boolean combineSelects(Expression predicate) 
+	throws SchemaMetadataException, AssertionError, TypeMappingException,
+	SNEEConfigurationException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER combineSelects() with " + predicate);
@@ -154,7 +173,7 @@ public class SelectOperator extends LogicalOperatorImpl {
 		if (oldPredicate instanceof NoPredicate) {
 			if (logger.isTraceEnabled())
 				logger.trace("Instance of NoPredicate");
-			if (this.getInput(0).pushSelectDown(predicate))
+			if (this.getInput(0).pushSelectIntoLeafOp(predicate))
 				result = true;
 			else
 				result = checkAndSetPredicate(predicate);
@@ -166,13 +185,13 @@ public class SelectOperator extends LogicalOperatorImpl {
 			Expression combined = 
 				oldPredicate2.combinePredicates(oldPredicate2, 
 						thePredicate);
-			if (this.getInput(0).pushSelectDown(combined)) {
+			if (this.getInput(0).pushSelectIntoLeafOp(combined)) {
 				setPredicate (new NoPredicate());
 				result = true;
 			} else {
-				if (this.getInput(0).pushSelectDown(predicate)) 
+				if (this.getInput(0).pushSelectIntoLeafOp(predicate)) 
 					result = true;
-				else if (this.getInput(0).pushSelectDown(oldPredicate)) {
+				else if (this.getInput(0).pushSelectIntoLeafOp(oldPredicate)) {
 					result = checkAndSetPredicate(predicate);
 				} else
 					result = false;		 

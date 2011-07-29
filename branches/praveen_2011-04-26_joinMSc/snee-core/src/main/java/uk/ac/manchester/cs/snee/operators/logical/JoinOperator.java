@@ -39,6 +39,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.Constants;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -214,10 +215,11 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 
 	/**
 	 * {@inheritDoc}
+	 * @throws SNEEConfigurationException 
 	 */
 	public boolean pushProjectionDown(List<Expression> projectExpressions, 
 			List<Attribute> projectAttributes) 
-	throws OptimizationException {
+	throws OptimizationException, SNEEConfigurationException {
 
 		boolean accepted = false;
 
@@ -284,7 +286,7 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 	 * 
 	 * @return False 
 	 */
-	public boolean pushSelectDown(Expression predicate) {
+	public boolean pushSelectIntoLeafOp(Expression predicate) {
 		return false;
 	}
 

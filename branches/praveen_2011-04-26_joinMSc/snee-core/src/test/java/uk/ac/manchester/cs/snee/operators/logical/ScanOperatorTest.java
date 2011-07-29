@@ -151,7 +151,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 		ScanOperator op = new ScanOperator(mockExtent, 
 				mockSource, 
 				types.getType("boolean"));
-		assertFalse(op.pushSelectDown(null));
+		assertFalse(op.pushSelectIntoLeafOp(null));
 		verifyAll();
 	}
 

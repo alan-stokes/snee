@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
@@ -144,7 +145,7 @@ public class AcquireOperatorTest extends EasyMockSupport {
 	@Test
 	public void testPushProjectionDown_EmptyAttributes() 
 	throws TypeMappingException, SchemaMetadataException,
-	OptimizationException, SourceMetadataException {
+	OptimizationException, SourceMetadataException, SNEEConfigurationException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>()).times(2);
@@ -159,7 +160,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testPushSelectDown() 
-	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
+	throws TypeMappingException, SchemaMetadataException, 
+	SourceMetadataException, AssertionError, SNEEConfigurationException {
 		Expression mockExpression = createMock(Expression.class);
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getAttributes())
@@ -170,7 +172,7 @@ public class AcquireOperatorTest extends EasyMockSupport {
 		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				mockSource, 
 				types.getType("boolean"));
-		assertTrue(op.pushSelectDown(mockExpression));
+		assertTrue(op.pushSelectIntoLeafOp(mockExpression));
 		verifyAll();
 	}
 

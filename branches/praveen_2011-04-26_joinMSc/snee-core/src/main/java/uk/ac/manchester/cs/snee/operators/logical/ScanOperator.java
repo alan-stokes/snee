@@ -98,7 +98,7 @@ public class ScanOperator extends InputOperator {
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
 	 */
-	public boolean pushSelectDown(Expression predicate) 
+	public boolean pushSelectIntoLeafOp(Expression predicate) 
 	throws SchemaMetadataException, TypeMappingException {
 		return false;
 	}

@@ -89,21 +89,10 @@ public final class SNEEPropertyNames {
     	"compiler.logicalrewriter.remove_unrequired_operators";
     
     /**
-     * Pushes project operators as close to the leaves of the operator
-     * tree as possible.
-     * TODO: currently in physical rewriter, move this to logical rewriter
-     * TODO: consider removing this option 
-     */
-    public static final String LOGICAL_REWRITER_PUSH_PROJECT_DOWN =
-    	"compiler.logicalrewriter.push_project_down";
-    
-    /**
-     * Combines leaf operators (receive, acquire, scan) and select 
+     * Combines acquire operators (sensor network) and select 
      * into a single operator.
-     * TODO: currently in physical rewriter, move this to logical rewriter
-     * TODO: consider removing this option
      */
-    public static final String LOGICAL_REWRITER_COMBINE_LEAF_SELECT =
+    public static final String LOGICAL_REWRITER_COMBINE_ACQUIRE_SELECT =
     	"compiler.logicalrewriter.combine_leaf_and_select";
     
     public static final String LOGICAL_REWRITER_INSERT_VALVE_OPS =

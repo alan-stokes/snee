@@ -132,7 +132,7 @@ public class MockOperator implements LogicalOperator {
 			return false;
 		}
 
-		public boolean pushSelectDown(Expression predicate)
+		public boolean pushSelectIntoLeafOp(Expression predicate)
 				throws SchemaMetadataException, AssertionError,
 				TypeMappingException {
 			// TODO Auto-generated method stub

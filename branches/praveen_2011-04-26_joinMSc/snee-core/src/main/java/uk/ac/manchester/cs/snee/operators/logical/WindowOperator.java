@@ -45,6 +45,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -350,10 +351,11 @@ public class WindowOperator extends LogicalOperatorImpl {
 
 	/**
 	 * {@inheritDoc}
+	 * @throws SNEEConfigurationException 
 	 */
 	public boolean pushProjectionDown(List<Expression> projectExpressions, 
 			List<Attribute> projectAttributes) 
-	throws OptimizationException {
+	throws OptimizationException, SNEEConfigurationException {
 		return getInput(0).pushProjectionDown(
 				projectExpressions, projectAttributes);
 	}
@@ -367,12 +369,25 @@ public class WindowOperator extends LogicalOperatorImpl {
 	 * @throws AssertionError 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
+	 * @throws SNEEConfigurationException 
 	 */
-	public boolean pushSelectDown(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException {
-		if (logger.isTraceEnabled())
-			logger.trace("Pushing down: " + predicate);
-		return this.getInput(0).pushSelectDown(predicate);
+	public boolean pushSelectIntoLeafOp(Expression predicate) 
+	throws SchemaMetadataException, AssertionError, TypeMappingException, 
+	SNEEConfigurationException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER pushSelectionIntoLeafOp() with " + predicate);
+		}
+		boolean result;
+		if (timeScope) {
+			result = this.getInput(0).pushSelectIntoLeafOp(predicate);
+		} else {
+			//Cannot push select below a row based window
+			result = false;
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN pushSelectionIntoLeafOp() with " + result);
+		}
+		return result;
 	}
 
 	//XXX: Removed by AG as metadata now handled in metadata object

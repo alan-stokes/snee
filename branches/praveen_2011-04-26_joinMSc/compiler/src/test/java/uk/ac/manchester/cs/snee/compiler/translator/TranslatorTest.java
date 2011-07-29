@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.compiler.translator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -87,6 +88,7 @@ public class TranslatorTest {
 		props.setProperty(SNEEPropertyNames.INPUTS_PHYSICAL_SCHEMA_FILE, "etc/physical-schema_translator.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_COST_PARAMETERS_FILE, "etc/cost-parameters.xml");
 		props.setProperty(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR, "output");
+		props.setProperty(SNEEPropertyNames.GENERAL_DELETE_OLD_FILES, "true");
 		props.setProperty(SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION, "false");
 		props.setProperty(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE, "false");
 		props.setProperty(SNEEPropertyNames.GENERATE_QEP_IMAGES, "true");
@@ -747,13 +749,34 @@ public class TranslatorTest {
 		Iterator<LogicalOperator> iterator = 
 			laf.operatorIterator(TraversalOrder.POST_ORDER);
 		testOperator(iterator, "RECEIVE");
-		testOperator(iterator, "SELECT");
+		LogicalOperator testOperator = testOperator(iterator, "SELECT");
+		assertFalse(testOperator.getPredicate().isJoinCondition());
 		testOperator(iterator, "PROJECT");
 		testOperator(iterator, "DELIVER");
 	}
 	
 	@Test
-	public void testMultiSelect_twoConjuncts() 
+	public void testMultiSelect_twoConjunctsSameAttr() 
+	throws ParserException, SourceDoesNotExistException, 
+	SchemaMetadataException, ExpressionException, AssertionError, 
+	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
+		LAF laf = testQuery("SELECT Timestamp " +
+				"FROM TestStream " +
+				"WHERE integerColumn > 6 AND integerColumn < 43;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		testOperator(iterator, "RECEIVE");
+		LogicalOperator testOperator = testOperator(iterator, "SELECT");
+		assertFalse(testOperator.getPredicate().isJoinCondition());
+		testOperator = testOperator(iterator, "SELECT");
+		assertFalse(testOperator.getPredicate().isJoinCondition());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
+	}
+	
+	@Test
+	public void testMultiSelect_twoConjunctsDifferentAttr() 
 	throws ParserException, SourceDoesNotExistException, 
 	SchemaMetadataException, ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException, ExtentDoesNotExistException,
@@ -764,8 +787,10 @@ public class TranslatorTest {
 		Iterator<LogicalOperator> iterator = 
 			laf.operatorIterator(TraversalOrder.POST_ORDER);
 		testOperator(iterator, "RECEIVE");
-		testOperator(iterator, "SELECT");
-		testOperator(iterator, "SELECT");
+		LogicalOperator testOperator = testOperator(iterator, "SELECT");
+		assertFalse(testOperator.getPredicate().isJoinCondition());
+		testOperator = testOperator(iterator, "SELECT");
+		assertFalse(testOperator.getPredicate().isJoinCondition());
 		testOperator(iterator, "PROJECT");
 		testOperator(iterator, "DELIVER");
 	}
@@ -783,9 +808,12 @@ public class TranslatorTest {
 		Iterator<LogicalOperator> iterator = 
 			laf.operatorIterator(TraversalOrder.POST_ORDER);
 		testOperator(iterator, "RECEIVE");
-		testOperator(iterator, "SELECT");
-		testOperator(iterator, "SELECT");
-		testOperator(iterator, "SELECT");
+		LogicalOperator testOperator = testOperator(iterator, "SELECT");
+		assertFalse(testOperator.getPredicate().isJoinCondition());
+		testOperator = testOperator(iterator, "SELECT");
+		assertFalse(testOperator.getPredicate().isJoinCondition());
+		testOperator = testOperator(iterator, "SELECT");
+		assertFalse(testOperator.getPredicate().isJoinCondition());
 		testOperator(iterator, "PROJECT");
 		testOperator(iterator, "DELIVER");
 	}
@@ -802,7 +830,8 @@ public class TranslatorTest {
 		Iterator<LogicalOperator> iterator = 
 			laf.operatorIterator(TraversalOrder.POST_ORDER);
 		testOperator(iterator, "RECEIVE");
-		testOperator(iterator, "SELECT");
+		LogicalOperator testOperator = testOperator(iterator, "SELECT");
+		assertFalse(testOperator.getPredicate().isJoinCondition());
 		testOperator(iterator, "PROJECT");
 		testOperator(iterator, "DELIVER");
 	}
@@ -820,8 +849,10 @@ public class TranslatorTest {
 		Iterator<LogicalOperator> iterator = 
 			laf.operatorIterator(TraversalOrder.POST_ORDER);
 		testOperator(iterator, "RECEIVE");
-		testOperator(iterator, "SELECT");
-		testOperator(iterator, "SELECT");
+		LogicalOperator testOperator = testOperator(iterator, "SELECT");
+		assertFalse(testOperator.getPredicate().isJoinCondition());
+		testOperator = testOperator(iterator, "SELECT");
+		assertFalse(testOperator.getPredicate().isJoinCondition());
 		testOperator(iterator, "PROJECT");
 		testOperator(iterator, "DELIVER");
 	}
@@ -899,16 +930,38 @@ public class TranslatorTest {
 		testQuery("SELECT * " +
 				"FROM TestStream[FROM NOW-10 MINUTES TO NOW];");
 	}
-	
+
+	@Test
+	public void testTimeWindowSelect() throws ParserException, 
+	SourceDoesNotExistException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, 
+	TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, TokenStreamException, SNEEConfigurationException {
+		testQuery("SELECT * " +
+				"FROM TestStream[NOW] " +
+				"WHERE integerColumn < 100;");
+	}
+
 	@Test
 	public void testNowEquiJoin() throws ParserException, 
 	SourceDoesNotExistException, SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, 
 	TypeMappingException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException, SNEEConfigurationException {
-		testQuery("SELECT * " +
+		LAF laf = testQuery("SELECT * " +
 				"FROM TestStream[NOW] t, PullStream[NOW] p " +
 				"WHERE t.timestamp = p.timestamp;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		testOperator(iterator, "RECEIVE");
+		testOperator(iterator, "WINDOW");
+		testOperator(iterator, "ACQUIRE");
+		testOperator(iterator, "WINDOW");
+		testOperator(iterator, "JOIN");
+		LogicalOperator testOperator = testOperator(iterator, "SELECT");
+		assertTrue(testOperator.getPredicate().isJoinCondition());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "DELIVER");
 	}
 	
 	@Test
@@ -928,8 +981,10 @@ public class TranslatorTest {
 		testOperator(iterator, "ACQUIRE");
 		testOperator(iterator, "WINDOW");
 		testOperator(iterator, "JOIN");
-		testOperator(iterator, "SELECT");
-		testOperator(iterator, "SELECT");
+		LogicalOperator testOperator = testOperator(iterator, "SELECT");
+		assertTrue(testOperator.getPredicate().isJoinCondition());
+		testOperator = testOperator(iterator, "SELECT");
+		assertFalse(testOperator.getPredicate().isJoinCondition());
 		testOperator(iterator, "PROJECT");
 		testOperator(iterator, "DELIVER");
 	}

@@ -38,6 +38,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -121,7 +122,7 @@ public class AggregationOperator extends PredicateOperator {
      * @return False Because any select to be done before aggregation 
      *    will already be below this operator.
      */
-	 public boolean pushSelectDown(Expression predicate) {
+	 public boolean pushSelectIntoLeafOp(Expression predicate) {
 		 return false;
 	 }
 
@@ -135,11 +136,12 @@ public class AggregationOperator extends PredicateOperator {
     
     /**
      * {@inheritDoc}
+     * @throws SNEEConfigurationException 
      */
     public boolean pushProjectionDown(
     		List<Expression> projectExpressions, 
     		List<Attribute> projectAttributes) 
-	throws OptimizationException {
+	throws OptimizationException, SNEEConfigurationException {
     	
     	//TODO remove attributes not require upstream
 
@@ -149,7 +151,8 @@ public class AggregationOperator extends PredicateOperator {
     		requiredAttributes.addAll(requiredAttributesX);
     	}
 
-    	getInput(0).pushProjectionDown(new  ArrayList<Expression>(), requiredAttributes);
+    	getInput(0).pushProjectionDown(
+    			new  ArrayList<Expression>(), requiredAttributes);
     	
     	return false;
 	}

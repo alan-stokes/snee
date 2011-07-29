@@ -101,7 +101,7 @@ public class ReceiveOperator extends InputOperator {
 	/**
 	 * {@inheritDoc}
 	 */
-	public boolean pushSelectDown(Expression predicate) {
+	public boolean pushSelectIntoLeafOp(Expression predicate) {
 		return false;
 	}
 

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -81,18 +82,19 @@ public class ExchangeOperator extends LogicalOperatorImpl {
 
 	@Override
 	public boolean pushProjectionDown(List<Expression> projectExpressions,
-			List<Attribute> projectAttributes) throws OptimizationException {
+			List<Attribute> projectAttributes) throws OptimizationException,
+			SNEEConfigurationException {
 		// TODO Auto-generated method stub
 		return getInput(0).pushProjectionDown(
 				projectExpressions, projectAttributes);
 	}
 
 	@Override
-	public boolean pushSelectDown(Expression predicate)
+	public boolean pushSelectIntoLeafOp(Expression predicate)
 			throws SchemaMetadataException, AssertionError,
-			TypeMappingException {
+			TypeMappingException, SNEEConfigurationException {
 		// TODO Auto-generated method stub
-		return getInput(0).pushSelectDown(predicate);
+		return getInput(0).pushSelectIntoLeafOp(predicate);
 	}
 
 	@Override

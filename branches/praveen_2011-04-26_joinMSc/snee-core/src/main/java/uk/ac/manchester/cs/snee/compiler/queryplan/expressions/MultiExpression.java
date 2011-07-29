@@ -59,6 +59,8 @@ public class MultiExpression implements Expression {
 	 * A multi-expression can only be a constant if all its parts are constants
 	 */
 	private boolean isConstant = false;
+	
+	private boolean isJoinCondition = false;
 
 	/**
 	 * Constuctor.
@@ -75,8 +77,47 @@ public class MultiExpression implements Expression {
 		this.multiType = type;
 		_booleanType = booleanType;
 		calculateIsConstant();
+		calculateIsJoin();
 	}
 	
+	private void calculateIsJoin() {
+		switch (multiType) {
+		case AND:
+		case OR:
+			// Check sub-expressions
+				isJoinCondition = expressions[0].isJoinCondition();
+			break;
+		case EQUALS:
+		case GREATERTHAN:
+		case GREATERTHANEQUALS:
+		case LESSTHAN:
+		case LESSTHANEQUALS:
+		case NOTEQUALS:
+			// Check sources of attributes			
+			Expression exp1 = expressions[0];
+			Expression exp2 = expressions[1];
+			if (exp1.isConstant() || exp2.isConstant()) {
+				// One of the expressions is a constant value
+				isJoinCondition = false;
+			} else {
+				String extent1 = 
+					exp1.getRequiredAttributes().get(0).getExtentName();
+				String extent2 = 
+					exp2.getRequiredAttributes().get(0).getExtentName();
+				if (extent1.equalsIgnoreCase(extent2)) {
+					// Comparison of attributes from same extent
+					isJoinCondition = false;
+				} else {
+					isJoinCondition = true;
+				}
+			}
+			break;
+		default:
+			// All other cases are false be default, no action needed
+			break;
+		}
+	}
+
 	private void calculateIsConstant() {
 		boolean result = true;
 		for (Expression exp : expressions) {
@@ -494,6 +535,16 @@ public class MultiExpression implements Expression {
 	@Override
 	public void setIsConstant(boolean isConstant) {
 		this.isConstant = isConstant;
+	}
+
+	@Override
+	public boolean isJoinCondition() {
+		return isJoinCondition;
+	}
+
+	@Override
+	public void setIsJoinCondition(boolean isJoinCondition) {
+		this.isJoinCondition = isJoinCondition;
 	}
 
 }

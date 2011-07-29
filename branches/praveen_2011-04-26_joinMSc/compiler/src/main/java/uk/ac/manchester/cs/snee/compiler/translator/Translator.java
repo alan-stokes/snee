@@ -693,9 +693,10 @@ public class Translator {
 		//Source Name - operator map
 		temp = null;
 		LogicalOperator mainJoin = null;
-		HashMap<String, LogicalOperator[]> sourceOperatorMap = getSourceOperatorsMap(operators);
-		for (Map.Entry<String, LogicalOperator[]> ipMap : sourceOperatorMap
-				.entrySet()) {
+		Map<String, LogicalOperator[]> sourceOperatorMap = 
+			getSourceOperatorsMap(operators);
+		for (Map.Entry<String, LogicalOperator[]> ipMap : 
+				sourceOperatorMap.entrySet()) {
 			LogicalOperator[] operatorGroup = ipMap.getValue();
 			for (int i = 0; i < operatorGroup.length; i++) {
 				if (temp == null) {
