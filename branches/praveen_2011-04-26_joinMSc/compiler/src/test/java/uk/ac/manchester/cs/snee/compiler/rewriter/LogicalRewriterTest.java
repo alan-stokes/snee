@@ -1186,5 +1186,302 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		verifyAll();
 	}
 
-	//FIXME: Write tests for multiple joins
+	/**
+	 * Test query
+	 * Receive -> window -> 
+	 * Receive -> window ->
+	 * join1 -> 
+	 * Receive -> window ->
+	 * join2 -> selectJoin1 -> selectJoin2 -> deliver
+	 * one select moves below join to left child
+	 * @throws SourceMetadataException 
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
+	 * @throws AssertionError 
+	 */
+	@Test
+	public void testPushSelectionDown_multiJoinSelectQuery1()
+	throws SchemaMetadataException, TypeMappingException, 
+	SourceMetadataException, OptimizationException, AssertionError, 
+	SNEEConfigurationException {
+		
+		ExtentMetadata mockExtent1 = createMock(ExtentMetadata.class);
+		ExtentMetadata mockExtent2 = createMock(ExtentMetadata.class);
+		ExtentMetadata mockExtent3 = createMock(ExtentMetadata.class);
+		StreamingSourceMetadataAbstract mockSource = 
+			createMock(StreamingSourceMetadataAbstract.class);
+		Attribute mockAttribute = createMock(Attribute.class);
+		Attribute mockAttribute1 = createMock(Attribute.class); 
+		Attribute mockAttribute2 = createMock(Attribute.class); 
+		AttributeType mockType = createMock(AttributeType.class);
+		
+		expect(mockAttribute.getAttributeSchemaName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute.getAttributeDisplayName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute.getExtentName())
+			.andReturn("stream1").anyTimes();
+		expect(mockAttribute.isConstant()).andReturn(false).anyTimes();
+		expect(mockAttribute.getType()).andReturn(mockType).anyTimes();
+		
+		expect(mockAttribute1.getAttributeSchemaName())
+			.andReturn("timestamp").anyTimes();
+		expect(mockAttribute1.getAttributeDisplayName())
+			.andReturn("timestamp").anyTimes();
+		expect(mockAttribute1.getExtentName())
+			.andReturn("stream2").anyTimes();
+		expect(mockAttribute1.isConstant()).andReturn(false).anyTimes();
+		expect(mockAttribute1.getType()).andReturn(mockType).anyTimes();
+
+		expect(mockAttribute2.getAttributeSchemaName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute2.getAttributeDisplayName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute2.getExtentName())
+			.andReturn("stream3").anyTimes();
+		expect(mockAttribute2.isConstant()).andReturn(false).anyTimes();
+		expect(mockAttribute2.getType()).andReturn(mockType).anyTimes();
+		
+		List<Attribute> attrList = new ArrayList<Attribute>();
+		attrList.add(mockAttribute);
+		List<Attribute> attrList1 = new ArrayList<Attribute>();
+		attrList1.add(mockAttribute1);
+		List<Attribute> attrList2 = new ArrayList<Attribute>();
+		attrList2.add(mockAttribute2);
+		
+		expect(mockExtent1.getExtentName()).andReturn("stream1").anyTimes();
+		expect(mockExtent1.getAttributes()).andReturn(attrList).anyTimes();
+		expect(mockExtent1.getCardinality()).andReturn(1).anyTimes();
+
+		expect(mockExtent2.getExtentName()).andReturn("stream2").anyTimes();
+		expect(mockExtent2.getAttributes()).andReturn(attrList1).anyTimes();
+		expect(mockExtent2.getCardinality()).andReturn(1).anyTimes();
+
+		expect(mockExtent3.getExtentName()).andReturn("stream3").anyTimes();
+		expect(mockExtent3.getAttributes()).andReturn(attrList1).anyTimes();
+		expect(mockExtent3.getCardinality()).andReturn(1).anyTimes();
+
+		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
+		expect(mockSource.getSourceType())
+			.andReturn(SourceType.PULL_STREAM_SERVICE).times(3);
+		expect(mockSource.getRate("stream1")).andReturn(2.0);
+		expect(mockSource.getRate("stream2")).andReturn(1.0);
+		expect(mockSource.getRate("stream3")).andReturn(0.1);
+
+		expect(mockType.getName()).andReturn("integer").anyTimes();
+
+		replayAll();
+
+		LogicalOperator receiveOp1 = 
+			new ReceiveOperator(mockExtent1, mockSource, boolType);
+		LogicalOperator windowOp1 = 
+			new WindowOperator(0, 0, true, 0, 0, receiveOp1, boolType);
+		LogicalOperator receiveOp2 = 
+			new ReceiveOperator(mockExtent2, mockSource, boolType);
+		LogicalOperator windowOp2 = 
+			new WindowOperator(0, 0, true, 0, 0, receiveOp2, boolType);
+		LogicalOperator joinOp1 = 
+			new JoinOperator(windowOp1, windowOp2, boolType);		
+		LogicalOperator receiveOp3 = 
+			new ReceiveOperator(mockExtent3, mockSource, boolType);
+		LogicalOperator windowOp3 = 
+			new WindowOperator(0, 0, true, 0, 0, receiveOp3, boolType);
+		LogicalOperator joinOp2 = 
+			new JoinOperator(joinOp1, windowOp3, boolType);		
+		Expression[] attributes = new Expression[2];
+		attributes[0] = new DataAttribute(mockAttribute);
+		attributes[1] = new DataAttribute(mockAttribute1);
+		Expression joinPredicate1 = 
+			new MultiExpression(attributes, MultiType.EQUALS, boolType);
+		LogicalOperator selectOp1 = 
+			new SelectOperator(joinPredicate1, joinOp2, boolType);
+
+		Expression[] attributes2 = new Expression[2];
+		attributes2[0] = new DataAttribute(mockAttribute);
+		attributes2[1] = new DataAttribute(mockAttribute2);
+		Expression joinPredicate2 = 
+			new MultiExpression(attributes2, MultiType.EQUALS, boolType);
+		LogicalOperator selectOp3 = 
+			new SelectOperator(joinPredicate2, selectOp1, boolType);
+
+		Expression[] expressions = new Expression[2];
+		expressions[0] = new DataAttribute(mockAttribute);
+		expressions[1] = new IntLiteral(42, types.getType("integer"));
+		Expression selectPredicate = new MultiExpression(expressions, MultiType.LESSTHANEQUALS, boolType);
+		LogicalOperator selectOp2 = 
+			new SelectOperator(selectPredicate, selectOp3, boolType);
+		LogicalOperator deliverOp = 
+			new DeliverOperator(selectOp2, boolType);
+
+		laf = new LAF(deliverOp, "multi-join-time-select1");
+		rewriter.pushSelectionDown(laf);
+		Iterator<LogicalOperator> opIt = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		testOperator(opIt, "RECEIVE");
+		testOperator(opIt, "SELECT");
+		testOperator(opIt, "WINDOW");
+		testOperator(opIt, "RECEIVE");
+		testOperator(opIt, "WINDOW");
+		testOperator(opIt, "JOIN");
+		testOperator(opIt, "SELECT");
+		testOperator(opIt, "RECEIVE");
+		testOperator(opIt, "WINDOW");
+		testOperator(opIt, "JOIN");
+		testOperator(opIt, "SELECT");
+		testOperator(opIt, "DELIVER");
+		verifyAll();
+	}
+
+	/**
+	 * Test query
+	 * Test query
+	 * Receive -> window -> 
+	 * Receive -> window ->
+	 * join1 -> 
+	 * Receive -> window ->
+	 * join2 -> selectJoin2 -> selectJoin1 -> deliver
+	 * one select moves below join to left child
+	 * @throws SourceMetadataException 
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
+	 * @throws AssertionError 
+	 */
+	@Test
+	public void testPushSelectionDown_multiJoinSelectQuery2()
+	throws SchemaMetadataException, TypeMappingException, 
+	SourceMetadataException, OptimizationException, AssertionError, 
+	SNEEConfigurationException {
+		
+		ExtentMetadata mockExtent1 = createMock(ExtentMetadata.class);
+		ExtentMetadata mockExtent2 = createMock(ExtentMetadata.class);
+		ExtentMetadata mockExtent3 = createMock(ExtentMetadata.class);
+		StreamingSourceMetadataAbstract mockSource = 
+			createMock(StreamingSourceMetadataAbstract.class);
+		Attribute mockAttribute = createMock(Attribute.class);
+		Attribute mockAttribute1 = createMock(Attribute.class); 
+		Attribute mockAttribute2 = createMock(Attribute.class); 
+		AttributeType mockType = createMock(AttributeType.class);
+		
+		expect(mockAttribute.getAttributeSchemaName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute.getAttributeDisplayName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute.getExtentName())
+			.andReturn("stream1").anyTimes();
+		expect(mockAttribute.isConstant()).andReturn(false).anyTimes();
+		expect(mockAttribute.getType()).andReturn(mockType).anyTimes();
+		
+		expect(mockAttribute1.getAttributeSchemaName())
+			.andReturn("timestamp").anyTimes();
+		expect(mockAttribute1.getAttributeDisplayName())
+			.andReturn("timestamp").anyTimes();
+		expect(mockAttribute1.getExtentName())
+			.andReturn("stream2").anyTimes();
+		expect(mockAttribute1.isConstant()).andReturn(false).anyTimes();
+		expect(mockAttribute1.getType()).andReturn(mockType).anyTimes();
+
+		expect(mockAttribute2.getAttributeSchemaName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute2.getAttributeDisplayName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute2.getExtentName())
+			.andReturn("stream3").anyTimes();
+		expect(mockAttribute2.isConstant()).andReturn(false).anyTimes();
+		expect(mockAttribute2.getType()).andReturn(mockType).anyTimes();
+		
+		List<Attribute> attrList = new ArrayList<Attribute>();
+		attrList.add(mockAttribute);
+		List<Attribute> attrList1 = new ArrayList<Attribute>();
+		attrList1.add(mockAttribute1);
+		List<Attribute> attrList2 = new ArrayList<Attribute>();
+		attrList2.add(mockAttribute2);
+		
+		expect(mockExtent1.getExtentName()).andReturn("stream1").anyTimes();
+		expect(mockExtent1.getAttributes()).andReturn(attrList).anyTimes();
+		expect(mockExtent1.getCardinality()).andReturn(1).anyTimes();
+
+		expect(mockExtent2.getExtentName()).andReturn("stream2").anyTimes();
+		expect(mockExtent2.getAttributes()).andReturn(attrList1).anyTimes();
+		expect(mockExtent2.getCardinality()).andReturn(1).anyTimes();
+
+		expect(mockExtent3.getExtentName()).andReturn("stream3").anyTimes();
+		expect(mockExtent3.getAttributes()).andReturn(attrList1).anyTimes();
+		expect(mockExtent3.getCardinality()).andReturn(1).anyTimes();
+
+		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
+		expect(mockSource.getSourceType())
+			.andReturn(SourceType.PULL_STREAM_SERVICE).times(3);
+		expect(mockSource.getRate("stream1")).andReturn(2.0);
+		expect(mockSource.getRate("stream2")).andReturn(1.0);
+		expect(mockSource.getRate("stream3")).andReturn(0.1);
+
+		expect(mockType.getName()).andReturn("integer").anyTimes();
+
+		replayAll();
+
+		LogicalOperator receiveOp1 = 
+			new ReceiveOperator(mockExtent1, mockSource, boolType);
+		LogicalOperator windowOp1 = 
+			new WindowOperator(0, 0, true, 0, 0, receiveOp1, boolType);
+		LogicalOperator receiveOp2 = 
+			new ReceiveOperator(mockExtent2, mockSource, boolType);
+		LogicalOperator windowOp2 = 
+			new WindowOperator(0, 0, true, 0, 0, receiveOp2, boolType);
+		LogicalOperator joinOp1 = 
+			new JoinOperator(windowOp1, windowOp2, boolType);		
+		LogicalOperator receiveOp3 = 
+			new ReceiveOperator(mockExtent3, mockSource, boolType);
+		LogicalOperator windowOp3 = 
+			new WindowOperator(0, 0, true, 0, 0, receiveOp3, boolType);
+		LogicalOperator joinOp2 = 
+			new JoinOperator(joinOp1, windowOp3, boolType);		
+
+		Expression[] attributes2 = new Expression[2];
+		attributes2[0] = new DataAttribute(mockAttribute);
+		attributes2[1] = new DataAttribute(mockAttribute2);
+		Expression joinPredicate2 = 
+			new MultiExpression(attributes2, MultiType.EQUALS, boolType);
+		LogicalOperator selectOp3 = 
+			new SelectOperator(joinPredicate2, joinOp2, boolType);
+		
+		Expression[] attributes = new Expression[2];
+		attributes[0] = new DataAttribute(mockAttribute);
+		attributes[1] = new DataAttribute(mockAttribute1);
+		Expression joinPredicate1 = 
+			new MultiExpression(attributes, MultiType.EQUALS, boolType);
+		LogicalOperator selectOp1 = 
+			new SelectOperator(joinPredicate1, selectOp3, boolType);
+
+		Expression[] expressions = new Expression[2];
+		expressions[0] = new DataAttribute(mockAttribute);
+		expressions[1] = new IntLiteral(42, types.getType("integer"));
+		Expression selectPredicate = new MultiExpression(expressions, MultiType.LESSTHANEQUALS, boolType);
+		LogicalOperator selectOp2 = 
+			new SelectOperator(selectPredicate, selectOp1, boolType);
+		LogicalOperator deliverOp = 
+			new DeliverOperator(selectOp2, boolType);
+
+		laf = new LAF(deliverOp, "multi-join-time-select2");
+		rewriter.pushSelectionDown(laf);
+		Iterator<LogicalOperator> opIt = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		testOperator(opIt, "RECEIVE");
+		testOperator(opIt, "SELECT");
+		testOperator(opIt, "WINDOW");
+		testOperator(opIt, "RECEIVE");
+		testOperator(opIt, "WINDOW");
+		testOperator(opIt, "JOIN");
+		testOperator(opIt, "SELECT");
+		testOperator(opIt, "RECEIVE");
+		testOperator(opIt, "WINDOW");
+		testOperator(opIt, "JOIN");
+		testOperator(opIt, "SELECT");
+		testOperator(opIt, "DELIVER");
+		verifyAll();
+	}
+
 }

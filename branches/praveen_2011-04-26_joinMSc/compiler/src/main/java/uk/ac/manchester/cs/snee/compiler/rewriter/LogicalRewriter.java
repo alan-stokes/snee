@@ -9,8 +9,11 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.LAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -174,11 +177,6 @@ public class LogicalRewriter {
 						} else {
 							reachedBottom = true;
 						}
-					} else if (childOp instanceof ProjectOperator) {
-						if (logger.isTraceEnabled()) {
-							logger.trace("Move SELECT below PROJECT");
-						}
-						swapOperators(op, childOp);
 					} else if (childOp instanceof SelectOperator) {
 						if (logger.isTraceEnabled()) {
 							logger.trace("Attempt to move SELECT below SELECT");
@@ -194,11 +192,11 @@ public class LogicalRewriter {
 							}						
 							// Move selection below join condition
 							swapOperators(op, childOp);
-							//					} else if (!predicate.isJoinCondition() && 
-							//							!childPredicate.isJoinCondition()) {
-							//						// Combine if both for same extent
 						} else {
-							reachedBottom = true;
+							if (logger.isTraceEnabled()) {
+								logger.trace("Move JOIN-SELECT below JOIN-SELECT");
+							}													
+							swapOperators(op, childOp);
 						}
 					} else if (childOp instanceof JoinOperator) {
 						if (logger.isTraceEnabled()) {
@@ -208,57 +206,17 @@ public class LogicalRewriter {
 						JoinOperator joinOp = (JoinOperator) childOp;
 						Expression predicate = selectOp.getPredicate();
 						if (predicate.isJoinCondition()) {
-							//FIXME: Check if we can move below this join instance
-							if (logger.isTraceEnabled()) {
-								logger.trace("Attempt to move JOIN-SELECT below JOIN");
-							}
-							reachedBottom = true;
+							reachedBottom = moveJoinSelectConditionBelowJoin(
+									op, joinOp, predicate);
 						} else {
-							if (logger.isTraceEnabled()) {
-								logger.trace("Move SELECT below JOIN");
-							}
-							String extentName = predicate.
-								getRequiredAttributes().get(0).getExtentName();
-							LogicalOperator leftOp = joinOp.getInput(0);
-							List<Attribute> leftAttrs = leftOp.getAttributes();
-							boolean foundLeft = false;
-							for (Attribute attr : leftAttrs) {
-								String leftExtentName = attr.getExtentName();
-								if (leftExtentName.equalsIgnoreCase(extentName)) {
-									foundLeft = true;
-									break;
-								}
-							}
-							if (foundLeft) {
-								if (logger.isTraceEnabled()) {
-									logger.trace("Move SELECT below left child");
-								}	
-								// Connect parent of select op to join op 
-								LogicalOperator parentOp = op.getParent();
-								parentOp.setInput(childOp, 0);
-								// Get left child
-								LogicalOperator grandChildOp = childOp.getInput(0);
-								// Set left child
-								childOp.setInput(op, 0);
-								op.setInput(grandChildOp, 0);
-								op.setOutput(childOp, 0);
-								childOp.setOutput(parentOp, 0);
-								grandChildOp.setOutput(op, 0);
-							} else {
-								if (logger.isTraceEnabled()) {
-									logger.trace("Move SELECT below right child");
-								}																
-								// Connect parent of select op to join op 
-								LogicalOperator parentOp = op.getParent();
-								parentOp.setInput(childOp, 0);
-								LogicalOperator grandChildOp = childOp.getInput(1);
-								childOp.setInput(op, 1);
-								op.setInput(grandChildOp, 0);
-								op.setOutput(childOp, 0);
-								childOp.setOutput(parentOp, 0);
-								grandChildOp.setOutput(op, 0);
-							}
+							moveSelectBelowJoin(op, joinOp, predicate);
 						}
+					} else { //if (childOp instanceof ProjectOperator) {
+						if (logger.isTraceEnabled()) {
+							logger.trace("Move SELECT below " + 
+									childOp.getOperatorName());
+						}
+						swapOperators(op, childOp);
 					}
 				}
 			}
@@ -268,6 +226,99 @@ public class LogicalRewriter {
 		}
 	}
 
+	private boolean moveJoinSelectConditionBelowJoin(LogicalOperator op,
+			JoinOperator joinOp, Expression predicate) {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER moveJoinSelectConditionBelowJoin() with" +
+					"\n\tSELECT op " + op + "\n\tJOIN op " + joinOp);
+		}
+		boolean reachedBottom = true;
+		String extent1 = 
+			predicate.getRequiredAttributes().get(0).getExtentName();
+		String extent2 = 
+			predicate.getRequiredAttributes().get(1).getExtentName();
+		List<Node> inputsOperators = joinOp.getInputsList();
+		for (int i = 0; i < inputsOperators.size(); i++) {
+			LogicalOperator joinChildOp = 
+				(LogicalOperator) inputsOperators.get(i);
+			List<Attribute> attributes = joinChildOp.getAttributes();
+			boolean found1 = false;
+			boolean found2 = false;
+			for (Attribute attr : attributes) {
+				if (attr.getExtentName().equalsIgnoreCase(extent1)) {
+					found1 = true;
+				}
+				if (attr.getExtentName().equalsIgnoreCase(extent2)) {
+					found2 = true;
+				}
+			}
+			if (found1 && found2) {
+				//Need to swap with join child
+				swapWithJoinChildOperator(op, joinOp, i);
+				reachedBottom = false;
+			}
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN moveJoinSelectConditionBelowJoin() " +
+					"reachedBottom=" + reachedBottom);
+		}
+		return reachedBottom;
+	}
+
+	private void moveSelectBelowJoin(LogicalOperator op,
+			JoinOperator joinOp, Expression predicate) {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER moveSelectBelowJoin() with" +
+					"\n\tSELECT op " + op + "\n\tJOIN op " + joinOp);
+		}
+		String extentName = predicate.
+			getRequiredAttributes().get(0).getExtentName();
+		LogicalOperator leftOp = joinOp.getInput(0);
+		List<Attribute> leftAttrs = leftOp.getAttributes();
+		boolean foundLeft = false;
+		for (Attribute attr : leftAttrs) {
+			String leftExtentName = attr.getExtentName();
+			if (leftExtentName.equalsIgnoreCase(extentName)) {
+				foundLeft = true;
+				break;
+			}
+		}
+		if (foundLeft) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Move SELECT below left child");
+			}	
+			swapWithJoinChildOperator(op, joinOp, 0);
+		} else {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Move SELECT below right child");
+			}	
+			swapWithJoinChildOperator(op, joinOp, 1);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN moveSelectBelowJoin()");
+		}
+	}
+
+	private void swapWithJoinChildOperator(LogicalOperator op, 
+			LogicalOperator joinOp, int inputPos) {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER swapWithJoinChildOperator() with " +
+					op.toString() + " and " + joinOp.toString() + 
+					" position=" + inputPos);
+		}
+		LogicalOperator parentOp = op.getParent();
+		parentOp.setInput(joinOp, 0);
+		LogicalOperator grandChildOp = joinOp.getInput(inputPos);
+		joinOp.setInput(op, inputPos);
+		op.setInput(grandChildOp, 0);
+		op.setOutput(joinOp, 0);
+		joinOp.setOutput(parentOp, 0);
+		grandChildOp.setOutput(op, 0);		
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN swapWithJoinChildOperator()");
+		}		
+	}
+	
 	private void swapOperators(LogicalOperator op, LogicalOperator childOp) {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER swapOperators() with " +

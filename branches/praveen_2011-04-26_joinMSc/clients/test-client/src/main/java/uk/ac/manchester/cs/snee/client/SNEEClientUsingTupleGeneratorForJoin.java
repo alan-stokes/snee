@@ -54,8 +54,11 @@ public class SNEEClientUsingTupleGeneratorForJoin extends SNEEClient {
 			//XXX: Use default query
 			//query = "SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h " +
 			//"WHERE p.intattr = h.Tz;";
-			query = "SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h " +
-			"WHERE p.intattr = h.Tz AND p.intattr <= 42;";
+			query = "SELECT p.intattr, h.Tz, p.decattr, h.tp " +
+					"FROM PushStream[NOW] p, HerneBay_Tide[NOW] h, " +
+					"HerneBay_Met[NOW] m " +
+					"WHERE p.intattr = h.Tz AND p.intattr <= 42 AND " +
+					"m.TAir <= h.Tz;";
 			//"WHERE p.intattr = h.Tz AND p.decattr <= h.tp ;";
 			//query = "SELECT p.intattr, h.Tz, p.timestamp, h.timestamp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h " +
 				//	"WHERE p.intattr = h.Tz AND p.timestamp <= h.timestamp;";
