@@ -395,8 +395,8 @@ public class TinyOS_SNCB implements SNCB {
 						// start/stop mechanism does not guarantee
 						// synchronisation. It was chosen as a trade-off
 						// between code size and accuracy.
-						pause();
-						resume();
+						//pause();
+						//resume();
 					} catch (Exception e) {
 						// General fail case
 						System.out.println("Execution failed. See logs for detail.");
