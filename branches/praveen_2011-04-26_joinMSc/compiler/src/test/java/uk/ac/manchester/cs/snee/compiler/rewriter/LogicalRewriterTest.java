@@ -35,6 +35,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
 import uk.ac.manchester.cs.snee.compiler.translator.TranslatorTest;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -715,8 +716,33 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
 		StreamingSourceMetadataAbstract mockSource = 
 			createMock(StreamingSourceMetadataAbstract.class);
-		MultiExpression mockPredicate = createMock(MultiExpression.class);
+		
+		Attribute mockAttribute = createMock(Attribute.class);
+		Attribute mockAttribute1 = createMock(Attribute.class); 
+		AttributeType mockIntegerType = createMock(AttributeType.class);
+		AttributeType mockStringType = createMock(AttributeType.class);
+		
+		expect(mockAttribute.getAttributeSchemaName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute.getAttributeDisplayName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute.getExtentName())
+			.andReturn("streamName").anyTimes();
+		expect(mockAttribute.getType()).andReturn(mockIntegerType).anyTimes();
+		expect(mockIntegerType.getName()).andReturn("integer").anyTimes();
+		
+		expect(mockAttribute1.getAttributeSchemaName())
+			.andReturn("stringColumn").anyTimes();
+		expect(mockAttribute1.getAttributeDisplayName())
+			.andReturn("stringColumn").anyTimes();
+		expect(mockAttribute1.getExtentName())
+			.andReturn("streamName").anyTimes();
+		expect(mockAttribute1.getType()).andReturn(mockStringType).anyTimes();
+		expect(mockStringType.getName()).andReturn("string").anyTimes();
+
 		List<Attribute> attrList = new ArrayList<Attribute>();
+		attrList.add(mockAttribute);
+		attrList.add(mockAttribute1);		
 		
 		expect(mockExtent.getExtentName()).andReturn("streamName").anyTimes();
 		expect(mockExtent.getAttributes()).andReturn(attrList);
@@ -726,20 +752,26 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		expect(mockSource.getSourceType()).andReturn(SourceType.PULL_STREAM_SERVICE);
 		expect(mockSource.getRate("streamName")).andReturn(2.0);
 		
-		expect(mockPredicate.getType()).andReturn(boolType).times(4);
-		expect(mockPredicate.combinePredicates(mockPredicate, mockPredicate))
-			.andReturn(mockPredicate).anyTimes();
-		expect(mockPredicate.getMultiType())
-			.andReturn(MultiType.GREATERTHAN).anyTimes();
-		expect(mockPredicate.isJoinCondition()).andReturn(false).anyTimes();
 		replayAll();
+
+		Expression[] expressions = new Expression[2];
+		expressions[0] = new DataAttribute(mockAttribute);
+		expressions[1] = new IntLiteral(42, types.getType("integer"));
+		Expression selectPredicate1 = 
+			new MultiExpression(expressions, MultiType.LESSTHANEQUALS, boolType);
+
+		Expression[] expressions2 = new Expression[2];
+		expressions2[0] = new DataAttribute(mockAttribute1);
+		expressions2[1] = new StringLiteral("something", types.getType("string"));
+		Expression selectPredicate2 = 
+			new MultiExpression(expressions2, MultiType.EQUALS, boolType);
 
 		LogicalOperator receiveOp = 
 			new ReceiveOperator(mockExtent, mockSource, boolType);
 		LogicalOperator selectOp1 = 
-			new SelectOperator(mockPredicate, receiveOp, boolType);
+			new SelectOperator(selectPredicate1, receiveOp, boolType);
 		LogicalOperator selectOp2 = 
-			new SelectOperator(mockPredicate, selectOp1, boolType);
+			new SelectOperator(selectPredicate2, selectOp1, boolType);
 		LogicalOperator deliverOp = 
 			new DeliverOperator(selectOp2, boolType);
 
