@@ -59,7 +59,10 @@ public class ProjectOperator extends PredicateOperator {
 		setOperatorDataType(input.getOperatorDataType());
 		this.setOperatorSourceType(input.getOperatorSourceType());
 		this.setSourceRate(input.getSourceRate());
-		setParamStr(expressions.toString());
+	}
+
+	public String getParamStr() {
+		return this.getExpressions().toString();
 	}
 
 //	/** 

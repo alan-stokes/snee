@@ -35,14 +35,15 @@ public class ExchangeOperator extends LogicalOperatorImpl {
 		//some other intelligent mechanism like say from a property
 		//file or dynamic configurations.
 		setQueueScanInterval(new Duration(10));
-		this.setParamStr("");
-		
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public List<Attribute> getAttributes() {
 		return super.defaultGetAttributes();
+	}
+
+	public String getParamStr() {
+		return "";
 	}
 
 	@Override

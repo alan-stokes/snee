@@ -46,6 +46,9 @@ import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -254,8 +257,17 @@ public class AcquireOperator extends InputOperator {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Combine acquire and select=" + boolSetting);
 		}
-		if (boolSetting) {			
-			setPredicate(predicate);
+		if (boolSetting) {	
+			Expression myPredicate = this.getPredicate();
+			if (myPredicate instanceof NoPredicate) {
+				setPredicate(predicate);
+			} else {
+				Expression[] expArray = new Expression[2];
+				expArray[0] = myPredicate;
+				expArray[1] = predicate;
+				setPredicate(new MultiExpression(expArray, MultiType.AND, 
+						_boolType));
+			}
 			if (logger.isDebugEnabled()) {
 				logger.debug("RETURN pushSelectionIntoLeafOp() with true");
 			}
@@ -280,6 +292,14 @@ public class AcquireOperator extends InputOperator {
 	throws SchemaMetadataException, TypeMappingException {
 		assert (acquiredAttributes != null);
 		return acquiredAttributes;
+	}
+
+	public String getParamStr() {
+		return this.extentName + 
+		" (cardinality=" + getCardinality(null) +
+		" source=" + this.getSource().getSourceName() + ")\n " + 
+		getPredicate() + "\n" +
+		this.getExpressions().toString();
 	}
 
 }

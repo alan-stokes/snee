@@ -85,7 +85,6 @@ public class SelectOperator extends LogicalOperatorImpl {
 		setChildren(new LogicalOperator[] {inputOperator});
 
 		setPredicate(predicate);
-		this.setParamStr(getPredicate().toString());
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SelectOperator() " + this);
 	}  
@@ -163,20 +162,19 @@ public class SelectOperator extends LogicalOperatorImpl {
 	throws SchemaMetadataException, AssertionError, TypeMappingException,
 	SNEEConfigurationException 
 	{
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER combineSelects() with " + predicate);
+		}
 		boolean result = false;
 		assert(predicate instanceof MultiExpression);
 		MultiExpression thePredicate = (MultiExpression)predicate;
 		assert(thePredicate.getMultiType().isBooleanDataType());
 		Expression oldPredicate = this.getPredicate();
 		if (oldPredicate instanceof NoPredicate) {
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("Instance of NoPredicate");
-			if (this.getInput(0).pushSelectIntoLeafOp(predicate))
-				result = true;
-			else
-				result = checkAndSetPredicate(predicate);
+			}
+			result = checkAndSetPredicate(predicate);
 		} else if (oldPredicate instanceof MultiExpression) {
 			if (logger.isTraceEnabled())
 				logger.trace("Instance of MultiExpression");
@@ -185,24 +183,15 @@ public class SelectOperator extends LogicalOperatorImpl {
 			Expression combined = 
 				oldPredicate2.combinePredicates(oldPredicate2, 
 						thePredicate);
-			if (this.getInput(0).pushSelectIntoLeafOp(combined)) {
-				setPredicate (new NoPredicate());
-				result = true;
-			} else {
-				if (this.getInput(0).pushSelectIntoLeafOp(predicate)) 
-					result = true;
-				else if (this.getInput(0).pushSelectIntoLeafOp(oldPredicate)) {
-					result = checkAndSetPredicate(predicate);
-				} else
-					result = false;		 
-			}
+			result = checkAndSetPredicate(combined);
 		} else {
 			String message = "Unexpected Predicate type";
 			logger.warn(message);
 			throw new AssertionError(message);
 		}
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN combineSelects() with " + result);
+		}
 		return result;
 	 }
 

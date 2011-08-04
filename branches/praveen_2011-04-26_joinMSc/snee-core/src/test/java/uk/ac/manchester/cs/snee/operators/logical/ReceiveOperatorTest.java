@@ -165,10 +165,10 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 				mockSource, 
 				types.getType("boolean"));
 		String extentMetadata = op.toString();
-		System.out.println(extentMetadata);
+//		System.out.println(extentMetadata);
 		assertTrue(extentMetadata.equals(
 				"TYPE: stream   OPERATOR: RECEIVE " +
-		"(Name (cardinality=1 source=sourceName ) - cardinality: 1"));
+		"(Name (cardinality=1 source=sourceName)\n TRUE ) - cardinality: 1"));
 		verifyAll();
 	}
 	

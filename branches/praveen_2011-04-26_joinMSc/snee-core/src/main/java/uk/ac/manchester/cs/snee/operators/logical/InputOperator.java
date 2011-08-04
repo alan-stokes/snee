@@ -64,7 +64,6 @@ implements LogicalOperator {
 		extentName = extentMetadata.getExtentName();
 		this.source = source;
 		addMetadataInfo(extentMetadata);
-		generateAndSetParamStr();
 	}
 	
 	/**
@@ -101,10 +100,10 @@ implements LogicalOperator {
 	 * Generates the parameter string that is used when displaying
 	 * the query plan as a graph.
 	 */
-	private void generateAndSetParamStr() {
-		this.setParamStr(this.extentName + 
+	public String getParamStr() {
+		return this.extentName + 
 				" (cardinality=" + getCardinality(null) +
-				" source=" + source.getSourceName());
+				" source=" + source.getSourceName() + ")\n " + getPredicate();
 	} 
 
 	/* (non-Javadoc)

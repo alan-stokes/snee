@@ -132,7 +132,6 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 		/* This is overridden when the 
 		 * child operators are a STREAM and RELATION */
 		setOperatorDataType(OperatorDataType.WINDOWS);
-		this.setParamStr("");
 
 		setChildren(left, right);
 		setOperatorSourceType(getOperatorSourceType(left, right));

@@ -68,18 +68,18 @@ public abstract class PredicateOperator extends LogicalOperatorImpl {
 		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
 		this.setSourceRate(inputOperator.getSourceRate());
 	}
-
-	/**
-	 * Makes a copy of the operator using a new opCount.
-	 * @param model Operator to get internal data from.
-	 * @param newID boolean flag expected to be true. 
-	 */
-	protected PredicateOperator(PredicateOperator model, 
-			boolean newID) {
-		super(model, newID);
-		this.expressions = model.expressions;
-		this.attributes = model.attributes;
-	}
+//
+//	/**
+//	 * Makes a copy of the operator using a new opCount.
+//	 * @param model Operator to get internal data from.
+//	 * @param newID boolean flag expected to be true. 
+//	 */
+//	protected PredicateOperator(PredicateOperator model, 
+//			boolean newID) {
+//		super(model, newID);
+//		this.expressions = model.expressions;
+//		this.attributes = model.attributes;
+//	}
 
 	/**
 	 * Constructor that creates a new operator
@@ -107,8 +107,8 @@ public abstract class PredicateOperator extends LogicalOperatorImpl {
 	public List<Attribute> getAttributes() {
 		return attributes;
 	}
-
-    /** {@inheritDoc} */
+	
+	/** {@inheritDoc} */
 	public boolean isLocationSensitive() {
 		return false;
 	}

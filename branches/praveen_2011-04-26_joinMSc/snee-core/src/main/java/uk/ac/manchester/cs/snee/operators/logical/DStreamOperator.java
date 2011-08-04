@@ -82,7 +82,6 @@ implements LogicalOperator {
 		this.setOperatorDataType(OperatorDataType.STREAM);
 		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
 		this.setSourceRate(inputOperator.getSourceRate());
-		this.setParamStr("");
 
 		setChildren(new LogicalOperator[] {inputOperator});
 	}  
@@ -98,6 +97,10 @@ implements LogicalOperator {
 //	protected DStreamOperator(DStreamOperator model) {
 //		super(model);
 //	}  
+
+	public String getParamStr() {
+		return "";
+	}
 
 	/**
 	 * {@inheritDoc}

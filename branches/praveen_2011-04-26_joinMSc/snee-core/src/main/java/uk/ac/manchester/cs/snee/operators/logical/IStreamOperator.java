@@ -82,7 +82,6 @@ implements LogicalOperator {
 		this.setOperatorDataType(OperatorDataType.STREAM);
 		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
 		this.setSourceRate(inputOperator.getSourceRate());
-		this.setParamStr("");
 
 		setChildren(new LogicalOperator[] {inputOperator});
 	}  
@@ -105,6 +104,10 @@ implements LogicalOperator {
 	 */
 	public LogicalOperator getInputOperator() {
 		return super.getInput(0);   
+	}
+
+	public String getParamStr() {
+		return "";
 	}
 
 	/**

@@ -86,7 +86,6 @@ public class DeliverOperator extends LogicalOperatorImpl {
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
 		this.setSourceRate(inputOperator.getSourceRate());
-		this.setParamStr("");
 
 		setChildren(new LogicalOperator[] {inputOperator});
 		if (inputOperator == null) {
@@ -105,6 +104,10 @@ public class DeliverOperator extends LogicalOperatorImpl {
 //	protected DeliverOperator(DeliverOperator model) {
 //		super(model);
 //	}
+
+	public String getParamStr() {
+		return "";
+	}
 
 	/**
 	 * {@inheritDoc}

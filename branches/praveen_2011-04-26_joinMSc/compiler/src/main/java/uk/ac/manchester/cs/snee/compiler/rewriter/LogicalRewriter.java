@@ -119,7 +119,33 @@ public class LogicalRewriter {
 			logger.trace("ENTER pushSelectionDown() with " + laf);
 		}
 		moveSelectClauseDown(laf);
+		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Generating graph image " + laf.getID());
+			}
+//			// Following lines useful for debugging
+//			String lafName = laf.getID();
+//			String newLafName = lafName.replace("LAF", "LAF'-push");
+//			laf.setID(newLafName);
+//			new LAFUtils(laf).generateGraphImage();
+		}
+
 		combineSelections(laf);
+		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Generating graph image " + laf.getID());
+			}
+//			// Following lines useful for debugging
+//			String lafName = laf.getID();
+//			String newLafName = lafName.replace("LAF'-push", "LAF'-combine");
+//			laf.setID(newLafName);
+//			new LAFUtils(laf).generateGraphImage();
+		}
+//		// Following lines useful for debugging
+//		String lafName = laf.getID();
+//		String newLafName = lafName.replace("LAF'-combine", "LAF'-pushFinal");
+//		laf.setID(newLafName);
+
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN pushSelectionDown()");
 		}

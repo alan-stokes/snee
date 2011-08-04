@@ -79,11 +79,6 @@ implements LogicalOperator {
 	 */
 	private OperatorDataType operatorDataType;
 
-	/**
-	 * String representation of operator parameters.
-	 */
-	private String paramStr;
-
 	/** 
 	 * Predicate that this operator is expected to test data against.
 	 */
@@ -133,21 +128,21 @@ implements LogicalOperator {
 //	}
 	
 	//XXX: where do we actually use this constructor?
-	/**
-	 * Makes a copy of the operator using a new opCount.
-	 * @param model Operator to get internal data from.
-	 * @param newID boolean flag expected to be true. 
-	 */
-	protected LogicalOperatorImpl(LogicalOperator model, boolean newID) {
-		super(new Integer(opCount).toString());
-		opCount++;        
-		assert (newID);
-		this.operatorDataType = model.getOperatorDataType();
-		this.operatorSourceType = model.getOperatorSourceType();
-		this.operatorName = model.getOperatorName();
-		this.paramStr = model.getParamStr();
-		this.predicate = model.getPredicate();
-	}
+//	/**
+//	 * Makes a copy of the operator using a new opCount.
+//	 * @param model Operator to get internal data from.
+//	 * @param newID boolean flag expected to be true. 
+//	 */
+//	protected LogicalOperatorImpl(LogicalOperator model, boolean newID) {
+//		super(new Integer(opCount).toString());
+//		opCount++;        
+//		assert (newID);
+//		this.operatorDataType = model.getOperatorDataType();
+//		this.operatorSourceType = model.getOperatorSourceType();
+//		this.operatorName = model.getOperatorName();
+//		this.paramStr = model.getParamStr();
+//		this.predicate = model.getPredicate();
+//	}
 
 	/**
 	 * @return The output operator at index 0.
@@ -279,18 +274,6 @@ implements LogicalOperator {
 		}
 	}
 
-	/** {@inheritDoc} */    
-	public String getParamStr() {
-		return this.paramStr;
-	}
-
-	/**
-	 * @param newParamStr new Value
-	 */
-	protected void setParamStr(String newParamStr) {
-		this.paramStr = newParamStr;
-	}    
-
 	/** {@inheritDoc} 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException */    
@@ -337,6 +320,11 @@ implements LogicalOperator {
 		return expressions;
 	}
 
+	/** {@inheritDoc} */ 
+	public String getParamStr() {
+		return getPredicate().toString();
+	}
+
 	/** {@inheritDoc} */    
 	public Expression getPredicate() {
 		return predicate;
@@ -355,7 +343,6 @@ implements LogicalOperator {
 			if (logger.isTraceEnabled())
 				logger.trace("Instance of NoPredicate");
 			this.predicate = newPredicate;
-			this.paramStr = paramStr + predicate.toString();
 			if (logger.isDebugEnabled())
 				logger.debug("RETURN setPredicate()");
 			return;
@@ -372,7 +359,6 @@ implements LogicalOperator {
 		}
 		if (this.acceptsPredicates()) {
 			this.predicate = newPredicate;
-			this.paramStr = paramStr + predicate.toString();
 		} else {
 			String msg = "Illegal call.";
 			logger.warn(msg);

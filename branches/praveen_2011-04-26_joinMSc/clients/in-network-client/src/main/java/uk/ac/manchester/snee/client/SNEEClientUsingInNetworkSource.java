@@ -41,7 +41,9 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 					"\t\"query duration in seconds\"\n" +
 					"\t\"query parameters file\"\n");
 			//XXX: Use default query
-			query = "SELECT * FROM SeaDefence;";
+//			query = "SELECT * FROM SeaDefence;";
+			query = "SELECT * FROM SeaDefence " +
+					"WHERE seaLevel < 42 AND seaLevel >= 0;";
 //			query = "SELECT seaLevel, \'East\' FROM SeaDefence;";
 			//query = "SELECT avg(seaLevel) FROM SeaDefence;";
 			//query = "SELECT e.seaLevel FROM SeaDefenceEast[NOW] e, SeaDefenceWest[NOW] w WHERE e.seaLevel > w.seaLevel;";

@@ -716,34 +716,15 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
 		StreamingSourceMetadataAbstract mockSource = 
 			createMock(StreamingSourceMetadataAbstract.class);
-		
-		Attribute mockAttribute = createMock(Attribute.class);
-		Attribute mockAttribute1 = createMock(Attribute.class); 
+
 		AttributeType mockIntegerType = createMock(AttributeType.class);
 		AttributeType mockStringType = createMock(AttributeType.class);
 		
-		expect(mockAttribute.getAttributeSchemaName())
-			.andReturn("integerColumn").anyTimes();
-		expect(mockAttribute.getAttributeDisplayName())
-			.andReturn("integerColumn").anyTimes();
-		expect(mockAttribute.getExtentName())
-			.andReturn("streamName").anyTimes();
-		expect(mockAttribute.getType()).andReturn(mockIntegerType).anyTimes();
-		expect(mockIntegerType.getName()).andReturn("integer").anyTimes();
-		
-		expect(mockAttribute1.getAttributeSchemaName())
-			.andReturn("stringColumn").anyTimes();
-		expect(mockAttribute1.getAttributeDisplayName())
-			.andReturn("stringColumn").anyTimes();
-		expect(mockAttribute1.getExtentName())
-			.andReturn("streamName").anyTimes();
-		expect(mockAttribute1.getType()).andReturn(mockStringType).anyTimes();
-		expect(mockStringType.getName()).andReturn("string").anyTimes();
 
-		List<Attribute> attrList = new ArrayList<Attribute>();
-		attrList.add(mockAttribute);
-		attrList.add(mockAttribute1);		
+		expect(mockIntegerType.getName()).andReturn("integer").anyTimes();
+		expect(mockStringType.getName()).andReturn("string").anyTimes();
 		
+		List<Attribute> attrList = new ArrayList<Attribute>();
 		expect(mockExtent.getExtentName()).andReturn("streamName").anyTimes();
 		expect(mockExtent.getAttributes()).andReturn(attrList);
 		expect(mockExtent.getCardinality()).andReturn(1);
@@ -753,16 +734,23 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		expect(mockSource.getRate("streamName")).andReturn(2.0);
 		
 		replayAll();
+		Attribute intAttr = new DataAttribute("streamName", 
+				"integerColumn", mockIntegerType);
+		Attribute stringAttr = new DataAttribute("streamName", 
+				"stringColumn", mockStringType); 
+		
+		attrList.add(intAttr);
+		attrList.add(stringAttr);		
 
 		Expression[] expressions = new Expression[2];
-		expressions[0] = new DataAttribute(mockAttribute);
+		expressions[0] = new DataAttribute(intAttr);
 		expressions[1] = new IntLiteral(42, types.getType("integer"));
 		Expression selectPredicate1 = 
 			new MultiExpression(expressions, MultiType.LESSTHANEQUALS, boolType);
 
 		Expression[] expressions2 = new Expression[2];
-		expressions2[0] = new DataAttribute(mockAttribute1);
-		expressions2[1] = new StringLiteral("something", types.getType("string"));
+		expressions2[0] = new DataAttribute(stringAttr);
+		expressions2[1] = new StringLiteral("\'something\'", types.getType("string"));
 		Expression selectPredicate2 = 
 			new MultiExpression(expressions2, MultiType.EQUALS, boolType);
 

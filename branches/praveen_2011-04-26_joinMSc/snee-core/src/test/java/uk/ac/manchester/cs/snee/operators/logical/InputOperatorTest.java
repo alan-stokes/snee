@@ -93,7 +93,7 @@ public class InputOperatorTest extends EasyMockSupport {
 //		System.out.println(extentMetadata);
 		assertTrue(extentMetadata.equals(
 				"TYPE: relation   OPERATOR: SCAN " +
-		"(Name (cardinality=1 source=extentName ) - cardinality: 1"));
+		"(Name (cardinality=1 source=extentName)\n TRUE ) - cardinality: 1"));
 		verifyAll();
 	}
 

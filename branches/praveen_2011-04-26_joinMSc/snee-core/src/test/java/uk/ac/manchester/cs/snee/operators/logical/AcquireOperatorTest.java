@@ -211,8 +211,8 @@ public class AcquireOperatorTest extends EasyMockSupport {
 		String extentMetadata = op.toString();
 //		System.out.println(extentMetadata);
 		assertTrue(extentMetadata.equals(
-				"TYPE: stream   OPERATOR: ACQUIRE " +
-		"(Name (cardinality=1 source=sourceName ) - cardinality: 1"));
+				"TYPE: stream   OPERATOR: ACQUIRE (" +
+		"Name (cardinality=1 source=sourceName)\n TRUE\n[] ) - cardinality: 1"));
 		verifyAll();
 	}
 	

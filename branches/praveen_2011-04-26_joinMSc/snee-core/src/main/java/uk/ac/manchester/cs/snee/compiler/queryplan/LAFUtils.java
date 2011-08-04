@@ -152,8 +152,20 @@ public class LAFUtils extends GraphUtils {
 				}
 				out.print(op.getOperatorName() + "\\n");
 
-				if (op.getParamStr() != null) {
-					out.print(op.getParamStr() + "\\n");
+				String paramStr = op.getParamStr();
+				if (paramStr != null) {
+					// Code replaces \n with \\n
+					char[] charArray = paramStr.toCharArray();
+					String outputParamStr = "";
+					for (int i = 0; i < paramStr.length(); i++) {
+						char character = charArray[i];
+						if (character == '\n') {
+							outputParamStr += "\\n";
+						} else {
+							outputParamStr += character;
+						}
+					}
+					out.print(outputParamStr + "\\n");
 				}
 				if (showOperatorID) {
 					out.print("id = " + op.getID() + "\\n");
