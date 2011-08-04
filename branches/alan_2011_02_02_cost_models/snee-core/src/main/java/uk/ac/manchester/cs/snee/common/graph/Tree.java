@@ -79,9 +79,7 @@ public class Tree extends Graph {
 	 */
 	public Node getRoot() {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER getRoot()");
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN getRoot()");		
+			logger.debug("ENTER/RETURN getRoot()");
 		return this.root;
 	}
 	
@@ -96,7 +94,7 @@ public class Tree extends Graph {
 			ArrayList<N> nodeList, 
 			TraversalOrder traversalOrder) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER doNodeIterator()");
+			logger.debug("ENTER doNodeIterator() with " + node.getID());
 		if (traversalOrder == TraversalOrder.PRE_ORDER) {
 			nodeList.add(node);
 		}

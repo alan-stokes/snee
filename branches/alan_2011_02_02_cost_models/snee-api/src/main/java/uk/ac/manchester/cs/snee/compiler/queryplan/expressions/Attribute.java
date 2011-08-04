@@ -74,6 +74,12 @@ public abstract class Attribute implements Expression {
 	 */
 	protected SQLTypes sqlType;
 	
+	/**
+	 * Holds the status of this attribute as to whether it is representing
+	 * a constant value or not. Default is false. 
+	 */
+	protected boolean isConstant = false;
+	
 	/** 
 	 * @param extentName name of the extent in which this attribute appears
 	 * @param attrName attribute name as it appears in the schema
@@ -249,6 +255,13 @@ public abstract class Attribute implements Expression {
 	 */
 	public List<AggregationExpression> getAggregates()	{
 		return new ArrayList<AggregationExpression>(0);
+	}
+	public void setIsConstant(boolean isConstant) {
+		this.isConstant = isConstant;
+	}
+
+	public boolean isConstant() {
+		return isConstant;
 	}
 	
 }

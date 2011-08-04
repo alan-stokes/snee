@@ -50,13 +50,10 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
  * A Join or Cross product operator.
  * 
  * Will join exactly two inputs
- * 
- * @author Christian
  *
  */
 public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator {
 
-	/** 	Standard Java logger. */
    private Logger logger = Logger.getLogger(JoinOperator.class.getName());
 
    /** 
@@ -71,6 +68,10 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 	 */
 	private List <Attribute> attributes;
 
+	private boolean rightChildIsRelation = false;
+	
+	private boolean leftChildIsRelation = false;
+	
 //	/**
 //	 * Constructor that creates a new operator
 //	 * based on a model of an existing operator.
@@ -99,6 +100,8 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 		this.setOperatorName("JOIN");
 //		this.setNesCTemplateName("join");
 
+		/* This is overridden when the 
+		 * child operators are a STREAM and RELATION */
 		setOperatorDataType(OperatorDataType.WINDOWS);
 		this.setParamStr("");
 
@@ -109,11 +112,12 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 	private void setChildren (LogicalOperator left, LogicalOperator right) 
 	throws OptimizationException {
 		String message = "Illegal attempt to Join Stream of tuples with " +
-		"anything but a Relation.";;
+			"anything but a Relation.";
 		if (left.getOperatorDataType() == OperatorDataType.STREAM) {
 			if (right.getOperatorDataType() == OperatorDataType.RELATION) {
 				setChildren(new LogicalOperator[] {left, right});
 				setOperatorDataType(OperatorDataType.STREAM);
+				rightChildIsRelation = true;
 			} else { 
 				logger.warn(message);
 				throw new OptimizationException(message); 
@@ -123,16 +127,20 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 					(right.getOperatorDataType() == OperatorDataType.RELATION)) {
 				setChildren(new LogicalOperator[] {left, right});
 				setOperatorDataType(OperatorDataType.WINDOWS);
+				if (right.getOperatorDataType() == OperatorDataType.RELATION) {
+					rightChildIsRelation = true;
+				}
 			} else {
 				logger.warn(message);
 				throw new OptimizationException(message);
 			}
 		} else if (left.getOperatorDataType() == OperatorDataType.RELATION) {
+			rightChildIsRelation = true;
 			if (right.getOperatorDataType() == OperatorDataType.RELATION) {
 				setChildren(new LogicalOperator[] {left, right});
 				setOperatorDataType(OperatorDataType.RELATION);
-
-			} else if (right.getOperatorDataType() == OperatorDataType.RELATION) {
+				leftChildIsRelation = true;
+			} else if (right.getOperatorDataType() == OperatorDataType.WINDOWS) {
 				//invert left and right so relation(s) are on the right.
 				setChildren(new LogicalOperator[] {right, left});
 				setOperatorDataType(OperatorDataType.WINDOWS);
@@ -422,6 +430,41 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 		return false;
 	}
 
+	/**
+	 * Join Operator places a relation source on the right if it is a mixed
+	 * source join.
+	 * 
+	 * This method states whether the right child is a relation
+	 * 
+	 * @return true if the right child is a relation
+	 */
+	public boolean isRightChildRelation() {
+		return rightChildIsRelation;
+	}
+	
+	/**
+	 * 
+	 * This method states whether the left child is a relation
+	 * 
+	 * @return true if the left child is a relation
+	 */
+	public boolean isLeftChildRelation() {
+		return leftChildIsRelation;
+	}	
+	
+	/**
+	 * Test to see if this is a join between two relations.
+	 * 
+	 * @return true if both sources are relations
+	 */
+	public boolean isRelationJoin() {
+		if (rightChildIsRelation && leftChildIsRelation) { 
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	//Call to default methods in OperatorImplementation
 
 	//	/** {@inheritDoc} */

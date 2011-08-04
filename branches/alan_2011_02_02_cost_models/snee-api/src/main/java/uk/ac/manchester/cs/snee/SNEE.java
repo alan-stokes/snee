@@ -28,7 +28,7 @@ public interface SNEE {
 	 * Return a list of the extent names available in the schema
 	 * @return list of available extents
 	 */
-	public Collection<String> getExtents();
+	public Collection<String> getExtentNames();
 	
 	/**
 	 * Retrieve the metadata about a specified extent.

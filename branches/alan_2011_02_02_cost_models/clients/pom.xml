@@ -28,5 +28,6 @@
 		<module>in-network-client</module>
 		<module>cco-stored-client</module>
 		<module>ecm-client</module>
+		<module>cco-both</module>
 	</modules>
 </project>

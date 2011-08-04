@@ -1,6 +1,8 @@
 package uk.ac.manchester.cs.snee.datasource.webservice;
 
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,14 +25,23 @@ import org.ggf.namespaces._2005._12.ws_dair.SchemaDescription;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import com.sun.java.xml.ns.jdbc.Data;
+import com.sun.java.xml.ns.jdbc.Data.CurrentRow;
+import com.sun.java.xml.ns.jdbc.Metadata;
+import com.sun.java.xml.ns.jdbc.Metadata.ColumnDefinition;
+import com.sun.java.xml.ns.jdbc.WebRowSet;
+
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
+import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 public class WSDAIRSourceWrapperImpl extends SourceWrapperAbstract 
 implements SourceWrapper {
@@ -38,13 +49,24 @@ implements SourceWrapper {
 	private static Logger logger = 
 		Logger.getLogger(WSDAIRSourceWrapperImpl.class.getName());
 	
-	private static String LANGUAGE_URI =
+	private static String SQL_LANGUAGE_URI =
 		"http://www.sqlquery.org/sql-92";
+	
+	//XXX: WSDAIR fails with this format
+	private static String CSV_DATASET_FORMAT = 
+		"http://ogsadai.org.uk/data/csv";
+	
+	//XXX: OGSA-DAI do not use the standard WRS object!
+	private static String WRS_DATASET_FORMAT =
+		"http://java.sun.com/xml/ns/jdbc";
+		
 //
 //	private static String WSDAI_NS =
 //		"http://www.ggf.org/namespaces/2005/12/WS-DAI/";
 	
 	private WSDAIRAccessServiceClient _wsdairClient;
+
+	private SQLUtils _sqlUtils;
 
     public WSDAIRSourceWrapperImpl(String url, Types types) 
     throws MalformedURLException {
@@ -52,6 +74,8 @@ implements SourceWrapper {
     	if (logger.isDebugEnabled())
     		logger.debug("ENTER WSDAIRSourceWrapper() with URL " + url);
     	_wsdairClient = createServiceClient(url);
+    	_sourceType = SourceType.WSDAIR;
+    	_sqlUtils = new SQLUtils(types);
         if (logger.isDebugEnabled())
         	logger.debug("RETURN WSDAIRSourceWrapper()");
     }
@@ -115,7 +139,6 @@ implements SourceWrapper {
     TypeMappingException {
     	if (logger.isDebugEnabled())
     		logger.debug("ENTER getSchema() with " + resourceName);
-    	//XXX: Assumes that a source only provides a single extent
     	List<ExtentMetadata> extents = new ArrayList<ExtentMetadata>();
 		try {
 	    	GetDataResourcePropertyDocumentRequest request = 
@@ -172,10 +195,10 @@ implements SourceWrapper {
 		}
 		SQLExecuteRequest request = new SQLExecuteRequest();
 		request.setDataResourceAbstractName(resourceName);
-		request.setDatasetFormatURI(DATASET_FORMAT);
+		request.setDatasetFormatURI(WRS_DATASET_FORMAT);
 		SQLExpressionType sqlExpression = new SQLExpressionType();
 		sqlExpression.setExpression(query);
-		sqlExpression.setLanguage(LANGUAGE_URI);
+		sqlExpression.setLanguage(SQL_LANGUAGE_URI);
 		request.setSQLExpression(sqlExpression);
 		SQLExecuteResponse response = _wsdairClient.sqlExecute(request);
 		List <Tuple> tuples = processSQLQueryResponse(response);
@@ -206,24 +229,31 @@ implements SourceWrapper {
 		List<Tuple> tuples = new ArrayList<Tuple>();
 		SQLDatasetType sqlDataset = response.getSQLDataset();
 		String formatURI = sqlDataset.getDatasetFormatURI();
-		if (formatURI.trim().equalsIgnoreCase(DATASET_FORMAT)) {
-			if (logger.isTraceEnabled()) {
-				logger.trace("Processing dataset with format " +
-						formatURI);
-			}
-			List<Object> datasets = 
-				sqlDataset.getDatasetData().getContent();
-			if (logger.isTraceEnabled()) {
-				logger.trace("Number of datasets: " + datasets.size());
-			}
-			for (Object data : datasets) {
-				tuples.addAll(processWRSDataset((String) data));
-			}
-		} else {
-			String msg = "Unknown dataset format URI " + formatURI + 
+		List<Object> datasets = 
+			sqlDataset.getDatasetData().getContent();
+		if (logger.isTraceEnabled()) {
+			logger.trace("Number of datasets: " + datasets.size());
+		}
+		for (Object data : datasets) {
+			if (formatURI.trim().equalsIgnoreCase(CSV_DATASET_FORMAT)) {
+				if (logger.isTraceEnabled()) {
+					logger.trace("Processing CSV dataset");
+				}
+				//FIXME: Process csv
+				String msg = "CSV format not currently processed.";
+				logger.warn(msg);
+				throw new SNEEDataSourceException(msg);
+			} else if (formatURI.trim().equalsIgnoreCase(WRS_DATASET_FORMAT)) {
+				if (logger.isTraceEnabled()) {
+					logger.trace("Processing WRS dataset");
+				}
+				tuples.addAll(processWRSDataset((WebRowSet) data));
+			} else {
+				String msg = "Unknown dataset format URI " + formatURI + 
 				". Unable to process dataset.";
-			logger.warn(msg);
-			throw new SNEEDataSourceException(msg);
+				logger.warn(msg);
+				throw new SNEEDataSourceException(msg);
+			}
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN processSQLQueryResponse() with " +
@@ -231,6 +261,94 @@ implements SourceWrapper {
 		return tuples;
 	}
     
+	protected List<Tuple> processWRSDataset(WebRowSet wrs)
+	throws TypeMappingException, SchemaMetadataException,
+			SNEEDataSourceException, SNEEException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER processWRSDataset(WSDAIR WebRowSet) with " + 
+					wrs);
+		}
+		List<Tuple> tuples = new ArrayList<Tuple>();
+		Metadata metadata = wrs.getMetadata();
+		Data data = wrs.getData();
+		List<ColumnDefinition> columns = metadata.getColumnDefinition();
+		int numCols = columns.size();
+		logger.debug("Number of columns: " + numCols);
+		int count = 0;
+		String[] attrNames = new String[numCols];
+		String[] extentNames = new String[numCols];
+		AttributeType[] dataTypes = new AttributeType[numCols];
+		for (ColumnDefinition colDef : columns) {
+			attrNames[count] = colDef.getColumnLabel();
+			extentNames[count] = colDef.getTableName();
+			int columnType = new Integer(colDef.getColumnType()).intValue();
+			dataTypes[count] = _sqlUtils.inferType(columnType);
+			count++;
+		}
+		List<Object> rows = data.getCurrentRowAndInsertRowAndDeleteRow();
+		int numberRows = rows.size();
+		logger.debug("Number of rows: " + numberRows);
+		for (Object rowObj : rows) {
+			if (rowObj instanceof CurrentRow) {
+				//Create tuple
+				Tuple tuple = new Tuple();
+				CurrentRow row = (CurrentRow) rowObj;
+				List<Object> rowColumns = row.getColumnValue();
+				for (int i = 0; i < numCols; i++) {
+					Element colNode = (Element) rowColumns.get(i);
+					String colValue = colNode.getTextContent();
+					Object value = 
+						convertStringToType(colValue, dataTypes[i].getName());
+					EvaluatorAttribute attr = 
+						new EvaluatorAttribute(extentNames[i], attrNames[i], 
+							dataTypes[i], value);
+//					if (logger.isTraceEnabled()) {
+//						logger.trace("Received attribute: " + attr);
+//					}
+					tuple.addAttribute(attr);
+				}
+				tuples.add(tuple);
+			}
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN processWRSDataset(WSDAIR WebRowSet), " +
+					"number of tuples " + tuples.size());
+		}
+		return tuples;
+	}
+
+	private Object convertStringToType(String colValue,
+			String typeName) {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER convertStringToType() with " +
+					colValue + " " + typeName);
+		}
+		Object obj;
+		if (colValue == null || colValue.isEmpty() || colValue.equals("")) {
+			logger.trace("Found a NULL Value. Representing with java.sql.Types.NULL");
+			obj = java.sql.Types.NULL;
+		} else if (typeName.equals("boolean")) {
+			obj = new Boolean(colValue);
+		} else if (typeName.equals("decimal")) {
+				obj = new BigDecimal(colValue);
+		} else if (typeName.equals("float")) {
+			obj = new Float(colValue);
+		} else if (typeName.equals("integer")) {
+			obj = new Integer(colValue);
+		} else if (typeName.equals("string")) {
+			obj = colValue;
+		} else if (typeName.equals("timestamp")) {
+			obj = new Long(colValue);
+		} else {
+			obj = colValue;
+		}
+
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN convertStringToType() with " + obj);
+		}
+		return obj;
+	}
+
 	public List<Tuple> getData(String resourceName)
 	throws SNEEDataSourceException, TypeMappingException, 
 	SchemaMetadataException, SNEEException

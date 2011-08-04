@@ -1,9 +1,6 @@
 package uk.ac.manchester.cs.snee.client;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -12,9 +9,6 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
-import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 public class SNEEClientUsingCCO extends SNEEClient {
@@ -24,7 +18,18 @@ public class SNEEClientUsingCCO extends SNEEClient {
 	
 	private String serviceUrl = 
 		"http://webgis1.geodata.soton.ac.uk:8080/CCO/services/PullStream?wsdl";
+//		"http://webgis1.geodata.soton.ac.uk:8080/EMU/services/PullStream?wsdl";
 	
+	private static String query =
+//		"SELECT * FROM envdata_hernebay_tide;";
+		"SELECT * FROM envdata_hernebay_met;";
+
+//		"SELECT * FROM rtdata_haylingisl;";
+
+//		"SELECT \'HerneBay\', timestamp, datetime, observed, " +
+//			"tz, hs, hmax, tp " +
+//			"FROM envdata_hernebay_tide;";
+
 
 	public SNEEClientUsingCCO(String query, double duration) 
 	throws SNEEException, IOException, SNEEConfigurationException,
@@ -33,37 +38,15 @@ public class SNEEClientUsingCCO extends SNEEClient {
 		super(query, duration);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClientUsingCCO()");
-		//Set sleep to 10 minutes
-		_sleepDuration = 600000;
 		controller.addServiceSource("CCO-WS", serviceUrl, 
 				SourceType.PULL_STREAM_SERVICE);
-//		Collection<String> extents = controller.getExtents();
-//		Iterator<String> it = extents.iterator();
-//		System.out.println("Extents:");
-//		while (it.hasNext()) {
-//			System.out.print("\t" + it.next() + "\n");
-//		}
+//		displayExtentNames();
+//		displayAllExtents();
 //		displayExtentSchema("envdata_haylingisland");
 //		displayExtentSchema("envdata_teignmouthpier_tide");
 //		displayExtentSchema("envdata_hernebay_met");
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN");
-	}
-
-	private void displayExtentSchema(String extentName) 
-	throws MetadataException 
-	{
-		ExtentMetadata extent = 
-			controller.getExtentDetails(extentName);
-		List<Attribute> attributes = extent.getAttributes();
-		System.out.println("Attributes for " + extentName + ":");
-		for (Attribute attr : attributes) {
-			String attrName = attr.getAttributeDisplayName();
-			AttributeType attrType = attr.getType();
-			System.out.print("\t" + attrName + ": " + 
-					attrType.getName() + "\n");
-		}
-		System.out.println();
 	}
 	
 	/**
@@ -77,7 +60,6 @@ public class SNEEClientUsingCCO extends SNEEClient {
 		PropertyConfigurator.configure(
 				SNEEClientUsingCCO.class.getClassLoader().
 				getResource("etc/log4j.properties"));
-		String query;
 		Long duration;
 		//This method represents the web server wrapper
 		if (args.length != 2) {
@@ -86,7 +68,6 @@ public class SNEEClientUsingCCO extends SNEEClient {
 					"\t\"query duration in seconds\"\n");
 //			System.exit(1);
 			//XXX: Use default settings
-			query = "SELECT * FROM envdata_hernebay_tide;";
 			duration = Long.valueOf("900");
 		} else {	
 			query = args[0];

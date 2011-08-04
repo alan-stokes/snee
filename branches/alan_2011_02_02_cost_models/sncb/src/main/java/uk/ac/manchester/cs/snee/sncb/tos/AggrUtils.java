@@ -28,13 +28,14 @@ public class AggrUtils {
        				CodeGenUtils.getNescAttrName(incrAttr);
 	  		   	final AttributeType attrType = incrAttr.getType();	  		   	
 	  		   	
-	  		   	String nesCType = attrType.getNesCName();
-	  		   	if (incrAttr.getAggrFunction() == AggregationFunction.SUM) {
-	  		   		nesCType = "uint64_t";
-	  		   	}
+//	  		   	String nesCType = attrType.getNesCName();
+//	  		   	if (incrAttr.getAggrFunction() == AggregationFunction.SUM) {
+//	  		   		nesCType = "uint64_t";
+//	  		   	}
+	  		   	String nesCType = "float";
 	  		   	aggrVariablesBuff.append("\t" + nesCType + " " + attrName + ";\n");       			
 
-	  		   	String baseAttr = incrAttr.getBaseAttribute().getAttributeSchemaName();
+	  		   	String baseAttr = incrAttr.getBaseAttribute().getAttributeDisplayName().replace('.','_');
 	       		baseAttributes.add(baseAttr);
        		}
 		}	
@@ -69,7 +70,7 @@ public class AggrUtils {
 				incrementAggregatesBuff.append("\t\t\t"
 						+ attrName + " = 0;\n");
 				
-	  		   	String baseAttr = incrAttr.getBaseAttribute().getAttributeSchemaName();
+	  		   	String baseAttr = incrAttr.getBaseAttribute().getAttributeDisplayName().replace('.', '_');
 	       		baseAttributes.add(baseAttr);
 			}		
 		}
@@ -105,7 +106,7 @@ public class AggrUtils {
 				Attribute baseAttr = incrAttr.getBaseAttribute();
 				String inputAttrName = attrName;
 				if (initFlag) {
-					inputAttrName = baseAttr.getExtentName()+"_"+baseAttr.getAttributeSchemaName();
+					inputAttrName = baseAttr.getAttributeDisplayName().replaceAll("\\.", "_");
 				}
 				if (aggrFn == AggregationFunction.SUM) {
 					incrementAggregatesBuff.append("\t\t\t\t" 
@@ -129,7 +130,7 @@ public class AggrUtils {
 				}
 				if (aggrFn == AggregationFunction.MIN || aggrFn == 
 					AggregationFunction.MAX) {
-					String baseAttrName = baseAttr.getAttributeSchemaName();
+					String baseAttrName = baseAttr.getAttributeDisplayName().replace('.', '_');
 					incrementAggregatesBuff.append("\t\t\t\tif " +
 							"(("+baseAttrName+"_tuplesReceived==FALSE) || (inQueue[inHead]."+
 							inputAttrName+" "+comp+" " + attrName + "))\n");
@@ -151,17 +152,16 @@ public class AggrUtils {
 		for (AggregationExpression aggr : aggregates) {
 			List<Attribute> attributes = aggr.getRequiredAttributes();
 			for (Attribute attr : attributes) {
-				String extentName = attr.getExtentName();
-				String schemaName = attr.getAttributeSchemaName();
+				String displayName = attr.getAttributeDisplayName().replace('.', '_');
 				AggregationFunction aggrFn = aggr.getAggregationFunction();
 				if ((aggrFn == AggregationFunction.AVG)) {
-					String averageVar = extentName+"_"+schemaName+"_avg";
+					String averageVar = displayName+"_avg";
 					final String nesCType = "float";
 					derivedAggregatesDeclsBuff.append("\t"+nesCType+" "+averageVar+";\n");
 				}
 				if ((aggrFn == AggregationFunction.STDEV)) {
-					String stdevVar = extentName+"_"+schemaName+"_stdev";
-					String avgForStdevVar = extentName+"_"+schemaName+"_avg_for_stdev";
+					String stdevVar = displayName+"_stdev";
+					String avgForStdevVar = displayName+"_avg_for_stdev";
 					derivedAggregatesDeclsBuff.append("\tfloat "+stdevVar+";\n");
 					derivedAggregatesDeclsBuff.append("\tfloat "+avgForStdevVar+";\n");
 					derivedAggregatesDeclsBuff.append("\tfloat tmpDiff;\n");
@@ -178,21 +178,20 @@ public class AggrUtils {
 		for (AggregationExpression aggr : aggregates) {
 			List<Attribute> attributes = aggr.getRequiredAttributes();
 			for (Attribute attr : attributes) {
-				String extentName = attr.getExtentName();
-				String schemaName = attr.getAttributeSchemaName();
+				String displayName = attr.getAttributeDisplayName().replace('.', '_');
 				AggregationFunction aggrFn = aggr.getAggregationFunction();
 				if ((aggrFn == AggregationFunction.AVG)) {
-					String countVar = extentName+"_"+schemaName+"_count";
-					String sumVar = extentName+"_"+schemaName+"_sum";
-					String averageVar = extentName+"_"+schemaName+"_avg";
+					String countVar = displayName+"_count";
+					String sumVar = displayName+"_sum";
+					String averageVar = displayName+"_avg";
 					derivedAggregatesBuff.append("\t\t"+averageVar+
 							" = ((float)"+sumVar+" / (float)"+countVar+");\n");
 				}
 				if ((aggrFn == AggregationFunction.STDEV)) {
-					String countVar = extentName+"_"+schemaName+"_count";
-					String sumVar = extentName+"_"+schemaName+"_sum";
-					String avgForStdevVar = extentName+"_"+schemaName+"_avg_for_stdev";
-					String stdevVar = extentName+"_"+schemaName+"_stdev";
+					String countVar = displayName+"_count";
+					String sumVar = displayName+"_sum";
+					String avgForStdevVar = displayName+"_avg_for_stdev";
+					String stdevVar = displayName+"_stdev";
 					String sqrtfn = "sqrtf";
 					
 					
@@ -203,7 +202,7 @@ public class AggrUtils {
 					derivedAggregatesBuff.append("\t\ttmpSum = 0.0;\n");
 					derivedAggregatesBuff.append("\t\tdo\n\t\t{\n");
 					derivedAggregatesBuff.append("\t\t\ttmpDiff = (inQueue[inHead]."+
-							extentName+"_"+schemaName+" - "+avgForStdevVar+");\n");
+							displayName+" - "+avgForStdevVar+");\n");
 					derivedAggregatesBuff.append("\t\t\ttmpSum += (tmpDiff * tmpDiff);\n\n");
 					derivedAggregatesBuff.append("\t\t\tinHead=(inHead+1) % inQueueSize;\n\t\t}\n");
 					derivedAggregatesBuff.append("\t\twhile(inHead!=inTail);\n");
@@ -245,4 +244,35 @@ public class AggrUtils {
 		return incrementAggregatesBuff;
     } 
 	
+    
+    public static StringBuffer generateTuple(
+    		List <Attribute> outputAttributes, List<AggregationExpression> aggregates) {
+    	final StringBuffer tupleBuffer = new StringBuffer();
+		tupleBuffer.append("\t\toutQueue[outTail]." 
+				+ "evalEpoch = currentEvalEpoch;\n");
+    	
+    	int i = 1;
+		for (AggregationExpression aggr : aggregates) {
+			//works because there is one required attribute per aggregate expression
+			List<Attribute> aggrAttributes = aggr.getRequiredAttributes();
+			for (Attribute aggrAttribute : aggrAttributes) {
+				AggregationFunction aggrFn = aggr.getAggregationFunction();
+				String aggrAttrDisplayName = aggrAttribute.
+					getAttributeDisplayName().replace('.', '_') +
+					"_" + aggrFn.toString();
+				
+				Attribute outputAttribute = outputAttributes.get(i);
+				String outputAttrDisplayName = outputAttribute.
+					getAttributeDisplayName().replace('.', '_');
+
+
+				tupleBuffer.append("\t\toutQueue[outTail]." 
+						+ outputAttrDisplayName + " = " + aggrAttrDisplayName + ";\n");	
+				
+				i++;
+			}
+    	}
+    	
+    	return tupleBuffer;
+    }
 }

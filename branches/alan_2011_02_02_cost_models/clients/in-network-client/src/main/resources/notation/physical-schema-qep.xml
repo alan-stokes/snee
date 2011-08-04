@@ -10,6 +10,10 @@
 		<extents>
 			<extent name="Castilla">
 				<sites>6,7,9</sites>
+				<sensorTypes>
+					<attribute name="light" sensorType="seaLevel"/>
+					<attribute name="water" sensorType="voltage"/>		
+				</sensorTypes>	
 			</extent>
 		</extents>
 	</sensor_network>

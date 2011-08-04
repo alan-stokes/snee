@@ -683,9 +683,9 @@ public CostParameters getCostParams()
 		return (SensornetOperator)this.getInput(1);
 	}
 	
-	//delegate except for exchange operators or incremental aggregates
+	//delegate except for exchange operators, incremental aggregates
 	public List<Attribute> getAttributes() {
-		return this.getLeftChild().getAttributes();
+		return this.getLogicalOperator().getAttributes();
 	}
 
 	//delegate

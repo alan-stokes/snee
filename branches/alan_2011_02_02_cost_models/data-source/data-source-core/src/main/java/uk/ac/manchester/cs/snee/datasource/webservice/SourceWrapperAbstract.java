@@ -41,12 +41,15 @@ public abstract class SourceWrapperAbstract implements SourceWrapper {
 
 	protected Types _types;
 
+	private SQLUtils _sqlUtils;
+
     public SourceWrapperAbstract(String url, Types types) 
     throws MalformedURLException {
     	if (logger.isDebugEnabled())
     		logger.debug("ENTER SourceWrapperAbstract() with URL " + url);
     	_types = types;
     	_url = url;
+    	_sqlUtils = new SQLUtils(types);
         if (logger.isDebugEnabled())
         	logger.debug("RETURN SourceWrapperAbstract()");
     }
@@ -79,16 +82,39 @@ public abstract class SourceWrapperAbstract implements SourceWrapper {
 	protected List<Tuple> processWRSDataset(String data)
 	throws TypeMappingException, SchemaMetadataException,
 			SNEEDataSourceException, SNEEException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER processWRSDataset() with " + data);
-		List<Tuple> tuples = new ArrayList<Tuple>();
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER processWRSDataset(String WebRowSet) with " + 
+					data);
+		}
+		List<Tuple> tuples;
 		try {
 			WebRowSet wrs = new WebRowSetImpl();
 			wrs.readXml(new StringReader(data));
 			if (logger.isTraceEnabled())
 				logger.trace("Successfully read in WebRowSet. " +
 						"Number of rows " + wrs.size());
-			//Retrieve resultset metadata
+			tuples = processWRS(wrs);
+		} catch (SQLException e) {
+			String msg = "Problem reading in WebRowSet. " + e;
+			logger.warn(msg);
+			throw new SNEEDataSourceException(msg, e);		
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN processWRSDataset(String WebRowSet), " +
+					"number of tuples " + tuples.size());
+		}
+		return tuples;
+	}
+
+	protected List<Tuple> processWRS(WebRowSet wrs) 
+	throws TypeMappingException, SchemaMetadataException,
+	SNEEDataSourceException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER processWRS(WebRowSet) with " + wrs);
+		}
+		List<Tuple> tuples = new ArrayList<Tuple>();
+		//Retrieve resultset metadata
+		try {
 			ResultSetMetaData wrsMetadata = wrs.getMetaData();
 			int numberColumns = wrsMetadata.getColumnCount();
 			//Move pointer to before first tuple
@@ -103,7 +129,8 @@ public abstract class SourceWrapperAbstract implements SourceWrapper {
 					//Populate fields of tuple
 					String attrName = wrsMetadata.getColumnLabel(i);
 					String extentName = wrsMetadata.getTableName(i);
-					AttributeType dataType = inferType(wrsMetadata, i);
+					AttributeType dataType = 
+						_sqlUtils.inferType(wrsMetadata.getColumnType(i));
 					Object value = wrs.getObject(i);
 					EvaluatorAttribute attr = 
 						new EvaluatorAttribute(extentName, attrName, 
@@ -117,50 +144,15 @@ public abstract class SourceWrapperAbstract implements SourceWrapper {
 				tuples.add(tuple);
 			}
 		} catch (SQLException e) {
-			String msg = "Problem reading in WebRowSet. " + e;
+			String msg = "Problem with WebRowSet. " + e;
 			logger.warn(msg);
 			throw new SNEEDataSourceException(msg);
 		}
-		if (logger.isTraceEnabled())
-			logger.trace("RETURN processWRSDataset(), number of tuples " + 
-					tuples.size());
-		return tuples;
-	}
-
-	private AttributeType inferType(ResultSetMetaData wrsMetadata, 
-			int colIndex) 
-	throws SQLException, TypeMappingException, SchemaMetadataException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER inferType() with column: " + colIndex);
-		AttributeType dataType;
-		int colType = wrsMetadata.getColumnType(colIndex);
-		if (logger.isTraceEnabled())
-			logger.trace("Column type code: " + colType);
-		switch (colType) {
-		case java.sql.Types.CHAR:
-			dataType = _types.getType("string");
-			break;
-		case java.sql.Types.DECIMAL:
-		case java.sql.Types.REAL:
-		case java.sql.Types.FLOAT:
-			dataType = _types.getType("float");
-			break;
-		case java.sql.Types.INTEGER:
-			//Corresponds to INT or INTEGER
-			dataType = _types.getType("integer");
-			break;
-		case java.sql.Types.TIMESTAMP:
-			dataType = _types.getType("timestamp");
-			break;
-		default:
-			String msg = "Unsupported data type " + 
-				wrsMetadata.getColumnTypeName(colIndex);
-			logger.warn(msg);
-			throw new SchemaMetadataException(msg);
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN processWRS(WebRowSet), " +
+					"number of tuples " + tuples.size());
 		}
-		if (logger.isTraceEnabled())
-			logger.trace("RETURN inferType() with " + dataType);
-		return dataType;
+		return tuples;
 	}
     
 }

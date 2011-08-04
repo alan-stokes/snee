@@ -54,7 +54,25 @@ public class MultiExpression implements Expression {
 	private MultiType multiType;
 
 	private AttributeType _booleanType;
+	
+	/**
+	 * A multi-expression can only be a constant if all its parts are constants
+	 */
+	private boolean isConstant = false;
 
+	/**
+	 * Used to give a unique name to each multiexpression, 
+	 * to avoid naming conflicts in code generator.
+	 */
+	private static int counter = 0;
+	
+	/**
+	 * The Id of this multiexpression.  This becomes the display name of 
+	 * the attribute if an alias is not given.  This is done to avoid
+	 * naming conflicts in code generator.
+	 */
+	private int multiExprId;
+	
 	/**
 	 * Constuctor.
 	 * 
@@ -65,12 +83,28 @@ public class MultiExpression implements Expression {
 	public MultiExpression(Expression[] newExpressions, 
 			MultiType type, AttributeType booleanType) {
 		this.expressions = newExpressions;
-		assert (type == MultiType.SQUAREROOT || expressions.length >= 2);
+		assert (type == MultiType.SQUAREROOT || type == MultiType.ABS
+				|| expressions.length >= 2);
 		assert (type != null);
 		this.multiType = type;
 		_booleanType = booleanType;
+		calculateIsConstant();
+		multiExprId = counter;
+		counter++;
+		
 	}
 	
+	private void calculateIsConstant() {
+		boolean result = true;
+		for (Expression exp : expressions) {
+			if (!exp.isConstant()) {
+				result = false;
+				break;
+			}
+		}
+		setIsConstant(result);
+	}
+
 	public MultiExpression combinePredicates (MultiExpression first, 
 			MultiExpression second) {
 		if (second.getMultiType() != MultiType.AND)
@@ -158,7 +192,7 @@ public class MultiExpression implements Expression {
 	 * @return An array List of all the aggregates within this expressions.
 	 * Could contain duplicates.
 	 */
-	public ArrayList<AggregationExpression> getAggregates()	{
+	public List<AggregationExpression> getAggregates()	{
 		ArrayList<AggregationExpression> list 
 			= new ArrayList<AggregationExpression>(1);
 		for (int i = 0;  i < expressions.length; i++) {
@@ -400,7 +434,21 @@ public class MultiExpression implements Expression {
 	 */
 	public Attribute toAttribute() 
 	throws SchemaMetadataException, TypeMappingException{
-		return new DataAttribute("", multiType.toString(), getType()); 
+		DataAttribute attribute = 
+			new DataAttribute("", this.toString(), getType());
+		attribute.setIsConstant(isConstant);
+		attribute.setAttributeDisplayName("expr"+this.multiExprId);
+		return attribute; 
+	}
+
+	@Override
+	public boolean isConstant() {
+		return isConstant;
+	}
+
+	@Override
+	public void setIsConstant(boolean isConstant) {
+		this.isConstant = isConstant;
 	}
 
 }

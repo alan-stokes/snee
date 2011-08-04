@@ -67,36 +67,21 @@ public class WebServiceSourceMetadata extends SourceMetadata {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER WebServiceSourceMetadata() with " + url);
 		}
-		try {
-			_sourceName = (new URL(url)).getHost();
-		} catch (MalformedURLException e) {
-			_sourceName = "";
+		if (sourceName == null || sourceName.equals("")) {
+			try {
+				_sourceName = (new URL(url)).getHost();
+			} catch (MalformedURLException e) {
+				_sourceName = "";
+			}
+		} else {
+			_sourceName = sourceName;
 		}
 		_url = url;
 		_resources = resources;
 		_source = sourceWrapper;
-		setStreamRates();
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN WebServiceSourceMetadata() " + this);
 		}
-	}
-
-	private void setStreamRates() {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER setStreamRates()");
-		for (String extentName : _extentNames) {
-			//FIXME: Read rate from stream property document
-			double rate;
-			if (extentName.endsWith("met") ||
-					extentName.endsWith("tide")) {
-				rate = 1/(60.0*10.0);
-			} else {
-				rate = 1/(60.0 * 30.0);
-			}
-			setRate(extentName, rate);
-		}
-		if (logger.isTraceEnabled())
-			logger.trace("RETURN setStreamRates()");
 	}
 
 //	public boolean equals(Object ob) {

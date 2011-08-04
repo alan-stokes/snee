@@ -71,7 +71,7 @@ public class Dispatcher {
 	private Logger logger = 
 		Logger.getLogger(Dispatcher.class.getName());
 	
-	private MetadataManager _schema;
+	private MetadataManager _metadata;
 	
 	private Map<Integer,QueryEvaluator> _queryEvaluators;
 	
@@ -79,11 +79,11 @@ public class Dispatcher {
 	
 	private SNCB sncb;
 	
-	public Dispatcher(MetadataManager schema) {
+	public Dispatcher(MetadataManager metadata) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER Dispatcher()");
 		}
-		_schema = schema;
+		_metadata = metadata;
 		_queryEvaluators = new HashMap<Integer, QueryEvaluator>();
 		/*set up cost modle structure */
     _autonomicManager = new AutonomicManager();
@@ -92,6 +92,7 @@ public class Dispatcher {
 			logger.debug("RETURN Dispatcher()");
 		}
 	}
+	
 	protected Set<Integer> getRunningQueryIds() {
 		return _queryEvaluators.keySet();
 	}
@@ -145,7 +146,6 @@ public class Dispatcher {
 		} else {
 			try {
 				SensorNetworkQueryPlan snQueryPlan = (SensorNetworkQueryPlan)queryPlan;
-				CostParameters costParams = snQueryPlan.getCostParameters();
 			    String sep = System.getProperty("file.separator");
 				String outputDir = SNEEProperties.getSetting(
 				SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
@@ -155,17 +155,11 @@ public class Dispatcher {
         _autonomicManager.setResultSet(resultSet);
         _autonomicManager.runCostModels();
         _autonomicManager.runAnyliserWithDeadNodes();
-				SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, costParams);
+				SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, _metadata);
 				_autonomicManager.setListener(mr);
-				CodeGenTarget target = getTarget();
 				InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
-				 _queryEvaluators.put(queryID, queryEvaluator);
-				if(target != CodeGenTarget.AVRORA_MICA2_T2 && target != CodeGenTarget.AVRORA_MICAZ_T2)
-				{
-				//  InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
-				  //_queryEvaluators.put(queryID, queryEvaluator);
-				  sncb.start();
-				}
+				_queryEvaluators.put(queryID, queryEvaluator);
+				sncb.start();
 			} catch (Exception e) {
 				logger.warn(e.getLocalizedMessage(), e);
 				throw new EvaluatorException(e);
@@ -176,28 +170,6 @@ public class Dispatcher {
 		}
 	}
 
-	private CodeGenTarget getTarget()
-    {
-    	if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET)) 
-    	{
-    	  try 
-    	  {
-    		return CodeGenTarget.parseCodeTarget(SNEEProperties
-    				.getSetting(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET));
-    	  } 
-    	  catch (SNEEConfigurationException e) 
-    	  {
-    		// TODO Auto-generated catch block
-    		e.printStackTrace();
-    		return CodeGenTarget.TELOSB_T2; //default
-    	  }
-    	}
-    	else
-    	{
-    		return CodeGenTarget.TELOSB_T2; //default
-    	}
-    }
-	
 	/**
 	 * Using a method for constructing the query evaluator so that it can be
 	 * overridden as a mock object for testing.
@@ -215,7 +187,7 @@ public class Dispatcher {
 	throws SNEEException, SchemaMetadataException,
 	EvaluatorException, SNEEConfigurationException {
 		QueryEvaluator queryEvaluator = 
-			new QueryEvaluator(queryId, queryPlan, _schema, resultSet);
+			new QueryEvaluator(queryId, queryPlan, _metadata, resultSet);
 		return queryEvaluator;
 	}
 	

@@ -97,6 +97,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	private long totalTuplesReceived;
 
 	List<Attribute> attributes ;
+	double rate;
 
 	private int _tupleIndex = 0;
 	private int currentTupleIndex = 0;
@@ -128,13 +129,9 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		// Instantiate this as a receive operator
 		receiveOp = (ReceiveOperator) op;
 		m_qid = qid;
-		try {
-			attributes = receiveOp.getAllReceivedAttributes();
-		} catch (TypeMappingException e) {
-			logger.error(e);
-			throw new SchemaMetadataException("", e);
-		}
+		attributes = receiveOp.getInputAttributes();
 		_streamName = receiveOp.getExtentName();
+		rate = receiveOp.getRate();
 	
 		if (logger.isTraceEnabled()) {
 			logger.trace("Receiver for stream: " + _streamName);
@@ -178,7 +175,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			logger.trace("ENTER initializeStreamReceiver()");
 		}
 		SourceMetadataAbstract source = receiveOp.getSource();
-		calculateSleepPeriods((SourceMetadata) source);
+		calculateSleepPeriods();
 		SourceType sourceType = source.getSourceType();
 		switch (sourceType) {
 		case UDP_SOURCE:
@@ -199,15 +196,17 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		}
 	}
 
-	private void calculateSleepPeriods(SourceMetadata source) 
+	private void calculateSleepPeriods() 
 	throws SourceMetadataException 
 	{
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER calculateSleepPeriod() with " + 
-					source +
-					" " + _streamName);
+			logger.trace("ENTER calculateSleepPeriod() for " + 
+					_streamName + " with rate " + rate);
 		}
-		double rate = source.getRate(_streamName);
+		// Code to prevent rates being set to 0.0
+		if (rate == 0.0) {
+			rate = 1.0;
+		}
 		double period = (1 / rate) * 1000;
 		_shortSleepPeriod = (long) (period * 0.1);
 		_longSleepPeriod = (long) (period - _shortSleepPeriod);
@@ -344,32 +343,32 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			 * Process a tuple that has been received in the 
 			 * background thread
 			 */
-				try {
-					// receive the tuple, blocking operation
-					tuple = _streamReceiver.receive();
-					// create a tagged tuple from the received tuple
-					TaggedTuple taggedTuple = new TaggedTuple(tuple);
-		
-					setChanged();
-					notifyObservers(taggedTuple);
-				} catch (ReceiveTimeoutException e) {
-					logger.warn("Receive Timeout Exception.", e);
-					receive = false;
-				} catch (SNEEException e) {
-					logger.warn("Received a SNEEException.", e);
-					receive = false;
-				} catch (EndOfResultsException e) {
-					executing = false;
-				} catch (SNEEDataSourceException e) {
-					logger.warn("Received a SNEEDataSourceException.", e);
-					receive = false;
-				} catch (TypeMappingException e) {
-					logger.warn("Received a TypeMappingException.", e);
-					receive = false;
-				} catch (SchemaMetadataException e) {
-					logger.warn("Received a SchemaMetadataException.", e);
-					receive = false;
-				}
+			try {
+				// receive the tuple, blocking operation
+				tuple = _streamReceiver.receive();
+				// create a tagged tuple from the received tuple
+				TaggedTuple taggedTuple = new TaggedTuple(tuple);
+
+				setChanged();
+				notifyObservers(taggedTuple);
+			} catch (ReceiveTimeoutException e) {
+				logger.warn("Receive Timeout Exception.", e);
+				receive = false;
+			} catch (SNEEException e) {
+				logger.warn("Received a SNEEException.", e);
+				receive = false;
+			} catch (EndOfResultsException e) {
+				executing = false;
+			} catch (SNEEDataSourceException e) {
+				logger.warn("Received a SNEEDataSourceException.", e);
+				receive = false;
+			} catch (TypeMappingException e) {
+				logger.warn("Received a TypeMappingException.", e);
+				receive = false;
+			} catch (SchemaMetadataException e) {
+				logger.warn("Received a SchemaMetadataException.", e);
+				receive = false;
+			}
 			if (logger.isDebugEnabled()) {
 				logger.debug("RETURN run() time to next execution: " + 
 						_longSleepPeriod);

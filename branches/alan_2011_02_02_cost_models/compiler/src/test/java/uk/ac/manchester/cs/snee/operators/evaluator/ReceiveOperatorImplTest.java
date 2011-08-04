@@ -50,7 +50,7 @@ public class ReceiveOperatorImplTest {
 		attributes.add(new DataAttribute("stream", "attr", 
 				types.getType("integer")));
 		
-		expect(mockOp.getReceivedAttributes()).andReturn(attributes);
+		expect(mockOp.getInputAttributes()).andReturn(attributes);
 		
 		mReceiveOp = new ReceiveOperatorImpl(mockOp, 20);
 	}

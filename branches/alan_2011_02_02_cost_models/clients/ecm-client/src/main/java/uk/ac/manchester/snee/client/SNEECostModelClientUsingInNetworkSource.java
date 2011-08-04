@@ -57,8 +57,6 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
 
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEECostModelClientUsingInNetworkSource()");		
-		//Set sleep to 10 seconds
-		_sleepDuration = 10000;
 		this.sneeProperties = sneeProperties;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SNEECostModelClientUsingInNetworkSource()");

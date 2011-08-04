@@ -16,13 +16,11 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 	private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;
 
 	public SNEEClientUsingInNetworkSource(String query, 
-			double duration, String queryParams) 
+			double duration, String queryParams, String csvFile) 
 	throws SNEEException, IOException, SNEEConfigurationException {
-		super(query, duration, queryParams);
+		super(query, duration, queryParams, csvFile);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClientUsingInNetworkSource()");		
-		//Set sleep to 10 seconds
-		_sleepDuration = 10000;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SNEEClientUsingInNetworkSource()");
 	}
@@ -40,13 +38,15 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 				SNEEClientUsingInNetworkSource.class.
 				getClassLoader().getResource("etc/common/log4j.properties"));
 		String query;
-		Long duration;
+		Double duration;
 		String queryParams;
-		if (args.length != 3) {
+		String csvFile=null;
+		if (args.length != 3 && args.length!=4) {
 			System.out.println("Usage: \n" +
 					"\t\"query statement\"\n" +
-					"\t\"query duration in seconds\"\n" +
-					"\t\"query parameters file\"\n");
+					"\t\"query duration in seconds ('inf' for indefinite)\"\n" +
+					"\t\"query parameters file\"\n" +
+					"\t[\"csv file to log results\"]\n");
 			//XXX: Use default query
 			//query = "SELECT RSTREAM anow.x as qx FROM A[NOW] anow;";
 			//query = "SELECT * FROM SeaDefence;";
@@ -76,32 +76,33 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 			  //"FROM (SELECT avg(m.light) as mLight FROM Meadow[now] m) a, " +
 			  //"(SELECT avg(f.light) as fLight FROM Forest[now] f) b " +
 			  //"WHERE a.mLight = b.fLight;";
-			duration = Long.valueOf("120");
+			duration = Double.valueOf("120");
 			queryParams= "etc/query-parameters.xml";
 //			System.exit(1);
 		} else {	
 			query = args[0];
-			duration = Long.valueOf(args[1]);
-			queryParams = args[2];
-		}
-				
-			try {
-				/* Initialise SNEEClient */
-				SNEEClientUsingInNetworkSource client = 
-					new SNEEClientUsingInNetworkSource(query, duration, queryParams);
-				/* Initialise and run data source */
-//				_myDataSource = new ConstantRatePushStreamGenerator();
-//				_myDataSource.startTransmission();
-				/* Run SNEEClient */
-				client.run();
-				/* Stop the data source */
-//				_myDataSource.stopTransmission();
-			} catch (Exception e) {
-				System.out.println("Execution failed. See logs for detail.");
-				logger.fatal(e);
-				System.exit(1);
+			if (args[1].equalsIgnoreCase("inf") || args[1].equalsIgnoreCase("ind")) {
+				duration = Double.POSITIVE_INFINITY;
+			} else {
+				duration = Double.valueOf(args[1]);
 			}
-//		}
+			queryParams = args[2];
+			if (args.length==4) {
+				csvFile=args[3];
+			}
+		}
+			
+		try {
+			/* Initialise SNEEClient */
+			SNEEClientUsingInNetworkSource client = 
+				new SNEEClientUsingInNetworkSource(query, duration, queryParams, csvFile);
+			/* Run SNEEClient */
+			client.run();
+		} catch (Exception e) {
+			System.out.println("Execution failed. See logs for detail.");
+			logger.fatal(e);
+			System.exit(1);
+		}
 		System.out.println("Success!");
 		System.exit(0);
 	}

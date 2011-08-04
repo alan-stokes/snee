@@ -34,6 +34,7 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -44,8 +45,11 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
  */
 public class IntLiteral implements Expression {
 
+	private boolean isConstant = true;
+	
 	/** Value of the constant. */
 	private int value;
+	
 	private AttributeType _type;
 	
 	/**
@@ -67,7 +71,7 @@ public class IntLiteral implements Expression {
 //	}
 
 	/** {@inheritDoc} */
-	public ArrayList<Attribute> getRequiredAttributes() {
+	public List<Attribute> getRequiredAttributes() {
     	return new ArrayList<Attribute>();
 	}
 
@@ -92,7 +96,7 @@ public class IntLiteral implements Expression {
 	 * 
 	 * @return Empty list.
 	 */
-	public ArrayList<AggregationExpression> getAggregates()	{
+	public List<AggregationExpression> getAggregates()	{
 		return new ArrayList<AggregationExpression>(0);
 	}
 	/**
@@ -157,8 +161,20 @@ public class IntLiteral implements Expression {
 	 */
 	public Attribute toAttribute() 
 	throws SchemaMetadataException, TypeMappingException {
-		throw new SchemaMetadataException("Attempt to convert " +
-				"IntLiteral to a DataAttribute.");
+		String attrName = new Integer(this.getValue()).toString();
+		Attribute attribute = new DataAttribute("", attrName, attrName, _type);
+		attribute.setIsConstant(isConstant);
+		return attribute;
+	}
+
+	@Override
+	public boolean isConstant() {
+		return isConstant;
+	}
+
+	@Override
+	public void setIsConstant(boolean isConstant) {
+		this.isConstant = isConstant;
 	}
 	
 }

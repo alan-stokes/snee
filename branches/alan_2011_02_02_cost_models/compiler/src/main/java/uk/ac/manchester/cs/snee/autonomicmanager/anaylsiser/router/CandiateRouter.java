@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -24,6 +25,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
@@ -62,7 +64,9 @@ public class CandiateRouter extends Router
     ArrayList<RT> newRoutingTrees = new ArrayList<RT>();
     HashMapList<Integer ,Tree> failedNodeToRoutingTreeMapping = new HashMapList<Integer,Tree>();
     //get connectivity graph
-    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) oldRoutingTree.getPAF().getDLAF().getSource();
+    Set<SourceMetadataAbstract> sourceSets = oldRoutingTree.getPAF().getDLAF().getSources();
+    Iterator<SourceMetadataAbstract> sourceIterator = sourceSets.iterator();
+    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) sourceIterator.next();
     Topology network = sm.getTopology();
     //Copy connectivity graph so that original never touched.
     Cloner cloner = new Cloner();

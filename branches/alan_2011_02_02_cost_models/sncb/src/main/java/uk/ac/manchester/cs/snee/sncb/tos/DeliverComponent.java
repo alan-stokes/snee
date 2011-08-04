@@ -39,9 +39,13 @@ import java.util.List;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class DeliverComponent extends NesCComponent {
@@ -53,9 +57,10 @@ public class DeliverComponent extends NesCComponent {
     CostParameters costParams;
 
     public DeliverComponent(final SensornetDeliverOperator op, final SensorNetworkQueryPlan plan, 
-    final NesCConfiguration fragConfig, boolean tossimFlag, boolean debugLeds, CostParameters costParams) {
+    final NesCConfiguration fragConfig, boolean tossimFlag, boolean debugLeds, CostParameters costParams,
+    CodeGenTarget target) {
 
-		super(fragConfig, tossimFlag, debugLeds);
+		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
 		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
@@ -115,12 +120,13 @@ public class DeliverComponent extends NesCComponent {
 				String deliverName = attr.getAttributeDisplayName();
 		
 			    displayTupleBuff3.append(comma+deliverName);
-			    if (attr.getAttributeTypeName().equals("float")) {
-			    	displayTupleBuff3.append("=%g");
-			    } else {
-			    	displayTupleBuff3.append("=%d");
-			    }
-			    
+	  			if (attr instanceof EvalTimeAttribute || attr instanceof IDAttribute
+	  					|| attr instanceof TimeAttribute ) {
+	  				displayTupleBuff3.append("=%d"); 
+	  			} else {
+	  				displayTupleBuff3.append("=%g");
+	  			}
+	  			
 			    displayTupleBuff4.append(comma+"inQueue[inHead]."+attrName);
 		
 			    displayTupleBuff5.append("\t\t\t\tstrcat(deliverStr, \""

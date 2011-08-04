@@ -99,8 +99,9 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    String targetName, CostParameters costParams, boolean controlRadioOff,
 	    boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
 	    boolean debugLeds, boolean usePowerManagement, boolean deliverLast, 
-	    boolean adjustRadioPower, boolean useControllerComponent) {
-		super(config, tossimFlag, debugLeds);
+	    boolean adjustRadioPower, boolean useControllerComponent,
+	    CodeGenTarget target) {
+		super(config, tossimFlag, debugLeds, target);
 		this.id = name;
 		this.plan = plan;
 		this.agenda = plan.getAgendaIOT();

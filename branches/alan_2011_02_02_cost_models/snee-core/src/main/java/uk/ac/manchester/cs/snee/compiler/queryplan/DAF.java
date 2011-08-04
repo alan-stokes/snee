@@ -7,19 +7,11 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.common.graph.Graph;
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
-import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 

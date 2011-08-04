@@ -13,6 +13,7 @@ import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 
 public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB 
@@ -23,10 +24,10 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
   {
     if (logger.isDebugEnabled())
       logger.debug("ENTER TinyOS_SNCB()");
-    try {
+    try 
+    {
       // TinyOS environment variables
       this.tinyOSEnvVars = new HashMap<String, String>();
-      this.duration = duration;
       workingDir = Utils.getResourcePath("etc/sncb/tools/python");
       String currentPath = System.getenv("PATH");
       this.tinyOSEnvVars.put("PATH", currentPath + ":" + workingDir + ":"
@@ -74,7 +75,7 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
   
   
   public SerialPortMessageReceiver register(SensorNetworkQueryPlan qep,
-      String queryOutputDir, CostParameters costParams)
+      String queryOutputDir, MetadataManager costParams)
       throws SNCBException {
     if (logger.isDebugEnabled())
       logger.debug("ENTER register()");
@@ -113,7 +114,7 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
         if (this.target == CodeGenTarget.AVRORA_MICA2_T2 ||
             this.target == CodeGenTarget.AVRORA_MICAZ_T2) {
           avroraCommand = TinyOS_SNCB_Utils.printAvroraCommands(queryOutputDir, qep, 
-              this.targetDirName, this.target, duration);         
+              this.targetDirName, this.target);         
         }
         
         //set up running Avrora

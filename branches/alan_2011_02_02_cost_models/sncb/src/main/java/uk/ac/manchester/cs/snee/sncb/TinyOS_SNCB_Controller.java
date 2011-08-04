@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 
 public class TinyOS_SNCB_Controller implements SNCB 
@@ -52,13 +53,6 @@ public class TinyOS_SNCB_Controller implements SNCB
   }
   
   @Override
-  public SNCBSerialPortReceiver register(SensorNetworkQueryPlan qep,
-      String queryOutputDir, CostParameters costParams) throws SNCBException
-  {
-    return sncb.register(qep, queryOutputDir, costParams);
-  }
-  
-  @Override
   public void deregister(SensorNetworkQueryPlan qep) throws SNCBException
   {
     sncb.deregister(qep);
@@ -80,5 +74,12 @@ public class TinyOS_SNCB_Controller implements SNCB
   public void waitForQueryEnd() throws InterruptedException
   {
     sncb.waitForQueryEnd();  
+  }
+
+  @Override
+  public SNCBSerialPortReceiver register(SensorNetworkQueryPlan qep,
+      String queryOutputDir, MetadataManager metadata) throws SNCBException
+  {
+    return sncb.register(qep, queryOutputDir, metadata);
   }
 }

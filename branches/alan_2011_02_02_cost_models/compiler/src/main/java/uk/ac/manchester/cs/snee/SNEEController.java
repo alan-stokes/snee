@@ -309,7 +309,7 @@ public class SNEEController implements SNEE {
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.SNEE#getExtents()
 	 */
-	public Collection<String> getExtents() {
+	public Collection<String> getExtentNames() {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getExtents()");
 		Collection<String> extentNames = _metadata.getExtentNames();
@@ -348,7 +348,7 @@ public class SNEEController implements SNEE {
 		}
 		int queryId = getNextQueryId();
 		if (logger.isInfoEnabled()) 
-			logger.info("Assigned ID " + queryId + " to query\n");
+			logger.info("Assigned ID " + queryId + " to query\n\t" + query);
 		if (logger.isInfoEnabled()) 
 			logger.info("Reading query " + queryId + " parameters\n");
 		QueryParameters queryParams = null;

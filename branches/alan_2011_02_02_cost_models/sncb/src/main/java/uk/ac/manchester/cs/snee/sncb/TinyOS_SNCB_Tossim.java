@@ -8,7 +8,9 @@ import uk.ac.manchester.cs.snee.common.Utils;
 
 public class TinyOS_SNCB_Tossim extends TinyOS_SNCB implements SNCB 
 {
-  public TinyOS_SNCB_Tossim(double duration)
+  private double duration = 0;
+  
+  public TinyOS_SNCB_Tossim(double duration) throws SNCBException 
   {
     if (logger.isDebugEnabled())
       logger.debug("ENTER TinyOS_SNCB()");
@@ -64,7 +66,10 @@ public class TinyOS_SNCB_Tossim extends TinyOS_SNCB implements SNCB
   @Override
   public void waitForQueryEnd() throws InterruptedException
   {
-    Thread.currentThread().sleep((long)duration * 1000); 
+    if(duration == Double.POSITIVE_INFINITY)
+      Thread.currentThread().sleep((long)duration); 
+    else
+      Thread.currentThread().sleep((long)duration * 1000); 
   }
   
   

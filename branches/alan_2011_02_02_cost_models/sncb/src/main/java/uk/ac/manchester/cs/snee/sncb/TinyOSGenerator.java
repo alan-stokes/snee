@@ -48,9 +48,12 @@ import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
@@ -58,6 +61,9 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
@@ -65,6 +71,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregationOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
@@ -99,6 +106,7 @@ import uk.ac.manchester.cs.snee.sncb.tos.RXComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.RadioComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SelectComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SensorComponent;
+import uk.ac.manchester.cs.snee.sncb.tos.SensorComponentUtils;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialAMReceiveComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialAMSendComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialStarterComponent;
@@ -161,8 +169,6 @@ public class TinyOSGenerator {
     public static String COMPONENT_QUERY_PLAN;
 
     private static String COMPONENT_QUERY_PLANC;
-
-    public static String COMPONENT_SENSOR;
 
     private static String COMPONENT_LEDS;
     
@@ -234,6 +240,8 @@ public class TinyOSGenerator {
     
     private CostParameters costParams;
     
+    private MetadataManager metadata;
+    
 	private boolean controlRadioOff;
 
 	private boolean enablePrintf;
@@ -256,8 +264,10 @@ public class TinyOSGenerator {
 	
 	private boolean useNodeController;
 	    
+	private boolean usesCustomSeaLevelSensor = false;
+	
     public TinyOSGenerator(CodeGenTarget codeGenTarget,
-    boolean combinedImage, String nescOutputDir, CostParameters costParams, boolean controlRadioOff,
+    boolean combinedImage, String nescOutputDir, MetadataManager metadata, boolean controlRadioOff,
     boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
     boolean usePowerManagement, boolean deliverLast, boolean adjustRadioPower,
     boolean includeDeluge, boolean debugLeds, boolean showLocalTime,
@@ -285,10 +295,11 @@ public class TinyOSGenerator {
         	this.tossimFlag = true;
     		this.useNodeController = false; // incompatible
         	this.combinedImage = true; // doesn't work otherwise
-    	}    	
+    	}
     	
     	this.nescOutputDir = nescOutputDir;
-		this.costParams = costParams;
+		this.costParams = metadata.getCostParameters();
+		this.metadata = metadata;
 
 		this.controlRadioOff =controlRadioOff;
 		this.enablePrintf = enablePrintf;
@@ -325,18 +336,7 @@ public class TinyOSGenerator {
 	    COMPONENT_QUERY_PLANC = "QueryPlan";  //AppC
 	    COMPONENT_RADIO = "ActiveMessageC";
 	    COMPONENT_RADIOTX = "AMSenderC";
-	    COMPONENT_RADIORX = "AMRecieverC";
-	    if (target == CodeGenTarget.TELOSB_T2) {
-//		    	COMPONENT_SENSOR = "VoltageC";
-	    	COMPONENT_SENSOR = "HamamatsuS1087ParC";
-	    } else if (target == CodeGenTarget.AVRORA_MICA2_T2) {	
-	    	COMPONENT_SENSOR = "DemoSensorC"; //PhotoTemp
-	    } else if (target == CodeGenTarget.TOSSIM_T2) {
-	    	COMPONENT_SENSOR  = "RandomSensorC";
-	    } else {
-	    	COMPONENT_SENSOR = "DemoSensorC";
-	    }
-	    	
+	    COMPONENT_RADIORX = "AMRecieverC";	    	
 	    COMPONENT_LEDS = "LedsC";
 	    COMPONENT_SERIALTX = "SerialAMSenderC";
 	    COMPONENT_SERIALRX = "SerialAMReceiverC";
@@ -648,7 +648,7 @@ public class TinyOSGenerator {
 			throws CodeGenerationException {
 		TrayComponent trayComp = new TrayComponent(sourceFrag, destFrag, 
 				destSiteID, currentSite, config, plan, 
-				tossimFlag, costParams, debugLeds);
+				tossimFlag, costParams, debugLeds, target);
 		
 		trayComp = (TrayComponent) config.addComponent(trayComp);
 		// tray may already exist
@@ -726,7 +726,7 @@ public class TinyOSGenerator {
 			plan, sink, (tossimFlag || combinedImage), targetDirName,
 			costParams, controlRadioOff, enablePrintf, useStartUpProtocol, enableLeds,
 			debugLeds, usePowerManagement, deliverLast, adjustRadioPower,
-			useNodeController);
+			useNodeController, target);
 		config.addComponent(queryPlanModuleComp);
 
 		TimerComponent timerComp = new TimerComponent(		//$
@@ -903,20 +903,37 @@ public class TinyOSGenerator {
 	private void wireFragToSensors(final Site currentSite, 
 	final NesCConfiguration config, final FragmentComponent fragComp, final SensornetOperator op)
 	throws CodeGenerationException {
-		final int numSensedAttr
-		= ((AcquireOperator) op.getLogicalOperator()).getNumSensedAttributes();
-		for (int i = 0; i < numSensedAttr; i++) {
-			//TODO: look up sensorID in metadata
-			String sensorId = new Integer(i).toString();
+		AcquireOperator acqOp = (AcquireOperator) op.getLogicalOperator();
+		List<Attribute> attributes = acqOp.getInputAttributes();
+		
+		int sensorID = 0;
+		for (Attribute attr : attributes) {
+			if ((attr instanceof EvalTimeAttribute) ||
+					(attr instanceof IDAttribute)) {
+				continue;
+			}
+
+			SensorType sensorType = metadata.getAttributeSensorType(attr);
+			String nesCComponentName = SensorComponentUtils.
+				getNesCComponentName(sensorType, this.target);
+			String nesCInterfaceName = SensorComponentUtils.
+				getNesCInterfaceName(sensorType, this.target);
+			
+			if (sensorType == SensorType.SEA_LEVEL) {
+				usesCustomSeaLevelSensor = true;
+			}
+			
 			final SensorComponent sensorComp = new SensorComponent(
-					currentSite, sensorId, COMPONENT_SENSOR, config, "",
+					currentSite, ""+sensorID, nesCComponentName, config, "",
 					tossimFlag);
 			config.addComponent(sensorComp);
 			final String sensorName = sensorComp.getID();
 
 			config.addWiring(fragComp.getID(), sensorName,
 					INTERFACE_READ, TYPE_READ,
-					"Op" + op.getID() + INTERFACE_READ + i, INTERFACE_READ);
+					"Op" + op.getID() + INTERFACE_READ + sensorID, nesCInterfaceName);
+			
+			sensorID++;
 		}
 	}
 
@@ -948,7 +965,7 @@ public class TinyOSGenerator {
 				sourceFrag, destFrag,
 				exchPart.getDestSite(),
 				exchPart.getNext().getCurrentSite(),
-				config, plan, tossimFlag, costParams, debugLeds);
+				config, plan, tossimFlag, costParams, debugLeds, target);
 
 		config.addComponent(txComp);
 		final String txCompName = txComp.getID();
@@ -990,7 +1007,7 @@ public class TinyOSGenerator {
 			sourceFrag, destFrag,
 			exchPart.getDestSite(),
 			exchPart.getPrevious().getCurrentSite(),
-			config, plan, tossimFlag, debugLeds);
+			config, plan, tossimFlag, debugLeds, target);
 		config.addComponent(rxComp);
 		final String rxCompName = rxComp.getID();
 
@@ -1086,37 +1103,37 @@ public class TinyOSGenerator {
 
 		if (op instanceof SensornetAcquireOperator) {
 		    return new AcquireComponent((SensornetAcquireOperator) op, plan,
-		    		config, tossimFlag, debugLeds);
+		    		config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetSingleStepAggregationOperator) {    
 		    return new AggrSingleStepComponent((SensornetSingleStepAggregationOperator) op, plan,
-		    		config, tossimFlag, debugLeds);
+		    		config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetAggrEvalOperator) {
 		    return new AggrEvalComponent((SensornetAggrEvalOperator) op, plan,
-		    		config, tossimFlag, debugLeds);
+		    		config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetAggrInitOperator) {
 		    return new AggrInitComponent((SensornetAggrInitOperator) op, plan,
-		    		config, tossimFlag, debugLeds);
+		    		config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetAggrMergeOperator) {
 		    return new AggrMergeComponent((SensornetAggrMergeOperator) op, plan,
-		    		config, tossimFlag, debugLeds);
+		    		config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetDeliverOperator) {
 		    return new DeliverComponent((SensornetDeliverOperator) op, plan,
-		    		config, tossimFlag, debugLeds, costParams);
+		    		config, tossimFlag, debugLeds, costParams, target);
 		} else if (op instanceof SensornetExchangeOperator) {
 		    return new ExchangeProducerComponent((SensornetExchangeOperator) op, plan,
-			    config, tossimFlag, debugLeds);
+			    config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetNestedLoopJoinOperator) {
 		    return new JoinComponent((SensornetNestedLoopJoinOperator) op, plan, config,
-		    		tossimFlag, debugLeds);
+		    		tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetProjectOperator) {
 		    return new ProjectComponent((SensornetProjectOperator) op, plan,
-		    		config, tossimFlag, debugLeds);
+		    		config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetSelectOperator) {
 		    return new SelectComponent((SensornetSelectOperator) op, plan, config,
-		    		tossimFlag, debugLeds);
+		    		tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetWindowOperator) {
 		    return new WindowComponent((SensornetWindowOperator) op, plan, config,
-		    		tossimFlag, debugLeds);
+		    		tossimFlag, debugLeds, target);
 		} else {
 		    throw new CodeGenerationException(
 			    "No NesC Component found for operator type="
@@ -1353,7 +1370,7 @@ public class TinyOSGenerator {
 			final String fragID, final String rootOpName,
 			final SensornetExchangeOperator producerOp) throws CodeGenerationException {
 		final ExchangeProducerComponent producerComp = new ExchangeProducerComponent(
-		    producerOp, plan, fragConfig, tossimFlag, debugLeds);
+		    producerOp, plan, fragConfig, tossimFlag, debugLeds, target);
 		fragConfig.addComponent(producerComp);
 		final String producerOpID = producerComp.getID();
 		fragConfig.addWiring(producerOpID, rootOpName, CodeGenUtils
@@ -1423,7 +1440,7 @@ public class TinyOSGenerator {
 			    .generateOperatorInstanceName(op, site);
 		    if (op instanceof SensornetAcquireOperator) {
 			    final int numSensedAttr
-			    	= ((AcquireOperator) op.getLogicalOperator()).getNumSensedAttributes();
+			    	= ((AcquireOperator) op.getLogicalOperator()).getNumberInputAttributes();
 			    for (int i = 0; i < numSensedAttr; i++) {
 					    fragConfig.linkToExternalProvider(opName,
 						    INTERFACE_READ, TYPE_READ, INTERFACE_READ + i,
@@ -1605,11 +1622,8 @@ public class TinyOSGenerator {
 					CodeGenUtils.outputTypeSize.get(
 					CodeGenUtils.generateOutputTupleType(op))+ " bytes\n\n");
 
-			if (this.tossimFlag) {
-				tupleTypeBuff.append("typedef struct ");				
-			} else {
-				tupleTypeBuff.append("typedef nx_struct ");
-			}
+			tupleTypeBuff.append("typedef struct ");				
+
 
 
 			tupleTypeBuff.append(CodeGenUtils.generateOutputTupleType(op) + " {\n");
@@ -1621,10 +1635,13 @@ public class TinyOSGenerator {
 
 			final AttributeType attrType = attributes.get(i).getType();
 
-			String nesCType = attrType.getNesCName();
-
-			if (!this.tossimFlag) {
-				nesCType = "nx_"+nesCType;				
+			String nesCType;
+			if (attributes.get(i) instanceof EvalTimeAttribute ||
+					attributes.get(i) instanceof TimeAttribute ||
+					attributes.get(i) instanceof IDAttribute ) {
+				nesCType = "uint16_t";
+			} else {
+				nesCType = "float";
 			}
 
 			if (!(op instanceof SensornetExchangeOperator) && (!op.isRecursive())) {
@@ -1666,11 +1683,7 @@ public class TinyOSGenerator {
 			messageTypeBuff.append("// Message output type for Fragment "
 				+ fragID + " (operator " + op.getID() + ")\n");
 			
-			if (this.tossimFlag) {
-				messageTypeBuff.append("typedef struct ");
-			} else {
-				messageTypeBuff.append("typedef nx_struct ");	
-			}
+			messageTypeBuff.append("typedef struct ");
 				
 			messageTypeBuff.append(CodeGenUtils.generateMessageType(op) + " {\n");
 			messageTypeBuff.append("\tTupleFrag" + fragID + " tuples["
@@ -1697,11 +1710,8 @@ public class TinyOSGenerator {
 		assert (numTuplesPerMessage > 0);
 		
 		StringBuffer deliverMsgBuff = new StringBuffer();
-		if (this.tossimFlag) {
-			deliverMsgBuff.append("typedef struct DeliverMessage {\n");
-		} else {
-			deliverMsgBuff.append("typedef nx_struct DeliverMessage {\n");			
-		}
+		deliverMsgBuff.append("typedef struct DeliverMessage {\n");
+
 		deliverMsgBuff.append("\t" + CodeGenUtils.generateOutputTupleType(op.getLeftChild()) + " tuples["
 			+ numTuplesPerMessage + "];\n"); //use child type because deliver doesn't change tuple type
 		deliverMsgBuff.append("} DeliverMessage;\n\n");
@@ -1984,17 +1994,21 @@ public class TinyOSGenerator {
 		}
 		if (this.target == CodeGenTarget.AVRORA_MICA2_T2 || 
 				this.target == CodeGenTarget.AVRORA_MICAZ_T2){
-			File dir = new File(nescOutputDir+ targetDirName + "/Blink");
-	        dir.mkdir();
-	        
-			Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/BlinkAppC.nc", 
-					nescOutputDir+ targetDirName + "/Blink/BlinkAppC.nc");
-			Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/BlinkC.nc", 
-					nescOutputDir+ targetDirName + "/Blink/BlinkC.nc");
-			Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/Makefile", 
-					nescOutputDir+ targetDirName + "/Blink/Makefile");
+			copyBlinkFiles();
 		}
     }
+
+	private void copyBlinkFiles() throws IOException, URISyntaxException {
+		File dir = new File(nescOutputDir+ targetDirName + "/Blink");
+		dir.mkdir();
+		
+		Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/BlinkAppC.nc", 
+				nescOutputDir+ targetDirName + "/Blink/BlinkAppC.nc");
+		Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/BlinkC.nc", 
+				nescOutputDir+ targetDirName + "/Blink/BlinkC.nc");
+		Template.instantiate(NESC_MISC_FILES_DIR + "/Blink/Makefile", 
+				nescOutputDir+ targetDirName + "/Blink/Makefile");
+	}
 
     public void copySerialStarterFiles(String dir) throws IOException, URISyntaxException {
     	Template.instantiate(NESC_MISC_FILES_DIR + "/SerialStarterC.nc",
@@ -2043,7 +2057,30 @@ public class TinyOSGenerator {
 		    if (!this.useNodeController && isSink) {
 		    	copySerialStarterFiles(nescOutputDir + nodeDir);
 		    }
+		    
+		    if (this.usesCustomSeaLevelSensor) {
+		    	copySeaLevelSensorFiles(nescOutputDir + nodeDir);
+		    }
 		}
+	}
+
+	private void copySeaLevelSensorFiles(String dir) throws IOException,
+			URISyntaxException {
+		Template.instantiate(NESC_MISC_FILES_DIR + 
+				"/SeaLevelADC/Msp430Adc12.h",
+			     dir +"/Msp430Adc12.h");
+		Template.instantiate(NESC_MISC_FILES_DIR + 
+				"/SeaLevelADC/Msp430AdcREADME.txt",
+				dir + "/Msp430AdcREADME.txt");
+		Template.instantiate(NESC_MISC_FILES_DIR + 
+				"/SeaLevelADC/Msp430SeaLevelC.nc",
+			    dir +"/Msp430SeaLevelC.nc");
+		Template.instantiate(NESC_MISC_FILES_DIR + 
+				"/SeaLevelADC/Msp430SeaLevelP.nc",
+			    dir +"/Msp430SeaLevelP.nc");
+		Template.instantiate(NESC_MISC_FILES_DIR + 
+				"/SeaLevelADC/SeaLevelC.nc",
+			    dir +"/SeaLevelC.nc");
 	}
 
 	private void generateCombinedMiscFiles() throws IOException, URISyntaxException {
@@ -2064,7 +2101,11 @@ public class TinyOSGenerator {
 		    }
 		    
 	    	copySerialStarterFiles(nescOutputDir + targetDirName);
-		}
+	    	
+	    	if (this.usesCustomSeaLevelSensor) {
+	    		copySeaLevelSensorFiles(nescOutputDir + targetDirName);
+	    	}
+	    }
 	
 
 	/**
@@ -2110,6 +2151,10 @@ public class TinyOSGenerator {
 			    nescOutputDir + targetDirName +"/RandomSensorC.nc");
 		
     	copySerialStarterFiles(nescOutputDir + targetDirName);
+    	
+    	if (this.usesCustomSeaLevelSensor) {
+    		copySeaLevelSensorFiles(nescOutputDir + targetDirName);
+    	}
 	}
 
 

@@ -72,6 +72,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceManager;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
@@ -79,6 +80,7 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
+import uk.ac.manchester.cs.snee.sncb.SensorType;
 
 public class MetadataManager {
 
@@ -463,12 +465,14 @@ public class MetadataManager {
 	}
 
 	/**
-	 * Retrieve the sources associated with the specified extent
+	 * Retrieve the source associated with the specified extent
 	 * 
 	 * @param extentName name of the extent to discover sources for
-	 * @return the list of sources for the given extent
+	 * @return the source metadata for the given extent
+	 * @throws SourceDoesNotExistException no source declared for the extent
 	 */
-	public SourceMetadataAbstract getSource(String extentName) {
+	public SourceMetadataAbstract getSource(String extentName) 
+	throws SourceDoesNotExistException {
 		return _sources.getSource(extentName);
 	}
 
@@ -478,6 +482,15 @@ public class MetadataManager {
 	SchemaMetadataException, TypeMappingException, SourceMetadataException 
 	{
 		_sources.addServiceSource(string, url, sourceType);
+	}
+	
+	/**
+	 * Given an attribute, returns the corresponding sensor type it is mapped to.
+	 * @param attr
+	 * @return
+	 */
+	public SensorType getAttributeSensorType(Attribute attr) {
+		return this._sources.getAttributeSensorType(attr);
 	}
 	
 }

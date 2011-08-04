@@ -7,16 +7,19 @@ import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 
 public class TinyOS_SNCB_TelosB extends TinyOS_SNCB implements SNCB {
 
+  private double duration = 0;
+  
 	public TinyOS_SNCB_TelosB(double duration) throws SNCBException {
+	  this.duration = duration;
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER TinyOS_SNCB()");
 		try {
 			// TinyOS environment variables
 			this.tinyOSEnvVars = new HashMap<String, String>();
-			this.duration = duration;
 			workingDir = Utils.getResourcePath("etc/sncb/tools/python");
 			String currentPath = System.getenv("PATH");
 			this.tinyOSEnvVars.put("PATH", currentPath + ":" + workingDir + ":"
@@ -63,7 +66,7 @@ public class TinyOS_SNCB_TelosB extends TinyOS_SNCB implements SNCB {
 	}
 	
   public SerialPortMessageReceiver register(SensorNetworkQueryPlan qep,
-      String queryOutputDir, CostParameters costParams)
+      String queryOutputDir, MetadataManager costParams)
       throws SNCBException {
     if (logger.isDebugEnabled())
       logger.debug("ENTER register()");
@@ -138,7 +141,9 @@ public class TinyOS_SNCB_TelosB extends TinyOS_SNCB implements SNCB {
   @Override
   public void waitForQueryEnd() throws InterruptedException
   {
-    Thread.currentThread().sleep((long)duration * 1000);
-    
+    if(duration == Double.POSITIVE_INFINITY)
+      Thread.currentThread().sleep((long)duration); 
+    else
+      Thread.currentThread().sleep((long)duration * 1000); 
   }
 }

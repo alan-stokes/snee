@@ -158,7 +158,7 @@ public class Monitor implements Observer
   }
   //Temporary code to allow notation tests without a failed node
   public void chooseFakeNodeFailure() throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException, SNEEException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
-  {
+  {/*
     ArrayList<String> failedNodes = new ArrayList<String>();
     Node failedNode = qep.getIOT().getNode(3);
     failedNodes.add(failedNode.getID());
@@ -168,7 +168,7 @@ public class Monitor implements Observer
     //network.removeNode(failedNode.getID());
     System.out.println("fake node failure of node 3");
     manager.runStragity2(failedNodes);
-    
+    */
   }
 
 }

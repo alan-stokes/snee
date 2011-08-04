@@ -23,6 +23,7 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapper;
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapperImpl;
 import uk.ac.manchester.cs.snee.datasource.webservice.SourceWrapper;
@@ -35,6 +36,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
+import uk.ac.manchester.cs.snee.sncb.SensorType;
 
 public class SourceManager {
 
@@ -50,6 +52,9 @@ public class SourceManager {
 	private Map<String, ExtentMetadata> _schema;
 
 	private Types _types;
+
+	private Map<String, SensorType> _sensorTypes = 
+		new HashMap<String, SensorType>();
 	
 	public SourceManager(Map<String, ExtentMetadata> schema, Types types) {
 		_schema = schema;
@@ -165,9 +170,51 @@ public class SourceManager {
 					sourceName, extentNames, extentsElem, topologyFile, 
 					resFile, gateways, sncb);
 			_sources.add(source);
+			
+			parseAttributeSensorTypes(wsnElem);
+			
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN addSensorNetworkSources()");
+	}
+
+	private void parseAttributeSensorTypes(Element wsnElem) 
+	throws MetadataException {
+		NodeList extentElems = wsnElem.getElementsByTagName("extent");
+		for (int j=0; j<extentElems.getLength(); j++) {
+			Element extentElem = (Element)extentElems.item(j);
+			String extentName = ""+extentElem.getAttributeNode("name").getNodeValue().toLowerCase();
+			if (!_schema.containsKey(extentName)) {
+				throw new MetadataException("Physical schema refers "+
+						"to extent '"+extentName+"' which is not "+
+				"present in the logical schema.");
+			}
+			ExtentMetadata em = this._schema.get(extentName);
+			
+			NodeList sensorAttrsElems = extentElem.getElementsByTagName("attribute");
+			for (int k=0; k<sensorAttrsElems.getLength(); k++) {
+				Element attrSensorTypeElem = (Element)sensorAttrsElems.item(k);
+				
+				String attrName = ""+attrSensorTypeElem.getAttributeNode("name").getNodeValue().toLowerCase();
+				if (!em.hasAttribute(attrName)) {
+					throw new MetadataException("Physical schema refers "+
+							"to attribute '"+attrName+"' in extent '"+extentName+
+							"' which is not present in the logical schema.");					
+				}
+				Attribute attr = em.getAttribute(attrName);
+				
+				String attrSensorType = ""+attrSensorTypeElem.getAttributeNode("sensorType").getNodeValue().toLowerCase();
+				SensorType sensorType = SensorType.parseSensorType(attrSensorType);
+				if (sensorType == null) {
+					throw new MetadataException("Physical schema refers "+
+							"to invalid sensor type '"+attrSensorType+
+							"' for attribute '"+attrName+"' in extent '"+extentName+
+							"'.");
+				}
+				
+				_sensorTypes.put(generateAttributeKey(attr), sensorType);
+			}
+		}
 	}
 
 	private Element parseSensorNetworkExtentNames(Element wsnElem,
@@ -244,6 +291,8 @@ public class SourceManager {
 						interfaceType = SourceType.PULL_STREAM_SERVICE;
 					} else if (it.equals("push-stream")) {
 						interfaceType = SourceType.PUSH_STREAM_SERVICE;
+					} else if (it.equals("wsdair")) {
+						interfaceType = SourceType.WSDAIR;
 					} else {
 						String message = 
 							"Unsupported interface type " + it;
@@ -269,7 +318,7 @@ public class SourceManager {
 	 * Adds a web service source. The schema of the source is read
 	 * and added to the logical schema. The source is added to the set
 	 * of data sources.
-	 * @param name TODO
+	 * @param name name used to refer to the source
 	 * @param url URL for the web service interface 
 	 * @param sourceType the service type of the interface
 	 * @throws MalformedURLException invalid url passed to method
@@ -287,12 +336,12 @@ public class SourceManager {
 			logger.debug("ENTER addServiceSource() with name=" +
 					name + " sourceType=" + sourceType + 
 					" epr= "+ url);
-		createServiceSource(sourceType, url, "");
+		createServiceSource(sourceType, url, name);
 		if (logger.isInfoEnabled())
 			logger.info("Web service successfully added from " + 
 					url + ". Number of extents=" + _schema.size());
-		if (logger.isTraceEnabled()) {
-			logger.trace("Available extents:\n\t" + _schema.keySet());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Available extents:\n\t" + _schema.keySet());
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN addServiceSource() #extents=" +
@@ -380,14 +429,20 @@ public class SourceManager {
 				logger.trace("Retrieving schema for " + resource);
 			List<ExtentMetadata> extents = 
 				sourceWrapper.getSchema(resource);
+			//TODO: Should really qualify extent names with the source!
 			for (ExtentMetadata extent : extents) {
 				String extentName = extent.getExtentName();
-				_schema.put(extentName, extent);
-				extentNames.add(extentName);
-				resourcesByExtent.put(extentName, resource);
-				if (logger.isTraceEnabled()) {
-					logger.trace("Added extent " + extentName + 
-							" of extent type " + extent.getExtentType());
+				if (_schema.containsKey(extentName)) {
+					logger.warn("Extent " + extentName + 
+							" already exists in logical schema.");
+				} else {
+					_schema.put(extentName, extent);
+					extentNames.add(extentName);
+					resourcesByExtent.put(extentName, resource);
+					if (logger.isTraceEnabled()) {
+						logger.trace("Added extent " + extentName + 
+								" of extent type " + extent.getExtentType());
+					}
 				}
 			}
 		}
@@ -425,7 +480,8 @@ public class SourceManager {
 				}
 			}
 			SourceMetadataAbstract source = 
-				new UDPSourceMetadata(sourceName, extentNames, hostName, extentNodes);
+				new UDPSourceMetadata(sourceName, extentNames, hostName,
+						extentNodes, _schema);
 			_sources.add(source);
 		}
 		if (logger.isTraceEnabled()) 
@@ -459,21 +515,44 @@ public class SourceManager {
 	 * 
 	 * @param extentName the name of the extent to find the sources for
 	 * @return details of the sources
+	 * @throws SourceDoesNotExistException no data source found for the extent
 	 */
-	public SourceMetadataAbstract getSource(String extentName) {
+	public SourceMetadataAbstract getSource(String extentName) 
+	throws SourceDoesNotExistException {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER getSources() for " + extentName);
-
-		for (SourceMetadataAbstract source : _sources) {
-			logger.trace(source.getExtentNames());
-			if (source.getExtentNames().contains(extentName))
-				if (logger.isDebugEnabled())
-					logger.debug("RETURN getSources() source=" + 
-							source.getSourceName());
-				return source;
+			logger.debug("ENTER getSource() for " + extentName);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Number of sources: " + _sources.size());
 		}
-
-		return null;
+		for (SourceMetadataAbstract source : _sources) {
+			if (logger.isTraceEnabled()) {
+				logger.trace(source);
+//				logger.trace(source + ": " + source.getExtentNames());
+			}
+			if (source.getExtentNames().contains(extentName)) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("RETURN getSource() source=" + 
+							source.getSourceName());
+				}
+				return source;
+			}
+		}
+		
+		String msg = "No source found for extent " + extentName;
+		logger.warn(msg);
+		throw new SourceDoesNotExistException(msg);
 	}
 	
+	/**
+	 * Given an attribute, returns the corresponding sensor type it is mapped to.
+	 * @param attr
+	 * @return
+	 */
+	public SensorType getAttributeSensorType(Attribute attr) {
+		return this._sensorTypes.get(generateAttributeKey(attr));
+	}
+	
+	private String generateAttributeKey(Attribute attr) {
+		return attr.getExtentName()+ "_"+ attr.getAttributeSchemaName();
+	}
 }

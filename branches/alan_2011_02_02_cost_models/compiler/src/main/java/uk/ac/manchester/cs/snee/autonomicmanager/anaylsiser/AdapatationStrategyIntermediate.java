@@ -36,6 +36,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
@@ -50,6 +51,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import com.rits.cloning.Cloner;
@@ -490,15 +492,12 @@ public class AdapatationStrategyIntermediate
   throws SNEEConfigurationException, SNEEException, SchemaMetadataException,
          OptimizationException, WhenSchedulerException, MalformedURLException, TypeMappingException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException 
   {
-      boolean decreaseBetaForValidAlpha = SNEEProperties.getBoolSetting(
-          SNEEPropertyNames.WHEN_SCHED_DECREASE_BETA_FOR_VALID_ALPHA);
       boolean useNetworkController = SNEEProperties.getBoolSetting(
           SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
       boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
           SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
       MetadataManager metadata = new MetadataManager(qep.getSNCB());
-      WhenScheduler whenSched = new WhenScheduler(decreaseBetaForValidAlpha,
-          allowDiscontinuousSensing, metadata, useNetworkController);
+      WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing, metadata, useNetworkController);
       AgendaIOT agenda = whenSched.doWhenScheduling(newIOT, qos, qep.getID(), qep.getCostParameters());  
       agenda.setID("new Agenda");
       this.agenda.setID("old Agenda");
@@ -601,10 +600,20 @@ public class AdapatationStrategyIntermediate
 
   public Topology getWsnTopology()
   {
-    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) 
-    qep.getDLAF().getSource();
-    Topology network = sm.getTopology();
-    return network;
+    Set<SourceMetadataAbstract> sourceSets = qep.getDLAF().getSources();
+    SensorNetworkSourceMetadata sm;
+    if(sourceSets.size() == 1)
+    {
+      Iterator<SourceMetadataAbstract> sourceIterator = sourceSets.iterator();
+      sm = (SensorNetworkSourceMetadata) sourceIterator.next();
+      Topology network = sm.getTopology();
+      return network;
+    }
+    else
+    {
+      System.out.println("error, more than 1 network");
+      return null;
+    }
   }
 
   public AgendaIOT getAgenda()

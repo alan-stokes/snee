@@ -91,8 +91,14 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 		}
 		for (int i = 0; i < extentNodes.getLength(); i++) {
 			Element element = (Element) extentNodes.item(i);
+			/*
+			 * Do not use root namespace check here as the WSDAIR
+			 * generated property document is not consistent. Using 
+			 * such a check results in no attribute names being added.
+			 * Namespaces are only used for XML Nodes, not XML attributes!
+			 */
 			String name = element.getAttribute("name").toLowerCase();
-			List<Attribute> attributes = parseColumns(element, name);
+			List<Attribute> attributes = parseColumns(rootNS, element, name);
 			extents.put(name, attributes);
 		}
 		if (logger.isTraceEnabled()) {
@@ -100,19 +106,32 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 		}
 	}
 	
-	private List<Attribute> parseColumns(Element root, String extentName) 
+	private List<Attribute> parseColumns(String rootNS, Element root, 
+			String extentName) 
 	throws TypeMappingException, SchemaMetadataException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER parseColumns() with " + root);
+			logger.trace("ENTER parseColumns() with " + rootNS + ":" + root +
+					" " + extentName);
 		}
 		List<Attribute> attributes = 
 			new ArrayList<Attribute>();
-		NodeList columns = root.getElementsByTagName("column");	
+		NodeList columns;
+		if (rootNS == null) {
+			columns = root.getElementsByTagName("column");	
+		} else {
+			columns = root.getElementsByTagNameNS(rootNS, "column");
+		}
 		for (int i = 0; i < columns.getLength(); i++) {
 			Element column = (Element) columns.item(i);
 			String columnName = column.getAttribute("name");
-			NodeList nameTypeElement = 
-				column.getElementsByTagName("sqlJavaTypeID");
+			NodeList nameTypeElement;
+			if (rootNS == null) {
+				nameTypeElement = 
+					column.getElementsByTagName("sqlJavaTypeID");
+			} else {
+				nameTypeElement = 
+					column.getElementsByTagNameNS(rootNS, "sqlJavaTypeID");
+			}
 			String sqlType = 
 				nameTypeElement.item(0).getFirstChild().getNodeValue();
 			AttributeType type = inferType(new Integer(sqlType));
@@ -139,7 +158,7 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 	
 	public List<Attribute> getColumns(String extentName) {
 		if (logger.isDebugEnabled())
-			logger.debug("ENTER getColumns()");
+			logger.debug("ENTER getColumns() with " + extentName);
 		List<Attribute> attributes = extents.get(extentName);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getColumns(), number of columns " + 

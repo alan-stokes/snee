@@ -41,6 +41,7 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class WindowComponent extends NesCComponent {
@@ -52,8 +53,9 @@ public class WindowComponent extends NesCComponent {
     public WindowComponent(final SensornetWindowOperator op,
     		final SensorNetworkQueryPlan plan,
     		final NesCConfiguration fragConfig,
-    		boolean tossimFlag, boolean debugLeds) {
-    	super(fragConfig, tossimFlag, debugLeds);
+    		boolean tossimFlag, boolean debugLeds,
+    		CodeGenTarget target) {
+    	super(fragConfig, tossimFlag, debugLeds, target);
     	this.op = op;
     	this.plan = plan;
     	this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
@@ -102,11 +104,11 @@ public class WindowComponent extends NesCComponent {
 			}
 			
 			final StringBuffer tupleConstructionBuff 
-				= CodeGenUtils.generateTupleConstruction(op, false, "inQueue", "inHead", "windowBuff", "windowTail");
+				= CodeGenUtils.generateTupleConstruction(op, false, "inQueue", "inHead", "windowBuff", "windowTail", target);
 			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff
 					.toString());
 			final StringBuffer tupleConstructionBuff2 
-			= CodeGenUtils.generateTupleConstruction(op, false, "windowBuff", "tmpWindowHead", "outQueue", "outTail");
+			= CodeGenUtils.generateTupleConstruction(op, false, "windowBuff", "tmpWindowHead", "outQueue", "outTail", target);
 		replacements.put("__CONSTRUCT_TUPLE2__", tupleConstructionBuff2
 				.toString());			
 			

@@ -50,6 +50,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class TrayComponent extends NesCComponent {
@@ -69,8 +70,9 @@ public class TrayComponent extends NesCComponent {
     public TrayComponent(final Fragment sourceFrag, final Fragment destFrag,
     final String destSiteID, final Site currentSite, 
     final NesCConfiguration config, final SensorNetworkQueryPlan plan,
-    boolean tossimFlag, CostParameters costParams, boolean ledsDebug) {
-		super(config, tossimFlag, ledsDebug);
+    boolean tossimFlag, CostParameters costParams, boolean ledsDebug,
+    CodeGenTarget target) {
+		super(config, tossimFlag, ledsDebug, target);
 		this.sourceFrag = sourceFrag;
 		this.destFrag = destFrag;
 		this.destSiteID = destSiteID;

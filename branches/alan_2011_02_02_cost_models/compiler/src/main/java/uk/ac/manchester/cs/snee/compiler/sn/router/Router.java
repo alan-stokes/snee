@@ -6,8 +6,6 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 
-import com.rits.cloning.Cloner;
-
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
@@ -68,19 +66,16 @@ public class Router {
 		//XXX: There is potentially one routing tree for each Sensor Network Source
 		//For now, assume only one source
 		SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) 
-			paf.getDLAF().getSource();
+			paf.getDLAF().getSources().iterator().next();
 		Topology network = sm.getTopology();
 		int sink = sm.getGateway(); 
-		int[] sources = sm.getSourceSites();
+		int[] sources = sm.getSourceSites(paf);
 		Tree steinerTree = computeSteinerTree(network, sink, sources); 
 		RT rt = new RT(paf, queryName, steinerTree);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN doRouting()");
 		return rt;
 	}
-	
-	
-  
 
     /**
      * Returns a graph representing the Steiner tree of the current graph.

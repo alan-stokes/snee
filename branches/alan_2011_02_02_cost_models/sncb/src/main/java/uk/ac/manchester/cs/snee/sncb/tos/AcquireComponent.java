@@ -51,10 +51,12 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 /**
@@ -72,8 +74,9 @@ public class AcquireComponent extends NesCComponent {
 
     public AcquireComponent(final SensornetAcquireOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    boolean tossimFlag, boolean debugLeds) {
-		super(fragConfig, tossimFlag, debugLeds);
+	    boolean tossimFlag, boolean debugLeds,
+	    CodeGenTarget target) {
+		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
 		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
@@ -99,10 +102,10 @@ public class AcquireComponent extends NesCComponent {
 					this.plan.getRT().getSite(
 						this.site.getID()), this.plan.getDAF())).toString());
 		    replacements.put("__FULL_ACQUIRE_PREDICATES__", 
-		    		getNescText(op.getLogicalOperator().getPredicate()));
+		    		getNescText(op.getLogicalOperator().getPredicate(), target));
 		    replacements.put("__ACQUIRE_PREDICATES__", CodeGenUtils.getNescText(
 		    		op.getLogicalOperator().getPredicate(), "", null,
-		    		((AcquireOperator)op.getLogicalOperator()).getAcquiredAttributes(), null));
+		    		((AcquireOperator)op.getLogicalOperator()).getAcquiredAttributes(), null, target));
 		    
 		    if (this.debugLeds) {
 				replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led0Toggle();");		
@@ -131,7 +134,7 @@ public class AcquireComponent extends NesCComponent {
     private void doGetDataMethods(final Map<String, String> replacements) {
     	final List<Attribute> sensedAttribs = 
     		((AcquireOperator)op.getLogicalOperator()).
-    		getSensedAttributes();
+    		getInputAttributes();
     	final StringBuffer getDataBuff = new StringBuffer();
     	final StringBuffer declsBuff = new StringBuffer();
     	for (int i = sensedAttribs.size()-1; i >= 0; i--) {
@@ -189,7 +192,7 @@ public class AcquireComponent extends NesCComponent {
      */
     private void doGetEmptyDataMethods(final Map<String, String> replacements) {
     	final List<Attribute> sensedAttribs = 
-    		((AcquireOperator)op.getLogicalOperator()).getSensedAttributes();
+    		((AcquireOperator)op.getLogicalOperator()).getInputAttributes();
     	final StringBuffer getDataBuff = new StringBuffer();
     	for (int i = sensedAttribs.size() - 1; i >= 0; i--) {
     	    getDataBuff.append("\tasync event result_t ADC" + i
@@ -218,12 +221,23 @@ public class AcquireComponent extends NesCComponent {
     	
     	for (int i = 0; i < expressions.size(); i++) {
     		Expression expression = expressions.get(i);
+    		if (expression.isConstant()) {
+    			throw new CodeGenerationException("Constant values in the " +
+    					"select clause are not implemented for in-network " +
+    					"evaluation.");
+    		}
     		String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
 
   			tupleConstructionBuff.append("\t\t\t\toutQueue[outTail]." 
-        			+ attrName + "=" + getNescText(expression) + ";\n");
+        			+ attrName + "=" + getNescText(expression, target) + ";\n");
   
-  			tupleStrBuff1.append(comma+attrName+"=%d"); //getNescText(expression)
+	  		if (attributes.get(i) instanceof EvalTimeAttribute ||
+	  				attributes.get(i) instanceof IDAttribute
+	  					|| attributes.get(i) instanceof TimeAttribute ) {
+  	  			tupleStrBuff1.append(comma+attrName+"=%d"); 
+  			} else {
+  	  			tupleStrBuff1.append(comma+attrName+"=%g");
+  			}
   			tupleStrBuff2.append(comma+"outQueue[outTail]."+attrName);
   			comma = ",";
     	}
@@ -241,7 +255,7 @@ public class AcquireComponent extends NesCComponent {
      * 
      * See also CodeGenUtils.getNescTExt
      */
-	private String getNescText(final Expression expression)
+	private String getNescText(final Expression expression, CodeGenTarget target)
 			throws CodeGenerationException {
 	    if (expression instanceof EvalTimeAttribute) {
 	    	return "currentEvalEpoch";
@@ -258,19 +272,28 @@ public class AcquireComponent extends NesCComponent {
 //	    }
 		if (expression instanceof DataAttribute) {
 			try {
-				return "reading" + ((AcquireOperator)op.
-				getLogicalOperator()).getSensedAttributeNumber(expression);
+				return "(float) reading" + ((AcquireOperator)op.
+				getLogicalOperator()).getInputAttributeNumber(expression);
 			} catch (OptimizationException e) {
 				throw new CodeGenerationException(e);
 			} 
 		}	
 		if (expression instanceof MultiExpression) {
 			MultiExpression multi = (MultiExpression) expression;
+			MultiType exprOperator = multi.getMultiType();
 			Expression[] expressions = multi.getExpressions(); 
-			String output = "(" + getNescText(expressions[0]);
-			for (int i = 1; i < expressions.length; i++) {
-				output = output + multi.getMultiType().getNesC() 
-					+ getNescText(expressions[i]);
+			StringBuffer output = new StringBuffer("(");
+			String leftOperand = getNescText(expressions[0], target);			
+			if (expressions.length ==1) {
+				//unary functions
+				String expr = CodeGenUtils.getNesCExpressionText(exprOperator,leftOperand, target);
+				output.append(expr);
+			} else {
+				for (int i = 1; i < expressions.length; i++) {
+					String rightOperand = getNescText(expressions[i], target);
+					String expr = CodeGenUtils.getNesCExpressionText(exprOperator,leftOperand, rightOperand, target);
+					output.append(expr);
+				}
 			}
 			return output + ")";
 		}

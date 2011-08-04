@@ -34,6 +34,8 @@
 package uk.ac.manchester.cs.snee.metadata.source;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
@@ -46,9 +48,15 @@ import org.w3c.dom.NodeList;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReader;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
@@ -239,5 +247,24 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 	
 	public SNCB getSNCB() {
 		return this.sncb;
+	}
+
+	public int[] getSourceSites(PAF paf) {
+		HashSet<Integer> siteSet = new HashSet<Integer>();
+		
+		Iterator<SensornetOperator> opIter = paf.getOperatorTree().
+			nodeIterator(TraversalOrder.POST_ORDER);
+		while (opIter.hasNext()) {
+			SensornetOperator op = opIter.next();
+			if (op instanceof SensornetAcquireOperator) {
+				SensornetAcquireOperator acqOp = (SensornetAcquireOperator)op;
+				String extentName = acqOp.getExtentName();
+				int[] extentSites = this._extentToSitesMapping.get(extentName);
+				for (int i = 0; i < extentSites.length; i++) {
+					siteSet.add(extentSites[i]);	
+				}
+			}
+		}
+		return Utils.hashset_to_int_array(siteSet);
 	}
 }

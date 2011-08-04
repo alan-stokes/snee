@@ -180,9 +180,7 @@ int tmpWindowHead;
 				outTail = 0;
 			}			
 
-			dbg("__DBG_CHANNEL__","adding tuple to current window - sealevel=%d\n",windowBuff[tmpWindowHead].seadefence_sealevel);
-//			outQueue[outTail].evalEpoch = currentEvalEpoch;
-//			outQueue[outTail].seadefence_sealevel = windowBuff[tmpWindowHead].seadefence_sealevel;
+			dbg("__DBG_CHANNEL__","adding tuple to current window\n");
 __CONSTRUCT_TUPLE2__			
 
 			outTail = outTail + 1;
