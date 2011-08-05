@@ -31,27 +31,34 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.sncb.tos;
+package uk.ac.manchester.cs.snee.compiler.queryplan;
 
-import java.io.IOException;
+import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
-public class PowerManagementComponent extends NesCComponent {
+public class RadioOnTask extends Task {
 
-    public PowerManagementComponent(final String name,
-	    final NesCConfiguration config, int tosVersion, boolean tossimFlag) {
-	super(config, tossimFlag);
-	this.id = name;
-    }
+	Site site;
+	
+	public RadioOnTask(long startTime, Site site, CostParameters costParams) {
+		super(startTime, costParams);
+		this.site = site;
+		this.endTime = startTime + (long)costParams.getTurnOnRadio();
+	}
 
-    @Override
-    public String toString() {
-	return this.getID();
-    }
+	public Site getSite() {
+		return this.site;
+	}
 
-    @Override
-    public void writeNesCFile(final String outputDir)
-	    throws CodeGenerationException {
-	//Do nothing!!
-    }
+	public String getSiteID() {
+		return this.site.getID();
+	}
 
+	protected long getTimeCost(DAF daf) {
+		return (long)costParams.getTurnOnRadio();
+	}
+
+	public String toString() {
+		return "Radio On";
+	}
 }

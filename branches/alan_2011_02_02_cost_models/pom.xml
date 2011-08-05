@@ -5,12 +5,12 @@
 	<artifactId>SNEE</artifactId>
 	<packaging>pom</packaging>
 	<name>SNEE</name>
-	<version>1.5.4-SNAPSHOT</version>
+	<version>1.6.4-SNAPSHOT</version>
 	<description>Continuous query processing engine for streaming and stored data.</description>
 
 	<properties>
 		<cxf.version>2.2.8</cxf.version>
-		<snee.version>1.5.4-SNAPSHOT</snee.version>
+		<snee.version>1.6.4-SNAPSHOT</snee.version>
 	</properties>
 	<modules>
 		<module>snee-api</module>
@@ -55,39 +55,40 @@
 					</systemproperties>
 				</configuration>
 			</plugin>
-			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.2</version>
-				<configuration>
-					<descriptors>
-						<descriptor>src/assemble/bin.xml</descriptor>
-						-->
-						<!-- Does not currently generate a usable jar file <descriptor>src/assemble/jar.xml</descriptor> -->
-					</descriptors>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-
-				<configuration>
-					<archive>
-						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-							<addClasspath>true</addClasspath>
-						</manifest>
-					</archive>
-				</configuration>
-
-			</plugin>
-		</plugins>
-	</build>
+            <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2</version>
+        <configuration>
+          <descriptors>
+            <descriptor>src/assemble/bin.xml</descriptor> -->
+<!--  Does not currently generate a usable jar file
+<descriptor>src/assemble/jar.xml</descriptor> 
+-->
+          </descriptors>
+                <archive>
+                    <manifest>
+                        <addClasspath>true</addClasspath>
+                    </manifest>
+                </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+              <addClasspath>true</addClasspath>
+            </manifest>
+          </archive>
+        </configuration>
+        
+      </plugin>
+    </plugins>
+  </build>
 
 	<dependencies>
 		<dependency>
@@ -133,6 +134,7 @@
 			<artifactId>objenesis</artifactId>
 			<version>1.2</version>
 			<type>jar</type>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
@@ -155,17 +157,6 @@
 			<id>ssg4env.internal</id>
 			<name>Archiva Managed Internal Repository</name>
 			<url>http://ssg4env.techideas.net:8180/archiva/repository/internal</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>maven.repository</id>
-			<name>Maven central repository</name>
-			<url>repo1.maven.org/maven2/</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>

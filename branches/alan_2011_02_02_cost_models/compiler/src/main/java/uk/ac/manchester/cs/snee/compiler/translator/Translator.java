@@ -767,7 +767,7 @@ public class Translator {
 					logger.trace("Translate SENSED stream");
 				}
 				output = new AcquireOperator(extentMetadata, 
-						_metadata.getTypes(), source, _boolType);
+						source, _boolType);
 				break;
 			case PUSHED: 
 				if (logger.isTraceEnabled()) {

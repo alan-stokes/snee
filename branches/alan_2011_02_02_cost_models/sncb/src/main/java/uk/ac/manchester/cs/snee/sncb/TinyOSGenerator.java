@@ -47,14 +47,6 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.metadata.CostParameters;
-import uk.ac.manchester.cs.snee.metadata.MetadataManager;
-import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
-import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
-import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
@@ -64,6 +56,12 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
+import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
+import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
@@ -71,7 +69,6 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregationOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
@@ -89,7 +86,6 @@ import uk.ac.manchester.cs.snee.sncb.tos.AggrSingleStepComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenUtils;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.tos.DeliverComponent;
-import uk.ac.manchester.cs.snee.sncb.tos.DelugeComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.ExchangeProducerComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.FragmentComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.JoinComponent;
@@ -99,7 +95,6 @@ import uk.ac.manchester.cs.snee.sncb.tos.MainComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.NesCComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.NesCConfiguration;
 import uk.ac.manchester.cs.snee.sncb.tos.NodeControllerComponent;
-import uk.ac.manchester.cs.snee.sncb.tos.PowerManagementComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.ProjectComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.QueryPlanModuleComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.RXComponent;
@@ -107,7 +102,6 @@ import uk.ac.manchester.cs.snee.sncb.tos.RadioComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SelectComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SensorComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SensorComponentUtils;
-import uk.ac.manchester.cs.snee.sncb.tos.SerialAMReceiveComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialAMSendComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.SerialStarterComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.TXComponent;
@@ -118,7 +112,7 @@ import uk.ac.manchester.cs.snee.sncb.tos.WindowComponent;
 
 /**
  *
- * Code Generation: step 8 of query compilation.
+ * Code Generation
  *
  * <i>Code Generation</i> generates executable code for each site based on the
  * distributed QEP, RT and the agenda.
@@ -203,8 +197,6 @@ public class TinyOSGenerator {
     
     public static String COMPONENT_SERIAL_STARTER;
 
-    public static String COMPONENT_DELUGE;
-    
     public static String COMPONENT_NODE_CONTROLLER;
     
     private static String INTERFACE_AMPACKET;
@@ -242,44 +234,32 @@ public class TinyOSGenerator {
     
     private MetadataManager metadata;
     
-	private boolean controlRadioOff;
+	private boolean controlRadio;
 
-	private boolean enablePrintf;
-
-	private boolean useStartUpProtocol;
+	private boolean enablePrintf; //not tested
 
 	private boolean enableLeds;
 
-	private boolean usePowerManagement;
-
-	private boolean deliverLast;
-
-	private boolean adjustRadioPower;
-	
-	private boolean includeDeluge;
-
 	private boolean debugLeds;
-	
-	private boolean showLocalTime; //Not working
 	
 	private boolean useNodeController;
 	    
 	private boolean usesCustomSeaLevelSensor = false;
 	
     public TinyOSGenerator(CodeGenTarget codeGenTarget,
-    boolean combinedImage, String nescOutputDir, MetadataManager metadata, boolean controlRadioOff,
-    boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
-    boolean usePowerManagement, boolean deliverLast, boolean adjustRadioPower,
-    boolean includeDeluge, boolean debugLeds, boolean showLocalTime,
+    boolean combinedImage, String nescOutputDir, MetadataManager metadata, boolean controlRadio,
+    boolean enablePrintf, boolean enableLeds, boolean debugLeds, 
     boolean useNodeController)
     throws IOException, SchemaMetadataException, TypeMappingException {
 		this.target = codeGenTarget;
 		this.targetDirName = codeGenTarget.toString().toLowerCase();
+		this.controlRadio =controlRadio;
 		
     	if (target==CodeGenTarget.TELOSB_T2) {
         	this.tossimFlag = false;
     		this.useNodeController = useNodeController;
         	this.combinedImage = combinedImage;
+    		this.controlRadio = false; // leads to too much packet loss, currently
     	}
     	if (target==CodeGenTarget.AVRORA_MICA2_T2) {
         	this.tossimFlag = false;
@@ -295,22 +275,17 @@ public class TinyOSGenerator {
         	this.tossimFlag = true;
     		this.useNodeController = false; // incompatible
         	this.combinedImage = true; // doesn't work otherwise
+    		this.controlRadio = false; // incompatible
     	}
     	
     	this.nescOutputDir = nescOutputDir;
 		this.costParams = metadata.getCostParameters();
 		this.metadata = metadata;
 
-		this.controlRadioOff =controlRadioOff;
+
 		this.enablePrintf = enablePrintf;
-		this.useStartUpProtocol = useStartUpProtocol;
 		this.enableLeds = enableLeds;
-		this.usePowerManagement = usePowerManagement;
-		this.deliverLast = deliverLast;
-		this.adjustRadioPower = adjustRadioPower;
-		this.includeDeluge = includeDeluge;
 		this.debugLeds = debugLeds;
-		this.showLocalTime = showLocalTime;
 		
     	initConstants();
 
@@ -328,7 +303,6 @@ public class TinyOSGenerator {
      */
     private void initConstants() {
 	    COMPONENT_AGENDA_TIMER = "AgendaTimer";
-	    COMPONENT_DELUGE = "DelugeC";
 	    COMPONENT_LOCAL_TIME = "LocalTimeMilliC";
 	    COMPONENT_MAIN = "MainC";
 	    COMPONENT_NODE_CONTROLLER = "CommandServerAppC";
@@ -420,11 +394,7 @@ public class TinyOSGenerator {
 		LedComponent ledComp = new LedComponent(COMPONENT_LEDS, config, tossimFlag);
 		config.addComponent(ledComp);
 		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_LEDS, INTERFACE_LEDS);
-		
-		if ((this.includeDeluge) && (tossimFlag == false)) {
-			config.addWiring(COMPONENT_DELUGE, COMPONENT_LEDS, INTERFACE_LEDS);
-		}
-		
+				
 		final Iterator<NesCComponent> compIter = config.componentIterator();
 		while (compIter.hasNext()) {
 		    final NesCComponent comp = compIter.next();
@@ -724,15 +694,14 @@ public class TinyOSGenerator {
 		QueryPlanModuleComponent queryPlanModuleComp =
 			new QueryPlanModuleComponent(COMPONENT_QUERY_PLAN, config,
 			plan, sink, (tossimFlag || combinedImage), targetDirName,
-			costParams, controlRadioOff, enablePrintf, useStartUpProtocol, enableLeds,
-			debugLeds, usePowerManagement, deliverLast, adjustRadioPower,
-			useNodeController, target);
+			costParams, controlRadio, enablePrintf, enableLeds,
+			debugLeds, useNodeController, target);
 		config.addComponent(queryPlanModuleComp);
 
 		TimerComponent timerComp = new TimerComponent(		//$
 			COMPONENT_AGENDA_TIMER, config, tossimFlag);
 		config.addComponent(timerComp);
-
+		
 		//Radio component and serial component are separate in T2
 		final RadioComponent radioComp = new RadioComponent(
 			COMPONENT_RADIO, config, tossimFlag);
@@ -749,51 +718,10 @@ public class TinyOSGenerator {
 		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_AGENDA_TIMER,
 			INTERFACE_TIMER, TYPE_TMILLI, COMPONENT_AGENDA_TIMER,
 			INTERFACE_TIMER);
-//		if (!tossimFlag) {
-//			TimerT2Component radioOnComp = new TimerT2Component(		//$
-//					"RadioOnTimer", config, tossimFlag);
-//			config.addComponent(radioOnComp);
-//			config.addWiring(COMPONENT_QUERY_PLAN, "RadioOnTimer",
-//					INTERFACE_TIMER, TYPE_TMILLI, "RadioOnTimer", INTERFACE_TIMER);
-//		}
 		
-		if (this.includeDeluge && tossimFlag == false) {
-			DelugeComponent delugeComp = new DelugeComponent(COMPONENT_DELUGE, config, tossimFlag);
-			config.addComponent(delugeComp);
-		}
-		if (this.useStartUpProtocol) {
-			addStartupProtocolComponents(config);
-		}
 		if (this.useNodeController) {
 			addNodeControllerComponents(config);
 		}
-	}
-
-	private void addStartupProtocolComponents(final NesCConfiguration config)
-			throws CodeGenerationException {
-		String aid = ActiveMessageIDGenerator.getActiveMessageID("AM_SERIAL_STARTUP_MESSAGE");
-		SerialAMReceiveComponent serialRxComp = 
-			new SerialAMReceiveComponent(COMPONENT_SERIALRX+"StartUp", config, aid, tossimFlag);
-		config.addComponent(serialRxComp);
-		config.addWiring(COMPONENT_QUERY_PLAN, COMPONENT_SERIALRX+"StartUp", INTERFACE_RECEIVE, "SerialStartUp", "Receive");
-		
-		aid = ActiveMessageIDGenerator.getActiveMessageID("AM_BEACON_MESSAGE");
-		AMSendComponent beaconSender = new AMSendComponent(config, aid, tossimFlag);
-		config.addComponent(beaconSender);
-		config.addWiring(COMPONENT_QUERY_PLAN, beaconSender.getID(),
-				INTERFACE_SEND, "Beacon"+INTERFACE_SEND, INTERFACE_SEND);
-		config.addWiring(COMPONENT_QUERY_PLAN, beaconSender.getID(),
-				INTERFACE_PACKET, "Beacon"+INTERFACE_PACKET,
-				INTERFACE_PACKET);
-		config.addWiring(COMPONENT_QUERY_PLAN, beaconSender.getID(),
-					INTERFACE_AMPACKET, "Beacon"+INTERFACE_AMPACKET,
-					INTERFACE_AMPACKET);
-		
-		AMRecieveComponent beaconReceiver = new AMRecieveComponent(config, aid, tossimFlag);
-		config.addComponent(beaconReceiver);
-		config.addWiring(COMPONENT_QUERY_PLAN, beaconReceiver.getID(),
-				INTERFACE_RECEIVE, "Beacon"+INTERFACE_RECEIVE,
-				INTERFACE_RECEIVE);
 	}
 
 
@@ -866,9 +794,10 @@ public class TinyOSGenerator {
 				/* Wire fragment component to the sensor component */
 				wireFragToSensors(currentSite, config, fragComp, op);
 				
-				if (this.showLocalTime) {
-					wireFragToLocalTime(currentSite, config, fragComp, op);
-				}
+//TODO: Should be viewed as another type of sensor in the physical schema				
+//				if (this.showLocalTime) {
+//					wireFragToLocalTime(currentSite, config, fragComp, op);
+//				}
 				
 			} else if (op instanceof SensornetDeliverOperator) {
 				
@@ -904,14 +833,10 @@ public class TinyOSGenerator {
 	final NesCConfiguration config, final FragmentComponent fragComp, final SensornetOperator op)
 	throws CodeGenerationException {
 		AcquireOperator acqOp = (AcquireOperator) op.getLogicalOperator();
-		List<Attribute> attributes = acqOp.getInputAttributes();
+		List<Attribute> attributes = acqOp.getSensedAttributes();
 		
 		int sensorID = 0;
 		for (Attribute attr : attributes) {
-			if ((attr instanceof EvalTimeAttribute) ||
-					(attr instanceof IDAttribute)) {
-				continue;
-			}
 
 			SensorType sensorType = metadata.getAttributeSensorType(attr);
 			String nesCComponentName = SensorComponentUtils.
@@ -1222,9 +1147,10 @@ public class TinyOSGenerator {
 		/* Wire the acquisition operators to the outside world */
 		addExternalSensorWiring(site, frag, fragConfig);
 		
-		if (this.showLocalTime) {
-			addExternalLocalTimeWiring(site, frag, fragConfig);
-		}
+		//TODO: Should be viewed as another type of sensor in the physical schema		
+//		if (this.showLocalTime) {
+//			addExternalLocalTimeWiring(site, frag, fragConfig);
+//		}
 	}
 
 
@@ -1440,7 +1366,7 @@ public class TinyOSGenerator {
 			    .generateOperatorInstanceName(op, site);
 		    if (op instanceof SensornetAcquireOperator) {
 			    final int numSensedAttr
-			    	= ((AcquireOperator) op.getLogicalOperator()).getNumberInputAttributes();
+			    	= ((AcquireOperator) op.getLogicalOperator()).getNumSensedAttributes();
 			    for (int i = 0; i < numSensedAttr; i++) {
 					    fragConfig.linkToExternalProvider(opName,
 						    INTERFACE_READ, TYPE_READ, INTERFACE_READ + i,
@@ -1629,12 +1555,21 @@ public class TinyOSGenerator {
 			tupleTypeBuff.append(CodeGenUtils.generateOutputTupleType(op) + " {\n");
 		}
 		
+		boolean evalTimeDone = false;
 		final List <Attribute> attributes = op.getAttributes();
 		for (int i = 0; i < attributes.size(); i++) {
 		    String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
 
 			final AttributeType attrType = attributes.get(i).getType();
 
+			//avoid duplicate evalTime attributes
+			if (attributes.get(i) instanceof EvalTimeAttribute) {
+				if (evalTimeDone==true)
+					continue;
+				else
+					evalTimeDone = true;
+			}
+			
 			String nesCType;
 			if (attributes.get(i) instanceof EvalTimeAttribute ||
 					attributes.get(i) instanceof TimeAttribute ||
@@ -1793,10 +1728,8 @@ public class TinyOSGenerator {
 		out.println("#define __QUERY_PLAN_H__\n");
 		
 		if (this.enablePrintf) {
-			if (targetDirName.equals("tmotesky_t2")) {
+			if (target == CodeGenTarget.TELOSB_T2) {
 				out.println("#include \"printf.h\"\n");
-			} else if (targetDirName.equals("z1")) {
-				out.println("#include \"printfZ1.h\"\n");
 			}
 		}
 		
@@ -2047,7 +1980,7 @@ public class TinyOSGenerator {
 	    	Template.instantiate(NESC_MISC_FILES_DIR + "/itoa.h",
 					    nescOutputDir + nodeDir + "/itoa.h");
 		    
-		    if (this.includeDeluge || this.useNodeController) {
+		    if (this.useNodeController) {
 		    	Template.instantiate(NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
 					    nescOutputDir + nodeDir +"/volumes-stm25p.xml");	
 		    	
@@ -2094,7 +2027,7 @@ public class TinyOSGenerator {
 					    nescOutputDir + targetDirName +"/itoa.h");
 
 		    
-		    if (this.includeDeluge) {
+		    if (this.useNodeController) {
 		    	Template.instantiate(
 					    NESC_MISC_FILES_DIR + "/volumes-stm25p.xml",
 					    nescOutputDir + targetDirName +"/volumes-stm25p.xml");		    	
@@ -2170,17 +2103,14 @@ public class TinyOSGenerator {
 		HashMap<String, String> replacements = new HashMap<String, String>();
 		replacements.put("__MAIN_CONFIG_NAME__", mainConfigName);
 		
-		if (this.includeDeluge && tossimFlag == false ||
-				this.useNodeController) {
+		if (this.useNodeController) {
 			replacements.put("__DELUGE__","BOOTLOADER=tosboot");			
 		} else {
 			replacements.put("__DELUGE__","");
 		}
 		
-		if (this.enablePrintf && targetDirName.equals("tmotesky_t2")) {
+		if (this.enablePrintf && target == CodeGenTarget.TELOSB_T2) {
 			replacements.put("__PRINTF__", "CFLAGS += -I$(TOSDIR)/lib/printf");
-		} else if (this.enablePrintf && targetDirName.equals("z1")) {
-			replacements.put("__PRINTF__", "CFLAGS += -DPRINTFUART_ENABLED");
 		} else {
 			replacements.put("__PRINTF__","");			
 		}

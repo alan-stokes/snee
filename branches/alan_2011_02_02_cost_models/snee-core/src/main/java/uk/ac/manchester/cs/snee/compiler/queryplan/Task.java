@@ -38,6 +38,7 @@ import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 
 /**
  * Abstract class to represent a task in the schedule.
@@ -68,7 +69,7 @@ public abstract class Task {
 	this.startTime = startTime;
 	this.costParams = costParams;
     }
-
+    
     /**
      * Returns the end time of this task.
      * @return
@@ -99,4 +100,14 @@ public abstract class Task {
     protected abstract long getTimeCost(DAF daf) 
     throws OptimizationException, SchemaMetadataException, TypeMappingException;
 
+    public boolean isDeliverTask() {
+    	if (this instanceof FragmentTask) {
+    		FragmentTask ft = (FragmentTask)this;
+			Fragment f = ft.getFragment();
+			if (f.containsOperatorType(SensornetDeliverOperator.class)) {
+				return true;
+			}
+    	}
+    	return false;	
+    }
 }

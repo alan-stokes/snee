@@ -31,35 +31,35 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.sncb.tos;
+package uk.ac.manchester.cs.snee.compiler.queryplan;
 
-import java.io.IOException;
-
-public class SerialAMReceiveComponent extends GenericNesCComponent {
-
-    public static String TYPE_NAME = "SerialAMReceiverC";
-
-    public SerialAMReceiveComponent(final String name,
-	    final NesCConfiguration config, final String activeMessageID,
-	    boolean tossimFlag) {
-	    	
-		super(config, TYPE_NAME, activeMessageID, tossimFlag);
-		this.instanceOfGeneric = true;
-		this.id = name;
-		this.systemComponent = true;
-    }
-
-    @Override
-    public String toString() {
-	return this.getID();
-    }
+import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 
+public class RadioOffTask extends Task {
 
-    @Override
-    public void writeNesCFile(final String outputDir)
-	    throws CodeGenerationException {
-	//Do nothing!!
-    }
+	Site site;
+	
+	public RadioOffTask(long startTime, Site site, CostParameters costParams) {
+		super(startTime, costParams);
+		this.site = site;
+		this.endTime = startTime + (long)costParams.getTurnOffRadio();
+	}
 
+	public Site getSite() {
+		return this.site;
+	}
+
+	public String getSiteID() {
+		return this.site.getID();
+	}
+
+	protected long getTimeCost(DAF daf) {
+		return (long)costParams.getTurnOffRadio();
+	}
+	
+	public String toString() {
+		return "Radio off";
+	}
 }

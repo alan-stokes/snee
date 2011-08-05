@@ -46,6 +46,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpres
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IncrementalAggregationAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
@@ -371,7 +372,7 @@ public final class CodeGenUtils {
 		if (expression instanceof NoPredicate) {
 			return "TRUE";
 		}
-		if (expression instanceof IntLiteral) {
+		if (expression instanceof IntLiteral || expression instanceof FloatLiteral) {
 			return expression.toString();
 		}
 		if (expression instanceof AggregationExpression) {

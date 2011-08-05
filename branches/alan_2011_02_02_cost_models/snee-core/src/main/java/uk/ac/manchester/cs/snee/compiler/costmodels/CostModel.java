@@ -18,6 +18,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOpera
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetRStreamOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSelectOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSingleStepAggregationOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
 
 public abstract class CostModel
@@ -32,6 +33,10 @@ public abstract class CostModel
     if(operator.getSensornetOperator() instanceof SensornetAcquireOperator)
     {
       return acquireCard(operator);
+    }
+    else if(operator.getSensornetOperator() instanceof SensornetSingleStepAggregationOperator)
+    {
+      return aggerateCard(operator);
     }
     else if(operator.getSensornetOperator() instanceof SensornetAggrEvalOperator)
     {

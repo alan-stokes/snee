@@ -53,10 +53,12 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.EndManagementTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.FragmentTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ManagementTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RadioOffTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RadioOnTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
@@ -77,29 +79,23 @@ public class QueryPlanModuleComponent extends NesCComponent {
 
     private CostParameters costParams;
     
-	private boolean controlRadioOff;
+	private boolean controlRadio;
 
 	private boolean enablePrintf;
 
-	private boolean useStartUpProtocol;
-
 	private boolean enableLeds;
 
-	private boolean usePowerManagement;
-
-	private boolean deliverLast;
-
-	private boolean adjustRadioPower;
-	
 	private boolean useControllerComponent;
     
+    private static boolean radioOn = false; 
+    	
+	
     public QueryPlanModuleComponent(final String name,
 	    final NesCConfiguration config, final SensorNetworkQueryPlan plan,
 	    final int sink, boolean tossimFlag, 
-	    String targetName, CostParameters costParams, boolean controlRadioOff,
-	    boolean enablePrintf, boolean useStartUpProtocol, boolean enableLeds,
-	    boolean debugLeds, boolean usePowerManagement, boolean deliverLast, 
-	    boolean adjustRadioPower, boolean useControllerComponent,
+	    String targetName, CostParameters costParams, boolean controlRadio,
+	    boolean enablePrintf, boolean enableLeds,
+	    boolean debugLeds, boolean useControllerComponent,
 	    CodeGenTarget target) {
 		super(config, tossimFlag, debugLeds, target);
 		this.id = name;
@@ -108,13 +104,9 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		this.sink = sink;
 		this.costParams = costParams;
 
-		this.controlRadioOff =controlRadioOff;
+		this.controlRadio =controlRadio;
 		this.enablePrintf = enablePrintf;
-		this.useStartUpProtocol = useStartUpProtocol;
 		this.enableLeds = enableLeds;
-		this.usePowerManagement = usePowerManagement;
-		this.deliverLast = deliverLast;
-		this.adjustRadioPower = adjustRadioPower;
 		this.useControllerComponent = useControllerComponent;
 		
 	    tosSiteAddress = "TOS_NODE_ID";
@@ -129,8 +121,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
     public void setTossimConfig(final NesCConfiguration tossimConfig) {
 	this.tossimConfig = tossimConfig;
     }
-
-    private static boolean radioOn = false; 
     
     public void writeNesCFile(final String outputDir)
 	    throws CodeGenerationException {
@@ -144,7 +134,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 			final ArrayList<Long> startTimeList = agenda.getStartTimes();
 			final StringBuffer firedTimerTaskBuff = new StringBuffer();
 			final StringBuffer agendaCheckingBuff = new StringBuffer();
-			final StringBuffer radioOnTaskBuff = new StringBuffer();
 		
 			if (tossimFlag && (this.tossimConfig != null)) {
 			    doQueryPlanModulePreamble(this.tossimConfig,
@@ -156,7 +145,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 			    throw new CodeGenerationException(
 				    "No tossim configuration specified for query plan module");
 			}
-		
+			
 			radioOn = false;
 			
 			agendaCheckingBuff.append("\t\t\tif (deadBySimulation) \n");
@@ -207,9 +196,16 @@ public class QueryPlanModuleComponent extends NesCComponent {
 				    if (task instanceof FragmentTask) {
 					doInvokeFragmentTask(firedTimerTaskBuff,
 						agendaCheckingBuff, lastTask, first, task,
-						indentation, radioOnTaskBuff);
-					first = false;
-		
+						indentation, i);
+					first = false;		
+				    } else if (task instanceof RadioOnTask) {
+				    	invokeRadioOnTask(agendaCheckingBuff, indentation);		    	
+				    	first = false;
+				   	
+				    } else if (task instanceof RadioOffTask) {
+				    	invokeRadioOffTask(agendaCheckingBuff, indentation);	
+				    	first = false;
+				    	
 					//task is a communication task
 				    } else if (task instanceof CommunicationTask) {
 					final CommunicationTask commTask = (CommunicationTask) task;
@@ -217,12 +213,12 @@ public class QueryPlanModuleComponent extends NesCComponent {
 					if ((mode == CommunicationTask.RECEIVE)) {
 					    this.doInvokeCommunicationTask(firedTimerTaskBuff,
 						    agendaCheckingBuff, lastTask, first, task,
-						    indentation, tossimFlag, radioOnTaskBuff);
+						    indentation, tossimFlag, i);
 					    first = false;
 					} else if ((mode == CommunicationTask.TRANSMIT)) {
 					    this.doInvokeCommunicationTask(firedTimerTaskBuff,
 						    agendaCheckingBuff, lastTask, txFirst,
-						    task, indentation, tossimFlag, radioOnTaskBuff);
+						    task, indentation, tossimFlag, i);
 					    first = false;
 					}
 		
@@ -268,7 +264,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		
 			boolean usesRadio = configUsesRadio();
 			doQueryPlanModuleBody(this.sink, out, startTimeList,
-				firedTimerTaskBuff, agendaCheckingBuff, radioOnTaskBuff, usesRadio);
+				firedTimerTaskBuff, agendaCheckingBuff, usesRadio);
     	} catch (Exception e) {
     		throw new CodeGenerationException(e);
     	}
@@ -297,6 +293,33 @@ public class QueryPlanModuleComponent extends NesCComponent {
     	agendaCheckingBuff.append(Utils.indent(ind) + 
     			"\t\t\t\tpost endNetworkManagementTask();\n");	
     }
+    
+	private void invokeRadioOffTask(final StringBuffer agendaCheckingBuff,
+			int indentation) {
+		agendaCheckingBuff.append(Utils.indent(indentation)
+				+ "\t\t\t\tcall AgendaTimer.startOneShot(nextDelta);//doInvokeRadioOffTask\n");
+			agendaCheckingBuff.append(Utils.indent(indentation) + "\t\t\t\tdbg(\"DBG_USR2\",\""
+			+ " timer fired at row %d\\n\",agendaRow);\n");		    	
+			
+		if (this.controlRadio && radioOn == true && tossimFlag == false) {
+			agendaCheckingBuff.append(Utils.indent(indentation+4) + "call CommControl.stop();\n");
+			radioOn = false;
+		}
+	}
+
+	private void invokeRadioOnTask(final StringBuffer agendaCheckingBuff,
+			int indentation) {
+		agendaCheckingBuff.append(Utils.indent(indentation)
+			+ "\t\t\t\tcall AgendaTimer.startOneShot(nextDelta);//doInvokeRadioOnTask\n");
+		agendaCheckingBuff.append(Utils.indent(indentation) + "\t\t\t\tdbg(\"DBG_USR2\",\""
+		+ " timer fired at row %d\\n\",agendaRow);\n");
+		
+		//For mica2, if radio off, turn it on here!
+		if (tossimFlag==false && radioOn==false && this.controlRadio) {
+			agendaCheckingBuff.append(Utils.indent(indentation+4) + "call CommControl.start();\n");
+			radioOn = true;
+		}
+	}
     
 	/**
      * Checks whether the radio is used by the configuration.
@@ -330,10 +353,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
     agendaCheckingBuff.append(Utils.indent(ind)
 		    + "\t\t\t\tcall AgendaTimer.startOneShot(nextDelta);\n");
 
-    if (this.controlRadioOff && radioOn == true && tossimFlag == false) {
-		agendaCheckingBuff.append(Utils.indent(ind+4) + "call CommControl.stop();\n");
-		radioOn = false;
-	}
 	if (tossimFlag == true) {
 	    agendaCheckingBuff.append("\t\t\t\t}\n");
 	}
@@ -343,7 +362,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    final PrintWriter out, final ArrayList<Long> startTimeList,
 	    final StringBuffer firedTimerTaskBuff,
 	    final StringBuffer agendaCheckingBuff, 
-	    final StringBuffer radioOnTaskBuff, 
 	    final boolean usesRadio) {
 
 	int firstDelta;
@@ -359,13 +377,11 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	}
 
 	out.println(firedTimerTaskBuff);
-
-	out.println(radioOnTaskBuff);
 	
 	doAgendaChecking(out, agendaCheckingBuff);
 
 	doAgendaTimerFired(out);
-
+		
 	out.println("}\n"); //end of queryPlanM
 	out.close();
     }
@@ -451,6 +467,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		
 		out.println("\ttask void initialize()");
 		out.println("\t{");
+		out.println("\t\tinitialized = TRUE;");
 		out.println("\t\tnextDelta = " + (firstDelta - 1) + ";");
 		out.println("\t\tagendaRow = 0;");
 		Site thisSite = tossimConfig.getSite();
@@ -465,56 +482,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		out.println("\t}\n");
 	}
 	
-	private void doT2StartupProtocol(final PrintWriter out, String sinkID) {
-		out.println("\tbool beaconSent = FALSE;");
-		out.println("\tbool beaconReceived = FALSE;");
-		out.println("\tmessage_t pkt;");
-		out.println("\ttypedef nx_struct BeaconMessage { nx_bool beaconMessage; } BeaconMessage;\n\n");
-		
-		out.println("\ttask void doStartUpProtocol()");
-		out.println("\t{");
-		if (this.debugLeds) {
-			out.println("\t\tcall Leds.set(LEDS_LED0 | LEDS_LED1 | LEDS_LED2);");
-		}
-		out.println("\t}\n\n");
-		
-		out.println("\ttask void sendBeaconTask()");
-		out.println("\t{");
-		out.println("\t\tBeaconMessage* bpkt = (BeaconMessage*)(call BeaconPacket.getPayload(&pkt, NULL));");
-		out.println("\t\tcall BeaconAMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BeaconMessage));");
-		out.println("\t}\n\n");
-		
-		out.println("\tevent void BeaconAMSend.sendDone(message_t* msg, error_t error)");
-		out.println("\t{");
-		out.println("\tif ( &pkt == msg )");
-		out.println("\t\t{");
-		out.println("\t\t\tbeaconSent = TRUE;");
-		out.println("\t\t\tpost initialize();");
-		out.println("\t\t}");
-		out.println("\t}\n\n");
-		
-		out.println("\tevent message_t* BeaconReceive.receive(message_t* msg, void* payload, uint8_t len)");
-		out.println("\t{");
-		out.println("\t\tif (! beaconReceived && ! beaconSent )");
-		out.println("\t\t{");
-		out.println("\t\t\tbeaconReceived = TRUE;");
-		out.println("\t\t\tpost sendBeaconTask();");
-		if (this.debugLeds) {
-			out.println("\t\t\tcall Leds.set(0);");
-		}
-		out.println("\t\t}");
-		out.println("\t\treturn msg;");
-		out.println("\t}\n\n");
-		
-		out.println("\tevent message_t* SerialStartUp.receive( message_t* msg, void* payload, uint8_t len )");
-		out.println("\t{");
-		if (this.debugLeds) {
-			out.println("\t\tcall Leds.set(0);");
-		}
-		out.println("\t\tpost sendBeaconTask();");
-		out.println("\t\treturn msg;");
-		out.println("\t}\n\n");
-	}
 	
 	//TODO: Add task invocation in firedTasksBuffer... (need to add to agenda too)
 	private void doT2StartupMethodsWithCommandServer(final PrintWriter out,
@@ -611,8 +578,8 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	private void doT2StartupMethods(final PrintWriter out,
 			final int firstDelta, boolean usesRadio, String sinkID, String targetName) {
 		
-    	out.println("\ttask void processAgendaItemsTask();\n");
-	
+    	out.println("\ttask void processAgendaItemsTask();");
+    	
     	doInitialize(out, firstDelta);
 	
 		out.println("\tevent void Boot.booted()");
@@ -621,9 +588,8 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		if (this.enablePrintf && targetName.equals("z1")) {
 			out.println("\t\tprintfz1_init();");
 		}
-		
 			
-		if (usesRadio) {
+		if (usesRadio && controlRadio == false) {
 			out.println("\t\tcall CommControl.start();");
 		} else {
 			out.println("\t\tpost initialize();");
@@ -631,18 +597,15 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		out.println("\t}\n");
 		
 		if (usesRadio) {
-			if (this.useStartUpProtocol) {
-				doT2StartupProtocol(out, sinkID);
-			}
-			
 			out.println("\tevent void CommControl.startDone(error_t err)");
 			out.println("\t{");
-			out.println("\t\tif (err == SUCCESS) {");
-			if (this.useStartUpProtocol) {
-				out.println("\t\t\tcall SerialControl.start();");
-			} else {
-				out.println("\t\t\tpost initialize();");				
-			}
+			out.println("\t\tif (err == SUCCESS)");
+			out.println("\t\t{");
+			out.println("\t\t\tif (initialized == FALSE)");
+			out.println("\t\t\t{");
+			out.println("\t\t\t\tpost initialize();");				
+			out.println("\t\t\t}");
+			
 			out.println("\t\t} else {");
 			out.println("\t\t\tcall CommControl.start();");			
 			out.println("\t\t}");
@@ -652,26 +615,8 @@ public class QueryPlanModuleComponent extends NesCComponent {
 			out.println("\t{");
 			out.println("\t\t//Do nothing");
 			out.println("\t}\n\n");
-
-			if (this.useStartUpProtocol) {
-				out.println("\tevent void SerialControl.startDone(error_t err)");
-				out.println("\t{");
-				out.println("\t\tif (err == SUCCESS) {");
-				out.println("\t\t\tpost doStartUpProtocol();");		
-				out.println("\t\t} else {");
-				out.println("\t\t\tcall SerialControl.start();");			
-				out.println("\t\t}");
-				out.println("\t}\n");			
-				
-				out.println("\tevent void SerialControl.stopDone(error_t err)");
-				out.println("\t{");
-				out.println("\t\t//Do nothing");
-				out.println("\t}\n\n");
-			}
 		}
     }
-
-
 
     private void doInvokeSleepTask(
 	    final StringBuffer agendaCheckingBuff, final Task task) {
@@ -679,82 +624,23 @@ public class QueryPlanModuleComponent extends NesCComponent {
 
 	int ind = 0;
 	agendaCheckingBuff.append("\t\t\t\tbusyUntil = 0;\n");
-	//TODO: make this the responsiblity of the deliver
-	if (this.controlRadioOff && radioOn == true && tossimFlag == false) {
-		agendaCheckingBuff.append(Utils.indent(ind+4) + "call CommControl.stop();\n");
-		radioOn = false;
-	}
 
 	agendaCheckingBuff.append(Utils.indent(ind)
 		+ "\t\t\t\t//Sleep done by power management\n");
 	
     agendaCheckingBuff.append(Utils.indent(ind)
-			    + "\t\t\t\tcall AgendaTimer.startOneShot(nextDelta);\n");		
-
-	if (this.deliverLast) {
-	    agendaCheckingBuff.append("\t\t\t\t}\n");
-	    agendaCheckingBuff.append("\t\t\t\telse\n");
-	    agendaCheckingBuff.append("\t\t\t\t{\n");
-	    agendaCheckingBuff
-		    .append(Utils.indent(ind)
-			    + "\t\t\t\tdbg(DBG_USR3,\"AGENDA: Mote %d End of Query Duration at %lld \\n\", NODE_NUM,tos_state.tos_time);\n");
-	    //CB: Better would be to call snooze with max value
-	    agendaCheckingBuff
-		    .append(Utils.indent(ind)
-			    + "\t\t\t\tdbg(DBG_POWER,\"POWER: Mote %d CPU_STATE POWER_SAVE at %lld \\n\", NODE_NUM,tos_state.tos_time);\n");
-	    if (!((SleepTask) task).isLastInAgenda()) {
-		agendaCheckingBuff
-			.append(Utils.indent(ind)
-				+ "\t\t\t\tdbg(DBG_USR3,\"AGENDA: Mote %d Jumping to non leaf start at %lld \\n\", NODE_NUM,tos_state.tos_time);\n");
-		agendaCheckingBuff.append(Utils.indent(ind)
-			+ "\t\t\t\tagendaTime=NON_LEAF_START;\n"); //TODO: change to agendaRow?
-		agendaCheckingBuff.append(Utils.indent(ind)
-			+ "\t\t\t\tnextDelta=NON_LEAF_DELTA;\n");
-		agendaCheckingBuff
-			.append(Utils.indent(ind)
-				+ "\t\t\t\t//Jump straight to buffered task to deliver remaining results without sleeping.;\n");
-		agendaCheckingBuff.append(Utils.indent(ind)
-			+ "\t\t\t\tpost processAgendaItemsTask();\n");
-		agendaCheckingBuff.append(Utils.indent(ind)
-			+ "\t\t\t\treturn;\n");
-	    } else {
-		agendaCheckingBuff.append(Utils.indent(ind)
-			+ "\t\t\t\t//Finished all buffered task.;\n");
-	    }
-	    agendaCheckingBuff.append(Utils.indent(ind) + "\t\t\t}\n");
-	}
-    }
-
-    private void doInvokeCommunicationTask(
-	    final StringBuffer firedTimerTaskBuff,
-	    final StringBuffer agendaCheckingBuff, final boolean lastTime,
-	    final boolean first, final Task task, final int ind,
-	    boolean tossimFlag, StringBuffer radioOnTaskBuff) {
-	    this.doInvokeT2CommunicationTask(firedTimerTaskBuff,
-		    agendaCheckingBuff, lastTime, first, task, ind); //TODO: ?tossimFlag?, radioOnTaskBuff?
+			    + "\t\t\t\tcall AgendaTimer.startOneShot(nextDelta);\n");
     }
 
     private String generateTaskName(final String commWiringName) {
 	return commWiringName.substring(6) + "Task()";
     }
 
-	private void invokeRadioOnTask(String commTaskName,
-			final StringBuffer agendaCheckingBuff,
-			StringBuffer radioOnTaskBuff, final int ind) {
-		
-//			agendaCheckingBuff.append(Utils.indent(ind) + "call RadioOnTimer.startOneShot("+
-//					CostParameters.getTurnOnRadio()+");\n");
-//			radioOnTaskBuff.append("\tevent void RadioOnTimer.fired()\n");
-//			radioOnTaskBuff.append("\t{\n");
-//			radioOnTaskBuff.append("\t\tpost " + commTaskName + "Task();\n");
-//			radioOnTaskBuff.append("\t}\n\n");
-
-	}
-
-    private void doInvokeT2CommunicationTask(
+    private void doInvokeCommunicationTask(
 	    final StringBuffer firedTimerTaskBuff,
 	    final StringBuffer agendaCheckingBuff, final boolean lastTime,
-	    final boolean first, final Task task, final int ind) {
+	    final boolean first, final Task task, final int ind,
+	    boolean tossimFlag, int agendaRow) {
 	final CommunicationTask commTask = (CommunicationTask) task;
 	final int mode = commTask.getMode();
 
@@ -794,8 +680,11 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	agendaCheckingBuff.append(Utils.indent(ind) + "\t\t\t\tdbg(\"DBG_USR2\",\""
 		+ commTask.toString()
 		+ " timer fired at row %d\\n\",agendaRow);\n");
-	agendaCheckingBuff.append(Utils.indent(ind) + "\t\t\t\tpost "
-		+ this.generateTaskName(txrxUserAsNames.get(0)) + ";\n");
+	
+	String taskName = this.generateTaskName(txrxUserAsNames.get(0));
+	agendaCheckingBuff.append(Utils.indent(ind+4) + "post " + taskName + ";\n");
+	
+
 
 	final StringBuffer taskBuffer = new StringBuffer();
 	final StringBuffer eventBuffer = new StringBuffer();
@@ -811,14 +700,11 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		    + ".doTaskDone(error_t err)\n");
 	    eventBuffer.append("\t{\n");
 	    if (i + 1 < txrxUserAsNames.size()) {
-		eventBuffer
-			.append("\t\t//transmit tuples from the next tray\n");
-		eventBuffer.append("\t\tpost "
-			+ this.generateTaskName(txrxUserAsNames.get(i + 1))
-			+ ";\n");
+	    	eventBuffer.append("\t\t//transmit tuples from the next tray\n");
+	    	eventBuffer.append("\t\tpost "
+	    			+ this.generateTaskName(txrxUserAsNames.get(i + 1))+ ";\n");
 	    } else {
-		eventBuffer
-			.append("\t\t//tuples from all trays transmitted, do nothing\n");
+	    	eventBuffer.append("\t\t//tuples from all trays transmitted\n");
 	    }
 	    eventBuffer.append("\t}\n\n"); //TODO: only applicable for T2?
 	} 
@@ -831,7 +717,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    final StringBuffer firedTimerTaskBuff,
 	    final StringBuffer agendaCheckingBuff, final boolean lastTime,
 	    final boolean first, final Task task, final int ind,
-	    StringBuffer radioOnTaskBuff) {
+	    int agendaRow) {
 	final FragmentTask fragTask = (FragmentTask) task;
 	final String fragID = fragTask.getFragment().getID();
 	final String nodeID = fragTask.getSiteID();
@@ -853,19 +739,8 @@ public class QueryPlanModuleComponent extends NesCComponent {
 				+ " timer fired at row %d\\n\",agendaRow);\n");		
 	
 	String taskName = "F" + fragID + "n" + nodeID + "C";
-	if (fragTask.getFragment().containsOperatorType(DeliverOperator.class) && tossimFlag == false) {
-		//mica2 only: turn the radio on if not already on, and wait for delay
-		if (this.controlRadioOff) {
-			agendaCheckingBuff.append(Utils.indent(ind+4) + "call CommControl.start();\n");
-			radioOn = true;
-			invokeRadioOnTask(taskName, agendaCheckingBuff, radioOnTaskBuff, ind+4);
-		} else {
-			agendaCheckingBuff.append(Utils.indent(ind+4) + "post " + taskName + "Task();\n");
-		}
-		
-	} else {
-		agendaCheckingBuff.append(Utils.indent(ind+4) + "post " + taskName + "Task();\n");
-	}
+	agendaCheckingBuff.append(Utils.indent(ind+4) + "post " + taskName + "Task();\n"); 
+	
 	if (fragTask.getOccurrence() == 1) {
 	    firedTimerTaskBuff.append("\ttask void " + taskName + "Task()\n");
 	    firedTimerTaskBuff.append("\t{\n");
@@ -883,12 +758,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		     + ".doTaskDone(error_t err)\n");
     	firedTimerTaskBuff.append("\t{\n");
     	firedTimerTaskBuff.append("\t}\n\n");
-	    
-    /*			firedTimerTaskBuff.append("\tevent void "+CodeGenUtils.generateUserAsDoTaskName(fragTask.getFragment(),
-     fragTask.getSiteID())+".doTaskDone(error_t err)\n");
-     firedTimerTaskBuff.append("\t{\n");
-     firedTimerTaskBuff.append("\t\t//do nothing\n");
-     firedTimerTaskBuff.append("\t}\n\n");*///TODO: only applicable for T2?
 	}	
     }
 
@@ -927,15 +796,8 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		.generateModuleHeader(TinyOSGenerator.COMPONENT_QUERY_PLAN);
 	out.println(header);
 
-	if (this.deliverLast) {
-	    out.println("\t#define NON_LEAF_START " + agenda.getNonLeafStart()
-		    + "\n");
-	    out.println("\t#define NON_LEAF_DELTA "
-		    + (startTimeList.get(startTimeList.indexOf(agenda
-			    .getNonLeafStart()) + 1)
-			    - agenda.getNonLeafStart() - 1) + "\n");
-	}
 	out.println("\n");
+	out.println("\tbool initialized = FALSE;\n");
 	out.println("\tuint32_t nextDelta;\n");
 	out.println("\tuint32_t agendaRow;\n");
 	out.println("\tbool deadBySimulation;\n");

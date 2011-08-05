@@ -33,16 +33,12 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
@@ -105,7 +101,7 @@ public class AcquireComponent extends NesCComponent {
 		    		getNescText(op.getLogicalOperator().getPredicate(), target));
 		    replacements.put("__ACQUIRE_PREDICATES__", CodeGenUtils.getNescText(
 		    		op.getLogicalOperator().getPredicate(), "", null,
-		    		((AcquireOperator)op.getLogicalOperator()).getAcquiredAttributes(), null, target));
+		    		((AcquireOperator)op.getLogicalOperator()).getSensedAttributes(), null, target));
 		    
 		    if (this.debugLeds) {
 				replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led0Toggle();");		
@@ -134,7 +130,7 @@ public class AcquireComponent extends NesCComponent {
     private void doGetDataMethods(final Map<String, String> replacements) {
     	final List<Attribute> sensedAttribs = 
     		((AcquireOperator)op.getLogicalOperator()).
-    		getInputAttributes();
+    		getSensedAttributes();
     	final StringBuffer getDataBuff = new StringBuffer();
     	final StringBuffer declsBuff = new StringBuffer();
     	for (int i = sensedAttribs.size()-1; i >= 0; i--) {
@@ -160,16 +156,7 @@ public class AcquireComponent extends NesCComponent {
     	    getDataBuff.append("\t\t\tatomic\n");
     	    getDataBuff.append("\t\t\t{\n");
     	    getDataBuff.append("\t\t\t\tacquiring" + i + " = FALSE;\n");    	    
-    	    getDataBuff.append("\t\t\t\treading" + i + " = data;\n");
-     	    final String attribName = 
-     	    	CodeGenUtils.getNescAttrName(sensedAttribs.get(i));
-    	    String padding = "";
-
-    	    //makes all the sensor readings be nicely aligned
-    	    if (attribName.length() < 16) {
-    	    	padding = Utils.pad(" ", 16 - attribName.length());
-    	    }
-
+    	    getDataBuff.append("\t\t\t\treading" + i + " = data;\n"); 
     	    getDataBuff.append("\t\t\t}\n");
 
     	    if (i + 1 < sensedAttribs.size()) {
@@ -186,26 +173,8 @@ public class AcquireComponent extends NesCComponent {
     }
 
     /**
-     * Writes the methods to actually acquire the data.
-     * 
-     * @param replacements Values to be replaced in the tamplates
-     */
-    private void doGetEmptyDataMethods(final Map<String, String> replacements) {
-    	final List<Attribute> sensedAttribs = 
-    		((AcquireOperator)op.getLogicalOperator()).getInputAttributes();
-    	final StringBuffer getDataBuff = new StringBuffer();
-    	for (int i = sensedAttribs.size() - 1; i >= 0; i--) {
-    	    getDataBuff.append("\tasync event result_t ADC" + i
-    		    + ".dataReady(uint16_t data)\n");
-    	    getDataBuff.append("\t{\n");
-    	    getDataBuff.append("\t}\n\n");
-    	}
-    	replacements.put("__GET_DATA_METHODS__", getDataBuff.toString());
-    }
-
-    /**
      * Generates the text for tuple construction.
-     * @param replacements Values to be replaced in the tamplates
+     * @param replacements Values to be replaced in the templates
      * @throws CodeGenerationException Error if Attribute not acquired.
      */
     private void doTupleConstruction(final Map<String, 
@@ -273,7 +242,7 @@ public class AcquireComponent extends NesCComponent {
 		if (expression instanceof DataAttribute) {
 			try {
 				return "(float) reading" + ((AcquireOperator)op.
-				getLogicalOperator()).getInputAttributeNumber(expression);
+				getLogicalOperator()).getSensedAttributeNumber(expression);
 			} catch (OptimizationException e) {
 				throw new CodeGenerationException(e);
 			} 

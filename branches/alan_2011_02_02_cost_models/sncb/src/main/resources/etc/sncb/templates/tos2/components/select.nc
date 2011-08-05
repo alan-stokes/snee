@@ -61,13 +61,17 @@ __HEADER__
 				{
 					if (__SELECT_PREDICATES__)
 					{
+						if (outHead == -1)
+						{
+							outHead = 0;
+						}
+__CONSTRUCT_TUPLE__
+
 						inHead= inHead+1;
 						if (inHead == inQueueSize) 
 						{
 							inHead = 0;
 						}
-
-__CONSTRUCT_TUPLE__
 					
 						outTail= outTail+1;
 						if (outTail == OUT_QUEUE_CARD) 

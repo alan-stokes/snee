@@ -49,6 +49,8 @@ public class TinyOS_SNCB implements SNCB {
 	
 	protected String targetDirName; 
 
+	private boolean controlRadio = true;
+
 	// Is the network running?
 	protected static boolean isStarted = false;
 	protected SerialPortMessageReceiver mr;
@@ -89,6 +91,11 @@ public class TinyOS_SNCB implements SNCB {
 				useNodeController = false;
 			}
 			targetDirName = target.toString().toLowerCase();
+			// Turn the radio on/off
+			if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_CONTROL_RADIO)) {
+				this.controlRadio = SNEEProperties
+					.getBoolSetting(SNEEPropertyNames.SNCB_CONTROL_RADIO);
+			}			
 			
 			//More TinyOS environment variables
 			if (serialPort != null) {
@@ -240,23 +247,13 @@ public class TinyOS_SNCB implements SNCB {
 			throws IOException, SchemaMetadataException, TypeMappingException,
 			OptimizationException, CodeGenerationException {
 		// TODO: move some of these to an sncb .properties file
-		boolean controlRadioOff = false;
-		boolean enablePrintf = false;
-		boolean useStartUpProtocol = false;
+		boolean enablePrintf = false; //TODO: not tested
 		boolean enableLeds = true;
-		boolean usePowerManagement = false;
-		boolean deliverLast = false;
-		boolean adjustRadioPower = false;
-		boolean includeDeluge = false;
 		boolean debugLeds = true;
-		boolean showLocalTime = false;
 
 		TinyOSGenerator codeGenerator = new TinyOSGenerator(target, combinedImage, queryOutputDir,
-				metadata, controlRadioOff, enablePrintf, useStartUpProtocol,
-				enableLeds, usePowerManagement, deliverLast, adjustRadioPower,
-				includeDeluge, debugLeds, showLocalTime, useNodeController);
-		// TODO: in the code generator, need to connect controller components to
-		// query plan components
+				metadata, controlRadio, enablePrintf, enableLeds,
+				debugLeds, useNodeController);
 		codeGenerator.doNesCGeneration(qep);
 	}
 
@@ -399,8 +396,8 @@ public class TinyOS_SNCB implements SNCB {
 						// start/stop mechanism does not guarantee
 						// synchronisation. It was chosen as a trade-off
 						// between code size and accuracy.
-						pause();
-						resume();
+						//pause();
+						//resume();
 					} catch (Exception e) {
 						// General fail case
 						System.out.println("Execution failed. See logs for detail.");
