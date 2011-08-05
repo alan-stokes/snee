@@ -6,16 +6,16 @@ This is a hopefully best standard behaviour for dealing with adding new modules 
 =Adding module=  
 (tips to keep sure you don't add or miss the wrong stuff into the svn)
 
-1. Its safer to port a old module and rename its artifact id, name and descriptions within its pom. 
-2. You need to update the main SNEE pom with the new module name (the artifact id of the module from point 1).
-3. you need to add the new modules directory to the svn (*but avoiding any of the auto generated files like target directory, .settings, .protect etc.*)
-4. commit new module to svn. 
-5. send a mail out to the rest of the developing team announcing the addition of the module.
+  # Its safer to port a old module and rename its artifact id, name and descriptions within its pom. 
+  # You need to update the main SNEE pom with the new module name (the artifact id of the module from point 1).
+  # you need to add the new modules directory to the svn (*but avoiding any of the auto generated files like target directory, .settings, .protect etc.*)
+  # commit new module to svn. 
+  # send a mail out to the rest of the developing team announcing the addition of the module.
 
 =gaining modules from merges= 
 (tips to keep sure you actually get the modules)
 
-1. merge the revisions which give you the new module.
-2. commit your new merged branch to the svn.
-3. remove your copy of the branch from your local area (needed for eclipse to detect the new module).
-4. pull your branch off the svn repos, if all is good and worked, you should find the new module appears in your new local version.
+  # merge the revisions which give you the new module.
+  # commit your new merged branch to the svn.
+  # remove your copy of the branch from your local area (needed for eclipse to detect the new module).
+  # pull your branch off the svn repos, if all is good and worked, you should find the new module appears in your new local version.
