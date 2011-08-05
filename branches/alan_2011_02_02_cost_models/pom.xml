@@ -15,6 +15,7 @@
 	<modules>
 		<module>snee-api</module>
 		<module>data-source</module>
+		<module>snee-wsn-manager</module>
 		<module>snee-core</module>
 		<module>sncb</module>
 		<module>compiler</module>
