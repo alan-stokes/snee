@@ -1,6 +1,6 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.planner;
+package uk.ac.manchester.cs.snee.manager.planner;
 
-import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 
 public class Planner 
 {

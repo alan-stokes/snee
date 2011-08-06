@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.anayliser;
+package uk.ac.manchester.cs.snee.manager.anayliser;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -10,8 +10,6 @@ import java.util.Map;
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.autonomicmanager.Adapatation;
-import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
@@ -20,6 +18,9 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
+import uk.ac.manchester.cs.snee.manager.Adapatation;
+import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeFrameWorkPartial;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -31,8 +32,8 @@ import uk.ac.manchester.cs.snee.sncb.SNCBException;
 public class Anaylsiser 
 {
   private CardinalityEstimatedCostModel cardECM;
-  private AdapatationStrategyIntermediate adapatationStrategyIntermediateSpaceAndTimePinned;
-  private AdapatationStrategyIntermediate adapatationStrategyIntermediateSpacePinned;
+  private FailedNodeFrameWorkPartial adapatationStrategyIntermediateSpaceAndTimePinned;
+  private FailedNodeFrameWorkPartial adapatationStrategyIntermediateSpacePinned;
   private SensorNetworkQueryPlan qep;
   private AutonomicManager manager;
   private DeadNodeSimulator deadNodeSimulator; 
@@ -42,8 +43,8 @@ public class Anaylsiser
   public Anaylsiser(AutonomicManager autonomicManager)
   {
     manager = autonomicManager;
-    adapatationStrategyIntermediateSpaceAndTimePinned = new AdapatationStrategyIntermediate(manager, true, true);
-    adapatationStrategyIntermediateSpacePinned = new AdapatationStrategyIntermediate(manager, true, false);
+    adapatationStrategyIntermediateSpaceAndTimePinned = new FailedNodeFrameWorkPartial(manager, true, true);
+    adapatationStrategyIntermediateSpacePinned = new FailedNodeFrameWorkPartial(manager, true, false);
     deadNodeSimulator = new DeadNodeSimulator();
   }
 
@@ -218,13 +219,13 @@ public class Anaylsiser
          TypeMappingException, 
          AgendaException, SNEEException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
   {
-	ArrayList<AdapatationStrategyIntermediate> methodologyiesOfAdapatation = new ArrayList<AdapatationStrategyIntermediate>();
+	ArrayList<FailedNodeFrameWorkPartial> methodologyiesOfAdapatation = new ArrayList<FailedNodeFrameWorkPartial>();
 	//add methodologyies
 	methodologyiesOfAdapatation.add(adapatationStrategyIntermediateSpaceAndTimePinned);
 	methodologyiesOfAdapatation.add(adapatationStrategyIntermediateSpacePinned);
 	//create adaparatation array
 	ArrayList<Adapatation> adapatations = new ArrayList<Adapatation>();
-	Iterator<AdapatationStrategyIntermediate> methodologyIterator = methodologyiesOfAdapatation.iterator();
+	Iterator<FailedNodeFrameWorkPartial> methodologyIterator = methodologyiesOfAdapatation.iterator();
 	//go though methodologyies till located a adapatation.
 	while(adapatations.size() == 0 && methodologyIterator.hasNext())
 	{

@@ -1,12 +1,8 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.anayliser;
+package uk.ac.manchester.cs.snee.manager.failednode;
 
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.autonomicmanager.Adapatation;
-import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
-import uk.ac.manchester.cs.snee.autonomicmanager.TemporalAdjustment;
-import uk.ac.manchester.cs.snee.autonomicmanager.anayliser.router.CandiateRouter;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
@@ -29,6 +25,10 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
+import uk.ac.manchester.cs.snee.manager.Adapatation;
+import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.TemporalAdjustment;
+import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.CandiateRouter;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -58,11 +58,10 @@ import com.rits.cloning.Cloner;
 
 /**
  * @author stokesa6
- *class AnaylsiserStrategy2Rules encapsulates the rules designed to calculate 
- *what possible changes the autonomic manager can do to adjust for a failure of a node
+ *class designed to encapsulate the partial framework of adapting just what needs to be adapted
  */
 
-public class AdapatationStrategyIntermediate
+public class FailedNodeFrameWorkPartial
 {
   private AutonomicManager manager;
   private boolean spacePinned;
@@ -78,7 +77,7 @@ public class AdapatationStrategyIntermediate
    * @param autonomicManager
    * the parent of this class.
    */
-  public AdapatationStrategyIntermediate(AutonomicManager autonomicManager, boolean spacePinned, boolean timePinned)
+  public FailedNodeFrameWorkPartial(AutonomicManager autonomicManager, boolean spacePinned, boolean timePinned)
   {
     this.manager = autonomicManager;
     this.spacePinned = spacePinned;
@@ -91,7 +90,7 @@ public class AdapatationStrategyIntermediate
   {
     this.qep = (SensorNetworkQueryPlan) oldQep;
     outputFolder = manager.getOutputFolder();
-    new AdapatationStrategyIntermediateUtils(this).outputTopologyAsDotFile(outputFolder, "/topology.dot");
+    new FailedNodeFrameWorkPartialUtils(this).outputTopologyAsDotFile(outputFolder, "/topology.dot");
     this.oldIOT = qep.getIOT();
     oldIOT.setID("OldIOT");
     this.agenda = this.qep.getAgendaIOT();
@@ -186,7 +185,7 @@ public class AdapatationStrategyIntermediate
       //run new iot though when scheduler and locate changes
       AgendaIOT newAgenda = doSNWhenScheduling(newIOT, qep.getQos(), qep.getID(), qep.getCostParameters());
       //output new and old agendas
-      new AdapatationStrategyIntermediateUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), oldIOT, newIOT, choiceFolder);
+      new FailedNodeFrameWorkPartialUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), oldIOT, newIOT, choiceFolder);
       //analysis newIOT for interesting nodes
       checkIOT(newIOT, oldIOT, failedNodes, currentAdapatation);
       //check if agenda agrees to constraints.

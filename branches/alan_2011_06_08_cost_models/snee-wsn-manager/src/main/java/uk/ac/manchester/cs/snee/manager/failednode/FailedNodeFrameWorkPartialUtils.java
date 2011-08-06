@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.anayliser;
+package uk.ac.manchester.cs.snee.manager.failednode;
 
 import java.io.File;
 
@@ -10,13 +10,17 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 
-public class AdapatationStrategyIntermediateUtils
+/**
+ *@author stokesa6
+ * class used to add utility functions for failed node framework
+ **/
+public class FailedNodeFrameWorkPartialUtils
 {
 
-  private AdapatationStrategyIntermediate ad;
+  private FailedNodeFrameWorkPartial ad;
   private String sep = System.getProperty("file.separator");
   
-  public AdapatationStrategyIntermediateUtils(AdapatationStrategyIntermediate ad)
+  public FailedNodeFrameWorkPartialUtils(FailedNodeFrameWorkPartial ad)
   {
     this.ad = ad;
   }

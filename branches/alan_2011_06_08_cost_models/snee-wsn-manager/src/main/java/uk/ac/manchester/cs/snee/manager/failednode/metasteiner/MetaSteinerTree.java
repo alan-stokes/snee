@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.anayliser.metasteinertree;
+package uk.ac.manchester.cs.snee.manager.failednode.metasteiner;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 
 import com.rits.cloning.Cloner;
 
-import uk.ac.manchester.cs.snee.autonomicmanager.anayliser.router.HeuristicSet;
 import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
@@ -17,6 +16,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.HeuristicSet;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;

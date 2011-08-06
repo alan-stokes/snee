@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.anayliser.metasteinertree;
+package uk.ac.manchester.cs.snee.manager.failednode.metasteiner;
 
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 

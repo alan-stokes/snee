@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.anayliser.router;
+package uk.ac.manchester.cs.snee.manager.failednode.alternativerouter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -11,7 +11,6 @@ import org.apache.log4j.Logger;
 
 import com.rits.cloning.Cloner;
 
-import uk.ac.manchester.cs.snee.autonomicmanager.anayliser.metasteinertree.MetaSteinerTree;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
 import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
@@ -23,6 +22,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
+import uk.ac.manchester.cs.snee.manager.failednode.metasteiner.MetaSteinerTree;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;

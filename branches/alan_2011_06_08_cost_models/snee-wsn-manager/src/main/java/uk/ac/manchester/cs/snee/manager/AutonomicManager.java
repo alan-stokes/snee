@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.autonomicmanager;
+package uk.ac.manchester.cs.snee.manager;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -12,10 +12,6 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.autonomicmanager.anayliser.Anaylsiser;
-import uk.ac.manchester.cs.snee.autonomicmanager.executer.Executer;
-import uk.ac.manchester.cs.snee.autonomicmanager.monitor.Monitor;
-import uk.ac.manchester.cs.snee.autonomicmanager.planner.Planner;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
@@ -27,6 +23,10 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
+import uk.ac.manchester.cs.snee.manager.anayliser.Anaylsiser;
+import uk.ac.manchester.cs.snee.manager.executer.Executer;
+import uk.ac.manchester.cs.snee.manager.monitor.Monitor;
+import uk.ac.manchester.cs.snee.manager.planner.Planner;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;

@@ -1,6 +1,6 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.executer;
+package uk.ac.manchester.cs.snee.manager.executer;
 
-import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 
 public class Executer 
 {

@@ -1,12 +1,12 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.anayliser.metasteinertree;
+package uk.ac.manchester.cs.snee.manager.failednode.metasteiner;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 
-import uk.ac.manchester.cs.snee.autonomicmanager.anayliser.router.HeuristicSet;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.HeuristicSet;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;

@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.monitor;
+package uk.ac.manchester.cs.snee.manager.monitor;
 
 import java.net.MalformedURLException;
 import java.sql.ResultSet;
@@ -16,7 +16,7 @@ import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.ResultStoreImpl;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
