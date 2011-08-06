@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.router;
+package uk.ac.manchester.cs.snee.autonomicmanager.anayliser.router;
 
 import java.io.File;
 import java.util.ArrayList;

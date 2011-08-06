@@ -12,7 +12,7 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.Anaylsiser;
+import uk.ac.manchester.cs.snee.autonomicmanager.anayliser.Anaylsiser;
 import uk.ac.manchester.cs.snee.autonomicmanager.executer.Executer;
 import uk.ac.manchester.cs.snee.autonomicmanager.monitor.Monitor;
 import uk.ac.manchester.cs.snee.autonomicmanager.planner.Planner;

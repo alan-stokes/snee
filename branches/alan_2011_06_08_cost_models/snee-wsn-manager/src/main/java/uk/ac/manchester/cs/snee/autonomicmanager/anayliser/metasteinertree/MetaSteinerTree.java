@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 
 import com.rits.cloning.Cloner;
 
-import uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.router.HeuristicSet;
+import uk.ac.manchester.cs.snee.autonomicmanager.anayliser.router.HeuristicSet;
 import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;

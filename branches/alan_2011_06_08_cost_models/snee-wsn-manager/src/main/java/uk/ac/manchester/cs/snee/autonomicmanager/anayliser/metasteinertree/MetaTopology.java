@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 
-import uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.router.HeuristicSet;
+import uk.ac.manchester.cs.snee.autonomicmanager.anayliser.router.HeuristicSet;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;

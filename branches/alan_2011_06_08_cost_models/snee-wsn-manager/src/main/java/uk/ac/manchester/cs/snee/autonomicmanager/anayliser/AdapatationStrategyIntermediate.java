@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser;
+package uk.ac.manchester.cs.snee.autonomicmanager.anayliser;
 
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
@@ -6,7 +6,7 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.autonomicmanager.Adapatation;
 import uk.ac.manchester.cs.snee.autonomicmanager.AutonomicManager;
 import uk.ac.manchester.cs.snee.autonomicmanager.TemporalAdjustment;
-import uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser.router.CandiateRouter;
+import uk.ac.manchester.cs.snee.autonomicmanager.anayliser.router.CandiateRouter;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;

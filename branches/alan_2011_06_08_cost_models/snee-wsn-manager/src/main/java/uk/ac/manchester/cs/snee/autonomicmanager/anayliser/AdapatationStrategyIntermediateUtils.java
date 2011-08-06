@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.autonomicmanager.anaylsiser;
+package uk.ac.manchester.cs.snee.autonomicmanager.anayliser;
 
 import java.io.File;
 
