@@ -7,9 +7,9 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.ac.manchester.cs.snee</groupId>
-	<artifactId>snee-compiler</artifactId>
-	<name>SNEE Compiler</name>
-	<description>Compiles a SNEEql query into a query plan</description>
+	<artifactId>snee-wsn-manager</artifactId>
+	<name>SNEE wsn manager</name>
+	<description>contains all run time management components, including autonomic manager</description>
 
 	<dependencies>
 		<dependency>
