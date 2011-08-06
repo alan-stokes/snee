@@ -11,6 +11,7 @@ This is a hopefully best standard behaviour for dealing with adding new modules 
   # Its safer to create a new module from scratch with new-other-maven-module (porting a copy of a current module will cause many problems with maven) but its easier and safer to copy the pom file and altering its artifiact id, etc.
   # You need to update the main SNEE pom with the new module name (the artifact id of the module from point 1).
   # you need to add the new modules directory to the svn (*but avoiding any of the auto generated files like target directory, .settings, .protect etc.*)
+  # right click on your module and click share. This allows it to be downloaded off the repos.
   # commit new module to svn. 
   # send a mail out to the rest of the developing team announcing the addition of the module.
 
