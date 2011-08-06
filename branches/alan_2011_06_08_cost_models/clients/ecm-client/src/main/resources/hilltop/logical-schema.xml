@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<schema xmlns="http://snee.cs.man.ac.uk/namespace/logical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/logical-schema ../schema/logical-schema.xsd">
+
+      <stream name="Hilltop" type="pull">
+         <column name="rain">
+          	<type class ="integer"/>
+         </column>
+     </stream>
+
+      <stream name="River" type="pull">
+         <column name="time">
+          	<type class ="integer"/>
+         </column>
+         <column name="depth">
+          	<type class ="integer"/>
+         </column>
+         <column name="rain">
+          	<type class ="integer"/>
+         </column>
+     </stream> 
+     
+</schema>

@@ -1,0 +1,16 @@
+\documentclass{article} 
+ \usepackage{a4-mancs} 
+ \usepackage{graphicx} 
+\usepackage{mathtools} 
+ \usepackage{subfig} 
+ \usepackage[english]{babel} 
+\usepackage{marvosym} 
+
+
+ \begin{document} 
+\begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}  
+ \hline 
+testNo &  dead Sites List & Cost Model Epoch Cardinality & Cost Model Angeda Cardinality &  Snee Epoch Cardinality & Snee Agenda Cardinality & correct \\ \hline 
+1 &  \multicolumn{6}{|c|}{SELECT RSTREAM AVG(sq1.sq1x) as qx FROM (SELECT AVG(anow.x) as sq1x FROM A[NOW] anow ) sq1 ;} \\ \hline 
+control&1.0&2.0&1.0&2.0&Y \\ \hline 
+control&1.0&2.0&1.0&2.0&Y \\ \hline 

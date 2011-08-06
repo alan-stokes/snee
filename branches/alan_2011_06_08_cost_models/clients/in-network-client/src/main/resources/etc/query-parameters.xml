@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+
+<query-parameters
+xmlns="http://snee.cs.manchester.ac.uk"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://snee.cs.manchester.ac.uk query-parameters.xsd">
+
+	<qos-expectations>
+
+		<optimization-goal>
+			<type>NONE</type>
+			<variable>NONE</variable>
+			<weighting>1</weighting>
+		</optimization-goal>
+
+		<acquisition-interval>
+			<units>SECONDS</units>
+			<constraint>
+				<range>	
+					<min-val>5</min-val>
+					<max-val>5</max-val>					
+				</range>	
+			</constraint>
+			<weighting>1</weighting>
+		</acquisition-interval>	
+		
+		<buffering-factor>
+			<constraint>
+				<range>	
+					<min-val>2</min-val>
+					<max-val>2</max-val>					
+				</range>	
+			</constraint>
+			<weighting>1</weighting>
+		</buffering-factor>			
+		
+		<delivery-time>
+			<units>SECONDS</units>
+			<constraint>
+				<less-equals>600</less-equals>
+			</constraint>
+			<weighting>2</weighting>
+		</delivery-time>
+	
+	</qos-expectations>
+
+<!-- Not currently implemented, but just to give an idea of what other
+parameters may be associated with a query...
+
+	<data-analysis>
+	</data-analysis>
+	
+	<execution-schedule>
+		<start-time>10:00 30 AUG 2010</start-time>
+		<stop-time>22:00 30 AUG 2010</stop-time>
+	</execution-schedule>
+
+-->
+
+</query-parameters>
