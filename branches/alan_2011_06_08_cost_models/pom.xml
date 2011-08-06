@@ -19,6 +19,7 @@
 		<module>sncb</module>
 		<module>compiler</module>
 		<module>clients</module>
+		<module>snee-wsn-manager</module>
 	</modules>
 
 	<organization>
