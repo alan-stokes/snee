@@ -18,6 +18,8 @@ public class TupleWindowOperatorImpl extends WindowOperatorImpl {
 	private int windowSize;
 	private Tuple[] buffer;
 	private int nextIndex = 0;
+	private List<Tuple> prevSlideTuples;
+	private boolean isFirst;
 
 	public TupleWindowOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
@@ -34,6 +36,8 @@ public class TupleWindowOperatorImpl extends WindowOperatorImpl {
 
 		// Instantiate the buffer for storing tuples
 		buffer = new Tuple[windowSize];
+		prevSlideTuples = new ArrayList<Tuple>(1);
+		isFirst = true;
 		
 		if (logger.isTraceEnabled()) 
 			logger.trace("Window size: " + windowSize + " Slide: " + slide);
@@ -75,6 +79,14 @@ public class TupleWindowOperatorImpl extends WindowOperatorImpl {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN update()");
 	}
+	
+	@Override
+	public void generateAndUpdate(List<Output> resultItems) {
+		if (sourceOperator.getSize() + prevSlideTuples.size() >= windowSize) {
+			resultItems.add(generateWindow());
+		}
+		
+	}
 
 	private void processTuple(Object observed, List<Output> resultItems) {
 		if (logger.isTraceEnabled())
@@ -112,15 +124,153 @@ public class TupleWindowOperatorImpl extends WindowOperatorImpl {
 	private Window generateWindow() {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER generateWindow()");
-		List<Tuple> tupleList = new ArrayList<Tuple>();
-		for (int i = 0; i < buffer.length ; i++) {
-			tupleList.add(buffer[i]);
-		}
+		List<Tuple> tupleList = getTupleList();		
 		Window window = new Window(tupleList);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN generateWindow() with " + window);
 		return window;
 	}
+
+	/*private List<Tuple> getTupleList1() {
+		List<Tuple> tupleList = new ArrayList<Tuple>();
+		if  (!windowOp.isGetDataByPullModeOperator()) {
+			for (int i = 0; i < buffer.length ; i++) {
+				tupleList.add(buffer[i]);
+			}
+		} else {			
+			for (int i = 0; i < windowSize; i++) {
+				tupleList.add(((TaggedTuple)sourceOperator.getNext()).getTuple());
+			}
+		}
+		return tupleList;
+	}	*/
+	
+	private List<Tuple> getTupleList() {
+		List<Tuple> tupleList = new ArrayList<Tuple>();
+		if (!windowOp.isGetDataByPullModeOperator()) {
+			for (int i = 0; i < buffer.length; i++) {
+				tupleList.add(buffer[i]);
+			}
+		} else {
+			// Slide factor can be 0, +ve or -ve
+			// If 0, there is no overlap and no need to store tuples for future
+			// If +ve, store tuples that fall in the next slide, and use the
+			// previous
+			// tuple buffer to create the new one for window size
+			// If -ve, there is a set of tuples that needs to be dropped in
+			// between
+			// two windows, just drop them
+			int slideFactor = windowSize - slide;
+			List<Tuple> newSlideTuples;// = new ArrayList<Tuple>(slideFactor);
+			if (slideFactor > 0) {
+				newSlideTuples = new ArrayList<Tuple>(slide);
+			} else {
+				newSlideTuples = new ArrayList<Tuple>(0);
+			}
+			// If slide factor is less than 0, then skip the next slideFactor
+			// tuples
+			// only if it is not the first window
+			//FIXME This is just a crappy way to go about implementing
+			//it in if else way, rather we need to bring in a timeout strategy
+			//implementation. The If else is put in to avoid the thread getting
+			//stuck. Not doing it due to lack of time
+			if (!isFirst && slideFactor < 0) {
+				for (int i = 0; i < slide; i++) {
+					//FIXME This while true should be there, and used through
+					//a receive time out. Otherwise, the thread will get stuck here
+					//while (true) {
+						//System.out.println("Stuck in here mate: ");
+						TaggedTuple taggedTuple = (TaggedTuple) sourceOperator
+								.getNext();
+						//System.out
+							//	.println("Stuck in here mate: " + taggedTuple);
+						if (taggedTuple != null) {
+							break;
+						}
+					//}
+					System.out.println("Dropped " + i);
+				}
+				isFirst = true;
+			} else {
+				for (int i = 0; i < windowSize; i++) {
+
+					Tuple nextTuple = null;
+					if (slideFactor > 0
+							&& (i < slide && prevSlideTuples.size() > 0)) {
+						// If the slideFactor is greater than 0, then for the
+						// size of the slide, get data from the previous tuple
+						// list
+						nextTuple = prevSlideTuples.get(i);
+						//System.out.println("Here");
+					} else {
+						TaggedTuple taggedTuple = null;
+						while (true) {
+							//System.out.println("Stuck in here then?");
+							taggedTuple = (TaggedTuple) sourceOperator
+									.getNext();
+							if (taggedTuple != null) {
+								break;
+							}
+						}
+						nextTuple = taggedTuple.getTuple();
+					}
+					tupleList.add(nextTuple);
+					if (slideFactor > 0) {
+						if (i >= slide) {
+							newSlideTuples.add(nextTuple);
+						}
+					}
+
+				}
+				prevSlideTuples = newSlideTuples;
+				if (slideFactor < 0) {
+					isFirst = false;
+				} else {
+					isFirst = true;
+				}
+			}
+		}
+		return tupleList;
+	}
+	
+	/*private List<Tuple> getTupleList2() {
+		List<Tuple> tupleList = new ArrayList<Tuple>();
+		if  (!windowOp.isGetDataByPullModeOperator()) {
+			for (int i = 0; i < buffer.length ; i++) {
+				tupleList.add(buffer[i]);
+			}
+		} else {
+			//Slide factor can be 0, +ve or -ve
+			//If 0, there is no overlap and no need to store tuples for future
+			//If +ve, store tuples that fall in the next slide
+			//If -ve, there is a set of tuples that needs to be dropped in between
+			//two windows, just drop them
+			int slideFactor = windowSize - slide;
+			List<Tuple> newSlideTuples = new ArrayList<Tuple>(slide);
+			for (int i = 0; i < windowSize; i++) {
+				Tuple nextTuple = null;
+				if (i < slide && prevSlideTuples.size() > 0) {					
+					nextTuple = prevSlideTuples.get(i);					
+				} else {
+					TaggedTuple taggedTuple = null;
+					while (true) {
+						taggedTuple = (TaggedTuple)sourceOperator.getNext();
+						if (taggedTuple != null) {
+							break;
+						}
+					}
+					nextTuple = taggedTuple.getTuple();
+					
+				}
+				tupleList.add(nextTuple);
+				if (slide > 0 && i >= slide) {
+					newSlideTuples.add(nextTuple);
+				}
+			}
+			prevSlideTuples = newSlideTuples;			
+		}
+		return tupleList;
+	}*/
 
 	//	public Collection<Output> getNext() 
 	//	throws ReceiveTimeoutException, SNEEException, EndOfResultsException {

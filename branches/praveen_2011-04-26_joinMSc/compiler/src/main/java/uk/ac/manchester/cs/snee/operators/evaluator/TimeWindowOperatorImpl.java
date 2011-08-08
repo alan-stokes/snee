@@ -31,6 +31,17 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 	private String slideWindowUnits;
 
 	private CircularArray<TaggedTuple> buffer;
+	
+	/**
+	 * This variable will hold the tuples generated in the 
+	 * previous window evaluation. This internal state
+	 * management is needed, to cater to the sliding windows.
+	 * It could have been done in the Valve operator as it
+	 * is the state management operator, but then it will
+	 * alter its properties as being a separate state
+	 * management operator.
+	 */
+	private List<TaggedTuple> prevWindowTuples;
 
 	private int tuplesSinceLastWindow = 0;
 
@@ -59,7 +70,9 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Buffer size: " + maxBufferSize);
 		}
-		buffer = new CircularArray<TaggedTuple>(maxBufferSize);
+		//if (!op.isGetDataByPullModeOperator()) {
+			buffer = new CircularArray<TaggedTuple>(maxBufferSize);
+		//}
 		
 		if (logger.isTraceEnabled()) 
 			logger.trace("\n\tStart (ms): " + windowStart + 
@@ -207,7 +220,43 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN update()");
 	}
+	
+	@Override
+	public void generateAndUpdate(List<Output> resultItems) {
+		
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER generateAndUpdate with id: "+windowOp.getID());
+		}
+		Output output = getNewestEntryofBuffer();		
+		if (output != null) {
+			processTupleByPull(output, resultItems);
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN generateAndUpdate");
+		}
+	}
+	
 
+	private void processTupleByPull(Output output, List<Output> resultItems) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER processTupleByPull");
+		}
+		TaggedTuple tuple = (TaggedTuple) output;
+		tuplesSinceLastWindow++;
+		lastTupleTick = tuple.getEvalTime();
+		if (nextWindowEvalTime < lastTupleTick) {
+			resultItems.addAll(createWindows(lastTupleTick));
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN processTuple() #tuples=" + buffer.size() +
+					"\ntuplesSinceLastWindow=" + tuplesSinceLastWindow +
+					"\nlastTupleTick=" + lastTupleTick);
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN processTupleByPull");
+		}
+	}
+	
 	private void processTuple(Object output, List<Output> resultItems) {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER processTuple() with " + output);
@@ -306,16 +355,28 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 			logger.trace("ENTER populateWindowTuples() next tuple index " + nextTupleIndex + 
 					" next window eval time " + nextWindowEvalTime);
 		}
-		List<Tuple> tupleList = new ArrayList<Tuple>();
+		//System.out.println("nextWindowEvalTime: "+nextWindowEvalTime);
+		//System.out.println("windowstart: "+windowStart);
+		List<Tuple> tupleList = checkForWindowOverlap(nextWindowEvalTime + windowStart);
+		if (tupleList == null) {
+			tupleList = new ArrayList<Tuple>();
+		}
+		if (prevWindowTuples == null) {
+			prevWindowTuples = new ArrayList<TaggedTuple>(1);		
+		}
+		
 		TaggedTuple taggedTuple;
 		if (prevTaggedTuple != null && prevTaggedTuple.getEvalTime() <= nextWindowEvalTime) {
 			tupleList.add(prevTaggedTuple.getTuple());	
+			prevWindowTuples.add(prevTaggedTuple);
 			nextTupleIndex++;			
 			prevTaggedTuple = null;			
 		}
-		while ((taggedTuple = buffer.poll()) != null) {
+		while ((taggedTuple = getNextFromChild(sourceOperator)) != null) {
+			
 			if (taggedTuple.getEvalTime() <= nextWindowEvalTime) {
 				tupleList.add(taggedTuple.getTuple());
+				prevWindowTuples.add(taggedTuple);
 				nextTupleIndex++;
 			} else {
 				/* Seen a tuple that is newer than the window evaluation time */
@@ -341,7 +402,33 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 		}*/
 		if (logger.isTraceEnabled()) 
 			logger.trace("RETURN populateWindowTuples() window size " + tupleList.size());
+		//System.out.println(tupleList.size());
+		//System.out.println(prevWindowTuples.size());
 		return tupleList;
+	}
+
+	private List<Tuple> checkForWindowOverlap(long tupleTime) {
+		List<Tuple> resultItems = null;
+		List<TaggedTuple> resultTaggedTuples = null;
+		if (prevWindowTuples != null && prevWindowTuples.size() > 0) {
+			for (TaggedTuple tuple:prevWindowTuples) {
+				if (tuple.getEvalTime() > tupleTime) {
+					if (resultItems == null) {
+						resultItems = new ArrayList<Tuple>(1);
+					}
+					//System.out.println("Some problem here: with tupletime: "+tupleTime+" and "+tuple.getEvalTime());
+					resultItems.add(tuple.getTuple());
+					if (resultTaggedTuples == null) {
+						resultTaggedTuples = new ArrayList<TaggedTuple>(1);
+					}
+					resultTaggedTuples.add(tuple);
+				} else {
+					break;
+				}
+			}
+		}
+		prevWindowTuples = resultTaggedTuples;
+		return resultItems;
 	}
 
 	/**
@@ -369,5 +456,24 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 		}
 		return index;
 	}
+	
+	/**
+	 * If the operator gets data in a pull mode from the child, then retrieve
+	 * the data from the buffer, else get it from the state management operator
+	 * beneath the window operator
+	 * 
+	 * @param operator
+	 * @return
+	 */
+	private TaggedTuple getNextFromChild(EvaluatorPhysicalOperator operator) {
+		TaggedTuple tuple = null;
+		if (!windowOp.isGetDataByPullModeOperator()) {
+			tuple = buffer.poll();
+		} else {
+			tuple = (TaggedTuple)operator.getNext();
+		}
+		return tuple;
+	}
+	
 	
 }

@@ -33,7 +33,7 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Enter LossyValveOperatorImpl with query " + qid);
 		}
-		inputBufferQueue = new CircularArray<Output>(maxBufferSize);
+		inputBufferQueue = new CircularArray<Output>(maxBufferSize, op.getID());
 		this.tupleDropPolicy = valveOperator.getTupleDropPolicy();
 		this.samplingRate = valveOperator.getSamplingRate();
 
@@ -55,8 +55,8 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 			break;
 		case SAMPLE:
 			if (!canDropObject()) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Object Dropped due to sampling");
+				if (logger.isInfoEnabled()) {
+					logger.info("Object Dropped due to sampling");
 				}
 				return false;
 			}
@@ -64,12 +64,21 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 		default:
 			break;
 		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("Valve Operator with id: " + valveOperator.getID()
-					+ "has a total number of "
-					+ inputBufferQueue.totalObjectsInserted() + " inserted");
+
+		if (inputBufferQueue.add(output)) {
+			if (logger.isInfoEnabled()) {
+				logger.info("Valve Operator with id: " + valveOperator.getID()
+						+ " using CQ with id: "
+						+ inputBufferQueue.getOperatorId()
+						+ " has a total number of "
+						+ inputBufferQueue.totalObjectsInserted() + " inserted"
+						+ "and has a current siize of"
+						+ inputBufferQueue.size()+" "+this);
+			}
+			return true;
+		} else {
+			return false;
 		}
-		return inputBufferQueue.add(output);
 	}
 
 	private boolean canDropObject() {
@@ -88,7 +97,38 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 
 	@Override
 	public Output getNext() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("This is before Polling:***" + valveOperator.getID()
+					+ inputBufferQueue.size()+ this);
+		}
 		return inputBufferQueue.poll();
+	}
+
+	@Override
+	public Output getNewestEntry() {
+		Output output = null;
+
+		output = inputBufferQueue.getLatest();
+		if (logger.isDebugEnabled()) {
+			logger.debug("This is the output obtained:*** from valve operator with id: "
+					+ valveOperator.getID()
+					+ output
+					+ "havng a size of: "
+					+ inputBufferQueue.size()
+					+ " using CQ of id: "
+					+ inputBufferQueue.getOperatorId()+" "+this);
+		}
+		return output;
+	}
+
+	@Override
+	public Output getOldestEntry() {
+		return inputBufferQueue.getOldest();
+	}
+
+	@Override
+	public int getSize() {
+		return inputBufferQueue.size();
 	}
 
 }

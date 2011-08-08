@@ -89,7 +89,7 @@ public class AlgorithmSelector {
 	 */
 	private void replaceWithAlgorithms(DLAF dlaf, QoSExpectations qos) {
 		Iterator<LogicalOperator> opIter = dlaf
-				.operatorIterator(TraversalOrder.PRE_ORDER);
+				.operatorIterator(TraversalOrder.POST_ORDER);
 		LogicalOperator op;
 		while (opIter.hasNext()) {
 			op = opIter.next();
@@ -167,15 +167,19 @@ public class AlgorithmSelector {
 			valveOperator.setPushBasedOperator(true);
 			joinOp.setGetDataByPullModeOperator(false);
 		}*/
-		
-		if (valveOperator.getParent() instanceof JoinOperator) {
-			JoinOperator joinOp = (JoinOperator) valveOperator.getParent();
-			valveOperator.setPushBasedOperator(false);
-			joinOp.setGetDataByPullModeOperator(true);
-
-		} else {
-			valveOperator.setPushBasedOperator(true);
-		}
+		//Till now there is no use case for making the valve operator
+		//a push based operator. When such a use case comes, the logic
+		//to set the push based functionality of  the valve operator
+		//should go here.
+		valveOperator.setPushBasedOperator(false);
+//		if (valveOperator.getParent() instanceof JoinOperator) {
+//			JoinOperator joinOp = (JoinOperator) valveOperator.getParent();
+//			valveOperator.setPushBasedOperator(false);
+//			joinOp.setGetDataByPullModeOperator(true);
+//
+//		} else {
+//			valveOperator.setPushBasedOperator(true);
+//		}
 		// Lossy or Lossless is to be determined via QoS parameters
 		if (qos.isTupleLossAllowed()) {
 			valveOperator.setAlgorithm(ValveOperator.TUPLE_DROP_MODE);
@@ -209,6 +213,11 @@ public class AlgorithmSelector {
 				// joinOperatorImpl = new JoinOperatorImpl(op, qid);
 				joinOperator.setAlgorithm(JoinOperator.NLJ_MODE);
 			}
+		}
+		//The join operator has a state management operator to manage its
+		//state, so just pull data from the state management operator
+		if (!joinOperator.getInput(0).isPushBasedOperator()) {
+			joinOperator.setGetDataByPullModeOperator(true);
 		}
 
 	}

@@ -153,4 +153,10 @@ public abstract class ValveOperatorAbstractImpl extends EvaluationOperator {
 
 	}
 
+	public abstract Output getNewestEntry();
+
+	public abstract Output getOldestEntry();
+	
+	public abstract int getSize();
+
 }

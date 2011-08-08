@@ -36,6 +36,7 @@
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
@@ -47,9 +48,9 @@ import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.operators.factory.JoinOperatorImplAbstractFactory;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ExchangeOperator;
@@ -235,6 +236,60 @@ implements Observer
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getAttributes() #attr=" + attrNames.size());
 		return attrNames;
+	}
+
+	/**
+	 * This method should be overridden by whichever
+	 * operator that can is designed to act as a store
+	 * of the data from which data can be pulled off
+	 * by the parent operator
+	 * 
+	 * @return
+	 * @throws SNEEException 
+	 */
+	protected Output getNext(){
+		String msg = "Unsupported operator " + m_op.getOperatorName();
+		logger.warn(msg);
+		return null;
+	}
+
+	/**
+	 * Method for the operator that follows the iterator model 
+	 * to implement, to get the oldest entry in the buffer held
+	 * by the operator
+	 * 
+	 * @return
+	 */
+	public Output getOldestEntry() {
+		String msg = "Unsupported operation to get the oldest entry for operator " + m_op.getOperatorName();
+		logger.warn(msg);
+		return null;
+	}
+	
+	/**
+	 * Method for the operator that follows the iterator model 
+	 * to implement, to get the newest entry in the buffer held
+	 * by the operator
+	 * 
+	 * @return
+	 */
+	public Output getNewestEntry() {		
+		String msg = "Unsupported operation to get the latest entry for operator " + m_op.getOperatorName();
+		logger.warn(msg);
+		return null;
+	}
+	
+	/**
+	 * Method for the operator that follows the iterator model 
+	 * to implement, to get the size of the buffer held
+	 * by the operator
+	 * 
+	 * @return
+	 */
+	public int getSize() {
+		String msg = "Unsupported operation to get the size for operator " + m_op.getOperatorName();
+		logger.warn(msg);
+		return 0;
 	}
 
 }

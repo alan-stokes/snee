@@ -265,4 +265,10 @@ public class MockOperator implements LogicalOperator {
 			// TODO Auto-generated method stub
 			
 		}
+
+		@Override
+		public boolean isPushBasedOperator() {
+			// TODO Auto-generated method stub
+			return false;
+		}
 }

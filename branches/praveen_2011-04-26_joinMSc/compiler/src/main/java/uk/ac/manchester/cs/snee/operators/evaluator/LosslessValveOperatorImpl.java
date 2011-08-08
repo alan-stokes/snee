@@ -49,4 +49,22 @@ public class LosslessValveOperatorImpl extends ValveOperatorAbstractImpl {
 		return inputBuffer.isEmpty();
 	}
 
+	@Override
+	public Output getNewestEntry() {
+		// TODO Auto-generated method stub
+		return inputBuffer.getNewest();
+	}
+
+	@Override
+	public Output getOldestEntry() {
+		// TODO Auto-generated method stub
+		return inputBuffer.getOldest();
+	}
+
+	@Override
+	public int getSize() {
+		// TODO Auto-generated method stub
+		return inputBuffer.size();
+	}
+
 }

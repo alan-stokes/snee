@@ -9,15 +9,12 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
-import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
-import uk.ac.manchester.cs.snee.compiler.queryplan.LAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
@@ -28,7 +25,6 @@ import uk.ac.manchester.cs.snee.operators.logical.ExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.logical.InputOperator;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
-import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.ValveOperator;
@@ -519,7 +515,7 @@ public class LogicalRewriter {
 		Iterator<LogicalOperator> iter;
 		while (opIter.hasNext()) {
 			op = opIter.next();
-			if (op instanceof JoinOperator
+			if ((!op.isPushBasedOperator()) 
 					&& SourceType.SENSOR_NETWORK != op.getOperatorSourceType()) {
 				iter = op.childOperatorIterator();
 				if (iter.hasNext()) {
