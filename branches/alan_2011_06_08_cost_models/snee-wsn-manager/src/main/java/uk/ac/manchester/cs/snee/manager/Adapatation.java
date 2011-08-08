@@ -12,6 +12,7 @@ public class Adapatation
   private ArrayList<Site> redirectedionSites;
   private ArrayList<TemporalAdjustment> temporalSites;
   private ArrayList<Site> deactivationSites;
+  private ArrayList<Site> activateSites;
   private SensorNetworkQueryPlan newQep = null;
   private SensorNetworkQueryPlan oldQep = null;
   
@@ -21,6 +22,7 @@ public class Adapatation
     redirectedionSites = new ArrayList<Site>();
     temporalSites = new ArrayList<TemporalAdjustment>();
     deactivationSites = new ArrayList<Site>();
+    activateSites = new ArrayList<Site>();
     this.oldQep = oldQep;
   }
   
@@ -77,6 +79,11 @@ public class Adapatation
     deactivationSites.add(site);
   }
   
+  public void addActivatedSite(Site site)
+  {
+    activateSites.add(site);
+  }
+  
   public Iterator<Site> reprogrammingSitesIterator()
   {
     return reprogrammingSites.iterator();
@@ -95,6 +102,11 @@ public class Adapatation
   public Iterator<Site> deactivationSitesIterator()
   {
     return deactivationSites.iterator();
+  }
+  
+  public Iterator<Site> activateSitesIterator()
+  {
+    return activateSites.iterator();
   }
 
   public void setNewQep(SensorNetworkQueryPlan newQep)
@@ -116,6 +128,8 @@ public class Adapatation
   {
     return reprogrammingSites.contains(find);
   }
+  
+  
   
   /**
    * returns all offset start times of all temporal adjustments
@@ -139,6 +153,7 @@ public class Adapatation
     Iterator<Site> redirectedIterator = redirectedionSitesIterator();
     Iterator<TemporalAdjustment> temporalIterator = temporalSitesIterator();
     Iterator<Site> deactivatedIterator = deactivationSitesIterator();
+    Iterator<Site> activateIterator = activateSites.iterator();
     output = output.concat("Reprogrammed[");
     while(reporgramIterator.hasNext())
     {
@@ -162,6 +177,15 @@ public class Adapatation
     {
       String concat = deactivatedIterator.next().getID();
       if(deactivatedIterator.hasNext())
+        output = output.concat(concat + ", ");
+      else
+        output = output.concat(concat);
+    }
+    output = output.concat("] activate[");
+    while(activateIterator.hasNext())
+    {
+      String concat = activateIterator.next().getID();
+      if(activateIterator.hasNext())
         output = output.concat(concat + ", ");
       else
         output = output.concat(concat);

@@ -20,6 +20,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.Adapatation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeFrameWorkLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeFrameWorkPartial;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -32,19 +33,24 @@ import uk.ac.manchester.cs.snee.sncb.SNCBException;
 public class Anaylsiser 
 {
   private CardinalityEstimatedCostModel cardECM;
-  private FailedNodeFrameWorkPartial adapatationStrategyIntermediateSpaceAndTimePinned;
-  private FailedNodeFrameWorkPartial adapatationStrategyIntermediateSpacePinned;
   private SensorNetworkQueryPlan qep;
   private AutonomicManager manager;
   private DeadNodeSimulator deadNodeSimulator; 
   private boolean anaylisieCECM = true;
-  private String deadSitesList = "";
+  private String deadSitesList = "";  
+  ArrayList<FrameWork> frameworks;
 
   public Anaylsiser(AutonomicManager autonomicManager)
   {
     manager = autonomicManager;
-    adapatationStrategyIntermediateSpaceAndTimePinned = new FailedNodeFrameWorkPartial(manager, true, true);
-    adapatationStrategyIntermediateSpacePinned = new FailedNodeFrameWorkPartial(manager, true, false);
+    frameworks = new ArrayList<FrameWork>();
+    FailedNodeFrameWorkPartial failedNodeFrameworkSpaceAndTimePinned = new FailedNodeFrameWorkPartial(manager, true, true);
+    FailedNodeFrameWorkPartial failedNodeFrameworkSpacePinned = new FailedNodeFrameWorkPartial(manager, true, false);
+    FailedNodeFrameWorkLocal failedNodeFrameworkLocal = new FailedNodeFrameWorkLocal(manager);
+    //add methodologies in order wished to be assessed
+    frameworks.add(failedNodeFrameworkLocal);
+    frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
+    frameworks.add(failedNodeFrameworkSpacePinned);
     deadNodeSimulator = new DeadNodeSimulator();
   }
 
@@ -52,8 +58,12 @@ public class Anaylsiser
   {//sets ECMs with correct query execution plan
 	  this.qep = (SensorNetworkQueryPlan) qep;
 	  cardECM = new CardinalityEstimatedCostModel(qep);
-	  adapatationStrategyIntermediateSpaceAndTimePinned.initilise(qep, noOfTrees);
-	  adapatationStrategyIntermediateSpacePinned.initilise(qep, noOfTrees);
+	  Iterator<FrameWork> frameworkIterator = frameworks.iterator();
+	  while(frameworkIterator.hasNext())
+	  {
+	    FrameWork currentFrameWork = frameworkIterator.next();
+	    currentFrameWork.initilise(qep, noOfTrees);
+	  }
 	  deadNodeSimulator.initilise(qep, cardECM);  
   }
    
@@ -219,18 +229,25 @@ public class Anaylsiser
          TypeMappingException, 
          AgendaException, SNEEException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
   {
-	ArrayList<FailedNodeFrameWorkPartial> methodologyiesOfAdapatation = new ArrayList<FailedNodeFrameWorkPartial>();
-	//add methodologyies
-	methodologyiesOfAdapatation.add(adapatationStrategyIntermediateSpaceAndTimePinned);
-	methodologyiesOfAdapatation.add(adapatationStrategyIntermediateSpacePinned);
-	//create adaparatation array
-	ArrayList<Adapatation> adapatations = new ArrayList<Adapatation>();
-	Iterator<FailedNodeFrameWorkPartial> methodologyIterator = methodologyiesOfAdapatation.iterator();
-	//go though methodologyies till located a adapatation.
-	while(adapatations.size() == 0 && methodologyIterator.hasNext())
-	{
-	  adapatations = methodologyIterator.next().calculateNewQEP(failedNodes);
-	}
+  	//create adaparatation array
+  	ArrayList<Adapatation> adapatations = new ArrayList<Adapatation>();
+  	Iterator<FrameWork> frameworkIterator = frameworks.iterator();
+  	//go though methodologyies till located a adapatation.
+  	while(adapatations.size() == 0 && frameworkIterator.hasNext())
+  	{
+  	  FrameWork framework = frameworkIterator.next();
+  	  if(framework.canAdaptToAll(failedNodes))
+  	    adapatations = framework.adapt(failedNodes);
+  	  else
+  	  {
+  	    //can't adapt to them all, so check to see if any are adpatable, if so, remove them from next frameworks scope
+  	    Iterator<String> failedNodeIterator = failedNodes.iterator();
+  	    while(failedNodeIterator.hasNext())
+  	    {
+  	      //TODO CHECK EACH FAILED NODE IN LOCAL, BEFORE SENDING TO PARTIAL
+  	    }
+  	  }
+  	}
     
     //output adapatations in a String format
     Iterator<Adapatation> adapatationIterator = adapatations.iterator();
@@ -238,7 +255,6 @@ public class Anaylsiser
     {
       System.out.println(adapatationIterator.next().toString());
     }
-    
     return null;
   }
 }

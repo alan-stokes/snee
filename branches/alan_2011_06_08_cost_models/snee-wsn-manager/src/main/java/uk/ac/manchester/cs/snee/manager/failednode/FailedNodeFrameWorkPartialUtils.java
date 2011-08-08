@@ -14,7 +14,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
  *@author stokesa6
  * class used to add utility functions for failed node framework
  **/
-public class FailedNodeFrameWorkPartialUtils
+public class FailedNodeFrameWorkPartialUtils 
 {
 
   private FailedNodeFrameWorkPartial ad;

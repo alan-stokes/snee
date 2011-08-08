@@ -28,6 +28,7 @@ import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.Adapatation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.TemporalAdjustment;
+import uk.ac.manchester.cs.snee.manager.anayliser.FrameWork;
 import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.CandiateRouter;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
@@ -61,18 +62,15 @@ import com.rits.cloning.Cloner;
  *class designed to encapsulate the partial framework of adapting just what needs to be adapted
  */
 
-public class FailedNodeFrameWorkPartial
+public class FailedNodeFrameWorkPartial extends FrameWork
 {
-  private AutonomicManager manager;
   private boolean spacePinned;
   private boolean timePinned;
-  private SensorNetworkQueryPlan qep;
   private IOT oldIOT;
   private AgendaIOT agenda;
-  private File outputFolder;
-  private String sep = System.getProperty("file.separator");
   private Integer numberOfRoutingTreesToWorkOn = 0;
   private static int choice;
+  
   /**
    * @param autonomicManager
    * the parent of this class.
@@ -82,10 +80,10 @@ public class FailedNodeFrameWorkPartial
     this.manager = autonomicManager;
     this.spacePinned = spacePinned;
     this.timePinned = timePinned;
-    this.timePinned = false;
-    
+    this.timePinned = false; 
   }
   
+  @Override
   public void initilise(QueryExecutionPlan oldQep, Integer numberOfTrees) throws SchemaMetadataException 
   {
     this.qep = (SensorNetworkQueryPlan) oldQep;
@@ -97,27 +95,8 @@ public class FailedNodeFrameWorkPartial
     this.numberOfRoutingTreesToWorkOn = numberOfTrees;
   }
   
-  /**
-   * calculates new QEP designed to adjust for the failed node. 
-   * @param nodeID the id for the failed node of the query plan
-   * @return new query plan which has now adjusted for the failed node.
-   * @throws TypeMappingException 
-   * @throws SchemaMetadataException 
-   * @throws OptimizationException 
-   * @throws AgendaException 
-   * @throws SNEEConfigurationException 
-   * @throws SNEEException 
-   * @throws SNCBException 
-   * @throws CostParametersException 
-   * @throws SNEEDataSourceException 
-   * @throws TopologyReaderException 
-   * @throws SourceMetadataException 
-   * @throws UnsupportedAttributeTypeException 
-   * @throws MetadataException 
-   * @throws WhenSchedulerException 
-   * @throws MalformedURLException 
-   */
-  public ArrayList<Adapatation> calculateNewQEP(ArrayList<String> failedNodes) throws OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException, SNEEException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
+  @Override
+  public ArrayList<Adapatation> adapt(ArrayList<String> failedNodes) throws SNEEConfigurationException, SchemaMetadataException, MalformedURLException, SNEEException, OptimizationException, WhenSchedulerException, TypeMappingException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
   { 
     System.out.println("Running fake Adapatation "); 
     //setup collectors
@@ -144,6 +123,12 @@ public class FailedNodeFrameWorkPartial
     return totalAdapatations;
   }
 
+  /**
+   * if a route cant be calculated with the pinned sites, dynamically remove a site to allow adaptation.
+   * @param oldIOT2
+   * @param failedNodes
+   * @param disconnectedNodes
+   */
   private void chooseDisconnectedNode(IOT oldIOT2, ArrayList<String> failedNodes,
                                       ArrayList<String> disconnectedNodes)
   {
@@ -151,6 +136,27 @@ public class FailedNodeFrameWorkPartial
     
   }
 
+  /**
+   * uses new routes to determine new QEP/adaptations
+   * @param routeIterator
+   * @param failedNodes
+   * @param disconnectedNodes
+   * @param totalAdapatations
+   * @throws SNEEException
+   * @throws SchemaMetadataException
+   * @throws OptimizationException
+   * @throws SNEEConfigurationException
+   * @throws MalformedURLException
+   * @throws WhenSchedulerException
+   * @throws TypeMappingException
+   * @throws MetadataException
+   * @throws UnsupportedAttributeTypeException
+   * @throws SourceMetadataException
+   * @throws TopologyReaderException
+   * @throws SNEEDataSourceException
+   * @throws CostParametersException
+   * @throws SNCBException
+   */
   private void tryGoingThoughRoutes(Iterator<RT> routeIterator, ArrayList<String> failedNodes, 
                                     ArrayList<String> disconnectedNodes, 
                                     ArrayList<Adapatation> totalAdapatations)
@@ -278,6 +284,14 @@ public class FailedNodeFrameWorkPartial
   }
 
 
+  /**
+   * find all sites which are affected by this time adjustment
+   * @param start
+   * @param affectedSites
+   * @param newAgenda
+   * @param ad
+   * @param adjust
+   */
   private void findAffectedSites(Node start, ArrayList<Site> affectedSites, AgendaIOT newAgenda,
 		                         Adapatation ad, TemporalAdjustment adjust)
   {
@@ -305,6 +319,20 @@ public class FailedNodeFrameWorkPartial
     }    
   }
 
+  /**
+   * determines time differences between 2 communication tasks
+   * @param newChild
+   * @param orginal
+   * @param parent
+   * @param failedSite
+   * @param startTime
+   * @param duration
+   * @param newAgenda
+   * @param oldAgenda
+   * @param adjust
+   * @param ad
+   * @return
+   */
   private boolean sortOutTiming(Node newChild, Node orginal, Node parent, 
       Node failedSite, Long startTime, Long duration, AgendaIOT newAgenda, 
       AgendaIOT oldAgenda, TemporalAdjustment adjust, Adapatation ad)
@@ -597,24 +625,6 @@ public class FailedNodeFrameWorkPartial
     return paf;
   }
 
-  public Topology getWsnTopology()
-  {
-    Set<SourceMetadataAbstract> sourceSets = qep.getDLAF().getSources();
-    SensorNetworkSourceMetadata sm;
-    if(sourceSets.size() == 1)
-    {
-      Iterator<SourceMetadataAbstract> sourceIterator = sourceSets.iterator();
-      sm = (SensorNetworkSourceMetadata) sourceIterator.next();
-      Topology network = sm.getTopology();
-      return network;
-    }
-    else
-    {
-      System.out.println("error, more than 1 network");
-      return null;
-    }
-  }
-
   public AgendaIOT getAgenda()
   {
     return agenda;
@@ -623,5 +633,17 @@ public class FailedNodeFrameWorkPartial
   public IOT getOldIOT()
   {
     return oldIOT;
+  }
+
+  @Override
+  public boolean canAdapt(String failedNode)
+  {
+    return true;
+  }
+
+  @Override
+  public boolean canAdaptToAll(ArrayList<String> failedNodes)
+  {
+    return true;
   }
 }
