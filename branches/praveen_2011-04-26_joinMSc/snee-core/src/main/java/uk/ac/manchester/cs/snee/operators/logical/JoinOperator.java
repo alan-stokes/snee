@@ -137,7 +137,8 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 		setOperatorSourceType(getOperatorSourceType(left, right));
 		this.setSourceRate(getSourceRate(left, right));
 		setAlgorithm(NLJ_MODE);
-		setGetDataByPullModeOperator(false);
+		this.setGetDataByPullModeOperator(false);
+		this.setPushBasedOperator(false);
 		getIncomingAttributes();
 	}
 

@@ -109,6 +109,9 @@ public class WindowOperator extends LogicalOperatorImpl {
 		setOperatorDataType(OperatorDataType.WINDOWS);
 		this.setOperatorSourceType(child.getOperatorSourceType());
 		this.setSourceRate(child.getSourceRate());
+		this.setPushBasedOperator(false);
+		this.setChildren(new LogicalOperator[] {child});
+		this.setGetDataByPullModeOperator(true);
 		this.from = from;
 		this.to = to;
 		if (timeSlide > 0 && rowSlide > 0) {
@@ -120,7 +123,7 @@ public class WindowOperator extends LogicalOperatorImpl {
 		this.timeScope = timeScope;	
 		this.timeSlide = timeSlide;
 		this.rowSlide = rowSlide;
-		this.addInput(child);
+		//this.addInput(child);
 		acInt = 1;
 	}
 

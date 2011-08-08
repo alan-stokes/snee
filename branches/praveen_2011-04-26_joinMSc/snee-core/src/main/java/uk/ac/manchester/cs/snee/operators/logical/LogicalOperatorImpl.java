@@ -95,9 +95,15 @@ implements LogicalOperator {
 	double sourceRate;
 	
 	/**
-	 * This is set true only for join operators now
+	 * This variable is used to hold the property of the operator
+	 * which tells, if this instance of the operator should <i>pull<i>
+	 * the next data from the child operator using a getNext()
+	 * method call, or whether it should stick to the <i>subscribe<i>
+	 * mode, where the data flow is driven by the update method
 	 */
 	private boolean isGetDataByPullModeOperator = false;
+	
+	private boolean isPushBasedOperator = true;
 
 	/**
 	 * Constructs a new operator. 
@@ -506,5 +512,20 @@ implements LogicalOperator {
 	public boolean isGetDataByPullModeOperator() {
 		return isGetDataByPullModeOperator;
 	}
+	
+	/**
+	 * @param isPushBasedOperator the isPushBasedOperator to set
+	 */
+	public void setPushBasedOperator(boolean isPushBasedOperator) {
+		this.isPushBasedOperator = isPushBasedOperator;
+	}
+
+	/**
+	 * @return the isPushBasedOperator
+	 */
+	public boolean isPushBasedOperator() {
+		return isPushBasedOperator;
+	}
+
 }
 

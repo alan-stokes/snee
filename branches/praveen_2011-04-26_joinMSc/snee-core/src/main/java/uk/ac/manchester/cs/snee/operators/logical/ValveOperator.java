@@ -37,7 +37,7 @@ public class ValveOperator extends LogicalOperatorImpl {
 	public static final String TUPLE_OFFLOAD_MODE = "TUPLE_OFFLOAD_MODE";
 	private Logger logger = Logger.getLogger(this.getClass().getName());	
 	private Duration queueScanInterval;
-	private boolean isPushBasedOperator;
+	
 	//Variable to hold how many objects should be pushed at once
 	private int outputSize;
 	//This variable holds the algorithm or the mode in which the
@@ -63,7 +63,8 @@ public class ValveOperator extends LogicalOperatorImpl {
 		//when more tuples arrive
 		setAlgorithm(GROW_SIZE_MODE);
 //		this.setNesCTemplateName("deliver");
-		setChildren(new LogicalOperator[] {inputOperator});
+		//setChildren(new LogicalOperator[] {inputOperator});
+		this.addInput(inputOperator);
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
 		this.setSourceRate(inputOperator.getSourceRate());
@@ -146,21 +147,7 @@ public class ValveOperator extends LogicalOperatorImpl {
 	public Duration getQueueScanInterval() {
 		return queueScanInterval;
 	}
-
-	/**
-	 * @param isPushBasedOperator the isPushBasedOperator to set
-	 */
-	public void setPushBasedOperator(boolean isPushBasedOperator) {
-		this.isPushBasedOperator = isPushBasedOperator;
-	}
-
-	/**
-	 * @return the isPushBasedOperator
-	 */
-	public boolean isPushBasedOperator() {
-		return isPushBasedOperator;
-	}
-
+	
 	public void setOutputSize(int outputSize) {
 		this.outputSize = outputSize;
 	}
