@@ -40,6 +40,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 
 public class ExtentMetadata {
 	
@@ -104,6 +105,35 @@ public class ExtentMetadata {
 		return _attributes;
 	}
 
+	/** 
+	 * Returns the metadata about attributes
+	 * @return The unqualified attribute names and their types
+	 */
+	public List<Attribute> getDataAttributes() {
+		List<Attribute> result = new ArrayList<Attribute>();
+		for (Attribute attr : _attributes) {
+			if (attr instanceof DataAttribute) {
+				result.add(attr);
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * Returns the attribute with the given name, or null if not found.
+	 * @param attributeName
+	 * @return
+	 */
+	public Attribute getAttribute(String attributeName) {
+		for (Attribute attr : _attributes) {
+			String attrName = attr.getAttributeSchemaName();
+			if (attrName.equalsIgnoreCase(attributeName)) {
+				return attr;
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 * Test if this extent has an attribute with the specified
 	 * name.

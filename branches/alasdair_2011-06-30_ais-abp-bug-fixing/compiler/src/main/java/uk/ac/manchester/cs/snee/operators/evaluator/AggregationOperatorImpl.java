@@ -20,7 +20,7 @@ import uk.ac.manchester.cs.snee.evaluator.types.Window;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
-import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class AggregationOperatorImpl
@@ -184,7 +184,7 @@ extends EvaluatorPhysicalOperator {
 					// Extract operands from expression
 					AggregationExpression agEx = 
 						(AggregationExpression)exp;
-					AggregationType agType = agEx.getAggregationType();
+					AggregationFunction agType = agEx.getAggregationFunction();
 					DataAttribute da = 
 						(DataAttribute)agEx.getExpression();
 					String attrDisplayName = 
@@ -229,7 +229,7 @@ extends EvaluatorPhysicalOperator {
 	}
 
 	private Window createResultWindow(Window curWindow, 
-			AggregationType agType, DataAttribute da, Number agValue, 
+			AggregationFunction agType, DataAttribute da, Number agValue, 
 			String extentName) 
 	throws SchemaMetadataException {
 		if (logger.isTraceEnabled()) {
@@ -263,7 +263,7 @@ extends EvaluatorPhysicalOperator {
 		return newWindow;
 	}
 
-	private Number computeAggregate(AggregationType agType, 
+	private Number computeAggregate(AggregationFunction agType, 
 			String attrDisplayName, AttributeType dataType, 
 			List<Tuple> tuples) 
 	throws SNEEException {
@@ -273,7 +273,8 @@ extends EvaluatorPhysicalOperator {
 					", " + attrDisplayName + ", " + dataType);
 		}
 		Number result;
-		if (agType == AggregationType.AVG) {
+		//TODO: Add aggregate functions: SUM, MIN, MAX, STDEV
+		if (agType == AggregationFunction.AVG) {
 			logger.trace("Calculate average.");
 			if (tuples.isEmpty()) {
 				logger.trace("Average over an empty window is undefined. Return null");
@@ -290,7 +291,7 @@ extends EvaluatorPhysicalOperator {
 							"for computing average");
 				}
 			}
-		} else if (agType == AggregationType.COUNT) {
+		} else if (agType == AggregationFunction.COUNT) {
 			logger.trace("Calculate count.");
 			result = tuples.size();
 		} else {

@@ -121,7 +121,7 @@ public class SourcePlanner {
 			logger.trace("ENTER doSensorNetworkSourcePlanning() for " +
 					queryID);
 		logger.info("Starting Algorithm Selection for query " + queryID);
-		PAF paf = doSNAlgorithmSelection(dlaf, costParams, queryID);
+		PAF paf = doSNAlgorithmSelection(dlaf, qos, costParams, queryID);
 		logger.info("Starting Routing for query " + queryID);		
 		RT rt = doSNRouting(paf, queryID);
 		logger.info("Starting Where-Scheduling for query " + queryID);
@@ -145,14 +145,14 @@ public class SourcePlanner {
 	 * @throws SchemaMetadataException
 	 * @throws SNEEConfigurationException
 	 */
-	private PAF doSNAlgorithmSelection(DLAF dlaf, CostParameters costParams, 
-	String queryName) 
+	private PAF doSNAlgorithmSelection(DLAF dlaf, QoSExpectations qos,
+			CostParameters costParams, String queryName) 
 	throws SNEEException, SchemaMetadataException, SNEEConfigurationException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSNAlgorithmSelection() for " + 
 					queryName);
 		AlgorithmSelector algorithmSelector = new AlgorithmSelector();
-		PAF paf = algorithmSelector.doPhysicalOptimizaton(dlaf, costParams, queryName);
+		PAF paf = algorithmSelector.doPhysicalOptimizaton(dlaf, qos, costParams, queryName);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new PAFUtils(paf).generateGraphImage();
 		}
@@ -180,7 +180,14 @@ public class SourcePlanner {
 	TypeMappingException, OptimizationException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER doSNWhereScheduling()");
-		WhereScheduler whereSched = new WhereScheduler();
+		
+		boolean removeRedundantExchanges = true;
+		if (SNEEProperties.isSet(SNEEPropertyNames.
+				WHERE_SCHED_REMOVE_REDUNDANT_EXCHANGES)) {
+			removeRedundantExchanges = SNEEProperties.getBoolSetting(SNEEPropertyNames.WHERE_SCHED_REMOVE_REDUNDANT_EXCHANGES);
+		}
+		
+		WhereScheduler whereSched = new WhereScheduler(removeRedundantExchanges);
 		DAF daf = whereSched.doWhereScheduling(paf, rt, costParams, queryID);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new DAFUtils(daf).generateGraphImage();
@@ -195,11 +202,11 @@ public class SourcePlanner {
 	OptimizationException, WhenSchedulerException {
 		if (logger.isTraceEnabled())
 			logger.debug("ENTER doSNWhenScheduling()");
-		boolean decreaseBetaForValidAlpha = SNEEProperties.getBoolSetting(
-				SNEEPropertyNames.WHEN_SCHED_DECREASE_BETA_FOR_VALID_ALPHA);
 		boolean useNetworkController = SNEEProperties.getBoolSetting(
 				SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
-		WhenScheduler whenSched = new WhenScheduler(decreaseBetaForValidAlpha,
+		boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
+				SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
+		WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing,
 				metadata, useNetworkController);
 		Agenda agenda = whenSched.doWhenScheduling(daf, qos, queryName);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {

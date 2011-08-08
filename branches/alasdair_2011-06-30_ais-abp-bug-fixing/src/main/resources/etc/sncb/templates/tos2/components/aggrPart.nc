@@ -6,15 +6,23 @@ __HEADER__
 	#define OUT_QUEUE_CARD __OUT_QUEUE_CARD__
 
 	__OUTPUT_TUPLE_TYPE__ outQueue[OUT_QUEUE_CARD];
-	int8_t outHead;
-	int8_t outTail;
+	int outHead;
+	int outTail;
 	int16_t currentEvalEpoch;
 
   	__CHILD_TUPLE_PTR_TYPE__ inQueue;
-	int8_t inHead;
-	int8_t inTail;
-	uint8_t inQueueSize;
-__VARIABLES_TO_BE_AGGREGATED__
+	int inHead;
+	int inTail;
+	int inHead2;
+	int inTail2;
+	int inQueueSize;
+__AGGREGATE_VAR_DECLS__
+
+
+	void task aggregateIncrementTask();
+	void task computeFinalAggregatesTask();
+	void task signalDoneTask();
+	void task outQueueAppendTask();
 
 	inline void initialize()
 	{
@@ -22,7 +30,8 @@ __VARIABLES_TO_BE_AGGREGATED__
 		{
 			outHead=-1;
 			outTail=0;
-__SET_AGGREGATES_TO_ZERO__
+
+__AGGREGATE_VAR_INITIALIZATION__
 			currentEvalEpoch=0;
 		}
 	}
@@ -45,77 +54,7 @@ __SET_AGGREGATES_TO_ZERO__
 		return SUCCESS;
 	}
 
-	void task signalDoneTask()
-	{
-		#ifdef PLATFORM_PC
-			int8_t outputTupleCount;
-			if (outHead==-1)
-			{
-				outputTupleCount = 0;
-			}
-			else if (outHead < outTail)
-			{
-				outputTupleCount = outTail - outHead;
-			}
-			else
-			{
-				outputTupleCount = OUT_QUEUE_CARD - outHead + outTail;
-			}
-			dbg("DBG_USR2","__OPERATOR_DESCRIPTION__: output cardinality %d tuple(s) for evalEpoch %d\n",outputTupleCount,currentEvalEpoch);
-		#endif
-
-		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
-	}
-
-
-	void task outQueueAppendTask()
-	{
-		if (outHead==outTail)
-		{
-			outHead= outHead+1;
-			if (outHead == OUT_QUEUE_CARD) {
-			   outHead = 0;
-		   }
-		}
-		if (outHead ==-1)
-		{
-			outHead=0;
-			outTail=0;
-		}
-
-__CONSTRUCT_TUPLE__
-		outQueue[outTail].evalEpoch=currentEvalEpoch;
-
-		outTail= outTail+1;
-		if (outTail == OUT_QUEUE_CARD) {
-		   outTail = 0;
-        }
-		dbg("DBG_USR1", "Performing aggregation\n");
-		post signalDoneTask();
-	}
-
-	void task aggegateTask()
-	{
-		if (inHead>-1)
-		{
-			do
-			{
-__INCREMENT_AGGREGATES__
-				inHead=(inHead+1)%inQueueSize;
-			}
-			while(inHead!=inTail);
-			post outQueueAppendTask();
-		}
-		else
-		{
-			outHead=-1;
-			outTail=-1;
-			post signalDoneTask();
-		}
-	}
-
-
-	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
+	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int _inHead, int _inTail, int _inQueueSize)
 	{
 		atomic
 		{
@@ -125,8 +64,76 @@ __INCREMENT_AGGREGATES__
 			inQueueSize = _inQueueSize;
 		}
 
-		post aggegateTask();
-
+		post aggregateIncrementTask();
 	}
+
+	void task aggregateIncrementTask()
+	{
+		inHead2 = inHead;
+		inTail2 = inTail;
+		if (inHead>-1)
+		{
+			do
+			{
+__AGGREGATE_VAR_INCREMENT__
+				inHead=(inHead+1)%inQueueSize;
+			}
+			while(inHead!=inTail);
+			post computeFinalAggregatesTask();
+		}
+		else
+		{
+			outHead=-1;
+			outTail=-1;
+			post signalDoneTask();
+		}
+	}
+
+__DERIVED_INCREMENTAL_AGGREGATES_DECLS__
+
+	void task computeFinalAggregatesTask()
+	{
+
+__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__
+		
+		post outQueueAppendTask();
+	}
+
+
+	void task outQueueAppendTask()
+	{
+		if (outHead==outTail)
+		{
+			outHead= outHead+1;
+			if (outHead == OUT_QUEUE_CARD) 
+			{
+			   outHead = 0;
+			}
+		}
+		if (outHead ==-1)
+		{
+			outHead=0;
+			outTail=0;
+		}
+
+__CONSTRUCT_TUPLE__
+
+		outTail= outTail+1;
+		if (outTail == OUT_QUEUE_CARD) 
+		{
+			outTail = 0;
+        	}
+		dbg("DBG_USR1", "Performing aggregation\n");
+		post signalDoneTask();
+	}
+
+
+
+	void task signalDoneTask()
+	{
+		dbg("__DBG_CHANNEL__","outHead=%d, outTail=%d, OUT_QUEUE_CARD=%d\n",outHead, outTail, OUT_QUEUE_CARD);
+		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
+	}
+
 
 }

@@ -11,6 +11,8 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 
 /**
@@ -44,6 +46,10 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlan {
 		this.rt = rt;
 		this.daf = daf;
 		this.agenda = agenda;
+		
+		SensornetOperator rootOperator = daf.getRootOperator();
+		metadata = new QueryPlanMetadata(rootOperator.getAttributes());
+
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SensorNetworkQueryPlan()"); 
 	}

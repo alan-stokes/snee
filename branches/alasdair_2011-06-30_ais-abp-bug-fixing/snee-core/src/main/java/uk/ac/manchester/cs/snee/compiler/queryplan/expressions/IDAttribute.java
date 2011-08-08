@@ -71,6 +71,10 @@ public class IDAttribute extends Attribute {
 		super(extentName, attrName, attrLabel, attrType);
 	}
 
+	public IDAttribute(Attribute attribute) throws SchemaMetadataException {
+		super(attribute);
+	}
+
 	/**
 	 * Finds the minimum value that this expression can return.
 	 * @return The minimum value for this expressions

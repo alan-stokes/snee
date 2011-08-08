@@ -41,10 +41,10 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class WindowComponent extends NesCComponent implements
-	TinyOS1Component, TinyOS2Component {
+public class WindowComponent extends NesCComponent {
 
     SensornetWindowOperator op;
 
@@ -53,11 +53,12 @@ public class WindowComponent extends NesCComponent implements
     public WindowComponent(final SensornetWindowOperator op,
     		final SensorNetworkQueryPlan plan,
     		final NesCConfiguration fragConfig,
-    		int tosVersion, boolean tossimFlag, boolean debugLeds) {
-    	super(fragConfig, tosVersion, tossimFlag, debugLeds);
+    		boolean tossimFlag, boolean debugLeds,
+    		CodeGenTarget target) {
+    	super(fragConfig, tossimFlag, debugLeds, target);
     	this.op = op;
     	this.plan = plan;
-    	this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
+    	this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
 	}
 
 	@Override
@@ -82,39 +83,36 @@ public class WindowComponent extends NesCComponent implements
 			replacements.put("__OUT_QUEUE_CARD__",outQueueCard); 		
 			replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
 					.generateOutputTuplePtrType(this.op.getLeftChild()));
-			//Window from and to are expressed as positive number is nesc.
-			//This allows for unsigned variables to be used.
-			replacements.put("__WINDOW_FROM__", new Integer(-this.op.getFrom())
-				.toString()); 
-			replacements.put("__WINDOW_TO__", new Integer(-this.op.getTo())
-				.toString()); 
-			replacements.put("__EVALUATION_INTERVAL__", new Integer((int) this.plan
-					.getAgenda().getAcquisitionInterval_ms()).toString());
+			
+			//Expressed as positive number is ms
+			Long alpha = this.plan.getAgenda().getAcquisitionInterval_ms();
+			Double fromInEpochs = ((double)-this.op.getFrom())/(double)alpha;
+			Double toInEpochs = ((double)-this.op.getTo())/(double)alpha;
+			Double slideInEpochs = ((double)(-this.op.getTimeSlide())/(double)alpha);
+			
+			replacements.put("__WINDOW_FROM_IN_EPOCHS__", fromInEpochs.toString()); 
+			replacements.put("__WINDOW_TO_IN_EPOCHS__", toInEpochs.toString());
 			
 			if (op.isTimeScope()) {
-				int timeslide = this.op.getTimeSlide();
-				if (timeslide == 0) {
-					timeslide = 1;
+				if (slideInEpochs == 0) {
+					slideInEpochs = 1.0;
 				}
-				replacements.put("__SLIDE__", new Integer((int) timeslide)
-					.toString()); 
-				if (op.getRowSlide() > 0) {
-					throw new CodeGenerationException(
-						"Row slide in window with time scope not yet implemented");
-				}
+				replacements.put("__SLIDE_IN_EPOCHS__", slideInEpochs.toString()); 
 			} else {
-				replacements.put("__SLIDE__", 
-						new Integer((int) this.op.getRowSlide()).toString()); 
-				if (op.getTimeSlide() > 0) {
 					throw new CodeGenerationException(
 						"Time slide in window with row scope not yet implemented");
-				}
 			}
-		
+			
 			final StringBuffer tupleConstructionBuff 
-				= CodeGenUtils.generateTupleConstruction(op, false);
+				= CodeGenUtils.generateTupleConstruction(op, false, "inQueue", "inHead", "windowBuff", "windowTail", target);
 			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff
 					.toString());
+			final StringBuffer tupleConstructionBuff2 
+			= CodeGenUtils.generateTupleConstruction(op, false, "windowBuff", "tmpWindowHead", "outQueue", "outTail", target);
+		replacements.put("__CONSTRUCT_TUPLE2__", tupleConstructionBuff2
+				.toString());			
+			
+			
 			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 			if (op.isTimeScope()) {
 				writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/timeWindow.nc",

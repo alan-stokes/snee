@@ -67,15 +67,15 @@ public class Dispatcher {
 	private Logger logger = 
 		Logger.getLogger(Dispatcher.class.getName());
 	
-	private MetadataManager _schema;
+	private MetadataManager _metadata;
 	
 	private Map<Integer,QueryEvaluator> _queryEvaluators;
 	
-	public Dispatcher(MetadataManager schema) {
+	public Dispatcher(MetadataManager metadata) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER Dispatcher()");
 		}
-		_schema = schema;
+		_metadata = metadata;
 		_queryEvaluators = new HashMap<Integer, QueryEvaluator>();
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN Dispatcher()");
@@ -135,13 +135,12 @@ public class Dispatcher {
 		} else {
 			try {
 				SensorNetworkQueryPlan snQueryPlan = (SensorNetworkQueryPlan)queryPlan;
-				CostParameters costParams = snQueryPlan.getCostParameters();
 				String sep = System.getProperty("file.separator");
 				String outputDir = SNEEProperties.getSetting(
 						SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
 						sep + queryPlan.getQueryName() + sep;
 				SNCB sncb = snQueryPlan.getSNCB();
-				SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, costParams);
+				SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, _metadata);
 				InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
 				_queryEvaluators.put(queryID, queryEvaluator);
 				sncb.start();
@@ -172,7 +171,7 @@ public class Dispatcher {
 	throws SNEEException, SchemaMetadataException,
 	EvaluatorException, SNEEConfigurationException {
 		QueryEvaluator queryEvaluator = 
-			new QueryEvaluator(queryId, queryPlan, _schema, resultSet);
+			new QueryEvaluator(queryId, queryPlan, _metadata, resultSet);
 		return queryEvaluator;
 	}
 	

@@ -332,7 +332,7 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 				return this.getLeftChild().getPhysicalTupleSize();
 			}
 	    	
-	        final List<Attribute> attributes = this.logicalOp.getAttributes();
+	        final List<Attribute> attributes = this.getAttributes();
 	        int totalSize = 0;
 	        int blockSize = 0;
 	        for (int i = 0; i < attributes.size(); i++) {
@@ -653,11 +653,8 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 		return (SensornetOperator)this.getInput(1);
 	}
 	
-	//delegate
+	//delegate except for exchange operators, incremental aggregates
 	public List<Attribute> getAttributes() {
-		if (this instanceof SensornetExchangeOperator) {
-			return this.getLeftChild().getAttributes();
-		}
 		return this.getLogicalOperator().getAttributes();
 	}
 
@@ -665,10 +662,20 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 	public List<Expression> getExpressions() {
 		return this.getLogicalOperator().getExpressions();	
 	}
+
+	//delegate
+	public boolean isLocationSensitive() {
+		return this.getLogicalOperator().isLocationSensitive();
+	}
 	
 	//delegate
 	public boolean isRecursive() {
-		return this.getLogicalOperator().isRecursive();
+		return false;
 	}
 
+	//delegate
+	public String getTupleAttributesStr(int maxPerLine) throws SchemaMetadataException, TypeMappingException {
+		return this.getLogicalOperator().getTupleAttributesStr(maxPerLine);
+	}
+	
 }

@@ -43,6 +43,16 @@
 					<port>6703</port>
 				</push_source>
 			</extent>
+			<extent name="PushStream2">
+				<push_source>
+					<port>6704</port>
+				</push_source>
+			</extent>
+			<extent name="PushStream3">
+				<push_source>
+					<port>6705</port>
+				</push_source>
+			</extent>						
 			<extent name="TestTable">
 				<push_source>
 					<port>6704</port>

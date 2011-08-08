@@ -3,6 +3,7 @@ package uk.ac.manchester.cs.snee.operators.sensornet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -12,6 +13,7 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RoutingTableEntry;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -219,4 +221,9 @@ public class SensornetExchangeOperator extends SensornetOperatorImpl {
     		 final Site node, final DAF daf) {
      	throw new AssertionError("Unexpected method call");
     } 
+	
+	public List<Attribute> getAttributes() {
+		return this.getLeftChild().getAttributes();
+	}
+
 }

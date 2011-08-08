@@ -44,6 +44,8 @@ public enum MultiType {
 	//Mathematical types
 	/** Addition. */
 	ADD (" + ", false),
+	/** Absolute value */
+	ABS (null, false),
 	/** Boolean and. */
 	AND (" && ", true),
 	/** Dision. */
@@ -67,12 +69,11 @@ public enum MultiType {
 	/** Not equals. */
 	NOTEQUALS (" ! =", true),
 	/** Boolean or. */
-	OR (" || ", true), // Nesc To be confirmed
+	OR (" || ", true),
 	/** Power. */
-	POWER (" ^ ", false),// Nesc To be confirmed
-	/** SquareRoot. 
-	 * Nsec code generation to do. */
-	SQUAREROOT (" SQUAREROOT ",false);
+	POWER (null, false),
+	/** SquareRoot. */
+	SQUAREROOT (null, false);
 
 	/** Hold the nesC string representation of the selected value. */
 	private String nesC;
@@ -105,10 +106,10 @@ public enum MultiType {
 	 * The nesc symbols required for this combination.
 	 * @return The symbols to be used in the ensc code.
 	 */
-	public String getNesC() {
+	public String getNesCSymbol() {
 		return nesC;
 	}
-
+	
 	/**
 	 * checks if this type results in Boolean data.
 	 * @return True if expression evaluates to a boolean.

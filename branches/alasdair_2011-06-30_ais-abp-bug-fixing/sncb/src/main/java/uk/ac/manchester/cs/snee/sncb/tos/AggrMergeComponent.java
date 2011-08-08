@@ -45,10 +45,10 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class AggrMergeComponent extends NesCComponent implements
-	TinyOS1Component, TinyOS2Component {
+public class AggrMergeComponent extends NesCComponent {
 
     SensornetAggrMergeOperator op;
 
@@ -56,12 +56,12 @@ public class AggrMergeComponent extends NesCComponent implements
 
     public AggrMergeComponent(final SensornetAggrMergeOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    int tosVersion, boolean tossimFlag, boolean debugLeds) {
+	    boolean tossimFlag, boolean debugLeds, CodeGenTarget target) {
 	    	
-    	super(fragConfig, tosVersion, tossimFlag, debugLeds);
+    	super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
     }
 
     @Override
@@ -89,16 +89,16 @@ public class AggrMergeComponent extends NesCComponent implements
 					.generateOutputTuplePtrType(this.op.getLeftChild()));
 		
 			List <Attribute> attributes = op.getAttributes();
-			replacements.put("__VARIABLES_TO_BE_AGGREGATED__",
-					CodeGenUtils.getPartialAggrVariables(attributes).toString());
-			replacements.put("__SET_AGGREGATES_TO_ZERO__",
-					CodeGenUtils.generateSetAggregatesToZero(attributes, 
-					this.op).toString());
-			replacements.put("__INCREMENT_AGGREGATES__",
-					CodeGenUtils.generateIncrementAggregates(attributes, 
-					this.op).toString());
+			replacements.put("__AGGREGATE_VAR_DECLS__",
+					AggrUtils.generateVarDecls(attributes).toString());
+			replacements.put("__AGGREGATE_VAR_INITIALIZATION__",
+					AggrUtils.generateVarsInit(attributes).toString());
+			replacements.put("__AGGREGATE_VAR_INCREMENT__",
+					AggrUtils.generateIncrementAggregates(attributes, false).toString());
+			replacements.put("__DERIVED_INCREMENTAL_AGGREGATES_DECLS__", "");
+			replacements.put("__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__", "");
 			replacements.put("__CONSTRUCT_TUPLE__",
-					CodeGenUtils.generateTupleFromAggregates(this.op).toString());
+					AggrUtils.generateTuple(attributes).toString());
 		
 			
 			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());

@@ -3,8 +3,8 @@ from TOSSIM import *
 import sys, os, getopt
 
 
-optSimDuration = 60
-optNumNodes = 10
+optSimDuration = __SIMULATION_DURATION_SECS__
+optNumNodes = __NUM_NODES__
 optLowRadioFidelity = True
 
 ONE_SECOND = 10000000000
@@ -14,7 +14,7 @@ def usage():
 	print '\t\tto run the Tossim simulation.\n'
 	print 'where options include:'
 	print '-h, --help\tdisplay this message'
-	print '--duration <t>\n\tdefault: ' + str(optSimDuration) + " (which corresponds to 10 epochs)"
+	print '--duration <t> in seconds\n\tdefault: ' + str(optSimDuration)
 	print '--num-nodes <n>\n\tdefault: ' + str(optNumNodes)
 	print '--low-radio-fidelity [true|false]\n\tdefault:' + str(optLowRadioFidelity) + " (set to true for faster simulations)"
 

@@ -104,36 +104,6 @@ implements LogicalOperator {
 		return new Integer(opCount).toString();
 	}
 
-
-	//XXX: where do we actually use this constructor?
-//	/**
-//	 * Makes a clone of the operator without using a new opCount.
-//	 * @param model Operator to get internal data from.
-//	 */
-//	protected LogicalOperatorImpl(LogicalOperator model) {
-//		super(model);
-//		this.operatorDataType = model.getOperatorDataType();
-//		this.operatorName = model.getOperatorName();
-//		this.paramStr = model.getParamStr();
-//		this.predicate = model.getPredicate();
-//	}
-	
-	//XXX: where do we actually use this constructor?
-	/**
-	 * Makes a copy of the operator using a new opCount.
-	 * @param model Operator to get internal data from.
-	 * @param newID boolean flag expected to be true. 
-	 */
-	protected LogicalOperatorImpl(LogicalOperator model, boolean newID) {
-		super(new Integer(opCount).toString());
-		opCount++;        
-		assert (newID);
-		this.operatorDataType = model.getOperatorDataType();
-		this.operatorName = model.getOperatorName();
-		this.paramStr = model.getParamStr();
-		this.predicate = model.getPredicate();
-	}
-
 	/**
 	 * @return The output operator at index 0.
 	 */
@@ -281,8 +251,11 @@ implements LogicalOperator {
 	 * @throws TypeMappingException */    
 	public String getTupleAttributesStr(int maxPerLine) 
 	throws SchemaMetadataException, TypeMappingException {
-		List<Attribute> attributes = getAttributes();
+		List<Attribute> attributes = this.getAttributes();
+		return LogicalOperatorImpl.getTupleAttributesStr(attributes, maxPerLine);
+	}
 
+	public static String getTupleAttributesStr(List<Attribute> attributes, int maxPerLine) {
 		StringBuffer strBuff = new StringBuffer();
 		strBuff.append("(");
 		for (int i = 0; i < attributes.size(); i++) {
@@ -293,7 +266,7 @@ implements LogicalOperator {
 					strBuff.append("\\n");
 				}
 			}
-			strBuff.append(attributes.get(i));
+			strBuff.append(attributes.get(i).getAttributeDisplayName());
 			strBuff.append(":");
 			assert (attributes.get(i) != null);
 			assert (attributes.get(i).getType() != null);            
@@ -304,7 +277,6 @@ implements LogicalOperator {
 		strBuff.append(")");
 		return strBuff.toString();
 	}
-
 
 	/** 
 	 * List of the attribute returned by this operator.

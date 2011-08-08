@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -459,6 +460,140 @@ public class DAF extends SNEEAlgebraicForm {
 		return (SensornetOperator) this.getOperatorTree().getRoot();
 	}    
 
+	/**
+	 * Removes a given exchange operator, merging the source fragment of the exchange operator into
+	 * the destination fragment.
+	 * @param exchOp	The exchange operator to be removed.
+	 * @throws OptimizationException
+	 */
+	public void removeExchangeOperator(SensornetExchangeOperator exchOp) throws OptimizationException {
+		//Merge the source fragment operators into the destination fragment			
+		Fragment sourceFrag = exchOp.getSourceFragment();
+		Fragment destFrag = exchOp.getDestFragment();
+		destFrag.mergeChildFragment(sourceFrag);
+		
+		//Remove the exchange operator and fragment
+		this.removeNode(exchOp);
+		this.removeFragment(sourceFrag);
+		
+		Iterator<Site> siteIter = this.rt.siteIterator(TraversalOrder.POST_ORDER);
+		while (siteIter.hasNext()) {
+			Site site = siteIter.next();
+		
+			//Remove the exchange components from any routing tree sites
+			site.removeExchangeComponents(exchOp);
+			
+			//Remove the source fragment from any routing tree sites
+			site.removeFragment(sourceFrag);
+			
+			//Change the destination fragment on any exchange component which has the 
+			//old destination fragment
+			Iterator<ExchangePart> exchCompIter = site.getExchangeComponents().iterator();
+			while (exchCompIter.hasNext()) {
+				ExchangePart exchComp = exchCompIter.next();
+				if (exchComp.getDestFrag()==sourceFrag) {
+					exchComp.setDestFrag(destFrag);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Given a DAF, removes any exchange operators from it which are not required.
+	 * An exchange operator is deemed not be required if both the source fragment
+	 * and destination fragment of the exchange operator are are placed on the same
+	 * set of sites.
+	 * @throws OptimizationException 
+	 */
+	public void removeRedundantExchanges() throws OptimizationException {
+		HashSet<SensornetExchangeOperator> exchangesToBeRemoved =
+			new HashSet<SensornetExchangeOperator>(); 
+		
+		Iterator<SensornetOperator> opIter = this.operatorIterator(TraversalOrder.PRE_ORDER);
+		while (opIter.hasNext()) {
+			SensornetOperator op = opIter.next();
+			if (op instanceof SensornetExchangeOperator) {
+				SensornetExchangeOperator exchOp = (SensornetExchangeOperator)op;
+				Fragment sourceFrag = exchOp.getSourceFragment();
+				ArrayList<Site> sourceSites = sourceFrag.getSites();
+				Fragment destFrag = exchOp.getDestFragment();
+				ArrayList<Site> destSites = destFrag.getSites();
+				
+				if (sourceSites.equals(destSites)) {
+//					logger.finest("Fragment " + sourceFrag.getID() + " and Fragment " + destFrag.getID()+"\n");
+					exchangesToBeRemoved.add(exchOp);
+				}
+			}
+		}
+		
+		Iterator<SensornetExchangeOperator> exchOpIter = exchangesToBeRemoved.iterator();
+		while (exchOpIter.hasNext()) {
+			SensornetExchangeOperator exchOp = exchOpIter.next();
+			this.removeExchangeOperator(exchOp);
+		}
+	}
+
+	/**
+	 * A recursive fragment is deemed to redundant if is has not been assigned to execute on 
+	 * any site, or has only been assigned to execute on one site.
+	 * Note that this assumes that a recursive operator is the only one in the recursive fragment.
+	 * This is in accordance with what partitioning does
+	 * @throws OptimizationException 
+	 */
+	public void removeRedundantRecursiveFragments() throws OptimizationException {
+	
+		HashSet<Fragment> fragmentsToRemove = new HashSet<Fragment>(); 
+		Iterator<Fragment> fragIter = this.fragmentIterator(TraversalOrder.POST_ORDER);
+		while (fragIter.hasNext()) {
+			Fragment frag = fragIter.next();
+			if (frag.isRecursive() && frag.getNumSites()<=1) {
+				fragmentsToRemove.add(frag);
+			}
+		}
+		
+		fragIter = fragmentsToRemove.iterator();
+		while (fragIter.hasNext()) {
+			Fragment frag = fragIter.next();
+			this.deleteFrag(frag);
+		}
+	}
+
+	/**
+	 * Deletes a fragment from the DAF.
+	 * @param frag The fragment to be deleted.
+	 * @throws OptimizationException 
+	 */
+	private void deleteFrag(Fragment frag) throws OptimizationException {
+		HashSet<SensornetOperator> opsToDelete = frag.getOperators();
+		
+		SensornetExchangeOperator exchOp = frag.getParentExchangeOperator();
+		this.removeExchangeOperator((SensornetExchangeOperator)exchOp);
+		Fragment parentFragment = frag.getParentFragment();
+		
+		Iterator<SensornetOperator> opIter = opsToDelete.iterator();
+		while (opIter.hasNext()) {
+			SensornetOperator op = opIter.next();
+			this.removeNode(op);
+			parentFragment.operators.remove(op);
+		}
+	}
+
+	public void removeNode(SensornetOperator op) throws OptimizationException {
+	
+		Fragment f = op.getContainingFragment();
+		if (f != null) {
+			f.removeOperator(op);			
+		}
+		physicalOperatorTree.removeNode(op);
+	}
+		
+	/**
+	 * Removes a fragment from the fragments collection.
+	 * @param fragment	The fragment to be removed.
+	 */
+	public void removeFragment(Fragment fragment) {
+		this.fragments.remove(fragment);
+	}
 }
 
 

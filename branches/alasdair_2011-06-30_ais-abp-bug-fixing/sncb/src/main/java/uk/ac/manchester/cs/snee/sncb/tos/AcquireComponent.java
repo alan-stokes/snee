@@ -51,10 +51,12 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 /**
@@ -62,8 +64,7 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
  * @author Ixent, Christian
  *
  */
-public class AcquireComponent extends NesCComponent implements
-	TinyOS1Component, TinyOS2Component {
+public class AcquireComponent extends NesCComponent {
 
 	/** Operator class code is being build for. */
     private SensornetAcquireOperator op;
@@ -73,11 +74,12 @@ public class AcquireComponent extends NesCComponent implements
 
     public AcquireComponent(final SensornetAcquireOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    int tosVersion, boolean tossimFlag, boolean debugLeds) {
-		super(fragConfig, tosVersion, tossimFlag, debugLeds);
+	    boolean tossimFlag, boolean debugLeds,
+	    CodeGenTarget target) {
+		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
     }
 
     @Override
@@ -100,10 +102,10 @@ public class AcquireComponent extends NesCComponent implements
 					this.plan.getRT().getSite(
 						this.site.getID()), this.plan.getDAF())).toString());
 		    replacements.put("__FULL_ACQUIRE_PREDICATES__", 
-		    		getNescText(op.getLogicalOperator().getPredicate()));
+		    		getNescText(op.getLogicalOperator().getPredicate(), target));
 		    replacements.put("__ACQUIRE_PREDICATES__", CodeGenUtils.getNescText(
 		    		op.getLogicalOperator().getPredicate(), "", null,
-		    		((AcquireOperator)op.getLogicalOperator()).getAcquiredAttributes(), null));
+		    		((AcquireOperator)op.getLogicalOperator()).getAcquiredAttributes(), null, target));
 		    
 		    if (this.debugLeds) {
 				replacements.put("__NESC_DEBUG_LEDS__", "call Leds.led0Toggle();");		
@@ -146,22 +148,13 @@ public class AcquireComponent extends NesCComponent implements
     			getDataBuff.append("\t\t\tacquiring" + i 
     					+ " = TRUE;\n");    		
     			getDataBuff.append("\t\t\t}\n");
-    			if (tosVersion==1) {
-    				getDataBuff.append("\t\tcall ADC" + i + ".getData();\n");	
-    			} else {
-    				getDataBuff.append("\t\tcall Read"+ i + ".read();\n");
-    			}
+    			getDataBuff.append("\t\tcall Read"+ i + ".read();\n");
     			
     			getDataBuff.append("\t}\n\n");
     		}
     		
-    		if (tosVersion==1) {
-	    	    getDataBuff.append("\tasync event result_t ADC" + i
-	    		    + ".dataReady(uint16_t data)\n");
-    		} else {
-	    	    getDataBuff.append("\tevent void Read" + i + 
+    	    getDataBuff.append("\tevent void Read" + i + 
 	    	    	".readDone(error_t result, uint16_t data)\n");
-	    	}
     	    getDataBuff.append("\t{\n");
     	    getDataBuff.append("\t\tif (acquiring" + i + ") {\n");
     	    getDataBuff.append("\t\t\tatomic\n");
@@ -177,11 +170,6 @@ public class AcquireComponent extends NesCComponent implements
     	    	padding = Utils.pad(" ", 16 - attribName.length());
     	    }
 
-    	    if (tosVersion==1) {
-	    	    getDataBuff.append("\t\t\t\tdbg(DBG_USR1,\"ACQUIRE: " + attribName
-	    		    + padding + "  %d at epoch %d\\n\",reading" + i
-	    		    + ",currentEvalEpoch);\n");
-    	    }
     	    getDataBuff.append("\t\t\t}\n");
 
     	    if (i + 1 < sensedAttribs.size()) {
@@ -190,9 +178,7 @@ public class AcquireComponent extends NesCComponent implements
     	    	getDataBuff.append("\t\t\tpost constructTupleTask();\n");
     	    }
     	    getDataBuff.append("\t\t}\n");
-    	    if (tosVersion==1) {
-    	    	getDataBuff.append("\t\treturn SUCCESS;\n");
-    	    }
+    	    
     	    getDataBuff.append("\t}\n\n");
     	}
     	replacements.put("__GET_DATA_METHODS__", getDataBuff.toString());
@@ -212,7 +198,6 @@ public class AcquireComponent extends NesCComponent implements
     	    getDataBuff.append("\tasync event result_t ADC" + i
     		    + ".dataReady(uint16_t data)\n");
     	    getDataBuff.append("\t{\n");
-    	    getDataBuff.append("\t\treturn SUCCESS;\n");
     	    getDataBuff.append("\t}\n\n");
     	}
     	replacements.put("__GET_DATA_METHODS__", getDataBuff.toString());
@@ -244,9 +229,15 @@ public class AcquireComponent extends NesCComponent implements
     		String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
 
   			tupleConstructionBuff.append("\t\t\t\toutQueue[outTail]." 
-        			+ attrName + "=" + getNescText(expression) + ";\n");
+        			+ attrName + "=" + getNescText(expression, target) + ";\n");
   
-  			tupleStrBuff1.append(comma+attrName+"=%d"); //getNescText(expression)
+	  		if (attributes.get(i) instanceof EvalTimeAttribute ||
+	  				attributes.get(i) instanceof IDAttribute
+	  					|| attributes.get(i) instanceof TimeAttribute ) {
+  	  			tupleStrBuff1.append(comma+attrName+"=%d"); 
+  			} else {
+  	  			tupleStrBuff1.append(comma+attrName+"=%g");
+  			}
   			tupleStrBuff2.append(comma+"outQueue[outTail]."+attrName);
   			comma = ",";
     	}
@@ -264,7 +255,7 @@ public class AcquireComponent extends NesCComponent implements
      * 
      * See also CodeGenUtils.getNescTExt
      */
-	private String getNescText(final Expression expression)
+	private String getNescText(final Expression expression, CodeGenTarget target)
 			throws CodeGenerationException {
 	    if (expression instanceof EvalTimeAttribute) {
 	    	return "currentEvalEpoch";
@@ -273,11 +264,7 @@ public class AcquireComponent extends NesCComponent implements
 	    	return "currentEvalEpoch";
 	    }
 	    if (expression instanceof IDAttribute) {
-	    	if (tosVersion == 1) {
-	    		return "TOS_LOCAL_ADDRESS";
-	    	} else {
-	    		return "TOS_NODE_ID";
-	    	}
+	    	return "TOS_NODE_ID";
 	    }
 //TOOD: Add LocalTime attribute back in at some point
 //	    if (expression instanceof LocalTimeAttribute) {
@@ -285,7 +272,7 @@ public class AcquireComponent extends NesCComponent implements
 //	    }
 		if (expression instanceof DataAttribute) {
 			try {
-				return "reading" + ((AcquireOperator)op.
+				return "(float) reading" + ((AcquireOperator)op.
 				getLogicalOperator()).getInputAttributeNumber(expression);
 			} catch (OptimizationException e) {
 				throw new CodeGenerationException(e);
@@ -293,11 +280,20 @@ public class AcquireComponent extends NesCComponent implements
 		}	
 		if (expression instanceof MultiExpression) {
 			MultiExpression multi = (MultiExpression) expression;
+			MultiType exprOperator = multi.getMultiType();
 			Expression[] expressions = multi.getExpressions(); 
-			String output = "(" + getNescText(expressions[0]);
-			for (int i = 1; i < expressions.length; i++) {
-				output = output + multi.getMultiType().getNesC() 
-					+ getNescText(expressions[i]);
+			StringBuffer output = new StringBuffer("(");
+			String leftOperand = getNescText(expressions[0], target);			
+			if (expressions.length ==1) {
+				//unary functions
+				String expr = CodeGenUtils.getNesCExpressionText(exprOperator,leftOperand, target);
+				output.append(expr);
+			} else {
+				for (int i = 1; i < expressions.length; i++) {
+					String rightOperand = getNescText(expressions[i], target);
+					String expr = CodeGenUtils.getNesCExpressionText(exprOperator,leftOperand, rightOperand, target);
+					output.append(expr);
+				}
 			}
 			return output + ")";
 		}

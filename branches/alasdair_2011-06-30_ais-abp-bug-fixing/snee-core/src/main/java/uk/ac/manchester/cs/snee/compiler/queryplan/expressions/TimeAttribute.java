@@ -70,6 +70,10 @@ public class TimeAttribute extends Attribute {
 		super(extentName, attrName, attrLabel, attrType);
 	}
 		
+	public TimeAttribute(Attribute attribute) throws SchemaMetadataException {
+		super(attribute);
+	}
+
 	/**
 	 * Finds the minimum value that this expression can return.
 	 * @return The minimum value for this expressions

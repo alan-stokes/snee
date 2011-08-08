@@ -61,7 +61,7 @@ public class Router {
 			paf.getDLAF().getSources().iterator().next();
 		Topology network = sm.getTopology();
 		int sink = sm.getGateway(); 
-		int[] sources = sm.getSourceSites();
+		int[] sources = sm.getSourceSites(paf);
 		Tree steinerTree = computeSteinerTree(network, sink, sources); 
 		RT rt = new RT(paf, queryName, steinerTree);
 		if (logger.isDebugEnabled())
@@ -104,6 +104,9 @@ public class Router {
 	    	Site s = (Site) siteIter.next();
 	    	if (nodesToAdd.contains(s.getID())) {
 	    		s.setIsSource(true);
+	    	}
+	    	if (gateway.getID().equals(s.getID())) {
+	    		gateway.setIsSource(true);
 	    	}
 	    }
 	

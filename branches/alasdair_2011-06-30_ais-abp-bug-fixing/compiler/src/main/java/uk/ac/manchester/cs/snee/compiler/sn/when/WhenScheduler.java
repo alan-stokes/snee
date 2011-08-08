@@ -4,6 +4,9 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
@@ -26,19 +29,21 @@ public class WhenScheduler {
 	 */
 	private Logger logger = 
 		Logger.getLogger(WhenScheduler.class.getName());
-
-	private boolean decreaseBetaForValidAlpha = true;
 	
 	private CostParameters costParams;
+
+	boolean allowDiscontinuousSensing = true;
 	
 	/**
 	 * Constructor for Sensor Network When-Scheduling Decision Maker.
 	 */
-	public WhenScheduler(boolean decreaseBetaForValidAlpha, MetadataManager m,
+	public WhenScheduler(boolean allowDiscontinuousSensing,
+			MetadataManager m,
 			boolean useNetworkController) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER WhenScheduler()");
-		this.decreaseBetaForValidAlpha=decreaseBetaForValidAlpha;
+
+		this.allowDiscontinuousSensing=allowDiscontinuousSensing;
 		this.costParams = m.getCostParameters();
 		if (logger.isDebugEnabled());
 			logger.debug("RETURN WhenScheduler()");
@@ -67,12 +72,17 @@ public class WhenScheduler {
 //	    	CostExpressions costExpressions = CostExpressions.costExpressionFactory(daf);
 //	    	costExpressions.display();
 //		}
+		
 	    logger.trace("Computing maximum possible buffering factor based on "
 	    		+ " memory");
 	    long maxBFactorSoFar = computeMaximumBufferingFactorBasedOnMemory(
 		    daf, qos);
 	    logger.trace("Max possible buffering factor according to memory " 
 	    		+ " available on nodes in sensor network: "	+ maxBFactorSoFar);
+	    
+	    if (daf.getFragments().size()==1) {
+	    	maxBFactorSoFar = 1;
+	    }
 	    
 		// optimizer should compute best buffering factor based on memory, 
 		// maxBFactor and delivery time
@@ -124,7 +134,7 @@ public class WhenScheduler {
 
 	    try {
 	    	final Agenda agenda = new Agenda(qos.getMaxAcquisitionInterval(), 
-	    			maxBFactorSoFar, daf, costParams, queryName);
+	    			maxBFactorSoFar, daf, costParams, queryName, allowDiscontinuousSensing);
 			if (logger.isDebugEnabled())
 				logger.debug("RETURN doWhenScheduling()");
 	    	return agenda;
@@ -251,7 +261,7 @@ public class WhenScheduler {
 	
 	final long alpha_bms = (int) Agenda.msToBms_RoundUp((qos.getMaxAcquisitionInterval()));
 	do {
-		if (this.decreaseBetaForValidAlpha) {
+		if (!this.allowDiscontinuousSensing) {
 			beta = (lowerBeta+upperBeta)/2;
 		} else {
 			beta = upperBeta;
@@ -259,37 +269,37 @@ public class WhenScheduler {
 	    
 		try {
 	    	agenda = new Agenda(qos.getMaxAcquisitionInterval(), beta, daf, 
-	    			costParams, "");
+	    			costParams, "", allowDiscontinuousSensing);
 		    logger.trace("Agenda constructed successfully length="
 				    + agenda.getLength_bms(Agenda.INCLUDE_SLEEP) + " met target length="
 				    + alpha_bms * beta + " with beta="
 				    + beta);
 		    lowerBeta = beta;
+
+
 		    
 		} catch (AgendaLengthException e) {
 			
-			if (!this.decreaseBetaForValidAlpha) {
-				String msg="Set decrease_bfactor_to_avoid_agenda_overlap=true in the "+
-				 "ini file to avoid need for overlap, as overlapping agendas are not" +
-				 "yet supported.";
+			if (!this.allowDiscontinuousSensing) {
+				String msg="Current acquisition interval cannot be supported without "+
+				"discontinuous sensing enabled. To enable it, set the "+
+				"compiler.allow_discontinuous_sensing option in the " +
+				"snee.properties file to true";
 				logger.warn(msg);
 				throw new WhenSchedulerException(msg);
 			}
 			
 	    	upperBeta = beta;
-	    	
+
 	    	logger.trace("Max Buffering factor reduced to " + beta);
 	    	if (beta == 1) {
-	    		String msg ="Agenda requires overlap even with buffering factor=1.  "+
-	    		"Overlapping agendas are currently not supported; try increasing the "+
-	    		"acquisition interval in the QoS file."; 
+	    		String msg ="Acquisition interval too small to be supported."; 
 	    		logger.warn(msg);
 	    		throw new WhenSchedulerException(msg);
 	    	}
 	    	
 	    	continue;
-	    } 
-	    
+		}
 	} while (lowerBeta+1<upperBeta);
 	//(agenda.getLength_bms(Agenda.INCLUDE_SLEEP) > (alpha_bms * currMaxBeta))
 	//	&& (currMaxBeta > 0));
@@ -320,7 +330,7 @@ public class WhenScheduler {
 	    do {
 	    	try {
 	    		agenda = new Agenda(qos.getMaxAcquisitionInterval(), 
-	    				currentMaxBuffFactor, daf, costParams, "");
+	    				currentMaxBuffFactor, daf, costParams, "", allowDiscontinuousSensing);
 	    		//CB I don't think this is neseccary as new Agenda throw an error.
 	    		//CB :Left in for safety
 	    		if (agenda.getLength_bms(Agenda.IGNORE_SLEEP) > bmsDeliveryTime) {

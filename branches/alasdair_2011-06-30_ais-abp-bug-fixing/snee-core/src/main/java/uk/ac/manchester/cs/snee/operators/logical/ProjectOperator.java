@@ -209,11 +209,6 @@ public class ProjectOperator extends PredicateOperator {
 	/** {@inheritDoc} */
 	public boolean isRemoveable() {
 		return getExpressions().equals(this.getInput(0).getAttributes());
-	}   
-
-	/** {@inheritDoc} */
-	public boolean isRecursive() {
-		return false;
 	}
 
 //	/**
