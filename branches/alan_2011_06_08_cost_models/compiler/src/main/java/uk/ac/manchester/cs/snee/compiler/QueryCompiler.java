@@ -58,6 +58,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.DLAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.rewriter.LogicalRewriter;
@@ -88,7 +89,7 @@ public class QueryCompiler {
 	 * The metadata being used. 
 	 */
 	private MetadataManager metadata;
-	private QueryExecutionPlan qep;
+	private QueryExecutionPlanAbstract qep;
 	private static boolean deletedFolderContents = false;
 	
 	public QueryExecutionPlan getQEP()
@@ -174,7 +175,7 @@ public class QueryCompiler {
 		return dlaf;
 	}
 	
-	private QueryExecutionPlan doSourcePlanning(DLAF dlaf, QoSExpectations qos, 
+	private QueryExecutionPlanAbstract doSourcePlanning(DLAF dlaf, QoSExpectations qos, 
 	int queryID) 
 	throws SNEEException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException,
 	OptimizationException, WhenSchedulerException {
@@ -212,7 +213,7 @@ public class QueryCompiler {
 	 * @throws ExtentDoesNotExistException 
 	 * @throws SourceDoesNotExistException 
 	 */
-	public QueryExecutionPlan compileQuery(int queryID, String query, 
+	public QueryExecutionPlanAbstract compileQuery(int queryID, String query, 
 			QoSExpectations qos) 
 	throws SNEEException, TypeMappingException, SchemaMetadataException, OptimizationException, 
 	ParserException, RecognitionException, TokenStreamException, 
@@ -247,7 +248,7 @@ public class QueryCompiler {
 		
 		if (logger.isInfoEnabled()) 
 			logger.info("Starting Source Planner for query " + queryID);
-		QueryExecutionPlan qep = doSourcePlanning(dlaf, qos, queryID);
+		QueryExecutionPlanAbstract qep = doSourcePlanning(dlaf, qos, queryID);
 
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN: " + qep.getID());

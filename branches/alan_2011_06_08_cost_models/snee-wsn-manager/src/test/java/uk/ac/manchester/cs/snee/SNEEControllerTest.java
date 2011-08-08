@@ -58,6 +58,7 @@ import uk.ac.manchester.cs.snee.compiler.allocator.SourceAllocatorException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
@@ -79,7 +80,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	final MetadataManager mockSchema = createMock(MetadataManager.class);
 	final QueryCompiler mockQueryCompiler = createMock(QueryCompiler.class);
 	final Dispatcher mockDispatcher = createMock(Dispatcher.class);
-	final QueryExecutionPlan mockPlan = createMock(QueryExecutionPlan.class);
+	final QueryExecutionPlanAbstract mockPlan = createMock(QueryExecutionPlanAbstract.class);
 	final ResultStore mockResultset = createMock(ResultStore.class);
 
 	@BeforeClass

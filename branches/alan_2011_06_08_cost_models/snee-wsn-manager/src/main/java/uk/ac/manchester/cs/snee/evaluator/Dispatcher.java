@@ -51,17 +51,16 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
-import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
@@ -85,8 +84,8 @@ public class Dispatcher {
 		}
 		_metadata = metadata;
 		_queryEvaluators = new HashMap<Integer, QueryEvaluator>();
-		/*set up cost modle structure */
-    _autonomicManager = new AutonomicManager();
+		/*set up autonomic manager */
+    _autonomicManager = new AutonomicManagerImpl(_metadata);
 		
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN Dispatcher()");
@@ -151,12 +150,9 @@ public class Dispatcher {
 				SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
 				sep + queryPlan.getQueryName() + sep;
 				sncb = snQueryPlan.getSNCB();
-        _autonomicManager.setQueryExecutionPlan(queryPlan);
-        _autonomicManager.setResultSet(resultSet);
-        _autonomicManager.runCostModels();
-        _autonomicManager.runAnyliserWithDeadNodes();
 				SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, _metadata);
-				_autonomicManager.setListener(mr);
+				SourceMetadataAbstract metadata = _metadata.getSource(snQueryPlan.getMetaData().getOutputAttributes().get(0).getExtentName());
+        _autonomicManager.initilise(metadata, queryPlan, resultSet, mr);
 				InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
 				_queryEvaluators.put(queryID, queryEvaluator);
 				sncb.start();

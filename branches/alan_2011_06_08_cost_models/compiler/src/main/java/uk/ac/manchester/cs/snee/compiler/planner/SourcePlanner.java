@@ -22,7 +22,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAFUtils;
-import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -74,13 +74,13 @@ public class SourcePlanner {
 	 * @throws OptimizationException 
 	 * @throws WhenSchedulerException 
 	 */
-	public QueryExecutionPlan doSourcePlanning(DLAF dlaf, QoSExpectations qos, 
+	public QueryExecutionPlanAbstract doSourcePlanning(DLAF dlaf, QoSExpectations qos, 
 	CostParameters costParams, int queryID) 
 	throws SNEEException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException, 
 	OptimizationException, WhenSchedulerException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER doSourcePlanning() for " + queryID);
-		QueryExecutionPlan qep = null;
+		QueryExecutionPlanAbstract qep = null;
 		//TODO: In the future, this will involve iterating over fragment identified by source allocator in turn.
 		SourceType dataSourceType = dlaf.getSources().iterator().next().getSourceType();
 		switch (dataSourceType) {

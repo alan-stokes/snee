@@ -34,8 +34,8 @@ public class FailedNodeFrameWorkPartialUtils
   {
     try
     {
-      ad.getAgenda().setID("newAgenda");
-      AgendaIOTUtils output = new AgendaIOTUtils(ad.getAgenda(), iot, true);
+      ad.getOldAgenda().setID("newAgenda");
+      AgendaIOTUtils output = new AgendaIOTUtils(ad.getOldAgenda(), iot, true);
       File agendaFolder = new File(outputFolder.toString() + sep + "Agendas");
       agendaFolder.mkdir();
       output.generateImage(agendaFolder.toString());

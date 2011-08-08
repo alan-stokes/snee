@@ -21,7 +21,7 @@ import uk.ac.manchester.cs.snee.sncb.SNCB;
 /**
  * Query Plan for Sensor Network that supports In-Network Query Processing.
  */
-public class SensorNetworkQueryPlan extends QueryExecutionPlan {
+public class SensorNetworkQueryPlan extends QueryExecutionPlanAbstract {
 
 	/**
 	 * Logger for this class.

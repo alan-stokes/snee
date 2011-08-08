@@ -63,6 +63,7 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
@@ -88,7 +89,7 @@ public class ResultStoreImplTest extends EasyMockSupport {
 	private ResultStore _resultStore;
 	private String testQuery = "SELECT * FROM TestStream;";
 	private QueryExecutionPlan mockQEP = 
-		createMock(QueryExecutionPlan.class);
+		createMock(QueryExecutionPlanAbstract.class);
 	private ResultSetMetaData mockMetaData = 
 		createMock(ResultSetMetaData.class);
 	private ResultSet mockResultSet = 

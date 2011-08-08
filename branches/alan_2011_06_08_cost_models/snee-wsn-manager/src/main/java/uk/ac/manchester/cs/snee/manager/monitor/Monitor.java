@@ -157,7 +157,14 @@ public class Monitor implements Observer
     
   }
   //Temporary code to allow notation tests without a failed node
-  public void chooseFakeNodeFailure() throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, TypeMappingException, AgendaException, SNEEException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
+  public void chooseFakeNodeFailure() 
+  throws SNEEConfigurationException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException, 
+  AgendaException, SNEEException, 
+  MalformedURLException, MetadataException, 
+  UnsupportedAttributeTypeException, SourceMetadataException, 
+  TopologyReaderException, SNEEDataSourceException, 
+  CostParametersException, SNCBException
   {/*
     ArrayList<String> failedNodes = new ArrayList<String>();
     Node failedNode = qep.getIOT().getNode(3);

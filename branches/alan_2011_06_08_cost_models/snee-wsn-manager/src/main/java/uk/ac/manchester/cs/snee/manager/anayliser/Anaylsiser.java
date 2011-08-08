@@ -5,9 +5,11 @@ import java.io.FileWriter;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import uk.ac.manchester.cs.snee.MetadataException;
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
@@ -17,15 +19,17 @@ import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.Cardinality
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.Adapatation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeFrameWorkGlobal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeFrameWorkLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeFrameWorkPartial;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
@@ -38,19 +42,21 @@ public class Anaylsiser
   private DeadNodeSimulator deadNodeSimulator; 
   private boolean anaylisieCECM = true;
   private String deadSitesList = "";  
-  ArrayList<FrameWork> frameworks;
+  ArrayList<FrameWorkAbstract> frameworks;
 
-  public Anaylsiser(AutonomicManager autonomicManager)
+  public Anaylsiser(AutonomicManager autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager)
   {
     manager = autonomicManager;
-    frameworks = new ArrayList<FrameWork>();
-    FailedNodeFrameWorkPartial failedNodeFrameworkSpaceAndTimePinned = new FailedNodeFrameWorkPartial(manager, true, true);
-    FailedNodeFrameWorkPartial failedNodeFrameworkSpacePinned = new FailedNodeFrameWorkPartial(manager, true, false);
-    FailedNodeFrameWorkLocal failedNodeFrameworkLocal = new FailedNodeFrameWorkLocal(manager);
+    frameworks = new ArrayList<FrameWorkAbstract>();
+    FailedNodeFrameWorkPartial failedNodeFrameworkSpaceAndTimePinned = new FailedNodeFrameWorkPartial(manager, _metadata, true, true);
+    FailedNodeFrameWorkPartial failedNodeFrameworkSpacePinned = new FailedNodeFrameWorkPartial(manager, _metadata, true, false);
+    FailedNodeFrameWorkLocal failedNodeFrameworkLocal = new FailedNodeFrameWorkLocal(manager, _metadata);
+    FailedNodeFrameWorkGlobal failedNodeFrameworkGlobal = new FailedNodeFrameWorkGlobal(manager, _metadata, _metadataManager);
     //add methodologies in order wished to be assessed
     frameworks.add(failedNodeFrameworkLocal);
     frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
     frameworks.add(failedNodeFrameworkSpacePinned);
+    frameworks.add(failedNodeFrameworkGlobal);
     deadNodeSimulator = new DeadNodeSimulator();
   }
 
@@ -58,10 +64,10 @@ public class Anaylsiser
   {//sets ECMs with correct query execution plan
 	  this.qep = (SensorNetworkQueryPlan) qep;
 	  cardECM = new CardinalityEstimatedCostModel(qep);
-	  Iterator<FrameWork> frameworkIterator = frameworks.iterator();
+	  Iterator<FrameWorkAbstract> frameworkIterator = frameworks.iterator();
 	  while(frameworkIterator.hasNext())
 	  {
-	    FrameWork currentFrameWork = frameworkIterator.next();
+	    FrameWorkAbstract currentFrameWork = frameworkIterator.next();
 	    currentFrameWork.initilise(qep, noOfTrees);
 	  }
 	  deadNodeSimulator.initilise(qep, cardECM);  
@@ -223,19 +229,23 @@ public class Anaylsiser
     anaylisieCECM = true;   
   }
   
-  public SensorNetworkQueryPlan adapatationStrategyIntermediateSpaceAndTimePinned(ArrayList<String> failedNodes) 
-  throws OptimizationException, 
-         SchemaMetadataException, 
-         TypeMappingException, 
-         AgendaException, SNEEException, SNEEConfigurationException, MalformedURLException, WhenSchedulerException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
+  public SensorNetworkQueryPlan runFailedNodeFramework(ArrayList<String> failedNodes) 
+  throws OptimizationException, SchemaMetadataException, 
+         TypeMappingException, AgendaException, 
+         SNEEException, SNEEConfigurationException, 
+         MalformedURLException, MetadataException, 
+         UnsupportedAttributeTypeException, SourceMetadataException, 
+         TopologyReaderException, SNEEDataSourceException, 
+         CostParametersException, SNCBException, SNEECompilerException, 
+         NumberFormatException
   {
   	//create adaparatation array
-  	ArrayList<Adapatation> adapatations = new ArrayList<Adapatation>();
-  	Iterator<FrameWork> frameworkIterator = frameworks.iterator();
+  	List<Adapatation> adapatations = new ArrayList<Adapatation>();
+  	Iterator<FrameWorkAbstract> frameworkIterator = frameworks.iterator();
   	//go though methodologyies till located a adapatation.
   	while(adapatations.size() == 0 && frameworkIterator.hasNext())
   	{
-  	  FrameWork framework = frameworkIterator.next();
+  	  FrameWorkAbstract framework = frameworkIterator.next();
   	  if(framework.canAdaptToAll(failedNodes))
   	    adapatations = framework.adapt(failedNodes);
   	  else

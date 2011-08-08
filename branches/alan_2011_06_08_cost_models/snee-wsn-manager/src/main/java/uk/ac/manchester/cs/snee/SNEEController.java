@@ -55,6 +55,7 @@ import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -111,8 +112,8 @@ public class SNEEController implements SNEE {
 	/**
 	 * Stores the query plan for each registered query
 	 */
-	private Map<Integer, QueryExecutionPlan> _queryPlans = 
-		new HashMap<Integer, QueryExecutionPlan>();
+	private Map<Integer, QueryExecutionPlanAbstract> _queryPlans = 
+		new HashMap<Integer, QueryExecutionPlanAbstract>();
 	
 	private static int _nextQueryID = 1;
 
@@ -525,7 +526,7 @@ public class SNEEController implements SNEE {
 				if (queryParams!=null) {
 					qos = queryParams.getQoS();
 				}
-				QueryExecutionPlan queryPlan = 
+				QueryExecutionPlanAbstract queryPlan = 
 					_compiler.compileQuery(queryID, query, qos);
 				_queryPlans.put(queryID, queryPlan);
 			} catch (Exception e) {

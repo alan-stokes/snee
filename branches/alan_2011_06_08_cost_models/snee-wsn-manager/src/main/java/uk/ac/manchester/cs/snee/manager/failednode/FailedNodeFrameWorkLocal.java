@@ -1,9 +1,8 @@
 package uk.ac.manchester.cs.snee.manager.failednode;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -11,10 +10,10 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.Adapatation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
-import uk.ac.manchester.cs.snee.manager.anayliser.FrameWork;
+import uk.ac.manchester.cs.snee.manager.anayliser.FrameWorkAbstract;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalCluster;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LocalClusterEquivalenceRelation;
-import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
@@ -23,18 +22,17 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
  * @author alan
  *class which encapsulates the local framework using clusters and equivalence relations
  */
-public class FailedNodeFrameWorkLocal extends FrameWork
+public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
 {
   private Topology network = null;
   private FailedNodeLocalCluster clusters;
-	
   /**
    * constructor
    * @param autonomicManager
    */
-  public FailedNodeFrameWorkLocal(AutonomicManager autonomicManager)
+  public FailedNodeFrameWorkLocal(AutonomicManager autonomicManager, SourceMetadataAbstract _metadata)
   {
-    this.manager = autonomicManager;
+    super(autonomicManager, _metadata); 
   }
 	
   /**
@@ -135,9 +133,9 @@ public class FailedNodeFrameWorkLocal extends FrameWork
   }
 
   @Override
-  public ArrayList<Adapatation> adapt(ArrayList<String> failedNodeIDs)
+  public List<Adapatation> adapt(ArrayList<String> failedNodeIDs)
   {
-    ArrayList<Adapatation> adapatation = new ArrayList<Adapatation>();
+    List<Adapatation> adapatation = new ArrayList<Adapatation>();
     Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
     Adapatation adapt = new Adapatation(qep);
     while(failedNodeIDsIterator.hasNext())

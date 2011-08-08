@@ -9,7 +9,7 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 /**
  * Query Plan for execution on SNEE Evaluator.
  */
-public class EvaluatorQueryPlan extends QueryExecutionPlan {
+public class EvaluatorQueryPlan extends QueryExecutionPlanAbstract {
 
     /**
      * Logger for this class.

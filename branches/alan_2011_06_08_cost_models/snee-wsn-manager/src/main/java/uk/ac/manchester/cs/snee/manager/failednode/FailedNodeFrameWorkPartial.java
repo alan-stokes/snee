@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.manager.failednode;
 
 import uk.ac.manchester.cs.snee.MetadataException;
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
@@ -15,7 +16,6 @@ import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceWhereSchedular;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -28,7 +28,7 @@ import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.Adapatation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.TemporalAdjustment;
-import uk.ac.manchester.cs.snee.manager.anayliser.FrameWork;
+import uk.ac.manchester.cs.snee.manager.anayliser.FrameWorkAbstract;
 import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.CandiateRouter;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
@@ -36,11 +36,9 @@ import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
-import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
@@ -52,7 +50,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.rits.cloning.Cloner;
@@ -62,12 +60,12 @@ import com.rits.cloning.Cloner;
  *class designed to encapsulate the partial framework of adapting just what needs to be adapted
  */
 
-public class FailedNodeFrameWorkPartial extends FrameWork
+public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
 {
   private boolean spacePinned;
   private boolean timePinned;
   private IOT oldIOT;
-  private AgendaIOT agenda;
+  private AgendaIOT oldAgenda;
   private Integer numberOfRoutingTreesToWorkOn = 0;
   private static int choice;
   
@@ -75,28 +73,36 @@ public class FailedNodeFrameWorkPartial extends FrameWork
    * @param autonomicManager
    * the parent of this class.
    */
-  public FailedNodeFrameWorkPartial(AutonomicManager autonomicManager, boolean spacePinned, boolean timePinned)
+  public FailedNodeFrameWorkPartial(AutonomicManager autonomicManager, 
+                                    SourceMetadataAbstract _metadata, boolean spacePinned, 
+                                    boolean timePinned)
   {
-    this.manager = autonomicManager;
+    super(autonomicManager, _metadata);
     this.spacePinned = spacePinned;
     this.timePinned = timePinned;
     this.timePinned = false; 
   }
   
   @Override
-  public void initilise(QueryExecutionPlan oldQep, Integer numberOfTrees) throws SchemaMetadataException 
+  public void initilise(QueryExecutionPlan oldQep, Integer numberOfTrees) 
+  throws SchemaMetadataException 
   {
     this.qep = (SensorNetworkQueryPlan) oldQep;
     outputFolder = manager.getOutputFolder();
     new FailedNodeFrameWorkPartialUtils(this).outputTopologyAsDotFile(outputFolder, "/topology.dot");
     this.oldIOT = qep.getIOT();
     oldIOT.setID("OldIOT");
-    this.agenda = this.qep.getAgendaIOT();
+    this.oldAgenda = this.qep.getAgendaIOT();
     this.numberOfRoutingTreesToWorkOn = numberOfTrees;
   }
   
   @Override
-  public ArrayList<Adapatation> adapt(ArrayList<String> failedNodes) throws SNEEConfigurationException, SchemaMetadataException, MalformedURLException, SNEEException, OptimizationException, WhenSchedulerException, TypeMappingException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException
+  public List<Adapatation> adapt(ArrayList<String> failedNodes) 
+  throws NumberFormatException, SNEEConfigurationException, SchemaMetadataException, 
+  SNEECompilerException, MalformedURLException, SNEEException, OptimizationException,
+  TypeMappingException, MetadataException, UnsupportedAttributeTypeException, 
+  SourceMetadataException, TopologyReaderException, SNEEDataSourceException, 
+  CostParametersException, SNCBException 
   { 
     System.out.println("Running fake Adapatation "); 
     //setup collectors
@@ -107,7 +113,7 @@ public class FailedNodeFrameWorkPartial extends FrameWork
     routingTrees = createNewRoutingTrees(failedNodes, disconnectedNodes, paf, oldIOT.getRT(), outputFolder );
 
     //create store for all adapatations
-    ArrayList<Adapatation> totalAdapatations = new ArrayList<Adapatation>();
+    List<Adapatation> totalAdapatations = new ArrayList<Adapatation>();
     Iterator<RT> routeIterator = routingTrees.iterator();
     choice = 0;
     
@@ -138,42 +144,27 @@ public class FailedNodeFrameWorkPartial extends FrameWork
 
   /**
    * uses new routes to determine new QEP/adaptations
-   * @param routeIterator
-   * @param failedNodes
-   * @param disconnectedNodes
-   * @param totalAdapatations
-   * @throws SNEEException
-   * @throws SchemaMetadataException
-   * @throws OptimizationException
-   * @throws SNEEConfigurationException
-   * @throws MalformedURLException
-   * @throws WhenSchedulerException
-   * @throws TypeMappingException
-   * @throws MetadataException
-   * @throws UnsupportedAttributeTypeException
-   * @throws SourceMetadataException
-   * @throws TopologyReaderException
-   * @throws SNEEDataSourceException
-   * @throws CostParametersException
-   * @throws SNCBException
+   * @param routeIterator @param failedNodes
+   * @param disconnectedNodes @param totalAdapatations
+   * @throws SNEEException @throws SchemaMetadataException
+   * @throws OptimizationException @throws SNEEConfigurationException
+   * @throws MalformedURLException @throws WhenSchedulerException
+   * @throws TypeMappingException @throws MetadataException
+   * @throws UnsupportedAttributeTypeException @throws SourceMetadataException
+   * @throws TopologyReaderException @throws SNEEDataSourceException
+   * @throws CostParametersException @throws SNCBException
+   * @throws SNEECompilerException 
    */
   private void tryGoingThoughRoutes(Iterator<RT> routeIterator, ArrayList<String> failedNodes, 
                                     ArrayList<String> disconnectedNodes, 
-                                    ArrayList<Adapatation> totalAdapatations)
-  throws SNEEException, 
-         SchemaMetadataException, 
-         OptimizationException, 
-         SNEEConfigurationException, 
-         MalformedURLException, 
-         WhenSchedulerException, 
-         TypeMappingException, 
-         MetadataException, 
-         UnsupportedAttributeTypeException, 
-         SourceMetadataException, 
-         TopologyReaderException, 
-         SNEEDataSourceException,
-         CostParametersException, 
-         SNCBException
+                                    List<Adapatation> totalAdapatations)
+  throws SNEEException, SchemaMetadataException, 
+         OptimizationException, SNEEConfigurationException, 
+         MalformedURLException, TypeMappingException, 
+         MetadataException, UnsupportedAttributeTypeException, 
+         SourceMetadataException, TopologyReaderException, 
+         SNEEDataSourceException, CostParametersException, 
+         SNCBException, SNEECompilerException
   {
     choice++;
     while(routeIterator.hasNext())
@@ -186,7 +177,8 @@ public class FailedNodeFrameWorkPartial extends FrameWork
       //create pinned paf
       PAF paf = pinPhysicalOperators(oldIOT, failedNodes, disconnectedNodes);
       //run fragment paf though where scheduler.
-      InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), choiceFolder.toString());
+      InstanceWhereSchedular instanceWhere = 
+        new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), choiceFolder.toString());
       IOT newIOT = instanceWhere.getIOT();
       //run new iot though when scheduler and locate changes
       AgendaIOT newAgenda = doSNWhenScheduling(newIOT, qep.getQos(), qep.getID(), qep.getCostParameters());
@@ -195,12 +187,14 @@ public class FailedNodeFrameWorkPartial extends FrameWork
       //analysis newIOT for interesting nodes
       checkIOT(newIOT, oldIOT, failedNodes, currentAdapatation);
       //check if agenda agrees to constraints.
-      boolean success = checkAgendas(agenda, newAgenda, newIOT, oldIOT, failedNodes, currentAdapatation);
+      boolean success = 
+        checkAgendas(oldAgenda, newAgenda, newIOT, oldIOT, failedNodes, currentAdapatation);
       //check if new plan agrees with time pinning
       if(success)
       {//create new qep, add qep to list of adapatations.
         DAF daf = new IOTUtils(newIOT, qep.getCostParameters()).getDAF();
-        SensorNetworkQueryPlan newQep = new SensorNetworkQueryPlan(qep.getDLAF(), routingTree, daf, newIOT, newAgenda, qep.getID());
+        SensorNetworkQueryPlan newQep 
+        = new SensorNetworkQueryPlan(qep.getDLAF(), routingTree, daf, newIOT, newAgenda, qep.getID());
         currentAdapatation.setNewQep(newQep);
         totalAdapatations.add(currentAdapatation);
       }
@@ -513,11 +507,17 @@ public class FailedNodeFrameWorkPartial extends FrameWork
    * @throws SNEEDataSourceException
    * @throws CostParametersException
    * @throws SNCBException
+   * @throws SNEECompilerException 
    */
   private AgendaIOT doSNWhenScheduling(IOT newIOT, QoSExpectations qos,
                                        String id, CostParameters costParameters)
-  throws SNEEConfigurationException, SNEEException, SchemaMetadataException,
-         OptimizationException, WhenSchedulerException, MalformedURLException, TypeMappingException, MetadataException, UnsupportedAttributeTypeException, SourceMetadataException, TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException 
+  throws SNEEConfigurationException, SNEEException, 
+  SchemaMetadataException, OptimizationException, 
+  MalformedURLException, TypeMappingException, 
+  MetadataException, UnsupportedAttributeTypeException, 
+  SourceMetadataException, TopologyReaderException, 
+  SNEEDataSourceException, CostParametersException, 
+  SNCBException, SNEECompilerException 
   {
       boolean useNetworkController = SNEEProperties.getBoolSetting(
           SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
@@ -525,9 +525,17 @@ public class FailedNodeFrameWorkPartial extends FrameWork
           SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
       MetadataManager metadata = new MetadataManager(qep.getSNCB());
       WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing, metadata, useNetworkController);
-      AgendaIOT agenda = whenSched.doWhenScheduling(newIOT, qos, qep.getID(), qep.getCostParameters());  
+      AgendaIOT agenda;
+      try
+      {
+        agenda = whenSched.doWhenScheduling(newIOT, qos, qep.getID(), qep.getCostParameters());
+      }
+      catch (WhenSchedulerException e)
+      {
+        throw new SNEECompilerException(e);
+      }  
       agenda.setID("new Agenda");
-      this.agenda.setID("old Agenda");
+      this.oldAgenda.setID("old Agenda");
       return agenda;
   }
 
@@ -545,8 +553,9 @@ public class FailedNodeFrameWorkPartial extends FrameWork
    */
   private ArrayList<RT> createNewRoutingTrees(ArrayList<String> failedNodes, 
       ArrayList<String> disconnectedNodes, PAF paf, RT oldRoutingTree, File outputFolder) 
-  throws NumberFormatException, 
-         SNEEConfigurationException, SchemaMetadataException
+  throws 
+  NumberFormatException, SNEEConfigurationException, 
+  SchemaMetadataException, SNEECompilerException
   {
     ArrayList<RT> routes = new ArrayList<RT>();
     CandiateRouter router = new CandiateRouter();
@@ -625,9 +634,9 @@ public class FailedNodeFrameWorkPartial extends FrameWork
     return paf;
   }
 
-  public AgendaIOT getAgenda()
+  public AgendaIOT getOldAgenda()
   {
-    return agenda;
+    return oldAgenda;
   }
   
   public IOT getOldIOT()

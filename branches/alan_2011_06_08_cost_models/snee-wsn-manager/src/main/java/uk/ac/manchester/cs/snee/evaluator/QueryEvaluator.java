@@ -205,7 +205,8 @@ public class QueryEvaluator implements Observer {
 		return phyOp;
 	}
 
-	@Override
+	@SuppressWarnings("unchecked")
+  @Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER update() for query " + _queryId + " " +
