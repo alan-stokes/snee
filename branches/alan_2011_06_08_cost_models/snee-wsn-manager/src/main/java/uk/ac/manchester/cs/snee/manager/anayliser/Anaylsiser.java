@@ -21,6 +21,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.Adapatation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.FrameWorkAbstract;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeFrameWorkGlobal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeFrameWorkLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeFrameWorkPartial;
@@ -36,72 +37,63 @@ import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public class Anaylsiser 
 {
-  private CardinalityEstimatedCostModel cardECM;
+ 
+  private AnayliserCostModelAssessor CMA;
   private SensorNetworkQueryPlan qep;
   private AutonomicManager manager;
-  private DeadNodeSimulator deadNodeSimulator; 
   private boolean anaylisieCECM = true;
   private String deadSitesList = "";  
   ArrayList<FrameWorkAbstract> frameworks;
 
-  public Anaylsiser(AutonomicManager autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager)
+  public Anaylsiser(AutonomicManager autonomicManager, 
+                    SourceMetadataAbstract _metadata, MetadataManager _metadataManager)
   {
     manager = autonomicManager;
     frameworks = new ArrayList<FrameWorkAbstract>();
-    FailedNodeFrameWorkPartial failedNodeFrameworkSpaceAndTimePinned = new FailedNodeFrameWorkPartial(manager, _metadata, true, true);
-    FailedNodeFrameWorkPartial failedNodeFrameworkSpacePinned = new FailedNodeFrameWorkPartial(manager, _metadata, true, false);
-    FailedNodeFrameWorkLocal failedNodeFrameworkLocal = new FailedNodeFrameWorkLocal(manager, _metadata);
-    FailedNodeFrameWorkGlobal failedNodeFrameworkGlobal = new FailedNodeFrameWorkGlobal(manager, _metadata, _metadataManager);
+    FailedNodeFrameWorkPartial failedNodeFrameworkSpaceAndTimePinned = 
+      new FailedNodeFrameWorkPartial(manager, _metadata, true, true);
+    FailedNodeFrameWorkPartial failedNodeFrameworkSpacePinned = 
+      new FailedNodeFrameWorkPartial(manager, _metadata, true, false);
+    FailedNodeFrameWorkLocal failedNodeFrameworkLocal = 
+      new FailedNodeFrameWorkLocal(manager, _metadata);
+    FailedNodeFrameWorkGlobal failedNodeFrameworkGlobal = 
+      new FailedNodeFrameWorkGlobal(manager, _metadata, _metadataManager);
     //add methodologies in order wished to be assessed
     frameworks.add(failedNodeFrameworkLocal);
     frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
     frameworks.add(failedNodeFrameworkSpacePinned);
     frameworks.add(failedNodeFrameworkGlobal);
-    deadNodeSimulator = new DeadNodeSimulator();
   }
 
-  public void initilise(QueryExecutionPlan qep, Integer noOfTrees) throws SchemaMetadataException 
+  public void initilise(QueryExecutionPlan qep, Integer noOfTrees) 
+  throws SchemaMetadataException 
   {//sets ECMs with correct query execution plan
 	  this.qep = (SensorNetworkQueryPlan) qep;
-	  cardECM = new CardinalityEstimatedCostModel(qep);
+	  this.CMA = new AnayliserCostModelAssessor(qep);
 	  Iterator<FrameWorkAbstract> frameworkIterator = frameworks.iterator();
 	  while(frameworkIterator.hasNext())
 	  {
 	    FrameWorkAbstract currentFrameWork = frameworkIterator.next();
 	    currentFrameWork.initilise(qep, noOfTrees);
-	  }
-	  deadNodeSimulator.initilise(qep, cardECM);  
+	  } 
   }
    
-  public void runECMs() throws OptimizationException 
+  public void runECMs() 
+  throws OptimizationException 
   {//runs ecms
 	  runCardECM();
   }
   
-  public void runCardECM() throws OptimizationException
-  {//runs ecm and outputs result to terminal
-  	cardECM.runModel();
-  	float epochResult = cardECM.returnEpochResult();
-  	float agendaCycleResult = cardECM.returnAgendaExecutionResult();
-  		
-  	System.out.println("the cardinality of this query for epoch cycle is " + epochResult);
-  	System.out.println("the cardinality of this query for agenda cycle is " + agendaCycleResult);
+  public void runCardECM() 
+  throws OptimizationException
+  {
+    CMA.runCardinalityCostModel();
   }
   
-  /**
-   * sets all nodes in deadNodes to dead for simulation
-   * @param deadNodes
- * @throws OptimizationException 
-   */
-  public void simulateDeadNodes(ArrayList<Integer> deadNodes) throws OptimizationException
+  public void simulateDeadNodes(ArrayList<Integer> deadNodes) 
+  throws OptimizationException
   {
-    deadSitesList = deadNodeSimulator.simulateDeadNodes(deadNodes);
-  	cardECM.runModel();
-  	float epochResult = cardECM.returnEpochResult();
-  	float agendaResult = cardECM.returnAgendaExecutionResult();
-  	  
-  	System.out.println("Test with node " + deadSitesList + "death, cardianlity of the query per epoch is estimated to be " + epochResult);
-  	System.out.println("Test with node " + deadSitesList + "death, cardianlity of the query per agenda cycle is estimated to be " + agendaResult);
+    CMA.simulateDeadNodes(deadNodes, deadSitesList);
   }
   
   /**
@@ -109,119 +101,31 @@ public class Anaylsiser
    * @param numberOfDeadNodes
  * @throws OptimizationException 
    */
-  public void simulateDeadNodes(int numberOfDeadNodes) throws OptimizationException
+  public void simulateDeadNodes(int numberOfDeadNodes) 
+  throws OptimizationException
   { 
-    deadSitesList = deadNodeSimulator.simulateDeadNodes(numberOfDeadNodes);  
-	  cardECM.runModel();
-	  float epochResult = cardECM.returnEpochResult();
-	  float agendaResult = cardECM.returnAgendaExecutionResult();
-	  
-	  System.out.println("Test with node " + deadSitesList + "death, cardianlity of the query per epoch is estimated to be " + epochResult);
-	  System.out.println("Test with node " + deadSitesList + "death, cardianlity of the query per agenda cycle is estimated to be " + agendaResult);
+    CMA.simulateDeadNodes(numberOfDeadNodes, deadSitesList);
   }
   
-  public float getCECMEpochResult() throws OptimizationException
+  public float getCECMEpochResult() 
+  throws OptimizationException
   {
-    return cardECM.returnEpochResult();
+    return CMA.returnEpochResult();
   }
   
   public float getCECMAgendaResult() throws OptimizationException
   {
-    return cardECM.returnAgendaExecutionResult();
+    return CMA.returnAgendaExecutionResult();
   }
 
   public void anaylsisSNEECard(Map<Integer, Integer> sneeTuples)
   { 
-    if(anaylisieCECM)
-    {
-      if(sneeTuples.size() > 0)
-      {
-        try
-        {
-          System.out.println("comparing");
-          float cecmEpochCard = getCECMEpochResult();
-          float cecmAgendaCard = getCECMAgendaResult();
-          float sneeAgendaCard = 0;
-          float sneeEpochCard = 0;
-          boolean sameValue = true;
-          boolean sameEpochValue = false;
-          boolean sameAgendaValue = false;
-          int epoch = 0;
-          sneeEpochCard = sneeTuples.get(epoch);
-          
-          
-          //check all epochs have same values also used to figure if an agenda worth of epochs have arrived
-          while(epoch <= (cardECM.getBeta()) && epoch < (sneeTuples.size()))
-          {
-            float sneeNextEpochCard = sneeTuples.get(epoch);
-            if(sneeNextEpochCard != sneeEpochCard)
-              sameValue = false;
-            epoch ++;
-          }
-          
-          if(epoch >= cardECM.getBeta())//reached an agenda cycle.
-          {
-            anaylisieCECM = false;
-            if(sameValue)
-            {
-              sneeAgendaCard = sneeEpochCard * cardECM.getBeta();
-            }
-            
-            //compare snee tuples to cost model estimates
-            if(cecmEpochCard == sneeEpochCard)
-              sameEpochValue = true;
-            if(sneeAgendaCard == cecmAgendaCard)
-              sameAgendaValue = true;
-            
-            //append to results file
-            String path = Utils.validateFileLocation("results/results.tex");
-            BufferedWriter out = new BufferedWriter(new FileWriter(path, true));
-            if ( deadSitesList.equals(""))
-              deadSitesList = "control";
-            if(sameEpochValue && sameAgendaValue)
-              out.write(deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "Y \\\\ \\hline \n");
-            else
-              out.write(deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "N \\\\ \\hline \n");
-            out.flush();
-            out.close();
-          }
-        }
-        catch (Exception e)
-        {
-          e.printStackTrace();
-        } 
-      }
-    }   
+    CMA.anaylsisSNEECard(sneeTuples, anaylisieCECM, deadSitesList);
   }
 
   public void anaylsisSNEECard()
   {
-    try
-    {
-      float cecmEpochCard = getCECMEpochResult();
-      float cecmAgendaCard = getCECMAgendaResult();
-      float sneeAgendaCard = 0;
-      float sneeEpochCard = 0;
-      boolean sameEpochValue = false;
-      boolean sameAgendaValue = false;
-      
-      if(cecmEpochCard == sneeEpochCard)
-        sameEpochValue = true;
-      if(sneeAgendaCard == cecmAgendaCard)
-        sameAgendaValue = true;
-      
-      String path = Utils.validateFileLocation("results/results.tex");
-      BufferedWriter out = new BufferedWriter(new FileWriter(path, true));
-      if ( deadSitesList.equals(""))
-        deadSitesList = "control";
-      if(sameEpochValue && sameAgendaValue)
-        out.write(deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "Y \\\\ \\hline \n");
-      else
-        out.write(deadSitesList + "&" + cecmEpochCard + "&" + cecmAgendaCard + "&" + sneeEpochCard + "&" + sneeAgendaCard + "&" + "N \\\\ \\hline \n");
-      out.flush();
-      out.close();
-    }
-    catch(Exception e) { }  
+    CMA.anaylsisSNEECard(deadSitesList);
   }
 
   public void queryStarted()

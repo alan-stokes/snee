@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.MetadataException;
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
@@ -24,7 +25,7 @@ import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.Adapatation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
-import uk.ac.manchester.cs.snee.manager.anayliser.FrameWorkAbstract;
+import uk.ac.manchester.cs.snee.manager.FrameWorkAbstract;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -76,6 +77,7 @@ public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract
 
 	/**
 	 * removes failed nodes from the network and then calls upon distributed section of compiler.
+	 * @throws SNEECompilerException 
 	 */
 	@Override
 	public List<Adapatation> adapt(ArrayList<String> failedNodes)
@@ -86,8 +88,11 @@ public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract
 	SNEEException,SNEEConfigurationException, 
 	MalformedURLException,TopologyReaderException,
 	MetadataException, SNEEDataSourceException,
-	CostParametersException, SNCBException, NumberFormatException 
+	CostParametersException, SNCBException, NumberFormatException, SNEECompilerException 
+	
 	{
+	  List<Adapatation> adaptation = new ArrayList<Adapatation>();
+	  Adapatation adapt = new Adapatation(qep);
 	  //remove nodes from topology
 		Topology network = this.getWsnTopology();
 		Iterator<String> failedNodeIterator = failedNodes.iterator();
@@ -103,16 +108,27 @@ public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract
 		//where
 		InstanceWhereSchedular instanceWhere = 
 		  new InstanceWhereSchedular(qep.getIOT().getPAF(), routingTree, qep.getCostParameters());
-    IOT iot = instanceWhere.getIOT();
+    IOT newIOT = instanceWhere.getIOT();
     //when
     boolean useNetworkController = SNEEProperties.getBoolSetting(
         SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
     boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
         SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
+    AgendaIOT newAgenda;
     WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing, _metadataManager, useNetworkController);
-	  
-	  // TODO Auto-generated method stub
-		return null;
+    try
+    {
+      newAgenda = whenSched.doWhenScheduling(newIOT, qep.getQos(), qep.getQueryName(), qep.getCostParameters());
+    }
+    catch (WhenSchedulerException e)
+    {
+      throw new SNEECompilerException(e);
+    }
+    
+    boolean success = assessQEPsAgendas(oldIOT, newIOT, oldAgenda, newAgenda, false, adapt, failedNodes, routingTree);
+    if(success)
+      adaptation.add(adapt);
+		return adaptation;
 	}
 
 }
