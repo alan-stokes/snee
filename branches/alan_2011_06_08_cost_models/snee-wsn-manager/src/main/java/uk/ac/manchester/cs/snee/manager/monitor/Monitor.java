@@ -14,6 +14,7 @@ import java.util.Observer;
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.ResultStore;
 import uk.ac.manchester.cs.snee.ResultStoreImpl;
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
@@ -164,18 +165,14 @@ public class Monitor implements Observer
   MalformedURLException, MetadataException, 
   UnsupportedAttributeTypeException, SourceMetadataException, 
   TopologyReaderException, SNEEDataSourceException, 
-  CostParametersException, SNCBException
-  {/*
+  CostParametersException, SNCBException, SNEECompilerException
+  {
     ArrayList<String> failedNodes = new ArrayList<String>();
     Node failedNode = qep.getIOT().getNode(3);
     failedNodes.add(failedNode.getID());
-    //network.removeNode(failedNode.getID());
-    //failedNode = qep.getIOT().getNode(1);
-    //failedNodes.add(failedNode.getID());
-    //network.removeNode(failedNode.getID());
     System.out.println("fake node failure of node 3");
-    manager.runStragity2(failedNodes);
-    */
+    manager.runFailedNodeFramework(failedNodes);
+    
   }
 
 }

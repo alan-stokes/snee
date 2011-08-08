@@ -54,21 +54,20 @@ public class AutonomicManagerImpl implements AutonomicManager
   
   public AutonomicManagerImpl(MetadataManager _metadataManager)
   {
-    this._metadataManager = _metadataManager;
+    this._metadataManager = _metadataManager;    
+    monitor = new Monitor(this);
+    planner = new Planner(this);
+    executer = new Executer(this);
   }
   
   public void initilise(SourceMetadataAbstract _metadata, QueryExecutionPlan qep, 
-                        ResultStore resultSet, SNCBSerialPortReceiver mr) 
+                        ResultStore resultSet) 
   throws SNEEException, SNEEConfigurationException, 
   SchemaMetadataException
   {
     this.qep = qep;
     anyliser = new Anaylsiser(this, _metadata, _metadataManager);
-    monitor = new Monitor(this);
-    planner = new Planner(this);
-    executer = new Executer(this);
     monitor.setResultSet(resultSet);
-    monitor.addPacketReciever(mr);
     anyliser.initilise(qep, numberOfTreesToUse);
     setupOutputFolder();
     monitor.setQueryPlan(qep);
@@ -135,20 +134,13 @@ public class AutonomicManagerImpl implements AutonomicManager
    */
   @Override
   public void runCostModels() 
-  throws OptimizationException, 
-         SNEEConfigurationException, 
-         SchemaMetadataException, 
-         TypeMappingException, 
-         AgendaException, 
-         SNEEException, 
-         MalformedURLException, 
-         MetadataException, 
-         UnsupportedAttributeTypeException, 
-         SourceMetadataException, 
-         TopologyReaderException, 
-         SNEEDataSourceException, 
-         CostParametersException, 
-         SNCBException
+  throws OptimizationException, SNEEConfigurationException, 
+         SchemaMetadataException, TypeMappingException, 
+         AgendaException, SNEEException, 
+         MalformedURLException, MetadataException, 
+         UnsupportedAttributeTypeException, SourceMetadataException, 
+         TopologyReaderException, SNEEDataSourceException, 
+         CostParametersException, SNCBException, SNEECompilerException
   {    
     anyliser.runECMs();
     monitor.chooseFakeNodeFailure();
@@ -252,5 +244,11 @@ public class AutonomicManagerImpl implements AutonomicManager
   public File getOutputFolder()
   {
     return outputFolder;
+  }  
+  
+  public void setListener(SNCBSerialPortReceiver mr)
+  {
+    monitor.addPacketReciever(mr);
   }
+
 }

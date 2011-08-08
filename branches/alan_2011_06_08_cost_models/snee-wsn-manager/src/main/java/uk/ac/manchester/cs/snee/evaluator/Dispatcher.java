@@ -116,17 +116,20 @@ public class Dispatcher {
 			QueryExecutionPlan queryPlan) 
 	throws SNEEException, MetadataException, EvaluatorException,
 	SNEEConfigurationException {
-		if (logger.isDebugEnabled()) {
+		if (logger.isDebugEnabled()) 
+		{
 			logger.debug("ENTER queryID " + queryID + " " + queryPlan);
 		}
-		if (queryPlan instanceof EvaluatorQueryPlan) {
+		if (queryPlan instanceof EvaluatorQueryPlan) 
+		{
 			// Create thread to evaluate query
 			/*
 			 * Using a method for constructing the query evaluator so that it can be
 			 * overridden as a mock object for testing.
 			 */
 			LAF laf = queryPlan.getLAF(); //TODO: This will be a PAF in future
-			try {
+			try 
+			{
 				QueryEvaluator queryEvaluator = 
 					createQueryEvaluator(queryID, laf, resultSet);
 				//		Thread evaluationThread = new Thread(queryEvaluator);
@@ -137,31 +140,39 @@ public class Dispatcher {
 				//		}
 				//		// Add thread to set of query evaluators
 				_queryEvaluators.put(queryID, queryEvaluator);
-			} catch (SchemaMetadataException e) {
-			logger.warn("Throwing a MetadataException. Cause " + e);
+			} catch (SchemaMetadataException e) 
+			{
+			  logger.warn("Throwing a MetadataException. Cause " + e);
 				logger.warn("Throwing a MetadataException. Cause " + e);
 				throw new MetadataException(e.getLocalizedMessage());
 			}
-		} else {
-			try {
+		} 
+		else 
+		{
+			try 
+			{
 				SensorNetworkQueryPlan snQueryPlan = (SensorNetworkQueryPlan)queryPlan;
-			    String sep = System.getProperty("file.separator");
-				String outputDir = SNEEProperties.getSetting(
-				SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
-				sep + queryPlan.getQueryName() + sep;
+			  String sep = System.getProperty("file.separator");
+				String outputDir = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + sep + queryPlan.getQueryName() + sep;
 				sncb = snQueryPlan.getSNCB();
-				SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, _metadata);
 				SourceMetadataAbstract metadata = _metadata.getSource(snQueryPlan.getMetaData().getOutputAttributes().get(0).getExtentName());
-        _autonomicManager.initilise(metadata, queryPlan, resultSet, mr);
+				_autonomicManager.initilise(metadata, queryPlan, resultSet);
+        _autonomicManager.runCostModels();
+        _autonomicManager.runAnyliserWithDeadNodes();
+				SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, _metadata);
+				_autonomicManager.setListener(mr);
 				InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
 				_queryEvaluators.put(queryID, queryEvaluator);
 				sncb.start();
-			} catch (Exception e) {
+			} 
+			catch (Exception e) 
+			{
 				logger.warn(e.getLocalizedMessage(), e);
 				throw new EvaluatorException(e);
 			}
 		}
-		if (logger.isDebugEnabled()) {
+		if (logger.isDebugEnabled()) 
+		{
 			logger.debug("RETURN");
 		}
 	}

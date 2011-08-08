@@ -60,8 +60,7 @@ public interface AutonomicManager
 
   public abstract void queryEnded();
   
-  public abstract void initilise(SourceMetadataAbstract _metadata, QueryExecutionPlan queryPlan, 
-                                 ResultStore resultSet, SNCBSerialPortReceiver mr) 
+  public abstract void initilise(SourceMetadataAbstract _metadata, QueryExecutionPlan queryPlan, ResultStore resultSet) 
   throws SNEEException, SNEEConfigurationException, SchemaMetadataException;
 
   //no tuples received this query
@@ -70,5 +69,6 @@ public interface AutonomicManager
   public abstract void setQuery(String query);
 
   public abstract File getOutputFolder();
-
+  
+  public abstract void setListener(SNCBSerialPortReceiver mr);
 }
