@@ -269,4 +269,6 @@ public interface LogicalOperator extends Node {
 	boolean isGetDataByPullModeOperator();
 	
 	void setGetDataByPullModeOperator(boolean isPullModeOperator);
+	
+	public boolean isPushBasedOperator();
 }
