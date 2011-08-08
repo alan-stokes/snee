@@ -17,6 +17,8 @@ public class CircularArray<E> implements Iterable<E> {
 	private int lastIndex;
 	private int capacity;
 	private int numberElements = 0;
+	//The id of the operator that initialised this DS
+	private String operatorId;
 	//This variable holds the total number of objects that has ever 
 	//been inserted into this array
 	private int totalNumberOfObjects = 0;
@@ -39,6 +41,30 @@ public class CircularArray<E> implements Iterable<E> {
 		firstIndex = lastIndex = 0;
 		this.capacity = capacity;
 		array = newElementArray(capacity);
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN CircularArray()");
+		}
+	}
+	
+	/**
+	 * Constructs a new instance of {@code ArrayList} with the specified
+	 * capacity.
+	 * 
+	 * @param capacity
+	 *            the initial capacity of this {@code ArrayList}.
+	 */
+	public CircularArray(int capacity, String id) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER CircularArray() with capacity=" +
+					capacity);
+		}
+		if (capacity <= 0) {
+			throw new IllegalArgumentException();
+		}
+		firstIndex = lastIndex = 0;
+		this.capacity = capacity;
+		array = newElementArray(capacity);
+		setOperatorId(id);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN CircularArray()");
 		}
@@ -102,6 +128,9 @@ public class CircularArray<E> implements Iterable<E> {
 		if (lastIndex == firstIndex) {			
 			firstIndex = incrementPointer(firstIndex);
 			numberElements--;
+			if (logger.isInfoEnabled()) {
+				logger.info("Object dropped in CircularArray");
+			}
 		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("Next insert index " + lastIndex
@@ -287,6 +316,19 @@ public class CircularArray<E> implements Iterable<E> {
 	}
 	
 	/**
+	 * Returns the newest element stored in this {@code CircularArray}.
+	 * 
+	 * @return the newest element stored in this {@code CircularArray}.
+	 */
+	public E getLatest() {
+		if (lastIndex == 0) {
+			return null;
+		} else {
+			return array[lastIndex-1];
+		}
+	}
+	
+	/**
 	 * Returns a part of consecutive elements of this {@code CircularArray} as a view. The
 	 * returned view will be of zero length if start equals end. 
 	 * <p>
@@ -326,6 +368,20 @@ public class CircularArray<E> implements Iterable<E> {
 		throw new IndexOutOfBoundsException(message);
 	}
 	
+	/**
+	 * @param operatorId the operatorId to set
+	 */
+	public void setOperatorId(String operatorId) {
+		this.operatorId = operatorId;
+	}
+
+	/**
+	 * @return the operatorId
+	 */
+	public String getOperatorId() {
+		return operatorId;
+	}
+
 	public Iterator<E> iterator() {
 		int lowerBound = Math.max(0, totalNumberOfObjects - capacity);
 		return circularIterator(lowerBound);

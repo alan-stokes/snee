@@ -193,5 +193,22 @@ public class SNEEQueue<E> extends AbstractQueue<E> {
 		}
 
 	}
+	/**
+	 * Returns the oldest element currently stored in this {@code SNEEQueue}.
+	 * 
+	 * @return the oldest element currently stored in this {@code SNEEQueue}.
+	 */
+	public E getOldest() {
+		return array[firstIndex];
+	}
+	
+	/**
+	 * Returns the newest element stored in this {@code SNEEQueue}.
+	 * 
+	 * @return the newest element stored in this {@code SNEEQueue}.
+	 */
+	public E getNewest() {		
+		return array[numElements - 1 % array.length];
+	}
 
 }
