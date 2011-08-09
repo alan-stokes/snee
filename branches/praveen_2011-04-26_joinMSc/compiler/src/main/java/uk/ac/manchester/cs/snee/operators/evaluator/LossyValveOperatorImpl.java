@@ -1,5 +1,11 @@
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
@@ -24,7 +30,8 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 
 	private CircularArray<Output> inputBufferQueue;
 	private TupleDropPolicy tupleDropPolicy;
-	private int samplingRate = 0;
+	private int numTuplesToDrop = 1;
+	private String opId = "";
 
 	public LossyValveOperatorImpl(LogicalOperator op, int qid)
 			throws SNEEException, SchemaMetadataException,
@@ -33,10 +40,17 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Enter LossyValveOperatorImpl with query " + qid);
 		}
-		inputBufferQueue = new CircularArray<Output>(maxBufferSize, op.getID());
+		opId = op.getID();
+		inputBufferQueue = new CircularArray<Output>(maxBufferSize, opId);
 		this.tupleDropPolicy = valveOperator.getTupleDropPolicy();
-		this.samplingRate = valveOperator.getSamplingRate();
-
+		if (valveOperator.getLoadShedRate() == 1.0) {
+			this.numTuplesToDrop = 1;
+		} else {
+			this.numTuplesToDrop = (int) ((valveOperator.getLoadShedRate()/100) * maxBufferSize);
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("The tuple drop policy is : "+tupleDropPolicy+ " and the Number of tuples to drop is:: " + numTuplesToDrop);
+		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("Exit LossyValveOperatorImpl with query " + qid);
 		}
@@ -49,17 +63,17 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 		}
 		switch (tupleDropPolicy) {
 		case FIFO:
+			handleFIFODrop();
 			break;
 		case LIFO:
 			inputBufferQueue.dropLastInsertedObject();
 			break;
 		case SAMPLE:
-			if (!canDropObject()) {
-				if (logger.isInfoEnabled()) {
-					logger.info("Object Dropped due to sampling");
-				}
-				return false;
-			}
+			handleSampleDrop();
+			/*
+			 * if (!canDropObject()) { if (logger.isInfoEnabled()) {
+			 * logger.info("Object Dropped due to sampling"); } return false; }
+			 */
 			break;
 		default:
 			break;
@@ -73,7 +87,7 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 						+ " has a total number of "
 						+ inputBufferQueue.totalObjectsInserted() + " inserted"
 						+ "and has a current siize of"
-						+ inputBufferQueue.size()+" "+this);
+						+ inputBufferQueue.size() + " " + this);
 			}
 			return true;
 		} else {
@@ -81,14 +95,73 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 		}
 	}
 
-	private boolean canDropObject() {
-		boolean canAdd = true;
-		int randomNumber = (int) (Math.random() * 100);
-		if (randomNumber <= samplingRate) {
-			canAdd = false;
+	/**
+	 * Method to drop tuples in random sample of fixed size
+	 */
+	private void handleSampleDrop() {
+		if (inputBufferQueue.size() == (inputBufferQueue.capacity())) {
+			Set<Integer> sampleDropArray = getRandomIndexes();
+			List<Output> newList = new ArrayList<Output>();
+			for (int i = 0; i < maxBufferSize; i++) {
+				if (sampleDropArray.contains(new Integer(i))) {
+					// Dropping the random sample
+					if (logger.isInfoEnabled()) {
+						logger.info("Object Dropped due to sampling in Valve with id: "+opId);
+					}
+					inputBufferQueue.poll();
+					continue;
+				}
+				newList.add(inputBufferQueue.poll());
+			}
+			inputBufferQueue = new CircularArray<Output>(maxBufferSize, opId, newList);
 		}
-		return canAdd;
 	}
+
+	/**
+	 * method to get a unique set of random numbers of the size of
+	 * numTuplesToDrop size
+	 * 
+	 * @return
+	 */
+	private Set<Integer> getRandomIndexes() {
+		Set<Integer> uniqueIndexes = new HashSet<Integer>(numTuplesToDrop);
+		Random random = new Random();
+		do {
+			uniqueIndexes.add(random.nextInt(maxBufferSize));
+		} while (uniqueIndexes.size() != numTuplesToDrop);
+
+		return uniqueIndexes;
+	}
+
+	/**
+	 * method to handle the object drop in FIFO mode
+	 * 
+	 */
+	private void handleFIFODrop() {
+		if (inputBufferQueue.size() == (inputBufferQueue.capacity())) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("The input buffer size is: "+ inputBufferQueue.size()
+						+" and the capacity of the buffer is: "+inputBufferQueue.capacity()+
+						" and both are equal, so going to drop");
+			}
+			for (int i = 0; i < numTuplesToDrop; i++) {
+				if (logger.isInfoEnabled()) {
+					logger.info("Object Dropped by FIFO");
+				}
+				inputBufferQueue.poll();
+			}
+		}
+
+	}
+
+	// private boolean canDropObject() {
+	// boolean canAdd = true;
+	// int randomNumber = (int) (Math.random() * 100);
+	// if (randomNumber <= samplingRate) {
+	// canAdd = false;
+	// }
+	// return canAdd;
+	// }
 
 	@Override
 	protected boolean isQueueEmpty() {
@@ -99,7 +172,7 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 	public Output getNext() {
 		if (logger.isDebugEnabled()) {
 			logger.debug("This is before Polling:***" + valveOperator.getID()
-					+ inputBufferQueue.size()+ this);
+					+ inputBufferQueue.size() + this);
 		}
 		return inputBufferQueue.poll();
 	}
@@ -116,7 +189,7 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 					+ "havng a size of: "
 					+ inputBufferQueue.size()
 					+ " using CQ of id: "
-					+ inputBufferQueue.getOperatorId()+" "+this);
+					+ inputBufferQueue.getOperatorId() + " " + this);
 		}
 		return output;
 	}

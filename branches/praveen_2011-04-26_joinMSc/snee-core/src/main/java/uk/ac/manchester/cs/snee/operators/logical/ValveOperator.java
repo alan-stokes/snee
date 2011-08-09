@@ -43,7 +43,7 @@ public class ValveOperator extends LogicalOperatorImpl {
 	//This variable holds the algorithm or the mode in which the
 	//valve operator would work
 	private String algorithm;
-	private int samplingRate;
+	private double loadShedRate;
 	private TupleDropPolicy tupleDropPolicy;
 	
 
@@ -183,15 +183,15 @@ public class ValveOperator extends LogicalOperatorImpl {
 	/**
 	 * @param samplingRate the samplingRate to set
 	 */
-	public void setSamplingRate(int samplingRate) {
-		this.samplingRate = samplingRate;
+	public void setLoadShedRate(double loadShedRate) {
+		this.loadShedRate = loadShedRate;
 	}
 
 	/**
 	 * @return the samplingRate
 	 */
-	public int getSamplingRate() {
-		return samplingRate;
+	public double getLoadShedRate() {
+		return loadShedRate;
 	}
 
 	/**

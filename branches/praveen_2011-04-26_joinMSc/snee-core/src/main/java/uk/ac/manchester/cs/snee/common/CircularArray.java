@@ -84,6 +84,21 @@ public class CircularArray<E> implements Iterable<E> {
 		this.addAll(collection);
 	}
 	
+	/**
+	 * Constructs a new instance of {@code CircularArray} containing the elements of
+	 * the specified collection. The size of the {@code CircularArray} will be set
+	 * to the specified capacity.
+   	 * 
+   	 * @param collection
+   	 *            the collection of elements to add.
+	 */
+	public CircularArray(int capacity, String opId, 
+			Collection<? extends E> collection) {
+		this(capacity);
+		setOperatorId(opId);
+		this.addAll(collection);
+	}
+	
 	@SuppressWarnings("unchecked")
 	private E[] newElementArray(int size) {
 		return (E[]) new Object[size + 1];
@@ -129,7 +144,7 @@ public class CircularArray<E> implements Iterable<E> {
 			firstIndex = incrementPointer(firstIndex);
 			numberElements--;
 			if (logger.isInfoEnabled()) {
-				logger.info("Object dropped in CircularArray");
+				logger.info("Object dropped in CircularArray for operator id: "+getOperatorId());
 			}
 		}
 		if (logger.isTraceEnabled()) {

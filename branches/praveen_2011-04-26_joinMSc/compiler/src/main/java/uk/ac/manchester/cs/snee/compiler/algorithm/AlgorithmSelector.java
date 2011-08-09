@@ -32,10 +32,18 @@ import uk.ac.manchester.cs.snee.operators.logical.ValveOperator;
  * 
  */
 public class AlgorithmSelector {
+	private static final double MIN_SHED_RATE = 1.0;
+
+	private static final double MAX_SHED_RATE = 10.0;
+
+	private static final double LOW_SHED_RATE = 2.5;
+
+	private static final double MED_SHED_RATE = 5.0;
+
 	Logger logger = Logger.getLogger(this.getClass().getName());
 
-	private double thresholdRate;
-	private boolean isJoinNLJOnly = false;
+	//private double thresholdRate;
+	private boolean isJoinNLJOnly = false;	
 
 	public AlgorithmSelector() throws SNEEConfigurationException {
 		if (logger.isDebugEnabled()) {
@@ -43,8 +51,9 @@ public class AlgorithmSelector {
 		}
 		isJoinNLJOnly = SNEEProperties
 				.getBoolSetting(SNEEPropertyNames.COMPILER_ALGORTHM_SELECTION_NLJ_ONLY);
-		thresholdRate = SNEEProperties
-				.getDoubleSetting(SNEEPropertyNames.COMPILER_ALGORTHM_SELECTION_THRESHOLD_RATE);
+		/*thresholdRate = SNEEProperties
+				.getDoubleSetting(SNEEPropertyNames.COMPILER_ALGORTHM_SELECTION_THRESHOLD_RATE);*/
+		
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN AlgorithmSelector()");
@@ -183,7 +192,18 @@ public class AlgorithmSelector {
 		// Lossy or Lossless is to be determined via QoS parameters
 		if (qos.isTupleLossAllowed()) {
 			valveOperator.setAlgorithm(ValveOperator.TUPLE_DROP_MODE);
-			valveOperator.setSamplingRate(qos.getSamplingRate());
+			String rateParam = qos.getLoadShedRate();
+			double loadShedRate = MIN_SHED_RATE;
+			if ("min".equalsIgnoreCase(rateParam)) {
+				loadShedRate = MIN_SHED_RATE;
+			} else if ("max".equalsIgnoreCase(rateParam)) {
+				loadShedRate = MAX_SHED_RATE;
+			} else if ("low".equalsIgnoreCase(rateParam)) {
+				loadShedRate = LOW_SHED_RATE;
+			} else if ("medium".equalsIgnoreCase(rateParam)) {
+				loadShedRate = MED_SHED_RATE;
+			}
+			valveOperator.setLoadShedRate(loadShedRate);
 			valveOperator.setTupleDropPolicy(qos.getTupleDropPolicy());
 		} else {
 			// TODO this has to replaced with TUPLE_OFFLOAD_MODE, once that

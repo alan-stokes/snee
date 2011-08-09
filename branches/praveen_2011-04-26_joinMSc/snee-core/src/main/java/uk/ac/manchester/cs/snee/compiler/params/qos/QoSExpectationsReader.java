@@ -206,11 +206,11 @@ public class QoSExpectationsReader extends QoSExpectations {
 					xPolicyDetails + "/snee:name");
 			this.setTupleDropPolicy(TupleDropPolicy
 					.getPolicyForString(tuplePolicy));
-			if (TupleDropPolicy.SAMPLE == this.getTupleDropPolicy()) {
-				int samplingRate = Utils.doXPathIntQuery(this._queryParamsFile,
-						xPolicyDetails + "/snee:constraints/snee:rate");
-				this.setSamplingRate(samplingRate);
-			}
+			//if (TupleDropPolicy.SAMPLE == this.getTupleDropPolicy()) {
+				String rateParam = Utils.doXPathStrQuery(this._queryParamsFile,
+						xPolicyDetails + "/snee:constraints/snee:rate");				
+				this.setLoadShedRate(rateParam);
+			//}
 
 		}
 		if (logger.isTraceEnabled()) {

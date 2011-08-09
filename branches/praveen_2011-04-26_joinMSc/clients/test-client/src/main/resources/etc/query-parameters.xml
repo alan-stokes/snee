@@ -42,22 +42,34 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk query-parameters.xsd">
 			<weighting>2</weighting>
 		</delivery-time>
 		
+		<!-- Users can set the tuple loss rates to
+		the four predefined values min, low, medium 
+		and max. min would mean 1 object is dropped
+		when the buffer fills up and max would mean
+		10% of the buffer size would be dropped.
+		A rate of low would mean 2.5% of the buffer 
+		size and medium would mean 5%-->
 		<tuple-loss>
 			<allowed>true</allowed>
-			 <!-- <policy>
-				<name>FIFO</name>
-				<constraints></constraints>
+			 <policy>
+				<name>SAMPLE</name>
+				<constraints>
+					<rate>low</rate>
+					<!-- <rate>low</rate>
+					<rate>medium</rate>
+					<rate>max</rate> -->
+				</constraints>
 			</policy> 
-			<policy>
+			<!-- <policy>
 				<name>LIFO</name>
 				<constraints></constraints>
-			</policy> -->
-			<policy>
+			</policy>
+			 <policy>
 				<name>SAMPLE</name>
 				<constraints>
 					<rate>30</rate>
 				</constraints>
-			</policy>
+			</policy> -->
 		</tuple-loss>
 		<!-- <tuple-loss-allowed>true</tuple-loss-allowed> -->
 	

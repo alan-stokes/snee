@@ -85,7 +85,7 @@ public class QoSExpectations {
     
     private TupleDropPolicy tupleDropPolicy = TupleDropPolicy.FIFO;
     
-    private int samplingRate = 0;
+    private String loadShedRate = "min";
 
     public void setOptimizationType(final QoSOptimizationType  
     optimizationType) {
@@ -367,15 +367,15 @@ public class QoSExpectations {
 	/**
 	 * @param samplingRate the samplingRate to set
 	 */
-	public void setSamplingRate(int samplingRate) {
-		this.samplingRate = samplingRate;
+	public void setLoadShedRate(String loadShedRate) {
+		this.loadShedRate = loadShedRate;
 	}
 
 	/**
 	 * @return the samplingRate
 	 */
-	public int getSamplingRate() {
-		return samplingRate;
+	public String getLoadShedRate() {
+		return loadShedRate;
 	}
 
 	@Override
@@ -415,8 +415,8 @@ public class QoSExpectations {
 			new Long(this.queryDuration));
 	
 		sb.append("\nTuple Drop Allowed : " + this.isTupleLossAllowed
-				+ " Tuple Drop Policy" + this.tupleDropPolicy + "[sample rate if applicable=" 
-				+ this.samplingRate + "]\n\n");
+				+ " Tuple Drop Policy" + this.tupleDropPolicy + "[load shed rate if applicable=" 
+				+ this.loadShedRate + "]\n\n");
 		return sb.toString().replaceAll("-1", "NA");
     }
 
