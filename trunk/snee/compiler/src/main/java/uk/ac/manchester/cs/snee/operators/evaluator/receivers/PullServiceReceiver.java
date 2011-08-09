@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.operators.evaluator.receivers;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -67,37 +68,37 @@ public class PullServiceReceiver implements SourceReceiver {
 	}
 
 	@Override
-	public Tuple receive() 
+	public List<Tuple> receive() 
 	throws EndOfResultsException, SNEEDataSourceException, 
 	TypeMappingException, SchemaMetadataException, SNEEException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER receive()");
-		Tuple tuple = null;
+		List<Tuple> tuples = new ArrayList<Tuple>();
 		if (lastTs == null) {
-			List<Tuple> tuples = 
-				_pullSource.getNewestData(_resourceName, 1);
-			//XXX: Hack here as CCO returns table name as temp!
-			tuple = correctTableName(tuples.get(0));
+			tuples = getNewestTuple();
 		} else {
-			List<Tuple> tuples = 
-				_pullSource.getData(_resourceName, 2, lastTs);
-			while (tuples.size() < 2) {
-				try {
-					logger.trace("No new tuple yet. Sleep for " + 
-							_sleep);
-					//Sleep for 10s before trying again
-					Thread.sleep(_sleep);
-				} catch (InterruptedException e1) {
-					logger.warn("InterruptionException " + e1);
-				}
-				tuples = _pullSource.getData(_resourceName, 2, lastTs);
-			}
-			tuple = correctTableName(tuples.get(1));
+			tuples = getNextTuples();
 		}
 		if (logger.isTraceEnabled()) {
-			logger.trace("Received tuple: \n" + tuple);
+			logger.trace("Number of tuples received: " + tuples.size());
+		}
+		//XXX: Hack to correct tuple names provided by CCO
+		tuples = correctTableName(tuples);
+
+		updateLastSeenTimestamp(tuples);
+		
+		if (logger.isDebugEnabled())
+			logger.debug("RETURN receive() with " + tuples.size());
+		return tuples;
+	}
+
+	private void updateLastSeenTimestamp(List<Tuple> tuples) 
+	throws AssertionError, SNEEException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER updataLastSeenTimestamp()");
 		}
 		long sqlTsValue;
+		Tuple tuple = tuples.get(tuples.size() - 1);
 		Object value = tuple.getAttributeValue(extentName, "timestamp");
 		if (value instanceof Long) {
 			sqlTsValue = (Long) value;
@@ -111,12 +112,59 @@ public class PullServiceReceiver implements SourceReceiver {
 		}
 		lastTs =  new Timestamp(sqlTsValue*1000);
 		if (logger.isTraceEnabled()) {
-			logger.trace(extentName + ".timestamp " + lastTs + " " +
+			logger.trace("RETURN updataLastSeenTimestamp() with " +
+					extentName + ".timestamp " + lastTs + " " +
 					lastTs.getTime());
 		}
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN receive() with " + tuple);
-		return tuple;
+	}
+
+	private List<Tuple> getNextTuples() throws SNEEDataSourceException,
+			TypeMappingException, SchemaMetadataException, SNEEException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER getNextTuples()");
+		}
+		List<Tuple> tuples = 
+			_pullSource.getData(_resourceName, lastTs);
+		while (tuples.isEmpty() || tuples.size() < 2) {
+			try {
+				logger.trace("No new tuple yet. Sleep for " + _sleep);
+				Thread.sleep(_sleep);
+			} catch (InterruptedException e1) {
+				logger.warn("InterruptionException " + e1);
+			}
+			tuples = _pullSource.getData(_resourceName, lastTs);
+		}
+		logger.trace("Removing already seen tuple!");
+		/*
+		 * Remove the already seen tuple. Requesting by timestamp means that 
+		 * we have already seen one of the tuples that we've just received.
+		 */
+		tuples.remove(0);
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN getNextTuples() with " + tuples.size());
+		}
+		return tuples;
+	}
+
+	private List<Tuple> getNewestTuple() throws SNEEDataSourceException,
+			TypeMappingException, SchemaMetadataException, SNEEException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER getNewestTuple()");
+		}
+		List<Tuple> tuples = _pullSource.getNewestData(_resourceName, 1);
+		while (tuples.isEmpty()) {
+			try {
+				logger.trace("No tuple yet. Sleep for " + _sleep);
+				Thread.sleep(_sleep);
+			} catch (InterruptedException e1) {
+				logger.warn("InterruptionException " + e1);
+			}
+			tuples = _pullSource.getNewestData(_resourceName, 1);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN getNewestTuple() with " + tuples.size());
+		}
+		return tuples;
 	}
 
 	/**
@@ -127,26 +175,33 @@ public class PullServiceReceiver implements SourceReceiver {
 	 * @return
 	 * @throws SchemaMetadataException
 	 */
-	private Tuple correctTableName(Tuple tuple) 
+	private List<Tuple> correctTableName(List<Tuple> tuples) 
 	throws SchemaMetadataException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER correctTableName() with\n" + tuple);
+			logger.trace("ENTER correctTableName() with " + tuples.size());
 		}
-		Tuple correctedTuple = new Tuple();
-		for (EvaluatorAttribute attr : tuple.getAttributeValues()) {
-			EvaluatorAttribute correctAttr = 
-				new EvaluatorAttribute(extentName, 
-						attr.getAttributeSchemaName(), 
-						attr.getAttributeDisplayName(), 
-						attr.getType(), 
-						attr.getData());
-			correctedTuple.addAttribute(correctAttr);
+		List<Tuple> correctedTuples = new ArrayList<Tuple>();
+		for (Tuple tuple : tuples) {
+			Tuple correctedTuple = new Tuple();
+			for (EvaluatorAttribute attr : tuple.getAttributeValues()) {
+				EvaluatorAttribute correctAttr = 
+					new EvaluatorAttribute(extentName, 
+							attr.getAttributeSchemaName(), 
+							attr.getAttributeDisplayName(), 
+							attr.getType(), 
+							attr.getData());
+				correctedTuple.addAttribute(correctAttr);
+			}
+			if (logger.isTraceEnabled()) {
+				logger.trace("Correct tuple: " + correctedTuple);
+			}
+			correctedTuples.add(correctedTuple);
 		}
 		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN correctTableName() with\n" + 
-					correctedTuple);
+			logger.trace("RETURN correctTableName() #tuples=" + 
+					correctedTuples.size());
 		}
-		return correctedTuple;
+		return correctedTuples;
 	}
 
 }
