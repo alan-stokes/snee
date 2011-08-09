@@ -725,7 +725,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
 	    final long startTime = this.alpha * n;
 
 	    //For each leaf fragment
-	    HashSet<InstanceFragment> leafFrags = iot.getLeafFragments();
+	    HashSet<InstanceFragment> leafFrags = iot.getLeafInstanceFragments();
 	    final Iterator<InstanceFragment> fragIter = leafFrags.iterator();
 	    while (fragIter.hasNext()) {
 		final InstanceFragment frag = fragIter.next();
@@ -800,11 +800,11 @@ public class AgendaIOT extends SNEEAlgebraicForm{
   
   	  //Schedule all fragment which have been allocated to execute on this node,
   	  //ensuring the precedence conditions are met
-  	  final Iterator<InstanceFragment> fragIter = iot.fragmentIterator(TraversalOrder.POST_ORDER);
+  	  final Iterator<InstanceFragment> fragIter = iot.instanceFragmentIterator(TraversalOrder.POST_ORDER);
   	  while (fragIter.hasNext()) 
   	  {
   		  final InstanceFragment frag = fragIter.next();
-  		  if (iot.HasSiteGotFrag(currentNode, frag) && (!frag.isLeaf())) 
+  		  if (iot.hasSiteGotInstFrag(currentNode, frag) && (!frag.isLeaf())) 
   		  {
   		    this.addFragmentTask(frag, currentNode);
   		  }

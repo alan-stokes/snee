@@ -129,6 +129,30 @@ public class Adapatation
     return reprogrammingSites.contains(find);
   }
   
+  public ArrayList<Site> getReprogrammingSites()
+  {
+    return reprogrammingSites;
+  }
+
+  public ArrayList<Site> getRedirectedionSites()
+  {
+    return redirectedionSites;
+  }
+
+  public ArrayList<TemporalAdjustment> getTemporalSites()
+  {
+    return temporalSites;
+  }
+
+  public ArrayList<Site> getDeactivationSites()
+  {
+    return deactivationSites;
+  }
+
+  public ArrayList<Site> getActivateSites()
+  {
+    return activateSites;
+  }
   
   
   /**

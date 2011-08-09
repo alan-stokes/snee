@@ -115,7 +115,7 @@ public class InstanceWhereSchedular
   
   private void updateOperatorLinksToIncludeExchangeParts() 
   {
-    Iterator<InstanceFragment> fragmentIterator = iot.fragmentIterator(TraversalOrder.POST_ORDER);
+    Iterator<InstanceFragment> fragmentIterator = iot.instanceFragmentIterator(TraversalOrder.POST_ORDER);
     //go though fragments
     while(fragmentIterator.hasNext())
     {
@@ -225,11 +225,11 @@ public class InstanceWhereSchedular
           currentFragment.addNextLowerFragment(newFrag);
           InstanceOperatorIterator = fragmentate(InstanceOperatorIterator, newFrag);
         }
-        iot.addFragment(currentFragment);
+        iot.addInstanceFragment(currentFragment);
         if(currentFragment.getRootOperator().getSensornetOperator()
            instanceof SensornetDeliverOperator)
         {
-          iot.setRootFragment(currentFragment);
+          iot.setRootInstanceFragment(currentFragment);
         }
       }
       else
@@ -255,7 +255,7 @@ public class InstanceWhereSchedular
   {
     //itterate though fragments in post order
     Iterator<InstanceFragment> InstanceFragmentIterator 
-    = iot.fragmentIterator(TraversalOrder.POST_ORDER);
+    = iot.instanceFragmentIterator(TraversalOrder.POST_ORDER);
     //get each fragment and link to parent fragment via exchanges
     while(InstanceFragmentIterator.hasNext())
     {

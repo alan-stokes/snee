@@ -157,11 +157,9 @@ public class Anaylsiser
   	    adapatations = framework.adapt(failedNodes);
   	  else
   	  {
-  	    //can't adapt to them all, so check to see if any are adpatable, if so, remove them from next frameworks scope
-  	    Iterator<String> failedNodeIterator = failedNodes.iterator();
-  	    while(failedNodeIterator.hasNext())
+  	    if(framework instanceof FailedNodeFrameWorkLocal)
   	    {
-  	      //TODO CHECK EACH FAILED NODE IN LOCAL, BEFORE SENDING TO PARTIAL
+  	      checkEachFailureIndividually(failedNodes, adapatations);
   	    }
   	  }
   	}
@@ -173,5 +171,18 @@ public class Anaylsiser
       System.out.println(adapatationIterator.next().toString());
     }
     return null;
+  }
+
+  private void checkEachFailureIndividually(ArrayList<String> failedNodes,
+      List<Adapatation> adapatations)
+  {
+    /*can't adapt to them all, so check to see if any are adpatable, 
+    if so, remove them from next frameworks scope as local framework safer*/
+    Iterator<String> failedNodeIterator = failedNodes.iterator();
+    while(failedNodeIterator.hasNext())
+    {
+      String failedNodeID = failedNodeIterator.next();
+      //TODO CHECK EACH FAILED NODE IN LOCAL, BEFORE SENDING TO PARTIAL
+    }
   }
 }

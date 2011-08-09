@@ -366,7 +366,7 @@ public class IOTUtils
         out.println("style=\"rounded,dotted\"");
         out.println("color=blue;");
         //get fragments within site
-        Iterator<InstanceFragment> fragmentIterator = iot.getFragments().iterator();
+        Iterator<InstanceFragment> fragmentIterator = iot.getInstanceFragments().iterator();
         while(fragmentIterator.hasNext())
         {
           InstanceFragment currentFrag = fragmentIterator.next();

@@ -64,7 +64,7 @@ public class IOT extends SNEEAlgebraicForm
    * Post order or Pre order
    * @return
    */
-  public final Iterator<InstanceFragment> fragmentIterator(final 
+  public final Iterator<InstanceFragment> instanceFragmentIterator(final 
       TraversalOrder traversalOrder) 
   {
     if (logger.isDebugEnabled())
@@ -128,7 +128,7 @@ public class IOT extends SNEEAlgebraicForm
    * adds a fragment to the fragment array.
    * @param frag
    */
-  public void addFragment(InstanceFragment frag)
+  public void addInstanceFragment(InstanceFragment frag)
   {
     fragments.add(frag);
   }
@@ -590,7 +590,7 @@ public class IOT extends SNEEAlgebraicForm
    * returns as a hash set the instance fragments located on leaf nodes.
    * @return hash set containing instance fragments on leaf nodes.
    */
-  public HashSet<InstanceFragment> getLeafFragments()
+  public HashSet<InstanceFragment> getLeafInstanceFragments()
   {
     HashSet<InstanceFragment> output = new HashSet<InstanceFragment>();
     Iterator<InstanceFragment> fragIterator = fragments.iterator();
@@ -603,7 +603,7 @@ public class IOT extends SNEEAlgebraicForm
     return output;
   }
   
-  public boolean HasSiteGotFrag( Site site, InstanceFragment frag)
+  public boolean hasSiteGotInstFrag( Site site, InstanceFragment frag)
   {
     return frag.site.getID().equals(site.getID());
   }
@@ -631,12 +631,12 @@ public class IOT extends SNEEAlgebraicForm
     instanceOperatorTree.removeEdge(source, dest);
   } 
   
-  public InstanceFragment getRootFragment()
+  public InstanceFragment getRootInstanceFragment()
   {
     return rootFragment;
   }
   
-  public void setRootFragment(InstanceFragment rootFragment)
+  public void setRootInstanceFragment(InstanceFragment rootFragment)
   {
     this.rootFragment = rootFragment;
   }
@@ -666,7 +666,7 @@ public class IOT extends SNEEAlgebraicForm
     return instanceOperatorTree;
   }
   
-  public HashSet<InstanceFragment> getFragments()
+  public HashSet<InstanceFragment> getInstanceFragments()
   {
     return fragments;
   }

@@ -7,6 +7,7 @@ import java.util.List;
 
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
@@ -20,6 +21,7 @@ import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
 /**
@@ -86,11 +88,22 @@ public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
         if(LocalClusterEquivalenceRelation.isEquivalent(firstNode, secondNode, qep, network))
         {
           clusters.addClusterNode(firstNode.getID(), secondNode.getID());
+          //add sites fragments and operaotrs onto equivlent node
+          transferQEP(qep, firstNode, secondNode);
         }
       }
     }
   }
   
+  private void transferQEP(SensorNetworkQueryPlan qep, Node firstNode,
+      Node secondNode)
+  {
+    //TODO develop way to get code onto equivalent nodes (possibly got numerous versions to place)
+    Site secondSite = (Site) secondNode;
+    ArrayList<InstanceOperator> siteOperators = qep.getIOT().get.getOpInstances(secondSite);
+    
+  }
+
   /**
    * used to recalculate clusters based off other adaptations
    * @param newQEP
@@ -170,6 +183,13 @@ public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
       String failedNodeID = failedNodeIDsIterator.next();
       String newNodeID = retrieveNewClusterHead(failedNodeID);
       adapt.addActivatedSite(network.getSite(newNodeID));
+      ArrayList<Node> children = qep.getIOT().getInputSites(qep.getRT().getSite(failedNodeID));
+      Iterator<Node> chidlrenIterator = children.iterator();
+      while(chidlrenIterator.hasNext())
+      {
+        Node child = chidlrenIterator.next();
+        
+      }
     }
     adapatation.add(adapt);
     return adapatation;
