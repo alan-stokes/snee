@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.manager.anayliser;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -66,7 +67,9 @@ public class Anaylsiser
   }
 
   public void initilise(QueryExecutionPlan qep, Integer noOfTrees) 
-  throws SchemaMetadataException 
+  throws 
+  SchemaMetadataException, TypeMappingException, 
+  OptimizationException, IOException 
   {//sets ECMs with correct query execution plan
 	  this.qep = (SensorNetworkQueryPlan) qep;
 	  this.CMA = new AnayliserCostModelAssessor(qep);
@@ -97,7 +100,7 @@ public class Anaylsiser
   }
   
   /**
-   * assumes root site has the lowest node value
+   * chooses nodes to simulate to fail
    * @param numberOfDeadNodes
  * @throws OptimizationException 
    */

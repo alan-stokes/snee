@@ -155,7 +155,7 @@ public class Dispatcher {
 			  String sep = System.getProperty("file.separator");
 				String outputDir = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + sep + queryPlan.getQueryName() + sep;
 				sncb = snQueryPlan.getSNCB();
-				SourceMetadataAbstract metadata = _metadata.getSource(snQueryPlan.getMetaData().getOutputAttributes().get(0).getExtentName());
+				SourceMetadataAbstract metadata = _metadata.getSource(snQueryPlan.getMetaData().getOutputAttributes().get(1).getExtentName());
 				_autonomicManager.initilise(metadata, queryPlan, resultSet);
         _autonomicManager.runCostModels();
         _autonomicManager.runAnyliserWithDeadNodes();

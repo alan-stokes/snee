@@ -40,15 +40,9 @@ public class DeadNodeSimulator
   
   public String simulateDeadNodes(int numberOfDeadNodes) throws OptimizationException
   {
-    ArrayList<Integer> sites = new ArrayList<Integer>();
+    ArrayList<Integer> sites = qep.getRT().getSiteIDs();
     ArrayList<Integer> deadSites = new ArrayList<Integer>();
     Random generator = new Random();
-    int rootSiteValue = Integer.parseInt(qep.getRT().getRoot().getID());
-    int biggestSiteID = qep.getRT().getMaxSiteID();
-    for(int siteNo = rootSiteValue; siteNo < biggestSiteID; siteNo++)
-    {
-      sites.add(siteNo);
-    }
     
     for(int deadNodeValue = 0; deadNodeValue < numberOfDeadNodes; deadNodeValue++)
     {

@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.manager;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Map;
@@ -63,14 +64,15 @@ public class AutonomicManagerImpl implements AutonomicManager
   public void initilise(SourceMetadataAbstract _metadata, QueryExecutionPlan qep, 
                         ResultStore resultSet) 
   throws SNEEException, SNEEConfigurationException, 
-  SchemaMetadataException
+  SchemaMetadataException, TypeMappingException, 
+  OptimizationException, IOException
   {
     this.qep = qep;
+    setupOutputFolder();
     anyliser = new Anaylsiser(this, _metadata, _metadataManager);
+    monitor.setQueryPlan(qep);
     monitor.setResultSet(resultSet);
     anyliser.initilise(qep, numberOfTreesToUse);
-    setupOutputFolder();
-    monitor.setQueryPlan(qep);
   }
 
   private void setupOutputFolder() throws SNEEConfigurationException

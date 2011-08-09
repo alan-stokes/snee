@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.manager;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Map;
@@ -60,8 +61,11 @@ public interface AutonomicManager
 
   public abstract void queryEnded();
   
-  public abstract void initilise(SourceMetadataAbstract _metadata, QueryExecutionPlan queryPlan, ResultStore resultSet) 
-  throws SNEEException, SNEEConfigurationException, SchemaMetadataException;
+  public abstract void initilise(SourceMetadataAbstract _metadata, QueryExecutionPlan queryPlan, 
+                                 ResultStore resultSet) 
+  throws SNEEException, SNEEConfigurationException, 
+  SchemaMetadataException, TypeMappingException, 
+  OptimizationException, IOException;
 
   //no tuples received this query
   public abstract void callAnaysliserAnaylsisSNEECard();

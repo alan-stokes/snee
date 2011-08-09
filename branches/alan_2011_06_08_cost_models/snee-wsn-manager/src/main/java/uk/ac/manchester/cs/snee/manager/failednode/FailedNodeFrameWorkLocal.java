@@ -1,10 +1,12 @@
 package uk.ac.manchester.cs.snee.manager.failednode;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
@@ -12,8 +14,11 @@ import uk.ac.manchester.cs.snee.manager.Adapatation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.FrameWorkAbstract;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalCluster;
+import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalClusterUtils;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LocalClusterEquivalenceRelation;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
@@ -38,21 +43,36 @@ public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
   /**
    * sets up framework by detecting equivalent nodes and placing them in a cluster
    * @param oldQep
+   * @throws OptimizationException 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws IOException 
    */
-  public void initilise(QueryExecutionPlan oldQep, Integer noTrees)
+  public void initilise(QueryExecutionPlan oldQep, Integer noTrees) 
+  throws 
+  SchemaMetadataException, TypeMappingException, 
+  OptimizationException, IOException
   {  
     this.qep = (SensorNetworkQueryPlan) oldQep;
     outputFolder = manager.getOutputFolder();
     clusters = new FailedNodeLocalCluster();
-    getWsnTopology();
+    network = getWsnTopology();
     locateEquivalentNodes();
+    new FailedNodeLocalClusterUtils(clusters, this.outputFolder).outputAsTextFile();
   }
 
   /**
    * goes though all nodes in topology and compares them to see if they are equivalent 
    * by the use of the localClusterEquivalentRelation
+   * @throws OptimizationException 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
    */
-  private void locateEquivalentNodes()
+  private void locateEquivalentNodes() 
+  throws 
+  SchemaMetadataException, 
+  TypeMappingException, 
+  OptimizationException
   {
     ArrayList<Node> secondNetworkNodes = new ArrayList<Node>(network.getNodes());
     Iterator<Node> firstNodeIterator = qep.getRT().getSiteTree().nodeIterator(TraversalOrder.POST_ORDER);
@@ -63,7 +83,7 @@ public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
       while(secondNodeIterator.hasNext())
       {
         Node secondNode = secondNodeIterator.next();
-        if(LocalClusterEquivalenceRelation.isEquivalent(firstNode, secondNode, qep))
+        if(LocalClusterEquivalenceRelation.isEquivalent(firstNode, secondNode, qep, network))
         {
           clusters.addClusterNode(firstNode.getID(), secondNode.getID());
         }
@@ -74,8 +94,15 @@ public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
   /**
    * used to recalculate clusters based off other adaptations
    * @param newQEP
+   * @throws OptimizationException 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
    */
-  public void reclaculateClusters(QueryExecutionPlan newQEP)
+  public void reclaculateClusters(QueryExecutionPlan newQEP) 
+  throws 
+  SchemaMetadataException, 
+  TypeMappingException, 
+  OptimizationException
   {
     this.qep = (SensorNetworkQueryPlan) newQEP;
     clusters = new FailedNodeLocalCluster();
@@ -89,7 +116,7 @@ public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
    */
   public boolean isThereACluster(String primary)
   {
-    if(clusters.getEquivilentNodes(primary) != null)
+    if(clusters.getEquivilentNodes(primary).size() != 0)
       return true;
     else
       return false;

@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.manager;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -74,9 +75,12 @@ public abstract class FrameWorkAbstract
    * used to set up a framework
    * @param oldQep
    * @param noTrees
+   * @throws OptimizationException 
+   * @throws TypeMappingException 
+   * @throws IOException 
    */
   public abstract void initilise(QueryExecutionPlan oldQep, Integer noTrees)
-  throws SchemaMetadataException ;
+  throws SchemaMetadataException, TypeMappingException, OptimizationException, IOException ;
   /**
    * calculates a set of adpatations which will produce new QEPs which respond to the 
    * failed node. 
