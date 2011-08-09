@@ -195,7 +195,7 @@ public class LogicalRewriter {
 						}
 						WindowOperator winOp = (WindowOperator) childOp;
 						if (winOp.isTimeScope()) {
-							swapOperators(op, childOp);
+							swapOperators(laf, op, childOp);
 						} else {
 							reachedBottom = true;
 						}
@@ -213,12 +213,12 @@ public class LogicalRewriter {
 								logger.trace("Move SELECT below JOIN-SELECT");
 							}						
 							// Move selection below join condition
-							swapOperators(op, childOp);
+							swapOperators(laf, op, childOp);
 						} else {
 							if (logger.isTraceEnabled()) {
 								logger.trace("Move JOIN-SELECT below JOIN-SELECT");
 							}													
-							swapOperators(op, childOp);
+							swapOperators(laf, op, childOp);
 						}
 					} else if (childOp instanceof JoinOperator) {
 						if (logger.isTraceEnabled()) {
@@ -238,7 +238,7 @@ public class LogicalRewriter {
 							logger.trace("Move SELECT below " + 
 									childOp.getOperatorName());
 						}
-						swapOperators(op, childOp);
+						swapOperators(laf, op, childOp);
 					}
 				}
 			}
@@ -341,19 +341,21 @@ public class LogicalRewriter {
 		}		
 	}
 	
-	private void swapOperators(LogicalOperator op, LogicalOperator childOp) {
+	private void swapOperators(LAF laf, LogicalOperator op, LogicalOperator childOp) throws OptimizationException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER swapOperators() with " +
 					op.toString() + " and " + childOp.toString());
 		}
 		LogicalOperator parentOp = op.getParent();
+		LogicalOperator grandChildOp = childOp.getInput(0);
 		if (parentOp instanceof JoinOperator) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Parent operator is a JOIN. Need to take care");
 			}
+			
 			if (op == parentOp.getInput(0)) {
 				// Left child of join
-				LogicalOperator grandChildOp = childOp.getInput(0);
+				//LogicalOperator grandChildOp = childOp.getInput(0);
 				parentOp.setInput(childOp, 0);
 				childOp.setInput(op, 0);
 				op.setInput(grandChildOp, 0);
@@ -362,7 +364,7 @@ public class LogicalRewriter {
 				grandChildOp.setOutput(op, 0);
 			} else {
 				//Right child of join
-				LogicalOperator grandChildOp = childOp.getInput(0);
+				//LogicalOperator grandChildOp = childOp.getInput(0);
 				parentOp.setInput(childOp, 1);
 				childOp.setInput(op, 0);
 				op.setInput(grandChildOp, 0);
@@ -371,14 +373,30 @@ public class LogicalRewriter {
 				grandChildOp.setOutput(op, 0);
 			}
 		} else {
-			LogicalOperator grandChildOp = childOp.getInput(0);
+			//LogicalOperator grandChildOp = childOp.getInput(0);			
+			//laf.removeOperator(op);
+			//laf.getOperatorTree().insertNode(grandChildOp, childOp,
+			//		op);
+			//LogicalOperator grandChildOp = childOp.getInput(0);
+			//laf.getOperatorTree().removeEdge(childOp, op);
+			//laf.getOperatorTree().removeEdge(op, parentOp);
+			//laf.getOperatorTree().removeEdge(grandChildOp, childOp);
 			parentOp.setInput(childOp, 0);
+			//laf.getOperatorTree().addEdge(childOp, parentOp);
 			childOp.setInput(op, 0);
+			//laf.getOperatorTree().addEdge(op, childOp);
 			op.setInput(grandChildOp, 0);
+			//laf.getOperatorTree().addEdge(grandChildOp, op);
 			op.setOutput(childOp, 0);
 			childOp.setOutput(parentOp, 0);
 			grandChildOp.setOutput(op, 0);
 		}
+		laf.getOperatorTree().removeEdge(childOp, op);
+		laf.getOperatorTree().removeEdge(op, parentOp);
+		laf.getOperatorTree().removeEdge(grandChildOp, childOp);
+		laf.getOperatorTree().addEdge(childOp, parentOp);
+		laf.getOperatorTree().addEdge(op, childOp);
+		laf.getOperatorTree().addEdge(grandChildOp, op);
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN swapOperators()");
 		}
@@ -528,7 +546,8 @@ public class LogicalRewriter {
 					} while (iter.hasNext());
 				}
 			}
-		}
+		}	
+		
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER insertValveOperator()");
 		}
