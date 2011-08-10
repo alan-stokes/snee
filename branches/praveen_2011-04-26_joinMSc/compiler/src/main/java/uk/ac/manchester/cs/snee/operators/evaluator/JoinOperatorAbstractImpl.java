@@ -36,7 +36,7 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 	protected List<Attribute> returnAttrs;
 	protected int maxBufferSize;
 	protected double leftOperatorRate, rightOperatorRate;
-	private boolean isFirstLeftOperand, isFirstRightOperand;
+	private boolean isFirstLeftOperand = true, isFirstRightOperand = true;
 	private long nextEvalTime;
 	private Timer timer;
 	private EvaluateTask evaluateTask;
@@ -69,8 +69,6 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 		operator = iter.next();
 		rightOperator = getEvaluatorOperator(operator);
 		rightOperatorRate = operator.getSourceRate();
-		isFirstLeftOperand = true;
-		isFirstRightOperand = true;
 		
 		// XXX: Join could be speeded up by working out once which attribute
 		// numbers are required from each tuple
@@ -127,9 +125,6 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 		startChildReceiver(rightOperator);
 		startChildReceiver(leftOperator);
 		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN open()");
-		}
-		if (logger.isDebugEnabled()) {
 			logger.debug("Is Pull Mode operator"+join.isGetDataByPullModeOperator());
 		}
 		if (join.isGetDataByPullModeOperator()) {
@@ -142,6 +137,9 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 			timer.schedule(evaluateTask, 0, nextEvalTime);
 			//timer.
 			//evaluateJoinForIntervals();
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN open()");
 		}
 	}
 
@@ -251,7 +249,8 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 			}
 		}
 		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN getNextFromChild() with output: "+output+ "for leftOperator?"+isLeftOperator);
+			logger.debug("RETURN getNextFromChild() with " + output + 
+					" isLeftOperator=" + isLeftOperator);
 		}
 		return output;
 	}

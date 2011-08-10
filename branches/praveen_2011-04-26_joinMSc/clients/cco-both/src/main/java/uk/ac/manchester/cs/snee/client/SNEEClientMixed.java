@@ -19,17 +19,25 @@ public class SNEEClientMixed extends SNEEClient {
 //	private static ConstantRatePushStreamGenerator _myDataSource;
 	
 	private String ccoWsUrl = 
-		"http://webgis1.geodata.soton.ac.uk:8080/CCO/services/PullStream?wsdl";
+//		"http://webgis1.geodata.soton.ac.uk:8080/CCO/services/PullStream?wsdl";
+		"http://webgis1.geodata.soton.ac.uk:8080/EMU/services/PullStream?wsdl";
+	
 	private String ccoStoredUrl = 
 		"http://webgis1.geodata.soton.ac.uk:8080/dai/services/";
 
 	private static String query =
-		"SELECT l.location, l.storm_threshold, t.Hs, t.HMax " +
-		"FROM envdata_swanagepier_tide t, " +
-			"locations l " +
-		"WHERE l.location = \'Swanage Pier\' AND " + 
-		       "(t.Hs <= l.storm_threshold OR " +
-		        "t.HMax <= l.storm_threshold);";
+		"SELECT l.location, l.storm_threshold, r.verticalheave " +
+		"FROM rtdata_haylingisl r, " +
+		"locations l " +
+		"WHERE l.location = \'Hayling Island\' AND " + 
+		       "r.verticalheave <= l.storm_threshold;";
+		
+//		"SELECT l.location, l.storm_threshold, t.Hs, t.HMax " +
+//		"FROM envdata_swanagepier_tide t, " +
+//			"locations l " +
+//		"WHERE l.location = \'Swanage Pier\' AND " + 
+//		       "(t.Hs <= l.storm_threshold OR " +
+//		        "t.HMax <= l.storm_threshold);";
 		
 //		"SELECT l.location, l.storm_threshold, t.Hs, t.HMax " +
 //		"FROM envdata_swanagepier_tide" +
@@ -54,8 +62,8 @@ public class SNEEClientMixed extends SNEEClient {
 //	       "(Hs >= storm_threshold OR " +
 //	        "HMax >= storm_threshold);";
 	
-	private static long duration = 900;
-//	private static long duration = 30;
+//	private static long duration = 900;
+	private static long duration = 60;
 	
 	public SNEEClientMixed(String query, double duration,  String queryParams) 
 	throws SNEEException, IOException, SNEEConfigurationException,
@@ -73,7 +81,7 @@ public class SNEEClientMixed extends SNEEClient {
 //		displayExtentNames();
 //		displayAllExtents();
 		displayExtentSchema("locations");
-		displayExtentSchema("envdata_swanagepier_tide");
+		displayExtentSchema("rtdata_haylingisl");
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN");
 	}
