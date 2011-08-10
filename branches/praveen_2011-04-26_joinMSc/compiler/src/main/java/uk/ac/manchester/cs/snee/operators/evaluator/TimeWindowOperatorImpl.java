@@ -53,7 +53,7 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 	
 	public TimeWindowOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
-	SNEEConfigurationException{
+	SNEEConfigurationException, EvaluatorException{
 		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER TimeWindowOperatorImpl() " + op);

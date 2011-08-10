@@ -38,6 +38,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
@@ -122,9 +123,10 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 	 * @param right Second input operator
 	 * @throws OptimizationException 
 	 * @throws SchemaMetadataException 
+	 * @throws SNEECompilerException 
 	 */
 	public JoinOperator(LogicalOperator left, LogicalOperator right, AttributeType boolType) 
-	throws OptimizationException, SchemaMetadataException {
+	throws OptimizationException, SchemaMetadataException, SNEECompilerException {
 		super(boolType);
 		this.setOperatorName("JOIN");
 //		this.setNesCTemplateName("join");
@@ -146,6 +148,9 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 
 	private void setChildren (LogicalOperator left, LogicalOperator right) 
 	throws OptimizationException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER setChildren()");
+		}
 		String message = "Illegal attempt to Join Stream of tuples with " +
 			"anything but a Relation.";
 		if (left.getOperatorDataType() == OperatorDataType.STREAM) {
@@ -186,6 +191,9 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 				setOperatorDataType(OperatorDataType.STREAM);
 			}    	
 		}    
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN setChildren()");
+		}
 	}
 
 	/**

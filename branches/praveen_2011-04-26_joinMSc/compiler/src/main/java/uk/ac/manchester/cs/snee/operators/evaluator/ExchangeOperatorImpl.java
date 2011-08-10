@@ -34,7 +34,7 @@ public class ExchangeOperatorImpl extends EvaluationOperator {
 
 	public ExchangeOperatorImpl(LogicalOperator op, int qid)
 			throws SNEEException, SchemaMetadataException,
-			SNEEConfigurationException {
+			SNEEConfigurationException, EvaluatorException {
 		super(op, qid);
 
 		// Instantiate exchange operator

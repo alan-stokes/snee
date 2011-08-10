@@ -7,6 +7,7 @@ import java.util.Stack;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -45,7 +46,7 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 
 	public ProjectOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
-	SNEEConfigurationException {
+	SNEEConfigurationException, EvaluatorException {
 		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ProjectOperatorImpl() " + op.getText());

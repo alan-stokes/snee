@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEQueue;
@@ -27,7 +28,7 @@ public class LosslessValveOperatorImpl extends ValveOperatorAbstractImpl {
 
 	public LosslessValveOperatorImpl(LogicalOperator op, int qid)
 			throws SNEEException, SchemaMetadataException,
-			SNEEConfigurationException {
+			SNEEConfigurationException, EvaluatorException {
 		super(op, qid);
 		inputBuffer = new SNEEQueue<Output>(maxBufferSize);
 	}

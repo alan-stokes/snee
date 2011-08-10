@@ -36,7 +36,6 @@
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
@@ -88,7 +87,7 @@ implements Observer
 	
 	public EvaluatorPhysicalOperator(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
-	SNEEConfigurationException {
+	SNEEConfigurationException, EvaluatorException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER EvaluatorOperator() " + op);
 		}
@@ -121,7 +120,7 @@ implements Observer
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.evaluator.operators.EvaluatorOperator#close()
 	 */
-	public void close(){
+	public void close() {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER close()");
 		}
@@ -159,7 +158,7 @@ implements Observer
 	public EvaluatorPhysicalOperator getEvaluatorOperator(
 			LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException,
-	SNEEConfigurationException {
+	SNEEConfigurationException, EvaluatorException {
 		EvaluatorPhysicalOperator phyOp = null;
 		if (op instanceof ReceiveOperator) {
 			phyOp = new ReceiveOperatorImpl(op, m_qid);

@@ -19,6 +19,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.MetadataException;
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
@@ -785,12 +786,13 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	 * @throws OptimizationException 
 	 * @throws SNEEConfigurationException 
 	 * @throws AssertionError 
+	 * @throws SNEECompilerException 
 	 */
 	@Test
 	public void testPushSelectionDown_timeWindowJoinQuery()
 	throws SchemaMetadataException, TypeMappingException, 
 	SourceMetadataException, OptimizationException, AssertionError,
-	SNEEConfigurationException {
+	SNEEConfigurationException, SNEECompilerException {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
 		StreamingSourceMetadataAbstract mockSource = 
 			createMock(StreamingSourceMetadataAbstract.class);
@@ -871,12 +873,13 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	 * @throws OptimizationException 
 	 * @throws SNEEConfigurationException 
 	 * @throws AssertionError 
+	 * @throws SNEECompilerException 
 	 */
 	@Test
 	public void testPushSelectionDown_timeWindowJoinLeftSelectQuery()
 	throws SchemaMetadataException, TypeMappingException, 
 	SourceMetadataException, OptimizationException, AssertionError, 
-	SNEEConfigurationException {
+	SNEEConfigurationException, SNEECompilerException {
 		ExtentMetadata mockExtentLeft = createMock(ExtentMetadata.class);
 		ExtentMetadata mockExtentRight = createMock(ExtentMetadata.class);
 		StreamingSourceMetadataAbstract mockSource = 
@@ -975,12 +978,13 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	 * @throws OptimizationException 
 	 * @throws SNEEConfigurationException 
 	 * @throws AssertionError 
+	 * @throws SNEECompilerException 
 	 */
 	@Test
 	public void testPushSelectionDown_timeWindowJoinRightSelectQuery()
 	throws SchemaMetadataException, TypeMappingException, 
 	SourceMetadataException, OptimizationException, AssertionError, 
-	SNEEConfigurationException {
+	SNEEConfigurationException, SNEECompilerException {
 		ExtentMetadata mockExtent1 = createMock(ExtentMetadata.class);
 		ExtentMetadata mockExtent2 = createMock(ExtentMetadata.class);
 		StreamingSourceMetadataAbstract mockSource = 
@@ -1089,6 +1093,7 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	 * @throws MetadataException 
 	 * @throws MalformedURLException 
 	 * @throws UtilsException 
+	 * @throws SNEECompilerException 
 	 */
 	@Test
 	public void testPushSelectionDown_acquireTimeWindowJoinSelectQueryCombine()
@@ -1096,7 +1101,7 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	SourceMetadataException, OptimizationException, SNEEConfigurationException, 
 	MalformedURLException, MetadataException, UnsupportedAttributeTypeException,
 	TopologyReaderException, SNEEDataSourceException, CostParametersException,
-	SNCBException, UtilsException {
+	SNCBException, UtilsException, SNEECompilerException {
 		Properties props = new Properties();
 		props.setProperty(SNEEPropertyNames.INPUTS_TYPES_FILE, "etc/Types.xml");
 		props.setProperty(SNEEPropertyNames.INPUTS_UNITS_FILE, "etc/units.xml");
@@ -1220,12 +1225,13 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	 * @throws OptimizationException 
 	 * @throws SNEEConfigurationException 
 	 * @throws AssertionError 
+	 * @throws SNEECompilerException 
 	 */
 	@Test
 	public void testPushSelectionDown_multiJoinSelectQuery1()
 	throws SchemaMetadataException, TypeMappingException, 
 	SourceMetadataException, OptimizationException, AssertionError, 
-	SNEEConfigurationException {
+	SNEEConfigurationException, SNEECompilerException {
 		
 		ExtentMetadata mockExtent1 = createMock(ExtentMetadata.class);
 		ExtentMetadata mockExtent2 = createMock(ExtentMetadata.class);
@@ -1369,12 +1375,13 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	 * @throws OptimizationException 
 	 * @throws SNEEConfigurationException 
 	 * @throws AssertionError 
+	 * @throws SNEECompilerException 
 	 */
 	@Test
 	public void testPushSelectionDown_multiJoinSelectQuery2()
 	throws SchemaMetadataException, TypeMappingException, 
 	SourceMetadataException, OptimizationException, AssertionError, 
-	SNEEConfigurationException {
+	SNEEConfigurationException, SNEECompilerException {
 		
 		ExtentMetadata mockExtent1 = createMock(ExtentMetadata.class);
 		ExtentMetadata mockExtent2 = createMock(ExtentMetadata.class);

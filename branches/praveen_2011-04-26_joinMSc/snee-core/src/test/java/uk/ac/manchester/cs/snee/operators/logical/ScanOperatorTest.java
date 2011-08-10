@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
@@ -120,38 +121,41 @@ public class ScanOperatorTest extends EasyMockSupport {
 		ScanOperator op = new ScanOperator(mockExtent, 
 				mockSource, 
 				types.getType("boolean"));
-		assertFalse(op.acceptsPredicates());
+		assertTrue(op.acceptsPredicates());
 		verifyAll();
 	}
 
 	@Test
-	public void testPushProjectionDown() 
+	public void testPushProjectionDown_EmptyAttributes() 
 	throws TypeMappingException, SchemaMetadataException,
-	OptimizationException, SourceMetadataException {
+	OptimizationException, SourceMetadataException, SNEEConfigurationException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
-		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
 		replayAll();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				mockSource, 
 				types.getType("boolean"));
-		assertFalse(op.pushProjectionDown(null, null));
+		assertFalse(op.pushProjectionDown(null, new ArrayList<Attribute>()));
 		verifyAll();
 	}
 
 	@Test
 	public void testPushSelectDown() 
-	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
+	throws TypeMappingException, SchemaMetadataException, 
+	SourceMetadataException, AssertionError, SNEEConfigurationException {
+		Expression mockExpression = createMock(Expression.class);
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
-		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+			.andReturn(new ArrayList<Attribute>()).times(2);
+		expect(mockExtent.getCardinality()).andReturn(1);
+		expect(mockExpression.getType()).andReturn(types.getType("boolean")).times(2);
 		replayAll();
-		ScanOperator op = new ScanOperator(mockExtent, 
+		AcquireOperator op = new AcquireOperator(mockExtent, types,
 				mockSource, 
 				types.getType("boolean"));
-		assertFalse(op.pushSelectIntoLeafOp(null));
+		assertTrue(op.pushSelectIntoLeafOp(mockExpression));
 		verifyAll();
 	}
 

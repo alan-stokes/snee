@@ -38,7 +38,7 @@ public abstract class WindowOperatorImpl extends EvaluatorPhysicalOperator {
 	
 	public WindowOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
-	SNEEConfigurationException {
+	SNEEConfigurationException, EvaluatorException {
 		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER WindowOperatorImpl() with " + op);

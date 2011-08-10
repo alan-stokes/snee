@@ -188,7 +188,7 @@ public class QueryEvaluator implements Observer {
 
 	private EvaluatorPhysicalOperator getInstance(LogicalOperator op) 
 	throws SNEEException, SchemaMetadataException,
-	SNEEConfigurationException {
+	SNEEConfigurationException, EvaluatorException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER getInstance() with " + op);
 		EvaluatorPhysicalOperator phyOp = null;

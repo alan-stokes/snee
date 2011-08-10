@@ -52,7 +52,7 @@ public class DLAFUtils extends LAFUtils {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("\\nSources:");
 		for (SourceMetadataAbstract source : dlaf.getSources()) {
-			buffer.append("\\n\\t");
+			buffer.append("\\n");
 			buffer.append(source.getSourceName());
 			buffer.append("(");
 			buffer.append(source.getSourceType().name().toLowerCase());

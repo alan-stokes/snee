@@ -58,6 +58,11 @@ public class Units {
 
 	TreeMap<String, Long> energyScalingFactors;
 
+	/**
+	 * Location of the units file on disk
+	 */
+	private String unitsFileLocation;
+
 	private Units() {
 
 		this.timeScalingFactors = new TreeMap<String, Long>();
@@ -65,6 +70,7 @@ public class Units {
 		this.memoryScalingFactors = new TreeMap<String, Long>();
 
 		try {
+			unitsFileLocation = SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_UNITS_FILE);
 			this.parseXMLFile();
 		} catch (XPathExpressionException e) {
 			// TODO Auto-generated catch block
@@ -87,26 +93,22 @@ public class Units {
 	private void parseXMLFile() 
 	throws ParserConfigurationException, SAXException, IOException, 
 	XPathExpressionException, SNEEConfigurationException {
-
 //		Utils.validateXMLFile(
 //				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_UNITS_FILE),
 //				"../src/main/resources/schema/units.xsd");
 
 		// parse file
-		String timeBaseUnit = Utils.doXPathStrQuery(
-				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_UNITS_FILE),
+		String timeBaseUnit = Utils.doXPathStrQuery(unitsFileLocation,
 				"/snee:units/snee:time/snee:base-unit");
 		this.setScalingFactor(timeBaseUnit.toUpperCase(), new Long(1),
 				this.timeScalingFactors);
 
-		String energyBaseUnit = Utils.doXPathStrQuery(
-				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_UNITS_FILE),
+		String energyBaseUnit = Utils.doXPathStrQuery(unitsFileLocation,
 				"/snee:units/snee:energy/snee:base-unit");
 		this.setScalingFactor(energyBaseUnit.toUpperCase(), new Long(1),
 				this.energyScalingFactors);
 
-		String memoryBaseUnit = Utils.doXPathStrQuery(
-				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_UNITS_FILE),
+		String memoryBaseUnit = Utils.doXPathStrQuery(unitsFileLocation,
 				"/snee:units/snee:memory/snee:base-unit");
 		this.setScalingFactor(memoryBaseUnit.toUpperCase(), new Long(1),
 				this.memoryScalingFactors);
@@ -123,13 +125,11 @@ public class Units {
 			TreeMap<String, Long> unitScalingFactors)
 	throws XPathExpressionException, FileNotFoundException,
 	SNEEConfigurationException {
-		NodeList nodeList = Utils.doXPathQuery(
-				SNEEProperties.getFilename(SNEEPropertyNames.INPUTS_UNITS_FILE), context);
+		NodeList nodeList = Utils.doXPathQuery(unitsFileLocation, context);
 		for (int i = 0; i < nodeList.getLength(); i++) {
 			Node node = nodeList.item(i);
 			String unitName = Utils.doXPathStrQuery(node, "snee:name");
-			Long scalingFactor = new Long(Utils.doXPathStrQuery(node,
-			"snee:scaling-factor"));
+			Long scalingFactor = new Long(Utils.doXPathStrQuery(node, "snee:scaling-factor"));
 			this.setScalingFactor(unitName, scalingFactor, unitScalingFactors);
 		}
 	}

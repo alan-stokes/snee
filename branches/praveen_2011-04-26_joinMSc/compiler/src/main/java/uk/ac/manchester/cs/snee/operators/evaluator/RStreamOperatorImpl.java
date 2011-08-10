@@ -41,6 +41,7 @@ import java.util.Observable;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
@@ -60,7 +61,7 @@ public class RStreamOperatorImpl extends EvaluatorPhysicalOperator {
 
 	public RStreamOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
-	SNEEConfigurationException {
+	SNEEConfigurationException, EvaluatorException {
 		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER RStreamOperatorImpl() " + op);

@@ -6,6 +6,7 @@ import java.util.Observable;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
@@ -35,7 +36,7 @@ extends EvaluatorPhysicalOperator {
 
 	public AggregationOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
-	SNEEConfigurationException {
+	SNEEConfigurationException, EvaluatorException {
 		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER AggregationOperatorImpl() " + op);

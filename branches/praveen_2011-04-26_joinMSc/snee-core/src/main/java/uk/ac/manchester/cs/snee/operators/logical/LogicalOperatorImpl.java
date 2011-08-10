@@ -39,6 +39,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.graph.NodeImplementation;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -397,64 +398,65 @@ implements LogicalOperator {
 	}
 	
 	/**
-	 * This method find the source type of the join operator
+	 * This method finds the source type of the join operator
 	 * based on its left and right child inputs.
 	 * 
 	 * @param left
 	 * @param right
 	 * @return
+	 * @throws SNEECompilerException 
 	 */
-	protected SourceType getOperatorSourceType(LogicalOperator left,
-			LogicalOperator right) {
+	protected SourceType getOperatorSourceType(LogicalOperator left, LogicalOperator right) 
+	throws SNEECompilerException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER getOperatorSourceType()" +
+					"\n\tleft " + left + 
+					"\n\tright " + right);
+		}
 		SourceType returnSourceType = null;
 		LogicalOperator higherPrecedenceOp = getHigherPrecedenceOp(left, right);
 		returnSourceType = higherPrecedenceOp.getOperatorSourceType();
-		/*SourceType lSourceType = left.getOperatorSourceType();
-		SourceType rSourceType = right.getOperatorSourceType();
-		if (lSourceType == rSourceType) {
-			returnSourceType = lSourceType;
-		} else if ((lSourceType == SourceType.SENSOR_NETWORK)
-				&& (rSourceType == SourceType.PULL_STREAM_SERVICE
-						|| rSourceType == SourceType.UDP_SOURCE || rSourceType == SourceType.PUSH_STREAM_SERVICE)) {
-			returnSourceType = rSourceType;
-		} else if ((lSourceType == SourceType.PULL_STREAM_SERVICE
-				|| lSourceType == SourceType.UDP_SOURCE || lSourceType == SourceType.PUSH_STREAM_SERVICE)
-				&& (rSourceType == SourceType.SENSOR_NETWORK)) {
-			returnSourceType = lSourceType;
-		} else if ((lSourceType == SourceType.SENSOR_NETWORK)
-				&& (rSourceType == SourceType.RELATIONAL || rSourceType == SourceType.WSDAIR)) {
-			returnSourceType = lSourceType;
-		} else if ((lSourceType == SourceType.PULL_STREAM_SERVICE
-				|| lSourceType == SourceType.UDP_SOURCE || lSourceType == SourceType.PUSH_STREAM_SERVICE)
-				&& (rSourceType == SourceType.RELATIONAL || rSourceType == SourceType.WSDAIR)) {
-			returnSourceType = rSourceType;
-		}*/
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN getOperatorSourceType() with " + 
+					returnSourceType);
+		}
 		return returnSourceType;
 	}
 	
 	/**
-	 * This method choses the operator that has the higher precedence
+	 * This method chooses the operator that has the higher precedence
 	 * where Pushed>Pulled>Scanned
 	 * 
 	 * @param left
 	 * @param right
 	 * @return
+	 * @throws SNEECompilerException 
 	 */
-	private LogicalOperator getHigherPrecedenceOp(LogicalOperator left,
-			LogicalOperator right) {
+	private LogicalOperator getHigherPrecedenceOp(LogicalOperator left, LogicalOperator right) 
+	throws SNEECompilerException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER getHigherPrecedenceOp() " +
+					"\n\tleft: " + left + "\n\tright: " + right);
+		}
 		LogicalOperator returnOperator = null;;
 		SourceType lSourceType = left.getOperatorSourceType();
 		SourceType rSourceType = right.getOperatorSourceType();
+		if (logger.isTraceEnabled()) {
+			logger.trace("Left source type: " + lSourceType);
+			logger.trace("Right source type: " + rSourceType);
+		}
 		if (lSourceType == rSourceType) {
 			//returnSourceType = lSourceType;
 			returnOperator = left;
 		} else if ((lSourceType == SourceType.SENSOR_NETWORK)
 				&& (rSourceType == SourceType.PULL_STREAM_SERVICE
-						|| rSourceType == SourceType.UDP_SOURCE || rSourceType == SourceType.PUSH_STREAM_SERVICE)) {
+						|| rSourceType == SourceType.UDP_SOURCE 
+						|| rSourceType == SourceType.PUSH_STREAM_SERVICE)) {
 			//returnSourceType = rSourceType;
 			returnOperator = right;
 		} else if ((lSourceType == SourceType.PULL_STREAM_SERVICE
-				|| lSourceType == SourceType.UDP_SOURCE || lSourceType == SourceType.PUSH_STREAM_SERVICE)
+				|| lSourceType == SourceType.UDP_SOURCE 
+				|| lSourceType == SourceType.PUSH_STREAM_SERVICE) 
 				&& (rSourceType == SourceType.SENSOR_NETWORK)) {
 			//returnSourceType = lSourceType;
 			returnOperator = left;
@@ -462,11 +464,29 @@ implements LogicalOperator {
 				&& (rSourceType == SourceType.RELATIONAL || rSourceType == SourceType.WSDAIR)) {
 			//returnSourceType = lSourceType;
 			returnOperator = left;
+		} else if ((rSourceType == SourceType.SENSOR_NETWORK)
+				&& (lSourceType == SourceType.RELATIONAL || rSourceType == SourceType.WSDAIR)) {
+			//returnSourceType = rSourType;
+			returnOperator = right;
 		} else if ((lSourceType == SourceType.PULL_STREAM_SERVICE
-				|| lSourceType == SourceType.UDP_SOURCE || lSourceType == SourceType.PUSH_STREAM_SERVICE)
+				|| lSourceType == SourceType.UDP_SOURCE 
+				|| lSourceType == SourceType.PUSH_STREAM_SERVICE)
 				&& (rSourceType == SourceType.RELATIONAL || rSourceType == SourceType.WSDAIR)) {
 			//returnSourceType = rSourceType;
 			returnOperator = right;
+		} else if ((rSourceType == SourceType.PULL_STREAM_SERVICE
+				|| rSourceType == SourceType.UDP_SOURCE 
+				|| rSourceType == SourceType.PUSH_STREAM_SERVICE)
+				&& (lSourceType == SourceType.RELATIONAL || lSourceType == SourceType.WSDAIR)) {
+			//returnSourceType = lSourceType;
+			returnOperator = left;
+		} else {
+			String message = "Untested scenario: left=" + lSourceType + " right=" + rSourceType;
+			logger.warn(message);
+			throw new SNEECompilerException(message);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN getHigherPrecedenceOp() with " + returnOperator);
 		}
 		return returnOperator;
 	}
@@ -492,8 +512,10 @@ implements LogicalOperator {
 	 * @param left
 	 * @param right
 	 * @return
+	 * @throws SNEECompilerException 
 	 */
-	public double getSourceRate(LogicalOperator left, LogicalOperator right) {
+	public double getSourceRate(LogicalOperator left, LogicalOperator right) 
+	throws SNEECompilerException {
 		double returnSourceRate = 1.0;
 		returnSourceRate = getHigherPrecedenceOp(left, right).getSourceRate();
 		return returnSourceRate;

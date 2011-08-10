@@ -50,10 +50,11 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 	 * @throws SNEEException
 	 * @throws SchemaMetadataException
 	 * @throws SNEEConfigurationException
+	 * @throws EvaluatorException 
 	 */
 	public JoinOperatorAbstractImpl(LogicalOperator op, int qid)
 			throws SNEEException, SchemaMetadataException,
-			SNEEConfigurationException {
+			SNEEConfigurationException, EvaluatorException {
 		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER JoinOperatorAbstractImpl() " + op);

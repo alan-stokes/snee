@@ -39,6 +39,7 @@ import java.io.StringReader;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
@@ -113,12 +114,10 @@ public class QueryCompiler {
 		return parseTree;
 	}
 	
-	private LAF doTranslation(CommonAST parseTree, int queryID, 
-			String queryPlanOutputDir) 
-	throws TypeMappingException, SourceDoesNotExistException, 
-	SchemaMetadataException, 
-	OptimizationException, ParserException, ExtentDoesNotExistException,
-	RecognitionException, SNEEConfigurationException, ExpressionException, SourceMetadataException 
+	private LAF doTranslation(CommonAST parseTree, int queryID, String queryPlanOutputDir) 
+	throws TypeMappingException, SourceDoesNotExistException, SchemaMetadataException, 
+	OptimizationException, ParserException, ExtentDoesNotExistException, RecognitionException, 
+	SNEEConfigurationException, ExpressionException, SourceMetadataException, SNEECompilerException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doTranslation() queryID: " + 
@@ -153,8 +152,9 @@ public class QueryCompiler {
 	}
 	
 		
-	private DLAF doSourceAllocation(LAF lafPrime, int queryID, QoSExpectations qos) throws 
-	SourceAllocatorException, SNEEConfigurationException, SourceMetadataException {
+	private DLAF doSourceAllocation(LAF lafPrime, int queryID, QoSExpectations qos) 
+	throws SourceAllocatorException, SNEEConfigurationException, SourceMetadataException, 
+	SNEECompilerException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSourceAllocation: " + lafPrime);
 		SourceAllocator allocator = new SourceAllocator();
@@ -220,15 +220,15 @@ public class QueryCompiler {
 	 * @throws WhenSchedulerException 
 	 * @throws ExpressionException 
 	 * @throws SourceMetadataException 
+	 * @throws SNEECompilerException 
 	 */
-	public QueryExecutionPlan compileQuery(int queryID, String query, 
-			QoSExpectations qos) 
+	public QueryExecutionPlan compileQuery(int queryID, String query, QoSExpectations qos) 
 	throws SNEEException, SourceDoesNotExistException, 
 	TypeMappingException, SchemaMetadataException, OptimizationException, 
 	ParserException, ExtentDoesNotExistException,
 	RecognitionException, TokenStreamException, 
 	SNEEConfigurationException, SourceAllocatorException, WhenSchedulerException,
-	ExpressionException, SourceMetadataException 
+	ExpressionException, SourceMetadataException, SNEECompilerException 
 	 {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER: queryID: " + queryID + "\n\tquery: " + query);

@@ -39,10 +39,11 @@ public abstract class ValveOperatorAbstractImpl extends EvaluationOperator {
 	 * @throws SNEEException
 	 * @throws SchemaMetadataException
 	 * @throws SNEEConfigurationException
+	 * @throws EvaluatorException 
 	 */
 	public ValveOperatorAbstractImpl(LogicalOperator op, int qid)
 			throws SNEEException, SchemaMetadataException,
-			SNEEConfigurationException {
+			SNEEConfigurationException, EvaluatorException {
 		super(op, qid);
 
 		// Instantiate valve operator

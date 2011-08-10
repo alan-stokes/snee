@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
@@ -40,7 +41,7 @@ public class SourceAllocator {
 	}
 
 	public DLAF allocateSources(LAF laf, QoSExpectations qos)
-			throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER allocateSources() laf=" + laf.getID());
 		DLAF dlaf = new DLAF(laf, laf.getQueryName());
@@ -84,9 +85,10 @@ public class SourceAllocator {
 	 * @param laf
 	 * @param qos
 	 * @throws SourceMetadataException
+	 * @throws SNEECompilerException 
 	 */
 	private void setSourceRates(LAF laf, QoSExpectations qos)
-			throws SourceMetadataException {
+	throws SourceMetadataException, SNEECompilerException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER setSourceRates()");
 		}

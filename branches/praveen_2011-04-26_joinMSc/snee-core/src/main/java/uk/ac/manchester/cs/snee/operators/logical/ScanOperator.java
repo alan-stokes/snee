@@ -33,18 +33,12 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.operators.logical;
 
-import java.util.List;
-
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.metadata.source.StreamingSourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.types.Duration;
@@ -79,28 +73,7 @@ public class ScanOperator extends InputOperator {
 	 * @return false;
 	 */
 	public boolean acceptsPredicates() {
-		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public boolean pushProjectionDown(List<Expression> projectExpressions, 
-			List<Attribute> projectAttributes) 
-	throws OptimizationException {
-		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @return False. As scan can not handle predicate.
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
-	 */
-	public boolean pushSelectIntoLeafOp(Expression predicate) 
-	throws SchemaMetadataException, TypeMappingException {
-		return false;
+		return true;
 	}
 	
 	public void setRescanInterval(Duration rescanInterval) {

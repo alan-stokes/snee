@@ -64,7 +64,7 @@ public class UnionOperatorImpl extends EvaluatorPhysicalOperator {
 
 	public UnionOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
-	SNEEConfigurationException {
+	SNEEConfigurationException, EvaluatorException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER UnionOperatorImpl() " + op);
 		}

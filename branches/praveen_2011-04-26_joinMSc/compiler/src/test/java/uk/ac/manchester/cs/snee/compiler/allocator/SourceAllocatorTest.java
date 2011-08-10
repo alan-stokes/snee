@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
@@ -85,7 +86,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test(expected=SourceAllocatorException.class)
 	public void testAllocateSources_noOperators() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("noQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("noQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -99,7 +100,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test
 	public void testAllocateSources_sensorQuery_oneAcquire() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("sensorQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("sensorQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -123,10 +124,11 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	 * Tests two acquires on the same sensor network source
 	 * @throws SourceAllocatorException
 	 * @throws SourceMetadataException 
+	 * @throws SNEECompilerException 
 	 */
 	@Test
 	public void testAllocateSources_sensorQuery_twoAcquire() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("sensorQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("sensorQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -149,7 +151,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test(expected=SourceAllocatorException.class)
 	public void testAllocateSources_twoSensorQuery() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("twoSensorQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("twoSensorQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -174,7 +176,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test
 	public void testAllocateSources_pullStreamSources() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("pullStream").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("pullStream-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -198,7 +200,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test
 	public void testAllocateSources_twoPullStream() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("twoPullStreamQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("twoPullStreamQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -227,7 +229,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test
 	public void testAllocateSources_UDPSource() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("UDPSource").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("UDPSource-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -253,7 +255,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test
 	public void testAllocateSources_twoUDPSources() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("twoUDPSource").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("twoUDPSources-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -288,7 +290,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test
 	public void testAllocateSources_scanRelationalQuery() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("scanQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("scanQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -310,7 +312,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test
 	public void testAllocateSources_twoRelationalSources() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("scanQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("scanQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -337,7 +339,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 
 	@Test
 	public void testAllocateSources_scanWSDAIRQuery() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("scanQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("scanQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -358,7 +360,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test
 	public void testAllocateSources_twoWSDAIRSources() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("scanQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("scanQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -384,7 +386,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test
 	public void testAllocateSources_mixedUDPWSDAIRQuery() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("mixedUDPWSDAIRQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("mixedUDPWSDAIRQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -417,7 +419,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test
 	public void testAllocateSources_mixedPushWSDAIRQuery() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("mixedPushWSDAIRQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("mixedPushWSDAIRQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -450,7 +452,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test
 	public void testAllocateSources_mixedPullWSDAIRQuery() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("mixedPullWSDAIRQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("mixedPullWSDAIRQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -481,7 +483,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test(expected=SourceAllocatorException.class)
 	public void testAllocateSources_mixedSensorWSDAIRQuery() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("mixedSensorWSDAIRQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("mixedSensorWSDAIRQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).
@@ -505,7 +507,7 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	
 	@Test(expected=SourceAllocatorException.class)
 	public void testAllocateSources_mixedPushSensorQuery() 
-	throws SourceAllocatorException, SourceMetadataException {
+	throws SourceAllocatorException, SourceMetadataException, SNEECompilerException {
 		expect(mockLaf.getID()).andReturn("mixedPushSensorQuery").times(0, 2);
 		expect(mockLaf.getQueryName()).andReturn("mixedPushSensorQuery-LAF");
 		expect(mockLaf.operatorIterator(TraversalOrder.PRE_ORDER)).

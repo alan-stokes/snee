@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.operators.factory;
 
+import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -16,7 +17,7 @@ public abstract class JoinOperatorImplAbstractFactory {
 
 	public static EvaluationOperator getJoinOperatorImpl(LogicalOperator op,
 			int qid) throws SNEEException, SchemaMetadataException,
-			SNEEConfigurationException {
+			SNEEConfigurationException, EvaluatorException {
 		EvaluationOperator joinOperatorImpl;
 		if (op.getPredicate() instanceof NoPredicate) {
 			joinOperatorImpl = new JoinOperatorImpl(op, qid);

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Stack;
 
+import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.CircularArray;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
@@ -41,7 +42,7 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 
 	public NestedLoopJoinImpl(LogicalOperator op, int qid)
 			throws SNEEException, SchemaMetadataException,
-			SNEEConfigurationException {
+			SNEEConfigurationException, EvaluatorException {
 		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER JoinOperatorImpl() " + op);

@@ -41,20 +41,12 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
-import uk.ac.manchester.cs.snee.metadata.source.StreamingSourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 
@@ -107,7 +99,7 @@ public class AcquireOperator extends InputOperator {
 		this.setOperatorSourceType(source.getSourceType());
 		//this.setSourceRate(((SourceMetadata)source).getRate(extentName));
 		this._types=types;
-		updateSensedAttributes(); 
+		updateInputAttributes(); 
 		updateMetadataInfo(extentMetadata);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN AcquireOperator()");
@@ -141,143 +133,11 @@ public class AcquireOperator extends InputOperator {
 
 	/** {@inheritDoc} */
 	public boolean acceptsPredicates() {
-		//logger.warn("Acquire does not yet accept predicates");
-		//return true;
-//		return Settings.LOGICAL_OPTIMIZATION_COMBINE_ACQUIRE_AND_SELECT;
-		return true;
-	}
-
-	/** 
-	 * Updates the sensed Attributes.
-	 * Extracts the attributes from the expressions.
-	 * Those that are data attributes become the sensed attributes.
-	 */	
-	private void updateSensedAttributes() {
-		inputAttributes = new ArrayList<Attribute>();
-		for (int i = 0; i < expressions.size(); i++) {
-			//DataAttribute sensed =  sensedAttributes.get(i);
-			Expression expression = expressions.get(i);
-			List<Attribute> attributes = 
-				expression.getRequiredAttributes();
-			for (int j = 0; j < attributes.size(); j++) {
-				Attribute attribute = attributes.get(j);
-				if (attribute instanceof DataAttribute) {
-					if (!inputAttributes.contains(attribute)) {
-						inputAttributes.add((DataAttribute) attribute);
-					}
-				}
-			}
-		}
-		List<Attribute> attributes = 
-			getPredicate().getRequiredAttributes();
-		for (int j = 0; j < attributes.size(); j++) {
-			Attribute attribute = attributes.get(j);
-			if (attribute instanceof DataAttribute) {
-				if (!inputAttributes.contains(attribute)) {
-					inputAttributes.add((DataAttribute) attribute);
-				}
-			}
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @throws SNEEConfigurationException 
-	 */
-	public boolean pushProjectionDown(List<Expression> projectExpressions, 
-			List<Attribute> projectAttributes) 
-	throws OptimizationException {
-		boolean boolSetting = true;
 		try {
-			boolSetting = SNEEProperties.getBoolSetting(
+			return SNEEProperties.getBoolSetting(
 					SNEEPropertyNames.LOGICAL_REWRITER_COMBINE_ACQUIRE_SELECT);
 		} catch (SNEEConfigurationException e) {
-			logger.warn(e + " Proceeding with default value true.");
-		}
-		if (boolSetting) {			
-			//if no project to push down Do nothing.
-			if (projectAttributes.isEmpty()) {
-				return false;
-			}
-
-			if (projectExpressions.isEmpty()) {
-				//remove unrequired attributes. No expressions to accept
-				for (int i = 0; i < outputAttributes.size(); ) {
-					if (projectAttributes.contains(outputAttributes.get(i)))
-						i++;
-					else {
-						outputAttributes.remove(i);
-						expressions.remove(i);		
-					}
-				}
-				updateSensedAttributes();
-				return false;
-			}
-
-			expressions = projectExpressions;
-			outputAttributes = projectAttributes;
-			updateSensedAttributes();
-			//		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
-			//			try {
-			//				outputAttributes.add(new LocalTimeAttribute());
-			//				expressions.add(new LocalTimeAttribute());
-			//			} catch (SchemaMetadataException e) {
-			//				// TODO Auto-generated catch block
-			//				e.printStackTrace();
-			//				System.exit(2);
-			//			} //Ixent added this
-			//		}		
 			return true;
-		} else {
-			// Projection should be kept separate from acquire for debugging
-			return false;
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @throws AssertionError 
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
-	 * @throws SNEEConfigurationException 
-	 */
-	public boolean pushSelectIntoLeafOp(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException
-	{
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER pushSelectionIntoLeafOp() with " + predicate);
-		}
-		boolean boolSetting = true;
-		try {
-			boolSetting = SNEEProperties.getBoolSetting(
-					SNEEPropertyNames.LOGICAL_REWRITER_COMBINE_ACQUIRE_SELECT);
-		} catch (SNEEConfigurationException e) {
-			logger.warn(e + " Proceeding with default value true.");
-		}
-		if (logger.isTraceEnabled()) {
-			logger.trace("Combine acquire and select=" + boolSetting);
-		}
-		if (boolSetting) {	
-			Expression myPredicate = this.getPredicate();
-			if (myPredicate instanceof NoPredicate) {
-				setPredicate(predicate);
-			} else {
-				Expression[] expArray = new Expression[2];
-				expArray[0] = myPredicate;
-				expArray[1] = predicate;
-				setPredicate(new MultiExpression(expArray, MultiType.AND, 
-						_boolType));
-			}
-			if (logger.isDebugEnabled()) {
-				logger.debug("RETURN pushSelectionIntoLeafOp() with true");
-			}
-			return true;
-		} else {
-			// Selection should be kept separate from acquire for debugging
-			if (logger.isDebugEnabled()) {
-				logger.debug("RETURN pushSelectionIntoLeafOp() with false");
-			}
-			return false;
 		}
 	}
 

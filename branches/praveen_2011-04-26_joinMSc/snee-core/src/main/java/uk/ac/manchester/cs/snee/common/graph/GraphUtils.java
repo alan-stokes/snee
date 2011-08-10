@@ -95,16 +95,20 @@ public class GraphUtils {
     }
     
     public static void generateGraphImage(String dotFilePath) 
-    throws SNEEConfigurationException {
+    {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER generateGraphImage()");
-		if (SNEEProperties.getBoolSetting(
-				SNEEPropertyNames.CONVERT_QEP_IMAGES)) {
-			if (!dotFilePath.endsWith(".dot")) {
-				dotFilePath = dotFilePath + ".dot";
+		try {
+			if (SNEEProperties.getBoolSetting(
+					SNEEPropertyNames.CONVERT_QEP_IMAGES)) {
+				if (!dotFilePath.endsWith(".dot")) {
+					dotFilePath = dotFilePath + ".dot";
+				}
+				String pngFilePath = dotFilePath.replaceAll("dot", "png");
+				convertDOT2PNG(dotFilePath, pngFilePath);
 			}
-			String pngFilePath = dotFilePath.replaceAll("dot", "png");
-			convertDOT2PNG(dotFilePath, pngFilePath);
+		} catch (SNEEConfigurationException e) {
+			//Do nothing. Proceed with default of false
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN generateGraphImage()");

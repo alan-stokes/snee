@@ -47,6 +47,14 @@ import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FalseAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TrueAttribute;
 import uk.ac.manchester.cs.snee.datasource.webservice.WSDAIRSourceWrapperImpl;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
@@ -69,7 +77,7 @@ public class ScanOperatorImpl extends EvaluatorPhysicalOperator {
 	/**
 	 * Stores the local extent name.
 	 */
-	private String _extentName;
+	private String extentName;
 
 	/**
 	 * Attributes that are to be returned by the scan operator
@@ -107,15 +115,21 @@ public class ScanOperatorImpl extends EvaluatorPhysicalOperator {
 	 * Name of the resource on the external service to retrieve data from
 	 */
 	private String _resourceName;
+
+	/**
+	 * The query expression that should be passed down to the database source
+	 */
+	private Expression expression;
 	
 	/**
 	 * Instantiates the scan operator
 	 * @param op
 	 * @throws SchemaMetadataException 
+	 * @throws EvaluatorException 
 	 * @throws SNEEConfigurationException 
 	 */
 	public ScanOperatorImpl(LogicalOperator op, int qid) 
-	throws SchemaMetadataException {
+	throws SchemaMetadataException, EvaluatorException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER ScanOperatorImpl() for query " + 
 					qid + " " +
@@ -125,7 +139,8 @@ public class ScanOperatorImpl extends EvaluatorPhysicalOperator {
 		scanOp = (ScanOperator) op;
 		m_qid = qid;
 		attributes = scanOp.getInputAttributes();
-		_extentName = scanOp.getExtentName();
+		extentName = scanOp.getExtentName();
+		expression = scanOp.getPredicate();
 		rescanInterval = scanOp.getRescanInterval();
 		// Construct the SQL query to retrieve the data from the source
 		sqlQuery = constructQuery();
@@ -140,8 +155,9 @@ public class ScanOperatorImpl extends EvaluatorPhysicalOperator {
 	 * to retrieve the data.
 	 * 
 	 * @return String representation of the SQL query
+	 * @throws EvaluatorException 
 	 */
-	private String constructQuery() {
+	protected String constructQuery() throws EvaluatorException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER constructQuery()");
 		}
@@ -151,12 +167,122 @@ public class ScanOperatorImpl extends EvaluatorPhysicalOperator {
 			queryBuffer.append(attr.getAttributeSchemaName()).append(", ");
 		}
 		queryBuffer.replace(queryBuffer.length() - 2, queryBuffer.length(), " ");
-		queryBuffer.append("FROM ").append(_extentName);
+		queryBuffer.append("FROM ").append(extentName);
+		if (expression != null && !(expression instanceof NoPredicate)) {
+			queryBuffer.append(" WHERE ");
+			queryBuffer.append(translateExpression(expression));
+		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN constructQuery() with " + 
 					queryBuffer.toString());
 		}		
 		return queryBuffer.toString();
+	}
+
+	/**
+	 * 
+	 * @return 
+	 * @throws EvaluatorException 
+	 */
+	private String translateExpression(Expression expr) throws EvaluatorException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER translateExprssion() with " + expr);
+		}
+		StringBuffer queryBuffer = new StringBuffer();
+		if (expr instanceof MultiExpression) {
+			queryBuffer.append(translateMultiExpression((MultiExpression) expr));
+		} else if (expr instanceof Attribute) {
+			Attribute attr = (Attribute) expr;
+			queryBuffer.append(attr.getAttributeSchemaName());
+		} else if (expr instanceof FalseAttribute) {
+			FalseAttribute falseAttr = (FalseAttribute) expr;
+			queryBuffer.append(falseAttr.getValue());
+		} else if (expr instanceof FloatLiteral) {
+			FloatLiteral floatLit = (FloatLiteral) expr;
+			queryBuffer.append(floatLit.getValue());
+		} else if (expr instanceof IntLiteral) {
+			IntLiteral intLit = (IntLiteral) expr;
+			queryBuffer.append(intLit.getValue());
+		} else if (expr instanceof StringLiteral) {
+			StringLiteral stringLit = (StringLiteral) expr;
+			queryBuffer.append("'").append(stringLit.getValue()).append("'");
+		} else if (expr instanceof TrueAttribute) {
+			TrueAttribute trueAttr = (TrueAttribute) expr;
+			queryBuffer.append(trueAttr.getValue());
+		} else {
+			String message = "Unknown expression " + expr;
+			logger.warn(message);
+			throw new EvaluatorException(message);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN translateExprssion() with " + queryBuffer.toString());
+		}		
+		return queryBuffer.toString();		
+	}
+	
+	private String translateMultiExpression(MultiExpression mExpr) 
+	throws EvaluatorException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER translateMultiExpression() with " + mExpr);
+		}		
+		StringBuffer queryBuffer = new StringBuffer();
+		Expression[] expressions = mExpr.getExpressions();
+		queryBuffer.append(translateExpression(expressions[0]));
+		switch (mExpr.getMultiType()) {
+		case ADD:
+			queryBuffer.append(" + ");
+			break;
+		case AND:
+			queryBuffer.append(" AND ");
+			break;
+		case DIVIDE:
+			queryBuffer.append(" / ");
+			break;
+		case EQUALS:
+			queryBuffer.append(" = ");
+			break;
+		case GREATERTHAN:
+			queryBuffer.append(" > ");
+			break;
+		case GREATERTHANEQUALS:
+			queryBuffer.append(" >= ");
+			break;
+		case LESSTHAN:
+			queryBuffer.append(" < ");
+			break;
+		case LESSTHANEQUALS:
+			queryBuffer.append(" <= ");
+			break;
+		case MINUS:
+			queryBuffer.append(" - ");
+			break;
+		case MOD:
+			queryBuffer.append(" % ");
+			break;
+		case MULTIPLY:
+			queryBuffer.append(" * ");
+			break;
+		case NOTEQUALS:
+			queryBuffer.append(" != ");
+			break;
+		case OR:
+			queryBuffer.append(" OR ");
+			break;				
+		case POWER:
+		case SQUAREROOT:
+			String message = "Unsupported function in WHERE clause " + mExpr.getMultiType();
+			logger.warn(message);
+			throw new EvaluatorException(message);
+		default:
+			message = "Unknown function " + mExpr.getMultiType();
+			logger.warn(message);
+			throw new EvaluatorException(message);
+		}
+		queryBuffer.append(translateExpression(expressions[1]));
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN translateMultiExpression() with " + queryBuffer.toString());
+		}		
+		return queryBuffer.toString();		
 	}
 
 	@Override
@@ -233,14 +359,14 @@ public class ScanOperatorImpl extends EvaluatorPhysicalOperator {
 		WebServiceSourceMetadata webSource = 
 			(WebServiceSourceMetadata) source;
 		_sourceClient = (WSDAIRSourceWrapperImpl) webSource.getSource();
-		_resourceName = webSource.getResourceName(_extentName);
+		_resourceName = webSource.getResourceName(extentName);
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN instantiateWSDAIRDataSource()");
 		}
 	}
 
 	@Override
-	public void close(){
+	public void close() {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER close()");
 		}
@@ -259,7 +385,7 @@ public class ScanOperatorImpl extends EvaluatorPhysicalOperator {
 	 *
 	 */
 	class RescanTask extends TimerTask {
-	
+
 		public void run() {
 			if (logger.isDebugEnabled()) {
 				logger.debug("ENTER run() for query " + m_qid);
@@ -272,12 +398,16 @@ public class ScanOperatorImpl extends EvaluatorPhysicalOperator {
 				notifyObservers(window);
 			} catch (SNEEDataSourceException e) {
 				logger.warn("Received a SNEEDataSourceException.", e);
+				close();
 			} catch (TypeMappingException e) {
 				logger.warn("Received a TypeMappingException.", e);
+				close();
 			} catch (SchemaMetadataException e) {
 				logger.warn("Received a SchemaMetadataException.", e);
+				close();
 			} catch (SNEEException e) {
 				logger.warn("Received a SNEEException.", e);
+				close();
 			}
 			if (logger.isDebugEnabled()) {
 				logger.debug("RETURN run() time to next execution: " + 

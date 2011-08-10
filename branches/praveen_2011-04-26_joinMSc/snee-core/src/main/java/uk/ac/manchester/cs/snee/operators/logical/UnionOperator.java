@@ -37,6 +37,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -51,7 +52,8 @@ implements LogicalOperator {
 	private Logger logger = 
 		Logger.getLogger(UnionOperator.class.getName());
 
-	public UnionOperator(LogicalOperator left, LogicalOperator right, AttributeType boolType) {
+	public UnionOperator(LogicalOperator left, LogicalOperator right, AttributeType boolType) 
+	throws SNEECompilerException {
 		super(boolType);
 		this.setOperatorName("UNION");
 		setOperatorDataType(OperatorDataType.STREAM);

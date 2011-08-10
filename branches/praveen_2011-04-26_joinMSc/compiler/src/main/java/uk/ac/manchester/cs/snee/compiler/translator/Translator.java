@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
@@ -91,10 +92,9 @@ public class Translator {
 	}
 
 	private LogicalOperator translateFrom(AST ast) 
-	throws ExpressionException, SchemaMetadataException, 
-	SourceDoesNotExistException, OptimizationException, ParserException, 
-	TypeMappingException, ExtentDoesNotExistException, 
-	RecognitionException, SourceMetadataException {
+	throws ExpressionException, SchemaMetadataException, SourceDoesNotExistException, 
+	OptimizationException, ParserException, TypeMappingException, ExtentDoesNotExistException, 
+	RecognitionException, SourceMetadataException, SNEECompilerException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateFrom(): ast " +
 					ast.toStringList());
@@ -109,10 +109,9 @@ public class Translator {
 	}
 
 	private LogicalOperator translateExtents(AST ast) 
-	throws ExpressionException, SchemaMetadataException, 
-	OptimizationException, SourceDoesNotExistException, ParserException, 
-	TypeMappingException, ExtentDoesNotExistException, 
-	RecognitionException, SourceMetadataException {
+	throws ExpressionException, SchemaMetadataException, OptimizationException, 
+	SourceDoesNotExistException, ParserException, TypeMappingException, ExtentDoesNotExistException, 
+	RecognitionException, SourceMetadataException, SNEECompilerException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateExtents() ast " + 
 					ast);
@@ -654,8 +653,8 @@ public class Translator {
 	}
 
 	private LogicalOperator combineSources (LogicalOperator[] operators)
-	throws ExpressionException, SchemaMetadataException, 
-	OptimizationException {
+	throws ExpressionException, SchemaMetadataException, OptimizationException, 
+	SNEECompilerException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER combineSources(): " +
 					"number of operators " + operators.length);
@@ -761,9 +760,11 @@ public class Translator {
 	 * @throws ExpressionException
 	 * @throws OptimizationException
 	 * @throws SchemaMetadataException
+	 * @throws SNEECompilerException 
 	 */
-	private LogicalOperator insertJoin(LogicalOperator leftOperator,
-			LogicalOperator rightOperator) throws ExpressionException, OptimizationException, SchemaMetadataException {
+	private LogicalOperator insertJoin(LogicalOperator leftOperator, LogicalOperator rightOperator) 
+	throws ExpressionException, OptimizationException, SchemaMetadataException, 
+	SNEECompilerException {
 		
 		if (leftOperator.getOperatorDataType() == OperatorDataType.STREAM &&
 				rightOperator.getOperatorDataType() == OperatorDataType.STREAM) {
@@ -877,10 +878,9 @@ public class Translator {
 	}
 
 	private LogicalOperator translateExtent(AST ast) 
-	throws ExtentDoesNotExistException, SchemaMetadataException, 
-	TypeMappingException, SourceDoesNotExistException, 
-	ExpressionException, OptimizationException, ParserException,
-	RecognitionException, SourceMetadataException  
+	throws ExtentDoesNotExistException, SchemaMetadataException, TypeMappingException, 
+	SourceDoesNotExistException, ExpressionException, OptimizationException, ParserException,
+	RecognitionException, SourceMetadataException, SNEECompilerException  
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateExtent() " + 
@@ -969,10 +969,9 @@ public class Translator {
 	}
 
 	private LogicalOperator translateQuery(AST ast) 
-	throws SchemaMetadataException, ExpressionException, 
-	OptimizationException, SourceDoesNotExistException, 
-	ParserException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, SourceMetadataException {
+	throws SchemaMetadataException, ExpressionException, OptimizationException, 
+	SourceDoesNotExistException, ParserException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, SourceMetadataException, SNEECompilerException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateQuery() with '" +
 					ast +
@@ -1069,10 +1068,8 @@ public class Translator {
 		return operator;
 	}
 
-	private LogicalOperator checkUnionCondition(LogicalOperator left, 
-			LogicalOperator right) 
-	throws ParserException, SchemaMetadataException, 
-	TypeMappingException 
+	private LogicalOperator checkUnionCondition(LogicalOperator left, LogicalOperator right) 
+	throws ParserException, SchemaMetadataException, TypeMappingException, SNEECompilerException 
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER checkUnionCondition()" +
@@ -1128,10 +1125,9 @@ public class Translator {
 	}
 
 	public LAF translate(AST ast, int queryID) 
-	throws SchemaMetadataException, ExpressionException, 
-	OptimizationException, SourceDoesNotExistException,
-	ParserException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException, SourceMetadataException {
+	throws SchemaMetadataException, ExpressionException, OptimizationException, 
+	SourceDoesNotExistException, ParserException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, SourceMetadataException, SNEECompilerException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER translate(): " + 
 					ast.toStringTree() +

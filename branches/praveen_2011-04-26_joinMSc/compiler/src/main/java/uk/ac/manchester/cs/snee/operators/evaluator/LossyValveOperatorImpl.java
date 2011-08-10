@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.CircularArray;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
@@ -35,7 +36,7 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 
 	public LossyValveOperatorImpl(LogicalOperator op, int qid)
 			throws SNEEException, SchemaMetadataException,
-			SNEEConfigurationException {
+			SNEEConfigurationException, EvaluatorException {
 		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("Enter LossyValveOperatorImpl with query " + qid);
