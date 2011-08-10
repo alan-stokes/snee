@@ -2,7 +2,6 @@ package uk.ac.manchester.cs.snee.datasource.webservice;
 
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,12 +24,6 @@ import org.ggf.namespaces._2005._12.ws_dair.SchemaDescription;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.sun.java.xml.ns.jdbc.Data;
-import com.sun.java.xml.ns.jdbc.Data.CurrentRow;
-import com.sun.java.xml.ns.jdbc.Metadata;
-import com.sun.java.xml.ns.jdbc.Metadata.ColumnDefinition;
-import com.sun.java.xml.ns.jdbc.WebRowSet;
-
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
@@ -42,6 +35,12 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
+
+import com.sun.java.xml.ns.jdbc.Data;
+import com.sun.java.xml.ns.jdbc.Data.CurrentRow;
+import com.sun.java.xml.ns.jdbc.Metadata;
+import com.sun.java.xml.ns.jdbc.Metadata.ColumnDefinition;
+import com.sun.java.xml.ns.jdbc.WebRowSet;
 
 public class WSDAIRSourceWrapperImpl extends SourceWrapperAbstract 
 implements SourceWrapper {
