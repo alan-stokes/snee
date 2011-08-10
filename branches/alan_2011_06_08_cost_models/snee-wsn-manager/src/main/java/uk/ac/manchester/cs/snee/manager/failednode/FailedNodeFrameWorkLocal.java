@@ -2,12 +2,15 @@ package uk.ac.manchester.cs.snee.manager.failednode;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
+import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
@@ -89,19 +92,40 @@ public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
         {
           clusters.addClusterNode(firstNode.getID(), secondNode.getID());
           //add sites fragments and operaotrs onto equivlent node
-          transferQEP(qep, firstNode, secondNode);
+          transferSiteQEP(qep, firstNode, secondNode);
         }
       }
     }
   }
   
-  private void transferQEP(SensorNetworkQueryPlan qep, Node firstNode,
-      Node secondNode)
+  private void transferSiteQEP(SensorNetworkQueryPlan qep, Node firstNode,
+                           Node secondNode)
   {
     //TODO develop way to get code onto equivalent nodes (possibly got numerous versions to place)
     Site secondSite = (Site) secondNode;
-    ArrayList<InstanceOperator> siteOperators = qep.getIOT().get.getOpInstances(secondSite);
-    
+    Site firstSite = (Site) firstNode;
+    Iterator<Fragment> firstSiteFragIterator = firstSite.getFragments().iterator();
+    while(firstSiteFragIterator.hasNext())
+    {
+      Fragment frag = firstSiteFragIterator.next();
+      secondSite.addFragment(frag);
+    }
+    Iterator<ExchangePart> exchangeComponentsIterator = 
+             firstSite.getExchangeComponents().iterator();
+    while(exchangeComponentsIterator.hasNext())
+    {
+      ExchangePart part = exchangeComponentsIterator.next();
+      secondSite.addExchangeComponent(part);
+    }
+    //set up iot with new operators 
+    ArrayList<InstanceOperator> siteInstanceOperators = 
+                qep.getIOT().getOpInstances(firstSite, TraversalOrder.POST_ORDER, true);
+    Iterator<InstanceOperator> siteInstanceOperatorsIterator = 
+                siteInstanceOperators.iterator();
+    while(siteInstanceOperatorsIterator.hasNext())
+    {
+      InstanceOperator operator = siteInstanceOperatorsIterator.next();
+    }
   }
 
   /**

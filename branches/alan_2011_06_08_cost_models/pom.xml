@@ -147,7 +147,7 @@
 			<artifactId>objenesis</artifactId>
 			<version>1.2</version>
 			<type>jar</type>
-			<scope>test</scope>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>

@@ -104,21 +104,9 @@ public abstract class FrameWorkAbstract
    */
   public Topology getWsnTopology()
   {
-//    qep.getMetaData().getOutputAttributes().get(0).getExtentName()_metadata.getSource(qep.getMetaData())
-    Set<SourceMetadataAbstract> sourceSets = qep.getDLAF().getSources();
-    SensorNetworkSourceMetadata sm;
-    if(sourceSets.size() == 1)
-    {
-      Iterator<SourceMetadataAbstract> sourceIterator = sourceSets.iterator();
-      sm = (SensorNetworkSourceMetadata) sourceIterator.next();
-      Topology network = sm.getTopology();
-      return network;
-    }
-    else
-    {
-      System.out.println("error, more than 1 network");
-      return null;
-    }
+    SensorNetworkSourceMetadata metadata = (SensorNetworkSourceMetadata) _metadata;
+    Topology network = metadata.getTopology();
+    return network;
   }
   
   

@@ -42,7 +42,7 @@ public class IOT extends SNEEAlgebraicForm
   private InstanceFragment rootFragment;
   private Tree instanceOperatorTree = new Tree();
   private InstanceOperator rootOp;
-  private RT rt;
+  private final RT rt;
   private PAF paf;
   private DAF cDAF;
   protected boolean showTupleTypes = false;

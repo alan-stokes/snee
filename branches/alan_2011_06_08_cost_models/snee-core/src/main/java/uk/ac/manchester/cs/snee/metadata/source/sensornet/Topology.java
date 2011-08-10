@@ -33,14 +33,17 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.metadata.source.sensornet;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 
 import org.apache.log4j.Logger;
 
 
+import uk.ac.manchester.cs.snee.common.graph.Edge;
 import uk.ac.manchester.cs.snee.common.graph.Graph;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 
@@ -441,6 +444,19 @@ public class Topology extends Graph {
 	public Iterator<Node> siteIterator() {
 		return this.nodes.values().iterator();
 	}
+
+  public void removeNodeAndAssociatedEdges(String nodeID)
+  {
+    ArrayList<Edge> edgesSet =  new ArrayList<Edge>(edges.values());
+    Iterator<Edge> edgeIterator = edgesSet.iterator();
+    while(edgeIterator.hasNext())
+    {
+      Edge edge = edgeIterator.next();
+      if(edge.getDestID().equals(nodeID) || edge.getSourceID().equals(nodeID))
+        this.removeEdge(this.getSite(edge.getSourceID()), this.getSite(edge.getDestID()));
+    }
+    this.removeNode(nodeID);
+  }
 
 
     

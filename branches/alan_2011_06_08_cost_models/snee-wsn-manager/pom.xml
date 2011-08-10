@@ -64,5 +64,10 @@
 			<version>${snee.version}</version>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>uk.com.robust-it</groupId>
+			<artifactId>cloning</artifactId>
+			<version>1.7.4</version>
+		</dependency>
 	</dependencies>
 </project>
