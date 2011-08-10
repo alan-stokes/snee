@@ -36,6 +36,7 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 	protected List<Attribute> returnAttrs;
 	protected int maxBufferSize;
 	protected double leftOperatorRate, rightOperatorRate;
+	private boolean isFirstLeftOperand, isFirstRightOperand;
 	private long nextEvalTime;
 	private Timer timer;
 	private EvaluateTask evaluateTask;
@@ -170,11 +171,23 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 		} else {
 			return (long) (currentTime + rightOperatorRate*1000);
 		}*/
-		if (leftOperatorRate < rightOperatorRate) {
-			return (long)((1/leftOperatorRate)*1000);
+		//FIXME: Fix for unknown source arrival rates. Probably set the
+		//source rate as -1 during setup of the sources, and fix the left
+		//or the right operator source rate as 1. This is a crude method
+		//and need to be based on some experimentation as how much can the
+		//operator process without being overwhelmed.
+		long retEvalTime = 1;
+		double evalRate = 1.0;
+		if (leftOperatorRate == 0 || rightOperatorRate == 0) {
+			evalRate = (leftOperatorRate == 0)? rightOperatorRate: leftOperatorRate;
+			evalRate = (evalRate == 0)? 1.0:evalRate;			
+		} else  if (leftOperatorRate < rightOperatorRate) {
+			evalRate = leftOperatorRate;
 		} else {
-			return (long)((1/rightOperatorRate)*1000);
+			evalRate = rightOperatorRate;
 		}
+		retEvalTime = (long)((1/evalRate)*1000);
+		return retEvalTime;
 	}
 
 	private void startChildReceiver(EvaluatorPhysicalOperator op)
@@ -201,6 +214,38 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN close()");
 		}
+	}
+	
+	protected Output getNextFromChild(EvaluatorPhysicalOperator operator) {
+		double sourceRate = 0;
+		boolean isLeftOperator = false;
+		if (operator == leftOperator) {
+			sourceRate = leftOperatorRate;
+			isLeftOperator = true;
+		} else {
+			sourceRate = rightOperatorRate;
+			isLeftOperator = false;
+		}
+		if (sourceRate == 0) {
+			if (isLeftOperator) {
+				if (!isFirstLeftOperand) {
+					return null;
+				}				
+			} else {
+				if (!isFirstRightOperand) {
+					return null;
+				}				
+			}
+		}
+		Output output = operator.getNext();		
+		if (output != null) {
+			if (isLeftOperator) {
+				isFirstLeftOperand = false;
+			} else {
+				isFirstRightOperand = false;
+			}
+		}
+		return output;
 	}
 	
 	/**

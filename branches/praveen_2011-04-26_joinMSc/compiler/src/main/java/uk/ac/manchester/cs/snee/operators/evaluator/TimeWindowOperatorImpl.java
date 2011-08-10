@@ -372,7 +372,7 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 			nextTupleIndex++;			
 			prevTaggedTuple = null;			
 		}
-		while ((taggedTuple = getNextFromChild(sourceOperator)) != null) {
+		while ((taggedTuple = getNext(sourceOperator)) != null) {
 			
 			if (taggedTuple.getEvalTime() <= nextWindowEvalTime) {
 				tupleList.add(taggedTuple.getTuple());
@@ -387,6 +387,7 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 				break;
 			}
 		}
+		isFirstWindowDelivered = true;
 		/*while (nextTupleIndex < buffer.size()) {
 			TaggedTuple taggedTuple = (TaggedTuple) buffer.get(nextTupleIndex);
 			if (taggedTuple.getEvalTime() <= nextWindowEvalTime) {
@@ -465,12 +466,12 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 	 * @param operator
 	 * @return
 	 */
-	private TaggedTuple getNextFromChild(EvaluatorPhysicalOperator operator) {
+	private TaggedTuple getNext(EvaluatorPhysicalOperator operator) {
 		TaggedTuple tuple = null;
 		if (!windowOp.isGetDataByPullModeOperator()) {
 			tuple = buffer.poll();
 		} else {
-			tuple = (TaggedTuple)operator.getNext();
+			tuple = getNextFromChild(operator);
 		}
 		return tuple;
 	}

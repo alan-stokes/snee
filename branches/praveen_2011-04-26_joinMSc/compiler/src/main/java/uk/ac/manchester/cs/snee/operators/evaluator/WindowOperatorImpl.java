@@ -13,6 +13,7 @@ import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
+import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
@@ -32,6 +33,7 @@ public abstract class WindowOperatorImpl extends EvaluatorPhysicalOperator {
 	private long nextEvalTime;
 	private Timer timer;
 	private WindowEvaluateTask evaluateTask;
+	protected boolean isFirstWindowDelivered;
 
 	// Defines the size of slide. Instantiated in constructor
 	protected int slide;
@@ -52,6 +54,7 @@ public abstract class WindowOperatorImpl extends EvaluatorPhysicalOperator {
 		LogicalOperator operator = iter.next();		
 		sourceOperator = getEvaluatorOperator(operator);
 		sourceOperatorRate = operator.getSourceRate();
+		isFirstWindowDelivered = false;
 		if (logger.isTraceEnabled()) 
 			logger.trace("Window start: " + windowStart + ", Window end: " + windowEnd);
 
@@ -104,8 +107,12 @@ public abstract class WindowOperatorImpl extends EvaluatorPhysicalOperator {
 		}
 	}
 	
-	private long getNextEvalTime(double operatorRate) {		
-		return (long)((1/operatorRate)*1000);
+	private long getNextEvalTime(double operatorRate) {	
+		double evalRate = 1.0;
+		if (operatorRate != 0) {
+			evalRate = operatorRate;
+		}
+		return (long)((1/evalRate)*1000);
 		
 	}
 //	public abstract Collection<Output> getNext() 
@@ -122,6 +129,17 @@ public abstract class WindowOperatorImpl extends EvaluatorPhysicalOperator {
 	
 	protected Output getNewestEntryofBuffer() {		
 		return sourceOperator.getNewestEntry();
+	}
+	
+	protected TaggedTuple getNextFromChild(EvaluatorPhysicalOperator operator) {
+		if (sourceOperatorRate == 0) {			
+			if (isFirstWindowDelivered) {
+				return null;
+			}
+		}		
+		//TaggedTuple tuple = (TaggedTuple)operator.getNext();
+		
+		return (TaggedTuple)operator.getNext();
 	}
 	
 	/**

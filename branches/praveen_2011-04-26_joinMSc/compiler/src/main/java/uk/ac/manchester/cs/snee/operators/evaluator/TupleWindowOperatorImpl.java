@@ -179,15 +179,12 @@ public class TupleWindowOperatorImpl extends WindowOperatorImpl {
 				for (int i = 0; i < slide; i++) {
 					//FIXME This while true should be there, and used through
 					//a receive time out. Otherwise, the thread will get stuck here
-					//while (true) {
-						//System.out.println("Stuck in here mate: ");
+					//while (true) {						
 						TaggedTuple taggedTuple = (TaggedTuple) sourceOperator
-								.getNext();
-						//System.out
-							//	.println("Stuck in here mate: " + taggedTuple);
-						if (taggedTuple != null) {
-							break;
-						}
+								.getNext();						
+						//if (taggedTuple != null) {
+							//break;
+						//}
 					//}
 					System.out.println("Dropped " + i);
 				}

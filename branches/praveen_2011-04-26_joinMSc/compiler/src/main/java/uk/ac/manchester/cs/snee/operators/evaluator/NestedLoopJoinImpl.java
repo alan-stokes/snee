@@ -182,11 +182,7 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 		if (logger.isTraceEnabled()) {
 			logger.trace("EXIT generateAndUpdate() for query " + m_qid);
 		}
-	}
-
-	private Output getNextFromChild(EvaluatorPhysicalOperator operator) {
-		return ((ValveOperatorAbstractImpl) operator).getNext();
-	}
+	}	
 
 	private void performOutputJoin(List<Output> resultItems)
 			throws SNEEException {

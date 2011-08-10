@@ -342,9 +342,9 @@ public class HashJoinOperatorImpl extends JoinOperatorAbstractImpl {
 	 * @param operator
 	 * @return
 	 */
-	private Output getNextFromChild(EvaluatorPhysicalOperator operator) {
+	/*private Output getNextFromChild(EvaluatorPhysicalOperator operator) {
 		return ((ValveOperatorAbstractImpl)operator).getNext();
-	}
+	}*/
 
 	
 	
