@@ -45,7 +45,7 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 			SNEEConfigurationException, EvaluatorException {
 		super(op, qid);
 		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER JoinOperatorImpl() " + op);
+			logger.debug("ENTER NestedLoopJoinImpl() " + op);
 		}
 		if (!join.isGetDataByPullModeOperator()) {
 			leftBuffer = new CircularArray<Window>(maxBufferSize);
@@ -53,7 +53,7 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 		}
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN JoinOperatorImpl()");
+			logger.debug("RETURN NestedLoopJoinImpl()");
 		}
 	}
 

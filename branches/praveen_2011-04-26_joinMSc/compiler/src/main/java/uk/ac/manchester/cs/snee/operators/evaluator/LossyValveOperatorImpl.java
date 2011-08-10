@@ -171,8 +171,8 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 
 	@Override
 	public Output getNext() {
-		if (logger.isDebugEnabled()) {
-			logger.debug("This is before Polling:***" + valveOperator.getID()
+		if (logger.isTraceEnabled()) {
+			logger.trace("This is before Polling:***" + valveOperator.getID() + " with a size of "
 					+ inputBufferQueue.size() + this);
 		}
 		return inputBufferQueue.poll();
@@ -184,7 +184,7 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 
 		output = inputBufferQueue.getLatest();
 		if (logger.isDebugEnabled()) {
-			logger.debug("This is the output obtained:*** from valve operator with id: "
+			logger.debug("This is the latest entry obtained:*** from valve operator with id: "
 					+ valveOperator.getID()
 					+ output
 					+ "havng a size of: "

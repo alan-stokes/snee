@@ -69,6 +69,8 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 		operator = iter.next();
 		rightOperator = getEvaluatorOperator(operator);
 		rightOperatorRate = operator.getSourceRate();
+		isFirstLeftOperand = true;
+		isFirstRightOperand = true;
 		
 		// XXX: Join could be speeded up by working out once which attribute
 		// numbers are required from each tuple
@@ -217,6 +219,9 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 	}
 	
 	protected Output getNextFromChild(EvaluatorPhysicalOperator operator) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER getNextFromChild()");
+		}
 		double sourceRate = 0;
 		boolean isLeftOperator = false;
 		if (operator == leftOperator) {
@@ -244,6 +249,9 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 			} else {
 				isFirstRightOperand = false;
 			}
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN getNextFromChild() with output: "+output+ "for leftOperator?"+isLeftOperator);
 		}
 		return output;
 	}
