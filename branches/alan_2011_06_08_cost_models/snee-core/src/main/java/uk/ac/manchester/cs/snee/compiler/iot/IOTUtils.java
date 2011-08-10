@@ -307,17 +307,17 @@ public class IOTUtils
           }
         
         
-        //add exchanges if needed
-        if(exchangesOnSites)
-        {
-          HashSet<InstanceExchangePart> exchangeParts = site.getInstanceExchangeComponents();
-          Iterator<InstanceExchangePart> exchangePartsIterator = exchangeParts.iterator();
-          while(exchangePartsIterator.hasNext())
+          //add exchanges if needed
+          if(exchangesOnSites)
           {
-            InstanceExchangePart exchangePart = exchangePartsIterator.next();
-            out.println("\"" + exchangePart.getID() + "\" ;");
+            HashSet<InstanceExchangePart> exchangeParts = site.getInstanceExchangeComponents();
+            Iterator<InstanceExchangePart> exchangePartsIterator = exchangeParts.iterator();
+            while(exchangePartsIterator.hasNext())
+            {
+              InstanceExchangePart exchangePart = exchangePartsIterator.next();
+              out.println("\"" + exchangePart.getID() + "\" ;");
+            }
           }
-        }
         }
         
         //traverse the edges now

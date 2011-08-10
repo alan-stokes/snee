@@ -49,7 +49,6 @@ public class MetaSteinerTree
     //create a array which holds all steiner nodes.
     ArrayList<String> bucket = new ArrayList<String>(sources);
     bucket.add(desiredSinkID);
-    setupSinkAndSources(workingTopology, desiredSinkID, sources);
     //create pointer for tree
     MetaSteinerTreeObjectContainer container = null;
     //create pointers for sink 
@@ -73,23 +72,8 @@ public class MetaSteinerTree
       rotateTree(container.getSteinerTree().getNode(desiredSinkID), container.getSteinerTree().getNode(desiredSinkID), container.getSteinerTree());
       container.getSteinerTree().setRoot(container.getSteinerTree().getNode(desiredSinkID));
     }
+    container.getSteinerTree().updateNodesAndEdgesColls(container.getSteinerTree().getRoot());
     return container.getSteinerTree();
-  }
-  
-  private void setupSinkAndSources(Topology workingTopology,
-      String desiredSinkID, ArrayList<String> sources)
-  {
-    Iterator<Node> siteIter = workingTopology.siteIterator();
-    while (siteIter.hasNext()) {
-      Site s = (Site) siteIter.next();
-      if (sources.contains(s.getID())) {
-        s.setIsSource(true);
-      }
-      if (desiredSinkID.equals(s.getID())) {
-        s.setIsSource(true);
-      }
-    }
-    
   }
 
   /**

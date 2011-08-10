@@ -119,7 +119,9 @@ public class CandiateRouter extends Router
     int counter = 1;
     while(routes.hasNext())
     {
-      new RTUtils(routes.next()).exportAsDotFile(output.toString() + sep + "completeRoute" + counter);
+      RT route = routes.next();
+      new RTUtils(route).exportAsDotFile(output.toString() + sep + "completeRoute" + counter);
+      new RTUtils(route).exportAsTextFile(output.toString() + sep + "completeRoute" + counter);
       counter ++;
     }
     
@@ -137,8 +139,6 @@ public class CandiateRouter extends Router
       HashMapList<Integer, Tree> failedNodeToRoutingTreeMapping,
       RT oldRoutingTree, ArrayList<String> failedNodes, Integer numberOfRoutingTreesToWorkOn)
   {
-    Cloner cloner = new Cloner();
-    cloner.dontClone(Logger.class);
     int counter = 0;
     ArrayList<RT> newRoutingTrees = new ArrayList<RT>();
     boolean first = true;
@@ -155,46 +155,9 @@ public class CandiateRouter extends Router
       //for each chain, connect a tree to complete it.
       while(keyIterator.hasNext())
       {
-        Integer key = keyIterator.next();
-        ArrayList<Tree> choices = failedNodeToRoutingTreeMapping.get(key);
-        Tree choice = null;
-        if(first)
-          choice = choices.get(0);
-        else
-          choice = choices.get(randomiser.nextInt(choices.size()));
-        //connect parent
-        Site treeParent =  newRoutingTree.getSite(choice.getRoot().getID());
-        Iterator<Node> choiceInputIterator = choice.getRoot().getInputsList().iterator();
-        while(choiceInputIterator.hasNext())
-        {
-          Node choiceParent = choiceInputIterator.next();
-          treeParent.addInput(choiceParent);
-          choiceParent.addOutput(treeParent);
-        }
-        //get children of choice.
-        Iterator<Node> choiceChildrenIterator = choice.getLeafNodes().iterator();
-        //connect children
-        while(choiceChildrenIterator.hasNext())
-        {
-          Site choiceChild = (Site) choiceChildrenIterator.next();
-          Site treeChild =  newRoutingTree.getSite(choiceChild.getID());
-          treeChild.addOutput(choiceChild.getOutput(0));
-          Iterator<Node> treeChildInputIterator = treeChild.getInputsList().iterator();
-          while(treeChildInputIterator.hasNext())
-          {
-            choiceChild.addInput(treeChildInputIterator.next());
-          }
-        }
-        //add extra nodes to new routing table nodes storage, with correct edges
-        Iterator<Node> choiceNodeIterator = choice.getNodes().iterator();
-        while(choiceNodeIterator.hasNext())
-        {
-          Node choiceNode = choiceNodeIterator.next();
-          if(!this.compareNodeToArray(choiceNode, new ArrayList<Node>(newRoutingTree.getSiteTree().getNodes())))
-          {
-            newRoutingTree.getSiteTree().addNode(choiceNode);
-          }
-        }
+        Tree choice = chooseChoice(keyIterator, failedNodeToRoutingTreeMapping, randomiser, first);
+        connectChildAndParent(newRoutingTree, choice);
+        updateNodesEdgeArray(choice, newRoutingTree);
       }
       //store new routingTree
       newRoutingTrees.add(newRoutingTree);
@@ -202,6 +165,67 @@ public class CandiateRouter extends Router
       counter ++;
     }
     return newRoutingTrees;
+  }
+
+  private void updateNodesEdgeArray(Tree choice, RT newRoutingTree)
+  {
+  //add extra nodes to new routing table nodes storage, with correct edges
+    Iterator<Node> choiceNodeIterator = choice.getNodes().iterator();
+    while(choiceNodeIterator.hasNext())
+    {
+      Node choiceNode = choiceNodeIterator.next();
+      if(!this.compareNodeToArray(choiceNode, new ArrayList<Node>(newRoutingTree.getSiteTree().getNodes())))
+      {
+        newRoutingTree.getSiteTree().addNode(choiceNode);
+      }
+    }
+    
+    new RTUtils(newRoutingTree).exportAsDotFile("looking3");
+    new RTUtils(newRoutingTree).exportAsTextFile("looking3");
+    
+  }
+
+  private Tree chooseChoice(Iterator<Integer> keyIterator, HashMapList<Integer, Tree> failedNodeToRoutingTreeMapping, Random randomiser, boolean first)
+  {
+    Integer key = keyIterator.next();
+    ArrayList<Tree> choices = failedNodeToRoutingTreeMapping.get(key);
+    Tree choice = null;
+    if(first)
+      choice = choices.get(0);
+    else
+      choice = choices.get(randomiser.nextInt(choices.size()));
+    return choice;
+  }
+
+  private void connectChildAndParent(RT newRoutingTree, Tree choice)
+  {
+    new RTUtils(newRoutingTree).exportAsDotFile("looking");
+    new RTUtils(newRoutingTree).exportAsTextFile("looking");
+    
+    //connect parent
+    Site treeParent =  newRoutingTree.getSite(choice.getRoot().getID());
+    Iterator<Node> choiceInputIterator = choice.getRoot().getInputsList().iterator();
+    while(choiceInputIterator.hasNext())
+    {
+      Node choiceChild = choiceInputIterator.next();
+      treeParent.addInput(choiceChild);
+      choiceChild.removeOutput(choiceChild.getOutput(0));
+      choiceChild.addOutput(treeParent);
+    }
+    //get children of choice.
+    Iterator<Node> choiceChildrenIterator = choice.getLeafNodes().iterator();
+    //connect children
+    while(choiceChildrenIterator.hasNext())
+    {
+      Site choiceChild = (Site) choiceChildrenIterator.next();
+      Site treeChild =  newRoutingTree.getSite(choiceChild.getID());
+      treeChild.addOutput(choiceChild.getOutput(0));
+    }
+    
+    
+    new RTUtils(newRoutingTree).exportAsDotFile("looking2");
+    new RTUtils(newRoutingTree).exportAsTextFile("looking2");
+    
   }
 
   /**
@@ -299,6 +323,7 @@ public class CandiateRouter extends Router
     }
     Tree steinerTree = computeSteinerTree(workingTopology, sink, sources); 
     new RTUtils(new RT(paf, "", steinerTree)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
+    new RTUtils(new RT(paf, "", steinerTree)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
     routes.add(steinerTree);
     //container for currently tested heuristics
     ArrayList<HeuristicSet> testedHeuristics = new ArrayList<HeuristicSet>();
@@ -314,7 +339,8 @@ public class CandiateRouter extends Router
       MetaSteinerTree treeGenerator = new MetaSteinerTree();
       
       Tree currentTree = treeGenerator.produceTree(set, sources, sink, workingTopology, paf, oldRoutingTree);
-      new RTUtils(new RT(paf, "", currentTree)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
+      new RTUtils(new RT(paf, "", steinerTree)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
+      new RTUtils(new RT(paf, "", steinerTree)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
       routes.add(currentTree);
     }
     routes = removeDuplicates(routes);
@@ -350,6 +376,7 @@ public class CandiateRouter extends Router
     {
       Tree currentTree = routeIterator.next();
       new RTUtils(new RT(paf, "", currentTree)).exportAsDotFile(cleaned.toString() + sep + "route" + counter); 
+      new RTUtils(new RT(paf, "", currentTree)).exportAsTextFile(cleaned.toString() + sep + "route" + counter); 
       counter++;
     }
   }
@@ -474,7 +501,7 @@ public class CandiateRouter extends Router
       intSources[counter] = Integer.parseInt(sourceIterator.next());
       counter++;
     }
-    return computeSteinerTree(workingTopology, intSink, intSources);
+    return computeSteinerTree(workingTopology, intSink, intSources, false);
   }
 
   /**

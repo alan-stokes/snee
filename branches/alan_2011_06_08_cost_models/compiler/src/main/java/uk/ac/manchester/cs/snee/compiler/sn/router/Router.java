@@ -77,6 +77,21 @@ public class Router {
 		return rt;
 	}
 
+	
+	/**
+	 * covering method to allow other code to work without being effected.
+	 * @param network
+	 * @param sink
+	 * @param sources
+	 * @return
+	 */
+	protected Tree computeSteinerTree(Topology network, final int sink, 
+      final int[] sources) 
+	{
+	  return computeSteinerTree(network, sink, sources, true);
+	}
+	
+	
     /**
      * Returns a graph representing the Steiner tree of the current graph.
      * @param sink 		the root of the graph
@@ -90,7 +105,7 @@ public class Router {
      * page 309. 
      */
     protected Tree computeSteinerTree(Topology network, final int sink, 
-    		final int[] sources) {
+    		final int[] sources, boolean setUpSources) {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER computeSteinerTree() with sink=" +sink+
 					" sources="+sources.toString());    	
@@ -105,7 +120,9 @@ public class Router {
 		}
 		boolean first = true;
 		final Random random = new Random(this.randomSeed);
-
+		
+    if(setUpSources)
+    {
 		//TODO: bug remains, sink of first routing tree never gets set as source...
 	    Iterator<Node> siteIter = network.siteIterator();
 	    while (siteIter.hasNext()) {
@@ -117,6 +134,7 @@ public class Router {
 	    		gateway.setIsSource(true);
 	    	}
 	    }
+    }
 	
 		while (nodesToAdd.size() > 0) {
 		    //get a source node at random

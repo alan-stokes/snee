@@ -119,17 +119,17 @@ public class InstanceWhereSchedular
     //go though fragments
     while(fragmentIterator.hasNext())
     {
-	  InstanceFragment currentFrag = fragmentIterator.next();//if frag on site
-	  //get root operator
-	  InstanceOperator rootOp = currentFrag.getRootOperator();
-	  if(!(rootOp.getSensornetOperator() instanceof SensornetDeliverOperator))
-	  {
-	    InstanceExchangePart exchange = currentFrag.getParentExchangeOperator();
-	    exchange.addInput(rootOp);
-	    //always have 1 output
-	    rootOp.replaceOutput(rootOp.getOutput(0), exchange);
-	    iot.addEdge(rootOp, exchange);
-	    while(exchange.getNext() != null)
+  	  InstanceFragment currentFrag = fragmentIterator.next();//if frag on site
+  	  //get root operator
+  	  InstanceOperator rootOp = currentFrag.getRootOperator();
+  	  if(!(rootOp.getSensornetOperator() instanceof SensornetDeliverOperator))
+  	  {
+  	    InstanceExchangePart exchange = currentFrag.getParentExchangeOperator();
+  	    exchange.addInput(rootOp);
+  	    //always have 1 output
+  	    rootOp.replaceOutput(rootOp.getOutput(0), exchange);
+  	    iot.addEdge(rootOp, exchange);
+  	    while(exchange.getNext() != null)
 	      {
           InstanceExchangePart nextExchange = exchange.getNext(); 
           iot.addEdge(exchange, nextExchange);
@@ -140,8 +140,8 @@ public class InstanceWhereSchedular
         lowestOperator.replaceInput(rootOp, exchange);   
         iot.addEdge(exchange, lowestOperator);
         iot.removeEdge(rootOp, lowestOperator);
+	    }
 	  }
-	}
   }
 
   //tested and works 
@@ -275,7 +275,7 @@ public class InstanceWhereSchedular
           {
             Site currentPathSite = routeIterator.next();
             InstanceExchangePart part = null;
-            if(currentPathSite == instance.getSite())
+            if(currentPathSite.getID().equals(instance.getSite().getID()))
             {
               part = new InstanceExchangePart(instance, instance.getSite(), parent, parent.getSite(), 
                                               currentPathSite, ExchangePartType.PRODUCER, false, 
@@ -285,7 +285,7 @@ public class InstanceWhereSchedular
             }
             else
             {
-              if(currentPathSite == parent.getSite())
+              if(currentPathSite.getID().equals(parent.getSite().getID()))
               {
                 part = new InstanceExchangePart(instance, instance.getSite(), parent, parent.getSite(), 
                                                 currentPathSite, ExchangePartType.CONSUMER, false, 

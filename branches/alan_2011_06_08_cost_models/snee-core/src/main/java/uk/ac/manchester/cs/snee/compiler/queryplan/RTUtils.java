@@ -2,12 +2,15 @@ package uk.ac.manchester.cs.snee.compiler.queryplan;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
@@ -116,6 +119,43 @@ public class RTUtils extends PAFUtils {
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN RTUtils.exportAsDOTFile()");
 		}
+	}
+	
+	public void exportAsTextFile(String fname)
+	{
+	  Iterator<String> siteIter = this.rt.siteTree.getAllNodes().keySet().iterator();
+	  try
+    {
+      final PrintWriter out = new PrintWriter(new BufferedWriter(
+          new FileWriter(fname)));
+	    while(siteIter.hasNext())
+	    {
+	      String key = siteIter.next();
+	      Site site = (Site) this.rt.siteTree.getAllNodes().get(key);
+	      out.println("Site:" + site.getID() + " ( " + site.toString() + "):  \n inputs:" );
+	      Iterator<Node> inputIterator = site.getInputsList().iterator();
+	      while(inputIterator.hasNext())
+	      {
+	        Node input = inputIterator.next();
+	        out.print(input.getID() + "( " + input.toString() + "), \n");
+	      }
+	      out.println(": \n outputs:");
+	      Iterator<Node> outputIterator = site.getOutputsList().iterator();
+	      while(outputIterator.hasNext())
+        {
+          Node output = outputIterator.next();
+          out.print(output.getID() + "(" + output.toString() + "), \n");
+        }
+	      out.print("\n\n\n");
+	    }
+	    out.flush();
+	    out.close();
+    }
+    catch (IOException e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
 	}
 	
 }
