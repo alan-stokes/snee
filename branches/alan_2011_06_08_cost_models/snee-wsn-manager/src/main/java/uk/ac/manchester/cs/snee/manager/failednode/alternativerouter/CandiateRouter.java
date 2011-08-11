@@ -53,6 +53,7 @@ public class CandiateRouter extends Router
   
   /**
    * calculates all routes which replace the failed nodes.
+   * @param disconnectedNodes 
    * 
    * @param paf
    * @param queryName
@@ -62,14 +63,14 @@ public class CandiateRouter extends Router
    */
   
   public ArrayList<RT> generateRoutes(RT oldRoutingTree, ArrayList<String> failedNodes, 
-                                     String queryName, Integer numberOfRoutingTreesToWorkOn) throws SchemaMetadataException
+                                     ArrayList<String> disconnectedNodes, String queryName, Integer numberOfRoutingTreesToWorkOn) throws SchemaMetadataException
   {
     //container for new routeing trees
     ArrayList<RT> newRoutingTrees = new ArrayList<RT>();
     HashMapList<Integer ,Tree> failedNodeToRoutingTreeMapping = new HashMapList<Integer,Tree>();
     /*remove failed nodes from the failed node list, which are parents of a failed node already.
     * this allows routes calculated to be completely independent of other routes */
-    HashMapList<Integer ,String> failedNodeLinks = createLinkedFailedNodes(failedNodes, oldRoutingTree);
+    HashMapList<Integer ,String> failedNodeLinks = createLinkedFailedNodes(failedNodes, disconnectedNodes, oldRoutingTree);
     
     Iterator<Integer> failedLinkIterator = failedNodeLinks.keySet().iterator();
     int chainCounter = 1;
@@ -495,15 +496,17 @@ public class CandiateRouter extends Router
    * remove failed nodes from the failed node list, which are parents of a failed node already.
    * this allows routes calculated to be completely independent of other routes 
    * @param failedNodes
+   * @param disconnectedNodes 
    * @param oldRoutingTree 
    * @return
    */
   private HashMapList<Integer, String> createLinkedFailedNodes(
-      ArrayList<String> failedNodes, RT RT)
+      ArrayList<String> failedNodes, ArrayList<String> disconnectedNodes, RT RT)
   {
     HashMapList<Integer, String> failedNodeLinkedList = new HashMapList<Integer, String>();
     int currentLink = 0;
     ArrayList<String> alreadyInLink = new ArrayList<String>();
+    failedNodes.addAll(disconnectedNodes);
     Iterator<String> oldFailedNodesIterator = failedNodes.iterator();
     while(oldFailedNodesIterator.hasNext())
     {

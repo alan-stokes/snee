@@ -136,7 +136,7 @@ public class Anaylsiser
     anaylisieCECM = true;   
   }
   
-  public SensorNetworkQueryPlan runFailedNodeFramework(ArrayList<String> failedNodes) 
+  public List<Adapatation> runFailedNodeFramework(ArrayList<String> failedNodes) 
   throws OptimizationException, SchemaMetadataException, 
          TypeMappingException, AgendaException, 
          SNEEException, SNEEConfigurationException, 
@@ -170,7 +170,7 @@ public class Anaylsiser
     {
       System.out.println(adapatationIterator.next().toString());
     }
-    return null;
+    return adapatations;
   }
 
   private void checkEachFailureIndividually(ArrayList<String> failedNodes,

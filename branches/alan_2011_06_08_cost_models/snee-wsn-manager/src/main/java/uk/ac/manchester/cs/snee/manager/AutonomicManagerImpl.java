@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -125,7 +126,7 @@ public class AutonomicManagerImpl implements AutonomicManager
          TopologyReaderException, SNEEDataSourceException, 
          CostParametersException, SNCBException, SNEECompilerException
   {
-    SensorNetworkQueryPlan newQEP = anyliser.runFailedNodeFramework(failedNodes);
+    List<Adapatation> choices = anyliser.runFailedNodeFramework(failedNodes);
     //newQEP.getIOT().exportAsDotFileWithFrags(fname, label, exchangesOnSites)
     //new AgendaIOTUtils( newQEP.getAgendaIOT(), newQEP.getIOT(), true).generateImage();
   }

@@ -65,6 +65,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
   private static int choice;
   private String sep = System.getProperty("file.separator");
   private File partialFolder; 
+  private Cloner cloner;
   /**
    * @param autonomicManager
    * the parent of this class.
@@ -78,6 +79,8 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
     this.spacePinned = spacePinned;
     this.timePinned = timePinned;
     this.timePinned = false; 
+    cloner = new Cloner();
+    cloner.dontClone(Logger.class);
   }
   
   @Override
@@ -147,6 +150,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
     Router router = new Router();
     //remove failed nodes out of new topology.
     Topology network = this.getWsnTopology();
+    network = cloner.deepClone(network);
     Iterator<String> failedNodeIterator = failedNodes.iterator();
     while(failedNodeIterator.hasNext())
     {
@@ -154,9 +158,19 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
       network.removeNode(nodeID);
     }
     RT globalRT = router.doRouting(qep.getDAF().getPAF(), qep.getQueryName(), network);
+    ArrayList<Integer> globalSiteIDs = globalRT.getSiteIDs();
+    ArrayList<Integer> qepSiteIDs = qep.getRT().getSiteIDs();
     
-    
-    
+    Iterator<Integer> qepSiteIterator = qepSiteIDs.iterator();
+    boolean found = false;
+    Integer nextSite = null;
+    while(qepSiteIterator.hasNext() && !found)
+    {
+      nextSite = qepSiteIterator.next();
+      if(!globalSiteIDs.contains(nextSite))
+        found = true;
+    }
+    disconnectedNodes.add(nextSite.toString()); 
   }
 
   /**
@@ -292,7 +306,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
     CandiateRouter router = new CandiateRouter(network, outputFolder);
     while(routes.size() == 0)
     {  
-      routes = router.generateRoutes(oldRoutingTree, failedNodes, "", numberOfRoutingTreesToWorkOn);
+      routes = router.generateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, "", numberOfRoutingTreesToWorkOn);
       if(routes.size() == 0)
       {
         chooseDisconnectedNode(oldIOT, failedNodes, disconnectedNodes);
