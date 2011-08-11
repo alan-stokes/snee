@@ -178,11 +178,7 @@ public class CandiateRouter extends Router
       {
         newRoutingTree.getSiteTree().addNode(choiceNode);
       }
-    }
-    
-    new RTUtils(newRoutingTree).exportAsDotFile("looking3");
-    new RTUtils(newRoutingTree).exportAsTextFile("looking3");
-    
+    } 
   }
 
   private Tree chooseChoice(Iterator<Integer> keyIterator, HashMapList<Integer, Tree> failedNodeToRoutingTreeMapping, Random randomiser, boolean first)
@@ -199,9 +195,6 @@ public class CandiateRouter extends Router
 
   private void connectChildAndParent(RT newRoutingTree, Tree choice)
   {
-    new RTUtils(newRoutingTree).exportAsDotFile("looking");
-    new RTUtils(newRoutingTree).exportAsTextFile("looking");
-    
     //connect parent
     Site treeParent =  newRoutingTree.getSite(choice.getRoot().getID());
     Iterator<Node> choiceInputIterator = choice.getRoot().getInputsList().iterator();
@@ -217,15 +210,14 @@ public class CandiateRouter extends Router
     //connect children
     while(choiceChildrenIterator.hasNext())
     {
-      Site choiceChild = (Site) choiceChildrenIterator.next();
+      Node choiceChild = choiceChildrenIterator.next();
+      Node choiceParent = choiceChild.getOutput(0);
       Site treeChild =  newRoutingTree.getSite(choiceChild.getID());
-      treeChild.addOutput(choiceChild.getOutput(0));
-    }
-    
-    
-    new RTUtils(newRoutingTree).exportAsDotFile("looking2");
-    new RTUtils(newRoutingTree).exportAsTextFile("looking2");
-    
+      treeChild.addOutput(choiceParent);
+      choiceParent.removeInput(choiceChild);
+      choiceParent.addInput(treeChild);
+      
+    }  
   }
 
   /**
