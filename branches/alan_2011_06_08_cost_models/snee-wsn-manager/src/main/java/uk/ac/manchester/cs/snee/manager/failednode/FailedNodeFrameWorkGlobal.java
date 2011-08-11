@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
+import com.rits.cloning.Cloner;
+
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
@@ -42,6 +46,8 @@ public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract
   private IOT oldIOT;
   private AgendaIOT oldAgenda;
   private MetadataManager _metadataManager;
+  private Topology network;
+  private Cloner cloner;
   
   
 	public FailedNodeFrameWorkGlobal(AutonomicManager manager, 
@@ -50,6 +56,8 @@ public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract
   {
     super(manager, _metadata);
     this._metadataManager = _metadataManager;
+    cloner = new Cloner();
+    cloner.dontClone(Logger.class);
   }
 
   @Override
@@ -94,7 +102,9 @@ public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract
 	  List<Adapatation> adaptation = new ArrayList<Adapatation>();
 	  Adapatation adapt = new Adapatation(qep);
 	  //remove nodes from topology
-		Topology network = this.getWsnTopology();
+		network = this.getWsnTopology();
+		network = cloner.deepClone(network);
+		
 		Iterator<String> failedNodeIterator = failedNodes.iterator();
 		while(failedNodeIterator.hasNext())
 		{
@@ -104,7 +114,7 @@ public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract
 		//shove though distributed section of compiler
 		//routing
 		Router router = new Router();
-		RT routingTree = router.doRouting(qep.getIOT().getPAF(), qep.getQueryName());
+		RT routingTree = router.doRouting(qep.getIOT().getPAF(), qep.getQueryName(), network);
 		//where
 		InstanceWhereSchedular instanceWhere = 
 		  new InstanceWhereSchedular(qep.getIOT().getPAF(), routingTree, qep.getCostParameters());

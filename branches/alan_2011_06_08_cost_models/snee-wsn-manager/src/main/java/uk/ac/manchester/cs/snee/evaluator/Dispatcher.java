@@ -202,9 +202,9 @@ public class Dispatcher {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER with: " + queryID);
 		}
-		_autonomicManager.queryEnded();
 		boolean success = false;
 		if (_queryEvaluators.containsKey(queryID)) {
+		  _autonomicManager.queryEnded();
 			QueryEvaluator queryEvaluator = _queryEvaluators.get(queryID);
 			queryEvaluator.stopExecuting();
 			if (logger.isInfoEnabled()) {

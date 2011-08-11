@@ -18,6 +18,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.Adapatation;
@@ -131,15 +132,30 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
   }
 
   /**
-   * if a route cant be calculated with the pinned sites, dynamically remove a site to allow adaptation.
+   * if a route can't be calculated with the pinned sites, 
+   * dynamically remove a site to allow adaptation.
    * @param oldIOT2
    * @param failedNodes
    * @param disconnectedNodes
+   * @throws SNEEConfigurationException 
+   * @throws NumberFormatException 
    */
   private void chooseDisconnectedNode(IOT oldIOT2, ArrayList<String> failedNodes,
-                                      ArrayList<String> disconnectedNodes)
+                                      ArrayList<String> disconnectedNodes) 
+  throws NumberFormatException, SNEEConfigurationException
   {
-    // TODO Auto-generated method stub
+    Router router = new Router();
+    //remove failed nodes out of new topology.
+    Topology network = this.getWsnTopology();
+    Iterator<String> failedNodeIterator = failedNodes.iterator();
+    while(failedNodeIterator.hasNext())
+    {
+      String nodeID = failedNodeIterator.next();
+      network.removeNode(nodeID);
+    }
+    RT globalRT = router.doRouting(qep.getDAF().getPAF(), qep.getQueryName(), network);
+    
+    
     
   }
 
@@ -168,12 +184,16 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
          SNCBException, SNEECompilerException
   {
     choice++;
+    File choiceFolderMain = new File(partialFolder.toString() + sep + "choices"); 
+    choiceFolderMain.mkdir();
+    
     while(routeIterator.hasNext())
     {
       //set up current objects
       RT routingTree =  routeIterator.next();
       Adapatation currentAdapatation = new Adapatation(qep);
-      File choiceFolder = new File(partialFolder.toString() + sep + "choice" + choice);
+      
+      File choiceFolder = new File(choiceFolderMain.toString() + sep + "choice" + choice);
       choiceFolder.mkdir();
       //create pinned paf
       PAF paf = pinPhysicalOperators(oldIOT, failedNodes, disconnectedNodes);
@@ -272,7 +292,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
     CandiateRouter router = new CandiateRouter(network, outputFolder);
     while(routes.size() == 0)
     {  
-      routes = router.findAllRoutes(oldRoutingTree, failedNodes, "", numberOfRoutingTreesToWorkOn);
+      routes = router.generateRoutes(oldRoutingTree, failedNodes, "", numberOfRoutingTreesToWorkOn);
       if(routes.size() == 0)
       {
         chooseDisconnectedNode(oldIOT, failedNodes, disconnectedNodes);

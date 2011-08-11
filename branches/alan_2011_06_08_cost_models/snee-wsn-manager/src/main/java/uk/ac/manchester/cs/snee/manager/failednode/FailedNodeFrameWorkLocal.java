@@ -3,7 +3,6 @@ package uk.ac.manchester.cs.snee.manager.failednode;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -21,7 +20,6 @@ import uk.ac.manchester.cs.snee.manager.FrameWorkAbstract;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalCluster;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalClusterUtils;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LocalClusterEquivalenceRelation;
-import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;

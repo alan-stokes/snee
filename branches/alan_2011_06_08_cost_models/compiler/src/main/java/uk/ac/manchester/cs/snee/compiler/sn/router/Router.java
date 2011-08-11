@@ -76,6 +76,30 @@ public class Router {
 			logger.debug("RETURN doRouting()");
 		return rt;
 	}
+	
+	/**
+	 * used by the global and partial frameworks for partial optimisation
+	 * @param paf
+	 * @param queryName
+	 * @param network
+	 * @return
+	 */
+	public RT doRouting(PAF paf, String queryName, Topology network) 
+	{
+	 if (logger.isDebugEnabled())
+	    logger.debug("ENTER doRouting() with " + paf.getID());
+	    //XXX: There is potentially one routing tree for each Sensor Network Source
+	    //For now, assume only one source
+	    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) 
+	      paf.getDLAF().getSources().iterator().next();
+	    int sink = sm.getGateway(); 
+	    int[] sources = sm.getSourceSites(paf);
+	    Tree steinerTree = computeSteinerTree(network, sink, sources); 
+	    RT rt = new RT(paf, queryName, steinerTree);
+	    if (logger.isDebugEnabled())
+	      logger.debug("RETURN doRouting()");
+	    return rt;
+	  }
 
 	
 	/**

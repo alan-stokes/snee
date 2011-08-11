@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -21,8 +20,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.manager.failednode.metasteiner.MetaSteinerTree;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
@@ -31,7 +28,7 @@ public class CandiateRouter extends Router
   private String sep = System.getProperty("file.separator");
   private Topology network;
   private Cloner cloner;
-  private File failedChain;
+  private File failedChainMain;
   private File outputFolder;
   private File desintatedOutputFolder;
   /**
@@ -50,11 +47,8 @@ public class CandiateRouter extends Router
     cloner = new Cloner();
     cloner.dontClone(Logger.class);
     this.outputFolder = outputFolder;
-    failedChain = new File(outputFolder.toString() + sep + "chain1");
-    failedChain.mkdir();
-    //set up folder to hold alternative routes
-    desintatedOutputFolder = new File(outputFolder.toString() + sep + "AllAlternatives");
-    desintatedOutputFolder.mkdir();
+    failedChainMain = new File(outputFolder.toString() + sep + "chains");
+    failedChainMain.mkdir();
   }
   
   /**
@@ -67,7 +61,7 @@ public class CandiateRouter extends Router
    * @throws SchemaMetadataException 
    */
   
-  public ArrayList<RT> findAllRoutes(RT oldRoutingTree, ArrayList<String> failedNodes, 
+  public ArrayList<RT> generateRoutes(RT oldRoutingTree, ArrayList<String> failedNodes, 
                                      String queryName, Integer numberOfRoutingTreesToWorkOn) throws SchemaMetadataException
   {
     //container for new routeing trees
@@ -78,9 +72,15 @@ public class CandiateRouter extends Router
     HashMapList<Integer ,String> failedNodeLinks = createLinkedFailedNodes(failedNodes, oldRoutingTree);
     
     Iterator<Integer> failedLinkIterator = failedNodeLinks.keySet().iterator();
+    int chainCounter = 1;
     //removes excess nodes and edges off the working topolgy, calculates new routes, and adds them to hashmap
     while(failedLinkIterator.hasNext())
-    {
+    {    
+      File chainFolder = new File(failedChainMain.toString() + sep + "chain" + chainCounter);
+      chainFolder.mkdir();
+      //set up folder to hold alternative routes
+      desintatedOutputFolder = new File(chainFolder.toString() + sep + "AllAlternatives");
+      desintatedOutputFolder.mkdir();
       Topology workingTopology = cloner.deepClone(network);
       Integer key = failedLinkIterator.next();
       ArrayList<String> setofLinkedFailedNodes = failedNodeLinks.get(key);
@@ -89,12 +89,12 @@ public class CandiateRouter extends Router
       String sink = removeExcessNodesAndEdges(workingTopology, oldRoutingTree, setofLinkedFailedNodes, sources);
       
       //output reduced topology for help in keeping track of progress
-      workingTopology.exportAsDOTFile(failedChain.toString() + sep + "reducedtopology");
+      workingTopology.exportAsDOTFile(chainFolder.toString() + sep + "reducedtopology");
 
       //calculate different routes around linked failed site.
       ArrayList<Tree> routesForFailedNode = 
         createRoutes(workingTopology, numberOfRoutingTreesToWorkOn, sources, 
-                     sink, oldRoutingTree.getPAF(), oldRoutingTree, failedChain);
+                     sink, oldRoutingTree.getPAF(), oldRoutingTree, chainFolder);
       
       //adds routes to system
       failedNodeToRoutingTreeMapping.addAll(key, routesForFailedNode);
@@ -181,7 +181,9 @@ public class CandiateRouter extends Router
     } 
   }
 
-  private Tree chooseChoice(Iterator<Integer> keyIterator, HashMapList<Integer, Tree> failedNodeToRoutingTreeMapping, Random randomiser, boolean first)
+  private Tree chooseChoice(Iterator<Integer> keyIterator, HashMapList<Integer, 
+                            Tree> failedNodeToRoutingTreeMapping, 
+                            Random randomiser, boolean first)
   {
     Integer key = keyIterator.next();
     ArrayList<Tree> choices = failedNodeToRoutingTreeMapping.get(key);
@@ -190,6 +192,7 @@ public class CandiateRouter extends Router
       choice = choices.get(0);
     else
       choice = choices.get(randomiser.nextInt(choices.size()));
+    choice = cloner.deepClone(choice);
     return choice;
   }
 
@@ -305,13 +308,6 @@ public class CandiateRouter extends Router
       RT oldRoutingTree, File outputFolder)
   {
     ArrayList<Tree> routes = new ArrayList<Tree>();
-    Iterator<String> sourcesIterator = sources.iterator();
-    while(sourcesIterator.hasNext())
-    {
-      String sourceID = sourcesIterator.next();
-      Site site = workingTopology.getSite(sourceID);
-      System.out.println();
-    }
     Tree steinerTree = computeSteinerTree(workingTopology, sink, sources); 
     new RTUtils(new RT(paf, "", steinerTree)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
     new RTUtils(new RT(paf, "", steinerTree)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
