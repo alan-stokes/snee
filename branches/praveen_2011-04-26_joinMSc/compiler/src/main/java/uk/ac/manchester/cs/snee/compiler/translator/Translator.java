@@ -11,7 +11,6 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParserTokenTypes;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlTreeWalker;
@@ -20,13 +19,16 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
@@ -37,10 +39,9 @@ import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
-import uk.ac.manchester.cs.snee.metadata.source.StreamingSourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
-import uk.ac.manchester.cs.snee.operators.logical.AggregationType;
 import uk.ac.manchester.cs.snee.operators.logical.DStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.IStreamOperator;
@@ -523,15 +524,15 @@ public class Translator {
 		if (isRowUnit(unit)) {
 			result = value;
 		}
-		int TICKS_PER_SECONDS = 1;
+		int TICKS_PER_SECOND = 1000;
 		if (unit.equalsIgnoreCase("seconds")) {
-			result = value * TICKS_PER_SECONDS;
+			result = value * TICKS_PER_SECOND;
 		} else if (unit.equalsIgnoreCase("minutes")) {
-			result = value * TICKS_PER_SECONDS * 60;
+			result = value * TICKS_PER_SECOND * 60;
 		} else if (unit.equalsIgnoreCase("hours")) {
-			result = value * TICKS_PER_SECONDS * 3600;
+			result = value * TICKS_PER_SECOND * 3600;
 		} else if (unit.equalsIgnoreCase("days")) {
-			result = value * TICKS_PER_SECONDS * 3600;
+			result = value * TICKS_PER_SECOND * 3600 * 24;
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN convertToTick() " + result);
@@ -935,8 +936,7 @@ public class Translator {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Translate PUSHED stream");
 				}
-				output = new ReceiveOperator(extentMetadata, (StreamingSourceMetadataAbstract) source, 
-						_boolType);
+				output = new ReceiveOperator(extentMetadata, source, _boolType);
 				break;
 			case TABLE:
 				if (logger.isTraceEnabled()) {
@@ -1299,13 +1299,13 @@ public class Translator {
 				expression = 
 					translateExpression(expressionAST, input);
 				attribute = expression.toAttribute();
-				if (!expression.allowedInProjectOperator()) {
-					allowedInProjectOperator = false;
-				}
-				if (!expression.allowedInAggregationOperator()) {
-					allowedInAggregationOperator = false;
-				}
 				break;
+			}
+			if (!expression.allowedInProjectOperator()) {
+				allowedInProjectOperator = false;
+			}
+			if (!expression.allowedInAggregationOperator()) {
+				allowedInAggregationOperator = false;
 			}
 			expressions.add(expression);
 			attributes.add(attribute);
@@ -1458,7 +1458,8 @@ public class Translator {
 				/* Now, check if the requested item has been found */
 				if ( attrName.equalsIgnoreCase(searchName) ) {
 
-					Attribute newAttribute = new DataAttribute(attribute);
+					Attribute newAttribute = copyAttribute(attribute);
+
 					newAttribute.setAttributeDisplayName(searchName);
 					expression = newAttribute;
 					attrFound = true;
@@ -1501,9 +1502,8 @@ public class Translator {
 				 * copy it and assign that one. Otherwise, there
 				 * will be problems */
 				Attribute attribute = attributes.get(found);
-
-				Attribute newAttribute = new DataAttribute(attribute);
-				newAttribute.setAttributeDisplayName(ast.getText());
+				Attribute newAttribute = copyAttribute(attribute);
+				
 				expression = newAttribute;
 				break;
 			} else {
@@ -1564,6 +1564,21 @@ public class Translator {
 		return expression;
 	}
 
+	private Attribute copyAttribute(Attribute attribute)
+			throws SchemaMetadataException {
+		Attribute newAttribute;
+		if (attribute instanceof EvalTimeAttribute) {
+			newAttribute = new EvalTimeAttribute(attribute);
+		} else if (attribute instanceof TimeAttribute) {
+			newAttribute = new TimeAttribute(attribute);
+		} else if (attribute instanceof IDAttribute) {
+			newAttribute = new IDAttribute(attribute);
+		} else {
+			newAttribute = new DataAttribute(attribute);						
+		}
+		return newAttribute;
+	}
+
 	private Expression getFunction(AST ast, LogicalOperator input) 
 	throws ExpressionException, OptimizationException, 
 	TypeMappingException, SchemaMetadataException {
@@ -1575,68 +1590,81 @@ public class Translator {
 		Expression inner = 
 			translateExpression(ast.getFirstChild(), input);
 		Expression expression;
-		if ((ast.getText().equalsIgnoreCase("avg")) || 
+		if (ast.getText().equalsIgnoreCase("abs")) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Absolute value function");
+			}
+			expression = new MultiExpression(
+					new Expression[] {inner}, 
+					MultiType.ABS, 
+					_types.getType("float"));
+		} else if ((ast.getText().equalsIgnoreCase("avg")) || 
 				(ast.getText().equalsIgnoreCase("average"))) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate average");
 			}
-			//FIXME: Not all arithmetic expressions are integers
 			expression = new AggregationExpression(inner, 
-					AggregationType.AVG, 
-					_types.getType("integer"));
+					AggregationFunction.AVG, 
+					_types.getType("float"));
 		} else if (ast.getText().equalsIgnoreCase("count")) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate count");
 			}
+			/* Count is DEFINITELY integer */
 			expression = new AggregationExpression(inner, 
-					AggregationType.COUNT,
+					AggregationFunction.COUNT,
 					_types.getType("integer"));
 		} else if ((ast.getText().equalsIgnoreCase("minimum")) || 
 				(ast.getText().equalsIgnoreCase("min"))) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate minimum");
 			}
-			//FIXME: Not all arithmetic expressions are integers
 			expression = new AggregationExpression(inner, 
-					AggregationType.MIN,
-					_types.getType("integer"));
+					AggregationFunction.MIN,
+					inner.getType());
+		} else if (ast.getText().equalsIgnoreCase("stdev")) {
+			if (logger.isTraceEnabled()) {
+				logger.trace("Translate standard deviation");
+			}
+			expression = new AggregationExpression(inner,
+					AggregationFunction.STDEV, 
+					_types.getType("float"));
 		} else if ((ast.getText().equalsIgnoreCase("max")) ||
 				(ast.getText().equalsIgnoreCase("maximum"))) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate maximum");
 			}
-			//FIXME: Not all arithmetic expressions are integers
 			expression = new AggregationExpression(inner,
-					AggregationType.MAX, 
-					_types.getType("integer"));
+					AggregationFunction.MAX, 
+					inner.getType());
 		} else if ((ast.getText().equalsIgnoreCase("sqr")) ||
 				(ast.getText().equalsIgnoreCase("square"))) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate square");
 			}
-			//FIXME: Not all arithmetic expressions are integers
 			expression = new MultiExpression(
 					new Expression[] {inner,inner}, 
 					MultiType.MULTIPLY, 
-					_types.getType("integer"));
+					inner.getType());
 		} else if ((ast.getText().equalsIgnoreCase("sqrt")) || 
 				(ast.getText().equalsIgnoreCase("squareroot"))) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate square root");
 			}
-			//FIXME: Not all arithmetic expressions are integers			
 			expression = new MultiExpression(
 					new Expression[] {inner}, 
 					MultiType.SQUAREROOT, 
-					_types.getType("integer"));
+					_types.getType("float"));
 		} else if (ast.getText().equalsIgnoreCase("sum")) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate sum");
 			}
-			//FIXME: Not all arithmetic expressions are integers
 			expression = new AggregationExpression(inner, 
-					AggregationType.SUM, 
-					_types.getType("integer"));
+					AggregationFunction.SUM, 
+//					inner.getType());
+					_types.getType("float")); 
+			//because in nesC floats have a much greater range than 16-bit ints
+			//TODO: Make this into a long int type
 		} else { 
 			String message = "Unprogrammed Function name " +
 					"AST Text:" + ast.getText();

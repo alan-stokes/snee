@@ -26,7 +26,7 @@ public abstract class QueryExecutionPlan {
 	/**
 	 * Stores ResultSet style metadata about the query plan
 	 */
-	private QueryPlanMetadata metadata;
+	protected QueryPlanMetadata metadata;
 	
 	/**
 	 * Counter used to assign unique id to different candidates.
@@ -49,9 +49,6 @@ public abstract class QueryExecutionPlan {
 			logger.debug("ENTER QueryExecutionPlan()"); 
 		this.id = generateName(queryName);
 		this.dlaf = dlaf;
-
-		LogicalOperator rootOperator = dlaf.getLAF().getRootOperator();
-		metadata = new QueryPlanMetadata(rootOperator.getAttributes());
 
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN QueryExecutionPlan()"); 

@@ -58,7 +58,7 @@ public class ProjectOperator extends PredicateOperator {
 //		this.setNesCTemplateName("project");
 		setOperatorDataType(input.getOperatorDataType());
 		this.setOperatorSourceType(input.getOperatorSourceType());
-		this.setSourceRate(input.getSourceRate());
+		this.setSourceRate(input.getStreamRate());
 	}
 
 	public String getParamStr() {
@@ -218,11 +218,6 @@ public class ProjectOperator extends PredicateOperator {
 	/** {@inheritDoc} */
 	public boolean isRemoveable() {
 		return getExpressions().equals(this.getInput(0).getAttributes());
-	}   
-
-	/** {@inheritDoc} */
-	public boolean isRecursive() {
-		return false;
 	}
 
 //	/**

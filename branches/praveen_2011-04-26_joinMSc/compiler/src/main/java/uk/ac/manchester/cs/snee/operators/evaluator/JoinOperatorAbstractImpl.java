@@ -65,10 +65,10 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 		Iterator<LogicalOperator> iter = op.childOperatorIterator();
 		LogicalOperator operator = iter.next();
 		leftOperator = getEvaluatorOperator(operator);
-		leftOperatorRate = operator.getSourceRate();
+		leftOperatorRate = operator.getStreamRate();
 		operator = iter.next();
 		rightOperator = getEvaluatorOperator(operator);
-		rightOperatorRate = operator.getSourceRate();
+		rightOperatorRate = operator.getStreamRate();
 		
 		// XXX: Join could be speeded up by working out once which attribute
 		// numbers are required from each tuple

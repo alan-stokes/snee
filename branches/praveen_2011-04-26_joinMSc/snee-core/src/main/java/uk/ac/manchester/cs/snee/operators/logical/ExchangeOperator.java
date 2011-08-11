@@ -28,7 +28,7 @@ public class ExchangeOperator extends LogicalOperatorImpl {
 		setChildren(new LogicalOperator[] {inputOperator});
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
-		this.setSourceRate(inputOperator.getSourceRate());
+		this.setSourceRate(inputOperator.getStreamRate());
 		//TODO To be set through some configuration
 		setOutputSize(5);
 		//TODO setting the queueScannterval needs to be done through
@@ -65,12 +65,6 @@ public class ExchangeOperator extends LogicalOperatorImpl {
 
 	@Override
 	public boolean isLocationSensitive() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isRecursive() {
 		// TODO Auto-generated method stub
 		return false;
 	}

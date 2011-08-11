@@ -60,6 +60,7 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IDAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TimeAttribute;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
@@ -79,6 +80,7 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
+import uk.ac.manchester.cs.snee.sncb.SensorType;
 
 public class MetadataManager {
 
@@ -257,9 +259,10 @@ public class MetadataManager {
 			parseAttributes(element.getElementsByTagName("column"),
 					extentName);
 		if (extentType == ExtentType.SENSED) {
-			attributes.add(0, new TimeAttribute(extentName, 
+			attributes.add(0, new EvalTimeAttribute(timeType));
+			attributes.add(1, new TimeAttribute(extentName, 
 					Constants.ACQUIRE_TIME, timeType));			
-			attributes.add(1, new IDAttribute(extentName, 
+			attributes.add(2, new IDAttribute(extentName, 
 					Constants.ACQUIRE_ID, idType));
 
 		}
@@ -479,6 +482,15 @@ public class MetadataManager {
 	SchemaMetadataException, TypeMappingException, SourceMetadataException 
 	{
 		_sources.addServiceSource(string, url, sourceType);
+	}
+	
+	/**
+	 * Given an attribute, returns the corresponding sensor type it is mapped to.
+	 * @param attr
+	 * @return
+	 */
+	public SensorType getAttributeSensorType(Attribute attr) {
+		return this._sources.getAttributeSensorType(attr);
 	}
 	
 }

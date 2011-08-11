@@ -34,6 +34,7 @@
 package uk.ac.manchester.cs.snee.operators.logical;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -48,21 +49,25 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 
 /**
  * Aggregation operator.
- * Either for before the Aggreagtion is split in three 
- * Or as a superclass for the three seperate Operators.
  * 
  * @author Christian
  */
 public class AggregationOperator extends PredicateOperator {
 
 	private Logger logger = Logger.getLogger(AggregationOperator.class.getName());
+	
 	/** 
-	 * List of the aggregation within the requested expression.
+	 * List of aggregate expressions within the requested expression.
 	 */
 	private List<AggregationExpression> aggregates;
 	
 	/**
-	 * @throws OptimizationException 
+	 * 
+	 * @param expressions The expressions for building the output attributes.
+	 * @param attributes The names of the output attributes.
+	 * @param inputOperator The incoming operator
+	 * @param boolType
+	 * @throws OptimizationException
 	 */
 	public AggregationOperator(List <Expression> expressions, 
 			List <Attribute> attributes, LogicalOperator inputOperator, 
@@ -70,7 +75,8 @@ public class AggregationOperator extends PredicateOperator {
 	throws OptimizationException {
     	super(expressions, attributes, inputOperator, boolType);
         this.setOperatorName("AGGREGATION");
-        setAggregates();
+        extractAggregates();
+        
         if (this.getOperatorDataType() == OperatorDataType.STREAM) {
 			String message = "Illegal attempt to place an " +
 					"AggregationOperator on a Stream of Tuples.";
@@ -80,41 +86,23 @@ public class AggregationOperator extends PredicateOperator {
     }
     
     /**
-     * Extracts and saves the actual aggregates from within the expressions.
+     * Extracts primitive aggregates from within expressions.
      * 
      * For example an expression could be max(temp) - avg(temp)
      * Which contains two aggregates. 
      */
-    private void setAggregates() {
-		boolean needsCount = false;
+    private void extractAggregates() {
     	aggregates = new ArrayList<AggregationExpression>();
-    	//Place an evalTime
-    	//aggregates.add(null);
-    	for (int i = 0; i < getExpressions().size(); i++) {
-    		List<AggregationExpression> newAggs 
-    			=  getExpressions().get(i).getAggregates();
-    		for (int j = 0; j < newAggs.size(); j++) {
-    			if (newAggs.get(j).getAggregationType() 
-    					== AggregationType.COUNT) {
-    				needsCount = true;
-    			} else {
-        			if (newAggs.get(j).needsCount()) {
-        				needsCount = true;
-        			}
-    				if (!aggregates.contains(newAggs.get(j))) {
-    					aggregates.add(newAggs.get(j));
-    				}
-    			}
+
+    	for (int i = 0; i < this.getExpressions().size(); i++) {
+    		List<AggregationExpression> aggrList 
+    			=  this.getExpressions().get(i).getAggregates();
+    		for (int j = 0; j < aggrList.size(); j++) {
+    			aggregates.add(aggrList.get(j));
     		}
     	}
-    	if (needsCount) {
-    		//FIXME: The typing here is a bit iffy
-    		AggregationExpression count 
-    			= new AggregationExpression(null, AggregationType.COUNT, 
-    					aggregates.get(0).getType()); 
-    		aggregates.add(count);
-    	}
     }
+
     
     /**
      * {@inheritDoc}
@@ -189,11 +177,17 @@ public class AggregationOperator extends PredicateOperator {
 		return false;
 	}
 
-    /** {@inheritDoc} */
-    public boolean isRecursive() {
-        return false;
-    }
- 
-
+    /** Looks at all the aggregation functions used in the operator, 
+     * and considers whether they could be computed incrementally. **/
+	public boolean isSplittable() {
+		Iterator<AggregationExpression> aggrExprIter =
+			aggregates.iterator();
+		while (aggrExprIter.hasNext()) {
+			AggregationExpression aggrExpr = aggrExprIter.next();
+			if (aggrExpr.canBeDoneIncrementally()==false)
+				return false;
+		}
+		return true;
+	}
 
 }

@@ -6,14 +6,24 @@ __HEADER__
 	#define OUT_QUEUE_CARD __OUT_QUEUE_CARD__
 
 	__OUTPUT_TUPLE_TYPE__ outQueue[OUT_QUEUE_CARD];
-	int8_t outHead;
-	int8_t outTail;
+	int outHead;
+	int outTail;
 
   	__CHILD_TUPLE_PTR_TYPE__ inQueue;
-	int8_t inHead;
-	int8_t inTail;
-	uint8_t inQueueSize;
+	int inHead;
+	int inTail;
+	int inQueueSize;
 	int16_t currentEvalEpoch;
+
+	void task outQueueAppendTask();
+	void task signalDoneTask();
+
+	command error_t Parent.open()
+	{
+		call Child.open();
+		return SUCCESS;
+	}	
+
 
 	command error_t Parent.requestData(nx_int32_t evalEpoch)
   	{
@@ -23,15 +33,18 @@ __HEADER__
 	   	return SUCCESS;
   	}
 
-	command error_t Parent.open()
-	{
-		call Child.open();
-		return SUCCESS;
-	}	
 
-	void task signalDoneTask()
+	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int _inHead, int _inTail, int _inQueueSize)
 	{
-		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
+		atomic
+		{
+			inQueue = _inQueue;
+			inHead = _inHead;
+			inTail = _inTail;
+			inQueueSize = _inQueueSize;
+		}
+
+		post outQueueAppendTask();
 	}
 
 
@@ -74,18 +87,9 @@ __CONSTRUCT_TUPLE__
 		post signalDoneTask();
 	}
 
-	event void Child.requestDataDone(__CHILD_TUPLE_PTR_TYPE__ _inQueue, int8_t _inHead, int8_t _inTail, uint8_t _inQueueSize)
+
+	void task signalDoneTask()
 	{
-		atomic
-		{
-			inQueue = _inQueue;
-			inHead = _inHead;
-			inTail = _inTail;
-			inQueueSize = _inQueueSize;
-		}
-
-		post outQueueAppendTask();
+		signal Parent.requestDataDone(outQueue, outHead, outTail, OUT_QUEUE_CARD);
 	}
-
-
 }

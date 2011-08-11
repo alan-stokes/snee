@@ -46,9 +46,9 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
-import uk.ac.manchester.cs.snee.metadata.source.StreamingSourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
@@ -135,17 +135,17 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	TypeMappingException, OptimizationException, AssertionError,
 	SNEEConfigurationException {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 		List<Attribute> attrList = new ArrayList<Attribute>();
 		
 		expect(mockExtent.getExtentName()).andReturn("streamName").anyTimes();
 		expect(mockExtent.getAttributes()).andReturn(attrList);
 		expect(mockExtent.getCardinality()).andReturn(1);
+		expect(mockExtent.getRate()).andReturn(2.0);
 				
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 		expect(mockSource.getSourceType()).andReturn(SourceType.PULL_STREAM_SERVICE);
-		expect(mockSource.getRate("streamName")).andReturn(2.0);
 				
 		replayAll();
 
@@ -179,18 +179,18 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	throws SchemaMetadataException, AssertionError, TypeMappingException,
 	SourceMetadataException, OptimizationException, SNEEConfigurationException {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 		Expression mockPredicate = createMock(Expression.class);
 		List<Attribute> attrList = new ArrayList<Attribute>();
 		
 		expect(mockExtent.getExtentName()).andReturn("streamName").anyTimes();
 		expect(mockExtent.getAttributes()).andReturn(attrList);
 		expect(mockExtent.getCardinality()).andReturn(1);
+		expect(mockExtent.getRate()).andReturn(2.0);
 				
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 		expect(mockSource.getSourceType()).andReturn(SourceType.PULL_STREAM_SERVICE);
-		expect(mockSource.getRate("streamName")).andReturn(2.0);
 		
 		expect(mockPredicate.getType()).andReturn(boolType).times(2);
 		
@@ -230,8 +230,8 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	SourceMetadataException, OptimizationException, AssertionError,
 	SNEEConfigurationException {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 		Attribute mockAttribute = createMock(Attribute.class);
 		AttributeType mockType = createMock(AttributeType.class);
 		List<Attribute> attrList = new ArrayList<Attribute>();
@@ -239,11 +239,11 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		expect(mockExtent.getExtentName()).andReturn("streamName");
 		expect(mockExtent.getAttributes()).andReturn(attrList);
 		expect(mockExtent.getCardinality()).andReturn(1);
+		expect(mockExtent.getRate()).andReturn(2.0);
 				
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 		expect(mockSource.getSourceType())
 			.andReturn(SourceType.PULL_STREAM_SERVICE);
-		expect(mockSource.getRate("streamName")).andReturn(2.0);
 		
 		expect(mockAttribute.getAttributeSchemaName())
 			.andReturn("integerColumn").anyTimes();
@@ -297,8 +297,8 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	SourceMetadataException, OptimizationException, AssertionError, 
 	SNEEConfigurationException {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 		Attribute mockAttribute = createMock(Attribute.class);
 		AttributeType mockType = createMock(AttributeType.class);
 		List<Attribute> attrList = new ArrayList<Attribute>();
@@ -306,11 +306,11 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		expect(mockExtent.getExtentName()).andReturn("streamName");
 		expect(mockExtent.getAttributes()).andReturn(attrList);
 		expect(mockExtent.getCardinality()).andReturn(1);
+		expect(mockExtent.getRate()).andReturn(2.0);
 				
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 		expect(mockSource.getSourceType())
 			.andReturn(SourceType.PULL_STREAM_SERVICE);
-		expect(mockSource.getRate("streamName")).andReturn(2.0);
 		
 		expect(mockAttribute.getAttributeSchemaName())
 			.andReturn("integerColumn").anyTimes();
@@ -387,13 +387,13 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		LogicalRewriter rewriter = new LogicalRewriter(metadata);
 
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 		Attribute mockAttribute = createMock(Attribute.class);
 		AttributeType mockType = createMock(AttributeType.class);
 		List<Attribute> attrList = new ArrayList<Attribute>();
 		
-		expect(mockExtent.getExtentName()).andReturn("streamName");
+		expect(mockExtent.getExtentName()).andReturn("streamName").times(2);
 		expect(mockExtent.getAttributes()).andReturn(attrList).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 				
@@ -474,13 +474,13 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		LogicalRewriter rewriter = new LogicalRewriter(metadata);
 
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 		Attribute mockAttribute = createMock(Attribute.class);
 		AttributeType mockType = createMock(AttributeType.class);
 		List<Attribute> attrList = new ArrayList<Attribute>();
 		
-		expect(mockExtent.getExtentName()).andReturn("streamName");
+		expect(mockExtent.getExtentName()).andReturn("streamName").times(2);
 		expect(mockExtent.getAttributes()).andReturn(attrList).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 				
@@ -562,13 +562,13 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		LogicalRewriter rewriter = new LogicalRewriter(metadata);
 
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 		Attribute mockAttribute = createMock(Attribute.class);
 		AttributeType mockType = createMock(AttributeType.class);
 		List<Attribute> attrList = new ArrayList<Attribute>();
 		
-		expect(mockExtent.getExtentName()).andReturn("streamName");
+		expect(mockExtent.getExtentName()).andReturn("streamName").times(2);
 		expect(mockExtent.getAttributes()).andReturn(attrList).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 				
@@ -650,13 +650,13 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		LogicalRewriter rewriter = new LogicalRewriter(metadata);
 
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 		Attribute mockAttribute = createMock(Attribute.class);
 		AttributeType mockType = createMock(AttributeType.class);
 		List<Attribute> attrList = new ArrayList<Attribute>();
 		
-		expect(mockExtent.getExtentName()).andReturn("streamName");
+		expect(mockExtent.getExtentName()).andReturn("streamName").times(2);
 		expect(mockExtent.getAttributes()).andReturn(attrList).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1);
 				
@@ -715,8 +715,8 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	SourceMetadataException, OptimizationException, AssertionError, 
 	SNEEConfigurationException {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 
 		AttributeType mockIntegerType = createMock(AttributeType.class);
 		AttributeType mockStringType = createMock(AttributeType.class);
@@ -729,10 +729,10 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		expect(mockExtent.getExtentName()).andReturn("streamName").anyTimes();
 		expect(mockExtent.getAttributes()).andReturn(attrList);
 		expect(mockExtent.getCardinality()).andReturn(1);
+		expect(mockExtent.getRate()).andReturn(2.0);
 				
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 		expect(mockSource.getSourceType()).andReturn(SourceType.PULL_STREAM_SERVICE);
-		expect(mockSource.getRate("streamName")).andReturn(2.0);
 		
 		replayAll();
 		Attribute intAttr = new DataAttribute("streamName", 
@@ -794,8 +794,8 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	SourceMetadataException, OptimizationException, AssertionError,
 	SNEEConfigurationException, SNEECompilerException {
 		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 		Attribute mockAttribute = createMock(Attribute.class);
 		Attribute mockAttribute2 = createMock(Attribute.class);
 		AttributeType mockType = createMock(AttributeType.class);
@@ -804,11 +804,11 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		expect(mockExtent.getExtentName()).andReturn("streamName").times(2);
 		expect(mockExtent.getAttributes()).andReturn(attrList).times(2);
 		expect(mockExtent.getCardinality()).andReturn(1).times(2);
+		expect(mockExtent.getRate()).andReturn(2.0).andReturn(1.0);
 				
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 		expect(mockSource.getSourceType())
 			.andReturn(SourceType.PULL_STREAM_SERVICE).times(2);
-		expect(mockSource.getRate("streamName")).andReturn(2.0).andReturn(1.0);
 		
 		expect(mockAttribute.getAttributeSchemaName())
 			.andReturn("integerColumn").anyTimes();
@@ -882,8 +882,8 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	SNEEConfigurationException, SNEECompilerException {
 		ExtentMetadata mockExtentLeft = createMock(ExtentMetadata.class);
 		ExtentMetadata mockExtentRight = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 		Attribute mockAttribute = createMock(Attribute.class);
 		Attribute mockAttribute1 = createMock(Attribute.class); 
 		AttributeType mockType = createMock(AttributeType.class);
@@ -911,16 +911,16 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		expect(mockExtentLeft.getExtentName()).andReturn("streamLeft").anyTimes();
 		expect(mockExtentLeft.getAttributes()).andReturn(leftAttrList).anyTimes();
 		expect(mockExtentLeft.getCardinality()).andReturn(1).anyTimes();
+		expect(mockExtentLeft.getRate()).andReturn(2.0);
 
 		expect(mockExtentRight.getExtentName()).andReturn("streamRight").anyTimes();
 		expect(mockExtentRight.getAttributes()).andReturn(rightAttrList).anyTimes();
 		expect(mockExtentRight.getCardinality()).andReturn(1).anyTimes();
+		expect(mockExtentRight.getRate()).andReturn(1.0);
 				
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 		expect(mockSource.getSourceType())
 			.andReturn(SourceType.PULL_STREAM_SERVICE).times(2);
-		expect(mockSource.getRate("streamLeft")).andReturn(2.0);
-		expect(mockSource.getRate("streamRight")).andReturn(1.0);
 
 		expect(mockType.getName()).andReturn("integer").anyTimes();
 
@@ -987,8 +987,8 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	SNEEConfigurationException, SNEECompilerException {
 		ExtentMetadata mockExtent1 = createMock(ExtentMetadata.class);
 		ExtentMetadata mockExtent2 = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 		Attribute mockAttribute = createMock(Attribute.class);
 		Attribute mockAttribute1 = createMock(Attribute.class); 
 		AttributeType mockType = createMock(AttributeType.class);
@@ -1016,16 +1016,16 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		expect(mockExtent1.getExtentName()).andReturn("stream2").anyTimes();
 		expect(mockExtent1.getAttributes()).andReturn(attrList1).anyTimes();
 		expect(mockExtent1.getCardinality()).andReturn(1).anyTimes();
+		expect(mockExtent1.getRate()).andReturn(2.0);
 
 		expect(mockExtent2.getExtentName()).andReturn("stream1").anyTimes();
 		expect(mockExtent2.getAttributes()).andReturn(attrList2).anyTimes();
 		expect(mockExtent2.getCardinality()).andReturn(1).anyTimes();
+		expect(mockExtent2.getRate()).andReturn(1.0);
 				
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 		expect(mockSource.getSourceType())
 			.andReturn(SourceType.PULL_STREAM_SERVICE).times(2);
-		expect(mockSource.getRate("stream1")).andReturn(2.0);
-		expect(mockSource.getRate("stream2")).andReturn(1.0);
 
 		expect(mockType.getName()).andReturn("integer").anyTimes();
 
@@ -1120,8 +1120,8 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		
 		ExtentMetadata mockExtentLeft = createMock(ExtentMetadata.class);
 		ExtentMetadata mockExtentRight = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 		Attribute mockAttribute = createMock(Attribute.class);
 		Attribute mockAttribute1 = createMock(Attribute.class); 
 		AttributeType mockType = createMock(AttributeType.class);
@@ -1236,8 +1236,8 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		ExtentMetadata mockExtent1 = createMock(ExtentMetadata.class);
 		ExtentMetadata mockExtent2 = createMock(ExtentMetadata.class);
 		ExtentMetadata mockExtent3 = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 		Attribute mockAttribute = createMock(Attribute.class);
 		Attribute mockAttribute1 = createMock(Attribute.class); 
 		Attribute mockAttribute2 = createMock(Attribute.class); 
@@ -1280,21 +1280,21 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		expect(mockExtent1.getExtentName()).andReturn("stream1").anyTimes();
 		expect(mockExtent1.getAttributes()).andReturn(attrList).anyTimes();
 		expect(mockExtent1.getCardinality()).andReturn(1).anyTimes();
+		expect(mockExtent1.getRate()).andReturn(2.0);
 
 		expect(mockExtent2.getExtentName()).andReturn("stream2").anyTimes();
 		expect(mockExtent2.getAttributes()).andReturn(attrList1).anyTimes();
 		expect(mockExtent2.getCardinality()).andReturn(1).anyTimes();
+		expect(mockExtent2.getRate()).andReturn(1.0);
 
 		expect(mockExtent3.getExtentName()).andReturn("stream3").anyTimes();
 		expect(mockExtent3.getAttributes()).andReturn(attrList1).anyTimes();
 		expect(mockExtent3.getCardinality()).andReturn(1).anyTimes();
+		expect(mockExtent3.getRate()).andReturn(0.1);
 
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 		expect(mockSource.getSourceType())
 			.andReturn(SourceType.PULL_STREAM_SERVICE).times(3);
-		expect(mockSource.getRate("stream1")).andReturn(2.0);
-		expect(mockSource.getRate("stream2")).andReturn(1.0);
-		expect(mockSource.getRate("stream3")).andReturn(0.1);
 
 		expect(mockType.getName()).andReturn("integer").anyTimes();
 
@@ -1386,8 +1386,8 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		ExtentMetadata mockExtent1 = createMock(ExtentMetadata.class);
 		ExtentMetadata mockExtent2 = createMock(ExtentMetadata.class);
 		ExtentMetadata mockExtent3 = createMock(ExtentMetadata.class);
-		StreamingSourceMetadataAbstract mockSource = 
-			createMock(StreamingSourceMetadataAbstract.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
 		Attribute mockAttribute = createMock(Attribute.class);
 		Attribute mockAttribute1 = createMock(Attribute.class); 
 		Attribute mockAttribute2 = createMock(Attribute.class); 
@@ -1430,21 +1430,21 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		expect(mockExtent1.getExtentName()).andReturn("stream1").anyTimes();
 		expect(mockExtent1.getAttributes()).andReturn(attrList).anyTimes();
 		expect(mockExtent1.getCardinality()).andReturn(1).anyTimes();
+		expect(mockExtent1.getRate()).andReturn(2.0);
 
 		expect(mockExtent2.getExtentName()).andReturn("stream2").anyTimes();
 		expect(mockExtent2.getAttributes()).andReturn(attrList1).anyTimes();
 		expect(mockExtent2.getCardinality()).andReturn(1).anyTimes();
+		expect(mockExtent2.getRate()).andReturn(1.0);
 
 		expect(mockExtent3.getExtentName()).andReturn("stream3").anyTimes();
 		expect(mockExtent3.getAttributes()).andReturn(attrList1).anyTimes();
 		expect(mockExtent3.getCardinality()).andReturn(1).anyTimes();
+		expect(mockExtent3.getRate()).andReturn(0.1);
 
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 		expect(mockSource.getSourceType())
 			.andReturn(SourceType.PULL_STREAM_SERVICE).times(3);
-		expect(mockSource.getRate("stream1")).andReturn(2.0);
-		expect(mockSource.getRate("stream2")).andReturn(1.0);
-		expect(mockSource.getRate("stream3")).andReturn(0.1);
 
 		expect(mockType.getName()).andReturn("integer").anyTimes();
 

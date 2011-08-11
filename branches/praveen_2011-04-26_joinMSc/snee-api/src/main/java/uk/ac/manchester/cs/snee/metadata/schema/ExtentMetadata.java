@@ -38,7 +38,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 
 public class ExtentMetadata {
 	
@@ -58,6 +60,8 @@ public class ExtentMetadata {
 	//XXX-Ixent moved this to here from SensorNetworkSourceMetadata, as this seems 
 	//to be a something considered during early steps of query optimization.
 	private int cardinality = 1;
+	
+	private double rate;
 	
 	public ExtentMetadata(String extentName, 
 			List<Attribute> attributes,
@@ -101,6 +105,35 @@ public class ExtentMetadata {
 		return _attributes;
 	}
 
+	/** 
+	 * Returns the metadata about attributes
+	 * @return The unqualified attribute names and their types
+	 */
+	public List<Attribute> getDataAttributes() {
+		List<Attribute> result = new ArrayList<Attribute>();
+		for (Attribute attr : _attributes) {
+			if (attr instanceof DataAttribute) {
+				result.add(attr);
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * Returns the attribute with the given name, or null if not found.
+	 * @param attributeName
+	 * @return
+	 */
+	public Attribute getAttribute(String attributeName) {
+		for (Attribute attr : _attributes) {
+			String attrName = attr.getAttributeSchemaName();
+			if (attrName.equalsIgnoreCase(attributeName)) {
+				return attr;
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 * Test if this extent has an attribute with the specified
 	 * name.
@@ -210,6 +243,19 @@ public class ExtentMetadata {
 
 	public int getCardinality() {
 		return cardinality;
+	}
+
+	public double getRate() throws SchemaMetadataException {
+		if (_extentType == ExtentType.TABLE) {
+			String message = "Rate not defined for " + ExtentType.TABLE; 
+			logger.warn(message);
+			throw new SchemaMetadataException(message);
+		}
+		return rate;
+	}
+
+	public void setRate(double rate) {
+		this.rate = rate;
 	}
 	
 }

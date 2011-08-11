@@ -60,7 +60,7 @@ implements LogicalOperator {
 //        this.setNesCTemplateName("rstream never set");
         this.setOperatorDataType(OperatorDataType.STREAM);
         this.setOperatorSourceType(inputOperator.getOperatorSourceType());
-        this.setSourceRate(inputOperator.getSourceRate());
+        this.setSourceRate(inputOperator.getStreamRate());
         
         setChildren(new LogicalOperator[] {inputOperator});
     }  
@@ -155,10 +155,6 @@ implements LogicalOperator {
 		return false;
 	}
 
-    /** {@inheritDoc} */
-	public boolean isRecursive() {
-		return false;
-	}
 	
     /** {@inheritDoc}
      * @return false;

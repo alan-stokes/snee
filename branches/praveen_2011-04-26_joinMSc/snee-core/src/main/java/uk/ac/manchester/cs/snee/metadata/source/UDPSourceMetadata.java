@@ -39,16 +39,16 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 
 /**
  * Implementation of the metadata imported from a UDP source.
  */
-public class UDPSourceMetadata extends StreamingSourceMetadataAbstract {
+public class UDPSourceMetadata extends SourceMetadataAbstract {
 
 	Logger logger = 
 		Logger.getLogger(UDPSourceMetadata.class.getName());
@@ -66,31 +66,53 @@ public class UDPSourceMetadata extends StreamingSourceMetadataAbstract {
 	
 	public UDPSourceMetadata(String sourceName, 
 			List<String> extentNames, String hostName, 
-			Element extentNodes) 
+			Element extentNodes, Map<String, ExtentMetadata> schema) 
 	throws SourceMetadataException {
 		super(sourceName, extentNames, SourceType.UDP_SOURCE);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER UDPSourceMetadata() with " + hostName);
 		}
 		_hostName = hostName;
-		parseRemainingMetadata(extentNodes);
+		Map<String, Double> extentRates = parseRemainingMetadata(extentNodes);
+		setStreamRates(extentRates, schema);
 		if (logger.isDebugEnabled()) {
 			logger.trace("RETURN UDPSourceMetadata() " + this);
 		}
 	}
 
-	private void parseRemainingMetadata(Element extentNodes) 
+	private void setStreamRates(Map<String, Double> extentRates, 
+			Map<String, ExtentMetadata> schema) {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER setStreamRates()");
+		}
+		for (String extentName : _extentNames) {
+			double rate;
+			if (extentRates.containsKey(extentName)) {
+				rate = extentRates.get(extentName);
+			} else {
+				rate = 1.0;
+			}
+			ExtentMetadata extentMetadata = schema.get(extentName);
+			extentMetadata.setRate(rate);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN setStreamRates()");
+		}
+		
+	}
+
+	private Map<String, Double> parseRemainingMetadata(Element extentNodes) 
 	throws SourceMetadataException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER parseRemainingMetadata()");
 		NodeList extents = extentNodes.getElementsByTagName("extent");
+		Map<String, Double> extentRates = new HashMap<String, Double>();
 		for (String extent : _extentNames) {
 			Element extentElement = findElement(extent, extents);
 			Element pushSourceNode = (Element) extentElement.getElementsByTagName("push_source").item(0);
 			if (logger.isTraceEnabled())
 				logger.trace("Push_source: " + pushSourceNode);
 			NodeList nodes = pushSourceNode.getChildNodes();
-			//FIXME: Need to assign elements to local variables
 			for (int i = 0; i < nodes.getLength(); i++) {
 				Node node = nodes.item(i);
 				if (node.getNodeName().equalsIgnoreCase("port")) {
@@ -98,12 +120,13 @@ public class UDPSourceMetadata extends StreamingSourceMetadataAbstract {
 					_portNumbers.put(extent, port);
 				} else if (node.getNodeName().equalsIgnoreCase("rate")) {
 					double rate = Double.parseDouble(node.getFirstChild().getNodeValue());
-					_extentRates.put(extent, rate);
+					extentRates.put(extent, rate);
 				}
 			}	
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN parseRemainingMetadata()");
+		return extentRates;
 	}
 
 	private Element findElement(String extentName, NodeList extents) 
@@ -176,12 +199,7 @@ public class UDPSourceMetadata extends StreamingSourceMetadataAbstract {
 		s.append("  Extent Type: " + _sourceType);
 		s.append("  Host " + _hostName);
 		for (String extent : _extentNames) {
-			try {
-				s.append("  " + extent + ": " + _portNumbers.get(extent) +
-						" @ " + getRate(extent) + " tuples per second");
-			} catch (SourceMetadataException e) {
-				// XXX: Never reached
-			}
+			s.append("  " + extent + ": " + _portNumbers.get(extent));
 		}
 		return s.toString();
 	}

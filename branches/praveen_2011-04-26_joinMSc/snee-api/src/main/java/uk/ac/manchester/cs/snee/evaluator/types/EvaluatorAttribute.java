@@ -107,7 +107,13 @@ public class EvaluatorAttribute extends DataAttribute {
 	}
 	
 	public String toString() {
-		return super.toString() + " " + _data.toString();
+		String valueString;
+		if (_data == null) {
+			valueString = null;
+		} else {
+			valueString = _data.toString();
+		}
+		return super.toString() + " " + valueString;
 	}
 
 	@Override

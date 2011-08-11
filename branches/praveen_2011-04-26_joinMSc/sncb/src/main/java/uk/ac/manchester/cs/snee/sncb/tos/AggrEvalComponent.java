@@ -33,26 +33,22 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 
-import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregationOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class AggrEvalComponent extends NesCComponent implements
-	TinyOS1Component, TinyOS2Component {
+public class AggrEvalComponent extends NesCComponent {
 
     SensornetAggrEvalOperator op;
 
@@ -60,12 +56,13 @@ public class AggrEvalComponent extends NesCComponent implements
 
     public AggrEvalComponent(final SensornetAggrEvalOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
-	    int tosVersion, boolean tossimFlag, boolean debugLeds) {
+	    boolean tossimFlag, boolean debugLeds,
+	    CodeGenTarget target) {
     	
-		super(fragConfig, tosVersion, tossimFlag, debugLeds);
+		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
     }
 
     @Override
@@ -93,17 +90,18 @@ public class AggrEvalComponent extends NesCComponent implements
 		
 			SensornetIncrementalAggregationOperator input = getIterate();
 			List <Attribute> attributes = input.getAttributes();
-			replacements.put("__VARIABLES_TO_BE_AGGREGATED__",
-					CodeGenUtils.getPartialAggrVariables(attributes).toString());
-			replacements.put("__SET_AGGREGATES_TO_ZERO__",
-					CodeGenUtils.generateSetAggregatesToZero(attributes, 
-					(SensornetIncrementalAggregationOperator)this.op).toString());
-			replacements.put("__INCREMENT_AGGREGATES__",
-					CodeGenUtils.generateIncrementAggregates(attributes, 
-							(SensornetIncrementalAggregationOperator)this.op).toString());
-			final StringBuffer tupleConstructionBuff 
-				= CodeGenUtils.generateTupleConstruction(op, false);
-			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff.toString());
+			replacements.put("__AGGREGATE_VAR_DECLS__",
+					AggrUtils.generateVarDecls(attributes).toString());
+			replacements.put("__AGGREGATE_VAR_INITIALIZATION__",
+					AggrUtils.generateVarsInit(attributes).toString());
+			replacements.put("__AGGREGATE_VAR_INCREMENT__",
+					AggrUtils.generateIncrementAggregates(attributes, false).toString());
+			replacements.put("__DERIVED_INCREMENTAL_AGGREGATES_DECLS__", 
+					AggrUtils.generateDerivedIncrAggregatesDecls(op.getAggregates()).toString());
+			replacements.put("__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__", 
+					AggrUtils.computeDerivedIncrAggregates(op.getAggregates()).toString());
+			replacements.put("__CONSTRUCT_TUPLE__", 
+					AggrUtils.generateTuple(op.getAttributes(), op.getAggregates()).toString());
 		
 			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/aggrPart.nc",

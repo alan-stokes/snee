@@ -68,13 +68,12 @@ public class WindowOperator extends LogicalOperatorImpl {
 	/** If true from and to are in ticks otherwise in rows. */
 	private boolean timeScope;
 
-	//FIXME: Should be in milliseconds
-	/** The timeSlide, in seconds, to use if any. */
+	/** The timeSlide, in milliseconds, to use if any. */
 	private int timeSlide = 0;
 	/** The rowSlide to use if any. */
 	private int rowSlide = 0;
-	/** Acquistion interval of the whole query. (Alpha)*/
-	private double acInt;
+	/** Tick interval of the whole query */
+	private int tickInterval = 1000;
 
 	/**
 	 * Constructor for NOW window.
@@ -108,7 +107,7 @@ public class WindowOperator extends LogicalOperatorImpl {
 //		setNesCTemplateName("window");
 		setOperatorDataType(OperatorDataType.WINDOWS);
 		this.setOperatorSourceType(child.getOperatorSourceType());
-		this.setSourceRate(child.getSourceRate());
+		this.setSourceRate(child.getStreamRate());
 		this.setPushBasedOperator(false);
 		this.setChildren(new LogicalOperator[] {child});
 		this.setGetDataByPullModeOperator(true);
@@ -124,7 +123,7 @@ public class WindowOperator extends LogicalOperatorImpl {
 		this.timeSlide = timeSlide;
 		this.rowSlide = rowSlide;
 		//this.addInput(child);
-		acInt = 1;
+		this.tickInterval = 1000;
 	}
 
 	/**
@@ -170,7 +169,7 @@ public class WindowOperator extends LogicalOperatorImpl {
 	public int getCardinality(CardinalityType card)	{
 		if (timeScope) {
 			int evaluationsPerWindow 
-			= (int) Math.ceil((-this.from + this.to + 1) / acInt);
+			= (int) Math.ceil((-this.from + this.to + 1) / tickInterval);
 			return Math.round((this.getInput(0)).getCardinality(card) 
 					* evaluationsPerWindow);			
 		} else {
@@ -334,11 +333,6 @@ public class WindowOperator extends LogicalOperatorImpl {
 
 	/** {@inheritDoc} */
 	public boolean isLocationSensitive() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	public boolean isRecursive() {
 		return false;
 	}
 
@@ -601,21 +595,16 @@ public class WindowOperator extends LogicalOperatorImpl {
 	//		return super.defaultGetDataMemoryCost(node, daf);
 	//	}
 
-	/** 
-	 * Sets acquisition Interval.
-	 * @param acquisitionInterval Acquisition interval of the whole query.
-	 *  (Alpha)
-	 */
-	public void setAcquisitionInterval(double acquisitionInterval) {
-		this.acInt = acquisitionInterval;
-	}
-
 	public boolean getTimeScope() {
 		return this.timeScope;
 	}
 	
-	public double getAcquisitionInterval() {
-		return this.acInt;
+	/**
+	 * Get the acquisition interval in milliseconds
+	 * @return
+	 */
+	public int getTickInterval() {
+		return this.tickInterval;
 	}	
 
 }

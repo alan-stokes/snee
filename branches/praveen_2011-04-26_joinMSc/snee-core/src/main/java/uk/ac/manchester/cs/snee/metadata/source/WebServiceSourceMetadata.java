@@ -46,7 +46,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
 /**
  * Implementation of the metadata imported from a web service source.
  */
-public class WebServiceSourceMetadata extends StreamingSourceMetadataAbstract {
+public class WebServiceSourceMetadata extends SourceMetadataAbstract {
 
 	Logger logger = 
 		Logger.getLogger(WebServiceSourceMetadata.class.getName());
@@ -79,31 +79,9 @@ public class WebServiceSourceMetadata extends StreamingSourceMetadataAbstract {
 		_url = url;
 		_resources = resources;
 		_source = sourceWrapper;
-		if (_sourceType == SourceType.PULL_STREAM_SERVICE ||
-				_sourceType == SourceType.PUSH_STREAM_SERVICE) {
-			setStreamRates();
-		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN WebServiceSourceMetadata() " + this);
 		}
-	}
-
-	private void setStreamRates() {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER setStreamRates()");
-		for (String extentName : _extentNames) {
-			//FIXME: Read rate from stream property document
-			double rate;
-			if (extentName.endsWith("met") ||
-					extentName.endsWith("tide")) {
-				rate = 1/(60.0*10.0);
-			} else {
-				rate = 1/(60.0 * 30.0);
-			}
-			setRate(extentName, rate);
-		}
-		if (logger.isTraceEnabled())
-			logger.trace("RETURN setStreamRates()");
 	}
 
 //	public boolean equals(Object ob) {

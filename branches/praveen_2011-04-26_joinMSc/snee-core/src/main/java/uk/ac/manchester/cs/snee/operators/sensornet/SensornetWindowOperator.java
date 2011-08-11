@@ -47,8 +47,8 @@ public class SensornetWindowOperator extends SensornetOperatorImpl {
     	int cardinality;
 		if (winOp.getTimeScope()) {
 			//evaluation covered by from 
-			final int fromEval = (int) Math.ceil((-this.winOp.getFrom() + 1) / 
-					this.winOp.getAcquisitionInterval());
+			final int fromEval = (int) Math.ceil((-this.winOp.getFrom() + 1000.0) / 
+					this.winOp.getTickInterval());
 			if (fromEval == 0) {
 				String msg = "QoS Query mismatch results in empty timeWindow. From: " 
 					+ this.winOp.getFrom() + " does not cover any evaluations.";
@@ -58,11 +58,11 @@ public class SensornetWindowOperator extends SensornetOperatorImpl {
 			
 			//less evaluation excluded by to
 			final int toEval = (int) Math.ceil(-this.winOp.getTo() / 
-					this.winOp.getAcquisitionInterval()); 
+					this.winOp.getTickInterval()); 
 			if (toEval >= fromEval) {
 				String msg = "QoS Query mismatch results in empty timeWindow. From: " 
 					+ this.winOp.getFrom() + " to " + this.winOp.getTo() + " evalRate " +
-					this.winOp.getAcquisitionInterval()
+					this.winOp.getTickInterval()
 					+ "All evaluation covered by the From are excluded by the to.";
 				logger.warn(msg);
 				throw new OptimizationException(msg);
@@ -78,7 +78,7 @@ public class SensornetWindowOperator extends SensornetOperatorImpl {
 			if (cardinality == 0) {
 				String msg = "QoS Query mismatch results in empty timeWindow. From: " 
 					+ this.winOp.getFrom() + " to " + this.winOp.getTo() + 
-					" evalRate " + this.winOp.getAcquisitionInterval()
+					" evalRate " + this.winOp.getTickInterval()
 					+ " fromEval " + fromEval + " toEval " + toEval
 					+ " inCard " + inCard;
 				logger.warn(msg);
@@ -89,7 +89,7 @@ public class SensornetWindowOperator extends SensornetOperatorImpl {
 			if (cardinality == 0) {
 				String msg = "QoS Query mismatch results in empty timeWindow. From: " 
 					+ this.winOp.getFrom() + " to " + this.winOp.getTo() + " evalRate " + 
-					this.winOp.getAcquisitionInterval();
+					this.winOp.getTickInterval();
 				logger.warn(msg);
 				throw new OptimizationException(msg);
 			}	
@@ -112,12 +112,12 @@ public class SensornetWindowOperator extends SensornetOperatorImpl {
      	if (winOp.getTimeScope()) {
         	final int evaluationsInQueue;
     		if ((winOp.getTimeSlide() > 1) || 
-    			(winOp.getTimeSlide() != winOp.getAcquisitionInterval())) {
-    			evaluationsInQueue = (int) Math.ceil((1 - winOp.getFrom() 
-    					+ winOp.getTimeSlide()) / winOp.getAcquisitionInterval());
+    			(winOp.getTimeSlide() != winOp.getTickInterval())) {
+    			evaluationsInQueue = (int) Math.ceil((1000 - winOp.getFrom() 
+    					+ winOp.getTimeSlide()) / winOp.getTickInterval());
     		} else {
     			evaluationsInQueue 
-    				= (int) Math.ceil((1 - winOp.getFrom()) / winOp.getAcquisitionInterval());
+    				= (int) Math.ceil((1000 - winOp.getFrom()) / winOp.getTickInterval());
     		}
     		//Size is always the max.
     		size = getInputCardinality(CardinalityType.MAX, 

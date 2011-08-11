@@ -84,11 +84,10 @@ public class AcquireOperator extends InputOperator {
 	 * @throws TypeMappingException
 	 * @throws SourceMetadataException 
 	 */
-	public AcquireOperator(ExtentMetadata extentMetadata, 
-			Types types, 
-			SourceMetadataAbstract source,
-			AttributeType boolType) 
-	throws SchemaMetadataException, TypeMappingException, SourceMetadataException {
+	public AcquireOperator(ExtentMetadata extentMetadata, Types types, 
+			SourceMetadataAbstract source, AttributeType boolType) 
+	throws SchemaMetadataException, TypeMappingException 
+	{
 		super(extentMetadata, source, boolType);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER AcquireOperator() with " + 
@@ -99,8 +98,11 @@ public class AcquireOperator extends InputOperator {
 		this.setOperatorSourceType(source.getSourceType());
 		//this.setSourceRate(((SourceMetadata)source).getRate(extentName));
 		this._types=types;
+
+		this.extentName = extentMetadata.getExtentName();
+
 		updateInputAttributes(); 
-		updateMetadataInfo(extentMetadata);
+		updateMetadataInfo(extentMetadata); //WHICH ORDER??
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN AcquireOperator()");
 	}
@@ -111,24 +113,28 @@ public class AcquireOperator extends InputOperator {
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
 	 */
-	private void updateMetadataInfo(ExtentMetadata extentMetaData) 
+	private void updateMetadataInfo(ExtentMetadata extentMetadata) 
 	throws SchemaMetadataException, TypeMappingException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER addMetaDataInfo() with " +
-					extentMetaData);
+					extentMetadata);
 		}
 		outputAttributes = new ArrayList<Attribute>();
-//TODO: Localtime
-//		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
-//			outputAttributes.add(new LocalTimeAttribute()); //Ixent added this
-//		}		
-		inputAttributes = extentMetaData.getAttributes();
+		inputAttributes = extentMetadata.getAttributes();
 		outputAttributes.addAll(inputAttributes);
 //		sites =  sourceMetaData.getSourceNodes();
 		copyExpressions(outputAttributes);
 		acquiredAttributes = (ArrayList<Attribute>) outputAttributes;
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN addMetaDataInfo()");
+	}
+
+	/**
+	 * Returns a string representation of the operator.
+	 * @return Operator as a String.
+	 */
+	public String toString() {
+		return this.getText();
 	}
 
 	/** {@inheritDoc} */

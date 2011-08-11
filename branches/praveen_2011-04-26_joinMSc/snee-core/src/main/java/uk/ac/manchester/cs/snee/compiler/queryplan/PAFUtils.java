@@ -130,7 +130,7 @@ public class PAFUtils extends DLAFUtils {
 					try {
 						if (showTupleTypes && (!(childOp instanceof SensornetExchangeOperator))) {
 							out.print("type: " + 
-								childOp.getLogicalOperator().getTupleAttributesStr(3) + " \\n");
+								childOp.getTupleAttributesStr(3) + " \\n");
 						}
 					} catch (TypeMappingException e1) {
 						String msg = "Problem getting tuple attributes. " + e1;

@@ -44,7 +44,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.metadata.source.StreamingSourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 
 public class ReceiveOperator extends InputOperator {
@@ -65,8 +65,7 @@ public class ReceiveOperator extends InputOperator {
 	 * @throws TypeMappingException
 	 * @throws SourceMetadataException 
 	 */
-	public ReceiveOperator(ExtentMetadata extentMetaData, 
-			StreamingSourceMetadataAbstract source, 
+	public ReceiveOperator(ExtentMetadata extentMetaData, SourceMetadataAbstract source, 
 			AttributeType boolType) 
 	throws SchemaMetadataException, TypeMappingException, SourceMetadataException {
 		super(extentMetaData, source, boolType);
@@ -77,7 +76,7 @@ public class ReceiveOperator extends InputOperator {
 		this.setOperatorName("RECEIVE");
 		this.setOperatorDataType(OperatorDataType.STREAM);	
 		this.setOperatorSourceType(source.getSourceType());
-		this.setSourceRate(source.getRate(extentName));
+		this.setSourceRate(extentMetaData.getRate());
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN ReceiveOperator()");
 	} 		 

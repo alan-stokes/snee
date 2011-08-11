@@ -53,7 +53,7 @@ public abstract class WindowOperatorImpl extends EvaluatorPhysicalOperator {
 		Iterator<LogicalOperator> iter = op.childOperatorIterator();
 		LogicalOperator operator = iter.next();		
 		sourceOperator = getEvaluatorOperator(operator);
-		sourceOperatorRate = operator.getSourceRate();
+		sourceOperatorRate = operator.getStreamRate();
 		isFirstWindowDelivered = false;
 		if (logger.isTraceEnabled()) 
 			logger.trace("Window start: " + windowStart + ", Window end: " + windowEnd);

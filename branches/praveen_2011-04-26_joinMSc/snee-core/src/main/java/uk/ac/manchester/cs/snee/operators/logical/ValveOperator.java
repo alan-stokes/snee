@@ -67,7 +67,7 @@ public class ValveOperator extends LogicalOperatorImpl {
 		this.addInput(inputOperator);
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
-		this.setSourceRate(inputOperator.getSourceRate());
+		this.setSourceRate(inputOperator.getStreamRate());
 	}
 
 	public String getParamStr() {
@@ -97,12 +97,6 @@ public class ValveOperator extends LogicalOperatorImpl {
 
 	@Override
 	public boolean isLocationSensitive() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isRecursive() {
 		// TODO Auto-generated method stub
 		return false;
 	}

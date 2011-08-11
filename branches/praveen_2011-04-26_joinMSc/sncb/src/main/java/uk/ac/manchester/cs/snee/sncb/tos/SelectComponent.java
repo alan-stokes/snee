@@ -33,21 +33,17 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.operators.logical.PredicateOperator;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSelectOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
-public class SelectComponent extends NesCComponent implements TinyOS1Component,
-	TinyOS2Component {
+public class SelectComponent extends NesCComponent {
 
     SensornetSelectOperator op;
 
@@ -57,11 +53,12 @@ public class SelectComponent extends NesCComponent implements TinyOS1Component,
 
     public SelectComponent(final SensornetSelectOperator op, final SensorNetworkQueryPlan plan,
     final NesCConfiguration fragConfig,
-    int tosVersion, boolean tossimFlag, boolean debugLeds) {
-		super(fragConfig, tosVersion, tossimFlag, debugLeds);
+    boolean tossimFlag, boolean debugLeds, 
+    CodeGenTarget target) {
+		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
-		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site, tosVersion);
+		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
     }
 
     @Override
@@ -88,10 +85,10 @@ public class SelectComponent extends NesCComponent implements TinyOS1Component,
 				.generateOutputTuplePtrType(this.op.getLeftChild()));
 		    replacements.put("__SELECT_PREDICATES__", CodeGenUtils.getNescText(
 		    		((SelectOperator)op.getLogicalOperator()).getPredicate(),
-		    		"inQueue[inHead].", null, op.getAttributes(), null));
+		    		"inQueue[inHead].", null, op.getAttributes(), null, target));
 		    
 			final StringBuffer tupleConstructionBuff 
-				= CodeGenUtils.generateTupleConstruction(op, false);
+				= CodeGenUtils.generateTupleConstruction(op, false, target);
 			replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff
 				.toString());
 		

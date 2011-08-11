@@ -516,7 +516,7 @@ public class TranslatorTest {
 		assertEquals(1, op.getAttributes().size());
 		Attribute attribute = op.getAttributes().get(0);
 		assertTrue(attribute.getAttributeDisplayName().
-				equalsIgnoreCase(".4523 + 60"));
+				equalsIgnoreCase("expr1"));
 		assertTrue(attribute.getAttributeSchemaName().
 				equalsIgnoreCase("4523 + 60"));
 		assertTrue(attribute.isConstant());
@@ -1183,7 +1183,7 @@ public class TranslatorTest {
 	{
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) " +
 				"UNION " +
-				"(SELECT timestamp FROM PullStream);");
+				"(SELECT timestamp FROM PushStream);");
 		verifyUnionQuery(laf, 1, 2);
 	}
 
@@ -1195,8 +1195,8 @@ public class TranslatorTest {
 	SNEEConfigurationException, SNEECompilerException 
 	{
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) UNION " +
-				"(SELECT timestamp FROM PullStream) UNION" +
-				"(SELECT timestamp FROM PushStream);");
+				"(SELECT timestamp FROM PushStream) UNION" +
+				"(SELECT timestamp FROM PushStream2);");
 		verifyUnionQuery(laf, 2, 3);
 	}
 	
@@ -1208,9 +1208,9 @@ public class TranslatorTest {
 	SNEEConfigurationException, SNEECompilerException 
 	{
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) UNION " +
-				"(SELECT timestamp FROM PullStream) UNION" +
-				"(SELECT timestamp FROM PushStream) UNION " +
-				"(SELECT timestamp FROM SensorStream);");
+				"(SELECT timestamp FROM PushStream) UNION" +
+				"(SELECT timestamp FROM PushStream2) UNION " +
+				"(SELECT timestamp FROM PushStream3);");
 		verifyUnionQuery(laf, 3, 4);
 	}
 	
@@ -1251,7 +1251,7 @@ public class TranslatorTest {
 	{
 		LAF laf = testQuery("(SELECT timestamp FROM TestStream) " +
 				"UNION " +
-				"(SELECT integerColumn FROM PullStream);");
+				"(SELECT integerColumn FROM PushStream);");
 		verifyUnionQuery(laf, 1, 2);
 	}
 	

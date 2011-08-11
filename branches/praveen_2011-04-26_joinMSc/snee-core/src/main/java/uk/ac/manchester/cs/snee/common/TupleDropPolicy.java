@@ -14,7 +14,7 @@ public enum TupleDropPolicy {
 	LIFO("Last in First Out Policy"),
 	/** The duplicate tuples are removed to make space for new tuples */
 	REM_DUP("Remove Duplicates Policy"),
-	/** The duplicate tuples are removed to make space for new tuples */
+	/** A random selection of tuples are removed to make space for new tuples */
 	SAMPLE("Drop tuples based on sampling");
 
 	private String tupleDropPolicy;

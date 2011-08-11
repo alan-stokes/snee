@@ -266,7 +266,7 @@ public class AlgorithmSelector {
 			joinOperator.setAlgorithm(JoinOperator.RHJ_MODE);
 		} else if (leftOperatorDataType == OperatorDataType.WINDOWS
 				&& rightOperatorDataType == OperatorDataType.WINDOWS) {
-			if (leftOperator.getSourceRate() > rightOperator.getSourceRate()) {
+			if (leftOperator.getStreamRate() > rightOperator.getStreamRate()) {
 				joinOperator.setAlgorithm(JoinOperator.RHJ_MODE);
 			} else {
 				joinOperator.setAlgorithm(JoinOperator.LHJ_MODE);

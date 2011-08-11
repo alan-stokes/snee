@@ -320,7 +320,7 @@ public class SNEEController implements SNEE {
 		}
 		int queryId = getNextQueryId();
 		if (logger.isInfoEnabled()) 
-			logger.info("Assigned ID " + queryId + " to query\n");
+			logger.info("Assigned ID " + queryId + " to query\n\t" + query);
 		if (logger.isInfoEnabled()) 
 			logger.info("Reading query " + queryId + " parameters\n");
 		QueryParameters queryParams = null;

@@ -9,6 +9,7 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 public class SNEEClientMixed extends SNEEClient {
@@ -67,7 +68,7 @@ public class SNEEClientMixed extends SNEEClient {
 	
 	public SNEEClientMixed(String query, double duration,  String queryParams) 
 	throws SNEEException, IOException, SNEEConfigurationException,
-	MetadataException, SNEEDataSourceException 
+	MetadataException, SNEEDataSourceException, SchemaMetadataException 
 	{
 		super(query, duration, queryParams);
 		if (logger.isDebugEnabled()) 

@@ -35,8 +35,7 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 
-public class SerialAMReceiveComponent extends GenericNesCComponent implements
-	TinyOS2Component {
+public class SerialAMReceiveComponent extends GenericNesCComponent {
 
     public static String TYPE_NAME = "SerialAMReceiverC";
 
@@ -44,7 +43,7 @@ public class SerialAMReceiveComponent extends GenericNesCComponent implements
 	    final NesCConfiguration config, final String activeMessageID,
 	    boolean tossimFlag) {
 	    	
-		super(config, TYPE_NAME, activeMessageID, 2, tossimFlag);
+		super(config, TYPE_NAME, activeMessageID, tossimFlag);
 		this.instanceOfGeneric = true;
 		this.id = name;
 		this.systemComponent = true;

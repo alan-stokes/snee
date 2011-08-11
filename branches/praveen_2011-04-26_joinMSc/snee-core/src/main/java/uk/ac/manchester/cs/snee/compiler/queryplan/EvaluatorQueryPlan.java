@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 /**
  * Query Plan for execution on SNEE Evaluator.
@@ -26,6 +27,10 @@ public class EvaluatorQueryPlan extends QueryExecutionPlan {
 		super(dlaf, queryName);
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER EvaluatorQueryPlan()");	
+		
+		LogicalOperator rootOperator = dlaf.getLAF().getRootOperator();
+		metadata = new QueryPlanMetadata(rootOperator.getAttributes());
+		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN EvaluatorQueryPlan()");	
 	}

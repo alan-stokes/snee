@@ -16,12 +16,15 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenUtils;
 
 //Based on TinyOS MsgReader.java class
@@ -33,13 +36,13 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 	
 	private MoteIF moteIF;
 	  
-	private DeliverOperator delOp;
+	private SensornetDeliverOperator delOp;
 	
 	private Message _msg;
 	
 	private String _source;
 	
-	public SerialPortMessageReceiver(String source, DeliverOperator delOp) throws Exception {
+	public SerialPortMessageReceiver(String source, SensornetDeliverOperator delOp) throws Exception {
 		_source = source;
 		
 		if (_source != null) {
@@ -62,22 +65,22 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 			List<Output> resultList = new ArrayList<Output>();
 			int tuplesPerMessage = getTuplesPerMessage(message);
 			for (int i=0; i<tuplesPerMessage; i++) {
-				String evalTimeAttrDisplayName = null;
 				Tuple newTuple = new Tuple();
+				boolean dummyTuple = false;
 				for (Attribute attr : this.delOp.getAttributes()) {
 					EvaluatorAttribute evalAttr = getAttribute(attr, message, i);
 					newTuple.addAttribute(evalAttr);
-					//Find the first evaltime attribute
-					if ((evalAttr.getAttributeDisplayName().endsWith("evalEpoch")) &&
-							(evalTimeAttrDisplayName==null)) {
-						evalTimeAttrDisplayName = evalAttr.getAttributeDisplayName();
+					if (attr instanceof EvalTimeAttribute) {
+						if (evalAttr.getData().equals(65535)) {
+							dummyTuple = true;
+							break;
+						}
 					}
+				} 
+				if (dummyTuple) {
+					continue; //do not add to result list
 				}
-				//TODO: Hack to get rid of bad tuples. Need to find a better way!
-				if (newTuple.getAttributeByDisplayName(evalTimeAttrDisplayName).getData().equals(65535))
-					continue;
-				//TODO: For now, In-Network only returns tagged tuples, no windows.
-			    logger.trace("Tuple received at time " + t + ": "+newTuple.toString());
+				logger.trace("Tuple received at time " + t + ": "+newTuple.toString());
 				TaggedTuple newTaggedTuple = new TaggedTuple(newTuple);
 				resultList.add(newTaggedTuple);
 			}
@@ -135,15 +138,15 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 		Method meth = msgClass.getMethod(methodName, paramTypes);
 		Object argList[] = new Object[1];
 		argList[0] = new Integer(index);
-		Object retObj = meth.invoke(message, argList);
-		Integer data = (Integer)retObj;
+		Object dataObj = meth.invoke(message, argList);
+//Integer data = (Integer)retObj;
 			
 		String extentName = attr.getExtentName();
 		//TODO: Had to change this after merging revs 269-271. Hopefully did right thing.
 		String attrName = attr.getAttributeDisplayName();
 		AttributeType attrType = attr.getType();
 			
-		EvaluatorAttribute evalAttr = new EvaluatorAttribute(extentName, attrName, attrType, data);
+		EvaluatorAttribute evalAttr = new EvaluatorAttribute(extentName, attrName, attrType, dataObj);
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER getAttribute()");
 		return evalAttr;

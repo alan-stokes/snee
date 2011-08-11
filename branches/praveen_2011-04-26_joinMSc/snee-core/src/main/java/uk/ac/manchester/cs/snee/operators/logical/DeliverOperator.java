@@ -56,24 +56,6 @@ public class DeliverOperator extends LogicalOperatorImpl {
 	private Logger logger = 
 		Logger.getLogger(DeliverOperator.class.getName());
 
-//	/**
-//	 * Constructs a new Deliver operator.
-//	 * 
-//	 * @param token A DeleiverOperator token
-//	 */
-//	public DeliverOperator(AST token) {
-//		super();
-//		Operator inputOperator 
-//		= OperatorFactory.convertAST(token.getFirstChild());
-//
-//		this.setOperatorName("DELIVER");
-//		this.setNesCTemplateName("deliver");
-//		this.setOperatorDataType(inputOperator.getOperatorDataType());
-//		this.setParamStr("");
-//
-//		setChildren(new Operator[] {inputOperator});
-//	}  
-
 	/**
 	 * Constructor that places a Deliver at the top of a tree.
 	 * @param inputOperator Previous operator.
@@ -85,7 +67,7 @@ public class DeliverOperator extends LogicalOperatorImpl {
 //		this.setNesCTemplateName("deliver");
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 		this.setOperatorSourceType(inputOperator.getOperatorSourceType());
-		this.setSourceRate(inputOperator.getSourceRate());
+		this.setSourceRate(inputOperator.getStreamRate());
 
 		setChildren(new LogicalOperator[] {inputOperator});
 		if (inputOperator == null) {
@@ -93,17 +75,6 @@ public class DeliverOperator extends LogicalOperatorImpl {
 		}
 	}  
 
-//	/**
-//	 * Constructor that creates a new operator 
-//	 * based on a model of an existing operator.
-//	 * 
-//	 * Used by the clone method.
-//	 * 
-//	 * @param model Another DeliverOperator on which to base new one.
-//	 */
-//	protected DeliverOperator(DeliverOperator model) {
-//		super(model);
-//	}
 
 	public String getParamStr() {
 		return "";
@@ -182,11 +153,6 @@ public class DeliverOperator extends LogicalOperatorImpl {
 		return true;
 	}
 
-	/** {@inheritDoc} */
-	public boolean isRecursive() {
-		return false;
-	}
-
 	/** {@inheritDoc}
 	 * @return false;
 	 */
@@ -200,90 +166,6 @@ public class DeliverOperator extends LogicalOperatorImpl {
 		super.getInput(0).toString() + " ]";  
 	}
 
-//	/** {@inheritDoc} */
-//	public DeliverOperator shallowClone() {
-//		DeliverOperator clonedOp = new DeliverOperator(this);
-//		return clonedOp;
-//	}
-
-	//	/** 
-	//     * Calculates the physical size of the state of this operator.
-	//     * 
-	//     * This cost model assumes that deliver is instantaneous
-	//     * so this operator has ne need to ever store data.
-	//     * 
-	//     * Does not included the size of the input 
-	//     * as these are assumed passed by reference.
-	//     *
-	//     * Does not include the size of the code itself.
-	//     * 
-	//     * @param node Physical mote on which this operator has been placed.
-	//     * @param daf Distributed query plan this operator is part of.
-	//     * @return OutputQueueCardinality * PhytsicalTuplesSize
-	//     */
-	//    public int getDataMemoryCost(Site node, DAF daf) {
-	//    	return 0;
-	//    }
-
-	//    /** Constant for length of per tuple overhead String. */ 	
-	//    private static int DELIVER_OVERHEAD = 10; //"DELIVER (" ++ ")";
-	//    
-	//    /** Maximum String length to represent an attribute. */
-	//    private static int ATTRIBUTE_STRING_LENGTH = 5; //unit16 max = 65536
-	//    
-	//    /** Maximum size of a deliver packet. */
-	//    public static int DELIVER_PAYLOAD_SIZE = 28;
-
-	//    /**
-	//     * Objains the size of the String needed to represent this tuple.
-	//     * @return Output String size in bytes
-	//     */
-	//    private int packetsPerTuple() {
-	//		int tupleSize = DELIVER_OVERHEAD;
-	//		ArrayList<Attribute> attributes = getAttributes(); 
-	//		for (int i = 0; i < attributes.size(); i++) {
-	//			String attrName = CodeGenUtils.getDeliverName(attributes.get(i));			
-	//			tupleSize += attrName.length() + ATTRIBUTE_STRING_LENGTH;
-	//			logger.trace("TuplesSize now " + tupleSize);
-	//		}
-	//		return (int) Math.ceil(tupleSize / DELIVER_PAYLOAD_SIZE);
-	//    }
-
-	//    private double getTimeCost(int tuples) { 
-	//		int packets = packetsPerTuple() * tuples;
-	//		double duration = getOverheadTimeCost()
-	//			+ CostParameters.getDeliverTuple() * packets;
-	//		return duration;
-	//    }
-
-	//	/** {@inheritDoc} */
-	//    public double getTimeCost(CardinalityType card, 
-	//    		Site node, DAF daf) {
-	//		int tuples 
-	//			= this.getInputCardinality(card, node, daf, 0);
-	//		return getTimeCost(tuples);
-	//    }
-
-	//    /** {@inheritDoc} */
-	//	public double getTimeCost(CardinalityType card, int numberOfInstances) {
-	//		int tuples = this.getInputCardinality(card, 0, numberOfInstances);
-	//		return getTimeCost(tuples);
-	//	}
-
-	//	/** {@inheritDoc} */
-	//	public AlphaBetaExpression getTimeExpression(
-	//			CardinalityType card, Site node, 
-	//			DAF daf, boolean round) {
-	//		AlphaBetaExpression result = new AlphaBetaExpression();
-	//		result.addBetaTerm(getOverheadTimeCost());
-	//		AlphaBetaExpression tuples 
-	//			= this.getInputCardinality(card, node, daf, round, 0);
-	//		tuples.multiplyBy(packetsPerTuple());
-	//		tuples.multiplyBy(CostParameters.getDeliverTuple());
-	//		result.add(tuples);
-	//		return result;
-	//	}
-
 	/**
 	 * Some operators do not change the data in any way those could be removed.
 	 * This operator does change the data so can not be. 
@@ -293,23 +175,6 @@ public class DeliverOperator extends LogicalOperatorImpl {
 	public boolean isRemoveable() {
 		return false;
 	}
-
-	//Call to default methods in OperatorImplementation
-
-	//    /** {@inheritDoc} */
-	//    public int[] getSourceSites() {
-	//    	return super.defaultGetSourceSites();
-	//    }
-
-	// 	/** {@inheritDoc} */    
-	//    public int getOutputQueueCardinality(int numberOfInstances) {
-	//    	return super.defaultGetOutputQueueCardinality(numberOfInstances);
-	//    }
-
-	// 	/** {@inheritDoc} */    
-	//    public int getOutputQueueCardinality(Site node, DAF daf) {
-	//    	return super.defaultGetOutputQueueCardinality(node, daf);
-	//    }
 
 	/** {@inheritDoc} */    
 	public List<Attribute> getAttributes() {

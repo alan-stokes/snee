@@ -82,10 +82,6 @@ implements LogicalOperator {
 		return false;
 	}
 
-	public boolean isRecursive() {
-		return false;
-	}
-
 	/** {@inheritDoc}
 	 * @return false;
 	 */
@@ -162,7 +158,7 @@ implements LogicalOperator {
 	 * @return
 	 */
 	public double getSourceRate(LogicalOperator left, LogicalOperator right) {
-		return left.getSourceRate() + right.getSourceRate();
+		return left.getStreamRate() + right.getStreamRate();
 	}
 
 }

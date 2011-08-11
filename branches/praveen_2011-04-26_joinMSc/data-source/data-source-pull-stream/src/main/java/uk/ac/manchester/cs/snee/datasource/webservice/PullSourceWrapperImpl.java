@@ -8,10 +8,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.xml.namespace.QName;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentType;
@@ -20,6 +25,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import eu.semsorgrid4env.service.stream.StreamDescriptionType;
+import eu.semsorgrid4env.service.stream.StreamRateType;
 import eu.semsorgrid4env.service.stream.pull.GetStreamItemRequest;
 import eu.semsorgrid4env.service.stream.pull.GetStreamNewestItemRequest;
 import eu.semsorgrid4env.service.stream.pull.PullStreamPropertyDocumentType;
@@ -134,6 +140,7 @@ implements PullSourceWrapper {
     			}
     			extents  = extractSchema(schemaParser, ExtentType.PUSHED);
     		}
+    		setStreamRates(extents, pullStreamPropDoc.getStreamRate());
     	} catch (ClassCastException e) {
     		String msg = "Unable to construct a pull stream property document from the received property document.";
     		logger.warn(msg);
@@ -162,7 +169,59 @@ implements PullSourceWrapper {
     	return extents;
     }
 
-    private PropertyDocumentType getPropertyDocument(String resourceName)
+    private void setStreamRates(List<ExtentMetadata> extents,
+			List<StreamRateType> streamRates) {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER setStreamRates() #extents=" + extents.size() +
+					" #streamRates=" + streamRates.size());
+		}
+		for (ExtentMetadata extent : extents) {
+			double rate = findAverageStreamRate(extent.getExtentName(), 
+					streamRates);
+			extent.setRate(rate);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN setStreamRates()");
+		}
+	}
+
+	/**
+	 * Finds the declared average stream rate for the given extent name.
+	 * If no rate has been declared, then a rate of 1.0 is assumed, i.e. 1Hz
+	 * 
+	 * @param extentName name of the extent 
+	 * @param streamRates stream rates declared
+	 * @return stream rate as a double
+	 */
+	private double findAverageStreamRate(String extentName,
+			List<StreamRateType> streamRates) {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER findAverageStreamRate() with " + extentName);
+		}
+		double rate;
+		try {
+			rate = new Double(SNEEProperties.getSetting(
+					SNEEPropertyNames.EVALUATOR_DEFAULT_POLL_RATE)).doubleValue();
+		} catch (Exception e) {
+			String message = "DEFAULT_POLL_RATE does not contain a double";
+			logger.error(message);
+			// If rate not set or incorrectly set, default to 1 tuple per second
+			rate = 1.0;
+		}
+		for (StreamRateType streamRate : streamRates) {
+			QName streamQName = streamRate.getStreamQName();
+			logger.debug(streamQName);
+			if (extentName.equalsIgnoreCase(streamQName.getLocalPart())) {
+				rate = streamRate.getAverageFlowRate();
+			}
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN findAverageStreamRate() with " + rate);
+		}
+		return rate;
+	}
+
+	private PropertyDocumentType getPropertyDocument(String resourceName)
     throws SchemaMetadataException, InvalidResourceNameFault,
     DataResourceUnavailableFault, NotAuthorizedFault, ServiceBusyFault {
     	if (logger.isTraceEnabled()) {
@@ -199,7 +258,7 @@ implements PullSourceWrapper {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getData() with " + resourceName);
 		GetStreamItemRequest request = 
-			createGetStreamItemRequest(resourceName, null, null);
+			createGetStreamItemRequest(resourceName, null);
 		GenericQueryResponse response = _pullClient.getStreamItems(request);;
 		List<Tuple> tuples = processGenericQueryResponse(response);
 		if (logger.isDebugEnabled())
@@ -207,16 +266,15 @@ implements PullSourceWrapper {
 		return tuples;
 	}
 
-	public List<Tuple> getData(String resourceName, int numItems, 
+	public List<Tuple> getData(String resourceName,  
 			Timestamp timestamp) 
 	throws SNEEDataSourceException, TypeMappingException,
 	SchemaMetadataException, SNEEException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getData() with " + resourceName + 
-					" #items=" + numItems +
 					" timestamp=" + timestamp);
 		GetStreamItemRequest request = 
-			createGetStreamItemRequest(resourceName, numItems, 
+			createGetStreamItemRequest(resourceName, 
 					timestamp);
 			GenericQueryResponse response = 
 				_pullClient.getStreamItems(request);
@@ -273,18 +331,14 @@ implements PullSourceWrapper {
 	 * @return request document
 	 */
 	private GetStreamItemRequest createGetStreamItemRequest(
-			String resourceName, Integer numItems, Timestamp timestamp) {
+			String resourceName, Timestamp timestamp) {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER createGetStreamItemRequest() with " +
 					resourceName +
-					" #items=" + numItems +
 					" timestamp=" + timestamp);
 		GetStreamItemRequest request = new GetStreamItemRequest();
 		request.setDataResourceAbstractName(resourceName);
 		request.setDatasetFormatURI(DATASET_FORMAT);
-		if (numItems != null) {
-			request.setCount(numItems.toString());
-		}
 		if (timestamp != null) {
 			long timeMillis = timestamp.getTime();
 			request.setPosition(dateFormat.format(new Date(timeMillis)));

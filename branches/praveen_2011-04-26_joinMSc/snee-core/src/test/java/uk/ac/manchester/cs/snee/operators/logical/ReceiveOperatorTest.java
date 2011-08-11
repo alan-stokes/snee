@@ -28,9 +28,9 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
-import uk.ac.manchester.cs.snee.metadata.source.StreamingSourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.WebServiceSourceMetadata;
 
 public class ReceiveOperatorTest extends EasyMockSupport {
@@ -50,7 +50,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 	private Types types;
 	private ExtentMetadata mockExtent;
 	private Attribute mockAttribute;
-	private StreamingSourceMetadataAbstract mockSource;
+	private SourceMetadataAbstract mockSource;
 
 	@Before
 	public void setUp() throws Exception {
@@ -70,7 +70,6 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		mockSource = createMock(WebServiceSourceMetadata.class);
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 		expect(mockSource.getSourceType()).andReturn(SourceType.PULL_STREAM_SERVICE);
-		expect(mockSource.getRate("Name")).andReturn(1.0);
 	}
 
 	@After
@@ -84,6 +83,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -99,6 +99,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -114,6 +115,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -130,6 +132,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -145,6 +148,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -160,6 +164,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 		.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -181,6 +186,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -196,6 +202,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -214,6 +221,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		attributes.add(mockAttribute);
 		expect(mockExtent.getAttributes())
 			.andReturn(attributes);
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -233,6 +241,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		attributes.add(mockAttribute);
 		expect(mockExtent.getAttributes())
 			.andReturn(attributes);
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -252,6 +261,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		attributes.add(mockAttribute);
 		expect(mockExtent.getAttributes())
 			.andReturn(attributes);
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -271,6 +281,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		attributes.add(mockAttribute);
 		expect(mockExtent.getAttributes())
 			.andReturn(attributes);
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -290,6 +301,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		attributes.add(mockAttribute);
 		expect(mockExtent.getAttributes())
 			.andReturn(attributes);
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -311,6 +323,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		attributes.add(mockAttr);
 		expect(mockExtent.getAttributes())
 			.andReturn(attributes);
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -328,6 +341,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -343,6 +357,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -358,6 +373,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -373,6 +389,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
 			.andReturn(new ArrayList<Attribute>());
+		expect(mockExtent.getRate()).andReturn(2.0);
 		replayAll();
 		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 				mockSource, 
@@ -389,6 +406,7 @@ public class ReceiveOperatorTest extends EasyMockSupport {
 //		expect(mockExtent.getCardinality()).andReturn(1);
 //		expect(mockExtent.getAttributes())
 //			.andReturn(new ArrayList<Attribute>());
+//	expect(mockExtent.getRate()).andReturn(2.0);
 //		replayAll();
 //		ReceiveOperator op = new ReceiveOperator(mockExtent, 
 //				mockSource, 

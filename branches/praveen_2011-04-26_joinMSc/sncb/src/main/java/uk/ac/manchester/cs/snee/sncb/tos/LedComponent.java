@@ -33,14 +33,12 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
 
-public class LedComponent extends NesCComponent implements
-	TinyOS1Component {
+public class LedComponent extends NesCComponent {
 
     public LedComponent(final String name, final NesCConfiguration config,
-    		int tosVersion, boolean tossimFlag) {
-    	super(config, tosVersion, tossimFlag);
+    		boolean tossimFlag) {
+    	super(config, tossimFlag);
 		this.id = name;
 		this.systemComponent = true;
     }

@@ -9,14 +9,26 @@
 		<gateways>1</gateways>
 		<extents>
 			<extent name="SeaDefence">
-				<sites>2</sites>
+				<sites>1</sites>
+				<sensorTypes>
+					<attribute name="seaLevel" sensorType="seaLevel"/>
+					<attribute name="voltage" sensorType="voltage"/>		
+				</sensorTypes>						
 			</extent>
-  			<extent name="SeaDefenceEast">
-				<sites>2</sites>
+ 			<extent name="SeaDefenceEast">
+				<sites>1</sites>
+				<sensorTypes>
+					<attribute name="seaLevel" sensorType="seaLevel"/>
+					<attribute name="voltage" sensorType="voltage"/>		
+				</sensorTypes>						
 			</extent>
 			<extent name="SeaDefenceWest">
-				<sites>2</sites>
-			</extent>  
+				<sites>1</sites>
+				<sensorTypes>
+					<attribute name="seaLevel" sensorType="seaLevel"/>
+					<attribute name="voltage" sensorType="voltage"/>		
+				</sensorTypes>				
+			</extent>
 		</extents>
 	</sensor_network>
 

@@ -9,7 +9,7 @@ import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator;
-import uk.ac.manchester.cs.snee.metadata.source.SourceType;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 
 public class SNEEClientUsingTupleGeneratorForJoin extends SNEEClient {
 	
@@ -21,7 +21,7 @@ public class SNEEClientUsingTupleGeneratorForJoin extends SNEEClient {
 	public SNEEClientUsingTupleGeneratorForJoin(String query, 
 			double duration, String queryParams) 
 	throws SNEEException, IOException, SNEEConfigurationException, 
-	MetadataException, SNEEDataSourceException {
+	MetadataException, SNEEDataSourceException, SchemaMetadataException {
 		super(query, duration,queryParams);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClietnUsingTupleGeneratorSource()");	

@@ -243,7 +243,7 @@ public class MockOperator implements LogicalOperator {
 		}
 
 		@Override
-		public double getSourceRate() {
+		public double getStreamRate() {
 			// TODO Auto-generated method stub
 			return 0;
 		}
