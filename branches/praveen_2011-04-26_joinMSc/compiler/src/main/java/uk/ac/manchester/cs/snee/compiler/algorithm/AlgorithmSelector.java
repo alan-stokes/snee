@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.common.TupleDropPolicy;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
@@ -190,7 +191,12 @@ public class AlgorithmSelector {
 //			valveOperator.setPushBasedOperator(true);
 //		}
 		// Lossy or Lossless is to be determined via QoS parameters
-		if (qos.isTupleLossAllowed()) {
+		if (qos == null) {
+			//Setting default behaviour in case there is QoS
+			valveOperator.setAlgorithm(ValveOperator.TUPLE_DROP_MODE);
+			valveOperator.setLoadShedRate(MIN_SHED_RATE);
+			valveOperator.setTupleDropPolicy(TupleDropPolicy.FIFO);
+		} else if (qos.isTupleLossAllowed()) {
 			valveOperator.setAlgorithm(ValveOperator.TUPLE_DROP_MODE);
 			String rateParam = qos.getLoadShedRate();
 			double loadShedRate = MIN_SHED_RATE;
