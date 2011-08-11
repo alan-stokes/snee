@@ -130,8 +130,8 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 		if (join.isGetDataByPullModeOperator()) {
 			timer = new Timer();
 			evaluateTask = new EvaluateTask();
-			long currentTime = System.currentTimeMillis();
-			nextEvalTime = getNextEvalTime(currentTime);
+			//long currentTime = System.currentTimeMillis();
+			nextEvalTime = getNextEvalTime();
 			//TODO Rescheduling of timer needs to be probed into
 			//timer.sc
 			timer.schedule(evaluateTask, 0, nextEvalTime);
@@ -165,7 +165,10 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 		} while (true);
 	}*/
 
-	private long getNextEvalTime(long currentTime) {
+	/**
+	 * 
+	 */
+	private long getNextEvalTime() {
 		/*if ((currentTime + leftOperatorRate*1000) < (currentTime + rightOperatorRate*1000)) {
 			return (long) (currentTime + leftOperatorRate*1000);
 		} else {
@@ -181,7 +184,7 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 		if (leftOperatorRate == 0 || rightOperatorRate == 0) {
 			evalRate = (leftOperatorRate == 0)? rightOperatorRate: leftOperatorRate;
 			evalRate = (evalRate == 0)? 1.0:evalRate;			
-		} else  if (leftOperatorRate < rightOperatorRate) {
+		} else  if (leftOperatorRate > rightOperatorRate) {
 			evalRate = leftOperatorRate;
 		} else {
 			evalRate = rightOperatorRate;

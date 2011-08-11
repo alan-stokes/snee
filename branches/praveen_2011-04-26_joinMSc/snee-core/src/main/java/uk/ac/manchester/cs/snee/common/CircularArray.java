@@ -141,11 +141,12 @@ public class CircularArray<E> implements Iterable<E> {
 		 * increment the first element
 		 */
 		if (lastIndex == firstIndex) {			
-			firstIndex = incrementPointer(firstIndex);
-			numberElements--;
-			if (logger.isInfoEnabled()) {
-				logger.info("Object dropped in CircularArray for operator id: "+getOperatorId());
+			if (logger.isInfoEnabled() && getOperatorId()!= null) {
+				logger.info("Object dropped in CircularArray for operator id: "+getOperatorId()+ "with size: "+size()+ 
+						"and capacity: "+capacity+ " with last Index: "+lastIndex + " and firstIndex: "+firstIndex);
 			}
+			firstIndex = incrementPointer(firstIndex);			
+			numberElements--;			
 		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("Next insert index " + lastIndex
@@ -273,8 +274,8 @@ public class CircularArray<E> implements Iterable<E> {
 			//If the first index has incremented it to be equal to
 			//the last index, then it means there are no more elements
 			//in the queue and hence the pointers can be reset to 0
-			if (lastIndex == firstIndex) {
-				firstIndex = lastIndex = numberElements = 0;
+			if (size() == 0) {
+				firstIndex = lastIndex = 0;
 			}
 		}
 		//System.out.println("Polling end");

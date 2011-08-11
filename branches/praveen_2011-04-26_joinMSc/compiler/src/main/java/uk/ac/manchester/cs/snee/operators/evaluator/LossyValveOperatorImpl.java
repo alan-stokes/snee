@@ -31,8 +31,7 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 
 	private CircularArray<Output> inputBufferQueue;
 	private TupleDropPolicy tupleDropPolicy;
-	private int numTuplesToDrop = 1;
-	private String opId = "";
+	private int numTuplesToDrop = 1;	
 
 	public LossyValveOperatorImpl(LogicalOperator op, int qid)
 			throws SNEEException, SchemaMetadataException,
@@ -40,8 +39,7 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 		super(op, qid);
 		if (logger.isDebugEnabled()) {
 			logger.debug("Enter LossyValveOperatorImpl with query " + qid);
-		}
-		opId = op.getID();
+		}		
 		inputBufferQueue = new CircularArray<Output>(maxBufferSize, opId);
 		this.tupleDropPolicy = valveOperator.getTupleDropPolicy();
 		if (valveOperator.getLoadShedRate() == 1.0) {
@@ -81,8 +79,8 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 		}
 
 		if (inputBufferQueue.add(output)) {
-			if (logger.isInfoEnabled()) {
-				logger.info("Valve Operator with id: " + valveOperator.getID()
+			if (logger.isDebugEnabled()) {
+				logger.debug("Valve Operator with id: " + valveOperator.getID()
 						+ " using CQ with id: "
 						+ inputBufferQueue.getOperatorId()
 						+ " has a total number of "
@@ -100,7 +98,14 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 	 * Method to drop tuples in random sample of fixed size
 	 */
 	private void handleSampleDrop() {
-		if (inputBufferQueue.size() == (inputBufferQueue.capacity())) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("The Valve operator with id: "+opId+" has input buffer size : "+ inputBufferQueue.size()
+					+" and the capacity of the buffer is: "+inputBufferQueue.capacity());
+		}
+		//size + 1 is checked, because in Circular Array, if after insertion of the element,
+		//the size is full, it automatically drops an element. This + 1 check is done
+		//to avoid that
+		if (inputBufferQueue.size()+1 == (inputBufferQueue.capacity())) {
 			Set<Integer> sampleDropArray = getRandomIndexes();
 			List<Output> newList = new ArrayList<Output>();
 			for (int i = 0; i < maxBufferSize; i++) {
@@ -139,7 +144,14 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 	 * 
 	 */
 	private void handleFIFODrop() {
-		if (inputBufferQueue.size() == (inputBufferQueue.capacity())) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("The Valve operator with id: "+opId+" has input buffer size : "+ inputBufferQueue.size()
+					+" and the capacity of the buffer is: "+inputBufferQueue.capacity());
+		}
+		//size + 1 is checked, because in Circular Array, if after insertion of the element,
+		//the size is full, it automatically drops an element. This + 1 check is done
+		//to avoid that
+		if (inputBufferQueue.size()+1 == (inputBufferQueue.capacity())) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("The input buffer size is: "+ inputBufferQueue.size()
 						+" and the capacity of the buffer is: "+inputBufferQueue.capacity()+
@@ -147,7 +159,7 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 			}
 			for (int i = 0; i < numTuplesToDrop; i++) {
 				if (logger.isInfoEnabled()) {
-					logger.info("Object Dropped by FIFO");
+					logger.info("Object Dropped by FIFO for Valve Operator: "+opId);
 				}
 				inputBufferQueue.poll();
 			}
@@ -171,8 +183,8 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 
 	@Override
 	public Output getNext() {
-		if (logger.isTraceEnabled()) {
-			logger.trace("This is before Polling:***" + valveOperator.getID() + " with a size of "
+		if (logger.isDebugEnabled()) {
+			logger.debug("This is before Polling:***" + valveOperator.getID() + " with a size of "
 					+ inputBufferQueue.size() + this);
 		}
 		return inputBufferQueue.poll();
@@ -203,6 +215,11 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 	@Override
 	public int getSize() {
 		return inputBufferQueue.size();
+	}
+
+	@Override
+	public int getTotalObjectsInserted() {
+		return inputBufferQueue.totalObjectsInserted();
 	}
 
 }

@@ -290,5 +290,18 @@ implements Observer
 		logger.warn(msg);
 		return 0;
 	}
+	
+	/**
+	 * Method for the operator that follows the iterator model 
+	 * to implement, to get the size of the buffer held
+	 * by the operator
+	 * 
+	 * @return
+	 */
+	public int getTotalObjectsInserted() {
+		String msg = "Unsupported operation to get the total number of inserted items for operator " + m_op.getOperatorName();
+		logger.warn(msg);
+		return 0;
+	}
 
 }

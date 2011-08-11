@@ -68,4 +68,9 @@ public class LosslessValveOperatorImpl extends ValveOperatorAbstractImpl {
 		return inputBuffer.size();
 	}
 
+	@Override
+	public int getTotalObjectsInserted() {
+		return inputBuffer.totalObjectsInserted();
+	}
+
 }

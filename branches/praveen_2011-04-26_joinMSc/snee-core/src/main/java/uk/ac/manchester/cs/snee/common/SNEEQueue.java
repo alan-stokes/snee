@@ -211,4 +211,13 @@ public class SNEEQueue<E> extends AbstractQueue<E> {
 		return array[numElements - 1 % array.length];
 	}
 
+	/**
+	 * Returns the number of elements that have been inserted in this {@code SNEEQueue}.
+	 *  
+	 * @return the number of elements that have been inserted in this {@code SNEEQueue}.
+	 */
+	public int totalObjectsInserted() {
+		return numElements;		
+	}
+
 }

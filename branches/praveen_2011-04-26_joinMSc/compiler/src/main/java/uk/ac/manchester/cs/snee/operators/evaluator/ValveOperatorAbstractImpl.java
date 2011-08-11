@@ -22,12 +22,13 @@ import uk.ac.manchester.cs.snee.types.Duration;
 public abstract class ValveOperatorAbstractImpl extends EvaluationOperator {
 
 	private Logger logger = Logger
-			.getLogger(LosslessValveOperatorImpl.class.getName());
+			.getLogger(ValveOperatorAbstractImpl.class.getName());
 	protected ValveOperator valveOperator;
 	protected int maxBufferSize;
 	private Duration queueScanInterval;
 	private Timer timer;
 	private int objectSizeToPush;
+	protected String opId = "";
 
 	/**
 	 * The constructor method for the abstract class. All the variables that has
@@ -48,6 +49,7 @@ public abstract class ValveOperatorAbstractImpl extends EvaluationOperator {
 
 		// Instantiate valve operator
 		valveOperator = (ValveOperator) op;
+		opId = op.getID();
 		maxBufferSize = SNEEProperties
 				.getIntSetting(SNEEPropertyNames.RESULTS_HISTORY_SIZE_TUPLES);
 
@@ -111,6 +113,24 @@ public abstract class ValveOperatorAbstractImpl extends EvaluationOperator {
 	 * @return
 	 */
 	protected abstract boolean isQueueEmpty();
+	
+	public void close() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER close()");
+		}
+		super.close();
+		if (timer != null) {
+			timer.cancel();
+			timer.purge();
+		}
+		if (logger.isInfoEnabled()) {
+			logger.info("Total number of objects inserted in the Valve Operator with id: "
+					+ opId + "is: " + getTotalObjectsInserted());
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN close()");
+		}
+	}
 
 	/**
 	 * This method returns the head of the queue, when asked for by the parent
@@ -159,5 +179,7 @@ public abstract class ValveOperatorAbstractImpl extends EvaluationOperator {
 	public abstract Output getOldestEntry();
 	
 	public abstract int getSize();
+	
+	public abstract int getTotalObjectsInserted();
 
 }
