@@ -62,7 +62,8 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
   private AgendaIOT oldAgenda;
   private Integer numberOfRoutingTreesToWorkOn = 0;
   private static int choice;
-  
+  private String sep = System.getProperty("file.separator");
+  private File partialFolder; 
   /**
    * @param autonomicManager
    * the parent of this class.
@@ -72,6 +73,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
                                     boolean timePinned)
   {
     super(autonomicManager, _metadata);
+    setUpFolders(manager);
     this.spacePinned = spacePinned;
     this.timePinned = timePinned;
     this.timePinned = false; 
@@ -82,14 +84,19 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
   throws SchemaMetadataException 
   {
     this.qep = (SensorNetworkQueryPlan) oldQep;
-    outputFolder = manager.getOutputFolder();
-    new FailedNodeFrameWorkPartialUtils(this).outputTopologyAsDotFile(outputFolder, "/topology.dot");
+    new FailedNodeFrameWorkPartialUtils(this).outputTopologyAsDotFile(partialFolder,  sep + "topology.dot");
     this.oldIOT = qep.getIOT();
     oldIOT.setID("OldIOT");
     this.oldAgenda = this.qep.getAgendaIOT();
     this.numberOfRoutingTreesToWorkOn = numberOfTrees;
   }
   
+  private void setUpFolders(AutonomicManager manager)
+  {
+    partialFolder = new File(outputFolder.toString() + sep + "partialStrategy");
+    partialFolder.mkdir();
+  }
+
   @Override
   public List<Adapatation> adapt(ArrayList<String> failedNodes) 
   throws NumberFormatException, SNEEConfigurationException, SchemaMetadataException, 
@@ -104,7 +111,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
     ArrayList<RT> routingTrees = new ArrayList<RT>();
     ArrayList<String> disconnectedNodes = new ArrayList<String>();
     //create new routing tree
-    routingTrees = createNewRoutingTrees(failedNodes, disconnectedNodes, paf, oldIOT.getRT(), outputFolder );
+    routingTrees = createNewRoutingTrees(failedNodes, disconnectedNodes, paf, oldIOT.getRT(), partialFolder );
 
     //create store for all adapatations
     List<Adapatation> totalAdapatations = new ArrayList<Adapatation>();
@@ -166,7 +173,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
       //set up current objects
       RT routingTree =  routeIterator.next();
       Adapatation currentAdapatation = new Adapatation(qep);
-      File choiceFolder = new File(outputFolder.toString() + sep + "choice" + choice);
+      File choiceFolder = new File(partialFolder.toString() + sep + "choice" + choice);
       choiceFolder.mkdir();
       //create pinned paf
       PAF paf = pinPhysicalOperators(oldIOT, failedNodes, disconnectedNodes);

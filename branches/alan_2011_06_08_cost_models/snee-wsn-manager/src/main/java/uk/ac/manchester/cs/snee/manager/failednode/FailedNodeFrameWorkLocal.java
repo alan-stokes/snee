@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.failednode;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -36,6 +37,8 @@ public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
 {
   private Topology network = null;
   private FailedNodeLocalCluster clusters;
+  private File localFolder;
+  private String sep = System.getProperty("file.separator");
   /**
    * constructor
    * @param autonomicManager
@@ -43,6 +46,7 @@ public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
   public FailedNodeFrameWorkLocal(AutonomicManager autonomicManager, SourceMetadataAbstract _metadata)
   {
     super(autonomicManager, _metadata); 
+    setupFolders(outputFolder);
   }
 	
   /**
@@ -59,11 +63,16 @@ public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
   OptimizationException, IOException
   {  
     this.qep = (SensorNetworkQueryPlan) oldQep;
-    outputFolder = manager.getOutputFolder();
     clusters = new FailedNodeLocalCluster();
     network = getWsnTopology();
     locateEquivalentNodes();
-    new FailedNodeLocalClusterUtils(clusters, this.outputFolder).outputAsTextFile();
+    new FailedNodeLocalClusterUtils(clusters, localFolder).outputAsTextFile();
+  }
+
+  private void setupFolders(File outputFolder)
+  {
+    localFolder = new File(outputFolder.toString() + sep + "localStrategy");
+    localFolder.mkdir();
   }
 
   /**

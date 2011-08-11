@@ -58,6 +58,7 @@ public abstract class FrameWorkAbstract
   {
     this.manager = manager;
     this._metadata = _metadata;
+    this.outputFolder = manager.getOutputFolder();
   }
   /**
    * checks that the framework can adapt to one failed node

@@ -216,7 +216,6 @@ public class CandiateRouter extends Router
       treeChild.addOutput(choiceParent);
       choiceParent.removeInput(choiceChild);
       choiceParent.addInput(treeChild);
-      
     }  
   }
 
