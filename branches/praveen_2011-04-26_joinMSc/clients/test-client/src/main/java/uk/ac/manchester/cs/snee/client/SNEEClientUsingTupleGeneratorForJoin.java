@@ -22,7 +22,7 @@ public class SNEEClientUsingTupleGeneratorForJoin extends SNEEClient {
 			double duration, String queryParams) 
 	throws SNEEException, IOException, SNEEConfigurationException, 
 	MetadataException, SNEEDataSourceException, SchemaMetadataException {
-		super(query, duration,queryParams);
+		super(query, duration, queryParams, null);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClietnUsingTupleGeneratorSource()");	
 		/*controller.addServiceSource("CCO-Stored", ccoStoredUrl, 
@@ -116,8 +116,7 @@ public class SNEEClientUsingTupleGeneratorForJoin extends SNEEClient {
 				/* Initialise SNEEClient */
 				SNEEClientUsingTupleGeneratorForJoin client = 
 					new SNEEClientUsingTupleGeneratorForJoin(query, duration, queryParams);
-				
-				
+
 				/* Initialise and run data source */
 				_myDataSource = new ConstantRatePushStreamGenerator();
 				_myDataSource.startTransmission();
