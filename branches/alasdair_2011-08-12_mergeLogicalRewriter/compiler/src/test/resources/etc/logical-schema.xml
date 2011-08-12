@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<schema xmlns="http://snee.cs.man.ac.uk/namespace/logical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/logical-schema ../schema/logical-schema.xsd">
+
+      <stream name="TestStream" type="push">
+    	<column name="timestamp">
+        	<type class ="integer"/>
+         </column>
+         <column name="integerColumn">
+          	<type class ="integer"/>
+         </column>
+         <column name="floatColumn">
+          	<type class ="float"/>
+         </column>
+         <column name="stringColumn">
+          	<type class ="string"/>
+         </column>
+         <column name="boolColumn">
+          	<type class ="boolean"/>
+         </column>
+     </stream>
+
+      <stream name="PullStream" type="pull">
+    	<column name="timestamp">
+        	<type class ="integer"/>
+         </column>
+         <column name="integerColumn">
+          	<type class ="integer"/>
+         </column>
+         <column name="floatColumn">
+          	<type class ="float"/>
+         </column>
+         <column name="stringColumn">
+          	<type class ="string"/>
+         </column>
+         <column name="boolColumn">
+          	<type class ="boolean"/>
+         </column>
+     </stream>
+
+      <stream name="PushStream" type="push">
+    	<column name="timestamp">
+        	<type class ="integer"/>
+         </column>
+         <column name="integerColumn">
+          	<type class ="integer"/>
+         </column>
+         <column name="floatColumn">
+          	<type class ="float"/>
+         </column>
+         <column name="stringColumn">
+          	<type class ="string"/>
+         </column>
+         <column name="boolColumn">
+          	<type class ="boolean"/>
+         </column>
+     </stream>
+
+      <stream name="PushStream2" type="push">
+    	<column name="timestamp">
+        	<type class ="integer"/>
+         </column>
+         <column name="integerColumn">
+          	<type class ="integer"/>
+         </column>
+         <column name="floatColumn">
+          	<type class ="float"/>
+         </column>
+         <column name="stringColumn">
+          	<type class ="string"/>
+         </column>
+         <column name="boolColumn">
+          	<type class ="boolean"/>
+         </column>
+     </stream>
+
+      <stream name="PushStream3" type="push">
+    	<column name="timestamp">
+        	<type class ="integer"/>
+         </column>
+         <column name="integerColumn">
+          	<type class ="integer"/>
+         </column>
+         <column name="floatColumn">
+          	<type class ="float"/>
+         </column>
+         <column name="stringColumn">
+          	<type class ="string"/>
+         </column>
+         <column name="boolColumn">
+          	<type class ="boolean"/>
+         </column>
+     </stream>
+
+      <stream name="SensorStream" type="pull">
+    	<column name="timestamp">
+        	<type class ="integer"/>
+         </column>
+         <column name="intColumn">
+          	<type class ="integer"/>
+         </column>
+         <column name="fltColumn">
+          	<type class ="float"/>
+         </column>
+         <column name="strColumn">
+          	<type class ="string"/>
+         </column>
+         <column name="boolColumn">
+          	<type class ="boolean"/>
+         </column>
+     </stream>
+
+      <table name="TestTable">
+    	<column name="timestamp">
+        	<type class ="integer"/>
+         </column>
+         <column name="integerColumn">
+          	<type class ="integer"/>
+         </column>
+         <column name="floatColumn">
+          	<type class ="float"/>
+         </column>
+         <column name="stringColumn">
+          	<type class ="string"/>
+         </column>
+         <column name="boolColumn">
+          	<type class ="boolean"/>
+         </column>
+     </table>
+
+      <table name="Relation">
+    	<column name="timestamp">
+        	<type class ="integer"/>
+         </column>
+         <column name="integerColumn">
+          	<type class ="integer"/>
+         </column>
+         <column name="floatColumn">
+          	<type class ="float"/>
+         </column>
+         <column name="stringColumn">
+          	<type class ="string"/>
+         </column>
+         <column name="boolColumn">
+          	<type class ="boolean"/>
+         </column>
+     </table>
+	
+	  <stream name="HerneBay_Tide" type="push">
+	  	<column name="Timestamp">
+	  		<type class="integer"/>
+	  	</column>
+	  	<column name="DateTime">
+	  		<type class="timestamp"/>
+	  	</column>
+	  	<column name="observed">
+	  		<type class="decimal"/>
+	  	</column>
+	  	<column name="Tz">
+	  		<type class="decimal"/>
+	  	</column>
+	  	<column name="Hs">
+	  		<type class="decimal"/>
+	  	</column>
+	  	<column name="Hmax">
+	  		<type class="decimal"/>
+	  	</column>
+	  	<column name="Tp">
+	  		<type class="decimal"/>
+	  	</column>
+	  </stream>
+     
+     <stream name="HerneBay_Met" type="push">
+     	<column name="timestamp">
+     		<type class="timestamp"/>
+     	</column>
+         <column name="Air_pressure">
+          	<type class ="float"/>
+         </column>
+         <column name="Wind_speed">
+          	<type class ="integer"/>
+         </column>
+         <column name="Gust_speed">
+          	<type class ="boolean"/>
+         </column>
+         <column name="WDir">
+          	<type class ="string"/>
+         </column>
+         <column name="TAir">
+          	<type class ="decimal"/>
+         </column>
+     </stream>
+
+</schema>

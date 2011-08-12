@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<source xmlns="http://snee.cs.man.ac.uk/namespace/physical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../schema/physical-schema.xsd ">
+
+
+	<service_source name="PushService">
+		<interface-type>push-stream</interface-type>
+		<endpoint-reference>http://www.snee.info/test?wsdl</endpoint-reference>
+	</service_source>
+
+</source>
