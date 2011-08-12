@@ -21,7 +21,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
-import uk.ac.manchester.cs.snee.manager.Adapatation;
+import uk.ac.manchester.cs.snee.manager.Adaptation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.FrameWorkAbstract;
 import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.CandiateRouter;
@@ -36,7 +36,6 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperatorImpl;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
@@ -102,7 +101,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
   }
 
   @Override
-  public List<Adapatation> adapt(ArrayList<String> failedNodes) 
+  public List<Adaptation> adapt(ArrayList<String> failedNodes) 
   throws NumberFormatException, SNEEConfigurationException, SchemaMetadataException, 
   SNEECompilerException, MalformedURLException, SNEEException, OptimizationException,
   TypeMappingException, MetadataException, UnsupportedAttributeTypeException, 
@@ -118,7 +117,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
     routingTrees = createNewRoutingTrees(failedNodes, disconnectedNodes, paf, oldIOT.getRT(), partialFolder );
 
     //create store for all adapatations
-    List<Adapatation> totalAdapatations = new ArrayList<Adapatation>();
+    List<Adaptation> totalAdapatations = new ArrayList<Adaptation>();
     Iterator<RT> routeIterator = routingTrees.iterator();
     choice = 0;
     
@@ -188,7 +187,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
    */
   private void tryGoingThoughRoutes(Iterator<RT> routeIterator, ArrayList<String> failedNodes, 
                                     ArrayList<String> disconnectedNodes, 
-                                    List<Adapatation> totalAdapatations)
+                                    List<Adaptation> totalAdapatations)
   throws SNEEException, SchemaMetadataException, 
          OptimizationException, SNEEConfigurationException, 
          MalformedURLException, TypeMappingException, 
@@ -205,7 +204,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
     {
       //set up current objects
       RT routingTree =  routeIterator.next();
-      Adapatation currentAdapatation = new Adapatation(qep);
+      Adaptation currentAdapatation = new Adaptation(qep);
       
       File choiceFolder = new File(choiceFolderMain.toString() + sep + "choice" + choice);
       choiceFolder.mkdir();

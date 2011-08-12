@@ -1,26 +1,35 @@
 package uk.ac.manchester.cs.snee.manager.planner;
 
+import java.io.IOException;
 import java.util.List;
 
-import uk.ac.manchester.cs.snee.manager.Adapatation;
+import uk.ac.manchester.cs.snee.manager.Adaptation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 
 public class Planner 
 {
 
   private AutonomicManager manager;
+  private ChoiceAssessor assessor;
   
-  public Planner(AutonomicManager autonomicManager)
+  public Planner(AutonomicManager autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager)
   {
     manager = autonomicManager;
+    assessor = new ChoiceAssessor(_metadata, _metadataManager, manager.getOutputFolder());
   }
 
-  public Adapatation assessChoices(List<Adapatation> choices)
+  /**
+   * takes a set of adaptations and assesses each one for energy and time costs of executing the adaptation.
+   * @param choices
+   * @return
+   * @throws IOException 
+   */
+  public Adaptation assessChoices(List<Adaptation> choices) 
+  throws IOException
   {
-    return choices.get(0);
-    // TODO Auto-generated method stub
+    return assessor.assessChoices(choices);
   }
   
-  
-
 }

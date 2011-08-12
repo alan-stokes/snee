@@ -14,7 +14,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
-import uk.ac.manchester.cs.snee.manager.Adapatation;
+import uk.ac.manchester.cs.snee.manager.Adaptation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.FrameWorkAbstract;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalCluster;
@@ -204,12 +204,12 @@ public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
   }
 
   @Override
-  public List<Adapatation> adapt(ArrayList<String> failedNodeIDs)
+  public List<Adaptation> adapt(ArrayList<String> failedNodeIDs)
   {
     System.out.println("Running Failed Node FrameWork Local");
-    List<Adapatation> adapatation = new ArrayList<Adapatation>();
+    List<Adaptation> adapatation = new ArrayList<Adaptation>();
     Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
-    Adapatation adapt = new Adapatation(qep);
+    Adaptation adapt = new Adaptation(qep);
     while(failedNodeIDsIterator.hasNext())
     {
       String failedNodeID = failedNodeIDsIterator.next();

@@ -29,7 +29,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
-import uk.ac.manchester.cs.snee.manager.Adapatation;
+import uk.ac.manchester.cs.snee.manager.Adaptation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.FrameWorkAbstract;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
@@ -93,7 +93,7 @@ public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract
 	 * @throws SNEECompilerException 
 	 */
 	@Override
-	public List<Adapatation> adapt(ArrayList<String> failedNodes)
+	public List<Adaptation> adapt(ArrayList<String> failedNodes)
 	throws 
 	OptimizationException, UnsupportedAttributeTypeException,
 	SchemaMetadataException,SourceMetadataException,
@@ -105,8 +105,8 @@ public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract
 	
 	{
 	  System.out.println("Running Failed Node FrameWork Global");
-	  List<Adapatation> adaptation = new ArrayList<Adapatation>();
-	  Adapatation adapt = new Adapatation(qep);
+	  List<Adaptation> adaptation = new ArrayList<Adaptation>();
+	  Adaptation adapt = new Adaptation(qep);
 	  //remove nodes from topology
 		network = this.getWsnTopology();
 		network = cloner.deepClone(network);

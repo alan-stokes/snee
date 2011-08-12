@@ -12,20 +12,20 @@ import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 
-public class AdapatationUtils
+public class AdaptationUtils
 {
-  private Adapatation adapt = null;
-  private List<Adapatation> adaptList = null;
+  private Adaptation adapt = null;
+  private List<Adaptation> adaptList = null;
   private final String sep = System.getProperty("file.separator");
   private CostParameters costs;
   
-  public AdapatationUtils(Adapatation adapt, CostParameters costs)
+  public AdaptationUtils(Adaptation adapt, CostParameters costs)
   {
     this.adapt = adapt;
     this.costs = costs;
   }
   
-  public AdapatationUtils(List<Adapatation> adapt, CostParameters costs)
+  public AdaptationUtils(List<Adaptation> adapt, CostParameters costs)
   {
     this.adaptList = adapt;
     this.costs = costs;
@@ -39,10 +39,10 @@ public class AdapatationUtils
     }
     else
     {
-      Iterator<Adapatation> adaptIterator = adaptList.iterator();
+      Iterator<Adaptation> adaptIterator = adaptList.iterator();
       while(adaptIterator.hasNext())
       {
-        Adapatation cAdapt = adaptIterator.next();
+        Adaptation cAdapt = adaptIterator.next();
         System.out.println(cAdapt.toString());
       }
     }
@@ -61,10 +61,10 @@ public class AdapatationUtils
     }
     else
     {
-      Iterator<Adapatation> adaptIterator = adaptList.iterator();
+      Iterator<Adaptation> adaptIterator = adaptList.iterator();
       while(adaptIterator.hasNext())
       {
-        Adapatation cAdapt = adaptIterator.next();
+        Adaptation cAdapt = adaptIterator.next();
         writer.write(cAdapt.toString() + "\n");
       }
     }

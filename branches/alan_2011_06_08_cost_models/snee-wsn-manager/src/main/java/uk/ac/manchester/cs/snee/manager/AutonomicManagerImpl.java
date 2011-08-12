@@ -57,7 +57,6 @@ public class AutonomicManagerImpl implements AutonomicManager
   {
     this._metadataManager = _metadataManager;    
     monitor = new Monitor(this);
-    planner = new Planner(this);
     executer = new Executer(this);
   }
   
@@ -70,6 +69,7 @@ public class AutonomicManagerImpl implements AutonomicManager
     this.qep = qep;
     setupOutputFolder();
     anyliser = new Anaylsiser(this, _metadata, _metadataManager);
+    planner = new Planner(this, _metadata, _metadataManager);
     monitor.setQueryPlan(qep);
     monitor.setResultSet(resultSet);
     anyliser.initilise(qep, numberOfTreesToUse);
@@ -126,11 +126,11 @@ public class AutonomicManagerImpl implements AutonomicManager
          CostParametersException, SNCBException, 
          SNEECompilerException, IOException
   {
-    List<Adapatation> choices = anyliser.runFailedNodeFramework(failedNodes);
-    new AdapatationUtils(choices, _metadataManager.getCostParameters()).FileOutput(outputFolder);
-    new AdapatationUtils(choices, _metadataManager.getCostParameters()).systemOutput();
-    Adapatation finalChoice = planner.assessChoices(choices);
-    new AdapatationUtils(finalChoice,  _metadataManager.getCostParameters()).FileOutputFinalChoice(outputFolder);
+    List<Adaptation> choices = anyliser.runFailedNodeFramework(failedNodes);
+    new AdaptationUtils(choices, _metadataManager.getCostParameters()).FileOutput(outputFolder);
+    new AdaptationUtils(choices, _metadataManager.getCostParameters()).systemOutput();
+    Adaptation finalChoice = planner.assessChoices(choices);
+    new AdaptationUtils(finalChoice,  _metadataManager.getCostParameters()).FileOutputFinalChoice(outputFolder);
     executer.adapt(finalChoice);
     //newQEP.getIOT().exportAsDotFileWithFrags(fname, label, exchangesOnSites)
     //new AgendaIOTUtils( newQEP.getAgendaIOT(), newQEP.getIOT(), true).generateImage();

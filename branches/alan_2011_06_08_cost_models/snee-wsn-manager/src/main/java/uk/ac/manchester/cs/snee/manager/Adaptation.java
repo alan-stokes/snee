@@ -6,7 +6,7 @@ import java.util.Iterator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
-public class Adapatation
+public class Adaptation
 {
   private ArrayList<Site> reprogrammingSites;
   private ArrayList<Site> redirectedionSites;
@@ -15,8 +15,10 @@ public class Adapatation
   private ArrayList<Site> activateSites;
   private SensorNetworkQueryPlan newQep = null;
   private SensorNetworkQueryPlan oldQep = null;
+  private Long timeCost = null;
+  private Long energyCost = null;
   
-  public Adapatation(SensorNetworkQueryPlan oldQep)
+  public Adaptation(SensorNetworkQueryPlan oldQep)
   {
     reprogrammingSites = new ArrayList<Site>();
     redirectedionSites = new ArrayList<Site>();
@@ -164,6 +166,25 @@ public class Adapatation
     return activateSites;
   }
   
+  public void setTimeCost(Long timeCost)
+  {
+    this.timeCost = timeCost;
+  }
+
+  public Long getTimeCost()
+  {
+    return timeCost;
+  }
+
+  public void setEnergyCost(Long energyCost)
+  {
+    this.energyCost = energyCost;
+  }
+
+  public Long getEnergyCost()
+  {
+    return energyCost;
+  }
   
   /**
    * returns all offset start times of all temporal adjustments
@@ -237,6 +258,10 @@ public class Adapatation
       counter++;
     }
     output = output.concat("]");
+    if(energyCost != null)
+      output  = output.concat(" EnergyCost [" + energyCost.toString() + "]");
+    if(timeCost != null)
+      output  = output.concat(" TimeCost [" + timeCost.toString() + "]");
     return output;
   }
 }

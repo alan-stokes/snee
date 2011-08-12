@@ -16,7 +16,7 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.manager.Adapatation;
+import uk.ac.manchester.cs.snee.manager.Adaptation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.FrameWorkAbstract;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeFrameWorkGlobal;
@@ -132,7 +132,7 @@ public class Anaylsiser
     anaylisieCECM = true;   
   }
   
-  public List<Adapatation> runFailedNodeFramework(ArrayList<String> failedNodes) 
+  public List<Adaptation> runFailedNodeFramework(ArrayList<String> failedNodes) 
   throws OptimizationException, SchemaMetadataException, 
          TypeMappingException, AgendaException, 
          SNEEException, SNEEConfigurationException, 
@@ -143,7 +143,7 @@ public class Anaylsiser
          NumberFormatException
   {
   	//create adaparatation array
-  	List<Adapatation> adapatations = new ArrayList<Adapatation>();
+  	List<Adaptation> adapatations = new ArrayList<Adaptation>();
   	Iterator<FrameWorkAbstract> frameworkIterator = frameworks.iterator();
   	//go though methodologyies till located a adapatation.
   	while(frameworkIterator.hasNext())
@@ -161,12 +161,12 @@ public class Anaylsiser
   	}
     
     //output adapatations in a String format
-    Iterator<Adapatation> adapatationIterator = adapatations.iterator();
+    Iterator<Adaptation> adapatationIterator = adapatations.iterator();
     return adapatations;
   }
 
   private void checkEachFailureIndividually(ArrayList<String> failedNodes,
-      List<Adapatation> adapatations)
+      List<Adaptation> adapatations)
   {
     /*can't adapt to them all, so check to see if any are adpatable, 
     if so, remove them from next frameworks scope as local framework safer*/

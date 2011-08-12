@@ -6,7 +6,6 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEECompilerException;
@@ -30,7 +29,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
-import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
@@ -90,7 +88,7 @@ public abstract class FrameWorkAbstract
    * @param nodeID the id for the failed node of the query plan
    * @return new query plan which has now adjusted for the failed node.
    */
-  public abstract List<Adapatation> adapt(ArrayList<String> failedNodes)  
+  public abstract List<Adaptation> adapt(ArrayList<String> failedNodes)  
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException, AgendaException, 
   SNEEException, SNEEConfigurationException, 
@@ -113,9 +111,23 @@ public abstract class FrameWorkAbstract
   }
   
   
+  /**
+   * compares between 2 QEPs, looking for differences and so creating adaptations
+   * @param oldIOT
+   * @param newIOT
+   * @param oldAgenda
+   * @param newAgenda
+   * @param timePinned
+   * @param adaptation
+   * @param failedNodes
+   * @param routingTree
+   * @return
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   */
   protected boolean assessQEPsAgendas(IOT oldIOT, IOT newIOT, AgendaIOT oldAgenda, 
                                    AgendaIOT newAgenda, boolean timePinned,
-                                   Adapatation adaptation, ArrayList<String> failedNodes,
+                                   Adaptation adaptation, ArrayList<String> failedNodes,
                                    RT routingTree) 
   throws SchemaMetadataException, TypeMappingException
   {
@@ -144,7 +156,7 @@ public abstract class FrameWorkAbstract
    * @return
    */
   private boolean checkAgendas(AgendaIOT oldAgenda, AgendaIOT newAgenda, IOT newIOT, IOT oldIOT,
-      ArrayList<String> failedNodes, Adapatation currentAdapatation, boolean timePinned)
+      ArrayList<String> failedNodes, Adaptation currentAdapatation, boolean timePinned)
   {
     checkForTemporalChangedNodes(newAgenda, oldAgenda, newIOT, oldIOT, failedNodes, currentAdapatation);
     if(timePinned)
@@ -165,7 +177,7 @@ public abstract class FrameWorkAbstract
    */
   private void checkForTemporalChangedNodes(AgendaIOT newAgenda,
       AgendaIOT oldAgenda,  IOT newIOT, IOT oldIOT, ArrayList<String> failedNodes, 
-      Adapatation ad)
+      Adaptation ad)
   {
     Iterator<String> failedNodesIterator = failedNodes.iterator();
     while(failedNodesIterator.hasNext())
@@ -219,7 +231,7 @@ public abstract class FrameWorkAbstract
    * @param adjust
    */
   private void findAffectedSites(Node start, ArrayList<Site> affectedSites, AgendaIOT newAgenda,
-                             Adapatation ad, TemporalAdjustment adjust)
+                             Adaptation ad, TemporalAdjustment adjust)
   {
     affectedSites.add((Site) start);
     Task comm = newAgenda.getTransmissionTask(start); 
@@ -261,7 +273,7 @@ public abstract class FrameWorkAbstract
    */
   private boolean sortOutTiming(Node newChild, Node orginal, Node parent, 
       Node failedSite, Long startTime, Long duration, AgendaIOT newAgenda, 
-      AgendaIOT oldAgenda, TemporalAdjustment adjust, Adapatation ad)
+      AgendaIOT oldAgenda, TemporalAdjustment adjust, Adaptation ad)
   {
     Task commTask = newAgenda.getCommunicationTaskBetween(newChild, parent);
     Task commTimeOld = oldAgenda.getCommunicationTaskBetween(failedSite, parent);
@@ -299,7 +311,7 @@ public abstract class FrameWorkAbstract
    * @param iot2
    * @param currentAdapatation
    */
-  private void checkIOT(IOT newIOT, IOT oldIOT, ArrayList<String> failedNodes, Adapatation currentAdapatation)
+  private void checkIOT(IOT newIOT, IOT oldIOT, ArrayList<String> failedNodes, Adaptation currentAdapatation)
   {
     //check reprogrammed nodes
     checkForReProgrammedNodes(newIOT, oldIOT, currentAdapatation);
@@ -315,7 +327,7 @@ public abstract class FrameWorkAbstract
    * @param currentAdapatation
    */
   private void checkForDeactivatedNodes(IOT newIOT, IOT oldIOT,
-      ArrayList<String> failedNodes, Adapatation ad)
+      ArrayList<String> failedNodes, Adaptation ad)
   {
     RT rt = oldIOT.getRT();
     Iterator<Site> siteIterator = rt.siteIterator(TraversalOrder.PRE_ORDER);
@@ -340,7 +352,7 @@ public abstract class FrameWorkAbstract
    * @param ad
    */
   private void checkForReDirectionNodes(IOT newIOT, IOT oldIOT,
-      Adapatation ad)
+      Adaptation ad)
   {
     RT rt = newIOT.getRT();
     Iterator<Site> siteIterator = rt.siteIterator(TraversalOrder.PRE_ORDER);
@@ -374,7 +386,7 @@ public abstract class FrameWorkAbstract
    * @param currentAdapatation
    */
   private void checkForReProgrammedNodes(IOT newIOT, IOT oldIOT,
-      Adapatation ad)
+      Adaptation ad)
   {
     RT rt = newIOT.getRT();
     Iterator<Site> siteIterator = rt.siteIterator(TraversalOrder.POST_ORDER);
