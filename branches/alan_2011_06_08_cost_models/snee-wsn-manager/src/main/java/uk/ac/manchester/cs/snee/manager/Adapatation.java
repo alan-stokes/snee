@@ -23,7 +23,7 @@ public class Adapatation
     temporalSites = new ArrayList<TemporalAdjustment>();
     deactivationSites = new ArrayList<Site>();
     activateSites = new ArrayList<Site>();
-    this.oldQep = oldQep;
+    this.setOldQep(oldQep);
   }
   
   /**
@@ -117,6 +117,16 @@ public class Adapatation
   public SensorNetworkQueryPlan getNewQep()
   {
     return newQep;
+  }
+  
+  public void setOldQep(SensorNetworkQueryPlan oldQep)
+  {
+    this.oldQep = oldQep;
+  }
+
+  public SensorNetworkQueryPlan getOldQep()
+  {
+    return oldQep;
   }
   
   public int getTemporalChangesSize()
@@ -229,6 +239,4 @@ public class Adapatation
     output = output.concat("]");
     return output;
   }
-  
-  
 }

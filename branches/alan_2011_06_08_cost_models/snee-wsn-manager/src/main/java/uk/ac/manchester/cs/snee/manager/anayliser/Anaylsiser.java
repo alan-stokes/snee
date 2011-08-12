@@ -1,7 +1,5 @@
 package uk.ac.manchester.cs.snee.manager.anayliser;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -14,9 +12,7 @@ import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -62,7 +58,7 @@ public class Anaylsiser
     //add methodologies in order wished to be assessed
     frameworks.add(failedNodeFrameworkLocal);
     frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
-    frameworks.add(failedNodeFrameworkSpacePinned);
+    //frameworks.add(failedNodeFrameworkSpacePinned);
     frameworks.add(failedNodeFrameworkGlobal);
   }
 
@@ -150,11 +146,11 @@ public class Anaylsiser
   	List<Adapatation> adapatations = new ArrayList<Adapatation>();
   	Iterator<FrameWorkAbstract> frameworkIterator = frameworks.iterator();
   	//go though methodologyies till located a adapatation.
-  	while(adapatations.size() == 0 && frameworkIterator.hasNext())
+  	while(frameworkIterator.hasNext())
   	{
   	  FrameWorkAbstract framework = frameworkIterator.next();
   	  if(framework.canAdaptToAll(failedNodes))
-  	    adapatations = framework.adapt(failedNodes);
+  	    adapatations.addAll(framework.adapt(failedNodes));
   	  else
   	  {
   	    if(framework instanceof FailedNodeFrameWorkLocal)
@@ -166,10 +162,6 @@ public class Anaylsiser
     
     //output adapatations in a String format
     Iterator<Adapatation> adapatationIterator = adapatations.iterator();
-    while(adapatationIterator.hasNext())
-    {
-      System.out.println(adapatationIterator.next().toString());
-    }
     return adapatations;
   }
 

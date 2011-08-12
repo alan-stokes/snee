@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.failednode;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,6 +22,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceWhereSchedular;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -48,6 +50,7 @@ public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract
   private MetadataManager _metadataManager;
   private Topology network;
   private Cloner cloner;
+  private File globalFile;
   
   
 	public FailedNodeFrameWorkGlobal(AutonomicManager manager, 
@@ -56,6 +59,8 @@ public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract
   {
     super(manager, _metadata);
     this._metadataManager = _metadataManager;
+    globalFile = new File(outputFolder.toString() + sep + "global Stragety");
+    globalFile.mkdir();
     cloner = new Cloner();
     cloner.dontClone(Logger.class);
   }
@@ -99,25 +104,29 @@ public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract
 	CostParametersException, SNCBException, NumberFormatException, SNEECompilerException 
 	
 	{
+	  System.out.println("Running Failed Node FrameWork Global");
 	  List<Adapatation> adaptation = new ArrayList<Adapatation>();
 	  Adapatation adapt = new Adapatation(qep);
 	  //remove nodes from topology
 		network = this.getWsnTopology();
 		network = cloner.deepClone(network);
-		
 		Iterator<String> failedNodeIterator = failedNodes.iterator();
 		while(failedNodeIterator.hasNext())
 		{
 		  String nodeID = failedNodeIterator.next();
 		  network.removeNode(nodeID);
 		}
+		//remove exchanges from PAF
+		PAF paf = cloner.deepClone(qep.getIOT().getPAF());
+		paf = this.removeExchangesFromPAF(paf);
 		//shove though distributed section of compiler
 		//routing
 		Router router = new Router();
-		RT routingTree = router.doRouting(qep.getIOT().getPAF(), qep.getQueryName(), network);
+		RT routingTree = router.doRouting(paf, qep.getQueryName(), network);
 		//where
 		InstanceWhereSchedular instanceWhere = 
-		  new InstanceWhereSchedular(qep.getIOT().getPAF(), routingTree, qep.getCostParameters());
+		  new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), 
+		                             globalFile.toString());
     IOT newIOT = instanceWhere.getIOT();
     //when
     boolean useNetworkController = SNEEProperties.getBoolSetting(

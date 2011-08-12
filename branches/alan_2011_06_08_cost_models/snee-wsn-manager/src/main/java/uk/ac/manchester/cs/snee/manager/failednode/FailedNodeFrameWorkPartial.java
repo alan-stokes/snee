@@ -109,7 +109,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
   SourceMetadataException, TopologyReaderException, SNEEDataSourceException, 
   CostParametersException, SNCBException 
   { 
-    System.out.println("Running fake Adapatation "); 
+    System.out.println("Running Failed Node FrameWork Partial"); 
     //setup collectors
     PAF paf = oldIOT.getPAF(); 
     ArrayList<RT> routingTrees = new ArrayList<RT>();
@@ -365,16 +365,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
       physicalOperatorImpl.setTotallyPinned(false);
     }
     
-    //remove exchange operators (does not exist in a paf)
-    Iterator<SensornetOperator> pafIterator = paf.operatorIterator(TraversalOrder.POST_ORDER);
-    while(pafIterator.hasNext())
-    {
-      SensornetOperator physicalOperator = pafIterator.next();
-      if(physicalOperator instanceof SensornetExchangeOperator)
-      {
-        paf.getOperatorTree().removeNode(physicalOperator);
-      }
-    }
+    paf = this.removeExchangesFromPAF(paf);
     paf.setID("PinnedPAF");
     return paf;
   }

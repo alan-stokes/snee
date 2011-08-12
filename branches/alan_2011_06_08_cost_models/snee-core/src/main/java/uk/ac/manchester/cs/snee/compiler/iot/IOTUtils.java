@@ -8,14 +8,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
-
-import com.rits.cloning.Cloner;
-
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
@@ -342,16 +337,16 @@ public class IOTUtils
   
   /**
    * exports the IOT as a dot file, but contains fragments, and allows to turn on or off exchange operators
-   * @param fname  name of file
+   * @param outputFolderString  name of file
    * @param label label for within dot file
    * @param exchangesOnSites if exchange operators are broken down
    */
-  public void exportAsDotFileWithFrags(final String fname, final String label, boolean exchangesOnSites)
+  public void exportAsDotFileWithFrags(final String outputFolderString, final String label, boolean exchangesOnSites)
   {
     try
     {
       //create writer
-      PrintWriter out = new PrintWriter(new BufferedWriter( new FileWriter(fname)));
+      PrintWriter out = new PrintWriter(new BufferedWriter( new FileWriter(outputFolderString)));
       //create blurb
       out.println("digraph \"" + (String) instanceOperatorTree.getName() + "\" {");
       out.println("label = \"" + label + "\";");

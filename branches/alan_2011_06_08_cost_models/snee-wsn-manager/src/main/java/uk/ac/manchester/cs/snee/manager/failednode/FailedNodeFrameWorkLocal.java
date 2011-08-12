@@ -206,6 +206,7 @@ public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
   @Override
   public List<Adapatation> adapt(ArrayList<String> failedNodeIDs)
   {
+    System.out.println("Running Failed Node FrameWork Local");
     List<Adapatation> adapatation = new ArrayList<Adapatation>();
     Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
     Adapatation adapt = new Adapatation(qep);

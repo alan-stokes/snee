@@ -368,7 +368,8 @@ public class WhenScheduler {
 
     public AgendaIOT doWhenScheduling(IOT iot, QoSExpectations qos, String queryName, 
                                       CostParameters costParams)
-    throws OptimizationException, WhenSchedulerException, SNEEException, SNEEConfigurationException 
+    throws OptimizationException, WhenSchedulerException, 
+    SNEEException, SNEEConfigurationException 
     {
 
         try {

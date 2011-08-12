@@ -36,15 +36,9 @@ public interface AutonomicManager
       MetadataException, UnsupportedAttributeTypeException,
       SourceMetadataException, TopologyReaderException,
       SNEEDataSourceException, CostParametersException, 
-      SNCBException, SNEECompilerException;
+      SNCBException, SNEECompilerException, IOException;
 
-  public abstract void runCostModels() throws OptimizationException,
-      SNEEConfigurationException, SchemaMetadataException,
-      TypeMappingException, AgendaException, SNEEException,
-      MalformedURLException, MetadataException,
-      UnsupportedAttributeTypeException, SourceMetadataException,
-      TopologyReaderException, SNEEDataSourceException,
-      CostParametersException, SNCBException, SNEECompilerException;
+  public abstract void runCostModels() throws OptimizationException;
 
   public abstract void runAnyliserWithDeadNodes() throws OptimizationException;
 
@@ -75,4 +69,12 @@ public interface AutonomicManager
   public abstract File getOutputFolder();
   
   public abstract void setListener(SNCBSerialPortReceiver mr);
+
+  public abstract void runSimulatedNodeFailure()throws OptimizationException,
+  SNEEConfigurationException, SchemaMetadataException,
+  TypeMappingException, AgendaException, SNEEException,
+  MalformedURLException, MetadataException,
+  UnsupportedAttributeTypeException, SourceMetadataException,
+  TopologyReaderException, SNEEDataSourceException,
+  CostParametersException, SNCBException, SNEECompilerException, IOException;
 }

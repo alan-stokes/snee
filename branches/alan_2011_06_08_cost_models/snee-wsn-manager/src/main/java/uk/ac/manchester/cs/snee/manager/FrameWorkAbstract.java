@@ -22,6 +22,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -39,6 +40,7 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
@@ -416,4 +418,25 @@ public abstract class FrameWorkAbstract
     }
   }
   
+  /**
+   * helper method which removes Exchanges from a PAF
+   * @param paf
+   * @return
+   * @throws OptimizationException
+   */
+  protected PAF removeExchangesFromPAF(PAF paf) 
+  throws OptimizationException
+  {
+    //remove exchange operators (does not exist in a paf)
+    Iterator<SensornetOperator> pafIterator = paf.operatorIterator(TraversalOrder.POST_ORDER);
+    while(pafIterator.hasNext())
+    {
+      SensornetOperator physicalOperator = pafIterator.next();
+      if(physicalOperator instanceof SensornetExchangeOperator)
+      {
+        paf.getOperatorTree().removeNode(physicalOperator);
+      }
+    }
+    return paf;
+  }
 }

@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.monitor;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -162,15 +163,17 @@ public class Monitor implements Observer
   throws SNEEConfigurationException, OptimizationException, 
   SchemaMetadataException, TypeMappingException, 
   AgendaException, SNEEException, 
-  MalformedURLException, MetadataException, 
+  MetadataException, 
   UnsupportedAttributeTypeException, SourceMetadataException, 
   TopologyReaderException, SNEEDataSourceException, 
-  CostParametersException, SNCBException, SNEECompilerException
+  CostParametersException, SNCBException, 
+  SNEECompilerException, IOException
   {
     ArrayList<String> failedNodes = new ArrayList<String>();
     Node failedNode = qep.getIOT().getNode(3);
     failedNodes.add(failedNode.getID());
-    System.out.println("fake node failure of node 3");
+    System.out.println("running fake node failure simulation");
+    System.out.println("simulated failure of node 3");
     manager.runFailedNodeFramework(failedNodes);
     
   }

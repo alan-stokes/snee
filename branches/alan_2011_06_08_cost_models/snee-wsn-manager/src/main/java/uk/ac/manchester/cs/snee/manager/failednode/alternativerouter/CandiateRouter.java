@@ -193,6 +193,7 @@ public class CandiateRouter extends Router
       choice = choices.get(0);
     else
       choice = choices.get(randomiser.nextInt(choices.size()));
+    choices.remove(choice);
     choice = cloner.deepClone(choice);
     return choice;
   }

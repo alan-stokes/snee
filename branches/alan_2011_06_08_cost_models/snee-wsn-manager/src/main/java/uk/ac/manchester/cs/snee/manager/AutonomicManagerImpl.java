@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.ResultStore;
@@ -47,8 +47,7 @@ public class AutonomicManagerImpl implements AutonomicManager
   private ArrayList<Integer> deadNodes = null;
   private int noDeadNodes = 0;
   private int adaptionCount = 1;
-  private static Logger resultsLogger = 
-    Logger.getLogger("results.autonomicManager");
+  //private static Logger resultsLogger = Logger.getLogger("results.autonomicManager");
   // folder for autonomic data
   private File outputFolder = new File("AutonomicManagerData");;
   //fixed parameters of autonomic calculations
@@ -121,12 +120,18 @@ public class AutonomicManagerImpl implements AutonomicManager
   throws SNEEConfigurationException, OptimizationException, 
          SchemaMetadataException, TypeMappingException, 
          AgendaException, SNEEException, 
-         MalformedURLException, MetadataException, 
+         MetadataException, 
          UnsupportedAttributeTypeException, SourceMetadataException, 
          TopologyReaderException, SNEEDataSourceException, 
-         CostParametersException, SNCBException, SNEECompilerException
+         CostParametersException, SNCBException, 
+         SNEECompilerException, IOException
   {
     List<Adapatation> choices = anyliser.runFailedNodeFramework(failedNodes);
+    new AdapatationUtils(choices, _metadataManager.getCostParameters()).FileOutput(outputFolder);
+    new AdapatationUtils(choices, _metadataManager.getCostParameters()).systemOutput();
+    Adapatation finalChoice = planner.assessChoices(choices);
+    new AdapatationUtils(finalChoice,  _metadataManager.getCostParameters()).FileOutputFinalChoice(outputFolder);
+    executer.adapt(finalChoice);
     //newQEP.getIOT().exportAsDotFileWithFrags(fname, label, exchangesOnSites)
     //new AgendaIOTUtils( newQEP.getAgendaIOT(), newQEP.getIOT(), true).generateImage();
   }
@@ -136,17 +141,11 @@ public class AutonomicManagerImpl implements AutonomicManager
    * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#runCostModels()
    */
   @Override
-  public void runCostModels() 
-  throws OptimizationException, SNEEConfigurationException, 
-         SchemaMetadataException, TypeMappingException, 
-         AgendaException, SNEEException, 
-         MalformedURLException, MetadataException, 
-         UnsupportedAttributeTypeException, SourceMetadataException, 
-         TopologyReaderException, SNEEDataSourceException, 
-         CostParametersException, SNCBException, SNEECompilerException
-  {    
+  public void runCostModels() throws OptimizationException 
+
+  {   
+    System.out.println("running cost model estimates");
     anyliser.runECMs();
-    monitor.chooseFakeNodeFailure();
   }
   
   /* (non-Javadoc)
@@ -252,6 +251,22 @@ public class AutonomicManagerImpl implements AutonomicManager
   public void setListener(SNCBSerialPortReceiver mr)
   {
     monitor.addPacketReciever(mr);
+  }
+
+  /**
+   * method used to simulate test data
+   */
+  @Override
+  public void runSimulatedNodeFailure() throws OptimizationException,
+      SNEEConfigurationException, SchemaMetadataException,
+      TypeMappingException, AgendaException, SNEEException,
+      MalformedURLException, MetadataException,
+      UnsupportedAttributeTypeException, SourceMetadataException,
+      TopologyReaderException, SNEEDataSourceException,
+      CostParametersException, SNCBException, SNEECompilerException,
+      IOException
+  {
+    monitor.chooseFakeNodeFailure();
   }
 
 }
