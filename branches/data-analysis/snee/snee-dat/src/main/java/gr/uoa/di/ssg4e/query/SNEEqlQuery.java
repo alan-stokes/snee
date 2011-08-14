@@ -288,7 +288,7 @@ public class SNEEqlQuery {
 				/* You can only split if the parSum is 0 */
 				if ( parSum == 0 ){
 					sources.add( fromClause.substring(start, end) );
-					start += end + 1;
+					start = end + 1;
 				}
 				break;
 			case '(':
