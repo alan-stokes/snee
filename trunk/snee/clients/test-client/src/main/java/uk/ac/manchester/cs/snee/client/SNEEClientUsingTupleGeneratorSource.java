@@ -8,6 +8,7 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 
 public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 	
@@ -16,7 +17,7 @@ public class SNEEClientUsingTupleGeneratorSource extends SNEEClient {
 	public SNEEClientUsingTupleGeneratorSource(String query, 
 			double duration, String csvFile) 
 	throws SNEEException, IOException, SNEEConfigurationException, 
-	MetadataException {
+	MetadataException, SchemaMetadataException {
 		super(query, duration, csvFile);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClietnUsingTupleGeneratorSource()");		

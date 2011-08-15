@@ -249,4 +249,18 @@ public class AggregationExpression implements Expression {
 	public boolean isConstant() {
 		return false;
 	}
+	
+	/* (non-Javadoc)
+	 * @see uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression#setIsJoin(boolean)
+	 */
+	public void setIsJoinCondition(boolean isJoin) {
+		throw new AssertionError("An attribute cannot be a join condition.");
+	}
+	
+	/* (non-Javadoc)
+	 * @see uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression#isJoinCondition()
+	 */
+	public boolean isJoinCondition() {
+		return false;
+	}
 }

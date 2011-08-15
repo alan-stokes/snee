@@ -36,10 +36,9 @@ package uk.ac.manchester.cs.snee.operators.logical;
 import java.util.Iterator;
 import java.util.List;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-//import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
-//import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -182,10 +181,11 @@ public interface LogicalOperator extends Node {
 	 * 
 	 * @throws OptimizationException 
 	 *  An exception is any attribute in the list is not in the source; 
+	 * @throws SNEEConfigurationException 
 	 */
 	boolean pushProjectionDown(List<Expression> projectExpressions, 
 			List<Attribute> projectAttributes) 
-	throws OptimizationException;
+	throws OptimizationException, SNEEConfigurationException;
 
 	/**
 	 * Allow pushing down of a select Predicate.
@@ -200,9 +200,11 @@ public interface LogicalOperator extends Node {
 	 * @throws AssertionError 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
+	 * @throws SNEEConfigurationException 
 	 */
-	boolean pushSelectDown(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException;
+	boolean pushSelectIntoLeafOp(Expression predicate) 
+	throws SchemaMetadataException, AssertionError, TypeMappingException,
+	SNEEConfigurationException;
 
 	//XXX: Removed by AG as metadata now handled in metadata object
 //	/** 

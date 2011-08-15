@@ -9,6 +9,7 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 public class SNEEClientUsingCCO extends SNEEClient {
@@ -56,7 +57,7 @@ public class SNEEClientUsingCCO extends SNEEClient {
 		
 	public SNEEClientUsingCCO(String query, double duration) 
 	throws SNEEException, IOException, SNEEConfigurationException,
-	MetadataException, SNEEDataSourceException 
+	MetadataException, SNEEDataSourceException, SchemaMetadataException 
 	{
 		super(query, duration);
 		if (logger.isDebugEnabled()) 

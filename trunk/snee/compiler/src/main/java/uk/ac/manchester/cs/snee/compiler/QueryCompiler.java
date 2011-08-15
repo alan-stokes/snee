@@ -39,6 +39,7 @@ import java.io.StringReader;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
@@ -66,6 +67,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import antlr.CommonAST;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
@@ -111,12 +113,10 @@ public class QueryCompiler {
 		return parseTree;
 	}
 	
-	private LAF doTranslation(CommonAST parseTree, int queryID, 
-			String queryPlanOutputDir) 
-	throws TypeMappingException, SourceDoesNotExistException, 
-	SchemaMetadataException, 
-	OptimizationException, ParserException, ExtentDoesNotExistException,
-	RecognitionException, SNEEConfigurationException, ExpressionException 
+	private LAF doTranslation(CommonAST parseTree, int queryID, String queryPlanOutputDir) 
+	throws TypeMappingException, SourceDoesNotExistException, SchemaMetadataException, 
+	OptimizationException, ParserException, ExtentDoesNotExistException, RecognitionException, 
+	SNEEConfigurationException, ExpressionException, SourceMetadataException, SNEECompilerException 
 	{
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doTranslation() queryID: " + 
@@ -135,11 +135,11 @@ public class QueryCompiler {
 	}
 
 	private LAF doLogicalRewriting(LAF laf, int queryID) 
-	throws SNEEConfigurationException, OptimizationException {
+	throws SNEEConfigurationException, OptimizationException, SchemaMetadataException,
+	AssertionError, TypeMappingException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doLogicalRewriting: " + laf);
 		LogicalRewriter rewriter = new LogicalRewriter();
-		//TODO: Push projections and selections down to scan operator
 		LAF lafPrime = rewriter.doLogicalRewriting(laf);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 			new LAFUtils(lafPrime).generateGraphImage();
@@ -165,8 +165,7 @@ public class QueryCompiler {
 		return dlaf;
 	}
 	
-	private QueryExecutionPlan doSourcePlanning(DLAF dlaf, QoSExpectations qos, 
-	int queryID) 
+	private QueryExecutionPlan doSourcePlanning(DLAF dlaf, QoSExpectations qos, int queryID) 
 	throws SNEEException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException,
 	OptimizationException, WhenSchedulerException {
 		if (logger.isTraceEnabled())
@@ -202,13 +201,15 @@ public class QueryCompiler {
 	 * @throws ExpressionException 
 	 * @throws ExtentDoesNotExistException 
 	 * @throws SourceDoesNotExistException 
+	 * @throws SNEECompilerException 
+	 * @throws SourceMetadataException 
 	 */
-	public QueryExecutionPlan compileQuery(int queryID, String query, 
-			QoSExpectations qos) 
+	public QueryExecutionPlan compileQuery(int queryID, String query, QoSExpectations qos) 
 	throws SNEEException, TypeMappingException, SchemaMetadataException, OptimizationException, 
 	ParserException, RecognitionException, TokenStreamException, 
 	SNEEConfigurationException, SourceAllocatorException, WhenSchedulerException,
-	ExpressionException, SourceDoesNotExistException, ExtentDoesNotExistException 
+	ExpressionException, SourceDoesNotExistException, ExtentDoesNotExistException,
+	SourceMetadataException, SNEECompilerException 
 	 {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER: queryID: " + queryID + "\n\tquery: " + query);
