@@ -99,7 +99,7 @@ public class AggrEvalComponent extends NesCComponent {
 			replacements.put("__DERIVED_INCREMENTAL_AGGREGATES_DECLS__", 
 					AggrUtils.generateDerivedIncrAggregatesDecls(op.getAggregates()).toString());
 			replacements.put("__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__", 
-					AggrUtils.computeDerivedIncrAggregates(op.getAggregates()).toString());
+					AggrUtils.computeDerivedIncrAggregates(op.getAggregates(), target).toString());
 			replacements.put("__CONSTRUCT_TUPLE__", 
 					AggrUtils.generateTuple(op.getAttributes(), op.getAggregates()).toString());
 		

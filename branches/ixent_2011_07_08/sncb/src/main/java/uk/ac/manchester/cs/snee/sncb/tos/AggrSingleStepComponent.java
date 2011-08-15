@@ -110,7 +110,7 @@ public class AggrSingleStepComponent extends NesCComponent {
 			replacements.put("__DERIVED_INCREMENTAL_AGGREGATES_DECLS__", 
 					AggrUtils.generateDerivedIncrAggregatesDecls(aggregates).toString());
 			replacements.put("__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__", 
-					AggrUtils.computeDerivedIncrAggregates(aggregates).toString());
+					AggrUtils.computeDerivedIncrAggregates(aggregates, target).toString());
 			replacements.put("__CONSTRUCT_TUPLE__", 
 					AggrUtils.generateTuple(outputAttributes, aggregates).toString());			
 			

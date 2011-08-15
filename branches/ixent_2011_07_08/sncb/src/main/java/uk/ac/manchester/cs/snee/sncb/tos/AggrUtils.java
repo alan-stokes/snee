@@ -11,6 +11,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
+import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 
 public class AggrUtils {
 
@@ -172,7 +173,7 @@ public class AggrUtils {
 		return derivedAggregatesDeclsBuff;
     }
     
-    public static StringBuffer computeDerivedIncrAggregates(List<AggregationExpression> aggregates) {
+    public static StringBuffer computeDerivedIncrAggregates(List<AggregationExpression> aggregates, CodeGenTarget target) {
     	final StringBuffer derivedAggregatesBuff = new StringBuffer();
     	
 		for (AggregationExpression aggr : aggregates) {
@@ -192,8 +193,6 @@ public class AggrUtils {
 					String sumVar = displayName+"_sum";
 					String avgForStdevVar = displayName+"_avg_for_stdev";
 					String stdevVar = displayName+"_stdev";
-					String sqrtfn = "sqrtf";
-					
 					
 					derivedAggregatesBuff.append("\t\t" + avgForStdevVar +
 							" = ((float)"+sumVar+" / (float)"+ countVar+");\n");
@@ -206,7 +205,13 @@ public class AggrUtils {
 					derivedAggregatesBuff.append("\t\t\ttmpSum += (tmpDiff * tmpDiff);\n\n");
 					derivedAggregatesBuff.append("\t\t\tinHead=(inHead+1) % inQueueSize;\n\t\t}\n");
 					derivedAggregatesBuff.append("\t\twhile(inHead!=inTail);\n");
-					derivedAggregatesBuff.append("\t\t"+stdevVar+" = "+sqrtfn+"((float)tmpSum / ((float)"+countVar+" - 1.0));\n");
+					
+					if (target == CodeGenTarget.AVRORA_MICA2_T2 || 
+							target == CodeGenTarget.AVRORA_MICAZ_T2) {
+						derivedAggregatesBuff.append("\t\t"+stdevVar+" = (float)sqrt((double)tmpSum / ((double)"+countVar+" - 1.0));\n");
+					} else {
+						derivedAggregatesBuff.append("\t\t"+stdevVar+" = sqrtf((float)tmpSum / ((float)"+countVar+" - 1.0));\n");						
+					}
 				}
 			}
 		}
