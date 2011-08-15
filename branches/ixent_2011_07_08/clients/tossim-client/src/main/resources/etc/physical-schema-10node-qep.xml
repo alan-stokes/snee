@@ -15,6 +15,20 @@
 					<attribute name="voltage" sensorType="voltage"/>		
 				</sensorTypes>						
 			</extent>
+			<extent name="SeaDefence2">
+				<sites>1,2,3,4,5,6,7,8,9,10</sites>
+				<sensorTypes>
+					<attribute name="seaLevel" sensorType="seaLevel"/>
+					<attribute name="voltage" sensorType="voltage"/>		
+				</sensorTypes>						
+			</extent>
+			<extent name="SeaDefence3">
+				<sites>1,2,3,4,5,6,7,8,9,10</sites>
+				<sensorTypes>
+					<attribute name="seaLevel" sensorType="seaLevel"/>
+					<attribute name="voltage" sensorType="voltage"/>		
+				</sensorTypes>						
+			</extent>			
  			<extent name="SeaDefenceEast">
 				<sites>1,2,3,4,5</sites>
 				<sensorTypes>
@@ -22,6 +36,13 @@
 					<attribute name="voltage" sensorType="voltage"/>		
 				</sensorTypes>						
 			</extent>
+ 			<extent name="SeaDefenceEast2">
+				<sites>1,2,3,4,5</sites>
+				<sensorTypes>
+					<attribute name="seaLevel" sensorType="seaLevel"/>
+					<attribute name="voltage" sensorType="voltage"/>		
+				</sensorTypes>						
+			</extent>			
 			<extent name="SeaDefenceWest">
 				<sites>6,7,8,9,10</sites>
 				<sensorTypes>
