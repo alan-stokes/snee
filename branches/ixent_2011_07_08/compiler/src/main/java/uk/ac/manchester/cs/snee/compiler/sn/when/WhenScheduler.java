@@ -64,7 +64,7 @@ public class WhenScheduler {
     		final QoSExpectations qos, final String queryName)
 	    throws OptimizationException, WhenSchedulerException {
 
-	try {
+//	try {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER doWhenScheduling() with " + daf.getID());
 //		if (Settings.DISPLAY_COST_EXPRESSIONS) {
@@ -75,62 +75,63 @@ public class WhenScheduler {
 		
 	    logger.trace("Computing maximum possible buffering factor based on "
 	    		+ " memory");
-	    long maxBFactorSoFar = computeMaximumBufferingFactorBasedOnMemory(
-		    daf, qos);
-	    logger.trace("Max possible buffering factor according to memory " 
-	    		+ " available on nodes in sensor network: "	+ maxBFactorSoFar);
-	    
-	    if (daf.getFragments().size()==1) {
-	    	maxBFactorSoFar = 1;
-	    }
-	    
-		// optimizer should compute best buffering factor based on memory, 
-		// maxBFactor and delivery time
-	    if (qos.getBufferingFactor() == -1) { 
-			logger.trace("qos.getBufferingFactor()==-1");			
-			if ((qos.getMaxBufferingFactor() < maxBFactorSoFar)
-				&& (qos.getMaxBufferingFactor() != -1)) {
-			    maxBFactorSoFar = qos.getMaxBufferingFactor();
-			}
-	
-			logger.trace("Reduce buffering factor to meet delivery time QoS, "
-					+ "if given");
-			maxBFactorSoFar = computeMaximumBufferingFactorToMeetDeliveryTime(
-				daf, qos, maxBFactorSoFar);
-			
-			//We need this until we can support overlapping agendas
-			logger.trace("Reduce buffering factor if agenda overlap will occur");
-			maxBFactorSoFar = computeMaximumBufferingFactorWithoutAgendaOverlap(
-				daf, qos, maxBFactorSoFar);
-			
-	    } else {
-		//use the buffering factor specified in the Qos 
-	    //(overrides Max buffering factor)
-
-			if (qos.getBufferingFactor() 
-				> computeMaximumBufferingFactorToMeetDeliveryTime(
-				daf, qos, maxBFactorSoFar)) {
-			    throw new OptimizationException(
-				    "Buffering factor " + qos.getBufferingFactor() 
-				    + " specified in QoS cannot meet the maximum delivery time "
-					+ qos.getMaxDeliveryTime());
-			}
-			if (maxBFactorSoFar < qos.getBufferingFactor()) {
-			    throw new OptimizationException(
-				"Buffering factor " + qos.getBufferingFactor()
-				+ " specified in QoS cannot be supported due to "
-				+ "lack of memory");
-			}
-			long maxBfWithoutOverlap = computeMaximumBufferingFactorWithoutAgendaOverlap(daf,
-					qos, maxBFactorSoFar);
-			if (maxBfWithoutOverlap < qos.getMaxBufferingFactor()) {
-			    throw new OptimizationException(
-				"Buffering factor " + qos.getBufferingFactor()
-				+ " specified in QoS would require an agenda overlap;"
-				+ " these are currently not supported");
-			}
-			maxBFactorSoFar = qos.getMaxBufferingFactor();
-	    }
+	    long maxBFactorSoFar = 1;
+//	    long maxBFactorSoFar = computeMaximumBufferingFactorBasedOnMemory(
+//		    daf, qos);
+//	    logger.trace("Max possible buffering factor according to memory " 
+//	    		+ " available on nodes in sensor network: "	+ maxBFactorSoFar);
+//	    
+//	    if (daf.getFragments().size()==1) {
+//	    	maxBFactorSoFar = 1;
+//	    }
+//	    
+//		// optimizer should compute best buffering factor based on memory, 
+//		// maxBFactor and delivery time
+//	    if (qos.getBufferingFactor() == -1) { 
+//			logger.trace("qos.getBufferingFactor()==-1");			
+//			if ((qos.getMaxBufferingFactor() < maxBFactorSoFar)
+//				&& (qos.getMaxBufferingFactor() != -1)) {
+//			    maxBFactorSoFar = qos.getMaxBufferingFactor();
+//			}
+//	
+//			logger.trace("Reduce buffering factor to meet delivery time QoS, "
+//					+ "if given");
+//			maxBFactorSoFar = computeMaximumBufferingFactorToMeetDeliveryTime(
+//				daf, qos, maxBFactorSoFar);
+//			
+//			//We need this until we can support overlapping agendas
+//			logger.trace("Reduce buffering factor if agenda overlap will occur");
+//			maxBFactorSoFar = computeMaximumBufferingFactorWithoutAgendaOverlap(
+//				daf, qos, maxBFactorSoFar);
+//			
+//	    } else {
+//		//use the buffering factor specified in the Qos 
+//	    //(overrides Max buffering factor)
+//
+//			if (qos.getBufferingFactor() 
+//				> computeMaximumBufferingFactorToMeetDeliveryTime(
+//				daf, qos, maxBFactorSoFar)) {
+//			    throw new OptimizationException(
+//				    "Buffering factor " + qos.getBufferingFactor() 
+//				    + " specified in QoS cannot meet the maximum delivery time "
+//					+ qos.getMaxDeliveryTime());
+//			}
+//			if (maxBFactorSoFar < qos.getBufferingFactor()) {
+//			    throw new OptimizationException(
+//				"Buffering factor " + qos.getBufferingFactor()
+//				+ " specified in QoS cannot be supported due to "
+//				+ "lack of memory");
+//			}
+//			long maxBfWithoutOverlap = computeMaximumBufferingFactorWithoutAgendaOverlap(daf,
+//					qos, maxBFactorSoFar);
+//			if (maxBfWithoutOverlap < qos.getMaxBufferingFactor()) {
+//			    throw new OptimizationException(
+//				"Buffering factor " + qos.getBufferingFactor()
+//				+ " specified in QoS would require an agenda overlap;"
+//				+ " these are currently not supported");
+//			}
+//			maxBFactorSoFar = qos.getMaxBufferingFactor();
+//	    }
 
 	    try {
 	    	final Agenda agenda = new Agenda(qos.getMaxAcquisitionInterval(), 
@@ -141,17 +142,17 @@ public class WhenScheduler {
 	    } catch (Exception e) {
 	    	logger.warn("When Scheduler exception", e);
 	    	throw new WhenSchedulerException(e);
-	    	
-	    }
-	} catch (final AgendaException e) {
-		logger.warn(e);
-	    throw new WhenSchedulerException(e.getMessage());
-	} catch (SchemaMetadataException e) {
-		logger.warn(e);
-		throw new WhenSchedulerException(e.getMessage());
-	} catch (TypeMappingException e) {
-		logger.warn(e);
-		throw new WhenSchedulerException(e.getMessage());	}
+	    }    	
+//	    }
+//	} catch (final AgendaException e) {
+//		logger.warn(e);
+//	    throw new WhenSchedulerException(e.getMessage());
+//	} catch (SchemaMetadataException e) {
+//		logger.warn(e);
+//		throw new WhenSchedulerException(e.getMessage());
+//	} catch (TypeMappingException e) {
+//		logger.warn(e);
+//		throw new WhenSchedulerException(e.getMessage());	}
     }
 
     /**
