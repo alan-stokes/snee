@@ -65,10 +65,6 @@ public class SleepTask extends Task {
 	return (this.endTime - this.startTime);
     }
 
-    protected final long getDuration() {
-	return (this.endTime - this.startTime);
-    }
-
     /**
      * @return True Overwritting general task
      */

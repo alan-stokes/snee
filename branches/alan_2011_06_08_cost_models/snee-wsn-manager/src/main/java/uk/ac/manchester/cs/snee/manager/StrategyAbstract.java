@@ -42,7 +42,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
-public abstract class FrameWorkAbstract
+public abstract class StrategyAbstract
 {
   protected SensorNetworkQueryPlan qep;
   protected AutonomicManager manager;
@@ -54,7 +54,7 @@ public abstract class FrameWorkAbstract
    * bog standard constructor
    * @param manager
    */
-  public FrameWorkAbstract(AutonomicManager manager, SourceMetadataAbstract _metadata)
+  public StrategyAbstract(AutonomicManager manager, SourceMetadataAbstract _metadata)
   {
     this.manager = manager;
     this._metadata = _metadata;

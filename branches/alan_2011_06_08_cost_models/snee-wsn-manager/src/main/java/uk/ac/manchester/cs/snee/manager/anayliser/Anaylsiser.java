@@ -18,10 +18,10 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.Adaptation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
-import uk.ac.manchester.cs.snee.manager.FrameWorkAbstract;
-import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeFrameWorkGlobal;
-import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeFrameWorkLocal;
-import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeFrameWorkPartial;
+import uk.ac.manchester.cs.snee.manager.StrategyAbstract;
+import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyGlobal;
+import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
+import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyPartial;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -40,21 +40,21 @@ public class Anaylsiser
   private AutonomicManager manager;
   private boolean anaylisieCECM = true;
   private String deadSitesList = "";  
-  ArrayList<FrameWorkAbstract> frameworks;
+  ArrayList<StrategyAbstract> frameworks;
 
   public Anaylsiser(AutonomicManager autonomicManager, 
                     SourceMetadataAbstract _metadata, MetadataManager _metadataManager)
   {
     manager = autonomicManager;
-    frameworks = new ArrayList<FrameWorkAbstract>();
-    FailedNodeFrameWorkPartial failedNodeFrameworkSpaceAndTimePinned = 
-      new FailedNodeFrameWorkPartial(manager, _metadata, true, true);
-    FailedNodeFrameWorkPartial failedNodeFrameworkSpacePinned = 
-      new FailedNodeFrameWorkPartial(manager, _metadata, true, false);
-    FailedNodeFrameWorkLocal failedNodeFrameworkLocal = 
-      new FailedNodeFrameWorkLocal(manager, _metadata);
-    FailedNodeFrameWorkGlobal failedNodeFrameworkGlobal = 
-      new FailedNodeFrameWorkGlobal(manager, _metadata, _metadataManager);
+    frameworks = new ArrayList<StrategyAbstract>();
+    FailedNodeStrategyPartial failedNodeFrameworkSpaceAndTimePinned = 
+      new FailedNodeStrategyPartial(manager, _metadata, true, true);
+    FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
+      new FailedNodeStrategyPartial(manager, _metadata, true, false);
+    FailedNodeStrategyLocal failedNodeFrameworkLocal = 
+      new FailedNodeStrategyLocal(manager, _metadata);
+    FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
+      new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
     //add methodologies in order wished to be assessed
     frameworks.add(failedNodeFrameworkLocal);
     frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
@@ -69,10 +69,10 @@ public class Anaylsiser
   {//sets ECMs with correct query execution plan
 	  this.qep = (SensorNetworkQueryPlan) qep;
 	  this.CMA = new AnayliserCostModelAssessor(qep);
-	  Iterator<FrameWorkAbstract> frameworkIterator = frameworks.iterator();
+	  Iterator<StrategyAbstract> frameworkIterator = frameworks.iterator();
 	  while(frameworkIterator.hasNext())
 	  {
-	    FrameWorkAbstract currentFrameWork = frameworkIterator.next();
+	    StrategyAbstract currentFrameWork = frameworkIterator.next();
 	    currentFrameWork.initilise(qep, noOfTrees);
 	  } 
   }
@@ -144,16 +144,16 @@ public class Anaylsiser
   {
   	//create adaparatation array
   	List<Adaptation> adapatations = new ArrayList<Adaptation>();
-  	Iterator<FrameWorkAbstract> frameworkIterator = frameworks.iterator();
+  	Iterator<StrategyAbstract> frameworkIterator = frameworks.iterator();
   	//go though methodologyies till located a adapatation.
   	while(frameworkIterator.hasNext())
   	{
-  	  FrameWorkAbstract framework = frameworkIterator.next();
+  	  StrategyAbstract framework = frameworkIterator.next();
   	  if(framework.canAdaptToAll(failedNodes))
   	    adapatations.addAll(framework.adapt(failedNodes));
   	  else
   	  {
-  	    if(framework instanceof FailedNodeFrameWorkLocal)
+  	    if(framework instanceof FailedNodeStrategyLocal)
   	    {
   	      checkEachFailureIndividually(failedNodes, adapatations);
   	    }

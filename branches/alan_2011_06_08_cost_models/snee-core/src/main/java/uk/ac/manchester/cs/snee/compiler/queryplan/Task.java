@@ -85,6 +85,14 @@ public abstract class Task {
     public final long getStartTime() {
 	return this.startTime;
     }
+    
+    /**
+     * Returns the duration of this task.
+     * @return
+     */
+    protected final long getDuration() {
+      return this.endTime - this.startTime;
+    }
 
     /**
      * @return False unless overwritten by sleep task

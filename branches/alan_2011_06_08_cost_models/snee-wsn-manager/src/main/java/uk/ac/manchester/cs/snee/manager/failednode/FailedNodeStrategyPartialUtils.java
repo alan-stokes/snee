@@ -14,13 +14,13 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
  *@author stokesa6
  * class used to add utility functions for failed node framework
  **/
-public class FailedNodeFrameWorkPartialUtils 
+public class FailedNodeStrategyPartialUtils 
 {
 
-  private FailedNodeFrameWorkPartial ad;
+  private FailedNodeStrategyPartial ad;
   private String sep = System.getProperty("file.separator");
   
-  public FailedNodeFrameWorkPartialUtils(FailedNodeFrameWorkPartial ad)
+  public FailedNodeStrategyPartialUtils(FailedNodeStrategyPartial ad)
   {
     this.ad = ad;
   }

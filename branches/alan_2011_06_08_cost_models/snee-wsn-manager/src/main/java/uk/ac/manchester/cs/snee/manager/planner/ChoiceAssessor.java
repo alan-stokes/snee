@@ -2,17 +2,19 @@ package uk.ac.manchester.cs.snee.manager.planner;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
+import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.Adaptation;
 import uk.ac.manchester.cs.snee.manager.AdaptationUtils;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
+
 public class ChoiceAssessor
 {
   private String sep = System.getProperty("file.separator");
@@ -41,12 +43,58 @@ public class ChoiceAssessor
     while(choiceIterator.hasNext())
     {
       Adaptation adapt = choiceIterator.next();
+      adapt.setTimeCost(this.timeCost(adapt));
       adapt.setEnergyCost(this.energyCost(adapt));
-      adapt.setTimeCost(this.energyCost(adapt));
+      adapt.setRuntimeCost(this.runTimeCost(adapt));
+      adapt.setLifetimeEstimate(this.estimatedLifetime(adapt));
+      
     }
     new AdaptationUtils(choices, _metadataManager.getCostParameters()).FileOutput(AssessmentFolder);
+    
     return this.locateBestAdaptation(choices);
   }
+  
+  
+  
+  /**
+   * method to determine the estimated lifetime of the new QEP
+   * @param adapt
+   * @return
+   */
+  private Double estimatedLifetime(Adaptation adapt)
+  {
+    double shortestLifetime = Double.MAX_VALUE; //s
+    
+    Iterator<Site> siteIter = adapt.getNewQep().getIOT().getRT().siteIterator(
+        TraversalOrder.POST_ORDER);
+    while (siteIter.hasNext()) {
+      Site site = siteIter.next();
+      if (site!=adapt.getNewQep().getIOT().getRT().getRoot()) {
+        
+        double siteEnergySupply = site.getEnergyStock()/1000.0; // mJ to J 
+        double siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site); // J
+        double agendaLength = Agenda.bmsToMs(adapt.getNewQep().getAgendaIOT().getLength_bms(false))/1000.0; // ms to s
+        double energyConsumptionRate = siteEnergyCons/agendaLength; // J/s
+        double siteLifetime = siteEnergySupply / energyConsumptionRate; //s
+      
+        shortestLifetime = Math.min((double)shortestLifetime, siteLifetime);
+      }
+      adapt.setLifetimeEstimate(shortestLifetime);
+    }// TODO Auto-generated method stub
+    return null;
+  }
+
+  /**
+   * method to determine cost of running new QEP for an agenda execution cycle
+   * @param adapt
+   * @return
+   */
+  private Long runTimeCost(Adaptation adapt)
+  {
+    // TODO Auto-generated method stub
+    return (long) 0;
+  }
+
   /**
    * Method which determines the energy cost of making the adaptation.
    * @param adapt
@@ -54,6 +102,7 @@ public class ChoiceAssessor
    */
   private Long energyCost(Adaptation adapt)
   {
+    // TODO Auto-generated method stub
     return (long) 0;
   }
   
@@ -64,81 +113,31 @@ public class ChoiceAssessor
    */
   private Long timeCost(Adaptation adapt)
   {
+    // TODO Auto-generated method stub
     return (long) 0;
   }
   
   /**
-   * goes though the choices list locating the one with the least energy and time costs.
+   * goes though the choices list locating the one with the biggest lifetime
    * @param choices
    * @return
    */
   private Adaptation locateBestAdaptation(List<Adaptation> choices)
   {
-    List<Adaptation> finalChoices = new ArrayList<Adaptation>();
-    Long cost = Long.MAX_VALUE;
+    Adaptation finalChoice = null;
+    Double cost = Double.MAX_VALUE;
     Iterator<Adaptation> choiceIterator = choices.iterator();
     //calculate each cost, and compares it with the best so far, if the same, store it 
     while(choiceIterator.hasNext())
     {
       Adaptation choice = choiceIterator.next();
-      Long choiceCost = choice.getEnergyCost() + choice.getTimeCost();
+      Double choiceCost = choice.getLifetimeEstimate();
       if(choiceCost < cost)
       {
-        finalChoices.clear();
-        finalChoices.add(choice);
+        finalChoice = choice;
         cost = choiceCost;
       }
-      if(choiceCost == cost)
-      {
-        finalChoices.add(choice);
-      }
     }
-    /*if only one best choice, return it 
-    otherwise compare the cost of each tuple travelling up the tree to find the one with the least running cost.
-    */
-    if(finalChoices.size() == 1)
-      return finalChoices.get(0);
-    else
-    {
-      return compareRunTimeCosts(finalChoices);
-    }
-  }
-
-  /**
-   * goes though the left over choices and compares their run time costs, to find 
-   * the cheapest adaptation in run time costs.
-   * @param finalChoices
-   * @return
-   */
-  private Adaptation compareRunTimeCosts(List<Adaptation> finalChoices)
-  {
-    Long runningCost = Long.MAX_VALUE;
-    Adaptation finalChoice = null;
-    Iterator<Adaptation> finalChoiceIterator = finalChoices.iterator();
-    while(finalChoiceIterator.hasNext())
-    {
-      Adaptation currentFinalChoice = finalChoiceIterator.next();
-      Long currentRunningCost = calculateRunningCost(currentFinalChoice);
-      if(currentRunningCost < runningCost)
-      {
-        finalChoice = currentFinalChoice;
-        runningCost = currentRunningCost;
-      }
-    } 
     return finalChoice;
   }
-
-  /**
-   * calculates running costs by tracking the cost of each tuple from source to sink
-   * @param currentFinalChoice
-   * @return
-   */
-  private Long calculateRunningCost(Adaptation currentFinalChoice)
-  {
-    RT routingTree = currentFinalChoice.getNewQep().getRT();
-    
-    // TODO Auto-generated method stub
-    return Long.MAX_VALUE -1;
-  }
-  
 }

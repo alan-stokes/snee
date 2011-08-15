@@ -16,7 +16,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.Adaptation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
-import uk.ac.manchester.cs.snee.manager.FrameWorkAbstract;
+import uk.ac.manchester.cs.snee.manager.StrategyAbstract;
+import uk.ac.manchester.cs.snee.manager.StrategyID;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalCluster;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalClusterUtils;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LocalClusterEquivalenceRelation;
@@ -31,7 +32,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
  * @author alan
  *class which encapsulates the local framework using clusters and equivalence relations
  */
-public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
+public class FailedNodeStrategyLocal extends StrategyAbstract
 {
   private Topology network = null;
   private FailedNodeLocalCluster clusters;
@@ -41,7 +42,7 @@ public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
    * constructor
    * @param autonomicManager
    */
-  public FailedNodeFrameWorkLocal(AutonomicManager autonomicManager, SourceMetadataAbstract _metadata)
+  public FailedNodeStrategyLocal(AutonomicManager autonomicManager, SourceMetadataAbstract _metadata)
   {
     super(autonomicManager, _metadata); 
     setupFolders(outputFolder);
@@ -209,7 +210,7 @@ public class FailedNodeFrameWorkLocal extends FrameWorkAbstract
     System.out.println("Running Failed Node FrameWork Local");
     List<Adaptation> adapatation = new ArrayList<Adaptation>();
     Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
-    Adaptation adapt = new Adaptation(qep);
+    Adaptation adapt = new Adaptation(qep, StrategyID.FAILED_NODE_LOCAL);
     while(failedNodeIDsIterator.hasNext())
     {
       String failedNodeID = failedNodeIDsIterator.next();

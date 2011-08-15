@@ -23,7 +23,8 @@ import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.Adaptation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
-import uk.ac.manchester.cs.snee.manager.FrameWorkAbstract;
+import uk.ac.manchester.cs.snee.manager.StrategyAbstract;
+import uk.ac.manchester.cs.snee.manager.StrategyID;
 import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.CandiateRouter;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
@@ -54,7 +55,7 @@ import com.rits.cloning.Cloner;
  *class designed to encapsulate the partial framework of adapting just what needs to be adapted
  */
 
-public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
+public class FailedNodeStrategyPartial extends StrategyAbstract
 {
   private boolean spacePinned;
   private boolean timePinned;
@@ -69,7 +70,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
    * @param autonomicManager
    * the parent of this class.
    */
-  public FailedNodeFrameWorkPartial(AutonomicManager autonomicManager, 
+  public FailedNodeStrategyPartial(AutonomicManager autonomicManager, 
                                     SourceMetadataAbstract _metadata, boolean spacePinned, 
                                     boolean timePinned)
   {
@@ -87,7 +88,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
   throws SchemaMetadataException 
   {
     this.qep = (SensorNetworkQueryPlan) oldQep;
-    new FailedNodeFrameWorkPartialUtils(this).outputTopologyAsDotFile(partialFolder,  sep + "topology.dot");
+    new FailedNodeStrategyPartialUtils(this).outputTopologyAsDotFile(partialFolder,  sep + "topology.dot");
     this.oldIOT = qep.getIOT();
     oldIOT.setID("OldIOT");
     this.oldAgenda = this.qep.getAgendaIOT();
@@ -204,7 +205,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
     {
       //set up current objects
       RT routingTree =  routeIterator.next();
-      Adaptation currentAdapatation = new Adaptation(qep);
+      Adaptation currentAdapatation = new Adaptation(qep, StrategyID.FAILED_NODE_PARTIAL);
       
       File choiceFolder = new File(choiceFolderMain.toString() + sep + "choice" + choice);
       choiceFolder.mkdir();
@@ -217,7 +218,7 @@ public class FailedNodeFrameWorkPartial extends FrameWorkAbstract
       //run new iot though when scheduler and locate changes
       AgendaIOT newAgenda = doSNWhenScheduling(newIOT, qep.getQos(), qep.getID(), qep.getCostParameters());
       //output new and old agendas
-      new FailedNodeFrameWorkPartialUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), oldIOT, newIOT, choiceFolder);
+      new FailedNodeStrategyPartialUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), oldIOT, newIOT, choiceFolder);
       boolean success = assessQEPsAgendas(oldIOT, newIOT, oldAgenda, newAgenda, 
                                           timePinned, currentAdapatation, failedNodes, routingTree);
       if(success)

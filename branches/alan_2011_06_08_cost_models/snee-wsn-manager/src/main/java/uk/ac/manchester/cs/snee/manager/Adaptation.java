@@ -17,8 +17,11 @@ public class Adaptation
   private SensorNetworkQueryPlan oldQep = null;
   private Long timeCost = null;
   private Long energyCost = null;
+  private Long runtimeCost = null;
+  private Double lifetimeEstimate = null; //done in agenda cycles
+  private StrategyID id;
   
-  public Adaptation(SensorNetworkQueryPlan oldQep)
+  public Adaptation(SensorNetworkQueryPlan oldQep, StrategyID id)
   {
     reprogrammingSites = new ArrayList<Site>();
     redirectedionSites = new ArrayList<Site>();
@@ -26,6 +29,7 @@ public class Adaptation
     deactivationSites = new ArrayList<Site>();
     activateSites = new ArrayList<Site>();
     this.setOldQep(oldQep);
+    this.setId(id);
   }
   
   /**
@@ -186,6 +190,37 @@ public class Adaptation
     return energyCost;
   }
   
+  public void setId(StrategyID id)
+  {
+    this.id = id;
+  }
+
+  public StrategyID getId()
+  {
+    return id;
+  }
+  
+  public void setRuntimeCost(Long runtimeCost)
+  {
+    this.runtimeCost = runtimeCost;
+  }
+
+  public Long getRuntimeCost()
+  {
+    return runtimeCost;
+  }
+
+  public void setLifetimeEstimate(Double lifetimeEstimate)
+  {
+    this.lifetimeEstimate = lifetimeEstimate;
+  }
+
+  public Double getLifetimeEstimate()
+  {
+    return lifetimeEstimate;
+  }
+  
+  
   /**
    * returns all offset start times of all temporal adjustments
    * @return
@@ -262,6 +297,13 @@ public class Adaptation
       output  = output.concat(" EnergyCost [" + energyCost.toString() + "]");
     if(timeCost != null)
       output  = output.concat(" TimeCost [" + timeCost.toString() + "]");
+    if(runtimeCost != null)
+      output  = output.concat(" EnergyCost [" + energyCost.toString() + "]");
+    if(lifetimeEstimate != null)
+      output  = output.concat(" TimeCost [" + timeCost.toString() + "]");
+    if(lifetimeEstimate != null)
+      output  = output.concat(" TimeCost [" + timeCost.toString() + "]");
+    output  = output.concat(" ID [" + id.toString() + "]");
     return output;
   }
 }

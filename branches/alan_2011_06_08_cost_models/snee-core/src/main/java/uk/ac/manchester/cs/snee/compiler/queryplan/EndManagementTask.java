@@ -62,10 +62,6 @@ public class EndManagementTask extends Task {
 	return (this.endTime - this.startTime);
     }
 
-    protected final long getDuration() {
-	return (this.endTime - this.startTime);
-    }
-
     /**
      * @return True Overwriting general task
      */

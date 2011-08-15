@@ -31,7 +31,8 @@ import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.Adaptation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
-import uk.ac.manchester.cs.snee.manager.FrameWorkAbstract;
+import uk.ac.manchester.cs.snee.manager.StrategyAbstract;
+import uk.ac.manchester.cs.snee.manager.StrategyID;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -43,7 +44,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
-public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract 
+public class FailedNodeStrategyGlobal extends StrategyAbstract 
 {
   private IOT oldIOT;
   private AgendaIOT oldAgenda;
@@ -53,7 +54,7 @@ public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract
   private File globalFile;
   
   
-	public FailedNodeFrameWorkGlobal(AutonomicManager manager, 
+	public FailedNodeStrategyGlobal(AutonomicManager manager, 
 	                                 SourceMetadataAbstract _metadata, 
 	                                 MetadataManager _metadataManager)
   {
@@ -106,7 +107,7 @@ public class FailedNodeFrameWorkGlobal extends FrameWorkAbstract
 	{
 	  System.out.println("Running Failed Node FrameWork Global");
 	  List<Adaptation> adaptation = new ArrayList<Adaptation>();
-	  Adaptation adapt = new Adaptation(qep);
+	  Adaptation adapt = new Adaptation(qep, StrategyID.FAILED_NODE_GLOBAL);
 	  //remove nodes from topology
 		network = this.getWsnTopology();
 		network = cloner.deepClone(network);
