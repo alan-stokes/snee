@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
@@ -31,6 +32,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.WebServiceSourceMetadata;
 import uk.ac.manchester.cs.snee.types.Duration;
 
@@ -78,7 +80,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testGetOperatorName() 
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
@@ -93,7 +95,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testGetOperatorDataType() 
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
@@ -108,7 +110,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testAcceptsPredicates() 
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
@@ -117,44 +119,45 @@ public class ScanOperatorTest extends EasyMockSupport {
 		ScanOperator op = new ScanOperator(mockExtent, 
 				mockSource, 
 				types.getType("boolean"));
-		assertFalse(op.acceptsPredicates());
+		assertTrue(op.acceptsPredicates());
 		verifyAll();
 	}
 
 	@Test
-	public void testPushProjectionDown() 
+	public void testPushProjectionDown_EmptyAttributes() 
 	throws TypeMappingException, SchemaMetadataException,
-	OptimizationException {
+	OptimizationException, SourceMetadataException, SNEEConfigurationException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		expect(mockExtent.getAttributes()).andReturn(new ArrayList<Attribute>());
 		expect(mockExtent.getCardinality()).andReturn(1);
-		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
 		replayAll();
 		ScanOperator op = new ScanOperator(mockExtent, 
 				mockSource, 
 				types.getType("boolean"));
-		assertFalse(op.pushProjectionDown(null, null));
+		assertFalse(op.pushProjectionDown(null, new ArrayList<Attribute>()));
 		verifyAll();
 	}
 
 	@Test
 	public void testPushSelectDown() 
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, 
+	SourceMetadataException, AssertionError, SNEEConfigurationException {
+		Expression mockExpression = createMock(Expression.class);
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
+		expect(mockExtent.getAttributes()).andReturn(new ArrayList<Attribute>());
 		expect(mockExtent.getCardinality()).andReturn(1);
-		expect(mockExtent.getAttributes())
-			.andReturn(new ArrayList<Attribute>());
+		expect(mockExpression.getType()).andReturn(types.getType("boolean")).times(2);
 		replayAll();
 		ScanOperator op = new ScanOperator(mockExtent, 
 				mockSource, 
 				types.getType("boolean"));
-		assertFalse(op.pushSelectDown(null));
+		assertTrue(op.pushSelectIntoLeafOp(mockExpression));
 		verifyAll();
 	}
 
 	@Test
 	public void testToString()
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
@@ -167,7 +170,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 //		System.out.println(extentMetadata);
 		assertTrue(extentMetadata.equals(
 				"TYPE: relation   OPERATOR: SCAN " +
-		"(Name (cardinality=1 source=sourceName ) - cardinality: 1"));
+		"(Name (cardinality=1 source=sourceName)\n TRUE ) - cardinality: 1"));
 		verifyAll();
 	}
 	
@@ -175,7 +178,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 	
 	@Test
 	public void testGetExtentName() 
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
@@ -190,7 +193,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testGetmockSource() 
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
@@ -205,7 +208,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testGetAttributes() 
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		List<Attribute> attributes = new ArrayList<Attribute>();
@@ -224,7 +227,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testGetExpressions() 
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		List<Attribute> attributes = new ArrayList<Attribute>();
@@ -243,7 +246,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testGetCardinality() 
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		List<Attribute> attributes = new ArrayList<Attribute>();
@@ -262,7 +265,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testGetInputAttributes() 
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		List<Attribute> attributes = new ArrayList<Attribute>();
@@ -281,7 +284,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testGetNumberInputAttributes() 
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		List<Attribute> attributes = new ArrayList<Attribute>();
@@ -300,7 +303,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testGetInputAttributeNumber() 
-	throws TypeMappingException, SchemaMetadataException, OptimizationException 
+	throws TypeMappingException, SchemaMetadataException, OptimizationException, SourceMetadataException 
 	{
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
@@ -322,7 +325,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 	}
 
 	@Test
-	public void testIsAttributeSensitive() throws TypeMappingException, SchemaMetadataException {
+	public void testIsAttributeSensitive() throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
@@ -337,7 +340,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testIsLocationSensitive() 
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
@@ -352,7 +355,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testIsRecursive() 
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
@@ -367,7 +370,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testIsRemoveable() 
-	throws TypeMappingException, SchemaMetadataException {
+	throws TypeMappingException, SchemaMetadataException, SourceMetadataException {
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
 		expect(mockExtent.getAttributes())
@@ -398,7 +401,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testGetRescan_rescanIntervalNotSet() 
-	throws SchemaMetadataException, TypeMappingException
+	throws SchemaMetadataException, TypeMappingException, SourceMetadataException
 	{
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);
@@ -414,7 +417,7 @@ public class ScanOperatorTest extends EasyMockSupport {
 
 	@Test
 	public void testGetRescan_rescanIntervalSet() 
-	throws SchemaMetadataException, TypeMappingException
+	throws SchemaMetadataException, TypeMappingException, SourceMetadataException
 	{
 		expect(mockExtent.getExtentName()).andReturn("Name").anyTimes();
 		expect(mockExtent.getCardinality()).andReturn(1);

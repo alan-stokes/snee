@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.PropertyConfigurator;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -17,6 +18,10 @@ public class CircularArrayTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		// Configure logging
+		PropertyConfigurator.configure(
+				SNEEPropertiesTest.class.getClassLoader().getResource(
+						"etc/log4j.properties"));
 	}
 
 	@AfterClass

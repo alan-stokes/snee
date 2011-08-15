@@ -35,6 +35,7 @@ package uk.ac.manchester.cs.snee.operators.logical;
 
 import java.util.List;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -56,7 +57,10 @@ public class ProjectOperator extends PredicateOperator {
 		this.setOperatorName("PROJECT");
 //		this.setNesCTemplateName("project");
 		setOperatorDataType(input.getOperatorDataType());
-		setParamStr(expressions.toString());
+	}
+
+	public String getParamStr() {
+		return this.getExpressions().toString();
 	}
 
 //	/** 
@@ -93,10 +97,11 @@ public class ProjectOperator extends PredicateOperator {
 
 	/**
 	 * {@inheritDoc}
+	 * @throws SNEEConfigurationException 
 	 */
 	public boolean pushProjectionDown(List<Expression> projectExpressions, 
 			List<Attribute> projectAttributes) 
-	throws OptimizationException {
+	throws OptimizationException, SNEEConfigurationException {
 
 		boolean accept = false;
 		if (projectAttributes.size() > 0) {
@@ -129,10 +134,12 @@ public class ProjectOperator extends PredicateOperator {
 	 * @throws AssertionError 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
+	 * @throws SNEEConfigurationException 
 	 */
-	public boolean pushSelectDown(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException {
-		this.getInput(0).pushSelectDown(new NoPredicate());
+	public boolean pushSelectIntoLeafOp(Expression predicate) 
+	throws SchemaMetadataException, AssertionError, TypeMappingException,
+	SNEEConfigurationException {
+		this.getInput(0).pushSelectIntoLeafOp(new NoPredicate());
 		return false;
 	}
 

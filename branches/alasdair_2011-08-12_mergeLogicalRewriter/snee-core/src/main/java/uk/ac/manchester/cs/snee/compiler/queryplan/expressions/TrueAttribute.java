@@ -158,4 +158,14 @@ public class TrueAttribute implements Expression {
 		this.isConstant = isConstant;
 	}
 
+	@Override
+	public boolean isJoinCondition() {
+		return false;
+	}
+
+	@Override
+	public void setIsJoinCondition(boolean isJoin) {
+		throw new AssertionError("True attribute cannot be a join condition.");
+	}
+
 }

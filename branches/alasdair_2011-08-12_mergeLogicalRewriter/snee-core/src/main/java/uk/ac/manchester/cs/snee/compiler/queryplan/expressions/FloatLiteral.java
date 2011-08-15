@@ -178,4 +178,14 @@ public class FloatLiteral implements Expression {
 		this.isConstant = isConstant;
 	}
 
+	@Override
+	public boolean isJoinCondition() {
+		return false;
+	}
+
+	@Override
+	public void setIsJoinCondition(boolean isJoin) {
+		throw new AssertionError("Float literal cannot be a join condition.");
+	}
+
 }

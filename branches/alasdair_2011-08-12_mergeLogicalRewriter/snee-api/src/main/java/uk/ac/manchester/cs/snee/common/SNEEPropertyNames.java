@@ -98,12 +98,9 @@ public final class SNEEPropertyNames {
     	"compiler.logicalrewriter.push_project_down";
     
     /**
-     * Combines leaf operators (receive, acquire, scan) and select 
-     * into a single operator.
-     * TODO: currently in physical rewriter, move this to logical rewriter
-     * TODO: consider removing this option
+     * Combines acquire operators and select into a single operator.
      */
-    public static final String LOGICAL_REWRITER_COMBINE_LEAF_SELECT =
+    public static final String LOGICAL_REWRITER_COMBINE_ACQUIRE_SELECT =
     	"compiler.logicalrewriter.combine_leaf_and_select";
  
     /**

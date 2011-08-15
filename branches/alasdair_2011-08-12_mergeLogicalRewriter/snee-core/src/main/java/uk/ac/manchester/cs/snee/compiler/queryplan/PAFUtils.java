@@ -11,7 +11,6 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
@@ -100,8 +99,21 @@ public class PAFUtils extends DLAFUtils {
 				out.print(op.getOperatorName() + "\\n");
 
 				if (!(op instanceof SensornetExchangeOperator)) {
-					if (op.getLogicalOperator().getParamStr() != null) {
-						out.print(op.getLogicalOperator().getParamStr() + "\\n");
+					String paramStr = op.getLogicalOperator().getParamStr();
+					System.out.println(paramStr);
+					if (paramStr != null) {
+						// Code replaces \n with \\n
+						char[] charArray = paramStr.toCharArray();
+						String outputParamStr = "";
+						for (int i = 0; i < paramStr.length(); i++) {
+							char character = charArray[i];
+							if (character == '\n') {
+								outputParamStr += "\\n";
+							} else {
+								outputParamStr += character;
+							}
+						}
+						out.print(outputParamStr + "\\n");
 					}
 				}
 				if (showOperatorID) {

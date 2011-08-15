@@ -38,11 +38,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -77,7 +76,8 @@ public class AcquireOperator extends InputOperator {
 	 * Constructs a new Acquire operator.
 	 * 
 	 * @param extentMetaData Schema data about the extent
-	 * @param sources Metadata about data sources for the acquire extent
+	 * @param types type information as read in from the types file
+	 * @param source Metadata about data sources for the acquire extent
 	 * @param boolType type used for booleans
 	 * @throws SchemaMetadataException
 	 * @throws TypeMappingException
@@ -90,7 +90,7 @@ public class AcquireOperator extends InputOperator {
 		super(extentMetadata, source, boolType);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER AcquireOperator() with " + 
-					extentMetadata + " #source=" + source.getSourceName());
+					extentMetadata + " source=" + source.getSourceName());
 		}
 		this.setOperatorName("ACQUIRE");
 		this.setOperatorDataType(OperatorDataType.STREAM);
@@ -98,9 +98,8 @@ public class AcquireOperator extends InputOperator {
 
 		this.extentName = extentMetadata.getExtentName();
 
-		updateSensedAttributes(); 
+		updateInputAttributes(); 
 		updateMetadataInfo(extentMetadata); //WHICH ORDER??
-		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN AcquireOperator()");
 	} 
@@ -137,97 +136,12 @@ public class AcquireOperator extends InputOperator {
 
 	/** {@inheritDoc} */
 	public boolean acceptsPredicates() {
-		//logger.warn("Acquire does not yet accept predicates");
-		//return true;
-//		return Settings.LOGICAL_OPTIMIZATION_COMBINE_ACQUIRE_AND_SELECT;
-		return true;
-	}
-	
-	/** 
-	 * Updates the sensed Attributes.
-	 * Extracts the attributes from the expressions.
-	 * Those that are data attributes become the sensed attributes.
-	 */	
-	private void updateSensedAttributes() {
-		inputAttributes  = new ArrayList<Attribute>();
-		for (int i = 0; i < expressions.size(); i++) {
-			//DataAttribute sensed =  sensedAttributes.get(i);
-			Expression expression = expressions.get(i);
-			List<Attribute> attributes = 
-				expression.getRequiredAttributes();
-			for (int j = 0; j < attributes.size(); j++) {
-				Attribute attribute = attributes.get(j);
-				if (attribute instanceof DataAttribute) {
-					if (!inputAttributes.contains(attribute)) {
-						inputAttributes.add((DataAttribute) attribute);
-					}
-				}
-			}
+		try {
+			return SNEEProperties.getBoolSetting(
+					SNEEPropertyNames.LOGICAL_REWRITER_COMBINE_ACQUIRE_SELECT);
+		} catch (SNEEConfigurationException e) {
+			return true;
 		}
-		List<Attribute> attributes = 
-			getPredicate().getRequiredAttributes();
-		for (int j = 0; j < attributes.size(); j++) {
-			Attribute attribute = attributes.get(j);
-			if (attribute instanceof DataAttribute) {
-				if (!inputAttributes.contains(attribute)) {
-					inputAttributes.add((DataAttribute) attribute);
-				}
-			}
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public boolean pushProjectionDown(List<Expression> projectExpressions, 
-			List<Attribute> projectAttributes) 
-	throws OptimizationException {
-		//if no project to push down Do nothing.
-		if (projectAttributes.size() == 0) {
-			return false;
-		}
-
-		if (projectExpressions.size() == 0) {
-			//remove unrequired attributes. No expressions to accept
-			for (int i = 0; i < outputAttributes.size(); ) {
-				if (projectAttributes.contains(outputAttributes.get(i)) ||
-						(outputAttributes.get(i) instanceof EvalTimeAttribute))
-					i++;
-				else {
-					outputAttributes.remove(i);
-					expressions.remove(i);		
-				}
-			}
-			updateSensedAttributes();
-			return false;
-		}
-
-		expressions = projectExpressions;
-		outputAttributes = projectAttributes;
-		updateSensedAttributes();
-//		if (Settings.CODE_GENERATION_SHOW_LOCAL_TIME) {
-//			try {
-//				outputAttributes.add(new LocalTimeAttribute());
-//				expressions.add(new LocalTimeAttribute());
-//			} catch (SchemaMetadataException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//				System.exit(2);
-//			} //Ixent added this
-//		}		
-		return true;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @throws AssertionError 
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
-	 */
-	public boolean pushSelectDown(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException {
-		setPredicate(predicate);
-		return true;
 	}
 
 	/**
@@ -241,6 +155,14 @@ public class AcquireOperator extends InputOperator {
 	throws SchemaMetadataException, TypeMappingException {
 		assert (acquiredAttributes != null);
 		return acquiredAttributes;
+	}
+
+	public String getParamStr() {
+		return this.extentName + 
+		" (cardinality=" + getCardinality(null) +
+		" source=" + this.getSource().getSourceName() + ")\n " + 
+		getPredicate() + "\n" +
+		this.getExpressions().toString();
 	}
 
 }

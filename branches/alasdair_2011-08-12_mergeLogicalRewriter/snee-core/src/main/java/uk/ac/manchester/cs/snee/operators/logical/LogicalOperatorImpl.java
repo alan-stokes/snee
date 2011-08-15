@@ -78,11 +78,6 @@ implements LogicalOperator {
 	 */
 	private OperatorDataType operatorDataType;
 
-	/**
-	 * String representation of operator parameters.
-	 */
-	private String paramStr;
-
 	/** 
 	 * Predicate that this operator is expected to test data against.
 	 */
@@ -236,22 +231,15 @@ implements LogicalOperator {
 
 	/** {@inheritDoc} */    
 	public String getParamStr() {
-		return this.paramStr;
+		return getPredicate().toString();
 	}
-
-	/**
-	 * @param newParamStr new Value
-	 */
-	protected void setParamStr(String newParamStr) {
-		this.paramStr = newParamStr;
-	}    
 
 	/** {@inheritDoc} 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException */    
 	public String getTupleAttributesStr(int maxPerLine) 
 	throws SchemaMetadataException, TypeMappingException {
-		List<Attribute> attributes = this.getAttributes();
+		List<Attribute> attributes = getAttributes();
 		return LogicalOperatorImpl.getTupleAttributesStr(attributes, maxPerLine);
 	}
 
@@ -312,7 +300,6 @@ implements LogicalOperator {
 			if (logger.isTraceEnabled())
 				logger.trace("Instance of NoPredicate");
 			this.predicate = newPredicate;
-			this.paramStr = paramStr + predicate.toString();
 			if (logger.isDebugEnabled())
 				logger.debug("RETURN setPredicate()");
 			return;
@@ -329,7 +316,6 @@ implements LogicalOperator {
 		}
 		if (this.acceptsPredicates()) {
 			this.predicate = newPredicate;
-			this.paramStr = paramStr + predicate.toString();
 		} else {
 			String msg = "Illegal call.";
 			logger.warn(msg);
