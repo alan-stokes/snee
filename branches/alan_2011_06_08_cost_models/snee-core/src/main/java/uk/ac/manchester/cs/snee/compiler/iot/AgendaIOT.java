@@ -47,6 +47,9 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AlphaBetaExpression;
+import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostExpressions;
+import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostParameters;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
@@ -1102,8 +1105,13 @@ public class AgendaIOT extends SNEEAlgebraicForm{
    * Returns the total site energy in Joules according to model.
    * @param site
    * @return
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
    */
   public double getSiteEnergyConsumption(Site site) 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
   {
     double sumEnergy = 0;
     long cpuActiveTimeBms = 0;
@@ -1146,8 +1154,14 @@ public class AgendaIOT extends SNEEAlgebraicForm{
    * Excludes radio switch on.
    * @param ct
    * @return
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
    */
-  private double getRadioEnergy(CommunicationTask ct) {
+  private double getRadioEnergy(CommunicationTask ct) 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
     double taskDuration = bmsToMs(ct.getDuration())/1000.0;
     double voltage = AvroraCostParameters.VOLTAGE;
     
@@ -1159,12 +1173,11 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     }
     Site sender = ct.getSourceNode();
     Site receiver = (Site)sender.getOutput(0);
-    int txPower = (int)this.getDAF().getRoutingTree().getLinkEnergyCost(sender, receiver);
+    int txPower = (int)iot.getRT().getRadioLink(sender, receiver).getEnergyCost();
     double radioTXAmp = AvroraCostParameters.getTXAmpere(txPower);
     
-    HashSet<ExchangePart> exchComps = ct.getExchangeComponents();
-    AvroraCostExpressions  costExpressions = 
-      (AvroraCostExpressions)CostExpressions.costExpressionFactory(daf);
+    HashSet<InstanceExchangePart> exchComps = ct.getInstanceExchangeComponents();
+    AvroraCostExpressions  costExpressions = new AvroraCostExpressions(daf, costParams, this);
     AlphaBetaExpression txTimeExpr = AlphaBetaExpression.multiplyBy(
         costExpressions.getPacketsSent(exchComps, true),
         AvroraCostParameters.PACKETTRANSMIT);

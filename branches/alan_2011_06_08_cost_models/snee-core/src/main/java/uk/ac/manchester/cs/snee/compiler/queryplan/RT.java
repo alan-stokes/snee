@@ -38,6 +38,8 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.graph.Edge;
+import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
@@ -71,18 +73,23 @@ public class RT extends SNEEAlgebraicForm {
 	 * The PAF associated with this routing tree.
 	 */
 	PAF paf;
+	/**
+	 * The topology this routing tree is based upon
+	 */
+	Topology network;
 	
     /**
      * Constructor for the RoutingTree class.
      * @param queryName the name of the routing tree
      * @param inRootSite the sink node for the query
      */
-	public RT(PAF paf, final String queryName, final Tree rt) {
+	public RT(PAF paf, final String queryName, final Tree rt, final Topology network) {
 		super(queryName);
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER RT()"); 
 		this.paf = paf;
 		this.siteTree = rt;
+		this.network = network;
 		Site root = (Site) this.siteTree.getRoot();
 		root.updateNumSources();
 		if (logger.isDebugEnabled())
@@ -270,11 +277,9 @@ public class RT extends SNEEAlgebraicForm {
 	public Site getSite(int id) {
 		return (Site) this.getSiteTree().getNode(id);
 	}
-	
-    public RadioLink getRadioLink(final Site source, final Site dest) {
-    	String id = siteTree.generateEdgeID(
-    			source.getID(), dest.getID());
-    	RadioLink link = (RadioLink) siteTree.getEdge(id);
-    	return link;
-    }
+
+  public RadioLink getRadioLink(Site sender, Site receiver)
+  {
+    return network.getRadioLink(sender, receiver);
+  }
 }

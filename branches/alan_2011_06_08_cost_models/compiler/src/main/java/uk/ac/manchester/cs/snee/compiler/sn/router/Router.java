@@ -71,7 +71,7 @@ public class Router {
 		int sink = sm.getGateway(); 
 		int[] sources = sm.getSourceSites(paf);
 		Tree steinerTree = computeSteinerTree(network, sink, sources); 
-		RT rt = new RT(paf, queryName, steinerTree);
+		RT rt = new RT(paf, queryName, steinerTree, network);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN doRouting()");
 		return rt;
@@ -95,7 +95,7 @@ public class Router {
 	    int sink = sm.getGateway(); 
 	    int[] sources = sm.getSourceSites(paf);
 	    Tree steinerTree = computeSteinerTree(network, sink, sources); 
-	    RT rt = new RT(paf, queryName, steinerTree);
+	    RT rt = new RT(paf, queryName, steinerTree, network);
 	    if (logger.isDebugEnabled())
 	      logger.debug("RETURN doRouting()");
 	    return rt;

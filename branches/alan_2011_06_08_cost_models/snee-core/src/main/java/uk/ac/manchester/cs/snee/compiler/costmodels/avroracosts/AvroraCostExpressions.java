@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.compiler.iot;
+package uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts;
 
 /****************************************************************************\ 
 *                                                                            *
@@ -42,7 +42,25 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
+import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
+import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.metadata.CostParameters;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 
 /** 
  * This method holds the static cost models.
@@ -55,6 +73,8 @@ public final class AvroraCostExpressions{
   
   /** Distributed Algebra Form for which these expressions are valid.*/ 
   private DAF daf;
+  private CostParameters costParams;
+  private AgendaIOT agenda;
   
   /** Format for display and showing decimal numbers. */
     private final DecimalFormat df = new DecimalFormat("0.000000");
@@ -66,8 +86,11 @@ public final class AvroraCostExpressions{
   /** Constructor which stores the DAF. 
    * @param queryDaf Distribute Algebra Form
    */ 
-  public AvroraCostExpressions(final DAF queryDaf) {
+  public AvroraCostExpressions(final DAF queryDaf, CostParameters costParams, AgendaIOT agenda) 
+  {
     this.daf = queryDaf;
+    this.costParams = costParams;
+    this.agenda = agenda;
   }
   
   /** 
@@ -78,9 +101,15 @@ public final class AvroraCostExpressions{
    * @param site Site for which to generate costs.
    * @param round Defines if rounding reserves should be included or not
    * @return Energy cost function. 
+   * @throws OptimizationException 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
    */
   public AlphaBetaExpression getSiteEnergyExpression(final Site site,
-      final boolean round, HashMap<String, AlphaBetaExpression> debug) {
+      final boolean round, HashMap<String, AlphaBetaExpression> debug) 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
     
     AlphaBetaExpression energyCost = getCPUEnergyExpression(site, round, debug);
     AlphaBetaExpression sensorCost = getSensorEnergyExpression(site, round, debug);
@@ -91,7 +120,10 @@ public final class AvroraCostExpressions{
   }
   
   public AlphaBetaExpression getSiteEnergyExpression(final Site site,
-      final boolean round) {
+      final boolean round) 
+  throws OptimizationException, SchemaMetadataException,
+  TypeMappingException 
+  {
     return getSiteEnergyExpression(site, round, null);
   }
   
@@ -103,9 +135,16 @@ public final class AvroraCostExpressions{
    * @param site Site for which to generate cost expressions.
    * @param round Defines if rounding reserves should be included or not
    * @return Energy cost function. 
+   * @throws OptimizationException 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
    */
   private AlphaBetaExpression getCPUEnergyExpression(
-      final Site site, final boolean round, HashMap<String,AlphaBetaExpression> debug) {
+      final Site site, final boolean round, HashMap<String,AlphaBetaExpression> debug) 
+  throws 
+  OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
     
     AlphaBetaExpression activeCPUTime = getCPUActiveDuration(site, round);
     AlphaBetaExpression activeCPUEnergy = AlphaBetaExpression.multiplyBy(
@@ -145,7 +184,7 @@ public final class AvroraCostExpressions{
     Iterator<Fragment> fragments = site.getFragments().iterator();
     while (fragments.hasNext()) {
       Fragment fragment = fragments.next();
-      if (fragment.containsOperatorType(AcquireOperator.class)) {
+      if (fragment.containsOperatorType(SensornetAcquireOperator.class)) {
         result.addBetaTerm(0.00000003222*1000.0); //J to MilliJoules
       }
     }
@@ -169,7 +208,7 @@ public final class AvroraCostExpressions{
     }
     Site parent = (Site) site.getOutput(0);
     int txLevel = 
-      (int) daf.getRoutingTree().getLinkEnergyCost(site, parent);
+      (int) daf.getRT().getRadioLink(site, parent).getEnergyCost();
     return txLevel;
   }
   
@@ -181,9 +220,15 @@ public final class AvroraCostExpressions{
    * @param site Site for which to generate costs.
    * @param round Defines if rounding reserves should be included or not
    * @return Energy cost function. 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
    */
   private AlphaBetaExpression getRadioEnergyExpression(
-      final Site site, final boolean round, HashMap<String,AlphaBetaExpression> debug) {
+      final Site site, final boolean round, HashMap<String,AlphaBetaExpression> debug) 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
     
     int txLevel = getTxLevel(site);
     double txPower =  AvroraCostParameters.RADIOTRANSMITAMPERE[txLevel]
@@ -215,14 +260,15 @@ public final class AvroraCostExpressions{
      * @param card CardinalityType The type of cardinality to be considered.
    * @param round Defines if rounding reserves should be included or not
    * @return Energy cost function. 
+   * @throws OptimizationException 
    */
   private AlphaBetaExpression getFragmentsDuration(
-      final CardinalityType card, final Site site, final boolean round) {
+      final CardinalityType card, final Site site, final boolean round) throws OptimizationException {
     AlphaBetaExpression result = new AlphaBetaExpression();
     Iterator<Fragment> fragments = site.getFragments().iterator();
     while (fragments.hasNext()) {
       Fragment fragment = fragments.next();
-      result.add(fragment.getTimeExpression(card, site, daf, round));
+      result.add(new AlphaBetaExpression(fragment.getTimeCost(site, daf, costParams)));
     }
     return result;
   }
@@ -239,9 +285,16 @@ public final class AvroraCostExpressions{
      * @param card CardinalityType The type of cardinality to be considered.
    * @param round Defines if rounding reserves should be included or not
    * @return Energy cost function. 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
    */
   private AlphaBetaExpression getSiteCommunicationDuration(
-      final CardinalityType card, final Site site, final boolean round) {
+      final CardinalityType card, final Site site, final boolean round) 
+  throws 
+  OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
     AlphaBetaExpression result = new AlphaBetaExpression();
     //Count sites involved in comms.
     HashSet<String> partners = new HashSet<String>();
@@ -252,27 +305,27 @@ public final class AvroraCostExpressions{
       final ExchangePart exchangeComponent = 
         exchangeComponents.next();
       result.add(
-          exchangeComponent.getTimeExpression(card, daf, round));
+          exchangeComponent.getTimeCost(daf, agenda.getBufferingFactor(), costParams));
       //Relays have to be added twice 
       //once for the rx and again for the tx.
       if (exchangeComponent.getComponentType() 
           == ExchangePartType.RELAY) {
         result.add(
-            exchangeComponent.getTimeExpression(card, daf, round));
+            exchangeComponent.getTimeCost(daf, agenda.getBufferingFactor(), costParams));
       }
       //Add sites involved.
       partners.add(exchangeComponent.getSourceSiteID());
       partners.add(exchangeComponent.getDestSiteID());
     }
       //remove one getBetweenpackets cost for first packet
-    result.subtract(CostParameters.getBetweenPackets());
+    result.subtract(AvroraCostParameters.getBetweenPackets());
     //Assume that all exchanges with each partner 
     //will be grouped into single task.
     //Add overhead for all source/ destinations found except self.
-    result.add(CommunicationTask.getTimeCostOverhead()
-        * (partners.size() - 1)); //does not include radio on/off
+    result.add(CommunicationTask.getTimeCostOverhead(costParams) * (partners.size() - 1)); 
+                                 //does not include radio on/off
     result.add((partners.size() - 1) * 
-        CostParameters.getTurnOnRadio());
+        costParams.getTurnOnRadio());
     return result;
   }
 
@@ -284,9 +337,15 @@ public final class AvroraCostExpressions{
    * @param site Site for which to generate costs.
    * @param round Defines if rounding reserves should be included or not
    * @return Energy cost function. 
+   * @throws OptimizationException 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
    */
   private AlphaBetaExpression getCPUActiveDuration(final Site site, 
-      final boolean round) {
+      final boolean round) 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
     AlphaBetaExpression result = getFragmentsDuration(
         CardinalityType.MAX, site, round);
     result.add(getSiteCommunicationDuration(CardinalityType.MAX, site, round));
@@ -347,7 +406,11 @@ public final class AvroraCostExpressions{
    * @param round Defines if rounding reserves should be included or not
    * @return Time cost function. 
    */
-  private AlphaBetaExpression getCPUActiveOrIdleDuration(final Site site, final boolean round) {
+  private AlphaBetaExpression getCPUActiveOrIdleDuration(final Site site, final boolean round) 
+  throws 
+  OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
     //Assume radio of so CPU can sleep once average done.
     AlphaBetaExpression result = getFragmentsDuration(
         CardinalityType.AVERAGE, site, round);
@@ -377,10 +440,15 @@ public final class AvroraCostExpressions{
    * @param site Site for which to generate costs.
    * @param round Defines if rounding reserves should be included or not
    * @return Time cost function. 
+   * @throws OptimizationException 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
    */
-  private AlphaBetaExpression getCPUIdleDuration(final Site site, final boolean round) {
+  private AlphaBetaExpression getCPUIdleDuration(final Site site, final boolean round) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException 
+  {
     return AlphaBetaExpression.subtract(getCPUActiveOrIdleDuration(site, round),
-        getCPUActiveDuration(site, round));
+                                        getCPUActiveDuration(site, round));
   }
   
   /** 
@@ -392,10 +460,13 @@ public final class AvroraCostExpressions{
    * @param site Site for which to generate costs.
    * @param round Defines if rounding reserves should be included or not
    * @return Energy cost function. 
+   * @throws OptimizationException 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
    */
-  private AlphaBetaExpression getCPUPowerSaveDuration(final Site site, final boolean round) {
-    return AlphaBetaExpression.subtract(AGENDA_LENGTH, 
-        getCPUActiveOrIdleDuration(site, round));
+  private AlphaBetaExpression getCPUPowerSaveDuration(final Site site, final boolean round) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException {
+    return AlphaBetaExpression.subtract(AGENDA_LENGTH, getCPUActiveOrIdleDuration(site, round));
   }
 
   /** 
@@ -405,23 +476,31 @@ public final class AvroraCostExpressions{
    * @param site Site for which to generate costs.
    * @param round Defines if rounding reserves should be included or not
    * @return Packets sent expression 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
    */
-  public AlphaBetaExpression getPacketsSent(HashSet<ExchangePart> exchangeComponents, 
-      final boolean round) { 
+  public AlphaBetaExpression getPacketsSent(HashSet<InstanceExchangePart> exchComps, 
+      final boolean round) 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  { 
     AlphaBetaExpression expression = new AlphaBetaExpression();
-    Iterator<ExchangePart> exchCompIter = 
-      exchangeComponents.iterator();
+    Iterator<InstanceExchangePart> exchCompIter = 
+      exchComps.iterator();
     while (exchCompIter.hasNext()) {
-      final ExchangePart exchangeComponent = 
+      final InstanceExchangePart exchangeComponent = 
         exchCompIter.next();
         if ((exchangeComponent.getComponentType() 
               == ExchangePartType.PRODUCER)
             || (exchangeComponent.getComponentType() 
               == ExchangePartType.RELAY)) {
           //TODO determine which is more accurate Packets or bytes.
-          AlphaBetaExpression packets = exchangeComponent.packetsPerTask(
-              CardinalityType.MAX, daf, round);
-          expression.add(packets);
+          AlphaBetaExpression packets = new AlphaBetaExpression(
+            exchangeComponent.packetsPerTask(daf, agenda.getBufferingFactor(), costParams));
+            //.packetsPerTask(
+            //  CardinalityType.MAX, daf, round);
+         // expression.add(packets);
         }
     }
     return expression;
@@ -437,10 +516,16 @@ public final class AvroraCostExpressions{
    * @param site Site for which to generate costs.
    * @param round Defines if rounding reserves should be included or not
    * @return Time cost function. 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
    */
   private AlphaBetaExpression getRadioTransmitDuration(final Site site, 
-      final boolean round) {
-    HashSet<ExchangePart> exchComps = site.getExchangeComponents(); 
+      final boolean round) 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
+    HashSet<InstanceExchangePart> exchComps = site.getInstanceExchangeComponents(); 
     return AlphaBetaExpression.multiplyBy(this.getPacketsSent(exchComps, round),
         AvroraCostParameters.PACKETTRANSMIT);
   }
@@ -454,9 +539,16 @@ public final class AvroraCostExpressions{
    * @param site Site for which to generate costs.
    * @param round Defines if rounding reserves should be included or not
    * @return Time cost function. 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
    */
   private AlphaBetaExpression getRadioOnDuration(final Site site, 
-      final boolean round) {
+      final boolean round) 
+  throws 
+  OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
     return getSiteCommunicationDuration(CardinalityType.MAX, site, round);
   }
 
@@ -470,9 +562,15 @@ public final class AvroraCostExpressions{
    * @param site Site for which to generate costs.
    * @param round Defines if rounding reserves should be included or not
    * @return Time cost function. 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
    */
   private AlphaBetaExpression getRadioReceiveDuration(final Site site, 
-      final boolean round) {
+      final boolean round) 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
     return AlphaBetaExpression.subtract(getRadioOnDuration(site, round),
         getRadioTransmitDuration(site, round));
   }
@@ -485,9 +583,16 @@ public final class AvroraCostExpressions{
    * @param site Site for which to generate costs.
    * @param round Defines if rounding reserves should be included or not
    * @return Time cost function. 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
    */
   private AlphaBetaExpression getRadioPowerDownDuration(final Site site, 
-      final boolean round) {
+      final boolean round) 
+  throws 
+  OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
     return AlphaBetaExpression.subtract(AGENDA_LENGTH,
         getRadioOnDuration(site, round));
   }
@@ -528,9 +633,16 @@ public final class AvroraCostExpressions{
    * @param site Site for which to generate costs.
    * @param round Defines if rounding reserves should be included or not
    * @return Time cost function. 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
    */
   public AlphaBetaExpression getSiteMemoryExpression(final Site site, 
-      final boolean round) {
+      final boolean round) 
+  throws 
+  OptimizationException, SchemaMetadataException,
+  TypeMappingException 
+  {
     double fragmentMemory = 0;
     Iterator<Fragment> fragments = site.getFragments().iterator();
     while (fragments.hasNext()) {
@@ -550,7 +662,7 @@ public final class AvroraCostExpressions{
             || (exchangeComponent.getComponentType() 
               == ExchangePartType.RELAY)) {
           expression.add(
-              exchangeComponent.getMemoryBetaExpression(site, daf));
+              exchangeComponent.getDataMemoryCost(site, daf));
         }
     }
     return expression;
@@ -558,15 +670,15 @@ public final class AvroraCostExpressions{
   
   /** 
    * Displays the cost expression for debugging and reporting.
+   * @throws SNEEConfigurationException 
    */
-  public void display() {
-    String latexFilename = QueryCompiler.queryPlanOutputDir 
-      + daf.getName() + "-cost-expressions.tex";
+  public void display() 
+  throws SNEEConfigurationException 
+  {
+    String latexFilename = SNEEProperties.getSetting(
+        SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) 
+      + daf.getQueryName() + "-cost-expressions.tex";
     exportToLatex(latexFilename);
-    
-    if (Settings.GENERAL_GENERATE_PDFS) {
-      Utils.latexToPDF(latexFilename);      
-    }
   }
 
   /** 
@@ -602,10 +714,10 @@ public final class AvroraCostExpressions{
             new FileWriter(fname)));
         out.println("\\documentclass[a4paper]{article}");
         out.println("\\begin{document}");
-        out.println("Daf = " + daf.getName() + "\n");
+        out.println("Daf = " + daf.getQueryName() + "\n");
           
           out.println("Total Enery\n");
-        Iterator<Site> sites = daf.siteIterator(TraversalOrder.POST_ORDER);
+        Iterator<Site> sites = daf.getRT().siteIterator(TraversalOrder.POST_ORDER);
           out.println(beginTable);
           out.println("\\hline");
         while (sites.hasNext()) {
@@ -618,7 +730,7 @@ public final class AvroraCostExpressions{
           out.println("\\end{tabular}\n");   
               
           out.println("Total Memory \n");
-        sites = daf.siteIterator(TraversalOrder.POST_ORDER);
+        sites = daf.getRT().siteIterator(TraversalOrder.POST_ORDER);
           out.println(beginTable);
           out.println("\\hline");
         while (sites.hasNext()) {
@@ -630,7 +742,7 @@ public final class AvroraCostExpressions{
             out.println("\\hline");
           out.println("\\end{tabular}\n");   
 
-            sites = daf.siteIterator(TraversalOrder.POST_ORDER);
+            sites = daf.getRT().siteIterator(TraversalOrder.POST_ORDER);
         while (sites.hasNext()) {
           Site site = sites.next();
             out.println("\\newpage Costs for Site: " + site.getID() + "\n");
@@ -667,7 +779,7 @@ public final class AvroraCostExpressions{
             out.println(beginTable);
               out.println("\\hline");
               out.print("Packets Sent: &$");
-              HashSet<ExchangePart> exchComps = site.getExchangeComponents();
+              HashSet<InstanceExchangePart> exchComps = site.getInstanceExchangeComponents();
             out.println(this.getPacketsSent(exchComps, true)
                 .toLatexString() + "$\\\\");
                 out.println("\\hline");
@@ -739,8 +851,8 @@ public final class AvroraCostExpressions{
         out.println("\ntest successful.");
         out.println("\\end{document}");
         out.close();
-      } catch (final Exception e) {
-        Utils.handleCriticalException(e);
+      } catch (final Exception e) 
+      {
       }
     }
 }

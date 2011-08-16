@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.compiler.iot;
+package uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts;
 
 /****************************************************************************\ 
 *                                                                            *
@@ -478,6 +478,11 @@ public final class AvroraCostParameters {
     public static double getSensorEnergyCost() 
     {
       return 0.00000003222;
+    }
+    
+    public static double getBetweenPackets()
+    {
+      return 4;
     }
    
   /** Hides default Constructor. */

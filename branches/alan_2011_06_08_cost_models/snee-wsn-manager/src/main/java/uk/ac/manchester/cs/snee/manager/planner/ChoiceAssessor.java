@@ -5,11 +5,14 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.Adaptation;
 import uk.ac.manchester.cs.snee.manager.AdaptationUtils;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -33,7 +36,9 @@ public class ChoiceAssessor
     this.outputFolder = outputFolder;
   }
 
-  public Adaptation assessChoices(List<Adaptation> choices) throws IOException
+  public Adaptation assessChoices(List<Adaptation> choices) 
+  throws IOException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException
   {
     AssessmentFolder = new File(outputFolder.toString() + sep + "assessment");
     AssessmentFolder.mkdir();
@@ -60,8 +65,13 @@ public class ChoiceAssessor
    * method to determine the estimated lifetime of the new QEP
    * @param adapt
    * @return
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
    */
-  private Double estimatedLifetime(Adaptation adapt)
+  private Double estimatedLifetime(Adaptation adapt) 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException
   {
     double shortestLifetime = Double.MAX_VALUE; //s
     
@@ -79,9 +89,8 @@ public class ChoiceAssessor
       
         shortestLifetime = Math.min((double)shortestLifetime, siteLifetime);
       }
-      adapt.setLifetimeEstimate(shortestLifetime);
     }// TODO Auto-generated method stub
-    return null;
+    return shortestLifetime;
   }
 
   /**

@@ -3,9 +3,12 @@ package uk.ac.manchester.cs.snee.manager.planner;
 import java.io.IOException;
 import java.util.List;
 
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.manager.Adaptation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 
 public class Planner 
@@ -25,9 +28,13 @@ public class Planner
    * @param choices
    * @return
    * @throws IOException 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
    */
   public Adaptation assessChoices(List<Adaptation> choices) 
-  throws IOException
+  throws IOException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException
   {
     return assessor.assessChoices(choices);
   }

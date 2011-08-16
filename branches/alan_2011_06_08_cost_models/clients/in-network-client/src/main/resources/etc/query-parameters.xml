@@ -17,8 +17,8 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk query-parameters.xsd">
 			<units>SECONDS</units>
 			<constraint>
 				<range>	
-					<min-val>5</min-val>
-					<max-val>5</max-val>					
+					<min-val>2</min-val>
+					<max-val>2</max-val>					
 				</range>	
 			</constraint>
 			<weighting>1</weighting>
@@ -27,8 +27,8 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk query-parameters.xsd">
 		<buffering-factor>
 			<constraint>
 				<range>	
-					<min-val>2</min-val>
-					<max-val>2</max-val>					
+					<min-val>1</min-val>
+					<max-val>1</max-val>					
 				</range>	
 			</constraint>
 			<weighting>1</weighting>

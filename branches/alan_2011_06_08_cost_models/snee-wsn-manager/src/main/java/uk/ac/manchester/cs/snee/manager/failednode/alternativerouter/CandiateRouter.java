@@ -311,8 +311,8 @@ public class CandiateRouter extends Router
   {
     ArrayList<Tree> routes = new ArrayList<Tree>();
     Tree steinerTree = computeSteinerTree(workingTopology, sink, sources); 
-    new RTUtils(new RT(paf, "", steinerTree)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
-    new RTUtils(new RT(paf, "", steinerTree)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
+    new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
+    new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
     routes.add(steinerTree);
     //container for currently tested heuristics
     ArrayList<HeuristicSet> testedHeuristics = new ArrayList<HeuristicSet>();
@@ -328,8 +328,8 @@ public class CandiateRouter extends Router
       MetaSteinerTree treeGenerator = new MetaSteinerTree();
       
       Tree currentTree = treeGenerator.produceTree(set, sources, sink, workingTopology, paf, oldRoutingTree);
-      new RTUtils(new RT(paf, "", steinerTree)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
-      new RTUtils(new RT(paf, "", steinerTree)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
+      new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
+      new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
       routes.add(currentTree);
     }
     routes = removeDuplicates(routes);
@@ -364,8 +364,8 @@ public class CandiateRouter extends Router
     while(routeIterator.hasNext())
     {
       Tree currentTree = routeIterator.next();
-      new RTUtils(new RT(paf, "", currentTree)).exportAsDotFile(cleaned.toString() + sep + "route" + counter); 
-      new RTUtils(new RT(paf, "", currentTree)).exportAsTextFile(cleaned.toString() + sep + "route" + counter); 
+      new RTUtils(new RT(paf, "", currentTree, network)).exportAsDotFile(cleaned.toString() + sep + "route" + counter); 
+      new RTUtils(new RT(paf, "", currentTree, network)).exportAsTextFile(cleaned.toString() + sep + "route" + counter); 
       counter++;
     }
   }

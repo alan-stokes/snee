@@ -90,7 +90,7 @@ public abstract class Task {
      * Returns the duration of this task.
      * @return
      */
-    protected final long getDuration() {
+    public final long getDuration() {
       return this.endTime - this.startTime;
     }
 
