@@ -256,12 +256,27 @@ public abstract class Attribute implements Expression {
 	public List<AggregationExpression> getAggregates()	{
 		return new ArrayList<AggregationExpression>(0);
 	}
+
 	public void setIsConstant(boolean isConstant) {
 		this.isConstant = isConstant;
 	}
 
 	public boolean isConstant() {
 		return isConstant;
+	}
+	
+	/* (non-Javadoc)
+	 * @see uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression#setIsJoinCondition(boolean)
+	 */
+	public void setIsJoinCondition(boolean isJoin) {
+		throw new AssertionError("An attribute cannot be a join condition.");
+	}
+	
+	/* (non-Javadoc)
+	 * @see uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression#isJoinCondition()
+	 */
+	public boolean isJoinCondition() {
+		return false;
 	}
 	
 }

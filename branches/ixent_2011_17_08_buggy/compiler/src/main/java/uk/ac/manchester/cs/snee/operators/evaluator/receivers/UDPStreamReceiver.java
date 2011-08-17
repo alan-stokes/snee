@@ -143,7 +143,7 @@ public class UDPStreamReceiver implements SourceReceiver {
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
 	 */
-	public Tuple receive() 
+	public List<Tuple> receive() 
 	throws EndOfResultsException, SNEEDataSourceException, 
 	ReceiveTimeoutException, SchemaMetadataException,
 	TypeMappingException {
@@ -151,6 +151,7 @@ public class UDPStreamReceiver implements SourceReceiver {
 			logger.debug("ENTER receive()");
 		}
 		Tuple tuple = null;
+		List<Tuple> tuples = new ArrayList<Tuple>();
 		try {
 			while (tuple == null) {
 				byte[] b = new byte[65535];
@@ -175,6 +176,7 @@ public class UDPStreamReceiver implements SourceReceiver {
 				} catch (InterruptedException e) {
 				}
 			}
+			tuples.add(tuple);
 		} catch (IOException e) {
 			logger.warn(e.getMessage());
 			throw new SNEEDataSourceException(e);
@@ -190,9 +192,9 @@ public class UDPStreamReceiver implements SourceReceiver {
 			throw new EndOfResultsException();
 		}
 		if (logger.isDebugEnabled()) {
-			logger.debug("RETURN receive() " + tuple);
+			logger.debug("RETURN receive() number of tuples=" + tuples.size());
 		}
-		return tuple;
+		return tuples;
 	}
 
 	private Tuple convertCSVToTuple(String dataCSV) 

@@ -38,13 +38,16 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.common.Constants;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 
 /** 
  * A Join or Cross product operator.
@@ -93,9 +96,10 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 	 * @param right Second input operator
 	 * @throws OptimizationException 
 	 * @throws SchemaMetadataException 
+	 * @throws SNEECompilerException 
 	 */
 	public JoinOperator(LogicalOperator left, LogicalOperator right, AttributeType boolType) 
-	throws OptimizationException, SchemaMetadataException {
+	throws OptimizationException, SchemaMetadataException, SNEECompilerException {
 		super(boolType);
 		this.setOperatorName("JOIN");
 //		this.setNesCTemplateName("join");
@@ -103,7 +107,6 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 		/* This is overridden when the 
 		 * child operators are a STREAM and RELATION */
 		setOperatorDataType(OperatorDataType.WINDOWS);
-		this.setParamStr("");
 
 		setChildren(left, right);
 		getIncomingAttributes();
@@ -111,6 +114,9 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 
 	private void setChildren (LogicalOperator left, LogicalOperator right) 
 	throws OptimizationException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER setChildren()");
+		}
 		String message = "Illegal attempt to Join Stream of tuples with " +
 			"anything but a Relation.";
 		if (left.getOperatorDataType() == OperatorDataType.STREAM) {
@@ -151,6 +157,9 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 				setOperatorDataType(OperatorDataType.STREAM);
 			}    	
 		}    
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN setChildren()");
+		}
 	}
 
 	/**
@@ -181,10 +190,11 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 
 	/**
 	 * {@inheritDoc}
+	 * @throws SNEEConfigurationException 
 	 */
 	public boolean pushProjectionDown(List<Expression> projectExpressions, 
 			List<Attribute> projectAttributes) 
-	throws OptimizationException {
+	throws OptimizationException, SNEEConfigurationException {
 
 		boolean accepted = false;
 
@@ -246,13 +256,44 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 
 	/**
 	 * {@inheritDoc}
-	 * 
-	 * STUB
-	 * 
+	 *
 	 * @return False 
+	 * @throws SNEEConfigurationException 
+	 * @throws TypeMappingException 
+	 * @throws AssertionError 
+	 * @throws SchemaMetadataException 
 	 */
-	public boolean pushSelectDown(Expression predicate) {
+	public boolean pushSelectIntoLeafOp(Expression predicate) 
+	throws SchemaMetadataException, AssertionError, TypeMappingException,
+	SNEEConfigurationException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER/RETURN pushSelectIntoLeaf() return with false");
+		}
 		return false;
+		/*
+		 * Below code should work, but has not been tested and the rewriter now
+		 * moves selects down and then tries only at the very bottom to move
+		 * them in, so this is never called.
+		 */
+//		if (predicate.isJoinCondition()) {
+//			if (logger.isDebugEnabled()) {
+//				logger.debug("RETURN pushSelectIntoLeaf() with " +
+//						"false (join condition)");
+//			}
+//			return false;
+//		}
+//		if (getInput(0).pushSelectIntoLeafOp(predicate) ||
+//				getInput(1).pushSelectIntoLeafOp(predicate)) {
+//			if (logger.isDebugEnabled()) {
+//				logger.debug("RETURN pushSelectIntoLeaf() with true");
+//			}
+//			return true;
+//		} else {
+//			if (logger.isDebugEnabled()) {
+//				logger.debug("RETURN pushSelectIntoLeaf() with false");
+//			}
+//			return false;
+//		}
 	}
 
 	/** 

@@ -38,6 +38,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.Constants;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -82,7 +83,6 @@ public class SelectOperator extends LogicalOperatorImpl {
 		setChildren(new LogicalOperator[] {inputOperator});
 
 		setPredicate(predicate);
-		this.setParamStr(getPredicate().toString());
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SelectOperator() " + this);
 	}  
@@ -117,16 +117,32 @@ public class SelectOperator extends LogicalOperatorImpl {
 	 * @throws AssertionError 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
+	 * @throws SNEEConfigurationException 
 	 */
-	public boolean pushSelectDown(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException {
-		if (predicate instanceof MultiExpression)
-			return combineSelects(predicate);
+	public boolean pushSelectIntoLeafOp(Expression predicate) 
+	throws SchemaMetadataException, AssertionError, TypeMappingException,
+	SNEEConfigurationException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER pushSelectionIntoLeafOp() with " + predicate);
+		}
+		if (predicate instanceof MultiExpression) {
+			boolean result = combineSelects(predicate);
+			if (logger.isDebugEnabled()) {
+				logger.debug("RETURN pushSelectionIntoLeafOp() with " + result);
+			}
+			return result;
+		}
 		assert(predicate instanceof NoPredicate);
 		Expression oldPredicate = this.getPredicate();
-		if (this.getInput(0).pushSelectDown(oldPredicate)) {
+		if (this.getInput(0).pushSelectIntoLeafOp(oldPredicate)) {
 			setPredicate (new NoPredicate());
+			if (logger.isDebugEnabled()) {
+				logger.debug("RETURN pushSelectionIntoLeafOp() with true");
+			}
 			return true;
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN pushSelectionIntoLeafOp() with false");
 		}
 		return false;
 	}
@@ -138,24 +154,25 @@ public class SelectOperator extends LogicalOperatorImpl {
 	 * @throws AssertionError 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
+	 * @throws SNEEConfigurationException 
 	 */
-	private boolean combineSelects(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException 
+	public boolean combineSelects(Expression predicate) 
+	throws SchemaMetadataException, AssertionError, TypeMappingException,
+	SNEEConfigurationException 
 	{
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER combineSelects() with " + predicate);
+		}
 		boolean result = false;
 		assert(predicate instanceof MultiExpression);
 		MultiExpression thePredicate = (MultiExpression)predicate;
 		assert(thePredicate.getMultiType().isBooleanDataType());
 		Expression oldPredicate = this.getPredicate();
 		if (oldPredicate instanceof NoPredicate) {
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()) {
 				logger.trace("Instance of NoPredicate");
-			if (this.getInput(0).pushSelectDown(predicate))
-				result = true;
-			else
-				result = checkAndSetPredicate(predicate);
+			}
+			result = checkAndSetPredicate(predicate);
 		} else if (oldPredicate instanceof MultiExpression) {
 			if (logger.isTraceEnabled())
 				logger.trace("Instance of MultiExpression");
@@ -164,24 +181,15 @@ public class SelectOperator extends LogicalOperatorImpl {
 			Expression combined = 
 				oldPredicate2.combinePredicates(oldPredicate2, 
 						thePredicate);
-			if (this.getInput(0).pushSelectDown(combined)) {
-				setPredicate (new NoPredicate());
-				result = true;
-			} else {
-				if (this.getInput(0).pushSelectDown(predicate)) 
-					result = true;
-				else if (this.getInput(0).pushSelectDown(oldPredicate)) {
-					result = checkAndSetPredicate(predicate);
-				} else
-					result = false;		 
-			}
+			result = checkAndSetPredicate(combined);
 		} else {
 			String message = "Unexpected Predicate type";
 			logger.warn(message);
 			throw new AssertionError(message);
 		}
-		if (logger.isTraceEnabled())
+		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN combineSelects() with " + result);
+		}
 		return result;
 	 }
 

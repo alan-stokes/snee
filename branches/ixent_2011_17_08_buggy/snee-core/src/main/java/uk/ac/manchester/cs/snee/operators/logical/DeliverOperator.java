@@ -37,6 +37,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -65,7 +66,6 @@ public class DeliverOperator extends LogicalOperatorImpl {
 		this.setOperatorName("DELIVER");
 //		this.setNesCTemplateName("deliver");
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
-		this.setParamStr("");
 
 		setChildren(new LogicalOperator[] {inputOperator});
 		if (inputOperator == null) {
@@ -74,12 +74,17 @@ public class DeliverOperator extends LogicalOperatorImpl {
 	}  
 
 
+	public String getParamStr() {
+		return "";
+	}
+
 	/**
 	 * {@inheritDoc}
+	 * @throws SNEEConfigurationException 
 	 */
 	public boolean pushProjectionDown(List<Expression> projectExpressions, 
 			List<Attribute> projectAttributes) 
-	throws OptimizationException {
+	throws OptimizationException, SNEEConfigurationException {
 		return getInput(0).pushProjectionDown(
 				projectExpressions, projectAttributes);
 	}
@@ -93,10 +98,12 @@ public class DeliverOperator extends LogicalOperatorImpl {
 	 * @throws AssertionError 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
+	 * @throws SNEEConfigurationException 
 	 */
-	public boolean pushSelectDown(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException {
-		return this.getInput(0).pushSelectDown(predicate);
+	public boolean pushSelectIntoLeafOp(Expression predicate) 
+	throws SchemaMetadataException, AssertionError, TypeMappingException, 
+	SNEEConfigurationException {
+		return this.getInput(0).pushSelectIntoLeafOp(predicate);
 	}
 
 	/** 

@@ -160,4 +160,14 @@ public class FalseAttribute implements Expression {
 		this.isConstant = isConstant;
 	}
 
+	@Override
+	public boolean isJoinCondition() {
+		return false;
+	}
+
+	@Override
+	public void setIsJoinCondition(boolean isJoin) {
+		throw new AssertionError("False attribute cannot be a join condition.");
+	}
+
 }

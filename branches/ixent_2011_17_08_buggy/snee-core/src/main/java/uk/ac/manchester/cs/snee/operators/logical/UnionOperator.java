@@ -37,6 +37,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEECompilerException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -50,7 +52,8 @@ implements LogicalOperator {
 	private Logger logger = 
 		Logger.getLogger(UnionOperator.class.getName());
 
-	public UnionOperator(LogicalOperator left, LogicalOperator right, AttributeType boolType) {
+	public UnionOperator(LogicalOperator left, LogicalOperator right, AttributeType boolType) 
+	throws SNEECompilerException {
 		super(boolType);
 		this.setOperatorName("UNION");
 		setOperatorDataType(OperatorDataType.STREAM);
@@ -90,10 +93,11 @@ implements LogicalOperator {
 
 	/**
 	 * {@inheritDoc}
+	 * @throws SNEEConfigurationException 
 	 */
 	public boolean pushProjectionDown(List<Expression> projectExpressions, 
 			List<Attribute> projectAttributes) 
-	throws OptimizationException {
+	throws OptimizationException, SNEEConfigurationException {
 		boolean accepted = false;
 		if (getInput(0).pushProjectionDown(
 				projectExpressions, projectAttributes) &&
@@ -110,12 +114,14 @@ implements LogicalOperator {
 	 * @throws AssertionError 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
+	 * @throws SNEEConfigurationException 
 	 */
-	public boolean pushSelectDown(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException {
+	public boolean pushSelectIntoLeafOp(Expression predicate) 
+	throws SchemaMetadataException, AssertionError, TypeMappingException,
+	SNEEConfigurationException {
 		boolean accepted = false;
-		if (getInput(0).pushSelectDown(predicate) &&
-				getInput(1).pushSelectDown(predicate))
+		if (getInput(0).pushSelectIntoLeafOp(predicate) &&
+				getInput(1).pushSelectIntoLeafOp(predicate))
 			accepted = true;
 		return accepted ;
 	}

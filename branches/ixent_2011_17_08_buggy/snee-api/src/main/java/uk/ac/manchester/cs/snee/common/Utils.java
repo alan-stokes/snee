@@ -46,9 +46,9 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -436,11 +436,11 @@ public class Utils {
 		}
 
 	//http://scriptche.blogspot.com/2011/04/add-hashset-integers-to-int-array-in.html
-	public static int [] hashset_to_int_array(HashSet<Integer> hs){  
+	public static int [] hashset_to_int_array(Set<Integer> hs){  
 	    
 		  int array[] = new int[hs.size()];  
 		    
-		  Iterator itr = hs.iterator();  
+		  Iterator<Integer> itr = hs.iterator();  
 		  
 		  int i=0;  
 		  

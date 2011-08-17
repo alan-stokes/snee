@@ -33,6 +33,8 @@ import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
+import uk.ac.manchester.cs.snee.metadata.schema.ExtentType;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 
 public abstract class SNEEClient implements Observer {
 
@@ -96,7 +98,8 @@ public abstract class SNEEClient implements Observer {
 
 	}
 	
-	protected void displayAllExtents() throws MetadataException {
+	protected void displayAllExtents() 
+	throws MetadataException, SchemaMetadataException {
 		Collection<String> extents = controller.getExtentNames();
 		Iterator<String> it = extents.iterator();
 		while (it.hasNext()) {
@@ -106,13 +109,20 @@ public abstract class SNEEClient implements Observer {
 	}
 	
 	protected void displayExtentSchema(String extentName) 
-	throws MetadataException 
+	throws MetadataException, SchemaMetadataException 
 	{
 		ExtentMetadata extent = 
 			controller.getExtentDetails(extentName);
 		List<Attribute> attributes = extent.getAttributes();
-		System.out.println("Attributes for " + extentName + " [" + 
-				extent.getExtentType() + "]" + ":");
+		System.out.print("Attributes for " + extentName + " [" + extent.getExtentType() + "]" + ":");
+		switch (extent.getExtentType()) {
+		case PUSHED:			
+			System.out.println(" (" + extent.getRate() + "t/s)"); 
+			break;
+		default:			
+			System.out.println();
+			break;
+		}
 		for (Attribute attr : attributes) {
 			String attrName = attr.getAttributeDisplayName();
 			AttributeType attrType = attr.getType();

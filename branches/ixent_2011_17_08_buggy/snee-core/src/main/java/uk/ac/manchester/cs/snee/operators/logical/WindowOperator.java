@@ -45,6 +45,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -118,92 +119,7 @@ public class WindowOperator extends LogicalOperatorImpl {
 		this.rowSlide = rowSlide;
 		this.addInput(child);
 		this.tickInterval = 1000;
-		setParamStr("from: "+from+" to: "+to+" slide: "+timeSlide);
 	}
-
-//	/**
-//	 * Converts the scope defintion of the window.
-//	 * 
-//	 * @param token ROWSCOPEDEF or TIMESCOPEDEF token
-//	 */
-//	private void convertScopeDef(AST token) {
-//		if (token.getType() == SNEEqlOperatorParserTokenTypes.TIMESCOPEDEF) {
-//			timeScope = true;
-//		} else if (token.getType() 
-//				== SNEEqlOperatorParserTokenTypes.ROWSCOPEDEF) {
-//			timeScope = false;
-//		} else {
-//			Utils.handleCriticalException(new Exception(
-//					"Unexpected Token in convertScopeDef. Found " 
-//					+ token.getText()));
-//		}	
-//		from = -Integer.parseInt(token.getFirstChild().getText());
-//		to = -Integer.parseInt(token.getFirstChild().
-//				getNextSibling().getText());
-//		if (from > to)
-//		{
-//			String message = "Window FROM may not be larger " +
-//					"(smaller negative) than TO";
-//			logger.warn(message);
-//			throw new AssertionError(message);
-//		}
-//		recordScopeDef();
-//	}    
-	
-//	/**
-//	 * Records the scope defintion of the window.
-//	 */
-//	private void recordScopeDef() {
-//		StringBuffer buf = new StringBuffer();
-//		if (timeScope) {
-//			buf.append("TimeScope (");
-//		} else {
-//			buf.append("RowScope (");
-//		}
-//		buf.append(from);
-//		buf.append(",");
-//		buf.append(to);
-//		buf.append(")");
-//		if (rowSlide > 0) {
-//			buf.append(" With RowSlide: " + rowSlide);
-//		}
-//		if (timeSlide > 0) {
-//			buf.append(" With Timeslide: " + timeSlide);
-//		}
-//
-//		setParamStr(buf.toString());
-//	}
-
-//	/**
-//	 * Converts the slide token to rowSlide, timeSlide or neither.
-//	 * 
-//	 * @param token An TIMEWINDOW, ROWWINDOW or INPUTWINDOW token
-//	 *
-//	 * @return token for the child operator.
-//	 */
-//	private AST convertSlide(AST token) {
-//		if (token.getType() == SNEEqlOperatorParserTokenTypes.TIMEWINDOW) {
-//			AST slideToken = token.getFirstChild().getNextSibling();
-//			timeSlide = Integer.parseInt(token.getFirstChild().getText());
-//			setParamStr(getParamStr() + "(TimeSlide" + timeSlide + ")");
-//			return slideToken.getNextSibling();
-//		}
-//		if (token.getType() == SNEEqlOperatorParserTokenTypes.ROWWINDOW) {
-//			AST slideToken = token.getFirstChild().getNextSibling();
-//			if (logger.isTraceEnabled())
-//				logger.trace("Slide token: " + slideToken);
-//			rowSlide = Integer.parseInt(slideToken.getText());
-//			setParamStr(getParamStr() + "(RowSlide " + rowSlide + ")");
-//			return slideToken.getNextSibling();
-//		}
-//		if (token.getType() == SNEEqlOperatorParserTokenTypes.INPUTWINDOW) {
-//			return token.getFirstChild().getNextSibling();
-//		}
-//		Utils.handleCriticalException(new Exception(
-//				"Unexpected Token in convertSlide. Found " 
-//				+ token.getText()));
-//		return null;
-//	}
 
 	/**
 	 * @return From Value which could be in ticks or rows.
@@ -347,10 +263,11 @@ public class WindowOperator extends LogicalOperatorImpl {
 
 	/**
 	 * {@inheritDoc}
+	 * @throws SNEEConfigurationException 
 	 */
 	public boolean pushProjectionDown(List<Expression> projectExpressions, 
 			List<Attribute> projectAttributes) 
-	throws OptimizationException {
+	throws OptimizationException, SNEEConfigurationException {
 		return getInput(0).pushProjectionDown(
 				projectExpressions, projectAttributes);
 	}
@@ -364,12 +281,25 @@ public class WindowOperator extends LogicalOperatorImpl {
 	 * @throws AssertionError 
 	 * @throws SchemaMetadataException 
 	 * @throws TypeMappingException 
+	 * @throws SNEEConfigurationException 
 	 */
-	public boolean pushSelectDown(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException {
-		if (logger.isTraceEnabled())
-			logger.trace("Pushing down: " + predicate);
-		return this.getInput(0).pushSelectDown(predicate);
+	public boolean pushSelectIntoLeafOp(Expression predicate) 
+	throws SchemaMetadataException, AssertionError, TypeMappingException, 
+	SNEEConfigurationException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER pushSelectionIntoLeafOp() with " + predicate);
+		}
+		boolean result;
+		if (timeScope) {
+			result = this.getInput(0).pushSelectIntoLeafOp(predicate);
+		} else {
+			//Cannot push select below a row based window
+			result = false;
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN pushSelectionIntoLeafOp() with " + result);
+		}
+		return result;
 	}
 
 	//XXX: Removed by AG as metadata now handled in metadata object
@@ -406,6 +336,10 @@ public class WindowOperator extends LogicalOperatorImpl {
 	 */
 	public boolean acceptsPredicates() {
 		return false;
+	}
+
+	public String getParamStr() {
+		return "from: " + from + " to: " + to + " slide: " + timeSlide;
 	}
 
 	/** {@inheritDoc} */

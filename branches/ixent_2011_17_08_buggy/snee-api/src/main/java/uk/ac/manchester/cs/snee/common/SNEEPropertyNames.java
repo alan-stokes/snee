@@ -98,12 +98,9 @@ public final class SNEEPropertyNames {
     	"compiler.logicalrewriter.push_project_down";
     
     /**
-     * Combines leaf operators (receive, acquire, scan) and select 
-     * into a single operator.
-     * TODO: currently in physical rewriter, move this to logical rewriter
-     * TODO: consider removing this option
+     * Combines acquire operators and select into a single operator.
      */
-    public static final String LOGICAL_REWRITER_COMBINE_LEAF_SELECT =
+    public static final String LOGICAL_REWRITER_COMBINE_ACQUIRE_SELECT =
     	"compiler.logicalrewriter.combine_leaf_and_select";
  
     /**
@@ -111,6 +108,7 @@ public final class SNEEPropertyNames {
      */
 	public static final String ALGORITHM_SELECTOR_ENABLE_INCREMENTAL_AGGREGATION = 
 		"compiler.algorithmselector.enable_incremental_aggregation";
+
     
     /**
      * Sets the random seed used for generating routing trees.
@@ -166,6 +164,9 @@ public final class SNEEPropertyNames {
 	public static String RESULTS_HISTORY_SIZE_TUPLES =
 		"results.history_size.tuples";
 
+	public static String EVALUATOR_DEFAULT_POLL_RATE =
+		"evaluator.default_poll_rate";
+	
 	/**
 	 * Specifies whether the metadata collection program should be invoked, 
 	 * or default metadata should be used.
@@ -192,7 +193,7 @@ public final class SNEEPropertyNames {
 	 */
 	public static final String SNCB_CODE_GENERATION_TARGET = 
 		"sncb.code_generation_target";
-
+    
 	/**
 	 * Turns the radio on/off during agenda evalauation, 
 	 * to enable power management to kick in.

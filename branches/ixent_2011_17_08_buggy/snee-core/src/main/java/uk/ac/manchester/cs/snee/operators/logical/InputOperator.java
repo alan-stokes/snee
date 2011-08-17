@@ -5,10 +5,16 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -64,7 +70,6 @@ implements LogicalOperator {
 		extentName = extentMetadata.getExtentName();
 		this.source = source;
 		addMetadataInfo(extentMetadata);
-		generateAndSetParamStr();
 	}
 	
 	/**
@@ -101,10 +106,10 @@ implements LogicalOperator {
 	 * Generates the parameter string that is used when displaying
 	 * the query plan as a graph.
 	 */
-	private void generateAndSetParamStr() {
-		this.setParamStr(this.extentName + 
+	public String getParamStr() {
+		return this.extentName + 
 				" (cardinality=" + getCardinality(null) +
-				" source=" + source.getSourceName());
+				" source=" + source.getSourceName() + ")\n " + getPredicate();
 	} 
 
 	/* (non-Javadoc)
@@ -195,6 +200,133 @@ implements LogicalOperator {
 			}
 		}
 		throw new OptimizationException("Unable to find a number for attribute: " + attribute.toString());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean pushSelectIntoLeafOp(Expression predicate) 
+	throws SchemaMetadataException, TypeMappingException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER pushSelectionIntoLeafOp() with " + predicate);
+		}
+		boolean boolSetting = true;
+		boolean result = false;
+		if (this instanceof AcquireOperator) {
+			// May want to keep acquire and select separate for debugging nesC
+			try {
+				boolSetting = SNEEProperties.getBoolSetting(
+						SNEEPropertyNames.LOGICAL_REWRITER_COMBINE_ACQUIRE_SELECT);
+			} catch (SNEEConfigurationException e) {
+				logger.warn(e + " Proceeding with default value true.");
+			}
+		}
+		if (boolSetting) {	
+			Expression myPredicate = this.getPredicate();
+			if (myPredicate instanceof NoPredicate) {
+				setPredicate(predicate);
+			} else {
+				Expression[] expArray = new Expression[2];
+				expArray[0] = myPredicate;
+				expArray[1] = predicate;
+				setPredicate(new MultiExpression(expArray, MultiType.AND, 
+						_boolType));
+			}
+			result = true;
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN pushSelectionIntoLeafOp() with " + result);
+		}
+		return result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public boolean pushProjectionDown(List<Expression> projectExpressions, 
+			List<Attribute> projectAttributes) 
+	throws OptimizationException {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER pushProjectionDown() with " + projectExpressions +
+					" " + projectAttributes);
+		}
+		boolean result = false;
+		boolean boolSetting = true;
+		if (this instanceof AcquireOperator) {
+			// May want to keep acquire and project separate for debugging nesC
+			try {
+				boolSetting = SNEEProperties.getBoolSetting(
+						SNEEPropertyNames.LOGICAL_REWRITER_COMBINE_ACQUIRE_SELECT);
+			} catch (SNEEConfigurationException e) {
+				logger.warn(e + " Proceeding with default value true.");
+			}
+		}
+		if (boolSetting) {					
+			if (projectAttributes.isEmpty()) {
+				//if no project to push down Do nothing.
+				result = false;
+			} else if (projectExpressions.isEmpty()) {
+				//remove unrequired attributes. No expressions to accept
+				for (int i = 0; i < outputAttributes.size(); ) {
+					if (projectAttributes.contains(outputAttributes.get(i)))
+						i++;
+					else {
+						outputAttributes.remove(i);
+						expressions.remove(i);		
+					}
+				}
+				updateInputAttributes();
+				result = false;
+			} else {
+				expressions = projectExpressions;
+				outputAttributes = projectAttributes;
+				updateInputAttributes();
+				result = true;
+			}
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN pushProjectionDown() with " + result);
+		}
+		return result;
+	}
+
+	/** 
+	 * Updates the input (sensed or scanned) Attributes.
+	 * Extracts the attributes from the expressions.
+	 * Those that are data attributes become the input attributes.
+	 */	
+	protected void updateInputAttributes() {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER updateInputAttributes()");
+		}
+		inputAttributes = new ArrayList<Attribute>();
+		for (int i = 0; i < expressions.size(); i++) {
+			//DataAttribute sensed =  sensedAttributes.get(i);
+			Expression expression = expressions.get(i);
+			List<Attribute> attributes = 
+				expression.getRequiredAttributes();
+			for (int j = 0; j < attributes.size(); j++) {
+				Attribute attribute = attributes.get(j);
+				if (attribute instanceof DataAttribute) {
+					if (!inputAttributes.contains(attribute)) {
+						inputAttributes.add((DataAttribute) attribute);
+					}
+				}
+			}
+		}
+		List<Attribute> attributes = 
+			getPredicate().getRequiredAttributes();
+		for (int j = 0; j < attributes.size(); j++) {
+			Attribute attribute = attributes.get(j);
+			if (attribute instanceof DataAttribute) {
+				if (!inputAttributes.contains(attribute)) {
+					inputAttributes.add((DataAttribute) attribute);
+				}
+			}
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN updateInputAttributes()");
+		}
 	}
 
 	/**

@@ -175,4 +175,14 @@ public class StringLiteral implements Expression {
 		this.isConstant = isConstant;
 	}
 
+	@Override
+	public boolean isJoinCondition() {
+		return false;
+	}
+
+	@Override
+	public void setIsJoinCondition(boolean isJoin) {
+		throw new AssertionError("String literal cannot be a join condition.");
+	}
+
 }

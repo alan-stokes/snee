@@ -1,5 +1,7 @@
 package uk.ac.manchester.cs.snee.operators.evaluator.receivers;
 
+import java.util.List;
+
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
@@ -16,8 +18,8 @@ public interface SourceReceiver {
 	public void open();
 
 	/**
-	 * Receive tuple from ReceiverHelper
-	 * @return
+	 * Receive a list of tuples from ReceiverHelper
+	 * @return a list of tuples
 	 * @throws EndOfResultsException
 	 * @throws SNEEDataSourceException 
 	 * @throws TypeMappingException 
@@ -25,7 +27,7 @@ public interface SourceReceiver {
 	 * @throws SNEEException 
 	 * @throws ReceiveTimeoutException 
 	 */
-	public Tuple receive()
+	public List<Tuple> receive()
 	throws EndOfResultsException, SNEEDataSourceException, 
 	TypeMappingException, SchemaMetadataException, SNEEException, 
 	ReceiveTimeoutException;

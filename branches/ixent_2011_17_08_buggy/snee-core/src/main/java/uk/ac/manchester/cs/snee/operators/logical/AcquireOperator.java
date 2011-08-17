@@ -38,6 +38,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
@@ -57,13 +60,6 @@ public class AcquireOperator extends InputOperator {
 	 */
 	private Logger logger = 
 		Logger.getLogger(AcquireOperator.class.getName());
-
-    /** 
-     * List of the attributes that are sensed by this operator. 
-     * Excludes attributes such as time, id, EvalTime.
-     * Includes attributes required for predicates.
-     */
-    private List<Attribute> sensedAttributes;
 	
 	/**
 	 * Constructs a new Acquire operator.
@@ -85,12 +81,11 @@ public class AcquireOperator extends InputOperator {
 		}
 		this.setOperatorName("ACQUIRE");
 		this.setOperatorDataType(OperatorDataType.STREAM);
-		updateSensedAttributes(); 
 		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN AcquireOperator()");
 	} 
-
+	
 	/**
 	 * Returns a string representation of the operator.
 	 * @return Operator as a String.
@@ -98,96 +93,17 @@ public class AcquireOperator extends InputOperator {
 	public String toString() {
 		return this.getText();
 	}
-
+	
 	/** {@inheritDoc} */
 	public boolean acceptsPredicates() {
-		return true;
+		try {
+			return SNEEProperties.getBoolSetting(
+					SNEEPropertyNames.LOGICAL_REWRITER_COMBINE_ACQUIRE_SELECT);
+		} catch (SNEEConfigurationException e) {
+			return true;
+		}
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 */
-	public boolean pushProjectionDown(List<Expression> projectExpressions, 
-			List<Attribute> projectAttributes) 
-	throws OptimizationException {
-		//if no project to push down Do nothing.
-		if (projectAttributes.size() == 0) {
-			return false;
-		}
-
-		if (projectExpressions.size() == 0) {
-			//remove unrequired attributes. No expressions to accept
-			for (int i = 0; i < outputAttributes.size(); ) {
-				if (projectAttributes.contains(outputAttributes.get(i)) ||
-						(outputAttributes.get(i) instanceof EvalTimeAttribute))
-					i++;
-				else {
-					outputAttributes.remove(i);
-					expressions.remove(i);		
-				}
-			}
-			updateSensedAttributes();
-			return false;
-		}
-
-		expressions = projectExpressions;
-		outputAttributes = projectAttributes;
-		
-		updateInputAttributes();
-		updateSensedAttributes();
-		return true;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * @throws AssertionError 
-	 * @throws SchemaMetadataException 
-	 * @throws TypeMappingException 
-	 */
-	public boolean pushSelectDown(Expression predicate) 
-	throws SchemaMetadataException, AssertionError, TypeMappingException {
-		setPredicate(predicate);
-		return true;
-	}
-	
-	/** 
-	 * Updates the sensed Attributes.
-	 */	
-	private void updateSensedAttributes() {
-		sensedAttributes = new ArrayList<Attribute>();
-		for (Attribute attr : inputAttributes) {
-			if (attr instanceof DataAttribute) {
-				sensedAttributes.add(attr);
-			}
-		}
-	}	
-
-	/**
-	 * 	Extracts the attributes from the expressions or predicates
-	 */
-	private void updateInputAttributes() {
-		for (int i = 0; i < expressions.size(); i++) {
-			//DataAttribute sensed =  sensedAttributes.get(i);
-			Expression expression = expressions.get(i);
-			List<Attribute> attributes = 
-				expression.getRequiredAttributes();
-			for (int j = 0; j < attributes.size(); j++) {
-				Attribute attribute = attributes.get(j);
-				if (!inputAttributes.contains(attribute)) {
-					inputAttributes.add((DataAttribute) attribute);
-				}
-			}
-		}
-		List<Attribute> attributes = 
-			getPredicate().getRequiredAttributes();
-		for (int j = 0; j < attributes.size(); j++) {
-			Attribute attribute = attributes.get(j);
-			if (!inputAttributes.contains(attribute)) {
-				inputAttributes.add((DataAttribute) attribute);
-			}
-		}
-	}
-
 	/**
 	 * Get the list of attributes acquired/ sensed by this operator.
 	 * List is before projection is pushed down.
@@ -196,12 +112,17 @@ public class AcquireOperator extends InputOperator {
 	 * @throws TypeMappingException 
 	 */
 	public List<Attribute> getSensedAttributes() {
-		assert (sensedAttributes != null);
+		ArrayList<Attribute> sensedAttributes = new ArrayList<Attribute>();
+		for (Attribute attr : inputAttributes) {
+			if (attr instanceof DataAttribute) {
+				sensedAttributes.add(attr);
+			}
+		}
 		return sensedAttributes;
 	}
 
 	public int getNumSensedAttributes() {
-		return sensedAttributes.size();
+		return getSensedAttributes().size();
 	}
 	
 	/**
@@ -213,12 +134,25 @@ public class AcquireOperator extends InputOperator {
 	public int getSensedAttributeNumber(Expression attribute)
 	throws OptimizationException {
 		assert (attribute instanceof DataAttribute);
-		for (int i = 0; i < sensedAttributes.size(); i++) {
-			if (attribute.equals(sensedAttributes.get(i))) {
-				return i;
+		int i = 0;
+		for (Attribute attr : inputAttributes) {
+			if (attr instanceof DataAttribute) {
+				if (attribute.equals(attr)) {
+					return i;
+				}
+				i++;
 			}
 		}
 		throw new OptimizationException("Unable to find a number for attribute: " + attribute.toString());
 	}
+	
+	public String getParamStr() {
+		return this.extentName + 
+		" (cardinality=" + getCardinality(null) +
+		" source=" + this.getSource().getSourceName() + ")\n " + 
+		getPredicate() + "\n" +
+		this.getExpressions().toString();
+	}
+
 	
 }

@@ -35,6 +35,7 @@ package uk.ac.manchester.cs.snee.operators.logical;
 
 import java.util.List;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -58,7 +59,6 @@ implements LogicalOperator {
         this.setOperatorName("RSTREAM");
 //        this.setNesCTemplateName("rstream never set");
         this.setOperatorDataType(OperatorDataType.STREAM);
-        this.setParamStr("");
         
         setChildren(new LogicalOperator[] {inputOperator});
     }  
@@ -74,13 +74,18 @@ implements LogicalOperator {
 //   protected RStreamOperator(RStreamOperator model) {
 //    	super(model);
 //    }  
+
+	public String getParamStr() {
+		return "";
+	}
     
    /**
     * {@inheritDoc}
+ * @throws SNEEConfigurationException 
     */
    public boolean pushProjectionDown(List<Expression> projectExpressions, 
 		   List<Attribute> projectAttributes) 
-   throws OptimizationException {
+   throws OptimizationException, SNEEConfigurationException {
 	   return getInput(0).pushProjectionDown(
 			   projectExpressions, projectAttributes);
    }
@@ -94,10 +99,12 @@ implements LogicalOperator {
  * @throws AssertionError 
  * @throws SchemaMetadataException 
  * @throws TypeMappingException 
+ * @throws SNEEConfigurationException 
     */
-	 public boolean pushSelectDown(Expression predicate) 
-	 throws SchemaMetadataException, AssertionError, TypeMappingException {
-		 return this.getInput(0).pushSelectDown(predicate);
+	 public boolean pushSelectIntoLeafOp(Expression predicate) 
+	 throws SchemaMetadataException, AssertionError, TypeMappingException,
+	 SNEEConfigurationException {
+		 return this.getInput(0).pushSelectIntoLeafOp(predicate);
 	 }
 
 	//XXX: Removed by AG as metadata now handled in metadata object

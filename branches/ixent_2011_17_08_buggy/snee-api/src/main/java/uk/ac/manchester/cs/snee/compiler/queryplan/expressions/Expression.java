@@ -134,5 +134,20 @@ public interface Expression {
 	 * @param isConstant
 	 */
 	void setIsConstant(boolean isConstant);
+
+	/**
+	 * Check if the expression is a join condition, i.e. compares the values
+	 * of two attributes from different extents.
+	 * 
+	 * @return true if this is a join condition
+	 */
+	boolean isJoinCondition();
+	
+	/**
+	 * Sets that this expression is a join condition, i.e. one that compares 
+	 * the values of two attributes from different extents.
+	 * @param isJoin
+	 */
+	void setIsJoinCondition(boolean isJoin);
 	
 }	

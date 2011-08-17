@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.parser.SNEEqlParserTokenTypes;
@@ -37,9 +38,10 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
-import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.IStreamOperator;
@@ -90,10 +92,9 @@ public class Translator {
 	}
 
 	private LogicalOperator translateFrom(AST ast) 
-	throws ExpressionException, SchemaMetadataException, 
-	SourceDoesNotExistException, OptimizationException, ParserException, 
-	TypeMappingException, ExtentDoesNotExistException, 
-	RecognitionException {
+	throws ExpressionException, SchemaMetadataException, SourceDoesNotExistException, 
+	OptimizationException, ParserException, TypeMappingException, ExtentDoesNotExistException, 
+	RecognitionException, SourceMetadataException, SNEECompilerException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateFrom(): ast " +
 					ast.toStringList());
@@ -108,10 +109,9 @@ public class Translator {
 	}
 
 	private LogicalOperator translateExtents(AST ast) 
-	throws ExpressionException, SchemaMetadataException, 
-	OptimizationException, SourceDoesNotExistException, ParserException, 
-	TypeMappingException, ExtentDoesNotExistException, 
-	RecognitionException {
+	throws ExpressionException, SchemaMetadataException, OptimizationException, 
+	SourceDoesNotExistException, ParserException, TypeMappingException, ExtentDoesNotExistException, 
+	RecognitionException, SourceMetadataException, SNEECompilerException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateExtents() ast " + 
 					ast);
@@ -653,8 +653,8 @@ public class Translator {
 	}
 
 	private LogicalOperator combineSources (LogicalOperator[] operators)
-	throws ExpressionException, SchemaMetadataException, 
-	OptimizationException {
+	throws ExpressionException, SchemaMetadataException, OptimizationException, 
+	SNEECompilerException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER combineSources(): " +
 					"number of operators " + operators.length);
@@ -718,7 +718,7 @@ public class Translator {
 	throws ExtentDoesNotExistException, SchemaMetadataException, 
 	TypeMappingException, SourceDoesNotExistException, 
 	ExpressionException, OptimizationException, ParserException,
-	RecognitionException  
+	RecognitionException, SourceMetadataException, SNEECompilerException  
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateExtent() " + 
@@ -773,8 +773,7 @@ public class Translator {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Translate PUSHED stream");
 				}
-				output = new ReceiveOperator(extentMetadata, source, 
-						_boolType);
+				output = new ReceiveOperator(extentMetadata, source, _boolType);
 				break;
 			case TABLE:
 				if (logger.isTraceEnabled()) {
@@ -807,10 +806,9 @@ public class Translator {
 	}
 
 	private LogicalOperator translateQuery(AST ast) 
-	throws SchemaMetadataException, ExpressionException, 
-	OptimizationException, SourceDoesNotExistException, 
-	ParserException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException {
+	throws SchemaMetadataException, ExpressionException, OptimizationException, 
+	SourceDoesNotExistException, ParserException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, SourceMetadataException, SNEECompilerException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER translateQuery() with '" +
 					ast +
@@ -907,10 +905,8 @@ public class Translator {
 		return operator;
 	}
 
-	private LogicalOperator checkUnionCondition(LogicalOperator left, 
-			LogicalOperator right) 
-	throws ParserException, SchemaMetadataException, 
-	TypeMappingException 
+	private LogicalOperator checkUnionCondition(LogicalOperator left, LogicalOperator right) 
+	throws ParserException, SchemaMetadataException, TypeMappingException, SNEECompilerException 
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER checkUnionCondition()" +
@@ -966,10 +962,9 @@ public class Translator {
 	}
 
 	public LAF translate(AST ast, int queryID) 
-	throws SchemaMetadataException, ExpressionException, 
-	OptimizationException, SourceDoesNotExistException,
-	ParserException, TypeMappingException, ExtentDoesNotExistException,
-	RecognitionException {
+	throws SchemaMetadataException, ExpressionException, OptimizationException, 
+	SourceDoesNotExistException, ParserException, TypeMappingException, ExtentDoesNotExistException,
+	RecognitionException, SourceMetadataException, SNEECompilerException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER translate(): " + 
 					ast.toStringTree() +
@@ -1033,26 +1028,39 @@ public class Translator {
 		case SNEEqlParserTokenTypes.WHERE:{
 			if (logger.isTraceEnabled()) {
 				logger.trace("Translate WHERE");
-			}
-			Expression expression = 
-				translateExpression(ast.getFirstChild(), input);
-			if (logger.isTraceEnabled()) {
-				logger.trace("Expression (" + expression + 
-						") type: " + expression.getType());
-			}
-			if (expression.getType() != _boolType) {
-				String msg = "Illegal attempt to use a none boolean " +
+			}			
+						
+			Expression[] expressions = new Expression[ast.getNumberOfChildren()];			
+			int count = 0;
+			AST child = ast.getFirstChild();			
+			while (child != null) {
+				Expression expression = translateExpression(child, input);
+				if (logger.isTraceEnabled()) {
+					logger.trace("Expression (" + expression + 
+							") type: " + expression.getType());
+				}
+				if (expression.getType() != _boolType) {
+					String msg = "Illegal attempt to use a none boolean " +
 					"expression in a where clause.";
-				logger.warn(msg);
-				throw new ExpressionException(msg);
+					logger.warn(msg);
+					throw new ExpressionException(msg);
+				}
+				expressions[count] = expression;
+				count++;
+				child = child.getNextSibling();
+			}		
+			LogicalOperator parentOperator = input;
+			for (int i = 0; i < expressions.length; i++) {
+				SelectOperator selectOperator = 
+					new SelectOperator(expressions[i], parentOperator, _boolType);
+				parentOperator = selectOperator;
 			}
-			SelectOperator selectOperator = 
-				new SelectOperator(expression,input, _boolType);
+			
 			if (logger.isTraceEnabled()) {
 				logger.debug("RETURN applyWhereOrGroupBy() " + 
-						selectOperator);
+						parentOperator);
 			}
-			return selectOperator;
+			return parentOperator;
 		}
 		default:
 		{

@@ -2,10 +2,8 @@ package uk.ac.manchester.cs.snee.compiler.queryplan;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -13,7 +11,6 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
-import uk.ac.manchester.cs.snee.common.graph.Edge;
 import uk.ac.manchester.cs.snee.common.graph.GraphUtils;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
@@ -152,8 +149,20 @@ public class LAFUtils extends GraphUtils {
 				}
 				out.print(op.getOperatorName() + "\\n");
 
-				if (op.getParamStr() != null) {
-					out.print(op.getParamStr() + "\\n");
+				String paramStr = op.getParamStr();
+				if (paramStr != null) {
+					// Code replaces \n with \\n
+					char[] charArray = paramStr.toCharArray();
+					String outputParamStr = "";
+					for (int i = 0; i < paramStr.length(); i++) {
+						char character = charArray[i];
+						if (character == '\n') {
+							outputParamStr += "\\n";
+						} else {
+							outputParamStr += character;
+						}
+					}
+					out.print(outputParamStr + "\\n");
 				}
 				if (showOperatorID) {
 					out.print("id = " + op.getID() + "\\n");
