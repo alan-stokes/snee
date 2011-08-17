@@ -12,6 +12,7 @@ public class SampleTesting {
 
 	public static final String schemaName = "java/resources/logical-schema.xml";
 
+	
 	public static final String baseClassPath = 
 		"/home/lebiathan/.m2/repository/uk/ac/manchester/cs/snee/snee-core/1.4.2/snee-core-1.4.2.jar";
 
