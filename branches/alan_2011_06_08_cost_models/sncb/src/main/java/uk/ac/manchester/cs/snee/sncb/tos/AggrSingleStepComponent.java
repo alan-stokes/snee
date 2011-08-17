@@ -53,6 +53,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregat
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSingleStepAggregationOperator;
 import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class AggrSingleStepComponent extends NesCComponent {

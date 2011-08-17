@@ -31,7 +31,7 @@
 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 *                                                                            *
 \****************************************************************************/
-package uk.ac.manchester.cs.snee.sncb.tos;
+package uk.ac.manchester.cs.snee.sncb;
 
 public class CodeGenerationException extends Exception {
 

@@ -22,6 +22,17 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
   
   public TinyOS_SNCB_Avrora(double duration)throws SNCBException 
   {
+    setUp();
+  }
+  
+  
+  public TinyOS_SNCB_Avrora() throws SNCBException 
+  {
+    setUp();
+  }
+
+  public void setUp()
+  {
     if (logger.isDebugEnabled())
       logger.debug("ENTER TinyOS_SNCB()");
     try 
@@ -73,7 +84,7 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
       logger.debug("RETURN TinyOS_SNCB()");
   }
   
-  
+
   public SerialPortMessageReceiver register(SensorNetworkQueryPlan qep,
       String queryOutputDir, MetadataManager costParams)
       throws SNCBException {

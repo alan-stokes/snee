@@ -23,6 +23,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeExceptio
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 
@@ -36,7 +37,8 @@ public interface AutonomicManager
       MetadataException, UnsupportedAttributeTypeException,
       SourceMetadataException, TopologyReaderException,
       SNEEDataSourceException, CostParametersException, 
-      SNCBException, SNEECompilerException, IOException;
+      SNCBException, SNEECompilerException, 
+      IOException, CodeGenerationException;
 
   public abstract void runCostModels() throws OptimizationException;
 
@@ -76,5 +78,6 @@ public interface AutonomicManager
   MalformedURLException, MetadataException,
   UnsupportedAttributeTypeException, SourceMetadataException,
   TopologyReaderException, SNEEDataSourceException,
-  CostParametersException, SNCBException, SNEECompilerException, IOException;
+  CostParametersException, SNCBException, 
+  SNEECompilerException, IOException, CodeGenerationException;
 }

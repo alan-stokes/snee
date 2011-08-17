@@ -35,6 +35,8 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
+
 public class TimerComponent extends GenericNesCComponent {
 
     public static String TYPE_NAME = "TimerMilliC";

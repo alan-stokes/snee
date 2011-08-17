@@ -10,6 +10,7 @@ import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public class Planner 
 {
@@ -31,10 +32,13 @@ public class Planner
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
+   * @throws CodeGenerationException 
    */
   public Adaptation assessChoices(List<Adaptation> choices) 
-  throws IOException, OptimizationException, 
-  SchemaMetadataException, TypeMappingException
+  throws 
+  IOException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException, 
+  CodeGenerationException
   {
     return assessor.assessChoices(choices);
   }

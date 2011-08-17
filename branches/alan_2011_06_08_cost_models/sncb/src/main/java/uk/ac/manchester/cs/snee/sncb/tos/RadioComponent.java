@@ -35,6 +35,8 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
+
 public class RadioComponent extends NesCComponent {
 
     public RadioComponent(final String name, final NesCConfiguration config,

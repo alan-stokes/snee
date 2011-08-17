@@ -41,6 +41,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSelectOperator;
 import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class SelectComponent extends NesCComponent {

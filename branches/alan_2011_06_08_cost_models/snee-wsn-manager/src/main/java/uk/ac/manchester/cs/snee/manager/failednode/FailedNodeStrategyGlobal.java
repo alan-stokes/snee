@@ -107,7 +107,7 @@ public class FailedNodeStrategyGlobal extends StrategyAbstract
 	{
 	  System.out.println("Running Failed Node FrameWork Global");
 	  List<Adaptation> adaptation = new ArrayList<Adaptation>();
-	  Adaptation adapt = new Adaptation(qep, StrategyID.FAILED_NODE_GLOBAL);
+	  Adaptation adapt = new Adaptation(qep, StrategyID.FAILED_NODE_GLOBAL, 1);
 	  //remove nodes from topology
 		network = this.getWsnTopology();
 		network = cloner.deepClone(network);

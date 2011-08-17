@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.manager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -16,12 +17,14 @@ public class Adaptation
   private SensorNetworkQueryPlan newQep = null;
   private SensorNetworkQueryPlan oldQep = null;
   private Long timeCost = null;
-  private Long energyCost = null;
+  private HashMap<String, Long> siteEnergyCosts = new HashMap<String, Long>();
+  private Long overallEnergyCost = null;
   private Long runtimeCost = null;
   private Double lifetimeEstimate = null; //done in agenda cycles
   private StrategyID id;
+  private int numberID;
   
-  public Adaptation(SensorNetworkQueryPlan oldQep, StrategyID id)
+  public Adaptation(SensorNetworkQueryPlan oldQep, StrategyID id, int numberID)
   {
     reprogrammingSites = new ArrayList<Site>();
     redirectedionSites = new ArrayList<Site>();
@@ -30,6 +33,7 @@ public class Adaptation
     activateSites = new ArrayList<Site>();
     this.setOldQep(oldQep);
     this.setId(id);
+    this.numberID = numberID;
   }
   
   /**
@@ -182,12 +186,12 @@ public class Adaptation
 
   public void setEnergyCost(Long energyCost)
   {
-    this.energyCost = energyCost;
+    this.overallEnergyCost = energyCost;
   }
 
   public Long getEnergyCost()
   {
-    return energyCost;
+    return overallEnergyCost;
   }
   
   public void setId(StrategyID id)
@@ -195,9 +199,14 @@ public class Adaptation
     this.id = id;
   }
 
-  public StrategyID getId()
+  public StrategyID getStrategyId()
   {
     return id;
+  }
+  
+  public String getOverallID()
+  {
+    return id.toString() + numberID;
   }
   
   public void setRuntimeCost(Long runtimeCost)
@@ -218,6 +227,19 @@ public class Adaptation
   public Double getLifetimeEstimate()
   {
     return lifetimeEstimate;
+  }
+  
+  public Long getSiteEnergyCost(Object key)
+  {
+    if(siteEnergyCosts.get(key) == null)
+      return new Long(0);
+    else
+      return siteEnergyCosts.get(key);
+  }
+
+  public Long putSiteEnergyCost(String key, Long value)
+  {
+    return siteEnergyCosts.put(key, value);
   }
   
   
@@ -293,17 +315,15 @@ public class Adaptation
       counter++;
     }
     output = output.concat("]");
-    if(energyCost != null)
-      output  = output.concat(" EnergyCost [" + energyCost.toString() + "]");
+    if(overallEnergyCost != null)
+      output  = output.concat(" OverallEnergyCost [" + overallEnergyCost.toString() + "]");
     if(timeCost != null)
       output  = output.concat(" TimeCost [" + timeCost.toString() + "]");
     if(runtimeCost != null)
-      output  = output.concat(" EnergyCost [" + energyCost.toString() + "]");
+      output  = output.concat(" RunTimeCost [" + runtimeCost.toString() + "]");
     if(lifetimeEstimate != null)
-      output  = output.concat(" TimeCost [" + timeCost.toString() + "]");
-    if(lifetimeEstimate != null)
-      output  = output.concat(" TimeCost [" + timeCost.toString() + "]");
-    output  = output.concat(" ID [" + id.toString() + "]");
+      output  = output.concat(" lifetimeEstimate [" + lifetimeEstimate.toString() + " s]");
+    output  = output.concat(" ID [" + id.toString() + ":" + numberID + "]");
     return output;
   }
 }

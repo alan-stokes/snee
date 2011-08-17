@@ -65,6 +65,13 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-sncb</artifactId>
+			<version>${snee.version}</version>
+			<scope>compile</scope>
+		</dependency>
+		
+		<dependency>
 			<groupId>uk.com.robust-it</groupId>
 			<artifactId>cloning</artifactId>
 			<version>1.7.4</version>

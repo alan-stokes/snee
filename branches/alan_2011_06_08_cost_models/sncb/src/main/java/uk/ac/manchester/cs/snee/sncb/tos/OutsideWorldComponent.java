@@ -35,6 +35,8 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.IOException;
 
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
+
 /**
  * Dummy NesC component for wirings to external providers/users of the configuration
  * @author galpini

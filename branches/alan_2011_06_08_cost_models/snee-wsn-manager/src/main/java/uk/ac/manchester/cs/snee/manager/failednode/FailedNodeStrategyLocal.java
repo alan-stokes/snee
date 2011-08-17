@@ -210,7 +210,7 @@ public class FailedNodeStrategyLocal extends StrategyAbstract
     System.out.println("Running Failed Node FrameWork Local");
     List<Adaptation> adapatation = new ArrayList<Adaptation>();
     Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
-    Adaptation adapt = new Adaptation(qep, StrategyID.FAILED_NODE_LOCAL);
+    Adaptation adapt = new Adaptation(qep, StrategyID.FAILED_NODE_LOCAL, 1);
     while(failedNodeIDsIterator.hasNext())
     {
       String failedNodeID = failedNodeIDsIterator.next();

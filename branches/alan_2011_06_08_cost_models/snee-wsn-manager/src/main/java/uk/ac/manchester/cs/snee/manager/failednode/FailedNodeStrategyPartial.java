@@ -205,7 +205,7 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
     {
       //set up current objects
       RT routingTree =  routeIterator.next();
-      Adaptation currentAdapatation = new Adaptation(qep, StrategyID.FAILED_NODE_PARTIAL);
+      Adaptation currentAdapatation = new Adaptation(qep, StrategyID.FAILED_NODE_PARTIAL, choice);
       
       File choiceFolder = new File(choiceFolderMain.toString() + sep + "choice" + choice);
       choiceFolder.mkdir();

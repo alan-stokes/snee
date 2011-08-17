@@ -27,7 +27,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
-import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 
 public class TinyOS_SNCB implements SNCB {
 
@@ -242,7 +241,7 @@ public class TinyOS_SNCB implements SNCB {
 		return mr;
 	}
 	
-	protected void generateNesCCode(SensorNetworkQueryPlan qep,
+	public void generateNesCCode(SensorNetworkQueryPlan qep,
 			String queryOutputDir, MetadataManager metadata)
 			throws IOException, SchemaMetadataException, TypeMappingException,
 			OptimizationException, CodeGenerationException {
@@ -257,7 +256,7 @@ public class TinyOS_SNCB implements SNCB {
 		codeGenerator.doNesCGeneration(qep);
 	}
 
-	protected void compileNesCCode(String queryOutputDir) throws IOException {
+	public void compileNesCCode(String queryOutputDir) throws IOException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER compileNesCCode()");
 		String nescOutputDir = System.getProperty("user.dir") + "/"
@@ -515,6 +514,11 @@ public class TinyOS_SNCB implements SNCB {
 		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN resume()");
+	}
+	
+	public void setOutputFolder(String newTargetDirName)
+	{
+	  this.targetDirName = newTargetDirName;
 	}
 
   @Override

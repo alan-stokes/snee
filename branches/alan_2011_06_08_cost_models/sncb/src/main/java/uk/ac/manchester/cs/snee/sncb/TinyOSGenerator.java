@@ -84,7 +84,6 @@ import uk.ac.manchester.cs.snee.sncb.tos.AggrInitComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.AggrMergeComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.AggrSingleStepComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenUtils;
-import uk.ac.manchester.cs.snee.sncb.tos.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.tos.DeliverComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.ExchangeProducerComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.FragmentComponent;

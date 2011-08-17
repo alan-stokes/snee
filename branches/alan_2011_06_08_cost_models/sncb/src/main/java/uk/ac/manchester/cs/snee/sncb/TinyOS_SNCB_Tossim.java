@@ -12,12 +12,21 @@ public class TinyOS_SNCB_Tossim extends TinyOS_SNCB implements SNCB
   
   public TinyOS_SNCB_Tossim(double duration) throws SNCBException 
   {
+    setup();
+  }
+
+  public TinyOS_SNCB_Tossim() throws SNCBException 
+  {
+    setup();
+  }
+  
+  private void setup()
+  {
     if (logger.isDebugEnabled())
       logger.debug("ENTER TinyOS_SNCB()");
     try {
       // TinyOS environment variables
       this.tinyOSEnvVars = new HashMap<String, String>();
-      this.duration = duration;
       workingDir = Utils.getResourcePath("etc/sncb/tools/python");
       String currentPath = System.getenv("PATH");
       this.tinyOSEnvVars.put("PATH", currentPath + ":" + workingDir + ":"

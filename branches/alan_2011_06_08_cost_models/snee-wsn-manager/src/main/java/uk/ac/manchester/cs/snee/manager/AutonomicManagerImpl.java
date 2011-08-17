@@ -33,6 +33,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeExceptio
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 
@@ -120,7 +121,7 @@ public class AutonomicManagerImpl implements AutonomicManager
   throws SNEEConfigurationException, OptimizationException, 
          SchemaMetadataException, TypeMappingException, 
          AgendaException, SNEEException, 
-         MetadataException, 
+         MetadataException, CodeGenerationException,
          UnsupportedAttributeTypeException, SourceMetadataException, 
          TopologyReaderException, SNEEDataSourceException, 
          CostParametersException, SNCBException, 
@@ -255,6 +256,7 @@ public class AutonomicManagerImpl implements AutonomicManager
 
   /**
    * method used to simulate test data
+   * @throws CodeGenerationException 
    */
   @Override
   public void runSimulatedNodeFailure() throws OptimizationException,
@@ -264,7 +266,7 @@ public class AutonomicManagerImpl implements AutonomicManager
       UnsupportedAttributeTypeException, SourceMetadataException,
       TopologyReaderException, SNEEDataSourceException,
       CostParametersException, SNCBException, SNEECompilerException,
-      IOException
+      IOException, CodeGenerationException
   {
     monitor.chooseFakeNodeFailure();
   }

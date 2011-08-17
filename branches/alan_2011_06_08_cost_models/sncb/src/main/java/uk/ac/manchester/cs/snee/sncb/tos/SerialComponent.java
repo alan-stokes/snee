@@ -33,6 +33,8 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
+
 public class SerialComponent extends NesCComponent {
 
     public SerialComponent(final String name, final NesCConfiguration config,
