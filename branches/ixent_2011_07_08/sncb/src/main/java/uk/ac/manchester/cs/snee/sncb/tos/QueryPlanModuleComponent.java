@@ -101,6 +101,10 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		this.costParams = costParams;
 
 		this.controlRadio =controlRadio;
+		if (this.sink.toString().equals(config.getSiteID())) {
+			this.controlRadio =false;
+		}
+		
 		this.enablePrintf = enablePrintf;
 		this.enableLeds = enableLeds;
 		this.useControllerComponent = useControllerComponent;
