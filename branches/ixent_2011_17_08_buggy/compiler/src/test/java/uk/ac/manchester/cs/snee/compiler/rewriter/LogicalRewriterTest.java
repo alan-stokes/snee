@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.compiler.rewriter;
 
 import static org.easymock.EasyMock.expect;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.net.MalformedURLException;
@@ -33,9 +34,11 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.FloatLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IntLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
 import uk.ac.manchester.cs.snee.compiler.translator.TranslatorTest;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
@@ -386,8 +389,8 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		AttributeType mockType = createMock(AttributeType.class);
 		List<Attribute> attrList = new ArrayList<Attribute>();
 		
-		expect(mockExtent.getExtentName()).andReturn("streamName").times(2);
-		expect(mockExtent.getAttributes()).andReturn(attrList).times(2);
+		expect(mockExtent.getExtentName()).andReturn("streamName");
+		expect(mockExtent.getAttributes()).andReturn(attrList);
 		expect(mockExtent.getCardinality()).andReturn(1);
 				
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
@@ -474,8 +477,8 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		AttributeType mockType = createMock(AttributeType.class);
 		List<Attribute> attrList = new ArrayList<Attribute>();
 		
-		expect(mockExtent.getExtentName()).andReturn("streamName").times(2);
-		expect(mockExtent.getAttributes()).andReturn(attrList).times(2);
+		expect(mockExtent.getExtentName()).andReturn("streamName");
+		expect(mockExtent.getAttributes()).andReturn(attrList);
 		expect(mockExtent.getCardinality()).andReturn(1);
 				
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
@@ -563,8 +566,8 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		AttributeType mockType = createMock(AttributeType.class);
 		List<Attribute> attrList = new ArrayList<Attribute>();
 		
-		expect(mockExtent.getExtentName()).andReturn("streamName").times(2);
-		expect(mockExtent.getAttributes()).andReturn(attrList).times(2);
+		expect(mockExtent.getExtentName()).andReturn("streamName");
+		expect(mockExtent.getAttributes()).andReturn(attrList);
 		expect(mockExtent.getCardinality()).andReturn(1);
 				
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
@@ -652,8 +655,8 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		AttributeType mockType = createMock(AttributeType.class);
 		List<Attribute> attrList = new ArrayList<Attribute>();
 		
-		expect(mockExtent.getExtentName()).andReturn("streamName").times(2);
-		expect(mockExtent.getAttributes()).andReturn(attrList).times(2);
+		expect(mockExtent.getExtentName()).andReturn("streamName");
+		expect(mockExtent.getAttributes()).andReturn(attrList);
 		expect(mockExtent.getCardinality()).andReturn(1);
 				
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
@@ -1135,11 +1138,6 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		List<Attribute> rightAttrList = new ArrayList<Attribute>();
 		rightAttrList.add(mockAttribute1);
 		
-		expect(mockAttribute.getRequiredAttributes())
-			.andReturn((ArrayList<Attribute>) leftAttrList);
-		expect(mockAttribute1.getRequiredAttributes())
-			.andReturn((ArrayList<Attribute>) rightAttrList);
-		
 		expect(mockExtentLeft.getExtentName()).andReturn("streamLeft").anyTimes();
 		expect(mockExtentLeft.getAttributes()).andReturn(leftAttrList).anyTimes();
 		expect(mockExtentLeft.getCardinality()).andReturn(1).anyTimes();
@@ -1486,6 +1484,169 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		testOperator(opIt, "RECEIVE");
 		testOperator(opIt, "WINDOW");
 		testOperator(opIt, "JOIN");
+		testOperator(opIt, "DELIVER");
+		verifyAll();
+	}
+
+	/**
+	 * Test query
+	 * Acquire1 -> window -> 
+	 * 
+	 * Acquire2 -> window -> project ->
+	 * Acquire3 -> window -> 
+	 * join1 -> 
+	 * join2 -> selectJoin2 -> project -> select -> project -> deliver
+	 * select combines with acquire2, join condition merges with corresponding join
+	 * @throws SourceMetadataException 
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
+	 * @throws AssertionError 
+	 * @throws SNEECompilerException 
+	 */
+	@Test
+	public void testJoinThreeWayCondition()
+	throws SchemaMetadataException, TypeMappingException, 
+	SourceMetadataException, OptimizationException, AssertionError, 
+	SNEEConfigurationException, SNEECompilerException {
+		ExtentMetadata mockExtent1 = createMock(ExtentMetadata.class);
+		ExtentMetadata mockExtent2 = createMock(ExtentMetadata.class);
+		ExtentMetadata mockExtent3 = createMock(ExtentMetadata.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
+		Attribute mockAttribute = createMock(Attribute.class);
+		Attribute mockAttribute1 = createMock(Attribute.class); 
+		Attribute mockAttribute2 = createMock(Attribute.class); 
+		AttributeType mockType = createMock(AttributeType.class);
+		
+		expect(mockAttribute.getAttributeSchemaName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute.getAttributeDisplayName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute.getExtentName())
+			.andReturn("stream1").anyTimes();
+		expect(mockAttribute.isConstant()).andReturn(false).anyTimes();
+		expect(mockAttribute.getType()).andReturn(mockType).anyTimes();
+		
+		expect(mockAttribute1.getAttributeSchemaName())
+			.andReturn("timestamp").anyTimes();
+		expect(mockAttribute1.getAttributeDisplayName())
+			.andReturn("timestamp").anyTimes();
+		expect(mockAttribute1.getExtentName())
+			.andReturn("stream2").anyTimes();
+		expect(mockAttribute1.isConstant()).andReturn(false).anyTimes();
+		expect(mockAttribute1.getType()).andReturn(mockType).anyTimes();
+
+		expect(mockAttribute2.getAttributeSchemaName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute2.getAttributeDisplayName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute2.getExtentName())
+			.andReturn("stream3").anyTimes();
+		expect(mockAttribute2.isConstant()).andReturn(false).anyTimes();
+		expect(mockAttribute2.getType()).andReturn(mockType).anyTimes();
+		
+		List<Attribute> attrList = new ArrayList<Attribute>();
+		attrList.add(mockAttribute);
+		List<Attribute> attrList1 = new ArrayList<Attribute>();
+		attrList1.add(mockAttribute1);
+		List<Attribute> attrList2 = new ArrayList<Attribute>();
+		attrList2.add(mockAttribute2);
+		
+		expect(mockExtent1.getExtentName()).andReturn("stream1").anyTimes();
+		expect(mockExtent1.getAttributes()).andReturn(attrList).anyTimes();
+		expect(mockExtent1.getCardinality()).andReturn(1).anyTimes();
+
+		expect(mockExtent2.getExtentName()).andReturn("stream2").anyTimes();
+		expect(mockExtent2.getAttributes()).andReturn(attrList1).anyTimes();
+		expect(mockExtent2.getCardinality()).andReturn(1).anyTimes();
+
+		expect(mockExtent3.getExtentName()).andReturn("stream3").anyTimes();
+		expect(mockExtent3.getAttributes()).andReturn(attrList1).anyTimes();
+		expect(mockExtent3.getCardinality()).andReturn(1).anyTimes();
+
+		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
+
+		expect(mockType.getName()).andReturn("integer").anyTimes();
+
+		replayAll();
+
+		LogicalOperator acquireOp1 =
+			new AcquireOperator(mockExtent1, mockSource, boolType);
+		LogicalOperator windowOp1 = 
+			new WindowOperator(0, 0, true, 0, 0, acquireOp1, boolType);
+		LogicalOperator acquireOp2 = 
+			new AcquireOperator(mockExtent2, mockSource, boolType);
+		LogicalOperator windowOp2 = 
+			new WindowOperator(0, 0, true, 0, 0, acquireOp2, boolType);
+		LogicalOperator acquireOp3 = 
+			new AcquireOperator(mockExtent3, mockSource, boolType);
+		LogicalOperator windowOp3 = 
+			new WindowOperator(0, 0, true, 0, 0, acquireOp3, boolType);
+		LogicalOperator joinOp1 = 
+			new JoinOperator(windowOp2, windowOp3, boolType);		
+		LogicalOperator joinOp2 = 
+			new JoinOperator(windowOp1, joinOp1, boolType);		
+
+		Expression[] expression1 = new Expression[2];
+		expression1[0] = new DataAttribute(mockAttribute1);
+		expression1[1] = new DataAttribute(mockAttribute2);
+		Expression[] expression2 = new Expression[2];
+		expression2[0] = new DataAttribute(mockAttribute);
+		expression2[1] = new MultiExpression(expression1, MultiType.MINUS, boolType);			
+		Expression[] expression3 = new Expression[2];
+		expression3[0] = new MultiExpression(expression2, MultiType.DIVIDE, boolType);
+		expression3[1] = new IntLiteral(1, types.getType("integer"));
+		
+		Expression joinPredicate2 = 
+			new MultiExpression(expression3, MultiType.LESSTHAN, boolType);
+		LogicalOperator selectOp2 = 
+			new SelectOperator(joinPredicate2, joinOp2, boolType);
+		
+		Expression[] expression4 = new Expression[2];
+		expression4[0] = new DataAttribute(mockAttribute);
+		expression4[1] = new FloatLiteral((float) 0.15, types.getType("float"));
+		Expression selectPredicate = 
+			new MultiExpression(expression4, MultiType.LESSTHAN, boolType);
+		LogicalOperator selectOp1 = 
+			new SelectOperator(selectPredicate, selectOp2, boolType);
+
+		LogicalOperator deliverOp = 
+			new DeliverOperator(selectOp1, boolType);
+
+		laf = new LAF(deliverOp, "multi-join-condition");
+		rewriter.doLogicalRewriting(laf);
+		Iterator<LogicalOperator> opIt = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		LogicalOperator op = testOperator(opIt, "ACQUIRE");
+		Expression predicate = op.getPredicate();
+		assert(predicate instanceof MultiExpression);
+		MultiExpression multiExp = (MultiExpression) predicate;
+		assertEquals(MultiType.LESSTHAN, multiExp.getMultiType());
+		Expression[] exprs = multiExp.getExpressions();
+		assert(exprs[0] instanceof DataAttribute);
+		assert(exprs[1] instanceof FloatLiteral);
+
+		testOperator(opIt, "WINDOW");
+		testOperator(opIt, "ACQUIRE");
+		testOperator(opIt, "WINDOW");
+		testOperator(opIt, "ACQUIRE");
+		testOperator(opIt, "WINDOW");
+		op = testOperator(opIt, "JOIN");
+		predicate = op.getPredicate();
+		assert(predicate instanceof NoPredicate);
+		
+		op = testOperator(opIt, "JOIN");
+		predicate = op.getPredicate();
+		assert(predicate instanceof MultiExpression);
+		multiExp = (MultiExpression) predicate;
+		assertEquals(MultiType.LESSTHAN, multiExp.getMultiType());
+		predicate = multiExp.getExpressions()[0];
+		assert(predicate instanceof MultiExpression);
+		multiExp = (MultiExpression) predicate;
+		assertEquals(MultiType.DIVIDE, multiExp.getMultiType());
+
 		testOperator(opIt, "DELIVER");
 		verifyAll();
 	}

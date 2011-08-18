@@ -44,13 +44,11 @@ import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 
 public class AcquireOperator extends InputOperator {
@@ -77,7 +75,7 @@ public class AcquireOperator extends InputOperator {
 		super(extentMetadata, source, boolType);
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER AcquireOperator() with " + 
-					extentMetadata + " #source=" + source.getSourceName());
+					extentMetadata + " source=" + source.getSourceName());
 		}
 		this.setOperatorName("ACQUIRE");
 		this.setOperatorDataType(OperatorDataType.STREAM);

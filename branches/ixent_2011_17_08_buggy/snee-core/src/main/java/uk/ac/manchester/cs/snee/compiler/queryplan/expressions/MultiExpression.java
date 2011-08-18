@@ -34,7 +34,9 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
@@ -93,45 +95,21 @@ public class MultiExpression implements Expression {
 		calculateIsConstant();
 		multiExprId = counter;
 		counter++;
-		calculateIsJoin();
+		isJoinCondition = calculateIsJoinCondition(this);
 	}
 	
-	private void calculateIsJoin() {
-		switch (multiType) {
-		case AND:
-		case OR:
-			// Check sub-expressions
-				isJoinCondition = expressions[0].isJoinCondition();
-			break;
-		case EQUALS:
-		case GREATERTHAN:
-		case GREATERTHANEQUALS:
-		case LESSTHAN:
-		case LESSTHANEQUALS:
-		case NOTEQUALS:
-			// Check sources of attributes			
-			Expression exp1 = expressions[0];
-			Expression exp2 = expressions[1];
-			if (exp1.isConstant() || exp2.isConstant()) {
-				// One of the expressions is a constant value
-				isJoinCondition = false;
-			} else {
-				String extent1 = 
-					exp1.getRequiredAttributes().get(0).getExtentName();
-				String extent2 = 
-					exp2.getRequiredAttributes().get(0).getExtentName();
-				if (extent1.equalsIgnoreCase(extent2)) {
-					// Comparison of attributes from same extent
-					isJoinCondition = false;
-				} else {
-					isJoinCondition = true;
-				}
-			}
-			break;
-		default:
-			// All other cases are false be default, no action needed
-			break;
+	private boolean calculateIsJoinCondition(MultiExpression expr) {
+		boolean isJoin = false;
+		List<Attribute> requiredAttributes = expr.getRequiredAttributes();
+		Set<String> requiredExtents = new HashSet<String>();
+		for (Attribute attr : requiredAttributes) {
+			String extentName = attr.getExtentName();
+			requiredExtents.add(extentName);
 		}
+		if (requiredExtents.size() > 1) {
+			isJoin = true;
+		}
+		return isJoin;
 	}
 
 	private void calculateIsConstant() {
