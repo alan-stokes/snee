@@ -89,15 +89,6 @@ public final class SNEEPropertyNames {
     	"compiler.logicalrewriter.remove_unrequired_operators";
     
     /**
-     * Pushes project operators as close to the leaves of the operator
-     * tree as possible.
-     * TODO: currently in physical rewriter, move this to logical rewriter
-     * TODO: consider removing this option 
-     */
-    public static final String LOGICAL_REWRITER_PUSH_PROJECT_DOWN =
-    	"compiler.logicalrewriter.push_project_down";
-    
-    /**
      * Combines acquire operators and select into a single operator.
      */
     public static final String LOGICAL_REWRITER_COMBINE_ACQUIRE_SELECT =

@@ -4,6 +4,7 @@ import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -121,8 +122,10 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		expect(mockAttr.getAttributeDisplayName()).andReturn("const");
 		expect(mockAttr.getExtentName()).andReturn("");
 		expect(mockAttr.getType()).andReturn(mockType);
-		expect(mockType.getName()).andReturn("string").times(2);
-
+		expect(mockType.getName()).andReturn("string");
+		List<Attribute> attrList = new ArrayList<Attribute>();
+		attrList.add(mockAttr);
+		expect(mockAttr.getRequiredAttributes()).andReturn(attrList);
 		//Test
 		replayAll();
 		ProjectOperatorImpl op = new ProjectOperatorImpl(mockProjOp);
@@ -145,7 +148,10 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		expect(mockAttr.getAttributeDisplayName()).andReturn("const");
 		expect(mockAttr.getExtentName()).andReturn("");
 		expect(mockAttr.getType()).andReturn(mockType);
-		expect(mockType.getName()).andReturn("integer").times(2);
+		expect(mockType.getName()).andReturn("integer");
+		List<Attribute> attrList = new ArrayList<Attribute>();
+		attrList.add(mockAttr);
+		expect(mockAttr.getRequiredAttributes()).andReturn(attrList);
 
 		//Test
 		replayAll();
@@ -169,7 +175,10 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		expect(mockAttr.getAttributeDisplayName()).andReturn("const");
 		expect(mockAttr.getExtentName()).andReturn("");
 		expect(mockAttr.getType()).andReturn(mockType);
-		expect(mockType.getName()).andReturn("float").times(2);
+		expect(mockType.getName()).andReturn("float");
+		List<Attribute> attrList = new ArrayList<Attribute>();
+		attrList.add(mockAttr);
+		expect(mockAttr.getRequiredAttributes()).andReturn(attrList);
 
 		//Test
 		replayAll();

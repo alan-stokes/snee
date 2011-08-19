@@ -85,7 +85,8 @@ public class MultiExpression implements Expression {
 	 * @param booleanType The type being used for BOOLEANS as read in from the types file
 	 */
 	public MultiExpression(Expression[] newExpressions, 
-			MultiType type, AttributeType booleanType) {
+			MultiType type, AttributeType booleanType) 
+	throws SchemaMetadataException, TypeMappingException {
 		this.expressions = newExpressions;
 		assert (type == MultiType.SQUAREROOT || type == MultiType.ABS
 				|| expressions.length >= 2);
@@ -98,15 +99,24 @@ public class MultiExpression implements Expression {
 		isJoinCondition = calculateIsJoinCondition(this);
 	}
 	
-	private boolean calculateIsJoinCondition(MultiExpression expr) {
+	private boolean calculateIsJoinCondition(MultiExpression expr) 
+	throws SchemaMetadataException, TypeMappingException {
 		boolean isJoin = false;
 		List<Attribute> requiredAttributes = expr.getRequiredAttributes();
 		Set<String> requiredExtents = new HashSet<String>();
 		for (Attribute attr : requiredAttributes) {
 			String extentName = attr.getExtentName();
-			requiredExtents.add(extentName);
+			if (extentName.equals("")) {
+				attr.getRequiredAttributes();
+			} else {
+				requiredExtents.add(extentName);
+			}
 		}
-		if (requiredExtents.size() > 1) {
+		/* 
+		 * Join condition if we have more than one extent and 
+		 * the expression is a boolean expression
+		 */
+		if (requiredExtents.size() > 1 && expr.getType() == _booleanType) {
 			isJoin = true;
 		}
 		return isJoin;
@@ -124,7 +134,8 @@ public class MultiExpression implements Expression {
 	}
 
 	public MultiExpression combinePredicates (MultiExpression first, 
-			MultiExpression second) {
+			MultiExpression second) 
+	throws SchemaMetadataException, TypeMappingException {
 		if (second.getMultiType() != MultiType.AND)
 			return combineAndToOther(first, second);
 		if (first.getMultiType() != MultiType.AND)
@@ -140,7 +151,8 @@ public class MultiExpression implements Expression {
 	}
 
 	private MultiExpression combineAndToOther (MultiExpression first, 
-			MultiExpression second) {
+			MultiExpression second) 
+	throws SchemaMetadataException, TypeMappingException {
 		if (first.getMultiType() != MultiType.AND)
 			return combineOtherToOther(first, second);
 		assert(second.getMultiType().isBooleanDataType());
@@ -152,7 +164,8 @@ public class MultiExpression implements Expression {
 	}
 
 	private MultiExpression combineOtherToOther (MultiExpression first, 
-			MultiExpression second) {
+			MultiExpression second) 
+	throws SchemaMetadataException, TypeMappingException {
 		assert(first.getMultiType().isBooleanDataType());
 		assert(second.getMultiType().isBooleanDataType());
 		Expression[] combine = new Expression[2];
@@ -456,6 +469,7 @@ public class MultiExpression implements Expression {
 			new DataAttribute("", this.toString(), getType());
 		attribute.setIsConstant(isConstant);
 		attribute.setAttributeDisplayName("expr"+this.multiExprId);
+		attribute.setRequiredAttributes(this.getRequiredAttributes());
 		return attribute; 
 	}
 

@@ -235,6 +235,7 @@ public class AggregationExpression implements Expression {
 		DataAttribute attribute = new DataAttribute(innerAttr.getExtentName(), innerAttr.getAttributeSchemaName()+"_"
 			+aggrFunction.toString(), innerAttr.getAttributeDisplayName()+"_"+aggrFunction.toString(), this.getType());
 		attribute.setIsConstant(false);
+		attribute.setRequiredAttributes(innerAttr.getRequiredAttributes());
 		return attribute;
 	}
 	

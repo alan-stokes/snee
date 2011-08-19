@@ -247,6 +247,9 @@ public class LogicalRewriterTest extends EasyMockSupport {
 			.andReturn("streamName").anyTimes();
 		expect(mockAttribute.getType()).andReturn(mockType).anyTimes();
 		expect(mockType.getName()).andReturn("integer").anyTimes();
+		List<Attribute> attrList1 = new ArrayList<Attribute>();
+		attrList1.add(mockAttribute);
+		expect(mockAttribute.getRequiredAttributes()).andReturn(attrList1);
 
 		replayAll();
 
@@ -313,6 +316,9 @@ public class LogicalRewriterTest extends EasyMockSupport {
 			.andReturn("streamName").anyTimes();
 		expect(mockAttribute.getType()).andReturn(mockType).anyTimes();
 		expect(mockType.getName()).andReturn("integer").anyTimes();
+		List<Attribute> attrList1 = new ArrayList<Attribute>();
+		attrList1.add(mockAttribute);
+		expect(mockAttribute.getRequiredAttributes()).andReturn(attrList1);
 
 		replayAll();
 
@@ -399,9 +405,12 @@ public class LogicalRewriterTest extends EasyMockSupport {
 			.andReturn("integerColumn");
 		expect(mockAttribute.getAttributeDisplayName())
 			.andReturn("integerColumn");
-		expect(mockAttribute.getExtentName()).andReturn("sensorStream");
+		expect(mockAttribute.getExtentName()).andReturn("sensorStream").anyTimes();
 		expect(mockAttribute.getType()).andReturn(mockType).anyTimes();
 		expect(mockType.getName()).andReturn("integer").anyTimes();
+		List<Attribute> attrList1 = new ArrayList<Attribute>();
+		attrList1.add(mockAttribute);
+		expect(mockAttribute.getRequiredAttributes()).andReturn(attrList1);
 
 		replayAll();
 		
@@ -487,9 +496,12 @@ public class LogicalRewriterTest extends EasyMockSupport {
 			.andReturn("integerColumn");
 		expect(mockAttribute.getAttributeDisplayName())
 			.andReturn("integerColumn");
-		expect(mockAttribute.getExtentName()).andReturn("sensorStream");
+		expect(mockAttribute.getExtentName()).andReturn("sensorStream").anyTimes();
 		expect(mockAttribute.getType()).andReturn(mockType).anyTimes();
 		expect(mockType.getName()).andReturn("integer").anyTimes();
+		List<Attribute> attrList1 = new ArrayList<Attribute>();
+		attrList1.add(mockAttribute);
+		expect(mockAttribute.getRequiredAttributes()).andReturn(attrList1);
 
 		replayAll();
 		
@@ -576,9 +588,12 @@ public class LogicalRewriterTest extends EasyMockSupport {
 			.andReturn("integerColumn");
 		expect(mockAttribute.getAttributeDisplayName())
 			.andReturn("integerColumn");
-		expect(mockAttribute.getExtentName()).andReturn("sensorStream");
+		expect(mockAttribute.getExtentName()).andReturn("sensorStream").anyTimes();
 		expect(mockAttribute.getType()).andReturn(mockType).anyTimes();
 		expect(mockType.getName()).andReturn("integer").anyTimes();
+		List<Attribute> attrList1 = new ArrayList<Attribute>();
+		attrList1.add(mockAttribute);
+		expect(mockAttribute.getRequiredAttributes()).andReturn(attrList1);
 
 		replayAll();
 		
@@ -665,9 +680,12 @@ public class LogicalRewriterTest extends EasyMockSupport {
 			.andReturn("integerColumn");
 		expect(mockAttribute.getAttributeDisplayName())
 			.andReturn("integerColumn");
-		expect(mockAttribute.getExtentName()).andReturn("sensorStream");
+		expect(mockAttribute.getExtentName()).andReturn("sensorStream").anyTimes();
 		expect(mockAttribute.getType()).andReturn(mockType).anyTimes();
 		expect(mockType.getName()).andReturn("integer").anyTimes();
+		List<Attribute> attrList1 = new ArrayList<Attribute>();
+		attrList1.add(mockAttribute);
+		expect(mockAttribute.getRequiredAttributes()).andReturn(attrList1);
 
 		replayAll();
 		
@@ -812,11 +830,17 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		expect(mockAttribute.getExtentName())
 			.andReturn("streamLeft").anyTimes();
 		expect(mockAttribute.getType()).andReturn(mockType).anyTimes();
+		List<Attribute> attrList1 = new ArrayList<Attribute>();
+		attrList1.add(mockAttribute);
+		expect(mockAttribute.getRequiredAttributes()).andReturn(attrList1);
 		
 		expect(mockAttribute2.getAttributeSchemaName()).andReturn("timestamp");
 		expect(mockAttribute2.getAttributeDisplayName()).andReturn("timestamp");
-		expect(mockAttribute2.getExtentName()).andReturn("streamRight");
+		expect(mockAttribute2.getExtentName()).andReturn("streamRight").anyTimes();
 		expect(mockAttribute2.getType()).andReturn(mockType).anyTimes();
+		List<Attribute> attrList2 = new ArrayList<Attribute>();
+		attrList2.add(mockAttribute2);
+		expect(mockAttribute2.getRequiredAttributes()).andReturn(attrList2);
 
 		expect(mockType.getName()).andReturn("integer").anyTimes();
 
@@ -898,10 +922,14 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		expect(mockAttribute1.getExtentName())
 			.andReturn("streamRight").anyTimes();
 		expect(mockAttribute1.getType()).andReturn(mockType).anyTimes();
+
 		List<Attribute> leftAttrList = new ArrayList<Attribute>();
 		leftAttrList.add(mockAttribute);
 		List<Attribute> rightAttrList = new ArrayList<Attribute>();
 		rightAttrList.add(mockAttribute1);
+
+		expect(mockAttribute.getRequiredAttributes()).andReturn(leftAttrList).anyTimes();
+		expect(mockAttribute1.getRequiredAttributes()).andReturn(rightAttrList).anyTimes();
 		
 		expect(mockExtentLeft.getExtentName()).andReturn("streamLeft").anyTimes();
 		expect(mockExtentLeft.getAttributes()).andReturn(leftAttrList).anyTimes();
@@ -1006,6 +1034,9 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		attrList1.add(mockAttribute);
 		List<Attribute> attrList2 = new ArrayList<Attribute>();
 		attrList2.add(mockAttribute1);
+		
+		expect(mockAttribute.getRequiredAttributes()).andReturn(attrList1).anyTimes();
+		expect(mockAttribute1.getRequiredAttributes()).andReturn(attrList2).anyTimes();
 		
 		expect(mockExtent1.getExtentName()).andReturn("stream2").anyTimes();
 		expect(mockExtent1.getAttributes()).andReturn(attrList1).anyTimes();
@@ -1138,6 +1169,9 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		List<Attribute> rightAttrList = new ArrayList<Attribute>();
 		rightAttrList.add(mockAttribute1);
 		
+		expect(mockAttribute.getRequiredAttributes()).andReturn(leftAttrList).anyTimes();
+		expect(mockAttribute1.getRequiredAttributes()).andReturn(rightAttrList).anyTimes();
+		
 		expect(mockExtentLeft.getExtentName()).andReturn("streamLeft").anyTimes();
 		expect(mockExtentLeft.getAttributes()).andReturn(leftAttrList).anyTimes();
 		expect(mockExtentLeft.getCardinality()).andReturn(1).anyTimes();
@@ -1259,6 +1293,10 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		attrList1.add(mockAttribute1);
 		List<Attribute> attrList2 = new ArrayList<Attribute>();
 		attrList2.add(mockAttribute2);
+		
+		expect(mockAttribute.getRequiredAttributes()).andReturn(attrList).anyTimes();
+		expect(mockAttribute1.getRequiredAttributes()).andReturn(attrList1).anyTimes();
+		expect(mockAttribute2.getRequiredAttributes()).andReturn(attrList2).anyTimes();
 		
 		expect(mockExtent1.getExtentName()).andReturn("stream1").anyTimes();
 		expect(mockExtent1.getAttributes()).andReturn(attrList).anyTimes();
@@ -1407,6 +1445,10 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		List<Attribute> attrList2 = new ArrayList<Attribute>();
 		attrList2.add(mockAttribute2);
 		
+		expect(mockAttribute.getRequiredAttributes()).andReturn(attrList).anyTimes();
+		expect(mockAttribute1.getRequiredAttributes()).andReturn(attrList1).anyTimes();
+		expect(mockAttribute2.getRequiredAttributes()).andReturn(attrList2).anyTimes();
+		
 		expect(mockExtent1.getExtentName()).andReturn("stream1").anyTimes();
 		expect(mockExtent1.getAttributes()).andReturn(attrList).anyTimes();
 		expect(mockExtent1.getCardinality()).andReturn(1).anyTimes();
@@ -1553,6 +1595,10 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		attrList1.add(mockAttribute1);
 		List<Attribute> attrList2 = new ArrayList<Attribute>();
 		attrList2.add(mockAttribute2);
+		
+		expect(mockAttribute.getRequiredAttributes()).andReturn(attrList).anyTimes();
+		expect(mockAttribute1.getRequiredAttributes()).andReturn(attrList1).anyTimes();
+		expect(mockAttribute2.getRequiredAttributes()).andReturn(attrList2).anyTimes();
 		
 		expect(mockExtent1.getExtentName()).andReturn("stream1").anyTimes();
 		expect(mockExtent1.getAttributes()).andReturn(attrList).anyTimes();

@@ -600,47 +600,40 @@ public class Translator {
 			 * we need to rename the attributes with the extent reference.
 			 * We do this by applying the name to the attribute label */
 			List<Attribute> attributes = 
-				(ArrayList<Attribute>) operator.getAttributes();
+				(List<Attribute>) operator.getAttributes();
+			List<Expression> expressions = operator.getExpressions();
 
 			/* For every attribute, apply a rename on the display name */
 			for ( Attribute attribute : attributes ){
-
 				String newAttrName = null;
 				String attrName = attribute.getAttributeDisplayName();
 				String[] parts = attrName.split("[.]");
-
 				assert ( parts.length > 0 && parts.length <= 2 );
-
 				/* There is not extent name, so this is a sub-query */
-				if ( extentName.isEmpty() ){
-
+				if ( extentName.isEmpty() || extentName.equals("")){
 					if ( parts.length == 1 ){
 						/* There is only the name of the attribute */
-						newAttrName = extentReference + "." + parts[0];
-	
-					} else {
-	
+						newAttrName = extentReference + "." + parts[0];	
+					} else {	
 						/* There are both a name and another extent
 						 * reference */
 						newAttrName = extentReference + "." + parts[1];
 					}
-					
 				}else{
-
 					/* This is not a sub-query and the first part of the
 					 * display name is that of the extent name */
 					if ( parts[0].equalsIgnoreCase(extentName) ){
-
 						/* Rename according to the extentReference */
 						newAttrName = attrName.replace(parts[0], extentReference);
-
 					}
 				}
-
 				attribute.setAttributeDisplayName(newAttrName);
+				List<Attribute> reqAttrs = attribute.getRequiredAttributes();
+				for (Expression exp : expressions) {
+					reqAttrs.addAll(exp.getRequiredAttributes());
+				}
+				attribute.setRequiredAttributes(reqAttrs);
 			}
-			//XXX: Removed by AG as metadata now handled in metadata object
-//			operator.pushLocalNameDown(extentReference);
 		} else {
 			String msg = "Unprogrammed AST Type:" + ast.getType() +
 				" Text:"+ extentReference;
@@ -1196,8 +1189,7 @@ public class Translator {
 	NumberFormatException, TypeMappingException, 
 	SchemaMetadataException {
 		if (logger.isTraceEnabled()) {
-			logger.trace("ENTER translateExpression() " + 
-					ast.toStringList() + " " + input);
+			logger.trace("ENTER translateExpression() " + ast.toStringList());
 		}
 		List<Attribute> attributes;
 		Expression[] expressions;
@@ -1262,7 +1254,7 @@ public class Translator {
 				 * no extent name, because it refers to an
 				 * entire sub-query. In this case, the fix
 				 * is to use the display name */
-				if ( eName.isEmpty() ){
+				if ( eName.isEmpty() || eName.equals("")){
 					eName = parts[0];
 					searchName = eName + "." + parts[1];
 				}

@@ -38,6 +38,9 @@ package uk.ac.manchester.cs.snee.evaluator.types;
 import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.PropertyConfigurator;
 import org.easymock.classextension.EasyMockSupport;
 import org.junit.After;
@@ -106,6 +109,9 @@ public class EvaluatorAttributeTest extends EasyMockSupport {
 			andReturn("attrName");
 		expect(mockAttribute.getAttributeDisplayName()).
 			andReturn("streamName.attrName");
+		List<Attribute> attrList = new ArrayList<Attribute>();
+		attrList.add(mockAttribute);
+		expect(mockAttribute.getRequiredAttributes()).andReturn(attrList);
 		expect(mockAttribute.getType()).andReturn(mockType);
 		expect(mockType.getName()).andReturn("integer");
 		replayAll();

@@ -75,7 +75,7 @@ public class LogicalRewriter {
 			logger.trace("ENTER pushSelectionDown() with " + laf);
 		}
 		moveSelectClauseDown(laf);
-//			// Following lines useful for debugging
+		// Following lines useful for debugging
 //		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 //			String lafName = laf.getID();
 //			String newLafName = lafName.replace("LAF", "LAF'-push");
@@ -84,17 +84,15 @@ public class LogicalRewriter {
 //		}
 
 		combineSelections(laf);
-//			// Following lines useful for debugging
+//		// Following lines useful for debugging
 //		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 //			String lafName = laf.getID();
 //			String newLafName = lafName.replace("LAF'-push", "LAF'-combine");
 //			laf.setID(newLafName);
 //			new LAFUtils(laf).generateGraphImage();
-//		}
-//		// Following lines useful for debugging
-//		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
-//			String lafName = laf.getID();
-//			String newLafName = lafName.replace("LAF'-combine", "LAF'-pushFinal");
+//			//Reset LAF' name
+//			lafName = laf.getID();
+//			newLafName = lafName.replace("LAF'-combine", "LAF'");
 //			laf.setID(newLafName);
 //		}
 		if (logger.isTraceEnabled()) {
@@ -106,7 +104,7 @@ public class LogicalRewriter {
 	 * Moves a selection condition, not a join condition, as far down the LAF
 	 * as possible.
 	 * 
-	 * Note, a selection condition can be move below a time window but not a
+	 * Note, a selection condition can be moved below a time window but not a
 	 * row based window.
 	 * 
 	 * @param laf
@@ -124,8 +122,6 @@ public class LogicalRewriter {
 		}
 		Iterator<LogicalOperator> opIter = laf.operatorIterator(
 				TraversalOrder.POST_ORDER);
-		// If select contains attribute(s) from one source, can be pushed below join
-		// Select can be pushed below time window, not a tuple window though
 		while (opIter.hasNext()) {
 			LogicalOperator op = opIter.next();
 			if (op instanceof SelectOperator) {

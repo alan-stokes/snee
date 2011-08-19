@@ -1950,4 +1950,79 @@ public class TranslatorTest {
 		testQuery("SELECT COUNT(integerColumn) FROM PushStream;");
 	}
 
+	@Test
+	public void testNestedQueryJoinCondition() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, TypeMappingException, 
+	SNEEConfigurationException, SNEECompilerException
+	{
+		LAF laf = testQuery("SELECT * FROM (" +
+				"SELECT (x.integerColumn - y.integerColumn) AS diff " +
+				"FROM PushStream[NOW] x, TestStream[NOW] y) od " +
+				"WHERE od.diff < 0.15;");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		testOperator(iterator, "PROJECT");
+		LogicalOperator op = testOperator(iterator, "SELECT");
+		Expression expression = op.getPredicate();
+		assertTrue(expression.isJoinCondition());
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "JOIN");
+		testOperator(iterator, "WINDOW");
+		testOperator(iterator, "RECEIVE");
+		testOperator(iterator, "WINDOW");
+		testOperator(iterator, "RECEIVE");
+	}
+	
+	@Test
+	public void testComplexDThreeQuery() 
+	throws SourceDoesNotExistException, ExtentDoesNotExistException, 
+	RecognitionException, ParserException, SchemaMetadataException, ExpressionException, 
+	AssertionError, OptimizationException, TypeMappingException, 
+	SNEEConfigurationException, SNEECompilerException
+	{
+		LAF laf = testQuery(
+				"SELECT RSTREAM od.integerColumn " +
+				"FROM (SELECT x.integerColumn * 1 as integerColumn, " +
+				"(1/q3.cnt)*((3/4)^1)*(1/(q3.scotts))*2*5-(1/(3*(q3.scotts^2)))*(((x.integerColumn - y.integerColumn)+5)^3 - ((x.integerColumn - y.integerColumn)-5)^3) as probability " +
+				"FROM (SELECT SQRT(5) * q1.sigma * (q2.rsize^(- 1/(4+1))) as scotts, " +
+				"q1.cnt * 1 as cnt " +
+				"FROM (SELECT STDEV(integerColumn) as sigma, COUNT(integerColumn) as cnt " +
+				"FROM testStream[NOW]) q1, " +
+				"(SELECT COUNT(integerColumn) as rsize FROM pushStream3[NOW]) q2) q3, " +
+				"pushStream[now] x, pushStream2[NOW] y " + 
+				"WHERE ( x.integerColumn - y.integerColumn) / q3.scotts < 1) od " +
+				"WHERE od.probability < 0.15;");
+		System.out.println(laf.getID());
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		testOperator(iterator, "RSTREAM");
+		testOperator(iterator, "PROJECT");
+		LogicalOperator op = testOperator(iterator, "SELECT");
+		Expression expression = op.getPredicate();
+		assertTrue(expression.isJoinCondition());
+		testOperator(iterator, "PROJECT");
+		op = testOperator(iterator, "SELECT");
+		expression = op.getPredicate();
+		assertTrue(expression.isJoinCondition());
+		testOperator(iterator, "JOIN");
+		testOperator(iterator, "WINDOW");
+		testOperator(iterator, "RECEIVE");
+		testOperator(iterator, "JOIN");
+		testOperator(iterator, "PROJECT");
+		testOperator(iterator, "JOIN");
+		testOperator(iterator, "AGGREGATION");
+		testOperator(iterator, "WINDOW");
+		testOperator(iterator, "RECEIVE");
+		testOperator(iterator, "AGGREGATION");
+		testOperator(iterator, "WINDOW");
+		testOperator(iterator, "RECEIVE");
+		testOperator(iterator, "WINDOW");
+		testOperator(iterator, "RECEIVE");
+
+	}
+	
 }

@@ -79,6 +79,8 @@ public abstract class Attribute implements Expression {
 	 * a constant value or not. Default is false. 
 	 */
 	protected boolean isConstant = false;
+
+	private List<Attribute> requiredAttributes = new ArrayList<Attribute>(1);
 	
 	/** 
 	 * @param extentName name of the extent in which this attribute appears
@@ -94,6 +96,7 @@ public abstract class Attribute implements Expression {
 		this.attributeLabel = extentName + "." + attrName;
 		this.type = type;
 		inferSQLType(type);
+		requiredAttributes.add(this);
 	}
 	
 	/** 
@@ -115,6 +118,7 @@ public abstract class Attribute implements Expression {
 		}
 		this.type = type;
 		inferSQLType(type);
+		requiredAttributes.add(this);
 	}
 
 	public Attribute(Attribute attr) throws SchemaMetadataException {
@@ -123,6 +127,7 @@ public abstract class Attribute implements Expression {
 		this.extentName = attr.getExtentName();
 		this.type = attr.getType();
 		inferSQLType(type);
+		requiredAttributes.addAll(attr.getRequiredAttributes());
 	}
 
 	private void inferSQLType(AttributeType type)
@@ -152,10 +157,12 @@ public abstract class Attribute implements Expression {
 	 * @return The zero or more attributes required for this expression.
 	 * Return may contain duplicates.
 	 */
-	public ArrayList<Attribute> getRequiredAttributes() {
-		ArrayList<Attribute> result = new ArrayList<Attribute>(1);
-		result.add(this);
-		return result;
+	public List<Attribute> getRequiredAttributes() {
+		return requiredAttributes;
+	}
+	
+	public void setRequiredAttributes(List<Attribute> requiredAttributes) {
+		this.requiredAttributes = requiredAttributes;
 	}
 	
 	/**
