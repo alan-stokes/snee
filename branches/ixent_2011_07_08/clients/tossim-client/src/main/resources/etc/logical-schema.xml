@@ -22,15 +22,6 @@
          </column>         
      </stream>
 
-      <stream name="SeaDefence3" type="pull">
-         <column name="seaLevel">
-          	<type class ="integer"/>
-         </column>
-         <column name="voltage">
-          	<type class ="integer"/>
-         </column>         
-     </stream>
-
      <stream name="SeaDefenceEast" type="pull">
          <column name="seaLevel">
           	<type class ="integer"/>
