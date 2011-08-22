@@ -39,6 +39,13 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>data-source-jdbc</artifactId>
+			<version>${snee.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 </project>

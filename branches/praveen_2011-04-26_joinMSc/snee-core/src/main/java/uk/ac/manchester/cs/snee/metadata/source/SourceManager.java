@@ -24,6 +24,7 @@ import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
+import uk.ac.manchester.cs.snee.datasource.jdbc.JDBCSourceWrapperImpl;
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapper;
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapperImpl;
 import uk.ac.manchester.cs.snee.datasource.webservice.SourceWrapper;
@@ -327,11 +328,9 @@ public class SourceManager {
 	 * @throws SNEEDataSourceException 
 	 * @throws SourceMetadataException 
 	 */
-	public void addServiceSource(String name, String url, 
-			SourceType sourceType) 
-	throws MalformedURLException, SNEEDataSourceException, 
-	SchemaMetadataException, TypeMappingException,
-	SourceMetadataException {
+	public void addServiceSource(String name, String url, SourceType sourceType) 
+	throws MalformedURLException, SNEEDataSourceException, SchemaMetadataException, 
+	TypeMappingException, SourceMetadataException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER addServiceSource() with name=" +
 					name + " sourceType=" + sourceType + 
@@ -368,6 +367,9 @@ public class SourceManager {
 				"Push-stream services are not currently supported.";
 			logger.warn(message);
 			throw new SourceMetadataException(message);
+		case RELATIONAL:
+			sourceWrapper = createJDBCSource(epr);
+			break;
 		case WSDAIR:
 			sourceWrapper = createWSDAIRSource(epr);
 			break;
@@ -396,6 +398,19 @@ public class SourceManager {
 		return pullClient;
 	}
 
+	protected JDBCSourceWrapperImpl createJDBCSource(String url)
+	throws MalformedURLException, SNEEDataSourceException 
+	{
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER createJDBCSource() with " + url);
+		}
+		JDBCSourceWrapperImpl jdbcClient = new JDBCSourceWrapperImpl(url, _types);
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN createJDBCSource()");
+		}
+		return jdbcClient;
+	}
+
 	protected WSDAIRSourceWrapperImpl createWSDAIRSource(String url)
 	throws MalformedURLException {
 		if (logger.isTraceEnabled()) {
@@ -421,7 +436,6 @@ public class SourceManager {
 		}
 		List<String> resources = sourceWrapper.getResourceNames();
 		List<String> extentNames = new ArrayList<String>();
-		//FIXME: Read stream rate from property document!
 		Map<String, String> resourcesByExtent = 
 			new HashMap<String, String>();
 		for (String resource : resources) {

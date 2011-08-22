@@ -42,7 +42,7 @@ import com.sun.java.xml.ns.jdbc.Metadata;
 import com.sun.java.xml.ns.jdbc.Metadata.ColumnDefinition;
 import com.sun.java.xml.ns.jdbc.WebRowSet;
 
-public class WSDAIRSourceWrapperImpl extends SourceWrapperAbstract 
+public class WSDAIRSourceWrapperImpl extends StoredSourceWrapperAbstract 
 implements SourceWrapper {
 
 	private static Logger logger = 

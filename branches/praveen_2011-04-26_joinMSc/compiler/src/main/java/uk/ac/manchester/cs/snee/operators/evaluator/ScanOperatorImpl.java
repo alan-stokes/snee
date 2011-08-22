@@ -55,6 +55,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.StringLiteral;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.TrueAttribute;
+import uk.ac.manchester.cs.snee.datasource.jdbc.JDBCSourceWrapperImpl;
+import uk.ac.manchester.cs.snee.datasource.webservice.StoredSourceWrapperAbstract;
 import uk.ac.manchester.cs.snee.datasource.webservice.WSDAIRSourceWrapperImpl;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Window;
@@ -109,7 +111,7 @@ public class ScanOperatorImpl extends EvaluatorPhysicalOperator {
 	/**
 	 * Wrapper for interacting with the external data source
 	 */
-	private WSDAIRSourceWrapperImpl _sourceClient;
+	private StoredSourceWrapperAbstract _sourceClient;
 
 	/**
 	 * Name of the resource on the external service to retrieve data from
@@ -328,10 +330,12 @@ public class ScanOperatorImpl extends EvaluatorPhysicalOperator {
 		SourceMetadataAbstract source = scanOp.getSource();
 		SourceType sourceType = source.getSourceType();
 		switch (sourceType) {
+		case RELATIONAL:
+			instantiateJDBCDataSource(source);
+			break;
 		case WSDAIR:
 			instantiateWSDAIRDataSource(source);
 			break;
-
 		default:
 			String msg = "Data source type " + sourceType +
 			" unsupported by SCAN operator";
@@ -341,6 +345,27 @@ public class ScanOperatorImpl extends EvaluatorPhysicalOperator {
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN initialiseStoredSourceClient()");
 		}		
+	}
+
+	/**
+	 * Set parameters for interacting with a JDBC source wrapper.
+	 * 
+	 * @param source
+	 * @throws ExtentDoesNotExistException
+	 */
+	private void instantiateJDBCDataSource(SourceMetadataAbstract source) 
+	throws ExtentDoesNotExistException 
+	{
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER instantiateJDBCDataSource() with " + 
+					source.getSourceName());
+		}
+		WebServiceSourceMetadata webSource = (WebServiceSourceMetadata) source; 
+		_sourceClient = (JDBCSourceWrapperImpl) webSource.getSource();
+		_resourceName = webSource.getResourceName(extentName);
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN instantiateJDBCDataSource()");
+		}
 	}
 
 	/**

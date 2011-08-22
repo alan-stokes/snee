@@ -85,6 +85,7 @@ public class SourcePlanner {
 		case PULL_STREAM_SERVICE:
 		case PUSH_STREAM_SERVICE:
 		case QUERY_SERVICE:
+		case RELATIONAL:
 		case UDP_SOURCE:
 		case WSDAIR:
 			qep = doEvaluatorPlanning(dlaf, queryID);

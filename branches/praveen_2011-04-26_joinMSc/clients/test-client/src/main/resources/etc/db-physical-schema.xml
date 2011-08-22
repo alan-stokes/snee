@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<source xmlns="http://snee.cs.man.ac.uk/namespace/physical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../../schema/physical-schema.xsd">
+
+	<udp_source name="TupleGenerator">
+		<host>228.5.6.7</host>
+		<extents>
+			<extent name="HerneBay_Tide">
+				<push_source>
+					<port>6700</port>
+					<rate>2.0</rate>
+				</push_source>
+			</extent>
+			<extent name="HerneBay_Met">
+				<push_source>
+					<port>6701</port>
+					<rate>2.0</rate>
+				</push_source>
+			</extent>
+            <extent name="PushStream">
+                <push_source>
+                    <port>6702</port>
+                    <rate>10.0</rate>
+                </push_source>
+            </extent>
+		</extents>
+	</udp_source>
+
+</source>
