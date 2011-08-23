@@ -47,6 +47,8 @@ import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragment;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragmentTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EndManagementTask;
@@ -198,7 +200,13 @@ public class QueryPlanModuleComponent extends NesCComponent {
 					doInvokeFragmentTask(firedTimerTaskBuff,
 						agendaCheckingBuff, lastTask, first, task,
 						indentation, i);
-					first = false;		
+					first = false;	
+					
+				    }else if(task instanceof InstanceFragmentTask) {
+						doInvokeInstanceFragmentTask(firedTimerTaskBuff,
+								agendaCheckingBuff, lastTask, first, task,
+								indentation, i);
+							first = false;	
 				    } else if (task instanceof RadioOnTask) {
 				    	invokeRadioOnTask(agendaCheckingBuff, indentation);		    	
 				    	first = false;
@@ -762,6 +770,54 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	}	
     }
 
+    private void doInvokeInstanceFragmentTask(
+    	    final StringBuffer firedTimerTaskBuff,
+    	    final StringBuffer agendaCheckingBuff, final boolean lastTime,
+    	    final boolean first, final Task task, final int ind,
+    	    int agendaRow) {
+    	final InstanceFragmentTask fragTask = (InstanceFragmentTask) task;
+    	final String fragID = fragTask.getFragment().getID();
+    	final String nodeID = fragTask.getSiteID();
+
+    	    agendaCheckingBuff.append(Utils.indent(ind)
+    		    + "\t\t\t\tcall AgendaTimer.startOneShot(nextDelta);\n");
+
+    	if (lastTime) {
+    	    agendaCheckingBuff.append(Utils.indent(ind)
+    		    + "\t\t\t\tbusyUntil = 0;\n");
+    	} else {
+    //TODO: fix
+//    	    agendaCheckingBuff.append(Utils.indent(ind)
+//    		    + "\t\t\t\tbusyUntil = " + task.getEndTime() + ";\n");
+    	}
+
+    	agendaCheckingBuff.append(Utils.indent(ind) + "\t\t\t\tdbg(\"DBG_USR2\""
+    				+ ",\" F" + fragID + "n" + nodeID
+    				+ " timer fired at row %d\\n\",agendaRow);\n");		
+    	
+    	String taskName = "F" + fragID + "n" + nodeID + "C";
+    	agendaCheckingBuff.append(Utils.indent(ind+4) + "post " + taskName + "Task();\n"); 
+    	
+    	if (fragTask.getOccurrence() == 1) {
+    	    firedTimerTaskBuff.append("\ttask void " + taskName + "Task()\n");
+    	    firedTimerTaskBuff.append("\t{\n");
+    	    InstanceFragment frag = fragTask.getFragment();
+    	    firedTimerTaskBuff.append("\t\t\tcall "
+    	    		+ CodeGenUtils.generateUserAsDoTaskName(fragTask
+    			    .getFragment(), fragTask.getSiteID())
+    		     + ".doTask();\n");
+
+    	    firedTimerTaskBuff.append("\t}\n\n");
+        
+        	firedTimerTaskBuff.append("\tevent void "
+    	    		+ CodeGenUtils.generateUserAsDoTaskName(fragTask
+    			    .getFragment(), fragTask.getSiteID())
+    		     + ".doTaskDone(error_t err)\n");
+        	firedTimerTaskBuff.append("\t{\n");
+        	firedTimerTaskBuff.append("\t}\n\n");
+    	}	
+        }
+    
     private long getNextDelta(final ArrayList<Long> startTimeList, final int i) {
 	long nextDelta;
 	if (i + 2 < startTimeList.size()) {

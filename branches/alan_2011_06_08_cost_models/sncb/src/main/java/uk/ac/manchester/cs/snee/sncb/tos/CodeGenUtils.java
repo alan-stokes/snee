@@ -41,6 +41,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -228,6 +229,12 @@ public final class CodeGenUtils {
 	return TinyOSGenerator.INTERFACE_DO_TASK + "Frag" + frag.getID() + "n"
 		+ currentSite;
     }
+    
+	public static String generateUserAsDoTaskName(InstanceFragment fragment,
+			String currentSite) {
+		return TinyOSGenerator.INTERFACE_DO_TASK + "Frag" + fragment.getID() + "n"
+		+ currentSite;// TODO Auto-generated method stub
+	}
 
     public static String generateProviderSendInterfaceName(String key) {
     	final String activeMessageID = ActiveMessageIDGenerator

@@ -2,8 +2,6 @@ package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.IOException;
 
-import net.sf.cglib.core.CodeGenerationException;
-
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
