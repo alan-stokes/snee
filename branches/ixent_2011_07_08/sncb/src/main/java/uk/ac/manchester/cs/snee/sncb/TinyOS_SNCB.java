@@ -37,7 +37,7 @@ public class TinyOS_SNCB implements SNCB {
 
 	private boolean combinedImage = false;
 
-	private String serialPort;
+	private String serialPort = null;
 
 	private boolean demoMode = false;
 
@@ -63,10 +63,17 @@ public class TinyOS_SNCB implements SNCB {
 			String currentPath = System.getenv("PATH");
 			this.tinyOSEnvVars.put("PATH", currentPath + ":" + workingDir + ":"
 					+ workingDir + "/utils");
-			
+
+			// Parse the code generation target
+			if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET)) {
+				this.target = CodeGenTarget.parseCodeTarget(SNEEProperties
+					.getSetting(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET));
+			}
 			//Check if a mote is plugged in.  If no mote is plugged in, this is null.
-			this.serialPort = this.getBaseStation();
-			
+			if (this.target == CodeGenTarget.TELOSB_T2) {
+				this.serialPort = this.getBaseStation();
+			}
+				
 			// Check if we are using the node controller
 			if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER)) {
 				useNodeController = SNEEProperties
@@ -77,11 +84,7 @@ public class TinyOS_SNCB implements SNCB {
 				this.combinedImage = SNEEProperties
 					.getBoolSetting(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE);
 			}
-			// Parse the code generation target
-			if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET)) {
-				this.target = CodeGenTarget.parseCodeTarget(SNEEProperties
-					.getSetting(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET));
-			}
+
 			// Node controller is only compatible with Tmote Sky/Tiny OS2
 			if (this.target != CodeGenTarget.TELOSB_T2 && useNodeController) {
 				logger.warn("Node controller is only compatible with Tmote Sky/Tiny OS2. " +
