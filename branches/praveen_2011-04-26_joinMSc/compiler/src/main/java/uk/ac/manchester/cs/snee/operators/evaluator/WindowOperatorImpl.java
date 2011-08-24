@@ -86,9 +86,12 @@ public abstract class WindowOperatorImpl extends EvaluatorPhysicalOperator {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER close()");
 		}
+		if (timer != null) {
+			timer.cancel();
+			timer.purge();
+		}
 		sourceOperator.close();
-		timer.cancel();
-		timer.purge();
+		
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN close()");
 		}

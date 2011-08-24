@@ -119,7 +119,7 @@ public class CircularArray<E> implements Iterable<E> {
 	 * 			  the object to add.
 	 * @return always true
 	 */
-	public boolean add(E object) {
+	public synchronized boolean add(E object) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER add() with " + object);
 		}
@@ -253,7 +253,7 @@ public class CircularArray<E> implements Iterable<E> {
 	 * 
 	 * @return 
 	 */
-	public E poll() {
+	public synchronized E poll() {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER poll()");
 		}
@@ -268,14 +268,17 @@ public class CircularArray<E> implements Iterable<E> {
 					"\n\tPosition of head " + firstIndex);
 		}
 		if (!isEmpty()) {
-			object = getOldest();
+			object = array[firstIndex];
+			//Setting the element to null
+			//for helping garbage collection
+			array[firstIndex] = null;
 			numberElements--;
 			firstIndex = incrementPointer(firstIndex);
 			//If the first index has incremented it to be equal to
 			//the last index, then it means there are no more elements
 			//in the queue and hence the pointers can be reset to 0
-			if (size() == 0) {
-				firstIndex = lastIndex = 0;
+			if (firstIndex == lastIndex) {
+				firstIndex = lastIndex = numberElements = 0;
 			}
 		}
 		//System.out.println("Polling end");

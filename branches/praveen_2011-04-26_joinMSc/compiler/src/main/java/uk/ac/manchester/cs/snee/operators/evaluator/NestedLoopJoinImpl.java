@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Stack;
 
+import org.apache.log4j.Logger;
+
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.CircularArray;
@@ -35,10 +37,12 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
  */
 public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 
+	private Logger logger = Logger.getLogger(NestedLoopJoinImpl.class.getName());
+	
 	private CircularArray<Window> leftBuffer, rightBuffer;
 	private Output leftOperand, rightOperand;
-	boolean isDataFetched = false;
-	boolean isLeftOperandJoined = false, isRightOperandJoined = false;
+	private boolean isDataFetched = false;
+	private boolean isLeftOperandJoined = false, isRightOperandJoined = false;
 
 	public NestedLoopJoinImpl(LogicalOperator op, int qid)
 			throws SNEEException, SchemaMetadataException,

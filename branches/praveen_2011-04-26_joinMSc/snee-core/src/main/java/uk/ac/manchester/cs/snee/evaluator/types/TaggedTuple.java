@@ -52,8 +52,8 @@ public class TaggedTuple implements Output {
 	private long _evalTime;
 	private Tuple _tuple;
 
-	DateFormat dateFormat =
-		new SimpleDateFormat(Constants.TIMESTAMP_FORMAT);
+	private DateFormat dateFormat = null;
+		
 	
 	public TaggedTuple(Tuple tuple) {
 		_tuple = tuple;
@@ -81,6 +81,9 @@ public class TaggedTuple implements Output {
 	}
 	
 	public String toString() {
+		if (dateFormat == null) {
+			dateFormat = new SimpleDateFormat(Constants.TIMESTAMP_FORMAT);
+		}
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("([" + _index);
 		buffer.append("," + dateFormat.format(_evalTime));

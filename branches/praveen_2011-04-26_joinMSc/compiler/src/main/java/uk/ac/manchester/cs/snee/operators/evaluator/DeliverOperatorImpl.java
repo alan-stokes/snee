@@ -45,6 +45,8 @@ import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
+import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
+import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
@@ -59,6 +61,13 @@ extends EvaluatorPhysicalOperator {
 	DeliverOperator deliverOp;
 	
 	int nextIndex = 0;
+	private long totalLatency = 0;
+
+	private boolean isTuplehavingTimestamp = false;
+
+	private boolean isFirst = true;
+
+	private int timeStampIndex;
 
 	public DeliverOperatorImpl(LogicalOperator op, int qid) 
 	throws SNEEException, SchemaMetadataException,
@@ -131,11 +140,52 @@ extends EvaluatorPhysicalOperator {
 			logger.trace("ENTER deliverResult() with " + observed);
 		}
 		observed.setIndex(nextIndex);
+		//if (logger.isInfoEnabled()) {
+			if (observed instanceof TaggedTuple) {
+				Tuple tuple = ((TaggedTuple)observed).getTuple();
+				try {
+					if (isFirst) {
+						isTuplehavingTimestamp = tuple.getAttributeNames().contains("timestamp");
+						for (int i = 0; i < tuple.getAttributeNames().size(); i++) {
+							if ("timestamp".equalsIgnoreCase(tuple.getAttributeNames().get(i))) {
+								timeStampIndex = i;
+							}
+						}
+						isFirst = false;
+					}
+					if (isTuplehavingTimestamp){
+						String atribVal = tuple.getAttributeValue(timeStampIndex).toString();
+						totalLatency += (System.currentTimeMillis() - Long.parseLong(atribVal));
+					}
+					//logger.info("Latency of "+(System.currentTimeMillis() - Long.parseLong(atribVal))+" milli seconds");
+				} catch (SNEEException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				//logger.info(System.currentTimeMillis() - tuple.getAttributeValueByDisplayName(""));
+			}
+		//}
 		nextIndex++;
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN deliverResult() with " + observed);
 		}
 		return observed;
+	}
+	
+	public void close() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER close()");
+		}
+		super.close();
+		if (logger.isInfoEnabled()) {
+			if (isTuplehavingTimestamp) {
+				logger.info("Average Latency of "+totalLatency/nextIndex);
+			}
+			logger.info("Number of tuples generated: "+nextIndex);
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("RETURN close()");
+		}		
 	}
 
 }

@@ -28,7 +28,8 @@ public class SNEEQueue<E> extends AbstractQueue<E> {
 		array = newElementArray(capacity);
 		//TODO set property for isIncreaseQueueCapacityEnabled
 		isIncreaseQueueCapacityEnabled = true;
-		capacityToIncrease = 10;
+		//Increasing by 50% of current capacity 
+		capacityToIncrease = (int)(0.5*capacity);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -37,7 +38,7 @@ public class SNEEQueue<E> extends AbstractQueue<E> {
 	}
 
 	@Override
-	public boolean offer(E object) {
+	public synchronized boolean offer(E object) {
 		if (full) {
 			if (isIncreaseQueueCapacityEnabled) {
 				increaseQueueCapacity(capacityToIncrease);
@@ -70,12 +71,12 @@ public class SNEEQueue<E> extends AbstractQueue<E> {
 				}
 			} while (qIterator.hasNext());
 		}		
-		//System.out.println("Current Capacity: "+ capacity());
+		System.out.println("Current Capacity: "+ capacity());
 		if (logger.isDebugEnabled()) {
 			logger.debug("Current Capacity: "+ capacity());
 		}
 		array = Arrays.copyOf(newArray, capacity()+ incCapacity);
-		//System.out.println("Current Capacity: "+ capacity());
+		System.out.println("Increased Capacity: "+ capacity());
 		if (logger.isDebugEnabled()) {
 			logger.debug("Current Capacity: "+ capacity());
 		}
@@ -95,10 +96,13 @@ public class SNEEQueue<E> extends AbstractQueue<E> {
 	}
 
 	@Override
-	public E poll() {
+	public synchronized E poll() {
 		E object = null;
 		if (size() > 0) {
 			object = array[firstIndex];
+			//Setting the array position to
+			//null for garbage collection
+			array[firstIndex] = null;
 			decreaseQueueSize();
 		}
 		return object;
@@ -208,7 +212,11 @@ public class SNEEQueue<E> extends AbstractQueue<E> {
 	 * @return the newest element stored in this {@code SNEEQueue}.
 	 */
 	public E getNewest() {		
-		return array[numElements - 1 % array.length];
+		if (lastIndex == 0) {
+			return null;
+		} else {
+			return array[lastIndex-1];
+		}
 	}
 
 	/**

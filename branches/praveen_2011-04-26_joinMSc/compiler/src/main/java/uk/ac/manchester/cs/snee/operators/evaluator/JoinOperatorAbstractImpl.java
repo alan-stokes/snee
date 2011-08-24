@@ -23,7 +23,7 @@ import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
-	Logger logger = Logger.getLogger(JoinOperatorAbstractImpl.class.getName());
+	private Logger logger = Logger.getLogger(JoinOperatorAbstractImpl.class.getName());
 
 	protected EvaluatorPhysicalOperator leftOperator, rightOperator;
 	protected JoinOperator join;
@@ -210,10 +210,12 @@ public abstract class JoinOperatorAbstractImpl extends EvaluationOperator {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER close()");
 		}
-		leftOperator.close();
-		rightOperator.close();
+		//super.close();
 		timer.cancel();
-		timer.purge();
+		timer.purge();		
+		timer = null;
+		leftOperator.close();
+		rightOperator.close();		
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN close()");
 		}

@@ -31,7 +31,7 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 
 	private CircularArray<Output> inputBufferQueue;
 	private TupleDropPolicy tupleDropPolicy;
-	private int numTuplesToDrop = 1;	
+	private int numTuplesToDrop = 1;		
 
 	public LossyValveOperatorImpl(LogicalOperator op, int qid)
 			throws SNEEException, SchemaMetadataException,
@@ -106,18 +106,23 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 		//the size is full, it automatically drops an element. This + 1 check is done
 		//to avoid that
 		if (inputBufferQueue.size()+1 == (inputBufferQueue.capacity())) {
+			numTimesDropPolicyEvoked++;
 			Set<Integer> sampleDropArray = getRandomIndexes();
 			List<Output> newList = new ArrayList<Output>();
-			for (int i = 0; i < maxBufferSize; i++) {
+			int numIterations = inputBufferQueue.size();
+			for (int i = 0; i < numIterations; i++) {
+				Output output = inputBufferQueue.poll(); 
 				if (sampleDropArray.contains(new Integer(i))) {
 					// Dropping the random sample
 					if (logger.isInfoEnabled()) {
 						logger.info("Object Dropped due to sampling in Valve with id: "+opId);
-					}
-					inputBufferQueue.poll();
+					}				
+					numTuplesDropped++;
 					continue;
 				}
-				newList.add(inputBufferQueue.poll());
+				if (output != null) {
+					newList.add(output);
+				}
 			}
 			inputBufferQueue = new CircularArray<Output>(maxBufferSize, opId, newList);
 		}
@@ -152,12 +157,14 @@ public class LossyValveOperatorImpl extends ValveOperatorAbstractImpl {
 		//the size is full, it automatically drops an element. This + 1 check is done
 		//to avoid that
 		if (inputBufferQueue.size()+1 == (inputBufferQueue.capacity())) {
+			numTimesDropPolicyEvoked++;
 			if (logger.isDebugEnabled()) {
 				logger.debug("The input buffer size is: "+ inputBufferQueue.size()
 						+" and the capacity of the buffer is: "+inputBufferQueue.capacity()+
 						" and both are equal, so going to drop");
 			}
 			for (int i = 0; i < numTuplesToDrop; i++) {
+				numTuplesDropped++;
 				if (logger.isInfoEnabled()) {
 					logger.info("Object Dropped by FIFO for Valve Operator: "+opId);
 				}

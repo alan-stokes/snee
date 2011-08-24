@@ -35,13 +35,10 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.evaluator.types;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.common.Constants;
 
 /**
  * Tuple is the class that represents a tuple. A tuple consists of 
@@ -57,8 +54,8 @@ public class Tuple {
 	private List<EvaluatorAttribute> _attrValues = 
 		new ArrayList<EvaluatorAttribute>();
 	
-	DateFormat dateFormat = 
-		new SimpleDateFormat(Constants.TIMESTAMP_FORMAT);
+	/*private DateFormat dateFormat = 
+		new SimpleDateFormat(Constants.TIMESTAMP_FORMAT);*/
 	
 	/**
 	 * Create an empty tuple.

@@ -68,9 +68,9 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 		if (logger.isTraceEnabled()) {
 			logger.trace("Buffer size: " + maxBufferSize);
 		}
-		//if (!op.isGetDataByPullModeOperator()) {
+		if (!op.isGetDataByPullModeOperator()) {
 			buffer = new CircularArray<TaggedTuple>(maxBufferSize);
-		//}
+		}
 		
 		if (logger.isTraceEnabled()) 
 			logger.trace("\n\tStart (ms): " + windowStart + 
@@ -246,7 +246,7 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 			resultItems.addAll(createWindows(lastTupleTick));
 		}
 		if (logger.isTraceEnabled()) {
-			logger.trace("RETURN processTuple() #tuples=" + buffer.size() +
+			logger.trace("RETURN processTuple() #tuples=" + ((resultItems!=null)?resultItems.size():0) +
 					"\ntuplesSinceLastWindow=" + tuplesSinceLastWindow +
 					"\nlastTupleTick=" + lastTupleTick);
 		}
@@ -359,14 +359,16 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 		if (tupleList == null) {
 			tupleList = new ArrayList<Tuple>();
 		}
-		if (prevWindowTuples == null) {
+		if (prevWindowTuples == null && slide != 0) {			
 			prevWindowTuples = new ArrayList<TaggedTuple>(1);		
 		}
 		
 		TaggedTuple taggedTuple;
 		if (prevTaggedTuple != null && prevTaggedTuple.getEvalTime() <= nextWindowEvalTime) {
-			tupleList.add(prevTaggedTuple.getTuple());	
-			prevWindowTuples.add(prevTaggedTuple);
+			tupleList.add(prevTaggedTuple.getTuple());
+			if (prevWindowTuples != null) {
+				prevWindowTuples.add(prevTaggedTuple);
+			}
 			nextTupleIndex++;			
 			prevTaggedTuple = null;			
 		}
@@ -374,7 +376,9 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 			
 			if (taggedTuple.getEvalTime() <= nextWindowEvalTime) {
 				tupleList.add(taggedTuple.getTuple());
-				prevWindowTuples.add(taggedTuple);
+				if (prevWindowTuples != null) {
+					prevWindowTuples.add(taggedTuple);
+				}
 				nextTupleIndex++;
 			} else {
 				/* Seen a tuple that is newer than the window evaluation time */
@@ -409,7 +413,7 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 	private List<Tuple> checkForWindowOverlap(long tupleTime) {
 		List<Tuple> resultItems = null;
 		List<TaggedTuple> resultTaggedTuples = null;
-		if (prevWindowTuples != null && prevWindowTuples.size() > 0) {
+		if (prevWindowTuples != null && prevWindowTuples.size() > 0 && slide != 0) {
 			for (TaggedTuple tuple:prevWindowTuples) {
 				if (tuple.getEvalTime() > tupleTime) {
 					if (resultItems == null) {

@@ -29,6 +29,8 @@ public abstract class ValveOperatorAbstractImpl extends EvaluationOperator {
 	private Timer timer;
 	private int objectSizeToPush;
 	protected String opId = "";
+	protected int numTuplesDropped = 0;
+	protected int numTimesDropPolicyEvoked = 0;
 
 	/**
 	 * The constructor method for the abstract class. All the variables that has
@@ -119,14 +121,17 @@ public abstract class ValveOperatorAbstractImpl extends EvaluationOperator {
 			logger.debug("ENTER close()");
 		}
 		super.close();
-		if (timer != null) {
-			timer.cancel();
-			timer.purge();
-		}
 		if (logger.isInfoEnabled()) {
 			logger.info("Total number of objects inserted in the Valve Operator with id: "
 					+ opId + "is: " + getTotalObjectsInserted());
+			logger.info("Total number of objects dropped in the Valve Operator with id: "
+					+ opId + "is: " + numTuplesDropped+ " with the number of times the drop policy was evoked: "
+					+ numTimesDropPolicyEvoked);
 		}
+		if (timer != null) {
+			timer.cancel();
+			timer.purge();
+		}		
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN close()");
 		}
