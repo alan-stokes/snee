@@ -804,15 +804,15 @@ public class QueryPlanModuleComponent extends NesCComponent {
     	    InstanceFragment frag = fragTask.getFragment();
     	    firedTimerTaskBuff.append("\t\t\tcall "
     	    		+ CodeGenUtils.generateUserAsDoTaskName(fragTask
-    			    .getFragment(), fragTask.getSiteID())
+    			    .getFragment(), fragTask.getSite())
     		     + ".doTask();\n");
 
     	    firedTimerTaskBuff.append("\t}\n\n");
         
         	firedTimerTaskBuff.append("\tevent void "
     	    		+ CodeGenUtils.generateUserAsDoTaskName(fragTask
-    			    .getFragment(), fragTask.getSiteID())
-    		     + ".doTaskDone(error_t err)\n");
+    			    .getFragment(), fragTask.getSite())
+    		        + ".doTaskDone(error_t err)\n");
         	firedTimerTaskBuff.append("\t{\n");
         	firedTimerTaskBuff.append("\t}\n\n");
     	}	

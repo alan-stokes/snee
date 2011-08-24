@@ -29,6 +29,7 @@ public class InstanceFragment
   /**
    * Counter to assign unique id to different fragments.
    */
+  public static int instanceFragmentCount = 0;
   public static int fragmentCount = 0;
 
   /**
@@ -66,6 +67,17 @@ public class InstanceFragment
   protected  HashSet<InstanceOperator> operators = new HashSet<InstanceOperator>();
   private InstanceFragment nextHigherFragment;
   private ArrayList<InstanceFragment> nextLowerFragment = new ArrayList<InstanceFragment>();
+  
+  /**
+   * constructor
+   */
+  
+  public InstanceFragment() 
+  {
+    instanceFragmentCount++;
+    this.fragID = instanceFragmentCount;
+  }
+  
   
   public boolean isRemote(InstanceFragment other)
   {
@@ -138,11 +150,6 @@ public class InstanceFragment
   public final void addOperator(final InstanceOperator op) 
   {
     this.operators.add(op);
-  }
-  
-  public InstanceFragment() {
-    fragmentCount++;
-    this.fragID = fragmentCount;
   }
 
   /**
@@ -432,7 +439,7 @@ if (!this.childExchanges.contains(c)) {
    *
    */
   public static void resetFragmentCounter() {
-    fragmentCount = 0;
+    instanceFragmentCount = 0;
   }
 
   public final void addDesiredSite(final Site n) {
@@ -445,6 +452,16 @@ if (!this.childExchanges.contains(c)) {
     }
   }
 
+  public static int getFragmentCount()
+  {
+    return fragmentCount;
+  }
+
+  public static void setFragmentCount(int fragmentCount)
+  {
+    InstanceFragment.fragmentCount = fragmentCount;
+  }
+  
   public final ArrayList<String> getDesiredSites() {
 return this.desiredSites;
   }
@@ -477,6 +494,13 @@ return this.getChildFragments().size();
   
   public int getNumSites() {
     return 1;
+  }
+
+
+  public String getFragID()
+  {
+    // TODO Auto-generated method stub
+    return null;
   }
  
  

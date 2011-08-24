@@ -249,18 +249,20 @@ public class DAF extends SNEEAlgebraicForm {
      * constructs the fragment tree. 
      */
     //TODO: Make this a private method??
-    public final void buildFragmentTree() {
+  public final void buildFragmentTree() 
+  {
     	if (logger.isDebugEnabled())
 			logger.debug("ENTER buildFragmentTree()"); 
 		boolean newFrag = true;
 		Fragment currentFrag = this.rootFragment;
 	
-		final Iterator<SensornetOperator> opIter = this
-			.operatorIterator(TraversalOrder.PRE_ORDER);
-		while (opIter.hasNext()) {
-		    final SensornetOperator op = opIter.next();
-	
-		    if (op instanceof SensornetExchangeOperator) {
+		final Iterator<SensornetOperator> opIter = this.operatorIterator(TraversalOrder.PRE_ORDER);
+		while (opIter.hasNext()) 
+		{
+	    final SensornetOperator op = opIter.next();
+
+	    if (op instanceof SensornetExchangeOperator) 
+	    {
 				//new fragment indicated by exhange
 				//link the current fragment to the exchange operator
 		    SensornetOperator parent = op.getParent();
@@ -274,24 +276,27 @@ public class DAF extends SNEEAlgebraicForm {
 				// link the new fragment to the exchange operator
 				((SensornetExchangeOperator) op).setSourceFragment(currentFrag);
 				currentFrag.setParentExchange((SensornetExchangeOperator) op);
-		    } else if (newFrag) {
-				//first operator in each fragment 
-		    	//(i.e., the fragment's root operator)
-				currentFrag.setRootOperator(op);
-				newFrag = false;
-				currentFrag.addOperator(op);
-				op.setContainingFragment(currentFrag);
-		    } else {
-				//all other operators within a fragment
-				currentFrag = ((SensornetOperator) op.getParent())
-					.getContainingFragment();
-				currentFrag.addOperator(op);
-				op.setContainingFragment(currentFrag);
-		    }
+	    } 
+	    else if (newFrag) 
+	    {
+  			//first operator in each fragment 
+  	    	//(i.e., the fragment's root operator)
+  			currentFrag.setRootOperator(op);
+  			newFrag = false;
+  			currentFrag.addOperator(op);
+  			op.setContainingFragment(currentFrag);
+	    } 
+	    else 
+	    {
+  			//all other operators within a fragment
+  			currentFrag = ((SensornetOperator) op.getParent()).getContainingFragment();
+  			currentFrag.addOperator(op);
+  			op.setContainingFragment(currentFrag);
+	    }
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN buildFragmentTree()"); 
-    }
+  }
     
     /**
      * Helper method to recursively generate the operator iterator.

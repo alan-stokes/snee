@@ -242,6 +242,12 @@ public class InstanceWhereSchedular
     return InstanceOperatorIterator;
   }
   
+  private int findPreviousFrag(InstanceFragment currentFragment)
+  {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
   private void checkRoot(InstanceFragment currentFragment, InstanceOperator instance )
   {
     if(currentFragment.getRootOperator() == null)
