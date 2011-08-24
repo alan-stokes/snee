@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.manager.failednode.alternativerouter;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -13,6 +14,8 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
+import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
@@ -240,6 +243,8 @@ public class CandiateRouter extends Router
       Node toRemove = oldRoutingTree.getSite(failedNodeIterator.next());
       //remove input link off parent
       toRemove.getOutput(0).removeInput(toRemove);
+      //remove inputExchange from parent
+     // removeParentExchange(toRemove);
       //remove output link off each child
       Iterator<Node> childIterator = toRemove.getInputsList().iterator();
       while(childIterator.hasNext())
@@ -248,12 +253,13 @@ public class CandiateRouter extends Router
       }
       oldRoutingTree.getSiteTree().removeNode(toRemove.getID());
     }
-    //clear all operaotrs off sites
+    //clear all operators off sites
     Iterator<Node> nodeIterator = oldRoutingTree.getSiteTree().getNodes().iterator();
     while(nodeIterator.hasNext())
     {
       Site node = (Site) nodeIterator.next();
       node.clearInstanceExchangeComponents();
+      node.clearExchangeComponents();
     }
   }
 
