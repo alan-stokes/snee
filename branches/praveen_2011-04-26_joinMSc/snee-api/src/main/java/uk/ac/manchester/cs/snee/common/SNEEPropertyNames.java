@@ -195,6 +195,8 @@ public final class SNEEPropertyNames {
 	 */
 	public static final String SNCB_CODE_GENERATION_TARGET = 
 		"sncb.code_generation_target";
+
+	public static final String DUMMY_RECEIVE_ENABLED = "compiler.receive.dummy";
     
 
 }

@@ -62,6 +62,7 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.UDPSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.WebServiceSourceMetadata;
+import uk.ac.manchester.cs.snee.operators.evaluator.receivers.DummyUDPStreamReceiver;
 import uk.ac.manchester.cs.snee.operators.evaluator.receivers.PullServiceReceiver;
 import uk.ac.manchester.cs.snee.operators.evaluator.receivers.SourceReceiver;
 import uk.ac.manchester.cs.snee.operators.evaluator.receivers.UDPStreamReceiver;
@@ -92,6 +93,8 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 
 	private long _shortSleepPeriod;
 	
+	private boolean isDummyReceiveEnabled = false;
+	
 	/**
 	 * Instantiates the receive operator
 	 * @param op
@@ -112,6 +115,13 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		attributes = receiveOp.getInputAttributes();
 		_streamName = receiveOp.getExtentName();
 		rate = receiveOp.getStreamRate();
+		try {
+			isDummyReceiveEnabled = SNEEProperties
+			.getBoolSetting(SNEEPropertyNames.DUMMY_RECEIVE_ENABLED);
+		} catch (SNEEConfigurationException e) {
+			isDummyReceiveEnabled = false;
+			e.printStackTrace();
+		}
 	
 		if (logger.isTraceEnabled()) {
 			logger.trace("Receiver for stream: " + _streamName);
@@ -158,7 +168,11 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		SourceType sourceType = source.getSourceType();
 		switch (sourceType) {
 		case UDP_SOURCE:
-			instantiateUdpDataSource(source);
+			if (!isDummyReceiveEnabled) {
+				instantiateUdpDataSource(source);
+			} else  {
+				instantiateDummyUdpDataSource(receiveOp, source);
+			}
 			break;
 		case PULL_STREAM_SERVICE:
 			instantiatePullServiceDataSource(source);
@@ -174,6 +188,8 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			logger.trace("RETURN initializeStreamReceiver()");
 		}
 	}
+
+	
 
 	private void calculateSleepPeriods() 
 	throws SourceMetadataException 
@@ -193,10 +209,21 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 				// If rate not set or incorrectly set, default to 1 tuple per second
 				rate = 1.0;
 			}
-		}
+		}		
 		double period = (1 / rate) * 1000;
-		_shortSleepPeriod = (long) (period * 0.1);
+		if (rate > 10) {
+			//setting period to 1000 which is equivalant to 1 sec
+			period = 1000;			
+			//setting long sleep period to 
+			_shortSleepPeriod = 1;			
+		} else {
+			//setting short sleep period to 0.1 of period
+			_shortSleepPeriod = (long) (period * 0.1);			
+		}
+		//_shortSleepPeriod = (long) (period * 0.1);	
 		_longSleepPeriod = (long) (period - _shortSleepPeriod);
+		
+		
 		if (logger.isTraceEnabled()) {
 			logger.trace(_streamName + " long sleep set to " +
 					_longSleepPeriod + ", short sleep set to " +
@@ -231,6 +258,15 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN instantiatePullServiceDataSource()");
 	}
+	
+	private void instantiateDummyUdpDataSource(ReceiveOperator receiveOp2, SourceMetadataAbstract source) {
+		if (logger.isTraceEnabled())
+			logger.trace("ENTER instantiateDummyUdpDataSource() with " + 
+					source.getSourceName());
+		_streamReceiver = new DummyUDPStreamReceiver(receiveOp2, source);
+		if (logger.isTraceEnabled())
+			logger.trace("RETURN instantiateDummyUdpDataSource()");
+	}
 
 	@Override
 	public void close(){
@@ -253,19 +289,39 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 				logger.debug("ENTER run() for query " + m_qid);
 			}
 			List<Tuple> tuples = null ;
+			//int counter = 1;
 			/* 
 			 * Process a tuple that has been received in the 
 			 * background thread
 			 */
 			try {
-				// receive the tuple, blocking operation
-				tuples = _streamReceiver.receive();
-				List<TaggedTuple> taggedTuples = new ArrayList<TaggedTuple>();
-				// create a tagged tuple from the received tuple
-				for (Tuple tuple : tuples) {
-					TaggedTuple taggedTuple = new TaggedTuple(tuple);
-					taggedTuples.add(taggedTuple);
-				}
+				/*if (rate > 10) {
+					counter = (int)rate;
+				}*/
+				//long currentTime = System.currentTimeMillis();
+				//System.out.println("Counter is set to: "+ counter);
+				List<TaggedTuple> taggedTuples = null;
+				//for (int i = 0; i < counter; i++) {
+					// receive the tuple, blocking operation					
+					tuples = _streamReceiver.receive();
+					
+					
+					// create a tagged tuple from the received tuple
+					if (taggedTuples == null) {
+						taggedTuples = new ArrayList<TaggedTuple>(tuples.size());
+					}
+					for (Tuple tuple : tuples) {
+						TaggedTuple taggedTuple = new TaggedTuple(tuple);
+						taggedTuples.add(taggedTuple);
+					}		
+					//If more tuples are generated or if a bunch of tuples are
+					//generated together and the generation exceeds 1 sec break
+					/*if (taggedTuples.size() > counter
+							|| (counter > 10 && (System.currentTimeMillis() - currentTime) >= 1000)) {
+						break;
+					}*/
+				//}
+				System.out.println(_streamName+": "+taggedTuples.size());
 				setChanged();
 				notifyObservers(taggedTuples);
 			} catch (ReceiveTimeoutException e) {
