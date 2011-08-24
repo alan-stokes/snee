@@ -186,7 +186,7 @@ public abstract class SNEEClient implements Observer {
 			logger.debug("ENTER update() with " + observation + " " + 
 					arg);
 		}
-		if (arg instanceof List<?>) {
+		/*if (arg instanceof List<?>) {
 			List<ResultSet> results = (List<ResultSet>) arg; 
 			try {
 				printResults(results, 1, _csvFilename);
@@ -195,7 +195,7 @@ public abstract class SNEEClient implements Observer {
 			} catch (FileNotFoundException e) {
 				logger.error("Problem writing results to csv file. ", e);				
 			}
-		}
+		}*/
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN update()");
 		}
@@ -217,12 +217,12 @@ public abstract class SNEEClient implements Observer {
 			(ResultStoreImpl) controller.getResultStore(queryId1);
 		resultStore.addObserver(this);
 
-		Runtime.getRuntime().addShutdownHook(new RunWhenShuttingDown(queryId1, 
-				resultStore));		
+		/*Runtime.getRuntime().addShutdownHook(new RunWhenShuttingDown(queryId1, 
+				resultStore));*/		
 		if (_duration == Double.POSITIVE_INFINITY) {
 			runQueryIndefinitely();
 		} else {
-			runQueryForFixedPeriod(startTime);
+			runQueryForFixedPeriod(startTime, resultStore, queryId1);
 		}
 		displayResultsAtEnd = true;
 
@@ -245,7 +245,7 @@ public abstract class SNEEClient implements Observer {
 
 	}
 
-	private void runQueryForFixedPeriod(long startTime) 
+	private void runQueryForFixedPeriod(long startTime, ResultStoreImpl resultStore, int queryId1) 
 	throws SNEEException {
 		long endTime = (long) (startTime + (_duration * 1000));
 		System.out.println("Running query for " + _duration + " seconds. Scheduled end time " + new Date(endTime));
@@ -258,6 +258,27 @@ public abstract class SNEEClient implements Observer {
 		while (System.currentTimeMillis() < endTime) {
 			Thread.currentThread().yield();
 		}
+		//List<ResultSet> results1 = resultStore.getResults();
+		//System.out.println("Got the results");
+		controller.removeQuery(queryId1);
+
+		System.out.println("Remove Query DOne");
+		//XXX: Sleep included to highlight evaluator not ending bug 
+		//Thread.currentThread().sleep((long) ((_duration/2) * 1000));
+		//Thread.sleep(2000);				
+		controller.close();				
+		//if (displayResultsAtEnd)
+			/*try {
+				printResults(results1, queryId1, null);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
+		System.out.println("Time to get out of here");
+		//return;
 	}
 
 		/*try {
@@ -281,18 +302,19 @@ public abstract class SNEEClient implements Observer {
     		System.out.println("Stopping query " + _queryId + ".");
     		try {
     			List<ResultSet> results1 = _resultStore.getResults();
+    			System.out.println("Got the results");
 				controller.removeQuery(_queryId);
 
+				System.out.println("Remove Query DOne");
 				//XXX: Sleep included to highlight evaluator not ending bug 
 				//Thread.currentThread().sleep((long) ((_duration/2) * 1000));
-				Thread.sleep(2000);
-				
+				//Thread.sleep(2000);				
 				controller.close();				
 				if (displayResultsAtEnd)
 					printResults(results1, _queryId, null);
     		
-    		} catch (InterruptedException e) {
-                e.printStackTrace();
+    		//} catch (InterruptedException e) {
+            //    e.printStackTrace();
             } catch (SNEEException e1) {
 				e1.printStackTrace();
 			} catch (FileNotFoundException e) {
@@ -300,7 +322,8 @@ public abstract class SNEEClient implements Observer {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-			System.out.println("Success!");
+			System.out.println("Success!!!");
+			//Runtime.getRuntime().halt(1);
         }
     }
 }
