@@ -71,7 +71,7 @@ public interface AutonomicManager
   public abstract File getOutputFolder();
   
   public abstract void setListener(SNCBSerialPortReceiver mr);
-
+  
   public abstract void runSimulatedNodeFailure()throws OptimizationException,
   SNEEConfigurationException, SchemaMetadataException,
   TypeMappingException, AgendaException, SNEEException,

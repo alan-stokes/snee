@@ -30,5 +30,6 @@
 		<module>cco-stored-client</module>
 		<module>ecm-client</module>
 		<module>cco-both</module>
+		<module>failed-node-eval-client</module>
 	</modules>
 </project>

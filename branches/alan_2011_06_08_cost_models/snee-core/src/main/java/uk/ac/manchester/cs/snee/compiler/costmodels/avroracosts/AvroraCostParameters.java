@@ -142,7 +142,12 @@ public final class AvroraCostParameters {
    * See RadioEnergy.java
    */
   static final double RADIORECEIVEAMPERE = 0.0096; //receive
-
+  
+  /**Ampere Level copied from Avrora Source Code.
+   * See ExternalFlash.java
+   */
+  static final double FlashWRITEAMPERE = 0.015; //write
+  
   /**
    * Getter method for radio ampere level while receiving
    * @return radio ampere level while receiving

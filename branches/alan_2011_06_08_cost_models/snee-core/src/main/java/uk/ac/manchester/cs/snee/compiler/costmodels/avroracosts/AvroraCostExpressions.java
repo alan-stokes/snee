@@ -251,6 +251,33 @@ public final class AvroraCostExpressions{
     return AlphaBetaExpression.add(txEnergy, rxEnergy);
   }
   
+  /**
+   * Generates an expression for the total Energy used in writing to flash
+   * 
+   */
+  public AlphaBetaExpression getRadioEnergyExpression(final int bytes, 
+                              HashMap<String,AlphaBetaExpression> debug) 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
+    
+    AlphaBetaExpression writeCost =  new AlphaBetaExpression(AvroraCostParameters.FlashWRITEAMPERE
+        * AvroraCostParameters.VOLTAGE);
+    
+    AlphaBetaExpression FlashCost = getRadioTransmitDuration(writeCost, bytes);
+
+    if (debug!=null) {
+      debug.put("Flash Energy (mJ)", FlashCost);  
+    }
+      
+    return FlashCost;
+  }
+  
+  private AlphaBetaExpression getRadioTransmitDuration(AlphaBetaExpression writeCost, int bytes)
+  {
+    return AlphaBetaExpression.multiplyBy(writeCost, bytes);
+  }
+
   /** 
    * Generates an expression for the total time 
    * for all fragments 

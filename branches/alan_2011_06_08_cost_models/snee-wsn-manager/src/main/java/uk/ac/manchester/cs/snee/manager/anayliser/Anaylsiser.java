@@ -16,9 +16,9 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.manager.Adaptation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.StrategyAbstract;
+import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyGlobal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyPartial;
@@ -29,6 +29,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
@@ -42,6 +43,12 @@ public class Anaylsiser
   private String deadSitesList = "";  
   ArrayList<StrategyAbstract> frameworks;
 
+  /**
+   * constructor
+   * @param autonomicManager
+   * @param _metadata
+   * @param _metadataManager
+   */
   public Anaylsiser(AutonomicManager autonomicManager, 
                     SourceMetadataAbstract _metadata, MetadataManager _metadataManager)
   {
@@ -62,6 +69,15 @@ public class Anaylsiser
     frameworks.add(failedNodeFrameworkGlobal);
   }
 
+  /**
+   * initilisier
+   * @param qep
+   * @param noOfTrees
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   * @throws OptimizationException
+   * @throws IOException
+   */
   public void initilise(QueryExecutionPlan qep, Integer noOfTrees) 
   throws 
   SchemaMetadataException, TypeMappingException, 
@@ -77,18 +93,31 @@ public class Anaylsiser
 	  } 
   }
    
+  /**
+   * run estimate models models
+   * @throws OptimizationException
+   */
   public void runECMs() 
   throws OptimizationException 
   {//runs ecms
 	  runCardECM();
   }
   
+  /**
+   * run cardianlity cost model
+   * @throws OptimizationException
+   */
   public void runCardECM() 
   throws OptimizationException
   {
     CMA.runCardinalityCostModel();
   }
   
+  /**
+   * run simulation of failed nodes
+   * @param deadNodes
+   * @throws OptimizationException
+   */
   public void simulateDeadNodes(ArrayList<Integer> deadNodes) 
   throws OptimizationException
   {
@@ -106,33 +135,74 @@ public class Anaylsiser
     CMA.simulateDeadNodes(numberOfDeadNodes, deadSitesList);
   }
   
+  /**
+   * take estimated epoch cardinality
+   * @return
+   * @throws OptimizationException
+   */
   public float getCECMEpochResult() 
   throws OptimizationException
   {
     return CMA.returnEpochResult();
   }
-  
+  /**
+   * take agenda estimated cardinality.
+   * @return
+   * @throws OptimizationException
+   */
   public float getCECMAgendaResult() throws OptimizationException
   {
     return CMA.returnAgendaExecutionResult();
   }
 
+  /**
+   * takes results and compares them against models. Also updates runnign energy models
+   * @param sneeTuples
+   */
   public void anaylsisSNEECard(Map<Integer, Integer> sneeTuples)
   { 
     CMA.anaylsisSNEECard(sneeTuples, anaylisieCECM, deadSitesList);
   }
 
+  /**
+   * takes results and compares them against models. Also updates runnign energy models
+   * @param sneeTuples
+   */
   public void anaylsisSNEECard()
   {
     CMA.anaylsisSNEECard(deadSitesList);
   }
 
+  /**
+   * tells anayslier to expect tuples
+   */
   public void queryStarted()
   {
     anaylisieCECM = true;   
   }
   
-  public List<Adaptation> runFailedNodeFramework(ArrayList<String> failedNodes) 
+  /**
+   * method to run failed node strageties
+   * @param failedNodes
+   * @return
+   * @throws OptimizationException
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   * @throws AgendaException
+   * @throws SNEEException
+   * @throws SNEEConfigurationException
+   * @throws MalformedURLException
+   * @throws MetadataException
+   * @throws UnsupportedAttributeTypeException
+   * @throws SourceMetadataException
+   * @throws TopologyReaderException
+   * @throws SNEEDataSourceException
+   * @throws CostParametersException
+   * @throws SNCBException
+   * @throws SNEECompilerException
+   * @throws NumberFormatException
+   */
+  public List<Adaptation> runFailedNodeStragities(ArrayList<String> failedNodes) 
   throws OptimizationException, SchemaMetadataException, 
          TypeMappingException, AgendaException, 
          SNEEException, SNEEConfigurationException, 
@@ -165,6 +235,11 @@ public class Anaylsiser
     return adapatations;
   }
 
+  /**
+   * method which runs each framework seperately
+   * @param failedNodes
+   * @param adapatations
+   */
   private void checkEachFailureIndividually(ArrayList<String> failedNodes,
       List<Adaptation> adapatations)
   {
@@ -177,4 +252,12 @@ public class Anaylsiser
       //TODO CHECK EACH FAILED NODE IN LOCAL, BEFORE SENDING TO PARTIAL
     }
   }
+
+  public Long calculateQepRunningCostForSite(Site currentSite) 
+  throws OptimizationException, SchemaMetadataException, 
+         TypeMappingException
+  {
+    return Math.round(this.qep.getAgendaIOT().getSiteEnergyConsumption(currentSite)); // J
+  }
+
 }

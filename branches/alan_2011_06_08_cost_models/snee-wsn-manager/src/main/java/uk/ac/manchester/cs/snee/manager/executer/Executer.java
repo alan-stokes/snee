@@ -1,7 +1,7 @@
 package uk.ac.manchester.cs.snee.manager.executer;
 
-import uk.ac.manchester.cs.snee.manager.Adaptation;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 
 public class Executer 
 {

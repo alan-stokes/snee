@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +23,11 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.anayliser.Anaylsiser;
+import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.common.AdaptationUtils;
+import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.executer.Executer;
 import uk.ac.manchester.cs.snee.manager.monitor.Monitor;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
@@ -30,8 +36,11 @@ import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
@@ -50,9 +59,10 @@ public class AutonomicManagerImpl implements AutonomicManager
   private int adaptionCount = 1;
   //private static Logger resultsLogger = Logger.getLogger("results.autonomicManager");
   // folder for autonomic data
-  private File outputFolder = new File("AutonomicManagerData");;
+  private File outputFolder = new File("AutonomicManagerData");
   //fixed parameters of autonomic calculations
   private final int numberOfTreesToUse = 10;
+  private HashMap<String, RunTimeSite> runningSites;
   
   public AutonomicManagerImpl(MetadataManager _metadataManager)
   {
@@ -69,11 +79,30 @@ public class AutonomicManagerImpl implements AutonomicManager
   {
     this.qep = qep;
     setupOutputFolder();
+    runningSites = new HashMap<String, RunTimeSite>();
     anyliser = new Anaylsiser(this, _metadata, _metadataManager);
     planner = new Planner(this, _metadata, _metadataManager);
     monitor.setQueryPlan(qep);
     monitor.setResultSet(resultSet);
     anyliser.initilise(qep, numberOfTreesToUse);
+    setupRunningSites();
+  }
+
+  private void setupRunningSites() 
+  throws 
+  OptimizationException, SchemaMetadataException, 
+  TypeMappingException
+  {
+    //Topology network = this.getWsnTopology();
+    SensorNetworkQueryPlan snQEP = (SensorNetworkQueryPlan) qep;
+    Iterator<Site> siteIterator = snQEP.getRT().getSiteTree().nodeIterator(TraversalOrder.POST_ORDER);
+    while(siteIterator.hasNext())
+    {
+      Site currentSite = siteIterator.next();
+      Long energyStock = currentSite.getEnergyStock();
+      Long qepExecutionCost = anyliser.calculateQepRunningCostForSite(currentSite);
+      runningSites.put(currentSite.getID(), new RunTimeSite(energyStock,currentSite, qepExecutionCost));
+    }
   }
 
   private void setupOutputFolder() throws SNEEConfigurationException
@@ -109,12 +138,11 @@ public class AutonomicManagerImpl implements AutonomicManager
     else
     {
       firstOutputFolder.mkdir();
-    } 
-    
+    }  
   }
 
-  /* (non-Javadoc)
-   * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#runStragity2(java.util.ArrayList)
+  /**
+   * used to run failed node framework
    */
   @Override
   public void runFailedNodeFramework(ArrayList<String> failedNodes) 
@@ -127,7 +155,8 @@ public class AutonomicManagerImpl implements AutonomicManager
          CostParametersException, SNCBException, 
          SNEECompilerException, IOException
   {
-    List<Adaptation> choices = anyliser.runFailedNodeFramework(failedNodes);
+    removeFailedNodesFromRunningNodes(failedNodes);
+    List<Adaptation> choices = anyliser.runFailedNodeStragities(failedNodes);
     new AdaptationUtils(choices, _metadataManager.getCostParameters()).FileOutput(outputFolder);
     new AdaptationUtils(choices, _metadataManager.getCostParameters()).systemOutput();
     Adaptation finalChoice = planner.assessChoices(choices);
@@ -137,7 +166,21 @@ public class AutonomicManagerImpl implements AutonomicManager
     //new AgendaIOTUtils( newQEP.getAgendaIOT(), newQEP.getIOT(), true).generateImage();
   }
   
-  
+  /**
+   * removes failed nodes from the running energy measurements.
+   * @param failedNodes
+   */
+  private void removeFailedNodesFromRunningNodes(ArrayList<String> failedNodes)
+  {
+    Iterator<String> failedNodeIterator = failedNodes.iterator();
+    while(failedNodeIterator.hasNext())
+    {
+      String failedNodeID = failedNodeIterator.next();
+      runningSites.remove(failedNodeID);
+    }
+    
+  }
+
   /* (non-Javadoc)
    * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#runCostModels()
    */
@@ -191,7 +234,7 @@ public class AutonomicManagerImpl implements AutonomicManager
   {
     return anyliser.getCECMEpochResult();
   }
-  
+
   /* (non-Javadoc)
    * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#getCECMAgendaResult()
    */
@@ -200,15 +243,6 @@ public class AutonomicManagerImpl implements AutonomicManager
   throws OptimizationException
   {
     return anyliser.getCECMAgendaResult();
-  }
-  
-  /* (non-Javadoc)
-   * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#callAnaysliserAnaylsisSNEECard(java.util.Map)
-   */
-  @Override
-  public void callAnaysliserAnaylsisSNEECard(Map <Integer, Integer> sneeTuplesPerEpoch)
-  {
-    anyliser.anaylsisSNEECard(sneeTuplesPerEpoch);
   }
 
   /* (non-Javadoc)
@@ -220,6 +254,15 @@ public class AutonomicManagerImpl implements AutonomicManager
     monitor.queryEnded();  
   }
 
+  /* (non-Javadoc)
+   * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#callAnaysliserAnaylsisSNEECard(java.util.Map)
+   */
+  @Override
+  public void callAnaysliserAnaylsisSNEECard(Map <Integer, Integer> sneeTuplesPerEpoch)
+  {
+    anyliser.anaylsisSNEECard(sneeTuplesPerEpoch);
+  }
+  
   //no tuples received this query
   /* (non-Javadoc)
    * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#callAnaysliserAnaylsisSNEECard()
@@ -253,7 +296,12 @@ public class AutonomicManagerImpl implements AutonomicManager
   {
     monitor.addPacketReciever(mr);
   }
-
+  
+  public HashMap<String, RunTimeSite> getRunningSites()
+  {
+    return runningSites;
+  }
+  
   /**
    * method used to simulate test data
    * @throws CodeGenerationException 

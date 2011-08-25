@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -18,7 +19,8 @@ import uk.ac.manchester.cs.snee.ResultStoreImpl;
 import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
+import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
@@ -40,14 +42,14 @@ import uk.ac.manchester.cs.snee.sncb.SerialPortMessageReceiver;
 
 public class Monitor implements Observer
 {
-  private AutonomicManager manager;
+  private AutonomicManagerImpl manager;
   private SerialPortMessageReceiver listener;
   private ResultStore _results;
   private boolean recievedPacketsThisQuery = false;
   private SensorNetworkQueryPlan qep;
   private String query;
   
-  public Monitor(AutonomicManager autonomicManager)
+  public Monitor(AutonomicManagerImpl autonomicManager)
   {
     manager = autonomicManager;
   }
@@ -64,11 +66,24 @@ public class Monitor implements Observer
         _results.addAll((Collection<Output>) observed);
       }
       CECMCollection();
+      updateEnergyMeasures();
     } 
     catch (Exception e)
     {
       e.printStackTrace();
     } 
+  }
+
+  private void updateEnergyMeasures()
+  {
+    HashMap<String, RunTimeSite> runningSites = manager.getRunningSites();
+    Iterator<String> keyIterator =  runningSites.keySet().iterator();
+    while(keyIterator.hasNext())
+    {
+      String key = keyIterator.next();
+      RunTimeSite site = runningSites.get(key);
+      site.removeQEPExecutionCost();
+    }
   }
 
   private void CECMCollection() throws SNEEException, SQLException

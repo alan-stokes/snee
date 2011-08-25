@@ -18,6 +18,7 @@
 		<DeliverTuple time = "100"/> 
 		<ManagementSection time = "5000"/>
 		<EndManagementSection time = "100"/>
+		<writeToFlash time= "1"/> <!--  pulled from avrora external flash monitor, for each byte -->
 	</Time>
 	<MinimumTimerInterval time = "10"/>
 	<Space>

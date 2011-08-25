@@ -105,12 +105,16 @@ public class CostParameters{
 
 	/** Maximum size of a deliver packet. */
 	private int deliverPayloadSize = 28;
+	
+	/** time taken for writing a byte to flash**/
+	private float writeToFlash;
 
     public CostParameters(String paramFile) throws CostParametersException {
     	this.paramFile = paramFile;
     	try {
 			Document doc = parseFile();
 		    Element root = (Element) doc.getFirstChild();
+		    writeToFlash = getFloatValue(root, "writeToFlash", "time");
 		    copyTuple = getFloatValue(root, "CopyTuple", "time");
 		    applyPredicate = getFloatValue(root, "ApplyPredicate", "time");
 		    checkTuple = getFloatValue(root, "CheckTuple", "time");
@@ -291,6 +295,11 @@ public class CostParameters{
 	public int getDeliverPayloadSize() {
 		return this.deliverPayloadSize;
 	}
+
+  public float getWriteToFlash()
+  {
+    return writeToFlash;
+  }
 
 
 }

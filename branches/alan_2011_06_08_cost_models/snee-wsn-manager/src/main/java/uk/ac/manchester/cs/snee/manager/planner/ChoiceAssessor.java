@@ -9,14 +9,18 @@ import java.util.List;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
-import uk.ac.manchester.cs.snee.manager.Adaptation;
-import uk.ac.manchester.cs.snee.manager.AdaptationUtils;
+import uk.ac.manchester.cs.snee.manager.TemporalAdjustment;
+import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.common.AdaptationUtils;
+import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
@@ -34,6 +38,8 @@ public class ChoiceAssessor
   private File imageGenerationFolder;
   private boolean underSpareTime;
   private SNCB imageGenerator = null;
+  private boolean compiledAlready = false;
+  
   
   public ChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager,
                         File outputFolder)
@@ -73,7 +79,7 @@ public class ChoiceAssessor
       Adaptation adapt = choiceIterator.next();
       adapt.setTimeCost(this.timeCost(adapt));
       adapt.setEnergyCost(this.energyCost(adapt));
-      adapt.setRuntimeCost(this.runTimeCost(adapt));
+      adapt.setRuntimeCost(this.qepExecutionCost(adapt));
       adapt.setLifetimeEstimate(this.estimatedLifetime(adapt));
       
     }
@@ -128,24 +134,23 @@ public class ChoiceAssessor
    * @throws SchemaMetadataException 
    * @throws IOException 
    */
-  private Long runTimeCost(Adaptation adapt) 
-  throws 
-  IOException, SchemaMetadataException, 
-  TypeMappingException, OptimizationException, 
-  CodeGenerationException
+  private Long qepExecutionCost(Adaptation adapt) 
   {
-    Long TimeTakesSoFar = new Long(0);
-    Iterator<Site> reporgrammedSitesIterator = adapt.reprogrammingSitesIterator();
-    while(reporgrammedSitesIterator.hasNext())
-    {
-      Site reprogrammedSite = reporgrammedSitesIterator.next();
-      Long SiteImageMemorySize = calculateMemorySizeOfSiteQEP(adapt, reprogrammedSite);
-      int packetSize = _metadataManager.getCostParameters().getDeliverPayloadSize();
-     // Long packets = SiteImageMemorySize
-    }
-    
-    // TODO Auto-generated method stub
-    return (long) 0;
+    return null;
+  }
+
+  /**
+   * calcuates how mnay hops are needed to get data from the sink to the reprogrammed node
+   * @param adapt
+   * @param reprogrammedSite
+   * @return
+   */
+  private int calculateHops(Adaptation adapt, Site reprogrammedSite)
+  {
+    RT routingTree = adapt.getNewQep().getRT();
+    Site sink = routingTree.getRoot();
+    Path path = routingTree.getPath(reprogrammedSite.getID(), sink.getID());
+    return path.getNodes().length;
   }
 
   /**
@@ -163,11 +168,15 @@ public class ChoiceAssessor
   TypeMappingException, OptimizationException, 
   CodeGenerationException
   {
-    //create folder for this adaptation 
     File adaptFolder = new File(imageGenerationFolder.toString() + sep + adapt.getOverallID());
-    adaptFolder.mkdir();
-    imageGenerator.generateNesCCode(adapt.getNewQep(), adaptFolder.toString() + sep, this._metadataManager);
-    imageGenerator.compileNesCCode(adaptFolder.toString()+ sep);
+    if(!compiledAlready)
+    {
+      //create folder for this adaptation 
+      adaptFolder.mkdir();
+      imageGenerator.generateNesCCode(adapt.getNewQep(), adaptFolder.toString() + sep, this._metadataManager);
+      imageGenerator.compileNesCCode(adaptFolder.toString()+ sep);
+      compiledAlready = true;
+    }
     File moteQEP = new File(adaptFolder.toString() + sep + "avrora_mica2_t2" + sep + "mote" + reprogrammedSite.getID() + ".elf");
     return moteQEP.length();
   }
@@ -178,9 +187,46 @@ public class ChoiceAssessor
    * @return returns the cost in energy units.
    */
   private Long energyCost(Adaptation adapt)
+  throws IOException, SchemaMetadataException, 
+  TypeMappingException, OptimizationException, 
+  CodeGenerationException
   {
-    // TODO Auto-generated method stub
-    return (long) 0;
+    CostParameters parameters = _metadataManager.getCostParameters();
+    Long timeTakesSoFar = new Long(0);
+    //do each reprogrammed site (most expensive cost)
+    Iterator<Site> reporgrammedSitesIterator = adapt.reprogrammingSitesIterator();
+    while(reporgrammedSitesIterator.hasNext())
+    {
+      Site reprogrammedSite = reporgrammedSitesIterator.next();
+      Long SiteImageMemorySize = calculateMemorySizeOfSiteQEP(adapt, reprogrammedSite);
+      int packetSize = parameters.getDeliverPayloadSize();
+      Long packets = SiteImageMemorySize / packetSize;
+      int hops = calculateHops(adapt, reprogrammedSite);
+      
+      long timePerHop = (long) Math.ceil(parameters.getCallMethod() + parameters.getSignalEvent() + 
+                                  parameters.getTurnOnRadio()+ parameters.getRadioSyncWindow() * 2
+                                  + parameters.getTurnOffRadio());
+      long reprogrammingTime = (long) (packetSize * parameters.getWriteToFlash());
+      timeTakesSoFar += packets * hops * timePerHop * reprogrammingTime;
+    }
+    //do for each of redirect, deact, act site
+    Iterator<Site> redirectedSiteIterator = adapt.redirectedionSitesIterator();
+    Iterator<Site> deactivatedSiteIterator = adapt.deactivationSitesIterator();
+    Iterator<Site> activatedSiteIterator = adapt.activateSitesIterator();
+    
+    timeTakesSoFar += calcOnePacketTimeCost(redirectedSiteIterator, parameters, adapt);
+    timeTakesSoFar += calcOnePacketTimeCost(deactivatedSiteIterator, parameters, adapt);
+    timeTakesSoFar += calcOnePacketTimeCost(activatedSiteIterator,  parameters, adapt);
+    
+    //do for temporal adjustment
+    Iterator<TemporalAdjustment> temporalSiteIterator = adapt.temporalSitesIterator();
+    while(temporalSiteIterator.hasNext())
+    {
+      TemporalAdjustment adjustment = temporalSiteIterator.next();
+      Iterator<Site> affectedsitesIterator = adjustment.affectedsitesIterator();
+      timeTakesSoFar += calcOnePacketTimeCost(affectedsitesIterator, parameters, adapt);
+    }
+    return timeTakesSoFar;//goes though each reprogrammable node and cal
   }
   
   /**
@@ -189,13 +235,98 @@ public class ChoiceAssessor
    * @return
    */
   private Long timeCost(Adaptation adapt)
+  throws 
+  IOException, SchemaMetadataException, 
+  TypeMappingException, OptimizationException, 
+  CodeGenerationException
   {
-    //goes though each reprogrammable node and cal
+    CostParameters parameters = _metadataManager.getCostParameters();
+    Long timeTakesSoFar = new Long(0);
+    //do each reprogrammed site (most expensive cost)
+    Iterator<Site> reporgrammedSitesIterator = adapt.reprogrammingSitesIterator();
+    while(reporgrammedSitesIterator.hasNext())
+    {
+      Site reprogrammedSite = reporgrammedSitesIterator.next();
+      Long SiteImageMemorySize = calculateMemorySizeOfSiteQEP(adapt, reprogrammedSite);
+      int packetSize = parameters.getDeliverPayloadSize();
+      Long packets = SiteImageMemorySize / packetSize;
+      int hops = calculateHops(adapt, reprogrammedSite);
+      long timePerHop = (long) Math.ceil(parameters.getCallMethod() + parameters.getSignalEvent() + 
+                                  parameters.getTurnOnRadio()+ parameters.getRadioSyncWindow() * 2
+                                  + parameters.getTurnOffRadio());
+      long reprogrammingTime = (long) (packetSize * parameters.getWriteToFlash());
+      timeTakesSoFar += packets * hops * timePerHop * reprogrammingTime;
+    }
+    //do for each of redirect, deact, act site
+    Iterator<Site> redirectedSiteIterator = adapt.redirectedionSitesIterator();
+    Iterator<Site> deactivatedSiteIterator = adapt.deactivationSitesIterator();
+    Iterator<Site> activatedSiteIterator = adapt.activateSitesIterator();
     
-    // TODO Auto-generated method stub
-    return (long) 0;
+    timeTakesSoFar += calcOnePacketTimeCost(redirectedSiteIterator, parameters, adapt);
+    timeTakesSoFar += calcOnePacketTimeCost(deactivatedSiteIterator, parameters, adapt);
+    timeTakesSoFar += calcOnePacketTimeCost(activatedSiteIterator,  parameters, adapt);
+    
+    //do for temporal adjustment
+    Iterator<TemporalAdjustment> temporalSiteIterator = adapt.temporalSitesIterator();
+    while(temporalSiteIterator.hasNext())
+    {
+      TemporalAdjustment adjustment = temporalSiteIterator.next();
+      Iterator<Site> affectedsitesIterator = adjustment.affectedsitesIterator();
+      timeTakesSoFar += calcOnePacketTimeCost(affectedsitesIterator, parameters, adapt);
+    }
+    return timeTakesSoFar;//goes though each reprogrammable node and cal
   }
   
+  /**
+   * calculates the time cost of sending one packet down to a node 
+   * (used for redircet, deact, and act adaptations)
+   * @param redirectedSiteIterator
+   * @param parameters
+   * @param adapt
+   * @return
+   */
+  private Long calcOnePacketTimeCost(Iterator<Site> redirectedSiteIterator,
+                                 CostParameters parameters, Adaptation adapt)
+  {
+    Long time = new Long(0);
+    while(redirectedSiteIterator.hasNext())
+    {
+      Site redirectedSite = redirectedSiteIterator.next();
+      Long packets = new Long(1);
+      int hops = calculateHops(adapt, redirectedSite);
+      long timePerHop = (long) Math.ceil(parameters.getCallMethod() + parameters.getSignalEvent() + 
+          parameters.getTurnOnRadio()+ parameters.getRadioSyncWindow() * 2
+          + parameters.getTurnOffRadio());
+      time += packets * hops * timePerHop;
+    }
+    return time;
+  }
+  
+  /**
+   * calculates the energy cost of sending one packet down to a node
+   * @param redirectedSiteIterator
+   * @param parameters
+   * @param adapt
+   * @return
+   */
+  private Long calcOnePacketEnergyCost(Iterator<Site> redirectedSiteIterator,
+      CostParameters parameters, Adaptation adapt)
+  {
+    Long time = new Long(0);
+    while(redirectedSiteIterator.hasNext())
+    {
+      Site redirectedSite = redirectedSiteIterator.next();
+      Long packets = new Long(1);
+      int packetSize = parameters.getDeliverPayloadSize();
+      int hops = calculateHops(adapt, redirectedSite);
+      long timePerHop = (long) Math.ceil(parameters.getCallMethod() + parameters.getSignalEvent() + 
+      parameters.getTurnOnRadio()+ parameters.getRadioSyncWindow() * 2
+      + parameters.getTurnOffRadio());
+      time += packets * hops * timePerHop;
+    }
+    return time;
+  }
+
   /**
    * goes though the choices list locating the one with the biggest lifetime
    * @param choices
