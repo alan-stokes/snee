@@ -253,11 +253,11 @@ public class Anaylsiser
     }
   }
 
-  public Long calculateQepRunningCostForSite(Site currentSite) 
+  public Double calculateQepRunningCostForSite(Site currentSite) 
   throws OptimizationException, SchemaMetadataException, 
          TypeMappingException
   {
-    return Math.round(this.qep.getAgendaIOT().getSiteEnergyConsumption(currentSite)); // J
+    return this.qep.getAgendaIOT().getSiteEnergyConsumption(currentSite); // J
   }
 
 }

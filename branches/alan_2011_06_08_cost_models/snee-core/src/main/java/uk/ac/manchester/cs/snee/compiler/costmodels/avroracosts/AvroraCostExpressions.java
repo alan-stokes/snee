@@ -251,11 +251,21 @@ public final class AvroraCostExpressions{
     return AlphaBetaExpression.add(txEnergy, rxEnergy);
   }
   
+  public double getPacketEnergyExpression(
+      final Site source, final Site dest, final boolean round, HashMap<String,AlphaBetaExpression> debug) 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
+    int txLevel = (int) daf.getRT().getRadioLink(source, dest).getEnergyCost();
+    double txPower =  AvroraCostParameters.RADIOTRANSMITAMPERE[txLevel] * AvroraCostParameters.VOLTAGE;
+    double rxPower = AvroraCostParameters.RADIORECEIVEAMPERE * AvroraCostParameters.VOLTAGE;
+    return txPower + rxPower;
+  }
   /**
    * Generates an expression for the total Energy used in writing to flash
    * 
    */
-  public AlphaBetaExpression getRadioEnergyExpression(final int bytes, 
+  public AlphaBetaExpression getFlashEnergyExpression(final int bytes, 
                               HashMap<String,AlphaBetaExpression> debug) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException 
@@ -527,7 +537,7 @@ public final class AvroraCostExpressions{
             exchangeComponent.packetsPerTask(daf, agenda.getBufferingFactor(), costParams));
             //.packetsPerTask(
             //  CardinalityType.MAX, daf, round);
-         // expression.add(packets);
+          expression.add(packets);
         }
     }
     return expression;

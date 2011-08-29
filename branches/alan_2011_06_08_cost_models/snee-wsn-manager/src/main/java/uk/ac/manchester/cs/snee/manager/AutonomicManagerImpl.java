@@ -19,6 +19,7 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -54,6 +55,7 @@ public class AutonomicManagerImpl implements AutonomicManager
   private Executer executer;
   private QueryExecutionPlan qep;
   private MetadataManager _metadataManager;
+  private SourceMetadataAbstract _metadata;
   private ArrayList<Integer> deadNodes = null;
   private int noDeadNodes = 0;
   private int adaptionCount = 1;
@@ -79,6 +81,7 @@ public class AutonomicManagerImpl implements AutonomicManager
   {
     this.qep = qep;
     setupOutputFolder();
+    this._metadata = _metadata;
     runningSites = new HashMap<String, RunTimeSite>();
     anyliser = new Anaylsiser(this, _metadata, _metadataManager);
     planner = new Planner(this, _metadata, _metadataManager);
@@ -93,14 +96,12 @@ public class AutonomicManagerImpl implements AutonomicManager
   OptimizationException, SchemaMetadataException, 
   TypeMappingException
   {
-    //Topology network = this.getWsnTopology();
-    SensorNetworkQueryPlan snQEP = (SensorNetworkQueryPlan) qep;
-    Iterator<Site> siteIterator = snQEP.getRT().getSiteTree().nodeIterator(TraversalOrder.POST_ORDER);
+    Iterator<Node> siteIterator = this.getWsnTopology().getNodes().iterator();
     while(siteIterator.hasNext())
     {
-      Site currentSite = siteIterator.next();
-      Long energyStock = currentSite.getEnergyStock();
-      Long qepExecutionCost = anyliser.calculateQepRunningCostForSite(currentSite);
+      Site currentSite = (Site) siteIterator.next();
+      Double energyStock = new Double(currentSite.getEnergyStock());
+      Double qepExecutionCost = anyliser.calculateQepRunningCostForSite(currentSite);
       runningSites.put(currentSite.getID(), new RunTimeSite(energyStock,currentSite, qepExecutionCost));
     }
   }
@@ -121,6 +122,10 @@ public class AutonomicManagerImpl implements AutonomicManager
     outputFolder.mkdir();
   }
 
+  /**
+   * cleaning method
+   * @param firstOutputFolder
+   */
   private void deleteFileContents(File firstOutputFolder)
   {
     if(firstOutputFolder.exists())
@@ -141,6 +146,18 @@ public class AutonomicManagerImpl implements AutonomicManager
     }  
   }
 
+  /**
+   * helper method to get topology from the qep
+   * @return topology
+   */
+  public Topology getWsnTopology()
+  {
+	SensorNetworkSourceMetadata metadata = (SensorNetworkSourceMetadata) _metadata;
+    Topology network = metadata.getTopology();
+    return network;
+  }
+  
+  
   /**
    * used to run failed node framework
    */

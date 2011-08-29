@@ -20,8 +20,8 @@ public class Adaptation
   private SensorNetworkQueryPlan oldQep = null;
   private Long timeCost = null;
   private HashMap<String, Long> siteEnergyCosts = new HashMap<String, Long>();
-  private Long overallEnergyCost = null;
-  private Long runtimeCost = null;
+  private Double overallEnergyCost = null;
+  private Double runtimeCost = null;
   private Double lifetimeEstimate = null; //done in agenda cycles
   private StrategyID id;
   private int numberID;
@@ -186,12 +186,12 @@ public class Adaptation
     return timeCost;
   }
 
-  public void setEnergyCost(Long energyCost)
+  public void setEnergyCost(Double energyCost)
   {
     this.overallEnergyCost = energyCost;
   }
 
-  public Long getEnergyCost()
+  public Double getEnergyCost()
   {
     return overallEnergyCost;
   }
@@ -211,12 +211,12 @@ public class Adaptation
     return id.toString() + numberID;
   }
   
-  public void setRuntimeCost(Long runtimeCost)
+  public void setRuntimeCost(Double runtimeCost)
   {
     this.runtimeCost = runtimeCost;
   }
 
-  public Long getRuntimeCost()
+  public Double getRuntimeCost()
   {
     return runtimeCost;
   }
@@ -318,13 +318,13 @@ public class Adaptation
     }
     output = output.concat("]");
     if(overallEnergyCost != null)
-      output  = output.concat(" OverallEnergyCost [" + overallEnergyCost.toString() + "]");
+      output  = output.concat(" OverallEnergyCost [" + overallEnergyCost.toString() + "j]");
     if(timeCost != null)
-      output  = output.concat(" TimeCost [" + timeCost.toString() + "]");
+      output  = output.concat(" TimeCost [" + timeCost.toString() + "ms]");
     if(runtimeCost != null)
-      output  = output.concat(" RunTimeCost [" + runtimeCost.toString() + "]");
+      output  = output.concat(" RunTimeCost [" + runtimeCost.toString() + "j]");
     if(lifetimeEstimate != null)
-      output  = output.concat(" lifetimeEstimate [" + lifetimeEstimate.toString() + " s]");
+      output  = output.concat(" lifetimeEstimate [" + lifetimeEstimate.toString() + " ms]");
     output  = output.concat(" ID [" + id.toString() + ":" + numberID + "]");
     return output;
   }

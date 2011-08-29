@@ -49,8 +49,7 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
       
       // Check if we are using the node controller
       if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER)) {
-        useNodeController = SNEEProperties
-        .getBoolSetting(SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);       
+        useNodeController = false;    
       }
       // Check whether to generate combined image or individual image
       if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_GENERATE_COMBINED_IMAGE)) {
@@ -261,6 +260,11 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
       logger.debug("RETURN deregister()");
   }
 
+  
+  public void start() throws SNCBException
+  {
+    
+  }
 
   @Override
   public void waitForQueryEnd() throws InterruptedException

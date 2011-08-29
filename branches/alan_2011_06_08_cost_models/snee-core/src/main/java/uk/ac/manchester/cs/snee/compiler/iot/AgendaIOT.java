@@ -1118,6 +1118,11 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     
     double sensorEnergy = 0;
     ArrayList<Task> siteTasks = this.tasks.get(site);
+    //not within the QEP. so no cost
+    if(siteTasks == null)
+    {
+    	return 0;
+    }
     for (int i=0; i<siteTasks.size(); i++) 
     {
       Task t = siteTasks.get(i);
@@ -1136,7 +1141,10 @@ public class AgendaIOT extends SNEEAlgebraicForm{
         sumEnergy += sensorEnergy;
       } else if (t instanceof CommunicationTask) {
         CommunicationTask ct = (CommunicationTask)t;
+        double RadioEnergy = getRadioEnergy(ct);
+        System.out.println("site " + site.getID() + " energy cost =" +  RadioEnergy);
         sumEnergy += getRadioEnergy(ct);
+        
       } else if (t instanceof RadioOnTask) {
         double taskDuration = bmsToMs(t.getDuration())/1000.0;
         double radioRXAmp = AvroraCostParameters.getRadioReceiveAmpere(); 
