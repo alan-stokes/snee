@@ -120,14 +120,14 @@ public class TinyOS_SNCB_Utils {
 		String avroraCommand = "";
 		avroraCommand = "-mcu=mts300 -platform="+platform+" " +
         "-simulation=sensor-network -colors=false -seconds=100 " +
-        "-monitors=packet,serial -ports="+gatewayID+":0:2390 -random-seed=1 " +
+        "-monitors=packet,serial,real-time -ports="+gatewayID+":0:2390 -random-seed=1 " +
         sensorData + " " + "-report-seconds "+nodeCount+" "+elfString;
 		System.out.println(avroraCommand);
 		
 		System.out.println("*** To start Avrora ***");
 		System.out.println("java avrora.Main -mcu=mts300 -platform="+platform+" " +
 				"-simulation=sensor-network -colors=false -seconds=100" +
-				" -monitors=packet,serial -ports="+gatewayID+":0:2390 -random-seed=1 " +
+				" -monitors=packet,serial,real-time -ports="+gatewayID+":0:2390 -random-seed=1 " +
 				sensorData + " " + "-report-seconds "+nodeCount+" "+elfString+" \n");
 		
 		System.out.println("*** In a separate terminal window ***");
