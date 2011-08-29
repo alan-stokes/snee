@@ -2,6 +2,8 @@ package uk.ac.manchester.cs.snee.sncb;
 
 import java.util.Iterator;
 
+import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
@@ -51,7 +53,7 @@ public class TinyOS_SNCB_Utils {
 		System.out.println("./runTossim.py");
 	}
 	
-	protected static void printAvroraCommands(String queryOutputDir, 
+	protected static String printAvroraCommands(String queryOutputDir, 
 			SensorNetworkQueryPlan qep, String targetDirName,
 			CodeGenTarget target) {
 		String nescOutputDir = System.getProperty("user.dir") + "/"
@@ -64,40 +66,68 @@ public class TinyOS_SNCB_Utils {
 		StringBuffer nodeCount = new StringBuffer();
 		StringBuffer elfString= new StringBuffer();
 
-		if (target==CodeGenTarget.AVRORA_MICAZ_T2) {
+		if (target==CodeGenTarget.AVRORA_MICAZ_T2) 
+		{
 			platform = "micaz";
 		}
 		
+		String path = "";
 		RT rt = qep.getRT();
-		for (int i=0; i<=maxSiteID; i++) {
+		for (int i=0; i<=maxSiteID; i++) 
+		{
 			String siteID = ""+i;
 			Site site = rt.getSite(siteID);
 			if (site!=null) {
-				if (site.isSource()) {
-					if (sensorData.length()==0) {
+				if (site.isSource()) 
+				{
+					if (sensorData.length()==0) 
+					{
 						sensorData.append("-sensor-data=light:"+siteID+":.");
-					} else {
+					} 
+					else 
+					{
 						sensorData.append(",light:"+siteID+":.");
 					}
 				}
-				elfString.append("mote"+siteID+".elf ");
-			} else {
-				elfString.append("Blink.elf ");
+				try {
+					path = Utils.validateFileLocation(nescOutputDir + "/mote"+siteID+".od");
+				} catch (UtilsException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				elfString.append(path + " ");
+			} 
+			else 
+			{
+				try {
+					path = Utils.validateFileLocation(nescOutputDir + "/Blink.od");
+				} catch (UtilsException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				elfString.append(path + " ");
 			}
 			
 			if (nodeCount.length()==0) {
 				nodeCount.append("-nodecount=1");
-			} else {
+			} 
+			else 
+			{
 				nodeCount.append(",1");
 			}
 			
 		}
+		String avroraCommand = "";
+		avroraCommand = "-mcu=mts300 -platform="+platform+" " +
+        "-simulation=sensor-network -colors=false -seconds=100 " +
+        "-monitors=packet,serial -ports="+gatewayID+":0:2390 -random-seed=1 " +
+        sensorData + " " + "-report-seconds "+nodeCount+" "+elfString;
+		System.out.println(avroraCommand);
 		
 		System.out.println("*** To start Avrora ***");
-		System.out.println("cd "+nescOutputDir);
 		System.out.println("java avrora.Main -mcu=mts300 -platform="+platform+" " +
-				"-simulation=sensor-network -colors=false -seconds=100 " +
-				"-monitors=packet,serial,energy -ports="+gatewayID+":0:2390 -random-seed=1 " +
+				"-simulation=sensor-network -colors=false -seconds=100" +
+				" -monitors=packet,serial -ports="+gatewayID+":0:2390 -random-seed=1 " +
 				sensorData + " " + "-report-seconds "+nodeCount+" "+elfString+" \n");
 		
 		System.out.println("*** In a separate terminal window ***");
@@ -110,6 +140,8 @@ public class TinyOS_SNCB_Utils {
 				"-o DeliverMessage.java");
 		System.out.println("    javac DeliverMessage.java");
 		System.out.println("    java net.tinyos.tools.MsgReader DeliverMessage\n");
+		
+		return avroraCommand;
 	}
 
 	

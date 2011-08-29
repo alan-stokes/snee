@@ -68,6 +68,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderExceptio
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB;
+import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB_Controller;
 
 
 /**
@@ -186,7 +187,7 @@ public class SNEEController implements SNEE {
 			logger.debug("ENTER initialise()");
 
 		try {
-			_sncb = initialiseSNCB();
+			_sncb = initialiseSNCB(1000);
 			
 			/* Process metadata */
 			_metadata = initialiseMetadata();
@@ -249,11 +250,11 @@ public class SNEEController implements SNEE {
 			logger.debug("RETURN initialise()");
 	}
 
-	protected SNCB initialiseSNCB() throws SNEEConfigurationException, SNCBException {
+	protected SNCB initialiseSNCB(double duration) throws SNEEConfigurationException, SNCBException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseSNCB()");
 		
-		return new TinyOS_SNCB();
+		return new TinyOS_SNCB_Controller(duration);
 	}
 	
 	protected MetadataManager initialiseMetadata() 
