@@ -28,6 +28,7 @@ public interface SNCB {
 
   public void waitForQueryEnd() throws InterruptedException;
   
+  
   public void setOutputFolder(String newTargetDir);
   
   public void generateNesCCode(SensorNetworkQueryPlan qep,

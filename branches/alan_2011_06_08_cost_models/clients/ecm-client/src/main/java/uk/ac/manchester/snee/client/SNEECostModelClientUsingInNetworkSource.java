@@ -51,10 +51,12 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
 	private static int queryid = 0;
 	
 	public SNEECostModelClientUsingInNetworkSource(String query, 
-			double duration, String queryParams, String sneeProperties) 
+			double duration, String queryParams, String csvFile, String sneeProperties) 
 	throws SNEEException, IOException, SNEEConfigurationException {
+		
+		//super(query, duration, queryParams, csvFile, sneeProperties);
 		super(query, duration, queryParams, sneeProperties);
-
+		
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEECostModelClientUsingInNetworkSource()");		
 		this.sneeProperties = sneeProperties;
@@ -101,7 +103,7 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
   		  String propertiesPath = "tests/snee" + queryid + ".properties";
   		  
         SNEECostModelClientUsingInNetworkSource client = 
-          new  SNEECostModelClientUsingInNetworkSource(currentQuery, duration, queryParams, propertiesPath);
+          new  SNEECostModelClientUsingInNetworkSource(currentQuery, duration, queryParams, null, propertiesPath);
         
         writeQueryToResultsFile(currentQuery);
         testNo ++;

@@ -17,6 +17,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.HeuristicSet;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -83,6 +84,7 @@ public class MetaSteinerTree
    */
   private void updateNoSources(Tree steinerTree, RT oldRoutingTree)
   {
+    
     Iterator<Site> siteIterator = steinerTree.nodeIterator(TraversalOrder.POST_ORDER);
     while(siteIterator.hasNext())
     {
@@ -167,13 +169,13 @@ public class MetaSteinerTree
    * @param childID
    * @param parentID
    */
-  private void mergePathIntoTree(Path finalPath, ArrayList<String> bucket, MetaSteinerTreeObjectContainer container)
+  private void mergePathIntoTree(Path finalPath, ArrayList<String> bucket, 
+                                 MetaSteinerTreeObjectContainer container)
   {
-    Site childNode = new Site(container.getChildID());
-    container.getSteinerTree().addNode(childNode);
     bucket.remove(container.getChildID());
     //add path into steinterTree
     Iterator<Site> siteIterator = finalPath.iterator();
+    boolean connected = false;
     //collect first site
     Site firstSite = siteIterator.next();
     if(!treeContainsSiteID(firstSite.getID(),  container.getSteinerTree()))
@@ -184,8 +186,9 @@ public class MetaSteinerTree
     else
     {
       firstSite = (Site) container.getSteinerTree().getNode(firstSite.getID());
+      connected = true;
     }
-    boolean connected = false;
+
     while(siteIterator.hasNext() && !connected)
     {
       Site secondSite = siteIterator.next();
@@ -199,13 +202,13 @@ public class MetaSteinerTree
         
         firstSite = newSecond;
       }
-      else
+      else 
       {
         connected = true;
         Node node =  container.getSteinerTree().getNode(secondSite.getID());
         node.addInput(firstSite);
         firstSite.addOutput(node);
-        
+        container.getSteinerTree().addEdge(firstSite, node);
       }
     }
     

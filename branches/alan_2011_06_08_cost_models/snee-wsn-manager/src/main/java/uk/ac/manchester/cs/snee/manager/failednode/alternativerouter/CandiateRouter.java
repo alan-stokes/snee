@@ -224,7 +224,9 @@ public class CandiateRouter extends Router
       treeChild.addOutput(choiceParent);
       choiceParent.removeInput(choiceChild);
       choiceParent.addInput(treeChild);
-    }  
+    } 
+    newRoutingTree.getSiteTree().updateNodesAndEdgesColls(newRoutingTree.getRoot());
+    
   }
 
   /**
@@ -332,7 +334,6 @@ public class CandiateRouter extends Router
       HeuristicSet set = collectNextHeuristicSet(workingTopology, testedHeuristics);
       //produce tree for set of heuristics
       MetaSteinerTree treeGenerator = new MetaSteinerTree();
-      
       Tree currentTree = treeGenerator.produceTree(set, sources, sink, workingTopology, paf, oldRoutingTree);
       new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
       new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 

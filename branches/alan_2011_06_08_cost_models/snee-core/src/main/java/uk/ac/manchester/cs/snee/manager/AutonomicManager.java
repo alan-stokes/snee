@@ -44,7 +44,7 @@ public interface AutonomicManager
 
   public abstract void runAnyliserWithDeadNodes() throws OptimizationException;
 
-  public abstract void setDeadNodes(ArrayList<Integer> deadNodes);
+  public abstract void setDeadNodes(ArrayList<String> deadNodes);
 
   public abstract void setNoDeadNodes(int noDeadNodes);
 

@@ -1142,7 +1142,6 @@ public class AgendaIOT extends SNEEAlgebraicForm{
       } else if (t instanceof CommunicationTask) {
         CommunicationTask ct = (CommunicationTask)t;
         double RadioEnergy = getRadioEnergy(ct);
-        System.out.println("site " + site.getID() + " energy cost =" +  RadioEnergy);
         sumEnergy += getRadioEnergy(ct);
         
       } else if (t instanceof RadioOnTask) {

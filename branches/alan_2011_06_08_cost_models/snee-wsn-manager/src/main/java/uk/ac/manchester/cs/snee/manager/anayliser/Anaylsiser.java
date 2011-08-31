@@ -118,7 +118,7 @@ public class Anaylsiser
    * @param deadNodes
    * @throws OptimizationException
    */
-  public void simulateDeadNodes(ArrayList<Integer> deadNodes) 
+  public void simulateDeadNodes(ArrayList<String> deadNodes) 
   throws OptimizationException
   {
     CMA.simulateDeadNodes(deadNodes, deadSitesList);

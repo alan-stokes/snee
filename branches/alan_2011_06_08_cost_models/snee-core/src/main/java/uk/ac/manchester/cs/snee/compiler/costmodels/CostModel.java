@@ -104,9 +104,9 @@ public abstract class CostModel
   protected abstract CostModelDataStructure acquireCard(InstanceOperator operator)
   throws OptimizationException;
   
-  public void setSiteDead(int siteID)
+  public void setSiteDead(String deadNode)
   {
-    Site toDie = routingTree.getSite(siteID);
+    Site toDie = routingTree.getSite(deadNode);
     toDie.setisDead(true);  
   }
 

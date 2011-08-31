@@ -36,6 +36,7 @@
 package uk.ac.manchester.cs.snee.evaluator;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,23 +47,31 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.ResultStore;
+import uk.ac.manchester.cs.snee.SNEECompilerException;
+import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
+import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 
 public class Dispatcher {
@@ -178,6 +187,23 @@ public class Dispatcher {
 		}
 	}
 
+	public void initiliseAutonomicManager(int queryID, ResultStore resultSet, 
+                                        QueryExecutionPlan queryPlan) 
+  throws 
+  SNEEException, MetadataException, 
+  EvaluatorException, SNEEConfigurationException, 
+  SchemaMetadataException, TypeMappingException, 
+  OptimizationException, IOException 
+  {
+	  SensorNetworkQueryPlan snQueryPlan = (SensorNetworkQueryPlan)queryPlan;
+    String sep = System.getProperty("file.separator");
+    String outputDir = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + sep + queryPlan.getQueryName() + sep;
+    sncb = snQueryPlan.getSNCB();
+    SourceMetadataAbstract metadata = _metadata.getSource(snQueryPlan.getMetaData().getOutputAttributes().get(1).getExtentName());
+    _autonomicManager.initilise(metadata, queryPlan, resultSet);
+  }
+	
+	
 	/**
 	 * Using a method for constructing the query evaluator so that it can be
 	 * overridden as a mock object for testing.
@@ -249,7 +275,7 @@ public class Dispatcher {
 			logger.debug("RETURN");
 		}
 	}
-  public void setDeadNodes(ArrayList<Integer> deadNodes)
+  public void setDeadNodes(ArrayList<String> deadNodes)
   {
     _autonomicManager.setDeadNodes(deadNodes);
     
@@ -267,6 +293,24 @@ public class Dispatcher {
   public void giveAutonomicManagerQuery(String query)
   {
     _autonomicManager.setQuery(query);
+    
+  }
+
+  public void giveAutonomicManagerQuery(String query,
+      ArrayList<String> failedNodesID) 
+  throws 
+  MalformedURLException, SNEEConfigurationException, 
+  OptimizationException, SchemaMetadataException, 
+  TypeMappingException, AgendaException, 
+  SNEEException, MetadataException, 
+  UnsupportedAttributeTypeException, SourceMetadataException, 
+  TopologyReaderException, SNEEDataSourceException, 
+  CostParametersException, SNCBException, 
+  SNEECompilerException, IOException, 
+  CodeGenerationException
+  {
+    _autonomicManager.setQuery(query);
+    _autonomicManager.runFailedNodeFramework(failedNodesID);
     
   }
 

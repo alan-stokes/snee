@@ -110,6 +110,7 @@ public class FailedNodeStrategyGlobal extends StrategyAbstract
 	  Adaptation adapt = new Adaptation(qep, StrategyID.FAILED_NODE_GLOBAL, 1);
 	  //remove nodes from topology
 		network = this.getWsnTopology();
+		makeNetworkFile(network);
 		network = cloner.deepClone(network);
 		Iterator<String> failedNodeIterator = failedNodes.iterator();
 		while(failedNodeIterator.hasNext())
@@ -123,7 +124,7 @@ public class FailedNodeStrategyGlobal extends StrategyAbstract
 		//shove though distributed section of compiler
 		//routing
 		Router router = new Router();
-		RT routingTree = router.doRouting(paf, qep.getQueryName(), network);
+		RT routingTree = router.doRouting(paf, qep.getQueryName(), network, _metadata);
 		//where
 		InstanceWhereSchedular instanceWhere = 
 		  new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), 
@@ -150,5 +151,15 @@ public class FailedNodeStrategyGlobal extends StrategyAbstract
       adaptation.add(adapt);
 		return adaptation;
 	}
+
+  private void makeNetworkFile(Topology network2) 
+  throws SchemaMetadataException
+  {
+    File top = new File(globalFile.toString() + sep + "topology");
+    top.mkdir();
+    network.exportAsDOTFile(top.toString() + sep + "topology");
+    // TODO Auto-generated method stub
+    
+  }
 
 }

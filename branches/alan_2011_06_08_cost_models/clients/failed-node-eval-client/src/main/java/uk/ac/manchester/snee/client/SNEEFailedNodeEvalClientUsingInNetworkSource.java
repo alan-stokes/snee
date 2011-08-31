@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,19 +28,33 @@ import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.ResultStoreImpl;
 import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEController;
+import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.client.SNEEClient;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.metadata.CostParametersException;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient 
 {
-	private static ArrayList<Integer> siteIDs = new ArrayList<Integer>();
+	private static ArrayList<String> siteIDs = new ArrayList<String>();
 	private static RT routingTree;
 	
 	protected static Logger resultsLogger;
@@ -49,11 +64,12 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	private static boolean inRecoveryMode = false;
 	private static int actualTestNo = 0;
 	private static int queryid = 0;
+	private static SensorNetworkQueryPlan qep;
 	
 	public SNEEFailedNodeEvalClientUsingInNetworkSource(String query, 
-			double duration, String queryParams, String sneeProperties) 
+			double duration, String queryParams, String csvFile, String sneeProperties) 
 	throws SNEEException, IOException, SNEEConfigurationException {
-		super(query, duration, queryParams, sneeProperties);
+		super(query, duration, queryParams, csvFile, sneeProperties);
 
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEECostModelClientUsingInNetworkSource()");		
@@ -101,7 +117,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
   		  String propertiesPath = "tests/snee" + queryid + ".properties";
   		  
         SNEEFailedNodeEvalClientUsingInNetworkSource client = 
-          new  SNEEFailedNodeEvalClientUsingInNetworkSource(currentQuery, duration, queryParams, propertiesPath);
+          new  SNEEFailedNodeEvalClientUsingInNetworkSource(currentQuery, duration, queryParams, null, propertiesPath);
         
         writeQueryToResultsFile(currentQuery);
         testNo ++;
@@ -110,10 +126,12 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
         actualTestNo = 0;
         updateRecoveryFile();
         
-        client.run();
-        routingTree = client.getRT();
+        client.runCompilelation();
+        SensorNetworkQueryPlan currentQEP = client.getQEP();
+        qep = currentQEP;
+        routingTree = currentQEP.getRT();
         System.out.println("ran control: success");
-        runTests(client, currentQuery);
+        client.runTests(client, currentQuery);
         queryid ++;
         System.out.println("Ran all tests on query " + testNo);
       }
@@ -127,7 +145,19 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
     }
 	}
 
-  private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
+  private void runCompilelation() throws SNEECompilerException 
+  {
+    if (logger.isDebugEnabled()) 
+      logger.debug("ENTER");
+    System.out.println("Query: " + _query);
+    SNEEController control = (SNEEController) controller;
+    control.queryCompilationOnly(_query, _queryParams);
+    controller.close();
+    if (logger.isDebugEnabled())
+      logger.debug("RETURN");// TODO Auto-generated method stub	
+  }
+
+private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
   {
     Iterator<String> queryIterator = queries.iterator();
     //recovery move
@@ -165,30 +195,106 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
     
   }
 
-  private static void runTests(SNEEFailedNodeEvalClientUsingInNetworkSource client, String currentQuery) throws SNEECompilerException, MetadataException, EvaluatorException, SNEEException, SNEEConfigurationException, IOException, OptimizationException, SQLException, UtilsException
+  private void runTests(SNEEFailedNodeEvalClientUsingInNetworkSource client, String currentQuery) 
+  throws 
+  SNEECompilerException, MetadataException, EvaluatorException, 
+  SNEEException, SNEEConfigurationException, IOException, 
+  OptimizationException, SQLException, UtilsException, 
+  SchemaMetadataException, TypeMappingException, AgendaException, 
+  UnsupportedAttributeTypeException, SourceMetadataException, 
+  TopologyReaderException, SNEEDataSourceException, CostParametersException, 
+  SNCBException, CodeGenerationException
   {
-    //go though all sites looking for confluence sites which are sites which will cause likely changes to results when lost
-	  Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
-  	siteIDs.clear();
-  	actualTestNo = 0;
-  	while(siteIterator.hasNext())
-  	{
-  	  Site currentSite = siteIterator.next();
-  	  if(currentSite.getInDegree() > 1)
-  		  if(!siteIDs.contains(Integer.parseInt(currentSite.getID())))
-  		    siteIDs.add(Integer.parseInt(currentSite.getID()));
-  	}
-  	 
+    
+    updateSites(routingTree); 	 
     int noSites = siteIDs.size();
     int position = 0;
-    ArrayList<Integer> deadNodes = new ArrayList<Integer>();
+    ArrayList<String> deadNodes = new ArrayList<String>();
     writeIncludeImageSection();
     
     chooseNodes(deadNodes, noSites, position, client, currentQuery);
   }
 
-  private static void chooseNodes(ArrayList<Integer> deadNodes, int noSites,
-      int position, SNEEFailedNodeEvalClientUsingInNetworkSource client, String currentQuery) throws SNEECompilerException, MetadataException, EvaluatorException, SNEEException, SNEEConfigurationException, IOException, OptimizationException, SQLException, UtilsException
+  /**
+   * goes thoun routing tree, looknig for nodes which are not source nodes and are 
+   * confluence sites which are sites which will cause likely changes to results when lost
+   * @param routingTree2
+   * @throws SourceDoesNotExistException 
+   */
+  private void updateSites(RT routingTree) 
+  throws SourceDoesNotExistException
+  {
+    actualTestNo = 0;
+    
+    Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
+    siteIDs.clear();
+    actualTestNo = 0;
+    SNEEController snee = (SNEEController) controller;
+    SourceMetadataAbstract metadata = snee.getMetaData().getSource(qep.getMetaData().getOutputAttributes().get(1).getExtentName());
+    SensorNetworkSourceMetadata sensornetworkMetadata = (SensorNetworkSourceMetadata) metadata;
+    int[] sources = sensornetworkMetadata.getSourceSites(qep.getDAF().getPAF());
+    
+    while(siteIterator.hasNext())
+    {
+      Site currentSite = siteIterator.next();
+      if(currentSite.getInDegree() > 1 && 
+         !siteIDs.contains(Integer.parseInt(currentSite.getID())) &&
+         !isSource(currentSite, sources))
+          siteIDs.add(currentSite.getID());
+    }// TODO Auto-generated method stub
+  }
+
+  private boolean isSource(Site currentSite, int[] sources)
+  {
+    String siteIDs = currentSite.getID();
+    int siteID = Integer.parseInt(siteIDs);
+    boolean found = false;
+    
+    for(int index = 0; index < sources.length; index++)
+    {
+      if(sources[index] == siteID)
+        found = true;
+    }
+    return found;
+  }
+
+  /**
+   * recursive method call, which iterates though the selected nodes to fail, 
+   * using only nodes given in the updatesites method.
+   * @param deadNodes
+   * @param noSites
+   * @param position
+   * @param client
+   * @param currentQuery
+   * @throws SNEECompilerException
+   * @throws MetadataException
+   * @throws EvaluatorException
+   * @throws SNEEException
+   * @throws SNEEConfigurationException
+   * @throws IOException
+   * @throws OptimizationException
+   * @throws SQLException
+   * @throws UtilsException
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   * @throws AgendaException
+   * @throws UnsupportedAttributeTypeException
+   * @throws SourceMetadataException
+   * @throws TopologyReaderException
+   * @throws SNEEDataSourceException
+   * @throws CostParametersException
+   * @throws SNCBException
+   * @throws CodeGenerationException
+   */
+  private static void chooseNodes(ArrayList<String> deadNodes, int noSites,
+      int position, SNEEFailedNodeEvalClientUsingInNetworkSource client, String currentQuery) 
+  throws 
+  SNEECompilerException, MetadataException, EvaluatorException, 
+  SNEEException, SNEEConfigurationException, IOException, 
+  OptimizationException, SQLException, UtilsException, SchemaMetadataException, 
+  TypeMappingException, AgendaException, UnsupportedAttributeTypeException, 
+  SourceMetadataException, TopologyReaderException, SNEEDataSourceException, 
+  CostParametersException, SNCBException, CodeGenerationException
   {
     if(position < noSites)
     {
@@ -212,7 +318,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
       		inRecoveryMode = false;
       		client.resetNodes();
           client.setDeadNodes(deadNodes);
-          client.runForTests(); 
+          client.runForTests(deadNodes); 
     	  }
       }
       else
@@ -225,7 +331,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
         {
       	  client.resetNodes();
           client.setDeadNodes(deadNodes);
-          client.runForTests(); 
+          client.runForTests(deadNodes); 
           actualTestNo++;
         }
       }      
@@ -242,36 +348,21 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	  }
   }
 
-  public void runForTests()throws SNEECompilerException, MetadataException, EvaluatorException,
-  SNEEException, SQLException, SNEEConfigurationException
+  public void runForTests(ArrayList<String> failedNodes)throws SNEECompilerException, MetadataException, EvaluatorException,
+  SNEEException, SQLException, SNEEConfigurationException, 
+  MalformedURLException, OptimizationException, SchemaMetadataException, 
+  TypeMappingException, AgendaException, UnsupportedAttributeTypeException, 
+  SourceMetadataException, TopologyReaderException, SNEEDataSourceException, 
+  CostParametersException, SNCBException, IOException, CodeGenerationException
   {
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
+    System.out.println("Failed nodes" + failedNodes.toString() );
     SNEEController control = (SNEEController) controller;
-    int queryId1 = control.addQueryWithoutCompilation(_query, _queryParams);
+    int queryId1 = control.addQueryWithoutCompilationAndStarting(_query, _queryParams, failedNodes);
     
-
-    long startTime = System.currentTimeMillis();
-    long endTime = (long) (startTime + (_duration * 1000));
-
-    System.out.println("Running query for " + _duration + " seconds. Scheduled end time " + new Date(endTime));
-
-    ResultStoreImpl resultStore = 
-      (ResultStoreImpl) controller.getResultStore(queryId1);
-    resultStore.addObserver(this);
-    
-    try {     
-      control = (SNEEController) controller;
-      control.waitForQueryEnd();
-    } catch (InterruptedException e) {
-    }
-    
-    while (System.currentTimeMillis() < endTime) {
-      Thread.currentThread().yield();
-    }
-    
-  //  List<ResultSet> results1 = resultStore.getResults();
+    //  List<ResultSet> results1 = resultStore.getResults();
     System.out.println("Stopping query " + queryId1 + ".");
     controller.removeQuery(queryId1);
     controller.close();

@@ -56,7 +56,7 @@ public class AutonomicManagerImpl implements AutonomicManager
   private QueryExecutionPlan qep;
   private MetadataManager _metadataManager;
   private SourceMetadataAbstract _metadata;
-  private ArrayList<Integer> deadNodes = null;
+  private ArrayList<String> deadNodes = null;
   private int noDeadNodes = 0;
   private int adaptionCount = 1;
   //private static Logger resultsLogger = Logger.getLogger("results.autonomicManager");
@@ -189,13 +189,15 @@ public class AutonomicManagerImpl implements AutonomicManager
    */
   private void removeFailedNodesFromRunningNodes(ArrayList<String> failedNodes)
   {
-    Iterator<String> failedNodeIterator = failedNodes.iterator();
-    while(failedNodeIterator.hasNext())
+    if(runningSites != null)
     {
-      String failedNodeID = failedNodeIterator.next();
-      runningSites.remove(failedNodeID);
+      Iterator<String> failedNodeIterator = failedNodes.iterator();
+      while(failedNodeIterator.hasNext())
+      {
+        String failedNodeID = failedNodeIterator.next();
+        runningSites.remove(failedNodeID);
+      }
     }
-    
   }
 
   /* (non-Javadoc)
@@ -228,7 +230,7 @@ public class AutonomicManagerImpl implements AutonomicManager
    * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#setDeadNodes(java.util.ArrayList)
    */
   @Override
-  public void setDeadNodes(ArrayList<Integer> deadNodes)
+  public void setDeadNodes(ArrayList<String> deadNodes)
   {
 	  this.deadNodes = deadNodes;
   }

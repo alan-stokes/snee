@@ -71,6 +71,24 @@ public abstract class SNEEClient implements Observer {
 			logger.debug("RETURN SNEEClient()");
 	}
 	
+    public SNEEClient(String query, double duration, String queryParams, 
+    		          String csvFilename,  String sneeProperties)
+    throws SNEEException, IOException, SNEEConfigurationException {
+      if (logger.isDebugEnabled())
+        logger.debug("ENTER SNEEClient() with query " + query + 
+            " duration " + duration);
+      
+      _query = query;
+      _duration = duration;
+      _queryParams = queryParams;
+      _csvFilename = csvFilename;
+      controller = new SNEEController(sneeProperties);
+
+      if (logger.isDebugEnabled())
+        logger.debug("RETURN SNEEClient()");
+    }
+
+	
 	public SNEEClient(String query, double duration, String csvFilename) 
 	throws SNEEException, IOException, SNEEConfigurationException {
 		this(query, duration, null, csvFilename);
@@ -297,14 +315,13 @@ public abstract class SNEEClient implements Observer {
 			System.out.println("Success!");
         }
     }
-	public RT getRT()
+	public SensorNetworkQueryPlan getQEP()
 	{
 	  SNEEController control = (SNEEController) controller;
-	  SensorNetworkQueryPlan qep =  (SensorNetworkQueryPlan) control.getQEP();
-	  return qep.getRT();
+	  return (SensorNetworkQueryPlan) control.getQEP();
 	}
 	
-	public void setDeadNodes(ArrayList<Integer> deadNodes)
+	public void setDeadNodes(ArrayList<String> deadNodes)
   {
 	  SNEEController control = (SNEEController) controller;
     control.setDeadNodes(deadNodes);

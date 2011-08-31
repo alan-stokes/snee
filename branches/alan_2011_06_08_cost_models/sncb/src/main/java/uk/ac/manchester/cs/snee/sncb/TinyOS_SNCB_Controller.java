@@ -120,6 +120,7 @@ public class TinyOS_SNCB_Controller implements SNCB
     return sncb.register(qep, queryOutputDir, metadata);
   }
 
+  
   @Override
   public void setOutputFolder(String newTargetDir)
   {

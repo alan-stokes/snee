@@ -40,7 +40,7 @@ public class AnayliserCostModelAssessor
     System.out.println("the cardinality of this query for agenda cycle is " + agendaCycleResult);
   }
 
-  public void simulateDeadNodes(ArrayList<Integer> deadNodes, String deadSitesList) 
+  public void simulateDeadNodes(ArrayList<String> deadNodes, String deadSitesList) 
   throws OptimizationException
   {
     deadSitesList = deadNodeSimulator.simulateDeadNodes(deadNodes);

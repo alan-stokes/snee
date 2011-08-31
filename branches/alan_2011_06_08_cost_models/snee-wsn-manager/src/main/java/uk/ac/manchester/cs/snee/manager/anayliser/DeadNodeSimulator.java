@@ -25,13 +25,13 @@ public class DeadNodeSimulator
   }
   
   
-  public String simulateDeadNodes(ArrayList<Integer> deadNodes) throws OptimizationException
+  public String simulateDeadNodes(ArrayList<String> deadNodes) throws OptimizationException
   {
-    Iterator<Integer> nodeIterator = deadNodes.iterator();
+    Iterator<String> nodeIterator = deadNodes.iterator();
     String deadSitesList = "";
     while(nodeIterator.hasNext())
     {
-        Integer deadNode = nodeIterator.next();
+        String deadNode = nodeIterator.next();
       cardECM.setSiteDead(deadNode);
       deadSitesList = deadSitesList.concat(deadNode.toString() + " ");
     }

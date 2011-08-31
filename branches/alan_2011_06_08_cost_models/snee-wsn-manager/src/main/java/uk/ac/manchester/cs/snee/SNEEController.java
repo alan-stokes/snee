@@ -54,8 +54,10 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -67,6 +69,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeExceptio
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB_Controller;
@@ -376,6 +379,36 @@ public class SNEEController implements SNEE {
 		return queryId;
 	}
 	
+  public int queryCompilationOnly(String query, String queryParamsFile) 
+  throws SNEECompilerException
+  {
+    if (logger.isDebugEnabled()) {
+      logger.debug("ENTER addQuery() with " + query);
+    }
+    if (query == null || query.trim().equals("")) {
+      logger.warn("Null or empty query passed in");
+      throw new SNEECompilerException("Null or empty query passed in.");
+    }
+    int queryId = getNextQueryId();
+    if (logger.isInfoEnabled()) 
+      logger.info("Assigned ID " + queryId + " to query\n\t" + query);
+    if (logger.isInfoEnabled()) 
+      logger.info("Reading query " + queryId + " parameters\n");
+    QueryParameters queryParams = null;
+    if (queryParamsFile != null) {
+      try {
+        queryParams = new QueryParameters(queryId, queryParamsFile);
+      } catch (Exception e) {
+        logger.warn("Error obtaining query parameters: " + e);
+        throw new SNEECompilerException(e.getLocalizedMessage());
+      }
+    }
+    if (logger.isInfoEnabled()) 
+      logger.info("Compiling query " + queryId + "\n");
+    compileQuery(queryId, query, queryParams);
+    return queryId;
+  }
+	
   public int addQueryWithoutCompilation(String query, String queryParamsFile)
   throws EvaluatorException, SNEECompilerException, SNEEException,
   MetadataException, SNEEConfigurationException 
@@ -389,6 +422,35 @@ public class SNEEController implements SNEE {
     }
     int queryId = _nextQueryID - 1;
     dispatchQuery(queryId, query);
+    if (logger.isInfoEnabled())
+      logger.info("Successfully started evaluation of query " + queryId);
+
+    if (logger.isDebugEnabled()) {
+        logger.debug("RETURN addQuery() with query id " + queryId);
+      }
+    return queryId;
+  }
+  
+  public int addQueryWithoutCompilationAndStarting(String query, String queryParamsFile, 
+                                                   ArrayList<String> failedNodes)
+  throws
+  EvaluatorException, SNEECompilerException, SNEEException,
+  MetadataException, SNEEConfigurationException, MalformedURLException, 
+  OptimizationException, SchemaMetadataException, TypeMappingException,
+  AgendaException, UnsupportedAttributeTypeException, SourceMetadataException, 
+  TopologyReaderException, SNEEDataSourceException, CostParametersException, 
+  SNCBException, IOException, CodeGenerationException 
+  {
+    if (logger.isDebugEnabled()) {
+      logger.debug("ENTER addQuery() with " + query);
+    }
+    if (query == null || query.trim().equals("")) {
+      logger.warn("Null or empty query passed in");
+      throw new SNEECompilerException("Null or empty query passed in.");
+    }
+    int queryId = _nextQueryID - 1;
+    dispatchQueryWithoutStarting(queryId, query, failedNodes);
+    
     if (logger.isInfoEnabled())
       logger.info("Successfully started evaluation of query " + queryId);
 
@@ -492,6 +554,33 @@ public class SNEEController implements SNEE {
 		}
 		return queryId;
 	}
+	
+	private int dispatchQueryWithoutStarting(int queryId, String query, ArrayList<String> failedNodesID) 
+  throws
+  SNEEException, MetadataException, EvaluatorException,
+  SNEEConfigurationException, MalformedURLException, 
+  OptimizationException, SchemaMetadataException, 
+  TypeMappingException, AgendaException,
+  UnsupportedAttributeTypeException, SourceMetadataException, 
+  TopologyReaderException, SNEEDataSourceException, 
+  CostParametersException, SNCBException, 
+  SNEECompilerException, IOException, 
+  CodeGenerationException
+  {
+    if (logger.isTraceEnabled()) {
+      logger.trace("ENTER dispatchQuery() with " + queryId +
+          " " + query);
+    }
+    QueryExecutionPlan queryPlan = _queryPlans.get(queryId);
+    ResultStore resultSet = createStreamResultSet(query, queryPlan);
+    _dispatcher.initiliseAutonomicManager(queryId, resultSet, queryPlan);
+    _dispatcher.giveAutonomicManagerQuery(query, failedNodesID);
+    
+    if (logger.isTraceEnabled()) {
+      logger.trace("RETURN dispatchQuery() with queryId " + queryId);
+    }
+    return queryId;
+  }
 
 	protected ResultStore createStreamResultSet(String query,
 			QueryExecutionPlan queryPlan) 
@@ -602,7 +691,13 @@ public class SNEEController implements SNEE {
 
 	}
 	
-	public void setDeadNodes(ArrayList<Integer> deadNodes)
+	
+	public MetadataManager getMetaData()
+	{
+	  return _metadata;
+	}
+	
+	public void setDeadNodes(ArrayList<String> deadNodes)
 	{
 	  _dispatcher.setDeadNodes(deadNodes);
 	}

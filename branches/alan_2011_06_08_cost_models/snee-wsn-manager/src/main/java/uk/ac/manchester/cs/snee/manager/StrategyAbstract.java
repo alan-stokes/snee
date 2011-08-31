@@ -20,6 +20,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -195,9 +196,10 @@ public abstract class StrategyAbstract
         Node child = newIOT.getNode(childrenIterator.next().getID());
         Node orginal = child;
         Node lastChild = null;
-        while(reprogrammed)
+        while(reprogrammed && newAgenda.getTransmissionTask(child) != null)
         {
-          Node nextChild = newAgenda.getTransmissionTask(child).getDestNode();
+          CommunicationTask task = newAgenda.getTransmissionTask(child);
+          Node nextChild =task.getDestNode();
           if (ad.reprogrammingContains((Site) nextChild))
           {
             lastChild = child;

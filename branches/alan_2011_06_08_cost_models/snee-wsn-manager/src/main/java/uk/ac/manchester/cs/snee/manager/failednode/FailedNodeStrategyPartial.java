@@ -101,6 +101,9 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
     partialFolder.mkdir();
   }
 
+  /**
+   * MAIN METHOD TO ENTER PATIAL ADAPTATION
+   */
   @Override
   public List<Adaptation> adapt(ArrayList<String> failedNodes) 
   throws NumberFormatException, SNEEConfigurationException, SchemaMetadataException, 
@@ -157,7 +160,7 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
       String nodeID = failedNodeIterator.next();
       network.removeNode(nodeID);
     }
-    RT globalRT = router.doRouting(qep.getDAF().getPAF(), qep.getQueryName(), network);
+    RT globalRT = router.doRouting(qep.getDAF().getPAF(), qep.getQueryName(), network, _metadata);
     ArrayList<Integer> globalSiteIDs = globalRT.getSiteIDs();
     ArrayList<Integer> qepSiteIDs = qep.getRT().getSiteIDs();
     

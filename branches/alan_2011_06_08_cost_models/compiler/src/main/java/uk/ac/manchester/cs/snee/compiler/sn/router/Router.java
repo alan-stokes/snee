@@ -82,16 +82,16 @@ public class Router {
 	 * @param paf
 	 * @param queryName
 	 * @param network
+	 * @param _metadataManager 
 	 * @return
 	 */
-	public RT doRouting(PAF paf, String queryName, Topology network) 
+	public RT doRouting(PAF paf, String queryName, Topology network, SourceMetadataAbstract _metadataManager) 
 	{
 	 if (logger.isDebugEnabled())
 	    logger.debug("ENTER doRouting() with " + paf.getID());
 	    //XXX: There is potentially one routing tree for each Sensor Network Source
 	    //For now, assume only one source
-	    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) 
-	      paf.getDLAF().getSources().iterator().next();
+	    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) _metadataManager;
 	    int sink = sm.getGateway(); 
 	    int[] sources = sm.getSourceSites(paf);
 	    Tree steinerTree = computeSteinerTree(network, sink, sources); 
