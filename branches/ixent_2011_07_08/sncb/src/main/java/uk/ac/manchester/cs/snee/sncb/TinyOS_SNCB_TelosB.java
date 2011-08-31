@@ -20,11 +20,11 @@ public class TinyOS_SNCB_TelosB extends TinyOS_SNCB implements SNCB {
 	  super(duration);
 	  this.target = CodeGenTarget.TELOSB_T2;
       try {
-	    this.serialPort = this.getBaseStation();
 	  	if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER)) {	
 			useNodeController = SNEEProperties
 				.getBoolSetting(SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);				
 			}
+	    this.serialPort = this.getBaseStation();
       } catch (Exception e) {
 			this.serialPort = null;
 	  }
