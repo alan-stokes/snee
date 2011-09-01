@@ -63,7 +63,7 @@ public class MetaSteinerTree
       //find route between child and parent.
       Path finalPath = weightedTopology.getShortestPath(container.getChildID(), container.getParentID(), set);
       //link path into tree
-      mergePathIntoTree(finalPath, bucket, container);
+      mergePathIntoTree(finalPath, bucket, container, sources);
       //update number of sources in all nodes in steiner tree
       updateNoSources(container.getSteinerTree(), oldRoutingTree);
     }
@@ -170,7 +170,8 @@ public class MetaSteinerTree
    * @param parentID
    */
   private void mergePathIntoTree(Path finalPath, ArrayList<String> bucket, 
-                                 MetaSteinerTreeObjectContainer container)
+                                 MetaSteinerTreeObjectContainer container,
+                                 ArrayList<String> sources)
   {
     bucket.remove(container.getChildID());
     //add path into steinterTree
@@ -181,6 +182,8 @@ public class MetaSteinerTree
     if(!treeContainsSiteID(firstSite.getID(),  container.getSteinerTree()))
     {
       firstSite = new Site(firstSite);
+      if(sources.contains(firstSite.getID()))
+          firstSite.setIsSource(true);
       container.getSteinerTree().addNode(firstSite);
     }
     else
@@ -195,6 +198,8 @@ public class MetaSteinerTree
       if(!treeContainsSiteID(secondSite.getID(),  container.getSteinerTree()))
       {
         Site newSecond = new Site(secondSite);
+        if(sources.contains(newSecond.getID()))
+          newSecond.setIsSource(true);
         newSecond.addInput(firstSite);
         firstSite.addOutput(newSecond);
         container.getSteinerTree().addNode(newSecond);

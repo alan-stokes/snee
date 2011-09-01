@@ -327,6 +327,12 @@ public class Site extends NodeImplementation implements Comparable{
         return -1;
     }
 
+    public String toString()
+    {
+      return "sensornet site with id " + this.id;
+    }
+    
+    
     public void setNoSources(int newNumSources)
     {
       this.numSources = newNumSources;    

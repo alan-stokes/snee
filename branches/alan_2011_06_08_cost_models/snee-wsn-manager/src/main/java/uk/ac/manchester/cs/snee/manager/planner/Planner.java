@@ -53,14 +53,14 @@ public class Planner
   private Adaptation chooseBestAdaptation(List<Adaptation> choices)
   {
     Adaptation finalChoice = null;
-    Double cost = Double.MAX_VALUE;
+    Double cost = Double.MIN_VALUE;
     Iterator<Adaptation> choiceIterator = choices.iterator();
     //calculate each cost, and compares it with the best so far, if the same, store it 
     while(choiceIterator.hasNext())
     {
       Adaptation choice = choiceIterator.next();
       Double choiceCost = choice.getLifetimeEstimate();
-      if(choiceCost < cost)
+      if(choiceCost > cost)
       {
         finalChoice = choice;
         cost = choiceCost;

@@ -233,13 +233,15 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     SourceMetadataAbstract metadata = snee.getMetaData().getSource(qep.getMetaData().getOutputAttributes().get(1).getExtentName());
     SensorNetworkSourceMetadata sensornetworkMetadata = (SensorNetworkSourceMetadata) metadata;
     int[] sources = sensornetworkMetadata.getSourceSites(qep.getDAF().getPAF());
+    String sinkID = qep.getRT().getRoot().getID();
     
     while(siteIterator.hasNext())
     {
       Site currentSite = siteIterator.next();
       if(currentSite.getInDegree() > 1 && 
          !siteIDs.contains(Integer.parseInt(currentSite.getID())) &&
-         !isSource(currentSite, sources))
+         !isSource(currentSite, sources) && 
+         !currentSite.getID().equals(sinkID))
           siteIDs.add(currentSite.getID());
     }// TODO Auto-generated method stub
   }
@@ -364,7 +366,6 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     
     //  List<ResultSet> results1 = resultStore.getResults();
     System.out.println("Stopping query " + queryId1 + ".");
-    controller.removeQuery(queryId1);
     controller.close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
@@ -417,20 +418,6 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     out.write("\\multirow{" + numberOfTests + "}{*}{\\includegraphics[width=1.6cm}{query" + realQueryid + "-RT-" + realQueryid + "}");
     out.flush();
     out.close();
-    copyRTtoResultsFolder();
-  }
-  
-  private static void copyRTtoResultsFolder() throws UtilsException
-  {
-    int realQueryid = queryid+1;
-    String path = Utils.validateFileLocation("output/query" + realQueryid + "/query-plan/");
-    File rtDotFile = new File(path + "/query" + realQueryid  + "-RT-" + realQueryid + ".dot");
-    File resultsFolder = new File("results");
-    String resultsPath = resultsFolder.getAbsolutePath();
-    File movedFile = new File(resultsPath + "/query"+ realQueryid  + "-RT-" + realQueryid + ".dot");
-    boolean success = rtDotFile.renameTo(movedFile);
-    if(!success)
-      System.out.println("attemptt o move file failed");
   }
 
   private static void writeLastResultsSection() throws IOException

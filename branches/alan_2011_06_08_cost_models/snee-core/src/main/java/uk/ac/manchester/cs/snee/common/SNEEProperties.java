@@ -75,7 +75,7 @@ public class SNEEProperties {
 			logger.trace("RETURN validateProperties()");
 	}
 
-	/**
+  /**
 	 * Ensure graphviz is available if we are trying to generate graphs
 	 * @throws SNEEConfigurationException
 	 */

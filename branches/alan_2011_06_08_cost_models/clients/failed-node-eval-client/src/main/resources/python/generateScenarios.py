@@ -14,7 +14,7 @@ optNumScenarios = 30
 optOutputDir1 = os.getenv('HOME')+os.sep+"tmp"+os.sep+"results"+os.sep+"scenarios1"
 
 #Scenarios 2
-optPercentSources = [50,100]
+optPercentSources = [25,50]
 optRValues = [1, 6, 30]
 optNumNetworksPerNetworkType = 5
 optOutputDir2 = os.getenv('HOME')+os.sep+"tmp"+os.sep+"results"+os.sep+"scenarios2"
@@ -322,6 +322,9 @@ sncb.perform_metadata_collection = false
 # Only compatible with Tmote Sky TinyOS2 code generation target
 sncb.include_command_server = true
 
+#Specifies which stragety levels to run.
+# Currently FL, FP, FG, ALL
+wsn_manager.strategies = FailedNodePartial
 
 # Specifies code generation target
 # telosb_t2 generates TinyOS v2 code for TelosB or TmoteSky hardware
@@ -340,14 +343,108 @@ results.history_size.tuples = 1000""" %(logicalSchemaId, physicalSchemaId)
     outFile.writelines(schemaStr)
     outFile.close()
 
-#30 random queries/networks/schemas
+#30 random select * queries/networks/schemas
 def generateScenarios1(numScenarios, numNodes, outputDir, scenariosFile):
     outFile = open(outputDir+os.sep+scenariosFile, 'w')
     outFile.writelines("scenarioId,queryId,networkId,numNodes,rValue,schemaId,percentSources\n")
     if os.path.exists(outputDir+os.sep+"queries"+".txt"):
     	os.remove(outputDir+os.sep+"queries"+".txt")
 
+    i = 0
     for i in range(0, numScenarios):
+        percentSources = random.randrange(30, 100, 1)
+        rValue = random.randrange(1, 5, 1)
+
+        queryId = 'q%d' % (i)
+	logicalSchemaId = 'logicalSchema_query%d' % (i)
+        physicalSchemaId = 'physicalSchema_query%d' % (i)
+        networkId = 'wsn_query%d' % (i)
+    
+        extentList = generateRandomQuery(queryId, outputDir)
+	generateSpiderNetwork(numNodes, rValue, networkId, outputDir)
+        generatePhysicalSchema(numNodes, percentSources, extentList, physicalSchemaId, outputDir, networkId)
+	generateLogicalSchema(extentList, logicalSchemaId, outputDir)
+	generateSneeProperties(logicalSchemaId, physicalSchemaId, i, outputDir)
+    
+        scenarioStr = "%d,%s,%s,%s,%s,%s,%s\n" % (i, queryId, networkId, numNodes, rValue, physicalSchemaId, percentSources)
+        outFile.writelines(scenarioStr)
+    outFile.close()
+
+#30 random select avg queries/networks/schemas
+def generateScenarios2(numScenarios, numNodes, outputDir, scenariosFile):
+
+    optProbabilityAggregate = 0.1
+
+    outFile = open(outputDir+os.sep+scenariosFile, 'w')
+    outFile.writelines("scenarioId,queryId,networkId,numNodes,rValue,schemaId,percentSources\n")
+    if os.path.exists(outputDir+os.sep+"queries"+".txt"):
+    	os.remove(outputDir+os.sep+"queries"+".txt")
+
+    for i in range(30, numScenarios*2):
+        percentSources = random.randrange(30, 100, 1)
+        rValue = random.randrange(1, 5, 1)
+
+        queryId = 'q%d' % (i)
+	logicalSchemaId = 'logicalSchema_query%d' % (i)
+        physicalSchemaId = 'physicalSchema_query%d' % (i)
+        networkId = 'wsn_query%d' % (i)
+    
+        extentList = generateRandomQuery(queryId, outputDir)
+	generateSpiderNetwork(numNodes, rValue, networkId, outputDir)
+        generatePhysicalSchema(numNodes, percentSources, extentList, physicalSchemaId, outputDir, networkId)
+	generateLogicalSchema(extentList, logicalSchemaId, outputDir)
+	generateSneeProperties(logicalSchemaId, physicalSchemaId, i, outputDir)
+    
+        scenarioStr = "%d,%s,%s,%s,%s,%s,%s\n" % (i, queryId, networkId, numNodes, rValue, physicalSchemaId, percentSources)
+        outFile.writelines(scenarioStr)
+    outFile.close()
+
+#30 random select join queries/networks/schemas
+def generateScenarios3(numScenarios, numNodes, outputDir, scenariosFile):
+
+    optProbabilityAggregate = 1
+    optProbabilitySubquery = 0.1
+    optMaxSourcesPerQueryLevel = 2
+    optMaxQueryNesting = 2
+
+    outFile = open(outputDir+os.sep+scenariosFile, 'w')
+    outFile.writelines("scenarioId,queryId,networkId,numNodes,rValue,schemaId,percentSources\n")
+    if os.path.exists(outputDir+os.sep+"queries"+".txt"):
+    	os.remove(outputDir+os.sep+"queries"+".txt")
+
+    for i in range(60, numScenarios*3):
+        percentSources = random.randrange(30, 100, 1)
+        rValue = random.randrange(1, 5, 1)
+
+        queryId = 'q%d' % (i)
+	logicalSchemaId = 'logicalSchema_query%d' % (i)
+        physicalSchemaId = 'physicalSchema_query%d' % (i)
+        networkId = 'wsn_query%d' % (i)
+    
+        extentList = generateRandomQuery(queryId, outputDir)
+	generateSpiderNetwork(numNodes, rValue, networkId, outputDir)
+        generatePhysicalSchema(numNodes, percentSources, extentList, physicalSchemaId, outputDir, networkId)
+	generateLogicalSchema(extentList, logicalSchemaId, outputDir)
+	generateSneeProperties(logicalSchemaId, physicalSchemaId, i, outputDir)
+    
+        scenarioStr = "%d,%s,%s,%s,%s,%s,%s\n" % (i, queryId, networkId, numNodes, rValue, physicalSchemaId, percentSources)
+        outFile.writelines(scenarioStr)
+    outFile.close()
+
+#30 random select agg join queries/networks/schemas
+def generateScenarios4(numScenarios, numNodes, outputDir, scenariosFile):
+
+    optProbabilityAggregate = 0.5
+    optProbabilitySubquery = 0.5
+    optMaxSourcesPerQueryLevel = 2
+    optMaxQueryNesting = 2
+
+    outFile = open(outputDir+os.sep+scenariosFile, 'w')
+    outFile.writelines("scenarioId,queryId,networkId,numNodes,rValue,schemaId,percentSources\n")
+    if os.path.exists(outputDir+os.sep+"queries"+".txt"):
+    	os.remove(outputDir+os.sep+"queries"+".txt")
+
+    for i in range(90, numScenarios*4):
         percentSources = random.randrange(30, 100, 1)
         rValue = random.randrange(1, 5, 1)
 
@@ -373,6 +470,9 @@ def main():
     optOutputDir1 = sys.argv[1]
     random.seed(1)
     generateScenarios1(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile)
+    generateScenarios2(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile)
+    generateScenarios3(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile)
+    generateScenarios4(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile)
 
 if __name__ == "__main__":
 	main()

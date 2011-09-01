@@ -200,6 +200,13 @@ public final class SNEEPropertyNames {
 	 */
 	public static final String SNCB_CONTROL_RADIO = 
 		"sncb.control_radio";
+	
+	/**
+	 * strategies for wsn manager (FL,FP, FG, ALL)
+	 */
+	public static final String WSN_MANAGER_STRATEGIES = 
+	  "wsn_manager.strategies";
+	
 }
 
 

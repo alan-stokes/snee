@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
@@ -214,7 +215,7 @@ public class CandiateRouter extends Router
       choiceChild.addOutput(treeParent);
     }
     //get children of choice.
-    Iterator<Node> choiceChildrenIterator = choice.getLeafNodes().iterator();
+    Iterator<Node> choiceChildrenIterator = getLeafSourceIterator(choice);//choice.getLeafNodes().iterator();
     //connect children
     while(choiceChildrenIterator.hasNext())
     {
@@ -222,11 +223,41 @@ public class CandiateRouter extends Router
       Node choiceParent = choiceChild.getOutput(0);
       Site treeChild =  newRoutingTree.getSite(choiceChild.getID());
       treeChild.addOutput(choiceParent);
+      if(choiceChild.getInDegree() > 0)
+      {
+        Iterator<Node> inputs = choiceChild.getInputsList().iterator();
+        while(inputs.hasNext())
+        {
+          Node input = inputs.next();
+          treeChild.addInput(input);
+          input.removeOutput(choiceChild);
+          input.addOutput(treeChild);
+        }
+      }
       choiceParent.removeInput(choiceChild);
       choiceParent.addInput(treeChild);
     } 
     newRoutingTree.getSiteTree().updateNodesAndEdgesColls(newRoutingTree.getRoot());
     
+  }
+
+  /**
+   * goes though tree looking for sources which are not the sink and palces them in a list
+   * @param choice
+   * @return
+   */
+  private Iterator<Node> getLeafSourceIterator(Tree choice)
+  {
+    Iterator<Node> nodeIterator = choice.getNodes().iterator();
+    List<Node> sources = new ArrayList<Node>();
+    while(nodeIterator.hasNext())
+    {
+      Node node = nodeIterator.next();
+      Site site = (Site) node;
+      if(site.isSource() && !site.getID().equals(choice.getRoot().getID()))
+        sources.add(node);
+    }
+    return sources.iterator();
   }
 
   /**
@@ -318,17 +349,20 @@ public class CandiateRouter extends Router
       RT oldRoutingTree, File outputFolder)
   {
     ArrayList<Tree> routes = new ArrayList<Tree>();
-    Tree steinerTree = computeSteinerTree(workingTopology, sink, sources); 
-    new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
-    new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
-    routes.add(steinerTree);
-    //container for currently tested heuristics
-    ArrayList<HeuristicSet> testedHeuristics = new ArrayList<HeuristicSet>();
-    //if no route exists between sink and childs. return empty array.
-    if(steinerTree == null)
+    Tree steinerTree = null;
+    try
+    {//checks that global route can generate a route between nodes.
+      steinerTree = computeSteinerTree(workingTopology, sink, sources); 
+      new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
+      new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
+      routes.add(steinerTree);
+    }
+    catch(Exception e)//no routes, hand up empty set
+    {
       return routes;
-    
-      
+    }
+    //container for currently tested heuristics
+    ArrayList<HeuristicSet> testedHeuristics = new ArrayList<HeuristicSet>();  
     while(routes.size() < numberOfRoutingTreesToWorkOn)
     {
       HeuristicSet set = collectNextHeuristicSet(workingTopology, testedHeuristics);

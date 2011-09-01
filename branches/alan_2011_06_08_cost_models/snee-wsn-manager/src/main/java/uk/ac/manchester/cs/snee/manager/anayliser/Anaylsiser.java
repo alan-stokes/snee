@@ -12,6 +12,8 @@ import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -19,6 +21,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.StrategyAbstract;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategy;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyGlobal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyPartial;
@@ -48,25 +51,56 @@ public class Anaylsiser
    * @param autonomicManager
    * @param _metadata
    * @param _metadataManager
+   * @throws SNEEConfigurationException 
    */
   public Anaylsiser(AutonomicManager autonomicManager, 
-                    SourceMetadataAbstract _metadata, MetadataManager _metadataManager)
+                    SourceMetadataAbstract _metadata, MetadataManager _metadataManager) 
+  throws SNEEConfigurationException
   {
     manager = autonomicManager;
     frameworks = new ArrayList<StrategyAbstract>();
-    FailedNodeStrategyPartial failedNodeFrameworkSpaceAndTimePinned = 
-      new FailedNodeStrategyPartial(manager, _metadata, true, true);
-    FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
-      new FailedNodeStrategyPartial(manager, _metadata, true, false);
-    FailedNodeStrategyLocal failedNodeFrameworkLocal = 
-      new FailedNodeStrategyLocal(manager, _metadata);
-    FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
-      new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
-    //add methodologies in order wished to be assessed
-    frameworks.add(failedNodeFrameworkLocal);
-    frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
-    //frameworks.add(failedNodeFrameworkSpacePinned);
-    frameworks.add(failedNodeFrameworkGlobal);
+    String prop = SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_STRATEGIES);
+    if(prop.equals(FailedNodeStrategy.FailedNodeLocal.toString()))
+    {
+      FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
+        new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
+      FailedNodeStrategyLocal failedNodeFrameworkLocal = 
+        new FailedNodeStrategyLocal(manager, _metadata);
+      frameworks.add(failedNodeFrameworkGlobal);
+      frameworks.add(failedNodeFrameworkLocal);
+    }
+    if(prop.equals(FailedNodeStrategy.FailedNodePartial.toString()))
+    {
+      FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
+        new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
+      FailedNodeStrategyPartial failedNodeFrameworkSpaceAndTimePinned = 
+        new FailedNodeStrategyPartial(manager, _metadata, true, true);
+      FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
+        new FailedNodeStrategyPartial(manager, _metadata, true, false);
+      frameworks.add(failedNodeFrameworkGlobal);
+      frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
+    }
+    if(prop.equals(FailedNodeStrategy.FailedNodeGlobal.toString()))
+    {
+      FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
+        new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
+      frameworks.add(failedNodeFrameworkGlobal);
+    }
+    if(prop.equals(FailedNodeStrategy.All.toString()))
+    { 
+      FailedNodeStrategyPartial failedNodeFrameworkSpaceAndTimePinned = 
+        new FailedNodeStrategyPartial(manager, _metadata, true, true);
+      FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
+        new FailedNodeStrategyPartial(manager, _metadata, true, false);
+      FailedNodeStrategyLocal failedNodeFrameworkLocal = 
+        new FailedNodeStrategyLocal(manager, _metadata);
+      FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
+        new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
+      frameworks.add(failedNodeFrameworkLocal);
+      frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
+      //frameworks.add(failedNodeFrameworkSpacePinned);
+      frameworks.add(failedNodeFrameworkGlobal);     
+    }
   }
 
   /**

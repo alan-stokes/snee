@@ -691,7 +691,6 @@ public class SNEEController implements SNEE {
 
 	}
 	
-	
 	public MetadataManager getMetaData()
 	{
 	  return _metadata;
