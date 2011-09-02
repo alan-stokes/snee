@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.anayliser;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -292,6 +293,16 @@ public class Anaylsiser
          TypeMappingException
   {
     return this.qep.getAgendaIOT().getSiteEnergyConsumption(currentSite); // J
+  }
+
+  public void updateFrameWorkStorageLocation(File outputFolder)
+  {
+    Iterator<StrategyAbstract> frameworkIterator = this.frameworks.iterator();    
+    while(frameworkIterator.hasNext())
+    {
+      StrategyAbstract framework = frameworkIterator.next();
+      framework.updateFrameWorkStorage(outputFolder);
+    }
   }
 
 }

@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.planner;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -67,6 +68,11 @@ public class Planner
       }
     }
     return finalChoice;
+  }
+
+  public void updateStorageLocation(File outputFolder)
+  {
+    this.assessor.updateStorageLocation(outputFolder);
   }
   
 }

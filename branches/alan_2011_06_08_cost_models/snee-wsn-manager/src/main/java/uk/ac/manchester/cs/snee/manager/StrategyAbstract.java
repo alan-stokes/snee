@@ -433,6 +433,13 @@ public abstract class StrategyAbstract
     }
   }
   
+  public void updateFrameWorkStorage(File outputFolder)
+  {
+    this.outputFolder = outputFolder;
+  }
+  
+  
+  
   /**
    * helper method which removes Exchanges from a PAF
    * @param paf

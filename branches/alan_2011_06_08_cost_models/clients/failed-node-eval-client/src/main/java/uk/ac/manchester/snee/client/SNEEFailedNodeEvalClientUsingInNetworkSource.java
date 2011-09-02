@@ -131,7 +131,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
         qep = currentQEP;
         routingTree = currentQEP.getRT();
         System.out.println("ran control: success");
-        client.runTests(client, currentQuery);
+        client.runTests(client, currentQuery, queryid);
         queryid ++;
         System.out.println("Ran all tests on query " + testNo);
       }
@@ -145,13 +145,23 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
     }
 	}
 
-  private void runCompilelation() throws SNEECompilerException 
+  private void runCompilelation() 
+  throws 
+  SNEECompilerException, MalformedURLException, 
+  EvaluatorException, SNEEException, MetadataException, 
+  SNEEConfigurationException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException, AgendaException, 
+  UnsupportedAttributeTypeException, SourceMetadataException, 
+  TopologyReaderException, SNEEDataSourceException, 
+  CostParametersException, SNCBException, IOException, 
+  CodeGenerationException 
   {
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
     SNEEController control = (SNEEController) controller;
     control.queryCompilationOnly(_query, _queryParams);
+    control.addQueryWithoutCompilationAndStarting(_query, _queryParams);
     controller.close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");// TODO Auto-generated method stub	
@@ -195,7 +205,8 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     
   }
 
-  private void runTests(SNEEFailedNodeEvalClientUsingInNetworkSource client, String currentQuery) 
+  private void runTests(SNEEFailedNodeEvalClientUsingInNetworkSource client, String currentQuery, 
+                        int queryid) 
   throws 
   SNEECompilerException, MetadataException, EvaluatorException, 
   SNEEException, SNEEConfigurationException, IOException, 
@@ -212,7 +223,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     ArrayList<String> deadNodes = new ArrayList<String>();
     writeIncludeImageSection();
     
-    chooseNodes(deadNodes, noSites, position, client, currentQuery);
+    chooseNodes(deadNodes, noSites, position, client, currentQuery, queryid);
   }
 
   /**
@@ -268,6 +279,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
    * @param position
    * @param client
    * @param currentQuery
+   * @param queryid2 
    * @throws SNEECompilerException
    * @throws MetadataException
    * @throws EvaluatorException
@@ -289,7 +301,8 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
    * @throws CodeGenerationException
    */
   private static void chooseNodes(ArrayList<String> deadNodes, int noSites,
-      int position, SNEEFailedNodeEvalClientUsingInNetworkSource client, String currentQuery) 
+      int position, SNEEFailedNodeEvalClientUsingInNetworkSource client, String currentQuery, 
+      int queryid) 
   throws 
   SNEECompilerException, MetadataException, EvaluatorException, 
   SNEEException, SNEEConfigurationException, IOException, 
@@ -300,9 +313,9 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
   {
     if(position < noSites)
     {
-      chooseNodes(deadNodes, noSites, position + 1, client, currentQuery);
+      chooseNodes(deadNodes, noSites, position + 1, client, currentQuery, queryid);
       deadNodes.add(siteIDs.get(position));
-      chooseNodes(deadNodes, noSites, position + 1, client, currentQuery);
+      chooseNodes(deadNodes, noSites, position + 1, client, currentQuery, queryid);
       deadNodes.remove(deadNodes.size() -1);
     }
     else
@@ -320,7 +333,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
       		inRecoveryMode = false;
       		client.resetNodes();
           client.setDeadNodes(deadNodes);
-          client.runForTests(deadNodes); 
+          client.runForTests(deadNodes, queryid ); 
     	  }
       }
       else
@@ -333,7 +346,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
         {
       	  client.resetNodes();
           client.setDeadNodes(deadNodes);
-          client.runForTests(deadNodes); 
+          client.runForTests(deadNodes, queryid); 
           actualTestNo++;
         }
       }      
@@ -350,7 +363,8 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
 	  }
   }
 
-  public void runForTests(ArrayList<String> failedNodes)throws SNEECompilerException, MetadataException, EvaluatorException,
+  public void runForTests(ArrayList<String> failedNodes, int queryid)
+  throws SNEECompilerException, MetadataException, EvaluatorException,
   SNEEException, SQLException, SNEEConfigurationException, 
   MalformedURLException, OptimizationException, SchemaMetadataException, 
   TypeMappingException, AgendaException, UnsupportedAttributeTypeException, 
@@ -362,10 +376,10 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     System.out.println("Query: " + _query);
     System.out.println("Failed nodes" + failedNodes.toString() );
     SNEEController control = (SNEEController) controller;
-    int queryId1 = control.addQueryWithoutCompilationAndStarting(_query, _queryParams, failedNodes);
-    
+    control.giveAutonomicManagerQuery(_query);
+    control.runSimulatedNodeFailure(failedNodes);
     //  List<ResultSet> results1 = resultStore.getResults();
-    System.out.println("Stopping query " + queryId1 + ".");
+    System.out.println("Stopping query " + queryid + ".");
     controller.close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");

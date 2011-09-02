@@ -116,8 +116,17 @@ public class AutonomicManagerImpl implements AutonomicManager
         SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
         sep + sQep.getAgendaIOT().getQueryName();
     File firstOutputFolder = new File(outputDir + sep + "AutonomicManData");
-    
     deleteFileContents(firstOutputFolder);
+  }
+
+  private void setupAdapatationFolder() throws SNEEConfigurationException
+  {
+    SensorNetworkQueryPlan sQep = (SensorNetworkQueryPlan) this.qep;
+    String sep = System.getProperty("file.separator");
+    String outputDir = SNEEProperties.getSetting(
+        SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
+        sep + sQep.getAgendaIOT().getQueryName();
+    File firstOutputFolder = new File(outputDir + sep + "AutonomicManData");
     outputFolder = new File(firstOutputFolder.toString() + sep + "Adaption" + adaptionCount);
     outputFolder.mkdir();
   }
@@ -172,6 +181,9 @@ public class AutonomicManagerImpl implements AutonomicManager
          CostParametersException, SNCBException, 
          SNEECompilerException, IOException
   {
+    setupAdapatationFolder();
+    anyliser.updateFrameWorkStorageLocation(outputFolder);
+    planner.updateStorageLocation(outputFolder);
     removeFailedNodesFromRunningNodes(failedNodes);
     List<Adaptation> choices = anyliser.runFailedNodeStragities(failedNodes);
     new AdaptationUtils(choices, _metadataManager.getCostParameters()).FileOutput(outputFolder);
@@ -179,6 +191,7 @@ public class AutonomicManagerImpl implements AutonomicManager
     Adaptation finalChoice = planner.assessChoices(choices);
     new AdaptationUtils(finalChoice,  _metadataManager.getCostParameters()).FileOutputFinalChoice(outputFolder);
     executer.adapt(finalChoice);
+    adaptionCount++;
     //newQEP.getIOT().exportAsDotFileWithFrags(fname, label, exchangesOnSites)
     //new AgendaIOTUtils( newQEP.getAgendaIOT(), newQEP.getIOT(), true).generateImage();
   }

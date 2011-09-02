@@ -109,7 +109,7 @@ public class InstanceWhereSchedular
     }    
     else
     {
-      System.out.println("directory not makable");
+      System.out.println("directory " + fileDirectory + " is not makable");
     }
   }
   

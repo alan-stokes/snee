@@ -352,7 +352,7 @@ public class CandiateRouter extends Router
     Tree steinerTree = null;
     try
     {//checks that global route can generate a route between nodes.
-      steinerTree = computeSteinerTree(workingTopology, sink, sources); 
+      steinerTree = computeSteinerTree(workingTopology, sink, sources, paf); 
       new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
       new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
       routes.add(steinerTree);
@@ -369,8 +369,8 @@ public class CandiateRouter extends Router
       //produce tree for set of heuristics
       MetaSteinerTree treeGenerator = new MetaSteinerTree();
       Tree currentTree = treeGenerator.produceTree(set, sources, sink, workingTopology, paf, oldRoutingTree);
-      new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
-      new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
+      new RTUtils(new RT(paf, "", currentTree, null)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
+      new RTUtils(new RT(paf, "", currentTree, null)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
       routes.add(currentTree);
     }
     routes = removeDuplicates(routes);
@@ -520,7 +520,7 @@ public class CandiateRouter extends Router
    * @return
    */
   private Tree computeSteinerTree(Topology workingTopology, String sink,
-      ArrayList<String> sources)
+      ArrayList<String> sources, PAF paf)
   {
     int intSink = Integer.parseInt(sink);
     int [] intSources = new int[sources.size()];
@@ -531,7 +531,10 @@ public class CandiateRouter extends Router
       intSources[counter] = Integer.parseInt(sourceIterator.next());
       counter++;
     }
-    return computeSteinerTree(workingTopology, intSink, intSources, false);
+    
+    Tree steinerTree =  computeSteinerTree(workingTopology, intSink, intSources, false);
+    MetaSteinerTree.finalCheckForSourceNodes(steinerTree, sources, paf);
+    return steinerTree;
   }
 
   /**

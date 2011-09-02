@@ -431,15 +431,16 @@ public class SNEEController implements SNEE {
     return queryId;
   }
   
-  public int addQueryWithoutCompilationAndStarting(String query, String queryParamsFile, 
-                                                   ArrayList<String> failedNodes)
-  throws
-  EvaluatorException, SNEECompilerException, SNEEException,
-  MetadataException, SNEEConfigurationException, MalformedURLException, 
-  OptimizationException, SchemaMetadataException, TypeMappingException,
-  AgendaException, UnsupportedAttributeTypeException, SourceMetadataException, 
-  TopologyReaderException, SNEEDataSourceException, CostParametersException, 
-  SNCBException, IOException, CodeGenerationException 
+  public int addQueryWithoutCompilationAndStarting(String query, String queryParamsFile) 
+  throws 
+  SNEECompilerException, MalformedURLException, 
+  SNEEException, MetadataException, EvaluatorException, 
+  SNEEConfigurationException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException, 
+  AgendaException, UnsupportedAttributeTypeException, 
+  SourceMetadataException, TopologyReaderException, 
+  SNEEDataSourceException, CostParametersException, 
+  SNCBException, IOException, CodeGenerationException
   {
     if (logger.isDebugEnabled()) {
       logger.debug("ENTER addQuery() with " + query);
@@ -449,7 +450,7 @@ public class SNEEController implements SNEE {
       throw new SNEECompilerException("Null or empty query passed in.");
     }
     int queryId = _nextQueryID - 1;
-    dispatchQueryWithoutStarting(queryId, query, failedNodes);
+    dispatchQueryWithoutStarting(queryId, query);
     
     if (logger.isInfoEnabled())
       logger.info("Successfully started evaluation of query " + queryId);
@@ -555,7 +556,7 @@ public class SNEEController implements SNEE {
 		return queryId;
 	}
 	
-	private int dispatchQueryWithoutStarting(int queryId, String query, ArrayList<String> failedNodesID) 
+	private int dispatchQueryWithoutStarting(int queryId, String query) 
   throws
   SNEEException, MetadataException, EvaluatorException,
   SNEEConfigurationException, MalformedURLException, 
@@ -574,7 +575,7 @@ public class SNEEController implements SNEE {
     QueryExecutionPlan queryPlan = _queryPlans.get(queryId);
     ResultStore resultSet = createStreamResultSet(query, queryPlan);
     _dispatcher.initiliseAutonomicManager(queryId, resultSet, queryPlan);
-    _dispatcher.giveAutonomicManagerQuery(query, failedNodesID);
+    _dispatcher.giveAutonomicManagerQuery(query);
     
     if (logger.isTraceEnabled()) {
       logger.trace("RETURN dispatchQuery() with queryId " + queryId);
@@ -689,6 +690,27 @@ public class SNEEController implements SNEE {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN addServiceSource()");
 
+	}
+	
+	
+	
+	public void giveAutonomicManagerQuery(String query)
+	{
+	  _dispatcher.giveAutonomicManagerQuery(query);
+	}
+	
+	public void runSimulatedNodeFailure(ArrayList<String> failedNodesID) 
+	throws 
+	MalformedURLException, SNEEConfigurationException, 
+	OptimizationException, SchemaMetadataException, 
+	TypeMappingException, AgendaException, SNEEException, 
+	MetadataException, UnsupportedAttributeTypeException, 
+	SourceMetadataException, TopologyReaderException, 
+	SNEEDataSourceException, CostParametersException, 
+	SNCBException, SNEECompilerException, IOException, 
+	CodeGenerationException
+	{
+	  _dispatcher.runSimulatedNodeFailure(failedNodesID);
 	}
 	
 	public MetadataManager getMetaData()

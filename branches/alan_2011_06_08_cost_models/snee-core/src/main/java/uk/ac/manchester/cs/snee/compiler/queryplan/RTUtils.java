@@ -132,7 +132,7 @@ public class RTUtils extends PAFUtils {
 	    {
 	      String key = siteIter.next();
 	      Site site = (Site) this.rt.siteTree.getAllNodes().get(key);
-	      out.println("Site:" + site.getID() + " ( " + site.toString() + "):  \n inputs:" );
+	      out.println("Site:" + site.getID() + " ( " + site.toString() + "): source:" + site.isSource() + "  \n inputs:" );
 	      Iterator<Node> inputIterator = site.getInputsList().iterator();
 	      while(inputIterator.hasNext())
 	      {

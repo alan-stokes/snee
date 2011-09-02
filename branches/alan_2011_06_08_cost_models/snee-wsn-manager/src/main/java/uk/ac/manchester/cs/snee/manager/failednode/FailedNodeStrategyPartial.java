@@ -75,7 +75,6 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
                                     boolean timePinned)
   {
     super(autonomicManager, _metadata);
-    setUpFolders(manager);
     this.spacePinned = spacePinned;
     this.timePinned = timePinned;
     this.timePinned = false; 
@@ -88,7 +87,6 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
   throws SchemaMetadataException 
   {
     this.qep = (SensorNetworkQueryPlan) oldQep;
-    new FailedNodeStrategyPartialUtils(this).outputTopologyAsDotFile(partialFolder,  sep + "topology.dot");
     this.oldIOT = qep.getIOT();
     oldIOT.setID("OldIOT");
     this.oldAgenda = this.qep.getAgendaIOT();
@@ -113,6 +111,8 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
   CostParametersException, SNCBException 
   { 
     System.out.println("Running Failed Node FrameWork Partial"); 
+    setUpFolders(manager);
+    new FailedNodeStrategyPartialUtils(this).outputTopologyAsDotFile(partialFolder,  sep + "topology.dot");
     //setup collectors
     PAF paf = oldIOT.getPAF(); 
     ArrayList<RT> routingTrees = new ArrayList<RT>();

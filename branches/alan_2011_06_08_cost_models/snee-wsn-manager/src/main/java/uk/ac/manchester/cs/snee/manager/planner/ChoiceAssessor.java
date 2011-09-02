@@ -420,4 +420,10 @@ public class ChoiceAssessor
       }
     }
   }
+
+  public void updateStorageLocation(File outputFolder)
+  {
+   this.outputFolder = outputFolder;
+    
+  }
 }

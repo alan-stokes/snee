@@ -74,10 +74,25 @@ public class MetaSteinerTree
       container.getSteinerTree().setRoot(container.getSteinerTree().getNode(desiredSinkID));
     }
     container.getSteinerTree().updateNodesAndEdgesColls(container.getSteinerTree().getRoot());
+    finalCheckForSourceNodes(container.getSteinerTree(), sources, paf);
     return container.getSteinerTree();
   }
 
-  /**
+  public static void finalCheckForSourceNodes(Tree steinerTree,
+		ArrayList<String> sources, PAF paf)
+  {
+    Iterator<Node> nodeIterator = steinerTree.nodeIterator(TraversalOrder.POST_ORDER);
+    while(nodeIterator.hasNext())
+    {
+      Site node = (Site) nodeIterator.next();
+      if(sources.contains(node.getID()))
+      {
+        node.setIsSource(true);
+      } 
+    }
+  }
+
+/**
    * update all nodes in tree in post order so that correct values used.
    * @param steinerTree
    * @param oldRoutingTree 
@@ -182,8 +197,6 @@ public class MetaSteinerTree
     if(!treeContainsSiteID(firstSite.getID(),  container.getSteinerTree()))
     {
       firstSite = new Site(firstSite);
-      if(sources.contains(firstSite.getID()))
-          firstSite.setIsSource(true);
       container.getSteinerTree().addNode(firstSite);
     }
     else
@@ -198,8 +211,6 @@ public class MetaSteinerTree
       if(!treeContainsSiteID(secondSite.getID(),  container.getSteinerTree()))
       {
         Site newSecond = new Site(secondSite);
-        if(sources.contains(newSecond.getID()))
-          newSecond.setIsSource(true);
         newSecond.addInput(firstSite);
         firstSite.addOutput(newSecond);
         container.getSteinerTree().addNode(newSecond);

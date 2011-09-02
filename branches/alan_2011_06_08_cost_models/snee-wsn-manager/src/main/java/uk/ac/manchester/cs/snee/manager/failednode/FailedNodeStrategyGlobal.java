@@ -60,8 +60,6 @@ public class FailedNodeStrategyGlobal extends StrategyAbstract
   {
     super(manager, _metadata);
     this._metadataManager = _metadataManager;
-    globalFile = new File(outputFolder.toString() + sep + "global Stragety");
-    globalFile.mkdir();
     cloner = new Cloner();
     cloner.dontClone(Logger.class);
   }
@@ -106,6 +104,8 @@ public class FailedNodeStrategyGlobal extends StrategyAbstract
 	
 	{
 	  System.out.println("Running Failed Node FrameWork Global");
+    globalFile = new File(outputFolder.toString() + sep + "global Stragety");
+    globalFile.mkdir();
 	  List<Adaptation> adaptation = new ArrayList<Adaptation>();
 	  Adaptation adapt = new Adaptation(qep, StrategyID.FAILED_NODE_GLOBAL, 1);
 	  //remove nodes from topology

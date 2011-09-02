@@ -14,7 +14,7 @@ optNumScenarios = 30
 optOutputDir1 = os.getenv('HOME')+os.sep+"tmp"+os.sep+"results"+os.sep+"scenarios1"
 
 #Scenarios 2
-optPercentSources = [25,50]
+optPercentSources = [6,25]
 optRValues = [1, 6, 30]
 optNumNetworksPerNetworkType = 5
 optOutputDir2 = os.getenv('HOME')+os.sep+"tmp"+os.sep+"results"+os.sep+"scenarios2"

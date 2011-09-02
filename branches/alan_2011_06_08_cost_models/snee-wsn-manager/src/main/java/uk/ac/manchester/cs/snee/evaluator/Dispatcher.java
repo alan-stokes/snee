@@ -290,28 +290,25 @@ public class Dispatcher {
     sncb.waitForQueryEnd();
     
   }
+  
   public void giveAutonomicManagerQuery(String query)
   {
     _autonomicManager.setQuery(query);
     
   }
 
-  public void giveAutonomicManagerQuery(String query,
-      ArrayList<String> failedNodesID) 
+  public void runSimulatedNodeFailure(ArrayList<String> failedNodesID) 
   throws 
   MalformedURLException, SNEEConfigurationException, 
   OptimizationException, SchemaMetadataException, 
-  TypeMappingException, AgendaException, 
-  SNEEException, MetadataException, 
-  UnsupportedAttributeTypeException, SourceMetadataException, 
-  TopologyReaderException, SNEEDataSourceException, 
-  CostParametersException, SNCBException, 
-  SNEECompilerException, IOException, 
+  TypeMappingException, AgendaException, SNEEException, 
+  MetadataException, UnsupportedAttributeTypeException, 
+  SourceMetadataException, TopologyReaderException, 
+  SNEEDataSourceException, CostParametersException, 
+  SNCBException, SNEECompilerException, IOException, 
   CodeGenerationException
   {
-    _autonomicManager.setQuery(query);
     _autonomicManager.runFailedNodeFramework(failedNodesID);
-    
   }
 
 }

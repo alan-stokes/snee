@@ -83,7 +83,8 @@ public class RT extends SNEEAlgebraicForm {
      * @param queryName the name of the routing tree
      * @param inRootSite the sink node for the query
      */
-	public RT(PAF paf, final String queryName, final Tree rt, final Topology network) {
+	public RT(PAF paf, final String queryName, final Tree rt, final Topology network) 
+	{
 		super(queryName);
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER RT()"); 
