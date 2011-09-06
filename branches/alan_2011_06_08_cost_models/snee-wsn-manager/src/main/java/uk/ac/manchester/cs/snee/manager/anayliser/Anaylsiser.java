@@ -250,12 +250,18 @@ public class Anaylsiser
   	//create adaparatation array
   	List<Adaptation> adapatations = new ArrayList<Adaptation>();
   	Iterator<StrategyAbstract> frameworkIterator = frameworks.iterator();
+  	boolean feasiable = true;
   	//go though methodologyies till located a adapatation.
-  	while(frameworkIterator.hasNext())
+  	while(frameworkIterator.hasNext() && feasiable)
   	{
   	  StrategyAbstract framework = frameworkIterator.next();
   	  if(framework.canAdaptToAll(failedNodes))
-  	    adapatations.addAll(framework.adapt(failedNodes));
+  	  {
+  	    List<Adaptation> frameworkOutput = framework.adapt(failedNodes);
+  	    if(frameworkOutput.size() == 0 && framework instanceof FailedNodeStrategyGlobal)
+  	      feasiable = false;
+  	    adapatations.addAll(frameworkOutput);
+  	  }
   	  else
   	  {
   	    if(framework instanceof FailedNodeStrategyLocal)

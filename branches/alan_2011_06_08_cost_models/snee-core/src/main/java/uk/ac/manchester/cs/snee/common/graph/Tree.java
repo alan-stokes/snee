@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
@@ -44,12 +45,13 @@ public class Tree extends Graph {
   {
     super();
   }
-
+	
   /**
 	 * Updates the nodes and edges collections according to the tree 
 	 * passed to it.  Call this if you've updated the tree by adding nodes
 	 * directly to other nodes.
 	 * @param node The current operator being processed
+   * @param paf 
 	 */
 	public void updateNodesAndEdgesColls(Node node) {
 		if (logger.isDebugEnabled())

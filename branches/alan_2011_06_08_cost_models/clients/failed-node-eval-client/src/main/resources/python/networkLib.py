@@ -233,6 +233,28 @@ class Field(object):
 		
 		
 	
+	def generateTopDotFile(self, fname):
+		self.updateEdges()
+	
+		outFile = open(fname, 'w')
+                outFile.writelines("""digraph "sensornet-topology" {
+label = "";
+rankdir="BT";""")
+                numNodes = len(self.nodes.keys())
+		for i in range(0,numNodes):
+			connected = False
+			for j in range(i,numNodes):
+				if (i>=j):
+					continue
+
+				if self.edges[i].has_key(j):					
+					txPowerSetting = self.edges[i][j]
+					dist = self.getDistance(i, j)
+                                        line = "\"%d\"->\"%d\" [arrowhead = \"both\"] \n"
+					outFile.writelines(line % (i, j))
+                outFile.writelines("""}""")
+                outFile.close()
+
 	#Creates a file with network in Sneeql QoS-aware format (with energy/latency associated with each radio link)
 	def generateSneeqlNetFile(self, fname):
 		self.updateEdges()

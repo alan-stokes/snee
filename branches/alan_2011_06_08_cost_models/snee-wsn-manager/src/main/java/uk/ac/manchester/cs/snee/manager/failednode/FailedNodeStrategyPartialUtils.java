@@ -9,6 +9,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyUtils;
 
 /**
  *@author stokesa6
@@ -60,7 +61,7 @@ public class FailedNodeStrategyPartialUtils
       
       File topFolder = new File(outputFolder.toString() + sep + "Topology");
       topFolder.mkdir();
-      ad.getWsnTopology().exportAsDOTFile(topFolder.toString() + string);
+      new TopologyUtils(ad.getWsnTopology()).exportAsDOTFile(topFolder.toString() + string);
     }
     catch (SchemaMetadataException e)
     {

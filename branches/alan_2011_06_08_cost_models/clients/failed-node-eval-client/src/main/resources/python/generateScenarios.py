@@ -209,6 +209,7 @@ def generateSpiderNetwork(numNodes, rValue, networkId, outputDir):
     f.trimEdgesRandomlyToMeetAverageDegree(6) #TODO: unhardcode this	
     f.generateSneeqlNetFile(outputDir+os.sep+networkId+".xml")
     f.generateTopFile(outputDir+os.sep+networkId+".top")
+    f.generateTopDotFile(outputDir+os.sep+networkId+".dot")
 
 def generateLogicalSchema(extentList, logicalSchemaId, outputDir):
     numExtents = len(extentList)
@@ -377,8 +378,6 @@ def generateScenarios2(numScenarios, numNodes, outputDir, scenariosFile):
 
     outFile = open(outputDir+os.sep+scenariosFile, 'w')
     outFile.writelines("scenarioId,queryId,networkId,numNodes,rValue,schemaId,percentSources\n")
-    if os.path.exists(outputDir+os.sep+"queries"+".txt"):
-    	os.remove(outputDir+os.sep+"queries"+".txt")
 
     for i in range(30, numScenarios*2):
         percentSources = random.randrange(30, 100, 1)
@@ -409,8 +408,6 @@ def generateScenarios3(numScenarios, numNodes, outputDir, scenariosFile):
 
     outFile = open(outputDir+os.sep+scenariosFile, 'w')
     outFile.writelines("scenarioId,queryId,networkId,numNodes,rValue,schemaId,percentSources\n")
-    if os.path.exists(outputDir+os.sep+"queries"+".txt"):
-    	os.remove(outputDir+os.sep+"queries"+".txt")
 
     for i in range(60, numScenarios*3):
         percentSources = random.randrange(30, 100, 1)
@@ -441,8 +438,6 @@ def generateScenarios4(numScenarios, numNodes, outputDir, scenariosFile):
 
     outFile = open(outputDir+os.sep+scenariosFile, 'w')
     outFile.writelines("scenarioId,queryId,networkId,numNodes,rValue,schemaId,percentSources\n")
-    if os.path.exists(outputDir+os.sep+"queries"+".txt"):
-    	os.remove(outputDir+os.sep+"queries"+".txt")
 
     for i in range(90, numScenarios*4):
         percentSources = random.randrange(30, 100, 1)

@@ -742,4 +742,9 @@ public class SNEEController implements SNEE {
   {
 	 _nextQueryID = 1;
   }
+  
+  public void setQueryID(int newqueryID)
+  {
+    _nextQueryID = newqueryID;
+  }
 }

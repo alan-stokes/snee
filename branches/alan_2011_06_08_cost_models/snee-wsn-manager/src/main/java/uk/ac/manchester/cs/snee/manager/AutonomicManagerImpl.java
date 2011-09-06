@@ -186,11 +186,14 @@ public class AutonomicManagerImpl implements AutonomicManager
     planner.updateStorageLocation(outputFolder);
     removeFailedNodesFromRunningNodes(failedNodes);
     List<Adaptation> choices = anyliser.runFailedNodeStragities(failedNodes);
-    new AdaptationUtils(choices, _metadataManager.getCostParameters()).FileOutput(outputFolder);
-    new AdaptationUtils(choices, _metadataManager.getCostParameters()).systemOutput();
-    Adaptation finalChoice = planner.assessChoices(choices);
-    new AdaptationUtils(finalChoice,  _metadataManager.getCostParameters()).FileOutputFinalChoice(outputFolder);
-    executer.adapt(finalChoice);
+    if(choices.size() !=0)
+    {
+      new AdaptationUtils(choices, _metadataManager.getCostParameters()).FileOutput(outputFolder);
+      new AdaptationUtils(choices, _metadataManager.getCostParameters()).systemOutput();
+      Adaptation finalChoice = planner.assessChoices(choices);
+      new AdaptationUtils(finalChoice,  _metadataManager.getCostParameters()).FileOutputFinalChoice(outputFolder);
+      executer.adapt(finalChoice);
+    }
     adaptionCount++;
     //newQEP.getIOT().exportAsDotFileWithFrags(fname, label, exchangesOnSites)
     //new AgendaIOTUtils( newQEP.getAgendaIOT(), newQEP.getIOT(), true).generateImage();

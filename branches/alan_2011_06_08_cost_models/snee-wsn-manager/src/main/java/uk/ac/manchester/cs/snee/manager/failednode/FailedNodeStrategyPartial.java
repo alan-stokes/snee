@@ -7,6 +7,7 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
@@ -19,6 +20,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
+import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
@@ -26,6 +28,7 @@ import uk.ac.manchester.cs.snee.manager.StrategyAbstract;
 import uk.ac.manchester.cs.snee.manager.StrategyID;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.CandiateRouter;
+import uk.ac.manchester.cs.snee.manager.failednode.metasteiner.MetaSteinerTreeException;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -34,6 +37,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
@@ -46,6 +50,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Logger;
 
 import com.rits.cloning.Cloner;
@@ -101,6 +106,7 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
 
   /**
    * MAIN METHOD TO ENTER PATIAL ADAPTATION
+   * @throws  
    */
   @Override
   public List<Adaptation> adapt(ArrayList<String> failedNodes) 
@@ -118,7 +124,14 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
     ArrayList<RT> routingTrees = new ArrayList<RT>();
     ArrayList<String> disconnectedNodes = new ArrayList<String>();
     //create new routing tree
-    routingTrees = createNewRoutingTrees(failedNodes, disconnectedNodes, paf, oldIOT.getRT(), partialFolder );
+    try
+    {
+      routingTrees = createNewRoutingTrees(failedNodes, disconnectedNodes, paf, oldIOT.getRT(), partialFolder );
+    }
+    catch (RouterException e)
+    {
+      e.printStackTrace();
+    }
 
     //create store for all adapatations
     List<Adaptation> totalAdapatations = new ArrayList<Adaptation>();
@@ -145,10 +158,13 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
    * @param disconnectedNodes
    * @throws SNEEConfigurationException 
    * @throws NumberFormatException 
+   * @throws RouterException 
    */
-  private void chooseDisconnectedNode(IOT oldIOT2, ArrayList<String> failedNodes,
+  private void chooseDisconnectedNode(IOT oldIOT, ArrayList<String> failedNodes,
                                       ArrayList<String> disconnectedNodes) 
-  throws NumberFormatException, SNEEConfigurationException
+  throws 
+  NumberFormatException, SNEEConfigurationException, 
+  RouterException
   {
     Router router = new Router();
     //remove failed nodes out of new topology.
@@ -160,6 +176,7 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
       String nodeID = failedNodeIterator.next();
       network.removeNode(nodeID);
     }
+    
     RT globalRT = router.doRouting(qep.getDAF().getPAF(), qep.getQueryName(), network, _metadata);
     ArrayList<Integer> globalSiteIDs = globalRT.getSiteIDs();
     ArrayList<Integer> qepSiteIDs = qep.getRT().getSiteIDs();
@@ -170,10 +187,38 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
     while(qepSiteIterator.hasNext() && !found)
     {
       nextSite = qepSiteIterator.next();
-      if(!globalSiteIDs.contains(nextSite))
+      if(!globalSiteIDs.contains(nextSite) && 
+         !disconnectedNodes.contains(new Integer(nextSite).toString()) &&
+         !failedNodes.contains(new Integer(nextSite).toString()))
         found = true;
     }
-    disconnectedNodes.add(nextSite.toString()); 
+    if(!found)
+    {
+      boolean foundParent = false;
+      while(!foundParent)
+      {
+        Iterator<String> failedNodeIDIterator = failedNodes.iterator();
+        while(failedNodeIDIterator.hasNext() && !foundParent)
+        {
+          String failedNodeId = failedNodeIDIterator.next();
+          Site failedSite = oldIOT.getRT().getSite(failedNodeId);
+          Node parent = failedSite.getOutput(0);
+          while(parent != null && !foundParent)
+          {
+            if(!disconnectedNodes.contains(parent.getID()) &&
+               !failedNodes.contains(parent.getID()))
+            {
+              disconnectedNodes.add(parent.getID());
+              foundParent = true;
+            }  
+          }
+        }
+      }
+    }
+    else
+    {
+      disconnectedNodes.add(nextSite.toString()); 
+    }
   }
 
   /**
@@ -297,25 +342,62 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
    * @throws SNEEConfigurationException 
    * @throws NumberFormatException 
    * @throws SchemaMetadataException 
+   * @throws RouterException 
+   * @throws MetaSteinerTreeException 
    */
   private ArrayList<RT> createNewRoutingTrees(ArrayList<String> failedNodes, 
       ArrayList<String> disconnectedNodes, PAF paf, RT oldRoutingTree, File outputFolder) 
   throws 
   NumberFormatException, SNEEConfigurationException, 
-  SchemaMetadataException, SNEECompilerException
+  SchemaMetadataException, SNEECompilerException, RouterException
   {
-    ArrayList<RT> routes = new ArrayList<RT>();
     Topology network = this.getWsnTopology();
     CandiateRouter router = new CandiateRouter(network, outputFolder);
-    while(routes.size() == 0)
-    {  
-      routes = router.generateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, "", numberOfRoutingTreesToWorkOn);
+    return genereateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, "", 
+                            numberOfRoutingTreesToWorkOn, router);
+  }
+
+  /**
+   * recursive method which repeats itself till it finds a set of failed 
+   * and disconnected nodes which allow new routes to be generated
+   * @param oldRoutingTree
+   * @param failedNodes
+   * @param disconnectedNodes
+   * @param queryName
+   * @param numberOfRoutingTreesToWorkOn
+   * @param router
+   * @return
+   * @throws SchemaMetadataException
+   * @throws NumberFormatException
+   * @throws SNEEConfigurationException
+   * @throws RouterException
+   */
+  private ArrayList<RT> genereateRoutes(RT oldRoutingTree, ArrayList<String> failedNodes, 
+                                         ArrayList<String> disconnectedNodes, String queryName, 
+                                         Integer numberOfRoutingTreesToWorkOn, CandiateRouter router) 
+  throws SchemaMetadataException, NumberFormatException, SNEEConfigurationException, RouterException
+  {
+    ArrayList<RT> routes = new ArrayList<RT>();
+    try
+    {
+      routes = router.generateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, 
+                                     queryName, numberOfRoutingTreesToWorkOn);
       if(routes.size() == 0)
       {
         chooseDisconnectedNode(oldIOT, failedNodes, disconnectedNodes);
+        System.out.println("No routes avilable, so disconnecting nodes" + disconnectedNodes.toString());
+        return genereateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, queryName, 
+                               numberOfRoutingTreesToWorkOn, router);
       }
+      return routes;
     }
-    return routes;
+    catch(Exception e)
+    {
+      chooseDisconnectedNode(oldIOT, failedNodes, disconnectedNodes);
+      System.out.println("No routes avilable, so disconnecting nodes" + disconnectedNodes.toString());
+      return genereateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, queryName, 
+                             numberOfRoutingTreesToWorkOn, router);
+    }
   }
 
   /**
@@ -356,7 +438,8 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
       }
       else
       {
-        if(!(physicalOperator instanceof SensornetAcquireOperator))
+        if(!(physicalOperator instanceof SensornetAcquireOperator) && 
+           failedNodes.contains(instanceOperator.getSite().getID()))
           opsOnFailedNode.add(((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())));
       }
     }

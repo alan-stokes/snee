@@ -28,6 +28,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
@@ -89,6 +90,7 @@ public abstract class StrategyAbstract
    * failed node. 
    * @param nodeID the id for the failed node of the query plan
    * @return new query plan which has now adjusted for the failed node.
+   * @throws RouterException 
    */
   public abstract List<Adaptation> adapt(ArrayList<String> failedNodes)  
   throws OptimizationException, SchemaMetadataException, 
@@ -237,27 +239,30 @@ public abstract class StrategyAbstract
                              Adaptation ad, TemporalAdjustment adjust)
   {
     affectedSites.add((Site) start);
-    Task comm = newAgenda.getTransmissionTask(start); 
-    ArrayList<Node> sites =  newAgenda.sitesWithTransmissionTasksAfterTime(comm.getStartTime());
-    Iterator<Node> siteIterator = sites.iterator();
-    while(siteIterator.hasNext())
+    if(!newAgenda.getIOT().getRT().getRoot().getID().equals(start.getID()))
     {
-      start = siteIterator.next();
-      ArrayList<Site> allAffectedSites = ad.getSitesAffectedByAllTemporalChanges();
-      if(allAffectedSites.contains(start))
+      Task comm = newAgenda.getTransmissionTask(start); 
+      ArrayList<Node> sites =  newAgenda.sitesWithTransmissionTasksAfterTime(comm.getStartTime());
+      Iterator<Node> siteIterator = sites.iterator();
+      while(siteIterator.hasNext())
       {
-        TemporalAdjustment otherAdjust = ad.getAdjustmentContainingSite((Site) start);
-        if(otherAdjust.getAdjustmentDuration() < adjust.getAdjustmentDuration())
+        start = siteIterator.next();
+        ArrayList<Site> allAffectedSites = ad.getSitesAffectedByAllTemporalChanges();
+        if(allAffectedSites.contains(start))
         {
-          affectedSites.add((Site) start);
-          otherAdjust.removeSiteFromAffectedSites((Site) start);
+          TemporalAdjustment otherAdjust = ad.getAdjustmentContainingSite((Site) start);
+          if(otherAdjust.getAdjustmentDuration() < adjust.getAdjustmentDuration())
+          {
+            affectedSites.add((Site) start);
+            otherAdjust.removeSiteFromAffectedSites((Site) start);
+          }
         }
-      }
-      else
-      {
-        affectedSites.add((Site) start); 
-      }
-    }    
+        else
+        {
+          affectedSites.add((Site) start); 
+        }
+      }   
+    }
   }
 
   /**
@@ -283,8 +288,16 @@ public abstract class StrategyAbstract
     //if failed site not got a direct communication between itself and the parent, look for a parent of the failed node which does
     while(commTimeOld == null)
     {
-      failedSite = oldAgenda.getTransmissionTask(failedSite).getDestNode();
-      commTimeOld = oldAgenda.getCommunicationTaskBetween(failedSite, parent);
+      //needs to distinguqise between sink and other nodes
+      if(!failedSite.getID().equals(oldAgenda.getIOT().getRT().getRoot().getID()))
+      {
+        failedSite = oldAgenda.getTransmissionTask(failedSite).getDestNode();
+        commTimeOld = oldAgenda.getCommunicationTaskBetween(failedSite, parent);
+      }
+      else
+      {
+        commTimeOld = oldAgenda.taskIterator(oldAgenda.getIOT().getRT().getRoot()).next();
+      }
     }
     long commStartTime = commTask.getStartTime();
     long commOldStartTime = commTimeOld.getStartTime();

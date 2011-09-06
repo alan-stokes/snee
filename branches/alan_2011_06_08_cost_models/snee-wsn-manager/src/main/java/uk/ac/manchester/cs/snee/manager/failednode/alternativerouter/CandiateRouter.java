@@ -22,10 +22,13 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
+import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.manager.failednode.metasteiner.MetaSteinerTree;
+import uk.ac.manchester.cs.snee.manager.failednode.metasteiner.MetaSteinerTreeException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyUtils;
 
 public class CandiateRouter extends Router
 {
@@ -64,10 +67,15 @@ public class CandiateRouter extends Router
    * @param numberOfRoutingTreesToWorkOn 
    * @return
    * @throws SchemaMetadataException 
+   * @throws MetaSteinerTreeException 
+   * @throws RouterException 
    */
   
   public ArrayList<RT> generateRoutes(RT oldRoutingTree, ArrayList<String> failedNodes, 
-                                     ArrayList<String> disconnectedNodes, String queryName, Integer numberOfRoutingTreesToWorkOn) throws SchemaMetadataException
+                                     ArrayList<String> disconnectedNodes, String queryName, 
+                                     Integer numberOfRoutingTreesToWorkOn)                                
+  throws 
+  SchemaMetadataException, MetaSteinerTreeException, RouterException
   {
     //container for new routeing trees
     ArrayList<RT> newRoutingTrees = new ArrayList<RT>();
@@ -91,10 +99,11 @@ public class CandiateRouter extends Router
       ArrayList<String> setofLinkedFailedNodes = failedNodeLinks.get(key);
       //sources used as a carrier to retrieve all input nodes
       ArrayList<String> sources = new ArrayList<String>();
-      String sink = removeExcessNodesAndEdges(workingTopology, oldRoutingTree, setofLinkedFailedNodes, sources);
+      String sink = removeExcessNodesAndEdges(workingTopology, oldRoutingTree, 
+                                              setofLinkedFailedNodes, disconnectedNodes, sources);
       
       //output reduced topology for help in keeping track of progress
-      workingTopology.exportAsDOTFile(chainFolder.toString() + sep + "reducedtopology");
+      new TopologyUtils(workingTopology).exportAsDOTFile(chainFolder.toString() + sep + "reducedtopology");
 
       //calculate different routes around linked failed site.
       ArrayList<Tree> routesForFailedNode = 
@@ -106,7 +115,7 @@ public class CandiateRouter extends Router
     }
     //merges new routes to create whole entire routingTrees
     newRoutingTrees =  mergeSections(failedNodeToRoutingTreeMapping, oldRoutingTree, 
-                                     failedNodes, numberOfRoutingTreesToWorkOn);
+                                     failedNodes, numberOfRoutingTreesToWorkOn, disconnectedNodes);
     outputcompleteTrees(newRoutingTrees, outputFolder);
     return newRoutingTrees;
   }
@@ -138,11 +147,14 @@ public class CandiateRouter extends Router
    * @param oldRoutingTree
    * @param failedNodes 
    * @param numberOfRoutingTreesToWorkOn 
+   * @param disconnectedNodes 
    * @return
    */
   private ArrayList<RT> mergeSections(
-      HashMapList<Integer, Tree> failedNodeToRoutingTreeMapping,
-      RT oldRoutingTree, ArrayList<String> failedNodes, Integer numberOfRoutingTreesToWorkOn)
+                                      HashMapList<Integer, Tree> failedNodeToRoutingTreeMapping,
+                                      RT oldRoutingTree, ArrayList<String> failedNodes, 
+                                      Integer numberOfRoutingTreesToWorkOn, 
+                                      ArrayList<String> disconnectedNodes)
   {
     int counter = 0;
     ArrayList<RT> newRoutingTrees = new ArrayList<RT>();
@@ -150,7 +162,7 @@ public class CandiateRouter extends Router
     Random randomiser = new Random();
     long max = calcuateMaxTrees(failedNodeToRoutingTreeMapping);
     RT clonedOldRoutingTree = cloner.deepClone(oldRoutingTree);
-    removeFailedNodesFromOldRT(clonedOldRoutingTree, failedNodes);
+    removeFailedNodesFromOldRT(clonedOldRoutingTree, failedNodes, disconnectedNodes);
     while(counter < numberOfRoutingTreesToWorkOn && counter < max)
     {
 
@@ -164,6 +176,8 @@ public class CandiateRouter extends Router
         connectChildAndParent(newRoutingTree, choice);
         updateNodesEdgeArray(choice, newRoutingTree);
       }
+      new RTUtils(newRoutingTree).exportAsDotFile("sod");
+      newRoutingTree.getSiteTree().updateNodesAndEdgesColls(newRoutingTree.getRoot());
       //store new routingTree
       newRoutingTrees.add(newRoutingTree);
       first = false;
@@ -236,9 +250,7 @@ public class CandiateRouter extends Router
       }
       choiceParent.removeInput(choiceChild);
       choiceParent.addInput(treeChild);
-    } 
-    newRoutingTree.getSiteTree().updateNodesAndEdgesColls(newRoutingTree.getRoot());
-    
+    }   
   }
 
   /**
@@ -264,10 +276,12 @@ public class CandiateRouter extends Router
    * creates a disconnected routing tree, leaving holes to be filled in with calculated trees.
    * @param oldRoutingTree
    * @param failedNodes
+   * @param disconnectedNodes 
    */
   private void removeFailedNodesFromOldRT(RT oldRoutingTree,
-      ArrayList<String> failedNodes)
+      ArrayList<String> failedNodes, ArrayList<String> disconnectedNodes)
   {
+    
     //iterate over failed nodes removing one by one
     Iterator<String> failedNodeIterator = failedNodes.iterator();
     while(failedNodeIterator.hasNext())
@@ -286,6 +300,8 @@ public class CandiateRouter extends Router
       }
       oldRoutingTree.getSiteTree().removeNode(toRemove.getID());
     }
+    
+    
     //clear all operators off sites
     Iterator<Node> nodeIterator = oldRoutingTree.getSiteTree().getNodes().iterator();
     while(nodeIterator.hasNext())
@@ -343,24 +359,22 @@ public class CandiateRouter extends Router
    * @param oldRoutingTree 
    * @param outputFolder 
    * @return
+   * @throws MetaSteinerTreeException 
+   * @throws RouterException 
    */
   private ArrayList<Tree> createRoutes(Topology workingTopology,
       Integer numberOfRoutingTreesToWorkOn, ArrayList<String> sources, String sink, PAF paf, 
-      RT oldRoutingTree, File outputFolder)
+      RT oldRoutingTree, File outputFolder) 
+  throws
+  MetaSteinerTreeException, RouterException
   {
     ArrayList<Tree> routes = new ArrayList<Tree>();
     Tree steinerTree = null;
-    try
-    {//checks that global route can generate a route between nodes.
-      steinerTree = computeSteinerTree(workingTopology, sink, sources, paf); 
-      new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
-      new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
-      routes.add(steinerTree);
-    }
-    catch(Exception e)//no routes, hand up empty set
-    {
-      return routes;
-    }
+    //checks that global route can generate a route between nodes.
+    steinerTree = computeSteinerTree(workingTopology, sink, sources, paf); 
+    new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
+    new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
+    routes.add(steinerTree);
     //container for currently tested heuristics
     ArrayList<HeuristicSet> testedHeuristics = new ArrayList<HeuristicSet>();  
     while(routes.size() < numberOfRoutingTreesToWorkOn)
@@ -518,9 +532,11 @@ public class CandiateRouter extends Router
    * @param sink
    * @param sources
    * @return
+   * @throws RouterException 
    */
   private Tree computeSteinerTree(Topology workingTopology, String sink,
-      ArrayList<String> sources, PAF paf)
+      ArrayList<String> sources, PAF paf) 
+  throws RouterException
   {
     int intSink = Integer.parseInt(sink);
     int [] intSources = new int[sources.size()];
@@ -548,11 +564,13 @@ public class CandiateRouter extends Router
   private HashMapList<Integer, String> createLinkedFailedNodes(
       ArrayList<String> failedNodes, ArrayList<String> disconnectedNodes, RT RT)
   {
+    ArrayList<String> combinedNodes = new ArrayList<String>();
+    combinedNodes.addAll(failedNodes);
+    combinedNodes.addAll(disconnectedNodes);
     HashMapList<Integer, String> failedNodeLinkedList = new HashMapList<Integer, String>();
     int currentLink = 0;
     ArrayList<String> alreadyInLink = new ArrayList<String>();
-    failedNodes.addAll(disconnectedNodes);
-    Iterator<String> oldFailedNodesIterator = failedNodes.iterator();
+    Iterator<String> oldFailedNodesIterator = combinedNodes.iterator();
     while(oldFailedNodesIterator.hasNext())
     {
       String failedNodeID = oldFailedNodesIterator.next();
@@ -560,7 +578,7 @@ public class CandiateRouter extends Router
       {
         Site failedSite = RT.getSite(failedNodeID);
         failedNodeLinkedList.add(currentLink, failedNodeID);
-        checkNodesChildrenAndParent(failedNodeLinkedList, alreadyInLink, failedSite, failedNodes, currentLink);
+        checkNodesChildrenAndParent(failedNodeLinkedList, alreadyInLink, failedSite, combinedNodes, currentLink);
         currentLink++;
       }
     }
@@ -608,8 +626,10 @@ public class CandiateRouter extends Router
    * @param setofLinkedFailedNodes
    * @param failedNodes 
    */
-  private String removeExcessNodesAndEdges(Topology workingTopology,
-      RT oldRoutingTree, ArrayList<String> setofLinkedFailedNodes, ArrayList<String> savedChildSites)
+  private String removeExcessNodesAndEdges(Topology workingTopology, RT oldRoutingTree, 
+                                           ArrayList<String> setofLinkedFailedNodes, 
+                                           ArrayList<String> disconnectedNodes, 
+                                           ArrayList<String> savedChildSites)
   {
     String savedParentSite = "";
     //locate all children of all failed nodes in link which are active, and place them into saved sites
@@ -636,7 +656,8 @@ public class CandiateRouter extends Router
     while(siteIterator.hasNext())
     {
       Site site = siteIterator.next();
-      if(!savedChildSites.contains(site.getID()) && !savedParentSite.equals(site.getID()))
+      if((!savedChildSites.contains(site.getID()) && !savedParentSite.equals(site.getID())) &&
+          !disconnectedNodes.contains(site.getID()))
       {
         workingTopology.removeNodeAndAssociatedEdges(site.getID());
       }

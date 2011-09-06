@@ -41,9 +41,11 @@ public class MetaSteinerTree
    * @param paf 
    * @param oldRoutingTree 
    * @return
+   * @throws MetaSteinerTreeException 
    */
   public Tree produceTree(HeuristicSet set, ArrayList<String> sources, 
       String desiredSinkID, Topology workingTopology, PAF paf, RT oldRoutingTree)
+  throws MetaSteinerTreeException
   {
     //create randomiser
     Random randomiser = new Random();
@@ -62,6 +64,10 @@ public class MetaSteinerTree
       
       //find route between child and parent.
       Path finalPath = weightedTopology.getShortestPath(container.getChildID(), container.getParentID(), set);
+      if(finalPath == null)
+        throw new MetaSteinerTreeException("no route between nodes " + container.getChildID() + "and" +
+                                           container.getParentID());
+      
       //link path into tree
       mergePathIntoTree(finalPath, bucket, container, sources);
       //update number of sources in all nodes in steiner tree

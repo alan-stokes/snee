@@ -27,6 +27,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
+import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
@@ -90,6 +91,7 @@ public class FailedNodeStrategyGlobal extends StrategyAbstract
 	/**
 	 * removes failed nodes from the network and then calls upon distributed section of compiler.
 	 * @throws SNEECompilerException 
+	 * @throws RouterException 
 	 */
 	@Override
 	public List<Adaptation> adapt(ArrayList<String> failedNodes)
@@ -124,7 +126,16 @@ public class FailedNodeStrategyGlobal extends StrategyAbstract
 		//shove though distributed section of compiler
 		//routing
 		Router router = new Router();
-		RT routingTree = router.doRouting(paf, qep.getQueryName(), network, _metadata);
+		RT routingTree;
+		//if no route generated, then return empty adapatation.
+    try
+    {
+      routingTree = router.doRouting(paf, qep.getQueryName(), network, _metadata);
+    }
+    catch (RouterException e1)
+    {
+      return adaptation;
+    }
 		//where
 		InstanceWhereSchedular instanceWhere = 
 		  new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), 

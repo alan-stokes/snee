@@ -16,6 +16,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -39,6 +40,7 @@ public class Router {
 	 * Random seed used by Steiner tree algorithm.
 	 */
 	int randomSeed = 4;
+	PAF paf;
 
 	/**
 	 * Constructor for Sensor Network Routing Decision Maker.
@@ -59,8 +61,11 @@ public class Router {
 	 * @param paf
 	 * @param queryName
 	 * @return
+	 * @throws RouterException 
 	 */
-	public RT doRouting(PAF paf, String queryName) {
+	public RT doRouting(PAF paf, String queryName) 
+	throws RouterException 
+	{
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER doRouting() with " + paf.getID());
 		//XXX: There is potentially one routing tree for each Sensor Network Source
@@ -70,6 +75,7 @@ public class Router {
 		Topology network = sm.getTopology();
 		int sink = sm.getGateway(); 
 		int[] sources = sm.getSourceSites(paf);
+		this.paf = paf;
 		Tree steinerTree = computeSteinerTree(network, sink, sources); 
 		RT rt = new RT(paf, queryName, steinerTree, network);
 		if (logger.isDebugEnabled())
@@ -84,8 +90,12 @@ public class Router {
 	 * @param network
 	 * @param _metadataManager 
 	 * @return
+	 * @throws RouterException 
 	 */
-	public RT doRouting(PAF paf, String queryName, Topology network, SourceMetadataAbstract _metadataManager) 
+	public RT doRouting(PAF paf, String queryName, Topology network, 
+	                    SourceMetadataAbstract _metadataManager) 
+	throws 
+	RouterException 
 	{
 	 if (logger.isDebugEnabled())
 	    logger.debug("ENTER doRouting() with " + paf.getID());
@@ -94,6 +104,7 @@ public class Router {
 	    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) _metadataManager;
 	    int sink = sm.getGateway(); 
 	    int[] sources = sm.getSourceSites(paf);
+	    this.paf = paf;
 	    Tree steinerTree = computeSteinerTree(network, sink, sources); 
 	    RT rt = new RT(paf, queryName, steinerTree, network);
 	    if (logger.isDebugEnabled())
@@ -108,9 +119,12 @@ public class Router {
 	 * @param sink
 	 * @param sources
 	 * @return
+	 * @throws RouterException 
 	 */
 	protected Tree computeSteinerTree(Topology network, final int sink, 
       final int[] sources) 
+	throws 
+	RouterException 
 	{
 	  return computeSteinerTree(network, sink, sources, true);
 	}
@@ -127,9 +141,13 @@ public class Router {
      * Simple algorithm used taken from "Protocols and Architectures from 
      * Wireless Sensor Networks" by Holger Karl and Andreas Willig,
      * page 309. 
+     * @throws RouterException 
      */
     protected Tree computeSteinerTree(Topology network, final int sink, 
-    		final int[] sources, boolean setUpSources) {
+    		final int[] sources, boolean setUpSources) 
+    throws 
+    RouterException 
+    {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER computeSteinerTree() with sink=" +sink+
 					" sources="+sources.toString());    	
@@ -164,6 +182,7 @@ public class Router {
 		    //get a source node at random
 		    final int randomPos = random.nextInt(nodesToAdd.size());
 		    final String sourceNodeID = nodesToAdd.get(randomPos);
+		    String destNode = null;
 		    nodesToAdd.remove(randomPos);
 	
 		    LinkCostMetric linkCostMetric = LinkCostMetric.RADIO_LOSS;
@@ -172,17 +191,20 @@ public class Router {
 				//the first time, get the path from the currentSource to the sink
 				shortestPath = network.getShortestPath(sourceNodeID, new Integer(
 					sink).toString(), linkCostMetric);
+				destNode = new Integer(sink).toString();
 				nodesAdded.add(new Integer(sink).toString());
 				first = false;
 	
 		    } else {
 				//add path from source node to a random destination node added to the steiner tree 
-				final String destNode = nodesAdded.get(random
+				destNode = nodesAdded.get(random
 					.nextInt(nodesAdded.size()));
 				shortestPath = network.getShortestPath(sourceNodeID, destNode, 
 						linkCostMetric);
 		    }
 		    
+		    if(shortestPath == null)
+		      throw new RouterException("no route between nodes " + sourceNodeID + " and " + destNode);
 		    //now traverse shortest path from the currentSource, adding edges to the steiner tree,
 		    //until you find a node already in the steiner tree
 		    String tmpPrev = sourceNodeID;

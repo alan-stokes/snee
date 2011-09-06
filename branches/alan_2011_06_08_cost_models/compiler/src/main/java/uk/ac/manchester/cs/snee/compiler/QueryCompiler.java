@@ -62,6 +62,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.rewriter.LogicalRewriter;
+import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.translator.Translator;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -178,7 +179,7 @@ public class QueryCompiler {
 	private QueryExecutionPlanAbstract doSourcePlanning(DLAF dlaf, QoSExpectations qos, 
 	int queryID) 
 	throws SNEEException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException,
-	OptimizationException, WhenSchedulerException {
+	OptimizationException, WhenSchedulerException, RouterException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER doSourcePlanning: " + dlaf);
 		SourcePlanner planner = new SourcePlanner(metadata);
@@ -212,13 +213,14 @@ public class QueryCompiler {
 	 * @throws ExpressionException 
 	 * @throws ExtentDoesNotExistException 
 	 * @throws SourceDoesNotExistException 
+	 * @throws RouterException 
 	 */
 	public QueryExecutionPlanAbstract compileQuery(int queryID, String query, 
 			QoSExpectations qos) 
 	throws SNEEException, TypeMappingException, SchemaMetadataException, OptimizationException, 
 	ParserException, RecognitionException, TokenStreamException, 
 	SNEEConfigurationException, SourceAllocatorException, WhenSchedulerException,
-	ExpressionException, SourceDoesNotExistException, ExtentDoesNotExistException 
+	ExpressionException, SourceDoesNotExistException, ExtentDoesNotExistException, RouterException 
 	 {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER: queryID: " + queryID + "\n\tquery: " + query);

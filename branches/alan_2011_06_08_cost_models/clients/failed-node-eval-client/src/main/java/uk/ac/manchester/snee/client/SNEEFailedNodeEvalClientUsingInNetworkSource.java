@@ -95,12 +95,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 		try
     {
       checkRecoveryFile();
-      if(!inRecoveryMode)
-      {
-        writeBeginningBlurb();
-      }
       runIxentsScripts();
-      
       
       //holds all 30 queries produced by python script.
       ArrayList<String> queries = new ArrayList<String>();
@@ -112,36 +107,58 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	   
 	    while(queryIterator.hasNext())
 	    {
-  		  //get query & schemas
-  		  String currentQuery = queryIterator.next();
-  		  String propertiesPath = "tests/snee" + queryid + ".properties";
-  		  
-        SNEEFailedNodeEvalClientUsingInNetworkSource client = 
-          new  SNEEFailedNodeEvalClientUsingInNetworkSource(currentQuery, duration, queryParams, null, propertiesPath);
-        
-        writeQueryToResultsFile(currentQuery);
-        testNo ++;
-        
-        //added to allow recovery from crash
-        actualTestNo = 0;
-        updateRecoveryFile();
-        
-        client.runCompilelation();
-        SensorNetworkQueryPlan currentQEP = client.getQEP();
-        qep = currentQEP;
-        routingTree = currentQEP.getRT();
-        System.out.println("ran control: success");
-        client.runTests(client, currentQuery, queryid);
-        queryid ++;
-        System.out.println("Ran all tests on query " + testNo);
+	      RecursiveRun(queryIterator, duration, queryParams);
       }
-	    writeLastResultsSection();
     } catch (Exception e)
     {
       System.out.println("Execution failed. See logs for detail.");
       logger.fatal(e);
       e.printStackTrace();
       System.exit(1);
+    }
+	}
+	
+	
+	private static void RecursiveRun(Iterator<String> queryIterator, Long duration, String queryParams) 
+	throws 
+	SNEEException, IOException, SNEEConfigurationException, 
+	SNEECompilerException, MetadataException, EvaluatorException,
+  OptimizationException, SQLException, UtilsException, 
+  SchemaMetadataException, TypeMappingException, AgendaException, 
+  UnsupportedAttributeTypeException, SourceMetadataException, 
+  TopologyReaderException, SNEEDataSourceException, 
+  CostParametersException, SNCBException, CodeGenerationException
+	{
+	//get query & schemas
+    String currentQuery = queryIterator.next();
+    String propertiesPath = "tests/snee" + queryid + ".properties";
+    
+    System.out.println("Running Tests on query " + (queryid + 1));
+    try
+    {
+      SNEEFailedNodeEvalClientUsingInNetworkSource client = 
+        new  SNEEFailedNodeEvalClientUsingInNetworkSource(currentQuery, duration, queryParams, null, propertiesPath);
+      //set queryid to correct id
+      SNEEController contol = (SNEEController) client.controller;
+      contol.setQueryID(queryid + 1);
+      //added to allow recovery from crash
+      updateRecoveryFile();
+      client.runCompilelation();
+      System.out.println("compiled control");
+      SensorNetworkQueryPlan currentQEP = client.getQEP();
+      qep = currentQEP;
+      routingTree = currentQEP.getRT();
+      System.out.println("running tests");
+      client.runTests(client, currentQuery, queryid);
+      queryid ++;
+      System.out.println("Ran all tests on query " + (queryid + 1));
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+      queryid ++;
+      System.out.println("tests failed for query " + queryid + " going onto query " + (queryid + 1));
+      RecursiveRun(queryIterator, duration, queryParams);
     }
 	}
 
@@ -208,22 +225,17 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
   private void runTests(SNEEFailedNodeEvalClientUsingInNetworkSource client, String currentQuery, 
                         int queryid) 
   throws 
-  SNEECompilerException, MetadataException, EvaluatorException, 
-  SNEEException, SNEEConfigurationException, IOException, 
-  OptimizationException, SQLException, UtilsException, 
-  SchemaMetadataException, TypeMappingException, AgendaException, 
-  UnsupportedAttributeTypeException, SourceMetadataException, 
-  TopologyReaderException, SNEEDataSourceException, CostParametersException, 
-  SNCBException, CodeGenerationException
+  Exception
   {
     
     updateSites(routingTree); 	 
     int noSites = siteIDs.size();
+    //no failed nodes, dont bother running tests
+    if(noSites == 0)
+      throw new Exception("no avilable nodes to fail");
     int position = 0;
-    ArrayList<String> deadNodes = new ArrayList<String>();
-    writeIncludeImageSection();
-    
-    chooseNodes(deadNodes, noSites, position, client, currentQuery, queryid);
+    ArrayList<String> deadNodes = new ArrayList<String>(); 
+    chooseNodes(deadNodes, noSites, position, client, currentQuery, queryid, true);
   }
 
   /**
@@ -236,10 +248,8 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
   throws SourceDoesNotExistException
   {
     actualTestNo = 0;
-    
     Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
     siteIDs.clear();
-    actualTestNo = 0;
     SNEEController snee = (SNEEController) controller;
     SourceMetadataAbstract metadata = snee.getMetaData().getSource(qep.getMetaData().getOutputAttributes().get(1).getExtentName());
     SensorNetworkSourceMetadata sensornetworkMetadata = (SensorNetworkSourceMetadata) metadata;
@@ -280,87 +290,45 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
    * @param client
    * @param currentQuery
    * @param queryid2 
-   * @throws SNEECompilerException
-   * @throws MetadataException
-   * @throws EvaluatorException
-   * @throws SNEEException
-   * @throws SNEEConfigurationException
-   * @throws IOException
-   * @throws OptimizationException
-   * @throws SQLException
-   * @throws UtilsException
-   * @throws SchemaMetadataException
-   * @throws TypeMappingException
-   * @throws AgendaException
-   * @throws UnsupportedAttributeTypeException
-   * @throws SourceMetadataException
-   * @throws TopologyReaderException
-   * @throws SNEEDataSourceException
-   * @throws CostParametersException
-   * @throws SNCBException
-   * @throws CodeGenerationException
+   * @throws Exception 
    */
   private static void chooseNodes(ArrayList<String> deadNodes, int noSites,
       int position, SNEEFailedNodeEvalClientUsingInNetworkSource client, String currentQuery, 
-      int queryid) 
+      int queryid, boolean first) 
   throws 
-  SNEECompilerException, MetadataException, EvaluatorException, 
-  SNEEException, SNEEConfigurationException, IOException, 
-  OptimizationException, SQLException, UtilsException, SchemaMetadataException, 
-  TypeMappingException, AgendaException, UnsupportedAttributeTypeException, 
-  SourceMetadataException, TopologyReaderException, SNEEDataSourceException, 
-  CostParametersException, SNCBException, CodeGenerationException
+  Exception
   {
     if(position < noSites)
     {
-      chooseNodes(deadNodes, noSites, position + 1, client, currentQuery, queryid);
-      deadNodes.add(siteIDs.get(position));
-      chooseNodes(deadNodes, noSites, position + 1, client, currentQuery, queryid);
-      deadNodes.remove(deadNodes.size() -1);
+      if(first && position == noSites -1)
+      {
+        deadNodes.add(siteIDs.get(position));
+        chooseNodes(deadNodes, noSites, position + 1, client, currentQuery, queryid, first);
+        first = false;
+      }
+      else
+      {
+        chooseNodes(deadNodes, noSites, position + 1, client, currentQuery, queryid, first);
+        deadNodes.add(siteIDs.get(position));
+        chooseNodes(deadNodes, noSites, position + 1, client, currentQuery, queryid, first);
+        deadNodes.remove(deadNodes.size() -1);
+      }
     }
     else
-    {
+    {   
       updateRecoveryFile();
         
       if(inRecoveryMode)
       {
-    	  if(actualTestNo != recoveredTestValue)
-    	  {
-    		  actualTestNo++;
-    	  }
-    	  else
-    	  {
-      		inRecoveryMode = false;
-      		client.resetNodes();
-          client.setDeadNodes(deadNodes);
-          client.runForTests(deadNodes, queryid ); 
-    	  }
+        inRecoveryMode = false;
+        client.runForTests(deadNodes, queryid ); 
       }
       else
       {
-        if(actualTestNo == 0)
-        {
-          actualTestNo++;
-        }
-        else
-        {
-      	  client.resetNodes();
-          client.setDeadNodes(deadNodes);
-          client.runForTests(deadNodes, queryid); 
-          actualTestNo++;
-        }
+        client.runForTests(deadNodes, queryid); 
+        actualTestNo++;
       }      
     }
-  }
-
-  private void resetNodes() 
-  {
-	  Iterator<Site> routingTreeIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
-	  while(routingTreeIterator.hasNext())
-	  {
-		  Site currentSite = routingTreeIterator.next();
-		  currentSite.setisDead(false);
-	  }
   }
 
   public void runForTests(ArrayList<String> failedNodes, int queryid)
@@ -384,67 +352,6 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
   }
-
-  private static void writeBeginningBlurb() throws IOException 
-  {
-	  File folder = new File("results");
-    String path = folder.getAbsolutePath();
-	  File resultsFile = new File(path + "/results.tex");
-	  
-	  BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile, true));
-	  //add blurb for results file, so can be compiled into latex doc at later date
-    out.write("\\documentclass{article} \n \\usepackage{a4-mancs} \n \\usepackage{graphicx} \n" +
-              "\\usepackage{mathtools} \n \\usepackage{subfig} \n \\usepackage[english]{babel} \n" +
-              "\\usepackage{marvosym} \n\n\n \\begin{document} \n");
-            
-    out.write("\\begin{tabular}{|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}  \n \\hline \n");
-    out.write("testNo &  dead Sites List & Cost Model Epoch Cardinality & Cost Model Angeda Cardinality & " +
-            " Snee Epoch Cardinality & Snee Agenda Cardinality & correct \\\\ \\hline \n");
-    out.flush();
-    out.close();	
-  }
-  
-  private static void writeQueryToResultsFile(String currentQuery) throws IOException
-  {
-    File folder = new File("results");
-    String path = folder.getAbsolutePath();
-    File resultsFile = new File(path + "/results.tex");
-    BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile, true));
-    
-    if(!inRecoveryMode || recoveredTestValue == 0)
-    {
-      out = new BufferedWriter(new FileWriter(resultsFile, true));
-      out.write(testNo + " &  \\multicolumn{6}{|c|}{" + currentQuery + "} \\\\ \\hline \n");
-      out.write("\\hline \n");
-      out.flush();
-      out.close();
-    } 
-  }
-  
-  private static void writeIncludeImageSection() throws IOException, UtilsException
-  {
-    File folder = new File("results");
-    String path = folder.getAbsolutePath();
-    File resultsFile = new File(path + "/results.tex");
-    BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile, true));
-    int numberOfTests = (int) Math.pow(2.0, (double) siteIDs.size()) -1;
-    int realQueryid = queryid+1;
-    out.write("\\multirow{" + numberOfTests + "}{*}{\\includegraphics[width=1.6cm}{query" + realQueryid + "-RT-" + realQueryid + "}");
-    out.flush();
-    out.close();
-  }
-
-  private static void writeLastResultsSection() throws IOException
-  {
-    File folder = new File("results");
-    String path = folder.getAbsolutePath();
-    File resultsFile = new File(path + "/results.tex");
-    BufferedWriter out = new BufferedWriter(new FileWriter(resultsFile, true));
-    out = new BufferedWriter(new FileWriter(path, true));
-    out.write("\\end{tabular} \n \\end{document} \n");
-    out.flush();
-    out.close();
-  }
   
   private static void updateRecoveryFile() throws IOException
   {
@@ -452,6 +359,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     String path = folder.getAbsolutePath();
     //added to allow recovery from crash
     BufferedWriter recoverWriter = new BufferedWriter(new FileWriter(new File(path + "/recovery.tex")));
+    actualTestNo = 0;
     recoverWriter.write(testNo + "\n");
     recoverWriter.write(actualTestNo + "\n");
     recoverWriter.flush();
