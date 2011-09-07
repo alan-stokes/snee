@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DBConfig>
+	<DBDriver>mysql</DBDriver>
+	<username>cco</username>
+	<password>cco</password>
+	<schema>cco</schema>
+	<host>localhost</host>
+	<port>3306</port>
+</DBConfig>

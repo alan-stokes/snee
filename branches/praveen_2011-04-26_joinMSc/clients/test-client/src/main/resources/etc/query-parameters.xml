@@ -51,23 +51,23 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk query-parameters.xsd">
 		size and medium would mean 5%-->
 		<tuple-loss>
 			<allowed>true</allowed>
-			 <policy>
-				<name>SAMPLE</name>
+			<policy>
+				<name>FIFO</name>
 				<constraints>
-					<rate>low</rate>
+					<rate>low</rate> 
 					<!-- <rate>low</rate>
 					<rate>medium</rate>
 					<rate>max</rate> -->
-				</constraints>
-			</policy> 
-			<!-- <policy>
+				 </constraints>
+			</policy>  
+			<!--<policy>
 				<name>LIFO</name>
 				<constraints></constraints>
 			</policy>
 			 <policy>
 				<name>SAMPLE</name>
 				<constraints>
-					<rate>30</rate>
+					<rate>low</rate>
 				</constraints>
 			</policy> -->
 		</tuple-loss>

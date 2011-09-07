@@ -1,0 +1,77 @@
+#Buffer Size 100, Algorithm - Sampling for 30%, Evaluation for data loss
+#Exp1_SAMPL_BF100_TRY1	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize100\try1\etc
+#Exp1_SAMPL_BF100_TRY1	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[FROM NOW - 1 SECONDS TO NOW SLIDE 1 SECONDS] p, HerneBay_Tide[FROM NOW - 1 SECONDS TO NOW SLIDE 1 SECONDS] h WHERE p.intattr = h.Tz;	10	resources\Experiment1\SAMPLING\buffersize100\try1\etc
+#Exp1_SAMPL_BF100_TRY2	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize100\try2\etc
+#Exp1_SAMPL_BF100_TRY3	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize100\try3\etc
+#Exp1_SAMPL_BF100_TRY4	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize100\try4\etc
+#Exp1_SAMPL_BF100_TRY5	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize100\try5\etc
+#Exp1_SAMPL_BF100_TRY5	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[FROM NOW - 1 SECONDS TO NOW SLIDE 1 SECONDS] p, HerneBay_Tide[FROM NOW - 1 SECONDS TO NOW SLIDE 1 SECONDS] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize100\try5\etc
+#Exp1_SAMPL_BF100_TRY6	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize100\try6\etc
+																		
+#Buffer Size 500, Algorithm - Sampling for 30%, Evaluation for data loss									
+#Exp1_SAMPL_BF500_TRY1	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize500\try1\etc
+#Exp1_SAMPL_BF500_TRY2	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize500\try2\etc
+#Exp1_SAMPL_BF500_TRY3	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize500\try3\etc
+#Exp1_SAMPL_BF500_TRY4	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize500\try4\etc
+#Exp1_SAMPL_BF500_TRY5	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize500\try5\etc
+#Exp1_SAMPL_BF500_TRY6	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize500\try6\etc
+																		
+#Buffer Size 1000, Algorithm - Sampling for 30%, Evaluation for data loss									
+#Exp1_SAMPL_BF1000_TRY1	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize1000\try1\etc
+#Exp1_SAMPL_BF1000_TRY2	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize1000\try2\etc
+#Exp1_SAMPL_BF1000_TRY3	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize1000\try3\etc
+#Exp1_SAMPL_BF1000_TRY4	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize1000\try4\etc
+#Exp1_SAMPL_BF1000_TRY5	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize1000\try5\etc
+#Exp1_SAMPL_BF1000_TRY6	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize1000\try6\etc
+
+#Buffer Size 10000, Algorithm - Sampling for 30%, Evaluation for data loss
+#Exp1_SAMPL_BF10000_TRY1	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize10000\try1\etc
+#Exp1_SAMPL_BF10000_TRY2	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize10000\try2\etc
+#Exp1_SAMPL_BF10000_TRY3	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize10000\try3\etc
+#Exp1_SAMPL_BF10000_TRY4	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize10000\try4\etc
+#Exp1_SAMPL_BF10000_TRY5	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize10000\try5\etc
+#Exp1_SAMPL_BF10000_TRY6	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\SAMPLING\buffersize10000\try6\etc
+
+#For FIFO
+#Buffer Size 100, Algorithm - FIFO , Evaluation for data loss
+#Exp1_FIFO_BF100_TRY1	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize100\try1\etc
+#Exp1_FIFO_BF100_TRY1	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[FROM NOW - 1 SECONDS TO NOW SLIDE 1 SECONDS] p, HerneBay_Tide[FROM NOW - 1 SECONDS TO NOW SLIDE 1 SECONDS] h WHERE p.intattr = h.Tz;	10	resources\Experiment1\FIFO\buffersize100\try1\etc
+#Exp1_FIFO_BF100_TRY2	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize100\try2\etc
+#Exp1_FIFO_BF100_TRY3	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize100\try3\etc
+#Exp1_FIFO_BF100_TRY4	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize100\try4\etc
+#Exp1_FIFO_BF100_TRY5	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize100\try5\etc
+#Exp1_FIFO_BF100_TRY5	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[FROM NOW - 1 SECONDS TO NOW SLIDE 1 SECONDS] p, HerneBay_Tide[FROM NOW - 1 SECONDS TO NOW SLIDE 1 SECONDS] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize100\try5\etc
+#Exp1_FIFO_BF100_TRY6	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize100\try6\etc
+																		
+#Buffer Size 500, Algorithm - FIFO , Evaluation for data loss											
+#Exp1_FIFO_BF500_TRY1	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize500\try1\etc
+#Exp1_FIFO_BF500_TRY2	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize500\try2\etc
+#Exp1_FIFO_BF500_TRY3	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize500\try3\etc
+#Exp1_FIFO_BF500_TRY4	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize500\try4\etc
+#Exp1_FIFO_BF500_TRY5	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize500\try5\etc
+#Exp1_FIFO_BF500_TRY6	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize500\try6\etc
+																		
+#Buffer Size 1000, Algorithm - FIFO , Evaluation for data loss											
+#Exp1_FIFO_BF1000_TRY1	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize1000\try1\etc
+#Exp1_FIFO_BF1000_TRY2	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize1000\try2\etc
+#Exp1_FIFO_BF1000_TRY3	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize1000\try3\etc
+#Exp1_FIFO_BF1000_TRY4	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize1000\try4\etc
+#Exp1_FIFO_BF1000_TRY5	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize1000\try5\etc
+#Exp1_FIFO_BF1000_TRY6	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize1000\try6\etc
+																		
+#Buffer Size 10000, Algorithm - FIFO , Evaluation for data loss											
+#Exp1_FIFO_BF10000_TRY1	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize10000\try1\etc
+#Exp1_FIFO_BF10000_TRY2	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize10000\try2\etc
+#Exp1_FIFO_BF10000_TRY3	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize10000\try3\etc
+#Exp1_FIFO_BF10000_TRY4	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize10000\try4\etc
+#Exp1_FIFO_BF10000_TRY5	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize10000\try5\etc
+#Exp1_FIFO_BF10000_TRY6	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize10000\try6\etc
+
+#For FIFO
+#Buffer Size 100, Algorithm - FIFO , Evaluation for data loss
+Exp1_FIFO_BF100_TRY1	RSTREAM SELECT p.timestamp, p.intattr, h.intattr, p.decattr, h.doubleattr FROM PushStream[NOW] p, LOCAL_TUPLE_TABLE h WHERE p.intattr = h.intattr;	20	resources\Experiment1\FIFO\buffersize100\try1\etc
+#Exp1_FIFO_BF100_TRY2	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize100\try2\etc
+#Exp1_FIFO_BF100_TRY3	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize100\try3\etc
+#Exp1_FIFO_BF100_TRY4	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize100\try4\etc
+Exp1_FIFO_BF100_TRY5	RSTREAM SELECT p.timestamp, p.intattr, h.intattr, p.decattr, h.doubleattr FROM PushStream[NOW] p, LOCAL_TUPLE_TABLE h WHERE p.intattr = h.intattr;	20	resources\Experiment1\FIFO\buffersize100\try5\etc
+#Exp1_FIFO_BF100_TRY6	RSTREAM SELECT p.intattr, h.Tz, p.decattr, h.tp FROM PushStream[NOW] p, HerneBay_Tide[NOW] h WHERE p.intattr = h.Tz;	20	resources\Experiment1\FIFO\buffersize100\try6\etc
