@@ -395,8 +395,10 @@ public class ScanOperatorImpl extends EvaluatorPhysicalOperator {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER close()");
 		}
+		if (_rescanTaskTimer != null) {
 		_rescanTaskTimer.cancel();
 		_rescanTaskTimer.purge();
+		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN close()");
 		}

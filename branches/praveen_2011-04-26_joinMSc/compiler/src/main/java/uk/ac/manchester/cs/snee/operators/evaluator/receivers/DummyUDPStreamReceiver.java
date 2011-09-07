@@ -7,6 +7,8 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
@@ -39,6 +41,8 @@ public class DummyUDPStreamReceiver implements SourceReceiver {
 	private double rate;
 	private int curIndex = 0;
 	private int counter = 0;
+	private Logger logger = 
+		Logger.getLogger(DummyUDPStreamReceiver.class.getName());
 	/**
 	 * The list of streams
 	 */
@@ -46,7 +50,11 @@ public class DummyUDPStreamReceiver implements SourceReceiver {
 
 	public DummyUDPStreamReceiver(ReceiveOperator receiveOp, SourceMetadataAbstract source) {
 		MetadataManager schema;
+		if (logger.isDebugEnabled()) {
+			logger.debug("ENTER DummyUDPStreamReceiver for with " + receiveOp);
+		}
 		try {
+			
 			schema = new MetadataManager(null);
 
 			_streams = schema.getPushedExtents();
@@ -69,6 +77,9 @@ public class DummyUDPStreamReceiver implements SourceReceiver {
 
 			if (rate > 10) {
 				counter = (int) rate;
+			}
+			if (logger.isDebugEnabled()) {
+				logger.debug("RETURN DummyUDPStreamReceiver for with " + receiveOp);
 			}
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -142,6 +153,9 @@ public class DummyUDPStreamReceiver implements SourceReceiver {
 	@Override
 	public void close() {
 		// TODO Auto-generated method stub
+		if (logger.isInfoEnabled()) {
+			logger.info("Total number of tuples generated for : "+streamName+ "is: "+curIndex);
+		}
 
 	}
 

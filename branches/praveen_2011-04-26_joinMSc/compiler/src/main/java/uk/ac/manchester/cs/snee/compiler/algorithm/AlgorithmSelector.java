@@ -125,25 +125,7 @@ public class AlgorithmSelector {
 	 * would then be pubished as it is being done now and the rest of the
 	 * operators would operate in the same Publish-Subscribe model.
 	 * 
-	 * Implementation
-	 * 
-	 * 1. If the parent join operator has the algorithm selected as Hash join,
-	 * the valve operator will subscribe to the data from its child, and hold on
-	 * to it until pulled by the join operator above. So the parent join
-	 * operator is informed to work in this mode.
-	 * 
-	 * 2. If the source rate of the child operator for the valve is above a
-	 * particular threshold value as defined in the SNEE.properties file, enable
-	 * the valve operator to subscribe to the data from its child, and hold on
-	 * to it until pulled by the join operator above. So the parent join
-	 * operator is informed to work in this mode.
-	 * 
-	 * 3. If the source rate of the child operator for the valve is below a
-	 * particular threshold value as defined in the SNEE.properties file, the
-	 * valve operator works in the traditional publish mode and the join
-	 * operator above will also work in the publish-subscribe mode, i.e. no
-	 * change from the current mode
-	 * 
+	 *  
 	 * @param valveOperator
 	 * @param qos
 	 */

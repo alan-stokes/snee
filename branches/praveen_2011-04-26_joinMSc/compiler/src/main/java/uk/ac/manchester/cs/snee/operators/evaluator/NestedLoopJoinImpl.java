@@ -134,9 +134,21 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 		//List<Output> resultItems = new ArrayList<Output>(1);
 
 		try {
-			//
-
 			Output tempOp = null;
+			//
+			/*tempOp = getNextFromChild(leftOperator);
+			if (tempOp != null) {
+				leftOperand = tempOp;
+			}
+
+			tempOp = getNextFromChild(rightOperator);
+			if (tempOp != null) {
+				rightOperand = tempOp;
+			}
+			
+			if (leftOperand != null && rightOperand != null ) {
+				performOutputJoin(resultItems);
+			}*/
 			// If both operands have data it means that already a
 			// join has been performed in the previous iterations
 			//
@@ -160,7 +172,15 @@ public class NestedLoopJoinImpl extends JoinOperatorAbstractImpl {
 
 			if (leftOperand != null && rightOperand != null && isDataFetched) {
 				performOutputJoin(resultItems);
-				leftOperand = rightOperand = null;
+				//if source rates are 0, then there will
+				//never be another entry from the operator
+				if (leftOperatorRate != 0) {
+					leftOperand = null;
+				}
+				if (rightOperatorRate != 0) {
+					rightOperand = null;
+				}
+				//leftOperand = rightOperand = null;
 				isLeftOperandJoined = isRightOperandJoined = true;
 				isDataFetched = false;
 			}

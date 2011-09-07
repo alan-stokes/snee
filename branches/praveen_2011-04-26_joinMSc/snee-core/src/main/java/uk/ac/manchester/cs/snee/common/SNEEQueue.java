@@ -72,13 +72,13 @@ public class SNEEQueue<E> extends AbstractQueue<E> {
 			} while (qIterator.hasNext());
 		}		
 		System.out.println("Current Capacity: "+ capacity());
-		if (logger.isDebugEnabled()) {
-			logger.debug("Current Capacity: "+ capacity());
+		if (logger.isInfoEnabled()) {
+			logger.info("Current Capacity: "+ capacity());
 		}
 		array = Arrays.copyOf(newArray, capacity()+ incCapacity);
 		System.out.println("Increased Capacity: "+ capacity());
-		if (logger.isDebugEnabled()) {
-			logger.debug("Current Capacity: "+ capacity());
+		if (logger.isInfoEnabled()) {
+			logger.info("Increased Capacity: "+ capacity());
 		}
 		firstIndex = 0;
 		lastIndex = i;

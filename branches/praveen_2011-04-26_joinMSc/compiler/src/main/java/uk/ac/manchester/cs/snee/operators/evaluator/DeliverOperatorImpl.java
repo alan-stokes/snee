@@ -55,13 +55,17 @@ public class DeliverOperatorImpl
 extends EvaluatorPhysicalOperator {
 	//XXX: Write test for deliver operator
 	
-	Logger logger =
+	private Logger logger =
 		Logger.getLogger(DeliverOperatorImpl.class.getName());
 
-	DeliverOperator deliverOp;
+	private DeliverOperator deliverOp;
 	
-	int nextIndex = 0;
+	private int nextIndex = 0;
 	private long totalLatency = 0;
+	
+	//interval 
+	private long interval = 1200000;//eqvt to 20 mins
+	private long lastIntervalTimeStamp = System.currentTimeMillis();
 
 	private boolean isTuplehavingTimestamp = false;
 
@@ -156,8 +160,19 @@ extends EvaluatorPhysicalOperator {
 					if (isTuplehavingTimestamp){
 						String atribVal = tuple.getAttributeValue(timeStampIndex).toString();
 						totalLatency += (System.currentTimeMillis() - Long.parseLong(atribVal));
+						//System.out.println("Latency of "+(System.currentTimeMillis() - Long.parseLong(atribVal))+" milli seconds");
+						
+						if (lastIntervalTimeStamp + interval <= System.currentTimeMillis()) {							
+							lastIntervalTimeStamp = System.currentTimeMillis();
+							if (logger.isInfoEnabled()) {
+								if (isTuplehavingTimestamp && nextIndex > 0) {
+									logger.info("Average Latency of "+totalLatency/nextIndex);
+								}
+								logger.info("Number of tuples generated: "+nextIndex);
+							}
+						}
 					}
-					//logger.info("Latency of "+(System.currentTimeMillis() - Long.parseLong(atribVal))+" milli seconds");
+					
 				} catch (SNEEException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -178,7 +193,7 @@ extends EvaluatorPhysicalOperator {
 		}
 		super.close();
 		if (logger.isInfoEnabled()) {
-			if (isTuplehavingTimestamp) {
+			if (isTuplehavingTimestamp && nextIndex > 0) {
 				logger.info("Average Latency of "+totalLatency/nextIndex);
 			}
 			logger.info("Number of tuples generated: "+nextIndex);
