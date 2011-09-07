@@ -444,13 +444,13 @@ implements LogicalOperator {
 				|| lSourceType == SourceType.PUSH_STREAM_SERVICE)
 				&& (rSourceType == SourceType.RELATIONAL || rSourceType == SourceType.WSDAIR)) {
 			//returnSourceType = rSourceType;
-			returnOperator = right;
+			returnOperator = left;
 		} else if ((rSourceType == SourceType.PULL_STREAM_SERVICE
 				|| rSourceType == SourceType.UDP_SOURCE 
 				|| rSourceType == SourceType.PUSH_STREAM_SERVICE)
 				&& (lSourceType == SourceType.RELATIONAL || lSourceType == SourceType.WSDAIR)) {
 			//returnSourceType = lSourceType;
-			returnOperator = left;
+			returnOperator = right;
 		} else {
 			String message = "Untested scenario: left=" + lSourceType + " right=" + rSourceType;
 			logger.warn(message);

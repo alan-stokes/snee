@@ -692,6 +692,7 @@ public class Translator {
 		//Praveen Begin
 		//Source Name - operator map
 		temp = null;
+		LogicalOperator swaptemp;
 		LogicalOperator mainJoin = null;
 		Map<String, LogicalOperator[]> sourceOperatorMap = 
 			getSourceOperatorsMap(operators);
@@ -702,12 +703,34 @@ public class Translator {
 				if (temp == null) {
 					temp = operatorGroup[i];
 					continue;
-				}
+				}				
 				temp = insertJoin(temp, operatorGroup[i]);
 			}
 			if (mainJoin == null) {
 				mainJoin = temp;
-			} else {
+			} else if (temp != null){
+				if (mainJoin.getOperatorDataType() == OperatorDataType.STREAM &&
+						temp.getOperatorDataType() == OperatorDataType.STREAM) {
+					String msg = "Unable to join two streams";
+					logger.warn(msg);
+					throw new ExpressionException(msg);
+				} else if ((mainJoin.getOperatorDataType() == OperatorDataType.STREAM &&
+						temp.getOperatorDataType() == OperatorDataType.WINDOWS)||
+						(mainJoin.getOperatorDataType() == OperatorDataType.WINDOWS &&
+								temp.getOperatorDataType() == OperatorDataType.STREAM)) {
+					String msg = "Unable to join a stream and a window, " +
+							"both stream extents need to have a window declared.";
+					logger.warn(msg);
+					throw new ExpressionException(msg);
+				}
+				swaptemp = temp;
+				if ((temp.getOperatorDataType() == OperatorDataType.STREAM) ||
+						((mainJoin.getOperatorDataType() == OperatorDataType.RELATION)
+								&& temp.getOperatorDataType() == OperatorDataType.WINDOWS)) {
+					swaptemp = temp;
+					temp = mainJoin;
+					mainJoin = swaptemp;					
+				}
 				mainJoin = insertJoin(mainJoin, temp);
 			}
 			temp = null;
