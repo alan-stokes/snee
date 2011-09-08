@@ -78,6 +78,11 @@ public class InstanceFragment
     this.fragID = instanceFragmentCount;
   }
   
+  public InstanceFragment(String fragID) 
+  {
+    this.fragID = Integer.parseInt(fragID);
+  }
+  
   
   public boolean isRemote(InstanceFragment other)
   {

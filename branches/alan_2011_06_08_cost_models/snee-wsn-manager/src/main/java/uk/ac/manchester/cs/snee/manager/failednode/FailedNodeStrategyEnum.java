@@ -1,6 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.failednode;
 
-public enum FailedNodeStrategy
+public enum FailedNodeStrategyEnum
 {
   FailedNodeLocal, FailedNodePartial, FailedNodeGlobal, All  
 }

@@ -24,6 +24,7 @@ optMaxQueryNesting = 1
 optMaxSourcesPerQueryLevel = 1
 optProbabilitySubquery = 1 #prob that each source in a query level is a sub-query
 optProbabilityAggregate = 1 #prob that aggregate is projected in query level
+topologyDensity = 6
 
 #network generation
 optRadioRange = 60
@@ -50,10 +51,10 @@ def parseArgs(args):
 
 def getNextQueryLevel(nextExtent, nextSubQuery, topLevel, levelQualifier, extentsUsed, indentLevel):
 
-    if optMaxSourcesPerQueryLevel == 1 :
-        numSources = 1
+    if optMaxSourcesPerQueryLevel == 1 or optMaxSourcesPerQueryLevel == 2:
+        numSources = optMaxSourcesPerQueryLevel
     else :
-        numSources = random.randrange(1, optMaxSourcesPerQueryLevel, 1)
+        numSources = random.randrange(2, optMaxSourcesPerQueryLevel, 1)
     selectClause = "SELECT "
     fromClause = " FROM "
     whereClause = " " 
@@ -109,6 +110,10 @@ def generateRandomQuery(queryId = 'q1', outputDir = '.'):
     topLevel = True
     extentsUsed = []
 
+   # print ("optProbabilityAggregate = %f" %(optProbabilityAggregate))
+   # print ("optProbabilitySubquery = %f" %(optProbabilitySubquery))
+   # print ("optMaxSourcesPerQueryLevel = %f" %(optMaxSourcesPerQueryLevel))
+   # print ("optMaxQueryNesting = %f" %(optMaxQueryNesting))
     (query, nextExtent, nextSubQuery, extentsUsed)  = getNextQueryLevel(nextExtent, nextSubQuery, True, "q", extentsUsed,0)
 
     outFile = open(outputDir+os.sep+"queries"+".txt", 'a')
@@ -206,7 +211,7 @@ def generateSpiderNetwork(numNodes, rValue, networkId, outputDir):
     for n in nodes:
         f.addNode(n.id, n.xPos, n.yPos)
 
-    f.trimEdgesRandomlyToMeetAverageDegree(6) #TODO: unhardcode this	
+    f.trimEdgesRandomlyToMeetAverageDegree(topologyDensity) #TODO: unhardcode this	
     f.generateSneeqlNetFile(outputDir+os.sep+networkId+".xml")
     f.generateTopFile(outputDir+os.sep+networkId+".top")
     f.generateTopDotFile(outputDir+os.sep+networkId+".dot")
@@ -345,14 +350,22 @@ results.history_size.tuples = 1000""" %(logicalSchemaId, physicalSchemaId)
     outFile.close()
 
 #30 random select * queries/networks/schemas
-def generateScenarios1(numScenarios, numNodes, outputDir, scenariosFile):
+def generateScenarios1(numScenarios, numNodes, outputDir, scenariosFile, counter, counterMax):
+    
+    global optProbabilityAggregate 
+    optProbabilityAggregate = 1
+    global optProbabilitySubquery 
+    optProbabilitySubquery = 1
+    global optMaxSourcesPerQueryLevel 
+    optMaxSourcesPerQueryLevel = 1
+    global optMaxQueryNesting 
+    optMaxQueryNesting = 1
+    
     outFile = open(outputDir+os.sep+scenariosFile, 'w')
     outFile.writelines("scenarioId,queryId,networkId,numNodes,rValue,schemaId,percentSources\n")
-    if os.path.exists(outputDir+os.sep+"queries"+".txt"):
-    	os.remove(outputDir+os.sep+"queries"+".txt")
 
     i = 0
-    for i in range(0, numScenarios):
+    for i in range(counter, counterMax):
         percentSources = random.randrange(30, 100, 1)
         rValue = random.randrange(1, 5, 1)
 
@@ -372,14 +385,15 @@ def generateScenarios1(numScenarios, numNodes, outputDir, scenariosFile):
     outFile.close()
 
 #30 random select avg queries/networks/schemas
-def generateScenarios2(numScenarios, numNodes, outputDir, scenariosFile):
+def generateScenarios2(numScenarios, numNodes, outputDir, scenariosFile, counter, counterMax):
 
-    optProbabilityAggregate = 0.1
+    global optProbabilityAggregate 
+    optProbabilityAggregate = 0.01
 
     outFile = open(outputDir+os.sep+scenariosFile, 'w')
     outFile.writelines("scenarioId,queryId,networkId,numNodes,rValue,schemaId,percentSources\n")
 
-    for i in range(30, numScenarios*2):
+    for i in range(counter, counterMax):
         percentSources = random.randrange(30, 100, 1)
         rValue = random.randrange(1, 5, 1)
 
@@ -399,17 +413,21 @@ def generateScenarios2(numScenarios, numNodes, outputDir, scenariosFile):
     outFile.close()
 
 #30 random select join queries/networks/schemas
-def generateScenarios3(numScenarios, numNodes, outputDir, scenariosFile):
+def generateScenarios3(numScenarios, numNodes, outputDir, scenariosFile, counter, counterMax):
 
+    global optProbabilityAggregate 
     optProbabilityAggregate = 1
-    optProbabilitySubquery = 0.1
+    global optProbabilitySubquery 
+    optProbabilitySubquery = 0.5
+    global optMaxSourcesPerQueryLevel 
     optMaxSourcesPerQueryLevel = 2
-    optMaxQueryNesting = 2
+    global optMaxQueryNesting 
+    optMaxQueryNesting = 1
 
     outFile = open(outputDir+os.sep+scenariosFile, 'w')
     outFile.writelines("scenarioId,queryId,networkId,numNodes,rValue,schemaId,percentSources\n")
 
-    for i in range(60, numScenarios*3):
+    for i in range(counter, counterMax):
         percentSources = random.randrange(30, 100, 1)
         rValue = random.randrange(1, 5, 1)
 
@@ -429,17 +447,21 @@ def generateScenarios3(numScenarios, numNodes, outputDir, scenariosFile):
     outFile.close()
 
 #30 random select agg join queries/networks/schemas
-def generateScenarios4(numScenarios, numNodes, outputDir, scenariosFile):
+def generateScenarios4(numScenarios, numNodes, outputDir, scenariosFile, counter, counterMax):
 
+    global optProbabilityAggregate 
     optProbabilityAggregate = 0.5
+    global optProbabilitySubquery 
     optProbabilitySubquery = 0.5
+    global optMaxSourcesPerQueryLevel 
     optMaxSourcesPerQueryLevel = 2
+    global optMaxQueryNesting 
     optMaxQueryNesting = 2
 
     outFile = open(outputDir+os.sep+scenariosFile, 'w')
     outFile.writelines("scenarioId,queryId,networkId,numNodes,rValue,schemaId,percentSources\n")
 
-    for i in range(90, numScenarios*4):
+    for i in range(counter, counterMax):
         percentSources = random.randrange(30, 100, 1)
         rValue = random.randrange(1, 5, 1)
 
@@ -460,14 +482,28 @@ def generateScenarios4(numScenarios, numNodes, outputDir, scenariosFile):
 
 
 def main():
+    print("starting script \n")
     #parse the command-line arguments
     parseArgs(sys.argv[2:])
     optOutputDir1 = sys.argv[1]
     random.seed(1)
-    generateScenarios1(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile)
-    generateScenarios2(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile)
-    generateScenarios3(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile)
-    generateScenarios4(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile)
+    
+    if os.path.exists(optOutputDir1+os.sep+"queries"+".txt"):
+	  os.remove(optOutputDir1+os.sep+"queries"+".txt")
+    #dense topology
+    generateScenarios1(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 1, 30)
+    generateScenarios2(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 30, 60)
+    generateScenarios3(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 60, 90)
+    generateScenarios4(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 90, 120)
+    #not so dense network
+    global topologyDensity
+    topologyDensity = 3
+    generateScenarios1(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 120, 150)
+    generateScenarios2(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 150, 180)
+    generateScenarios3(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 180, 210)
+    generateScenarios4(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 210, 240)
+    
+    print("finished script \n")
 
 if __name__ == "__main__":
 	main()

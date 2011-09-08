@@ -38,7 +38,7 @@ public interface AutonomicManager
       SourceMetadataException, TopologyReaderException,
       SNEEDataSourceException, CostParametersException, 
       SNCBException, SNEECompilerException, 
-      IOException, CodeGenerationException;
+      IOException, CodeGenerationException, AutonomicManagerException;
 
   public abstract void runCostModels() throws OptimizationException;
 
@@ -79,5 +79,5 @@ public interface AutonomicManager
   UnsupportedAttributeTypeException, SourceMetadataException,
   TopologyReaderException, SNEEDataSourceException,
   CostParametersException, SNCBException, 
-  SNEECompilerException, IOException, CodeGenerationException;
+  SNEECompilerException, IOException, CodeGenerationException, AutonomicManagerException;
 }

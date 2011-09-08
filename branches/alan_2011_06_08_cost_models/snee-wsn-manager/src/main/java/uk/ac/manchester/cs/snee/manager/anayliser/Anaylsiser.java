@@ -20,9 +20,9 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
-import uk.ac.manchester.cs.snee.manager.StrategyAbstract;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
-import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategy;
+import uk.ac.manchester.cs.snee.manager.common.StrategyAbstract;
+import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyGlobal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyPartial;
@@ -61,7 +61,7 @@ public class Anaylsiser
     manager = autonomicManager;
     frameworks = new ArrayList<StrategyAbstract>();
     String prop = SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_STRATEGIES);
-    if(prop.equals(FailedNodeStrategy.FailedNodeLocal.toString()))
+    if(prop.equals(FailedNodeStrategyEnum.FailedNodeLocal.toString()))
     {
       FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
         new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
@@ -70,7 +70,7 @@ public class Anaylsiser
       frameworks.add(failedNodeFrameworkGlobal);
       frameworks.add(failedNodeFrameworkLocal);
     }
-    if(prop.equals(FailedNodeStrategy.FailedNodePartial.toString()))
+    if(prop.equals(FailedNodeStrategyEnum.FailedNodePartial.toString()))
     {
       FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
         new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
@@ -81,13 +81,13 @@ public class Anaylsiser
       frameworks.add(failedNodeFrameworkGlobal);
       frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
     }
-    if(prop.equals(FailedNodeStrategy.FailedNodeGlobal.toString()))
+    if(prop.equals(FailedNodeStrategyEnum.FailedNodeGlobal.toString()))
     {
       FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
         new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
       frameworks.add(failedNodeFrameworkGlobal);
     }
-    if(prop.equals(FailedNodeStrategy.All.toString()))
+    if(prop.equals(FailedNodeStrategyEnum.All.toString()))
     { 
       FailedNodeStrategyPartial failedNodeFrameworkSpaceAndTimePinned = 
         new FailedNodeStrategyPartial(manager, _metadata, true, true);

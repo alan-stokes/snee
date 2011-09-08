@@ -9,6 +9,7 @@ import random, sys, array, math, os.path, UtilLib
 optFreq = 432969975					#Default frequency for Avrora Mica2 radio
 optMinRXPower = 0.000009				#This is the minimum receive power at which packets can be received
 lightConst = math.pow(299792458 / (4 * math.pi),2)	#Constant used by freespace model
+topologyDensity = 6
 
 logger = None
 			
@@ -468,7 +469,7 @@ def parseAvroraTopFile(inputFile, rtFiles = None):
 def main(): 	
 
 	field = generateRandomTopology(numNodes = 100, xDim= 15, yDim = 15)
-	field.trimEdgesRandomlyToMeetAverageDegree(6) #TODO: unhardcode this	
+	field.trimEdgesRandomlyToMeetAverageDegree(topologyDesnity) #TODO: unhardcode this	
 	field.generateTopFile("test.top")
 	field.generateSneeqlNetFile("test.xml")
 	field.generateTossimNetFile("test.nss")
@@ -480,7 +481,7 @@ def main():
 	print "INFO: The average node degree is " + str(field.getAverageNodeDegree())
 
 	
-	field.trimEdgesRandomlyToMeetAverageDegree(6)
+	field.trimEdgesRandomlyToMeetAverageDegree(topologyDesnity)
 	print field.edges
 	
 

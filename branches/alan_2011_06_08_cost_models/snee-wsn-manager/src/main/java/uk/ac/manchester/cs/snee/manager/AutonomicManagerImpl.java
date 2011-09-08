@@ -1,6 +1,8 @@
 package uk.ac.manchester.cs.snee.manager;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -65,6 +67,7 @@ public class AutonomicManagerImpl implements AutonomicManager
   //fixed parameters of autonomic calculations
   private final int numberOfTreesToUse = 10;
   private HashMap<String, RunTimeSite> runningSites;
+  private String sep = System.getProperty("file.separator");
   
   public AutonomicManagerImpl(MetadataManager _metadataManager)
   {
@@ -111,7 +114,6 @@ public class AutonomicManagerImpl implements AutonomicManager
     // TODO Auto-generated method stub
     SensorNetworkQueryPlan sQep = (SensorNetworkQueryPlan) this.qep;
     //sort out output folder
-    String sep = System.getProperty("file.separator");
     String outputDir = SNEEProperties.getSetting(
         SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
         sep + sQep.getAgendaIOT().getQueryName();
@@ -122,7 +124,6 @@ public class AutonomicManagerImpl implements AutonomicManager
   private void setupAdapatationFolder() throws SNEEConfigurationException
   {
     SensorNetworkQueryPlan sQep = (SensorNetworkQueryPlan) this.qep;
-    String sep = System.getProperty("file.separator");
     String outputDir = SNEEProperties.getSetting(
         SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
         sep + sQep.getAgendaIOT().getQueryName();
@@ -169,6 +170,7 @@ public class AutonomicManagerImpl implements AutonomicManager
   
   /**
    * used to run failed node framework
+   * @throws AutonomicManagerException 
    */
   @Override
   public void runFailedNodeFramework(ArrayList<String> failedNodes) 
@@ -179,12 +181,13 @@ public class AutonomicManagerImpl implements AutonomicManager
          UnsupportedAttributeTypeException, SourceMetadataException, 
          TopologyReaderException, SNEEDataSourceException, 
          CostParametersException, SNCBException, 
-         SNEECompilerException, IOException
+         SNEECompilerException, IOException, AutonomicManagerException
   {
     setupAdapatationFolder();
     anyliser.updateFrameWorkStorageLocation(outputFolder);
     planner.updateStorageLocation(outputFolder);
     removeFailedNodesFromRunningNodes(failedNodes);
+    recordFailedNodes(failedNodes);
     List<Adaptation> choices = anyliser.runFailedNodeStragities(failedNodes);
     if(choices.size() !=0)
     {
@@ -194,11 +197,29 @@ public class AutonomicManagerImpl implements AutonomicManager
       new AdaptationUtils(finalChoice,  _metadataManager.getCostParameters()).FileOutputFinalChoice(outputFolder);
       executer.adapt(finalChoice);
     }
+    else
+    {
+      throw new AutonomicManagerException("strategies can not produce any adaptations");
+    }
     adaptionCount++;
     //newQEP.getIOT().exportAsDotFileWithFrags(fname, label, exchangesOnSites)
     //new AgendaIOTUtils( newQEP.getAgendaIOT(), newQEP.getIOT(), true).generateImage();
   }
   
+  /**
+   * outputs failed nodes in a text file for easy tracking after execution
+   * @param failedNodes
+   * @throws IOException 
+   */
+  private void recordFailedNodes(ArrayList<String> failedNodes) throws IOException
+  {
+    File failedNodeTextFile = new File(outputFolder + sep + "failedNodesRecord");
+    BufferedWriter writer = new BufferedWriter(new FileWriter(failedNodeTextFile));
+    writer.write(failedNodes.toString());
+    writer.flush();
+    writer.close();
+  }
+
   /**
    * removes failed nodes from the running energy measurements.
    * @param failedNodes
@@ -340,6 +361,7 @@ public class AutonomicManagerImpl implements AutonomicManager
   /**
    * method used to simulate test data
    * @throws CodeGenerationException 
+   * @throws AutonomicManagerException 
    */
   @Override
   public void runSimulatedNodeFailure() throws OptimizationException,
@@ -349,7 +371,7 @@ public class AutonomicManagerImpl implements AutonomicManager
       UnsupportedAttributeTypeException, SourceMetadataException,
       TopologyReaderException, SNEEDataSourceException,
       CostParametersException, SNCBException, SNEECompilerException,
-      IOException, CodeGenerationException
+      IOException, CodeGenerationException, AutonomicManagerException
   {
     monitor.chooseFakeNodeFailure();
   }

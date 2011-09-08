@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.manager.StrategyID;
-import uk.ac.manchester.cs.snee.manager.TemporalAdjustment;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class Adaptation

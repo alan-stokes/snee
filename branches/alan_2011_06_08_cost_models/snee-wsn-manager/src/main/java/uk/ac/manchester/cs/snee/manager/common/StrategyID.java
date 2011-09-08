@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager;
+package uk.ac.manchester.cs.snee.manager.common;
 
 public enum StrategyID
 {

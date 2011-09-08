@@ -481,8 +481,34 @@ public class InstanceExchangePart extends InstanceOperator{
      * Sets the destination fragment of this exchange part.
      * @param fragment
      */
-	public void setDestFrag(InstanceFragment fragment) {
+	public void setDestFrag(InstanceFragment fragment) 
+	{
 		this.destFrag = fragment;
 	}
+	
+	/**
+	 * used to set up rewiring
+	 * @param next
+	 */
+	public void setNextExchange(InstanceExchangePart next)
+	{
+	  this.next = next;
+	}
+	
+	public void setDestinitionSite(Site newDestinationSite)
+	{
+	  this.destSite = newDestinationSite;
+	  InstanceExchangePart nextPart = this.next;
+	  while(nextPart != null)
+	  {
+	    nextPart.setDestinitionSite(newDestinationSite);
+	  }
+	  InstanceExchangePart prePart = this.prev;
+	  while(prePart != null)
+    {
+	    prePart.setDestinitionSite(newDestinationSite);
+    }
+	}
+	
 
 }

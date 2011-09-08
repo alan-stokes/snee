@@ -608,12 +608,17 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     }
 
     /**
-     * Returns an iterator which gives the tasks, in order, for the given node
+     * Returns an iterator which gives the tasks, in order, 
+     * for the given node or null if no correct node is given
      * @param node
      * @return
      */
-    public final Iterator<Task> taskIterator(final Site node) {
-	return this.tasks.get(node).iterator();
+    public final Iterator<Task> taskIterator(final Site node) 
+    {
+	    if(this.tasks.get(node) == null)
+	      return null;
+	    else
+        return this.tasks.get(node).iterator();
     }
 
     //TODO: review thie taskschedule data structure in view of this inefficient access algorithm

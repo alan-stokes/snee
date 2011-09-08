@@ -5,33 +5,23 @@ import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceWhereSchedular;
-import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
-import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
-import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
-import uk.ac.manchester.cs.snee.manager.StrategyAbstract;
-import uk.ac.manchester.cs.snee.manager.StrategyID;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.common.StrategyID;
 import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.CandiateRouter;
 import uk.ac.manchester.cs.snee.manager.failednode.metasteiner.MetaSteinerTreeException;
-import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
-import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
@@ -40,9 +30,6 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperatorImpl;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 import java.io.File;
@@ -60,8 +47,9 @@ import com.rits.cloning.Cloner;
  *class designed to encapsulate the partial framework of adapting just what needs to be adapted
  */
 
-public class FailedNodeStrategyPartial extends StrategyAbstract
+public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
 {
+  @SuppressWarnings("unused")
   private boolean spacePinned;
   private boolean timePinned;
   private IOT oldIOT;
@@ -206,12 +194,40 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
           while(parent != null && !foundParent)
           {
             if(!disconnectedNodes.contains(parent.getID()) &&
-               !failedNodes.contains(parent.getID()))
+               !failedNodes.contains(parent.getID()) &&
+               !globalRT.getRoot().getID().equals(parent.getID()))   
             {
               disconnectedNodes.add(parent.getID());
               foundParent = true;
-            }  
+              found = true;
+            }
+            else
+            {
+              if(parent.getOutDegree() == 0)
+                parent = null;
+              else
+                parent = parent.getOutput(0);
+            } 
           }
+        }
+        if(!found) //if still not located a disconnected node
+        {
+          failedNodeIDIterator = failedNodes.iterator();
+          while(failedNodeIDIterator.hasNext())
+          {
+            globalSiteIDs.remove(new Integer(failedNodeIDIterator.next()));
+          }
+          Iterator<String> disconnectedNodeIDIterator = disconnectedNodes.iterator();
+          while(disconnectedNodeIDIterator.hasNext())
+          {
+            globalSiteIDs.remove(new Integer(disconnectedNodeIDIterator.next()));
+          }
+          Random random = new Random();
+          if(globalSiteIDs.size() == 0)
+            throw new RouterException("No possible adapatation as all nodes disconnected and still no avilable routes");
+          
+          disconnectedNodes.add(
+              new Integer(globalSiteIDs.get(random.nextInt(globalSiteIDs.size()))).toString());
         }
       }
     }
@@ -264,6 +280,7 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
         new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), choiceFolder.toString());
       IOT newIOT = instanceWhere.getIOT();
       //run new iot though when scheduler and locate changes
+      this.oldAgenda.setID("old Agenda");
       AgendaIOT newAgenda = doSNWhenScheduling(newIOT, qep.getQos(), qep.getID(), qep.getCostParameters());
       //output new and old agendas
       new FailedNodeStrategyPartialUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), oldIOT, newIOT, choiceFolder);
@@ -274,61 +291,6 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
       choice++;
     }
     
-  }
-
-  
-
-  /**
-   * run when scheduling
-   * @param newIOT
-   * @param qos
-   * @param id
-   * @param costParameters
-   * @return
-   * @throws SNEEConfigurationException
-   * @throws SNEEException
-   * @throws SchemaMetadataException
-   * @throws OptimizationException
-   * @throws WhenSchedulerException
-   * @throws MalformedURLException
-   * @throws TypeMappingException
-   * @throws MetadataException
-   * @throws UnsupportedAttributeTypeException
-   * @throws SourceMetadataException
-   * @throws TopologyReaderException
-   * @throws SNEEDataSourceException
-   * @throws CostParametersException
-   * @throws SNCBException
-   * @throws SNEECompilerException 
-   */
-  private AgendaIOT doSNWhenScheduling(IOT newIOT, QoSExpectations qos,
-                                       String id, CostParameters costParameters)
-  throws SNEEConfigurationException, SNEEException, 
-  SchemaMetadataException, OptimizationException, 
-  MalformedURLException, TypeMappingException, 
-  MetadataException, UnsupportedAttributeTypeException, 
-  SourceMetadataException, TopologyReaderException, 
-  SNEEDataSourceException, CostParametersException, 
-  SNCBException, SNEECompilerException 
-  {
-      boolean useNetworkController = SNEEProperties.getBoolSetting(
-          SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
-      boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
-          SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
-      MetadataManager metadata = new MetadataManager(qep.getSNCB());
-      WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing, metadata, useNetworkController);
-      AgendaIOT agenda;
-      try
-      {
-        agenda = whenSched.doWhenScheduling(newIOT, qos, qep.getID(), qep.getCostParameters());
-      }
-      catch (WhenSchedulerException e)
-      {
-        throw new SNEECompilerException(e);
-      }  
-      agenda.setID("new Agenda");
-      this.oldAgenda.setID("old Agenda");
-      return agenda;
   }
 
   /**
@@ -398,62 +360,6 @@ public class FailedNodeStrategyPartial extends StrategyAbstract
       return genereateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, queryName, 
                              numberOfRoutingTreesToWorkOn, router);
     }
-  }
-
-  /**
-   * creates a fragment of a physical operator tree, this fragment encapsulates the failed nodes operators.
-   * @param agenda2
-   * @param iot
-   * @param failedNodes
-   * @param disconnectedNodes 
-   * @throws SNEEException
-   * @throws SchemaMetadataException
-   * @throws SNEEConfigurationException
-   * @throws OptimizationException 
-   */
-  private PAF pinPhysicalOperators(IOT iot, ArrayList<String> failedNodes, 
-                                   ArrayList<String> disconnectedNodes) 
-  throws SNEEException, 
-         SchemaMetadataException, 
-         SNEEConfigurationException, 
-         OptimizationException
-  {
-    //get paf 
-    Cloner cloner = new Cloner();
-    cloner.dontClone(Logger.class);
-    PAF paf = cloner.deepClone(iot.getPAF());
-    //get iterator for IOT without exchanges
-    Iterator<InstanceOperator> iotInstanceOperatorIterator = iot.treeIterator(TraversalOrder.POST_ORDER, false);
-    ArrayList<SensornetOperatorImpl> opsOnFailedNode = new ArrayList<SensornetOperatorImpl>();
-    while(iotInstanceOperatorIterator.hasNext())
-    {
-      InstanceOperator instanceOperator = iotInstanceOperatorIterator.next();
-      SensornetOperator physicalOperator = instanceOperator.getSensornetOperator();
-      SensornetOperatorImpl physicalOperatorImpl = (SensornetOperatorImpl) physicalOperator;
-      if(!failedNodes.contains(instanceOperator.getSite().getID()) && 
-         !disconnectedNodes.contains(instanceOperator.getSite().getID()))
-      {
-        ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).setIsPinned(true);
-        ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).addSiteToPinnedList(instanceOperator.getSite().getID());
-      }
-      else
-      {
-        if(!(physicalOperator instanceof SensornetAcquireOperator) && 
-           failedNodes.contains(instanceOperator.getSite().getID()))
-          opsOnFailedNode.add(((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())));
-      }
-    }
-    //remove total pinning on operators located on failed node
-    Iterator<SensornetOperatorImpl> failedNodeOpIterator = opsOnFailedNode.iterator();
-    while(failedNodeOpIterator.hasNext())
-    {
-      SensornetOperatorImpl physicalOperatorImpl = ((SensornetOperatorImpl) paf.getOperatorTree().getNode(failedNodeOpIterator.next().getID()));
-      physicalOperatorImpl.setTotallyPinned(false);
-    }
-    
-    paf = this.removeExchangesFromPAF(paf);
-    paf.setID("PinnedPAF");
-    return paf;
   }
 
   public AgendaIOT getOldAgenda()

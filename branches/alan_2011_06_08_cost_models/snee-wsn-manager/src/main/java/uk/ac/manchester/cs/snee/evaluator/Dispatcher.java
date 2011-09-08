@@ -60,6 +60,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -306,7 +307,7 @@ public class Dispatcher {
   SourceMetadataException, TopologyReaderException, 
   SNEEDataSourceException, CostParametersException, 
   SNCBException, SNEECompilerException, IOException, 
-  CodeGenerationException
+  CodeGenerationException, AutonomicManagerException
   {
     _autonomicManager.runFailedNodeFramework(failedNodesID);
   }

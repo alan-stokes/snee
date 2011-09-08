@@ -216,6 +216,7 @@ public class InstanceWhereSchedular
           || !instance.isRemote(inputOp))
       {
         currentFragment.addOperator(instance);
+        instance.setCorraspondingFragment(currentFragment);
         checkRoot(currentFragment, instance);
           
         for(int input = 0; input < instance.getInDegree(); input++ )

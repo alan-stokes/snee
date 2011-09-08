@@ -5,19 +5,25 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
+import com.rits.cloning.Cloner;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
+import uk.ac.manchester.cs.snee.compiler.iot.IOT;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragment;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceWhereSchedular;
+import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
-import uk.ac.manchester.cs.snee.manager.StrategyAbstract;
-import uk.ac.manchester.cs.snee.manager.StrategyID;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.common.StrategyID;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalCluster;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalClusterUtils;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LocalClusterEquivalenceRelation;
@@ -32,7 +38,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
  * @author alan
  *class which encapsulates the local framework using clusters and equivalence relations
  */
-public class FailedNodeStrategyLocal extends StrategyAbstract
+public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
 {
   private Topology network = null;
   private FailedNodeLocalCluster clusters;
@@ -92,48 +98,59 @@ public class FailedNodeStrategyLocal extends StrategyAbstract
     while(firstNodeIterator.hasNext())
     {
       Iterator<Node> secondNodeIterator = secondNetworkNodes.iterator();
-      Node firstNode = firstNodeIterator.next();
+      Node clusterHead = firstNodeIterator.next();
       while(secondNodeIterator.hasNext())
       {
-        Node secondNode = secondNodeIterator.next();
-        if(LocalClusterEquivalenceRelation.isEquivalent(firstNode, secondNode, qep, network))
+        Node equilvientNode = secondNodeIterator.next();
+        if(LocalClusterEquivalenceRelation.isEquivalent(clusterHead, equilvientNode, qep, network))
         {
-          clusters.addClusterNode(firstNode.getID(), secondNode.getID());
+          clusters.addClusterNode(clusterHead.getID(), equilvientNode.getID());
           //add sites fragments and operaotrs onto equivlent node
-          transferSiteQEP(qep, firstNode, secondNode);
+          transferSiteQEP(qep, clusterHead, equilvientNode);
         }
       }
     }
   }
   
-  private void transferSiteQEP(SensorNetworkQueryPlan qep, Node firstNode,
-                           Node secondNode)
+  /**
+   * clones operators onto new site, so that when the iot is called, they should work correctly
+   * @param qep
+   * @param clusterHead
+   * @param equilvientNode
+   */
+  private void transferSiteQEP(SensorNetworkQueryPlan qep, Node clusterHead,
+                           Node equilvientNode)
   {
-    //TODO develop way to get code onto equivalent nodes (possibly got numerous versions to place)
-    Site secondSite = (Site) secondNode;
-    Site firstSite = (Site) firstNode;
-    Iterator<Fragment> firstSiteFragIterator = firstSite.getFragments().iterator();
-    while(firstSiteFragIterator.hasNext())
-    {
-      Fragment frag = firstSiteFragIterator.next();
-      secondSite.addFragment(frag);
-    }
-    Iterator<ExchangePart> exchangeComponentsIterator = 
-             firstSite.getExchangeComponents().iterator();
-    while(exchangeComponentsIterator.hasNext())
-    {
-      ExchangePart part = exchangeComponentsIterator.next();
-      secondSite.addExchangeComponent(part);
-    }
+    Site equilvientSite = (Site) equilvientNode;
+    Site clusterHeadSite = (Site) clusterHead;
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
     //set up iot with new operators 
-    ArrayList<InstanceOperator> siteInstanceOperators = 
-                qep.getIOT().getOpInstances(firstSite, TraversalOrder.POST_ORDER, true);
+    ArrayList<InstanceOperator> ClusterHeadsiteInstanceOperators = 
+                qep.getIOT().getOpInstances(clusterHeadSite, TraversalOrder.PRE_ORDER, true);
     Iterator<InstanceOperator> siteInstanceOperatorsIterator = 
-                siteInstanceOperators.iterator();
+                ClusterHeadsiteInstanceOperators.iterator();
+    
+    InstanceFragment firstFrag = new InstanceFragment();
     while(siteInstanceOperatorsIterator.hasNext())
     {
       InstanceOperator operator = siteInstanceOperatorsIterator.next();
-    }
+      InstanceOperator clonedOperator = cloner.deepClone(operator);
+      clonedOperator.setSite(equilvientSite);
+      if(!clonedOperator.getCorraspondingFragment().getID().equals(firstFrag.getID()))
+      {
+        firstFrag = new InstanceFragment(clonedOperator.getCorraspondingFragment().getID());
+        firstFrag.setSite(equilvientSite);
+        firstFrag.addOperator(clonedOperator);
+        firstFrag.setRootOperator(clonedOperator);
+        qep.getIOT().addInstanceFragment(firstFrag);
+      }
+      else
+      {
+        firstFrag.addOperator(clonedOperator);
+      }
+      qep.getIOT().addOpInstToSite(clonedOperator, equilvientSite);
+    }   
   }
 
   /**
@@ -204,31 +221,95 @@ public class FailedNodeStrategyLocal extends StrategyAbstract
     return success;
   }
 
+  private void rewireRoutingTree(String failedNodeID, String equivilentNodeID, RT currentRoutingTree) 
+  throws 
+  OptimizationException
+  {
+    Topology network = this.getWsnTopology();
+    network.removeNodeAndAssociatedEdges(failedNodeID);
+    Node equivilentNode = network.getNode(equivilentNodeID);
+    Node failedNode = currentRoutingTree.getSiteTree().getNode(failedNodeID);
+    currentRoutingTree.getSiteTree().replaceNode(failedNode, equivilentNode);
+  }
+
+  private void rewireNodes(IOT clonedIOT, String failedNodeID, String equivilentNodeID)
+  {
+    ArrayList<Node> children = clonedIOT.getInputSites(qep.getRT().getSite(failedNodeID));
+    Iterator<Node> chidlrenIterator = children.iterator();
+    while(chidlrenIterator.hasNext())
+    {
+      Node child = chidlrenIterator.next();
+      InstanceOperator rootOp = clonedIOT.getRootOperatorOfSite((Site) child);
+      InstanceExchangePart childExchange = (InstanceExchangePart) rootOp;
+      //if exchanges end at the ffailed node, realter all exhcanges in path to follow to new site
+      if(childExchange.getDestSite().getID().equals(failedNodeID))
+        childExchange.setDestinitionSite(network.getSite(equivilentNodeID));
+     
+      ArrayList<InstanceExchangePart> exchanges = 
+        clonedIOT.getExchangeOperators(network.getSite(equivilentNodeID));
+      Iterator<InstanceExchangePart> exchangeIterator = exchanges.iterator();
+      while(exchangeIterator.hasNext())
+      {
+        InstanceExchangePart exchange = exchangeIterator.next();
+        if(exchange.getPrevious().equals(exchange))
+        {
+          childExchange.setNextExchange(exchange);
+        }
+      }
+      InstanceOperator equivilentNodesRootExchange = 
+        clonedIOT.getRootOperatorOfSite(network.getSite(equivilentNodeID));
+      
+      //TODO get parent connected
+    }
+    
+  }
+  
+  
   @Override
-  public List<Adaptation> adapt(ArrayList<String> failedNodeIDs)
+  public List<Adaptation> adapt(ArrayList<String> failedNodeIDs) 
+  throws OptimizationException
   {
     System.out.println("Running Failed Node FrameWork Local");
     List<Adaptation> adapatation = new ArrayList<Adaptation>();
     Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
     Adaptation adapt = new Adaptation(qep, StrategyID.FAILED_NODE_LOCAL, 1);
+    
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    IOT clonedIOT = cloner.deepClone(qep.getIOT());
+    RT currentRoutingTree = cloner.deepClone(qep.getRT());
     while(failedNodeIDsIterator.hasNext())
     {
       String failedNodeID = failedNodeIDsIterator.next();
-      String newNodeID = retrieveNewClusterHead(failedNodeID);
-      adapt.addActivatedSite(network.getSite(newNodeID));
-      ArrayList<Node> children = qep.getIOT().getInputSites(qep.getRT().getSite(failedNodeID));
-      Iterator<Node> chidlrenIterator = children.iterator();
-      while(chidlrenIterator.hasNext())
-      {
-        Node child = chidlrenIterator.next();
-        
-      }
+      String equivilentNodeID = retrieveNewClusterHead(failedNodeID);
+      adapt.addActivatedSite(network.getSite(equivilentNodeID));
+      rewireRoutingTree(failedNodeID, equivilentNodeID, currentRoutingTree);
+      //rewire children
+      rewireNodes(clonedIOT, failedNodeID, equivilentNodeID);
     }
-    adapatation.add(adapt);
+    try
+    {
+      
+      PAF pinnedPaf = this.pinPhysicalOperators(clonedIOT, failedNodeIDs, new ArrayList<String>());
+      InstanceWhereSchedular instanceWhere = 
+        new InstanceWhereSchedular(pinnedPaf, currentRoutingTree, qep.getCostParameters(), localFolder.toString());
+      IOT newIOT = instanceWhere.getIOT();
+      //run new iot though when scheduler and locate changes
+      AgendaIOT newAgenda = doSNWhenScheduling(newIOT, qep.getQos(), qep.getID(), qep.getCostParameters());
+      //output new and old agendas
+      new FailedNodeStrategyLocalUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), 
+                                                           qep.getIOT(), newIOT, localFolder);
+      
+      boolean success = assessQEPsAgendas(qep.getIOT(), newIOT, qep.getAgendaIOT(), newAgenda, 
+                                          false, adapt, failedNodeIDs, currentRoutingTree);
+      if(success)
+        adapatation.add(adapt);
+      return adapatation;
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+    }
     return adapatation;
   }
-
-  
-  
-  
 }

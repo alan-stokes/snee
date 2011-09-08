@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager;
+package uk.ac.manchester.cs.snee.manager.common;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +22,6 @@ import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
-import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -30,7 +29,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
-import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -41,7 +39,6 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
@@ -53,16 +50,6 @@ public abstract class StrategyAbstract
   protected File outputFolder;
   protected String sep = System.getProperty("file.separator");
   
-  /**
-   * bog standard constructor
-   * @param manager
-   */
-  public StrategyAbstract(AutonomicManager manager, SourceMetadataAbstract _metadata)
-  {
-    this.manager = manager;
-    this._metadata = _metadata;
-    this.outputFolder = manager.getOutputFolder();
-  }
   /**
    * checks that the framework can adapt to one failed node
    * @param failedNode
@@ -196,31 +183,34 @@ public abstract class StrategyAbstract
       while(childrenIterator.hasNext() && reprogrammed)
       {
         Node child = newIOT.getNode(childrenIterator.next().getID());
-        Node orginal = child;
-        Node lastChild = null;
-        while(reprogrammed && newAgenda.getTransmissionTask(child) != null)
+        if(child != null)
         {
-          CommunicationTask task = newAgenda.getTransmissionTask(child);
-          Node nextChild =task.getDestNode();
-          if (ad.reprogrammingContains((Site) nextChild))
+          Node orginal = child;
+          Node lastChild = null;
+          while(reprogrammed && newAgenda.getTransmissionTask(child) != null)
           {
-            lastChild = child;
-            child = nextChild;
-          }
-          else
-          {
-            lastChild = child;
-            TemporalAdjustment adjust = new TemporalAdjustment();
-            boolean changed = sortOutTiming(lastChild, orginal, nextChild, (Node) failedSite, startTime, 
-                          duration, newAgenda, oldAgenda, adjust, ad);
-            if(changed)
+            CommunicationTask task = newAgenda.getTransmissionTask(child);
+            Node nextChild =task.getDestNode();
+            if (ad.reprogrammingContains((Site) nextChild))
             {
-              findAffectedSites(nextChild, affectedSites, newAgenda, ad, adjust);
-              adjust.setAffectedSites(affectedSites);
-              ad.addTemporalSite(adjust);
+              lastChild = child;
+              child = nextChild;
             }
-            reprogrammed = false;           
-          } 
+            else
+            {
+              lastChild = child;
+              TemporalAdjustment adjust = new TemporalAdjustment();
+              boolean changed = sortOutTiming(lastChild, orginal, nextChild, (Node) failedSite, startTime, 
+                            duration, newAgenda, oldAgenda, adjust, ad);
+              if(changed)
+              {
+                findAffectedSites(nextChild, affectedSites, newAgenda, ad, adjust);
+                adjust.setAffectedSites(affectedSites);
+                ad.addTemporalSite(adjust);
+              }
+              reprogrammed = false;           
+            } 
+          }
         }
       }
     } 
@@ -453,25 +443,4 @@ public abstract class StrategyAbstract
   
   
   
-  /**
-   * helper method which removes Exchanges from a PAF
-   * @param paf
-   * @return
-   * @throws OptimizationException
-   */
-  protected PAF removeExchangesFromPAF(PAF paf) 
-  throws OptimizationException
-  {
-    //remove exchange operators (does not exist in a paf)
-    Iterator<SensornetOperator> pafIterator = paf.operatorIterator(TraversalOrder.POST_ORDER);
-    while(pafIterator.hasNext())
-    {
-      SensornetOperator physicalOperator = pafIterator.next();
-      if(physicalOperator instanceof SensornetExchangeOperator)
-      {
-        paf.getOperatorTree().removeNode(physicalOperator);
-      }
-    }
-    return paf;
-  }
 }

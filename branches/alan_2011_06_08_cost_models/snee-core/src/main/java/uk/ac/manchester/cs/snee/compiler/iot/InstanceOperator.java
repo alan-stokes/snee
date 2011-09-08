@@ -22,6 +22,8 @@ public class InstanceOperator extends NodeImplementation implements Node
   private Site getDeepestConfluenceSite;
   private static int counter = 0;
   private float selectivity = 1;
+  private InstanceFragment corraspondingFragment = null;
+  
   private ArrayList<InstanceOperator> childOps = new ArrayList<InstanceOperator>();
 
   public Iterator<InstanceOperator> childIterator()
@@ -201,5 +203,15 @@ public class InstanceOperator extends NodeImplementation implements Node
   {
     childOps.clear();
     super.removeAllInputs();
+  }
+
+  public void setCorraspondingFragment(InstanceFragment corraspondingFragment)
+  {
+    this.corraspondingFragment = corraspondingFragment;
+  }
+
+  public InstanceFragment getCorraspondingFragment()
+  {
+    return corraspondingFragment;
   }
 }

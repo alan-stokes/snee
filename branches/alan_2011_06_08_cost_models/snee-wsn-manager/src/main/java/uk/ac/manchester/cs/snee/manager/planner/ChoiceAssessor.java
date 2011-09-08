@@ -2,33 +2,28 @@ package uk.ac.manchester.cs.snee.manager.planner;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AlphaBetaExpression;
 import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostExpressions;
 import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostParameters;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
-import uk.ac.manchester.cs.snee.manager.TemporalAdjustment;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationUtils;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
+import uk.ac.manchester.cs.snee.manager.common.TemporalAdjustment;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB_Controller;
@@ -38,8 +33,6 @@ public class ChoiceAssessor
   private String sep = System.getProperty("file.separator");
   private File AssessmentFolder;
   private MetadataManager _metadataManager;
-  private SensorNetworkSourceMetadata _metadata;
-  private Topology network;
   private File outputFolder;
   private File imageGenerationFolder;
   private boolean underSpareTime;
@@ -51,8 +44,6 @@ public class ChoiceAssessor
                         File outputFolder)
   {
     this._metadataManager = _metadataManager;
-    this._metadata = (SensorNetworkSourceMetadata) _metadata;
-    network = this._metadata.getTopology();
     this.outputFolder = outputFolder;
     this.imageGenerator = new TinyOS_SNCB_Controller();
   }
@@ -218,7 +209,6 @@ public class ChoiceAssessor
   CodeGenerationException
   {
     CostParameters parameters = _metadataManager.getCostParameters();
-    Long timeTakesSoFar = new Long(0);
     //do each reprogrammed site (most expensive cost)
     Iterator<Site> reporgrammedSitesIterator = adapt.reprogrammingSitesIterator();
     while(reporgrammedSitesIterator.hasNext())
@@ -250,10 +240,21 @@ public class ChoiceAssessor
       Iterator<Site> affectedsitesIterator = adjustment.affectedsitesIterator();
       calcOnePacketEnergyCost(affectedsitesIterator, adapt);
     }
-    
+    if(!underSpareTime)
+      calculateEnergyCostOfRunningStartStopCommand(adapt.getNewQep().getRT());
     return calculateOverallEnergyCost();
   }
   
+  /**
+   * used to determine the energy cost of calling start and stop on each node
+   * @param rt
+   */
+  private void calculateEnergyCostOfRunningStartStopCommand(RT rt)
+  {
+    // TODO calculate each energy cost
+    
+  }
+
   /**
    * goes though the entire running sites, looking for cost of adaptation.
    * @return
@@ -339,9 +340,45 @@ public class ChoiceAssessor
       Iterator<Site> affectedsitesIterator = adjustment.affectedsitesIterator();
       timeTakesSoFar += calcPacketsTimeCost(affectedsitesIterator, parameters, adapt, new Long(1));
     }
+    long goldenFrame = calculateGolderTime(adapt.getOldQep().getAgendaIOT());
+    if(timeTakesSoFar > goldenFrame)
+      underSpareTime = false;
+    else
+      underSpareTime = true;
+    if(!underSpareTime)
+      timeTakesSoFar += calculateStartStopTimeAddition(adapt.getNewQep().getRT());
     return timeTakesSoFar;//goes though each reprogrammable node and cal
   }
   
+  /**
+   * used to determine how long the start and stop command will take to run.
+   * @param rt
+   * @return
+   */
+  private Long calculateStartStopTimeAddition(RT rt)
+  {
+    // TODO calculate time and energy cost for start / stop commands
+    /**
+     * pulled from the sncb python scripts, the stop takes a 10 second delay 
+     * and the start a 30 second delay
+     */
+    return new Long(40000);
+  }
+
+  /**
+   * method used to calculate the golden time frame
+   * @param agendaIOT
+   * @return
+   */
+  private long calculateGolderTime(AgendaIOT agendaIOT)
+  {
+    Long deliveryTime = agendaIOT.getDeliveryTime_ms();
+    Long agendaAcquisitionTime = agendaIOT.getAcquisitionInterval_ms();
+    Long agendaBufferingFactor = agendaIOT.getBufferingFactor();
+    Long agendaExecutionTime = agendaAcquisitionTime*agendaBufferingFactor;
+    return agendaExecutionTime - deliveryTime;
+  }
+
   /**
    * calculates the time cost of sending one packet down to a node 
    * (used for redircet, deact, and act adaptations) if no packets, then calculates the packet size

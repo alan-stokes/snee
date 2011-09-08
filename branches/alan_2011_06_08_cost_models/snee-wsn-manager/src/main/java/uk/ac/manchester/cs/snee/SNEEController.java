@@ -59,6 +59,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
+import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
@@ -708,7 +709,7 @@ public class SNEEController implements SNEE {
 	SourceMetadataException, TopologyReaderException, 
 	SNEEDataSourceException, CostParametersException, 
 	SNCBException, SNEECompilerException, IOException, 
-	CodeGenerationException
+	CodeGenerationException, AutonomicManagerException
 	{
 	  _dispatcher.runSimulatedNodeFailure(failedNodesID);
 	}

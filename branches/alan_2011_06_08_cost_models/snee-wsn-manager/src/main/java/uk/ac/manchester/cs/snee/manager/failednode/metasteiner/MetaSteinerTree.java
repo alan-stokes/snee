@@ -14,10 +14,8 @@ import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
-import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.HeuristicSet;
-import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -84,6 +82,12 @@ public class MetaSteinerTree
     return container.getSteinerTree();
   }
 
+  /**
+   * clean up method to keep sure all sources are defined as sources
+   * @param steinerTree
+   * @param sources
+   * @param paf
+   */
   public static void finalCheckForSourceNodes(Tree steinerTree,
 		ArrayList<String> sources, PAF paf)
   {
