@@ -222,12 +222,15 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
           {
             globalSiteIDs.remove(new Integer(disconnectedNodeIDIterator.next()));
           }
+          globalSiteIDs.remove(new Integer(globalRT.getRoot().getID()));
           Random random = new Random();
           if(globalSiteIDs.size() == 0)
             throw new RouterException("No possible adapatation as all nodes disconnected and still no avilable routes");
           
           disconnectedNodes.add(
               new Integer(globalSiteIDs.get(random.nextInt(globalSiteIDs.size()))).toString());
+          found = true;
+          foundParent = true;
         }
       }
     }
@@ -269,7 +272,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     {
       //set up current objects
       RT routingTree =  routeIterator.next();
-      Adaptation currentAdapatation = new Adaptation(qep, StrategyID.FAILED_NODE_PARTIAL, choice);
+      Adaptation currentAdapatation = new Adaptation(qep, StrategyID.FailedNodePartial, choice);
       
       File choiceFolder = new File(choiceFolderMain.toString() + sep + "choice" + choice);
       choiceFolder.mkdir();
@@ -286,6 +289,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
       new FailedNodeStrategyPartialUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), oldIOT, newIOT, choiceFolder);
       boolean success = assessQEPsAgendas(oldIOT, newIOT, oldAgenda, newAgenda, 
                                           timePinned, currentAdapatation, failedNodes, routingTree);
+      currentAdapatation.setFailedNodes(failedNodes);
       if(success)
         totalAdapatations.add(currentAdapatation);
       choice++;

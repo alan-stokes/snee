@@ -256,12 +256,20 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           childExchange.setNextExchange(exchange);
         }
       }
-      InstanceOperator equivilentNodesRootExchange = 
-        clonedIOT.getRootOperatorOfSite(network.getSite(equivilentNodeID));
-      
-      //TODO get parent connected
+      InstanceExchangePart equivilentNodesRootExchange = 
+        (InstanceExchangePart) clonedIOT.getRootOperatorOfSite(network.getSite(equivilentNodeID));
+      Node parent = clonedIOT.getNode(qep.getRT().getSite(failedNodeID).getID()).getOutput(0);
+      exchanges = clonedIOT.getExchangeOperators((Site) parent);
+      exchangeIterator = exchanges.iterator();
+      while(exchangeIterator.hasNext())
+      {
+        InstanceExchangePart exchange = exchangeIterator.next();
+        if(exchange.getPrevious().getCurrentSite().getID().equals(failedNodeID))
+        {
+          exchange.setPrev(equivilentNodesRootExchange);
+        }
+      }
     }
-    
   }
   
   
@@ -272,7 +280,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     System.out.println("Running Failed Node FrameWork Local");
     List<Adaptation> adapatation = new ArrayList<Adaptation>();
     Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
-    Adaptation adapt = new Adaptation(qep, StrategyID.FAILED_NODE_LOCAL, 1);
+    Adaptation adapt = new Adaptation(qep, StrategyID.FailedNodeLocal, 1);
     
     Cloner cloner = new Cloner();
     cloner.dontClone(Logger.class);
@@ -302,6 +310,8 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
       
       boolean success = assessQEPsAgendas(qep.getIOT(), newIOT, qep.getAgendaIOT(), newAgenda, 
                                           false, adapt, failedNodeIDs, currentRoutingTree);
+      
+      adapt.setFailedNodes(failedNodeIDs);
       if(success)
         adapatation.add(adapt);
       return adapatation;

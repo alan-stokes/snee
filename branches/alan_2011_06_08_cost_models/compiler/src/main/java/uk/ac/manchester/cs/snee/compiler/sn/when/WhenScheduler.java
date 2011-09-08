@@ -449,6 +449,7 @@ public class WhenScheduler {
             }
         } catch (final AgendaException e) {
           logger.warn(e);
+            e.printStackTrace();
             throw new WhenSchedulerException(e.getMessage());
         } catch (SchemaMetadataException e) {
           logger.warn(e);

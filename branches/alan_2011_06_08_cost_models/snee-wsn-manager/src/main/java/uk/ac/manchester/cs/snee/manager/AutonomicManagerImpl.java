@@ -51,6 +51,7 @@ import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 
 public class AutonomicManagerImpl implements AutonomicManager 
 {
+  private String sep = System.getProperty("file.separator");
   private Anaylsiser anyliser;
   private Monitor monitor;
   private Planner planner;
@@ -61,13 +62,15 @@ public class AutonomicManagerImpl implements AutonomicManager
   private ArrayList<String> deadNodes = null;
   private int noDeadNodes = 0;
   private int adaptionCount = 1;
+  private String queryName = "";
+
   //private static Logger resultsLogger = Logger.getLogger("results.autonomicManager");
   // folder for autonomic data
   private File outputFolder = new File("AutonomicManagerData");
   //fixed parameters of autonomic calculations
   private final int numberOfTreesToUse = 10;
+  
   private HashMap<String, RunTimeSite> runningSites;
-  private String sep = System.getProperty("file.separator");
   
   public AutonomicManagerImpl(MetadataManager _metadataManager)
   {
@@ -117,6 +120,7 @@ public class AutonomicManagerImpl implements AutonomicManager
     String outputDir = SNEEProperties.getSetting(
         SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
         sep + sQep.getAgendaIOT().getQueryName();
+    setQueryName(sQep.getAgendaIOT().getQueryName());
     File firstOutputFolder = new File(outputDir + sep + "AutonomicManData");
     deleteFileContents(firstOutputFolder);
   }
@@ -374,6 +378,21 @@ public class AutonomicManagerImpl implements AutonomicManager
       IOException, CodeGenerationException, AutonomicManagerException
   {
     monitor.chooseFakeNodeFailure();
+  }
+
+  public void setQueryName(String queryName)
+  {
+    this.queryName = queryName;
+  }
+
+  public String getQueryName()
+  {
+    return queryName;
+  }
+  
+  public int getAdaptionCount()
+  {
+    return adaptionCount;
   }
 
 }

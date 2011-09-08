@@ -313,6 +313,12 @@ public class InstanceExchangePart extends InstanceOperator{
     	return this.prev;
     }
 
+    public void setPrev(InstanceExchangePart prev)
+    {
+      this.prev = prev;
+    }
+    
+    
     /**
      * Get the next exchange component in the chain.
      * @return

@@ -14,6 +14,7 @@ public class Adaptation
   private ArrayList<TemporalAdjustment> temporalSites;
   private ArrayList<Site> deactivationSites;
   private ArrayList<Site> activateSites;
+  private ArrayList<String> failedNodes;
   private SensorNetworkQueryPlan newQep = null;
   private SensorNetworkQueryPlan oldQep = null;
   private Long timeCost = null;
@@ -325,5 +326,15 @@ public class Adaptation
       output  = output.concat(" lifetimeEstimate [" + lifetimeEstimate.toString() + " ms]");
     output  = output.concat(" ID [" + id.toString() + ":" + numberID + "]");
     return output;
+  }
+
+  public void setFailedNodes(ArrayList<String> failedNodes)
+  {
+    this.failedNodes = failedNodes;
+  }
+
+  public ArrayList<String> getFailedNodes()
+  {
+    return failedNodes;
   }
 }

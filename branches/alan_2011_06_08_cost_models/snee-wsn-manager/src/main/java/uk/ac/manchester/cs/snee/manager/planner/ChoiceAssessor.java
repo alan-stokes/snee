@@ -362,7 +362,8 @@ public class ChoiceAssessor
      * pulled from the sncb python scripts, the stop takes a 10 second delay 
      * and the start a 30 second delay
      */
-    return new Long(40000);
+    return new Long(0);
+   // return new Long(40000);
   }
 
   /**
@@ -444,16 +445,21 @@ public class ChoiceAssessor
       Site maindest = redirectedSiteIterator.next();
       Path path = routingTree.getPath(maindest.getID(), sink.getID());
       Iterator<Site> sitesInPath = path.iterator();
-      if(path.getNodes().length == 1)
-      {}
-      Site dest = sitesInPath.next();
-      while(sitesInPath.hasNext())
+      if(path.getNodes().length != 0)
       {
-        Site source = sitesInPath.next();
-        double costPerPacket = costs.getPacketEnergyExpression(source, dest, false, null);
-        runningSites.get(dest.getID()).addToCurrentAdaptationEnergyCost(costPerPacket);
-        runningSites.get(source.getID()).addToCurrentAdaptationEnergyCost(costPerPacket);
-        dest = source;
+        Site dest = sitesInPath.next();
+        while(sitesInPath.hasNext())
+        {
+          Site source = sitesInPath.next();
+          double costPerPacket = costs.getPacketEnergyExpression(source, dest, false, null);
+          runningSites.get(dest.getID()).addToCurrentAdaptationEnergyCost(costPerPacket);
+          runningSites.get(source.getID()).addToCurrentAdaptationEnergyCost(costPerPacket);
+          dest = source;
+        }
+      }
+      else
+      {
+        System.out.println("w");
       }
     }
   }

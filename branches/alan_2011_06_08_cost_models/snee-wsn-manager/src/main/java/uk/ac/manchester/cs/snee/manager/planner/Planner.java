@@ -47,7 +47,10 @@ public class Planner
   CodeGenerationException
   {
     assessor.assessChoices(choices, runningSites);
-    return chooseBestAdaptation(choices);
+    Adaptation bestChoice = chooseBestAdaptation(choices);
+    String id = manager.getQueryName() + "-" + manager.getAdaptionCount();
+    new PlannerUtils(choices).printLatexDocument(bestChoice, id);
+    return bestChoice;
   }
 
   private Adaptation chooseBestAdaptation(List<Adaptation> choices)

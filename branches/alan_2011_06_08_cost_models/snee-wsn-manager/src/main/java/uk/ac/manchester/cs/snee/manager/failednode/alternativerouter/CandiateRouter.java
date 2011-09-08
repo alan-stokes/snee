@@ -176,7 +176,6 @@ public class CandiateRouter extends Router
         connectChildAndParent(newRoutingTree, choice);
         updateNodesEdgeArray(choice, newRoutingTree);
       }
-      new RTUtils(newRoutingTree).exportAsDotFile("sod");
       newRoutingTree.getSiteTree().updateNodesAndEdgesColls(newRoutingTree.getRoot());
       //store new routingTree
       newRoutingTrees.add(newRoutingTree);

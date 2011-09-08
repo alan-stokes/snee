@@ -185,7 +185,7 @@ public class Router {
 		    String destNode = null;
 		    nodesToAdd.remove(randomPos);
 	
-		    LinkCostMetric linkCostMetric = LinkCostMetric.RADIO_LOSS;
+		    LinkCostMetric linkCostMetric = LinkCostMetric.ENERGY;
 		    Path shortestPath;
 		    if (first) {
 				//the first time, get the path from the currentSource to the sink

@@ -60,12 +60,12 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
   private static String sep = System.getProperty("file.separator");
 	protected static Logger resultsLogger;
 	private String sneeProperties;
-	private static int testNo = 1;
 	private static int recoveredTestValue = 0;
 	private static boolean inRecoveryMode = false;
-	private static int actualTestNo = 0;
 	private static int queryid = 1;
+	protected static int testNo = 1;
 	private static SensorNetworkQueryPlan qep;
+	private static BufferedWriter latexCore = null;
 	
 	public SNEEFailedNodeEvalClientUsingInNetworkSource(String query, 
 			double duration, String queryParams, String csvFile, String sneeProperties) 
@@ -98,7 +98,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
       checkRecoveryFile();
 
       runIxentsScripts();
-      
+      generateLatexCore();
       //holds all 30 queries produced by python script.
       ArrayList<String> queries = new ArrayList<String>();
       collectQueries(queries);
@@ -111,15 +111,15 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	    
 	    while(queryIterator.hasNext())
 	    {
-	      RecursiveRun(queryIterator, duration, queryParams, false, failedOutput);
+	      recursiveRun(queryIterator, duration, queryParams, false, failedOutput);
       }
 	    
 	    queryIterator = queries.iterator();
 	    while(queryIterator.hasNext())
       {
-        RecursiveRun(queryIterator, duration, queryParams, true, failedOutput);
+        recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
       }
-	    
+	    failedOutput.write("\\end{document}");
 	    failedOutput.flush();
 	    failedOutput.close();  
     } 
@@ -134,14 +134,55 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	}
 	
 	
-	private static BufferedWriter createFailedTestListWriter() throws IOException
+	private static void generateLatexCore() throws IOException
+  {
+	  File latexCoreF = new File("LatexSections");
+	  if(!latexCoreF.exists())
+    {
+	    latexCoreF.mkdir();
+    }
+	  else
+	  {
+	    deleteFileContents(latexCoreF);
+	  }
+	  latexCoreF = new File(latexCoreF.toString() + sep + "core.tex");
+	  latexCore = new BufferedWriter(new FileWriter(latexCoreF));
+	  latexCore.write("\\documentclass[landscape, 10pt]{report} \n\\usepackage[landscape]{geometry} \n" +
+	  		            "\\begin{document}  \n");
+	  latexCore.flush();  
+  }
+	
+	private static void deleteFileContents(File firstOutputFolder)
+  {
+    if(firstOutputFolder.exists())
+    {
+      File[] contents = firstOutputFolder.listFiles();
+      for(int index = 0; index < contents.length; index++)
+      {
+        File delete = contents[index];
+        if(delete.isDirectory())
+          if(delete != null && delete.listFiles().length > 0)
+            deleteFileContents(delete);
+          else
+            delete.delete();
+        else
+          delete.delete();
+      }
+    }
+    else
+    {
+      firstOutputFolder.mkdir();
+    }  
+  }
+
+  private static BufferedWriter createFailedTestListWriter() throws IOException
   {
 	  File folder = new File("results"); 
 	  File file = new File(folder + sep + "failedTests");
     return new BufferedWriter(new FileWriter(file));
   }
 
-  private static void RecursiveRun(Iterator<String> queryIterator, 
+  private static void recursiveRun(Iterator<String> queryIterator, 
 	                                 Long duration, String queryParams, 
 	                                 boolean allowDeathOfAcquires, 
 	                                 BufferedWriter failedOutput) 
@@ -176,25 +217,32 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
       routingTree = currentQEP.getRT();
       System.out.println("running tests");
       client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
+      
       queryid ++;
       System.out.println("Ran all tests on query " + (queryid));
     }
     catch(Exception e)
     {
       e.printStackTrace();
+      writeErrorToFile(e, failedOutput );
       queryid ++;
-      System.out.println("tests failed for query " + queryid + " going onto query " + (queryid + 1));
-      failedOutput.write(queryid + "          |         " + e.getMessage() + "\n\n" );
-      StackTraceElement[] trace = e.getStackTrace();
-      for(int index = 0; index < trace.length; index++)
-      {
-        failedOutput.write(trace[index].toString() + "\n");
-      }
-      failedOutput.write("\n\n");
-      failedOutput.flush();
-      RecursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
+      recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
     }
 	}
+
+  private static void writeErrorToFile(Exception e, BufferedWriter failedOutput) throws IOException
+  {
+    System.out.println("tests failed for query " + queryid + "  going onto query " + (queryid + 1));
+    failedOutput.write(queryid + " | " + testNo + "          |         " + e.getMessage() + "\n\n" );
+    StackTraceElement[] trace = e.getStackTrace();
+    for(int index = 0; index < trace.length; index++)
+    {
+      failedOutput.write(trace[index].toString() + "\n");
+    }
+    failedOutput.write("\n\n");
+    failedOutput.flush();
+    
+  }
 
   private void runCompilelation() 
   throws 
@@ -295,7 +343,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
   private void updateSites(RT routingTree, boolean allowDeathOfAcquires) 
   throws SourceDoesNotExistException
   {
-    actualTestNo = 0;
+    testNo = 0;
     Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
     siteIDs.clear();
     SNEEController snee = (SNEEController) controller;
@@ -351,35 +399,29 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
   {
     if(position < noSites)
     {
-      if(first && position == noSites -1)
-      {
-        deadNodes.add(siteIDs.get(position));
-        chooseNodes(deadNodes, noSites, position + 1, client, currentQuery, queryid, first);
-        deadNodes.remove(deadNodes.size() -1);
-        first = false;
-      }
-      else
-      {
         chooseNodes(deadNodes, noSites, position + 1, client, currentQuery, queryid, first);
         deadNodes.add(siteIDs.get(position));
         chooseNodes(deadNodes, noSites, position + 1, client, currentQuery, queryid, first);
         deadNodes.remove(deadNodes.size() -1);
-      }
     }
     else
     {   
-      updateRecoveryFile();
-        
-      if(inRecoveryMode)
+      if(deadNodes.size()  != 0)
       {
-        inRecoveryMode = false;
-        client.runForTests(deadNodes, queryid ); 
+        updateRecoveryFile();
+          
+        if(inRecoveryMode)
+        {
+          inRecoveryMode = false;
+          client.runForTests(deadNodes, queryid ); 
+          testNo++;
+        }
+        else
+        {
+          client.runForTests(deadNodes, queryid); 
+          testNo++;
+        }  
       }
-      else
-      {
-        client.runForTests(deadNodes, queryid); 
-        actualTestNo++;
-      }      
     }
   }
 
@@ -412,9 +454,8 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     String path = folder.getAbsolutePath();
     //added to allow recovery from crash
     BufferedWriter recoverWriter = new BufferedWriter(new FileWriter(new File(path + "/recovery.tex")));
-    actualTestNo = 0;
+    testNo = 0;
     recoverWriter.write(testNo + "\n");
-    recoverWriter.write(actualTestNo + "\n");
     recoverWriter.flush();
     recoverWriter.close();
     
@@ -435,7 +476,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
       System.out.println("recovery text located with query test value = " +  recoveryQueryIdLine + " and has test no = " + recoverQueryTestLine);
       queryid = Integer.parseInt(recoveryQueryIdLine);
       testNo = queryid;
-      recoveredTestValue = Integer.parseInt(recoverQueryTestLine);
+      recoveredTestValue = 0;
       inRecoveryMode = true;
       if(queryid == 0 && recoveredTestValue == 0)
       {

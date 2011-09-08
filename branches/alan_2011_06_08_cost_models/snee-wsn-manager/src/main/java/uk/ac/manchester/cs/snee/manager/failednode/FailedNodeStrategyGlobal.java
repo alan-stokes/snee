@@ -109,7 +109,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
     globalFile = new File(outputFolder.toString() + sep + "global Stragety");
     globalFile.mkdir();
 	  List<Adaptation> adaptation = new ArrayList<Adaptation>();
-	  Adaptation adapt = new Adaptation(qep, StrategyID.FAILED_NODE_GLOBAL, 1);
+	  Adaptation adapt = new Adaptation(qep, StrategyID.FailedNodeGlobal, 1);
 	  //remove nodes from topology
 		network = this.getWsnTopology();
 		makeNetworkFile(network);
@@ -160,6 +160,8 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
     }
     
     boolean success = assessQEPsAgendas(oldIOT, newIOT, oldAgenda, newAgenda, false, adapt, failedNodes, routingTree);
+    adapt.setFailedNodes(failedNodes);
+    
     if(success)
       adaptation.add(adapt);
 		return adaptation;
