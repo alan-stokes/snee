@@ -35,6 +35,7 @@
 package uk.ac.manchester.cs.snee.common.graph;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -227,11 +228,6 @@ public class NodeImplementation implements Node {
 		NodeImplementation clonedNode = new NodeImplementation(this.id);
 		return clonedNode;
 	}
-
-	protected void removeAllInputs()
-	{
-	  inputs.clear();
-	}
 	
 	public boolean isLeaf() {
 		return (this.getInDegree() == 0);
@@ -245,5 +241,17 @@ public class NodeImplementation implements Node {
 
 		return true;
 	}
+
+  @Override
+  public void clearInputs()
+  {
+    inputs.clear();
+  }
+
+  @Override
+  public void clearOutputs()
+  {
+    outputs.clear();  
+  }
 
 }

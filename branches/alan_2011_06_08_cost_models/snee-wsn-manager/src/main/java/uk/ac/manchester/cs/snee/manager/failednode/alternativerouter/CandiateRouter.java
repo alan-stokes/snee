@@ -82,7 +82,8 @@ public class CandiateRouter extends Router
     HashMapList<Integer ,Tree> failedNodeToRoutingTreeMapping = new HashMapList<Integer,Tree>();
     /*remove failed nodes from the failed node list, which are parents of a failed node already.
     * this allows routes calculated to be completely independent of other routes */
-    HashMapList<Integer ,String> failedNodeLinks = createLinkedFailedNodes(failedNodes, disconnectedNodes, oldRoutingTree);
+    HashMapList<Integer ,String> failedNodeLinks =
+                          createLinkedFailedNodes(failedNodes, oldRoutingTree, disconnectedNodes);
     
     Iterator<Integer> failedLinkIterator = failedNodeLinks.keySet().iterator();
     int chainCounter = 1;
@@ -100,7 +101,8 @@ public class CandiateRouter extends Router
       //sources used as a carrier to retrieve all input nodes
       ArrayList<String> sources = new ArrayList<String>();
       String sink = removeExcessNodesAndEdges(workingTopology, oldRoutingTree, 
-                                              setofLinkedFailedNodes, disconnectedNodes, sources);
+                                              setofLinkedFailedNodes, sources,
+                                              disconnectedNodes);
       
       //output reduced topology for help in keeping track of progress
       new TopologyUtils(workingTopology).exportAsDOTFile(chainFolder.toString() + sep + "reducedtopology");
@@ -280,17 +282,18 @@ public class CandiateRouter extends Router
   private void removeFailedNodesFromOldRT(RT oldRoutingTree,
       ArrayList<String> failedNodes, ArrayList<String> disconnectedNodes)
   {
+    ArrayList<String> allNodes = new ArrayList<String> ();
+    //allNodes.addAll(disconnectedNodes);
+    allNodes.addAll(failedNodes);
     
     //iterate over failed nodes removing one by one
-    Iterator<String> failedNodeIterator = failedNodes.iterator();
+    Iterator<String> failedNodeIterator = allNodes.iterator();
     while(failedNodeIterator.hasNext())
     {
       //get failed node
       Node toRemove = oldRoutingTree.getSite(failedNodeIterator.next());
       //remove input link off parent
       toRemove.getOutput(0).removeInput(toRemove);
-      //remove inputExchange from parent
-     // removeParentExchange(toRemove);
       //remove output link off each child
       Iterator<Node> childIterator = toRemove.getInputsList().iterator();
       while(childIterator.hasNext())
@@ -300,6 +303,21 @@ public class CandiateRouter extends Router
       oldRoutingTree.getSiteTree().removeNode(toRemove.getID());
     }
     
+    Iterator<String> disconnectedNodesIterator = disconnectedNodes.iterator();
+    while(disconnectedNodesIterator.hasNext())
+    {
+      String nodeID = disconnectedNodesIterator.next();
+      Node toClean = oldRoutingTree.getSite(nodeID);
+      oldRoutingTree.getSiteTree().removeSiteEdges(nodeID);
+      toClean.getOutput(0).removeInput(toClean);
+      Iterator<Node> childIterator = toClean.getInputsList().iterator();
+      while(childIterator.hasNext())
+      {
+        childIterator.next().removeOutput(toClean);
+      }
+      toClean.clearInputs();
+      toClean.clearOutputs();
+    }
     
     //clear all operators off sites
     Iterator<Node> nodeIterator = oldRoutingTree.getSiteTree().getNodes().iterator();
@@ -371,8 +389,10 @@ public class CandiateRouter extends Router
     Tree steinerTree = null;
     //checks that global route can generate a route between nodes.
     steinerTree = computeSteinerTree(workingTopology, sink, sources, paf); 
-    new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
-    new RTUtils(new RT(paf, "", steinerTree, workingTopology)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
+    new RTUtils(new RT(paf, "", steinerTree, workingTopology)).
+         exportAsDotFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
+    new RTUtils(new RT(paf, "", steinerTree, workingTopology)).
+         exportAsTextFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
     routes.add(steinerTree);
     //container for currently tested heuristics
     ArrayList<HeuristicSet> testedHeuristics = new ArrayList<HeuristicSet>();  
@@ -382,8 +402,10 @@ public class CandiateRouter extends Router
       //produce tree for set of heuristics
       MetaSteinerTree treeGenerator = new MetaSteinerTree();
       Tree currentTree = treeGenerator.produceTree(set, sources, sink, workingTopology, paf, oldRoutingTree);
-      new RTUtils(new RT(paf, "", currentTree, null)).exportAsDotFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
-      new RTUtils(new RT(paf, "", currentTree, null)).exportAsTextFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
+      new RTUtils(new RT(paf, "", currentTree, null)).
+           exportAsDotFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
+      new RTUtils(new RT(paf, "", currentTree, null)).
+           exportAsTextFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
       routes.add(currentTree);
     }
     routes = removeDuplicates(routes);
@@ -391,7 +413,8 @@ public class CandiateRouter extends Router
     return routes;
   }
 
-  private HeuristicSet collectNextHeuristicSet(Topology workingTopology, ArrayList<HeuristicSet> testedHeuristics)
+  private HeuristicSet collectNextHeuristicSet(Topology workingTopology, 
+                                               ArrayList<HeuristicSet> testedHeuristics)
   {
     boolean alreadyDone = false;
     //get new set of heuristics
@@ -418,8 +441,10 @@ public class CandiateRouter extends Router
     while(routeIterator.hasNext())
     {
       Tree currentTree = routeIterator.next();
-      new RTUtils(new RT(paf, "", currentTree, network)).exportAsDotFile(cleaned.toString() + sep + "route" + counter); 
-      new RTUtils(new RT(paf, "", currentTree, network)).exportAsTextFile(cleaned.toString() + sep + "route" + counter); 
+      new RTUtils(new RT(paf, "", currentTree, network)).
+            exportAsDotFile(cleaned.toString() + sep + "route" + counter); 
+      new RTUtils(new RT(paf, "", currentTree, network)).
+            exportAsTextFile(cleaned.toString() + sep + "route" + counter); 
       counter++;
     }
   }
@@ -561,11 +586,12 @@ public class CandiateRouter extends Router
    * @return
    */
   private HashMapList<Integer, String> createLinkedFailedNodes(
-      ArrayList<String> failedNodes, ArrayList<String> disconnectedNodes, RT RT)
+      ArrayList<String> failedNodes, RT RT, ArrayList<String> disconnectedNodes)
   {
     ArrayList<String> combinedNodes = new ArrayList<String>();
     combinedNodes.addAll(failedNodes);
     combinedNodes.addAll(disconnectedNodes);
+    
     HashMapList<Integer, String> failedNodeLinkedList = new HashMapList<Integer, String>();
     int currentLink = 0;
     ArrayList<String> alreadyInLink = new ArrayList<String>();
@@ -627,8 +653,8 @@ public class CandiateRouter extends Router
    */
   private String removeExcessNodesAndEdges(Topology workingTopology, RT oldRoutingTree, 
                                            ArrayList<String> setofLinkedFailedNodes, 
-                                           ArrayList<String> disconnectedNodes, 
-                                           ArrayList<String> savedChildSites)
+                                           ArrayList<String> savedChildSites,
+                                           ArrayList<String> disconnectedNodes)
   {
     String savedParentSite = "";
     //locate all children of all failed nodes in link which are active, and place them into saved sites
@@ -655,13 +681,12 @@ public class CandiateRouter extends Router
     while(siteIterator.hasNext())
     {
       Site site = siteIterator.next();
-      if((!savedChildSites.contains(site.getID()) && !savedParentSite.equals(site.getID())) &&
-          !disconnectedNodes.contains(site.getID()))
+      if(!savedChildSites.contains(site.getID()) && !savedParentSite.equals(site.getID()) && 
+         !disconnectedNodes.contains(site.getID()))
       {
         workingTopology.removeNodeAndAssociatedEdges(site.getID());
       }
     }
-    
     return savedParentSite;
   }
 

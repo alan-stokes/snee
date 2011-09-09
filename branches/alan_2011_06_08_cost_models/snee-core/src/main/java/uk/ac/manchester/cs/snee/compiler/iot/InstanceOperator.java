@@ -202,7 +202,7 @@ public class InstanceOperator extends NodeImplementation implements Node
   public void removeAllInputs()
   {
     childOps.clear();
-    super.removeAllInputs();
+    super.clearInputs();
   }
 
   public void setCorraspondingFragment(InstanceFragment corraspondingFragment)

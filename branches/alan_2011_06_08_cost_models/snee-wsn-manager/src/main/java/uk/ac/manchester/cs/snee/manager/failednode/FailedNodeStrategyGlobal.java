@@ -152,6 +152,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
     {
       newAgenda = whenSched.doWhenScheduling(newIOT, qep.getQos(), qep.getQueryName(), qep.getCostParameters());
       new AgendaIOTUtils(newAgenda, newIOT, false).exportAsLatex(globalFile.toString() + sep + "newAgenda");
+      new AgendaIOTUtils(newAgenda, newIOT, false).generateImage(globalFile.toString());
       //new AgendaIOTUtils(newAgenda, newIOT, false).generateImage(globalFile.toString() + sep + "newAgenda");
     }
     catch (WhenSchedulerException e)

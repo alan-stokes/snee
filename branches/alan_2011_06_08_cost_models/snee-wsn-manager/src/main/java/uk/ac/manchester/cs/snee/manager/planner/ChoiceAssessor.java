@@ -81,7 +81,7 @@ public class ChoiceAssessor
       adapt.setEnergyCost(this.energyCost(adapt));
       adapt.setLifetimeEstimate(this.estimatedLifetime(adapt));
       adapt.setRuntimeCost(calculateQEPExecutionEnergyCost());
-      resetRunningSitesAdaptCost();  
+      resetRunningSitesAdaptCost(); 
     }
     new AdaptationUtils(choices, _metadataManager.getCostParameters()).FileOutput(AssessmentFolder);
   }
@@ -162,7 +162,23 @@ public class ChoiceAssessor
   {
     RT routingTree = adapt.getNewQep().getRT();
     Site sink = routingTree.getRoot();
-    Path path = routingTree.getPath(reprogrammedSite.getID(), sink.getID());
+    //checking not jumping unpon itself
+    if(sink.getID().equals(reprogrammedSite.getID()))
+      return 0;
+    //find path between the two nodes
+    Path path = null;
+    try
+    {
+      if(reprogrammedSite.getID().equals("4"))
+        System.out.println("");
+      path = routingTree.getPath(reprogrammedSite.getID(), sink.getID());
+    }
+    catch(Exception e)
+    {
+      System.out.println("path between " + reprogrammedSite.getID() + "and sink" + sink.getID());
+      System.exit(0);
+    }
+    //if no path return 0
     if(path.getNodes().length == 1)
       return 0;
     else
@@ -293,17 +309,18 @@ public class ChoiceAssessor
     Site sink = routingTree.getRoot();
     Path path = routingTree.getPath(reprogrammedSite.getID(), sink.getID());
     Iterator<Site> sitesInPath = path.iterator();
-    if(path.getNodes().length == 1)
-    {}
-    Site dest = sitesInPath.next();
-    while(sitesInPath.hasNext())
+    if(path.getNodes().length != 1)
     {
-      Site source = sitesInPath.next();
-      double costPerPacket = costs.getPacketEnergyExpression(source, dest, false, null);
-      costPerPacket = costPerPacket * packets;
-      runningSites.get(dest.getID()).addToCurrentAdaptationEnergyCost(costPerPacket);
-      runningSites.get(source.getID()).addToCurrentAdaptationEnergyCost(costPerPacket);
-      dest = source;
+      Site dest = sitesInPath.next();
+      while(sitesInPath.hasNext())
+      {
+        Site source = sitesInPath.next();
+        double costPerPacket = costs.getPacketEnergyExpression(source, dest, false, null);
+        costPerPacket = costPerPacket * packets;
+        runningSites.get(dest.getID()).addToCurrentAdaptationEnergyCost(costPerPacket);
+        runningSites.get(source.getID()).addToCurrentAdaptationEnergyCost(costPerPacket);
+        dest = source;
+      }
     }
   }
 

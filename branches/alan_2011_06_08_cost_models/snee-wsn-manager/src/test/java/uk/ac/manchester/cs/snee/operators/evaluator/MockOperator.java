@@ -234,4 +234,18 @@ public class MockOperator implements LogicalOperator {
 			// TODO Auto-generated method stub
 			return false;
 		}
+
+    @Override
+    public void clearInputs()
+    {
+      // TODO Auto-generated method stub
+      
+    }
+
+    @Override
+    public void clearOutputs()
+    {
+      // TODO Auto-generated method stub
+      
+    }
 }

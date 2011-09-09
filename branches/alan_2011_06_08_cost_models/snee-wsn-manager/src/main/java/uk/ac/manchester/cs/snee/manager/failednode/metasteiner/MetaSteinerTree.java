@@ -233,7 +233,7 @@ public class MetaSteinerTree
         connected = true;
         Node node =  container.getSteinerTree().getNode(secondSite.getID());
         node.addInput(firstSite);
-        firstSite.addOutput(node);
+        //firstSite.addOutput(node);
         container.getSteinerTree().addEdge(firstSite, node);
       }
     }

@@ -175,4 +175,27 @@ public class Tree extends Graph {
       }
     }
   }
+
+  public void removeSiteEdges(String nodeID)
+  {
+    ArrayList<Edge> toRemove = new ArrayList<Edge>();
+    Iterator<Edge> edgeIter = this.edges.values().iterator();
+    while (edgeIter.hasNext()) 
+    {
+      Edge e = edgeIter.next();
+      if (e.getSourceID().equals(nodeID) || e.getDestID().equals(nodeID)) 
+      {
+        toRemove.add(e);
+      }
+    }
+    edgeIter = toRemove.iterator();
+    while (edgeIter.hasNext()) 
+    {
+      Edge e = edgeIter.next();
+      String eid = generateEdgeID(e.getSourceID(),e.getDestID());
+      this.edges.remove(eid);
+    }
+    
+    
+  }
 }

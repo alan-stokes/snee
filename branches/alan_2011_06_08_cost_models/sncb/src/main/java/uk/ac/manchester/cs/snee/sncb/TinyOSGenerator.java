@@ -2192,6 +2192,8 @@ public class TinyOSGenerator {
 		    copyMiscFiles();
 
 		} catch (Exception e) {
+		  e.printStackTrace();
+		  System.exit(0);
 			logger.warn(e.getLocalizedMessage(), e);
 		    throw new CodeGenerationException(e);
 		} 

@@ -457,6 +457,18 @@ public class Topology extends Graph {
     }
     this.removeNode(nodeID);
   }
+  
+  public void removeAssociatedEdges(String nodeID)
+  {
+    ArrayList<Edge> edgesSet =  new ArrayList<Edge>(edges.values());
+    Iterator<Edge> edgeIterator = edgesSet.iterator();
+    while(edgeIterator.hasNext())
+    {
+      Edge edge = edgeIterator.next();
+      if(edge.getDestID().equals(nodeID) || edge.getSourceID().equals(nodeID))
+        this.removeEdge(this.getSite(edge.getSourceID()), this.getSite(edge.getDestID()));
+    }
+  }
 
 
     

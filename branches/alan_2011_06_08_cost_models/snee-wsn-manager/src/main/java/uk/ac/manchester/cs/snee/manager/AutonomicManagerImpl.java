@@ -63,14 +63,13 @@ public class AutonomicManagerImpl implements AutonomicManager
   private int noDeadNodes = 0;
   private int adaptionCount = 1;
   private String queryName = "";
-
-  //private static Logger resultsLogger = Logger.getLogger("results.autonomicManager");
   // folder for autonomic data
   private File outputFolder = new File("AutonomicManagerData");
+  private HashMap<String, RunTimeSite> runningSites;
+  //private static Logger resultsLogger = Logger.getLogger("results.autonomicManager");
+
   //fixed parameters of autonomic calculations
   private final int numberOfTreesToUse = 10;
-  
-  private HashMap<String, RunTimeSite> runningSites;
   
   public AutonomicManagerImpl(MetadataManager _metadataManager)
   {
@@ -229,7 +228,7 @@ public class AutonomicManagerImpl implements AutonomicManager
    * @param failedNodes
    */
   private void removeFailedNodesFromRunningNodes(ArrayList<String> failedNodes)
-  {
+  {/*
     if(runningSites != null)
     {
       Iterator<String> failedNodeIterator = failedNodes.iterator();
@@ -238,7 +237,7 @@ public class AutonomicManagerImpl implements AutonomicManager
         String failedNodeID = failedNodeIterator.next();
         runningSites.remove(failedNodeID);
       }
-    }
+    }*/
   }
 
   /* (non-Javadoc)

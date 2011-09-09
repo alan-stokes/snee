@@ -77,4 +77,9 @@ public class RunTimeSite
     currentEnergy = currentEnergy - qepExecutionCost;
   }
   
+  public String toString()
+  {
+    return this.representativeSite.toString();
+  }
+  
 }

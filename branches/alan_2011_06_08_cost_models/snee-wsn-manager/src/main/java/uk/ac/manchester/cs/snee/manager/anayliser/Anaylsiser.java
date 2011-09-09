@@ -19,6 +19,7 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.StrategyAbstract;
@@ -236,6 +237,7 @@ public class Anaylsiser
    * @throws SNCBException
    * @throws SNEECompilerException
    * @throws NumberFormatException
+   * @throws RouterException 
    */
   public List<Adaptation> runFailedNodeStragities(ArrayList<String> failedNodes) 
   throws OptimizationException, SchemaMetadataException, 

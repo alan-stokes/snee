@@ -522,7 +522,7 @@ public class Agenda extends SNEEAlgebraicForm{
 		.siteIterator(TraversalOrder.POST_ORDER);
 	while (siteIter.hasNext()) {
 	    final Site site = siteIter.next();
-	    this.assertConsistentStartTime(sleepStart, site);
+	    //this.assertConsistentStartTime(sleepStart, site);
 	    final SleepTask t = new SleepTask(sleepStart, sleepEnd, site,
 		    lastInAgenda, costParams);
 	    this.addTask(t, site);

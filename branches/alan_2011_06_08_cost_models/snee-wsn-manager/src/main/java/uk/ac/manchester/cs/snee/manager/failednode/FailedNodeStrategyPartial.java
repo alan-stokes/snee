@@ -93,52 +93,6 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
   }
 
   /**
-   * MAIN METHOD TO ENTER PATIAL ADAPTATION
-   * @throws  
-   */
-  @Override
-  public List<Adaptation> adapt(ArrayList<String> failedNodes) 
-  throws NumberFormatException, SNEEConfigurationException, SchemaMetadataException, 
-  SNEECompilerException, MalformedURLException, SNEEException, OptimizationException,
-  TypeMappingException, MetadataException, UnsupportedAttributeTypeException, 
-  SourceMetadataException, TopologyReaderException, SNEEDataSourceException, 
-  CostParametersException, SNCBException 
-  { 
-    System.out.println("Running Failed Node FrameWork Partial"); 
-    setUpFolders(manager);
-    new FailedNodeStrategyPartialUtils(this).outputTopologyAsDotFile(partialFolder,  sep + "topology.dot");
-    //setup collectors
-    PAF paf = oldIOT.getPAF(); 
-    ArrayList<RT> routingTrees = new ArrayList<RT>();
-    ArrayList<String> disconnectedNodes = new ArrayList<String>();
-    //create new routing tree
-    try
-    {
-      routingTrees = createNewRoutingTrees(failedNodes, disconnectedNodes, paf, oldIOT.getRT(), partialFolder );
-    }
-    catch (RouterException e)
-    {
-      e.printStackTrace();
-    }
-
-    //create store for all adapatations
-    List<Adaptation> totalAdapatations = new ArrayList<Adaptation>();
-    Iterator<RT> routeIterator = routingTrees.iterator();
-    choice = 0;
-    
-    try
-    {
-      tryGoingThoughRoutes(routeIterator, failedNodes, disconnectedNodes, totalAdapatations);
-    }
-    catch(Exception e)
-    {
-      e.printStackTrace();
-      tryGoingThoughRoutes(routeIterator, failedNodes, disconnectedNodes, totalAdapatations);
-    }
-    return totalAdapatations;
-  }
-
-  /**
    * if a route can't be calculated with the pinned sites, 
    * dynamically remove a site to allow adaptation.
    * @param oldIOT2
@@ -312,15 +266,16 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
    * @throws MetaSteinerTreeException 
    */
   private ArrayList<RT> createNewRoutingTrees(ArrayList<String> failedNodes, 
-      ArrayList<String> disconnectedNodes, PAF paf, RT oldRoutingTree, File outputFolder) 
+      ArrayList<String> disconnectedNodes, PAF paf, RT oldRoutingTree, File outputFolder,
+      boolean previousDidntMeetQoSExpectations) 
   throws 
   NumberFormatException, SNEEConfigurationException, 
-  SchemaMetadataException, SNEECompilerException, RouterException
+  SchemaMetadataException, RouterException
   {
     Topology network = this.getWsnTopology();
     CandiateRouter router = new CandiateRouter(network, outputFolder);
     return genereateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, "", 
-                            numberOfRoutingTreesToWorkOn, router);
+                            numberOfRoutingTreesToWorkOn, router, previousDidntMeetQoSExpectations);
   }
 
   /**
@@ -340,20 +295,24 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
    */
   private ArrayList<RT> genereateRoutes(RT oldRoutingTree, ArrayList<String> failedNodes, 
                                          ArrayList<String> disconnectedNodes, String queryName, 
-                                         Integer numberOfRoutingTreesToWorkOn, CandiateRouter router) 
-  throws SchemaMetadataException, NumberFormatException, SNEEConfigurationException, RouterException
+                                         Integer numberOfRoutingTreesToWorkOn, CandiateRouter router,
+                                         boolean previousDidntMeetQoSExpectations) 
+  throws
+  SchemaMetadataException, NumberFormatException, 
+  SNEEConfigurationException, RouterException
   {
     ArrayList<RT> routes = new ArrayList<RT>();
     try
     {
-      routes = router.generateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, 
-                                     queryName, numberOfRoutingTreesToWorkOn);
+      if(!previousDidntMeetQoSExpectations)
+        routes = router.generateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, 
+                                       queryName, numberOfRoutingTreesToWorkOn);
       if(routes.size() == 0)
       {
         chooseDisconnectedNode(oldIOT, failedNodes, disconnectedNodes);
         System.out.println("No routes avilable, so disconnecting nodes" + disconnectedNodes.toString());
         return genereateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, queryName, 
-                               numberOfRoutingTreesToWorkOn, router);
+                               numberOfRoutingTreesToWorkOn, router, false);
       }
       return routes;
     }
@@ -362,7 +321,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
       chooseDisconnectedNode(oldIOT, failedNodes, disconnectedNodes);
       System.out.println("No routes avilable, so disconnecting nodes" + disconnectedNodes.toString());
       return genereateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, queryName, 
-                             numberOfRoutingTreesToWorkOn, router);
+                             numberOfRoutingTreesToWorkOn, router, false);
     }
   }
 
@@ -386,5 +345,67 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
   public boolean canAdaptToAll(ArrayList<String> failedNodes)
   {
     return true;
+  }
+  
+  /**
+   * method used to recover from all types of failures (no routes, routes which break QoS 
+   * expectations etc
+   */
+  private  List<Adaptation> recursivelyReTryCalculation(ArrayList<String> failedNodes,
+                                                        ArrayList<String> disconnectedNodes, 
+                                                        PAF paf, RT rt, File partialFolder2, 
+                                                        List<Adaptation> totalAdapatations,
+                                                        boolean previouslyFailedToMeetQoSExpectations) 
+  throws 
+  NumberFormatException, SNEEConfigurationException, 
+  SchemaMetadataException
+  {
+    ArrayList<RT> routingTrees;
+    try
+    {
+      routingTrees = createNewRoutingTrees(failedNodes, disconnectedNodes, paf, oldIOT.getRT(), 
+                                           partialFolder, previouslyFailedToMeetQoSExpectations);
+    }
+    catch (RouterException e)
+    {
+      return totalAdapatations;
+    }
+    Iterator<RT> routeIterator = routingTrees.iterator();
+    choice = 0;
+    try
+    {
+      tryGoingThoughRoutes(routeIterator, failedNodes, disconnectedNodes, totalAdapatations);
+      return totalAdapatations;
+    }
+    catch(Exception e)
+    {
+      System.out.println("Routes generated didnt agree with QoS trying with larger scope");
+      return recursivelyReTryCalculation(failedNodes, disconnectedNodes, paf, oldIOT.getRT(), 
+                                         partialFolder, totalAdapatations, true);
+    }
+  }  
+  
+  /**
+   * @throws RouterException 
+   * MAIN METHOD TO ENTER PATIAL ADAPTATION
+   * @throws  
+   */
+  @Override
+  public List<Adaptation> adapt(ArrayList<String> failedNodes) 
+  throws NumberFormatException, SNEEConfigurationException, SchemaMetadataException, 
+  SNEECompilerException, MalformedURLException, SNEEException, OptimizationException,
+  TypeMappingException, MetadataException, UnsupportedAttributeTypeException, 
+  SourceMetadataException, TopologyReaderException, SNEEDataSourceException, 
+  CostParametersException, SNCBException 
+  { 
+    System.out.println("Running Failed Node FrameWork Partial"); 
+    setUpFolders(manager);
+    new FailedNodeStrategyPartialUtils(this).outputTopologyAsDotFile(partialFolder,  sep + "topology.dot");
+    //setup collectors
+    PAF paf = oldIOT.getPAF(); 
+    ArrayList<String> disconnectedNodes = new ArrayList<String>();
+    List<Adaptation> totalAdapatations = new ArrayList<Adaptation>();
+    return recursivelyReTryCalculation(failedNodes, disconnectedNodes, paf, 
+                                       oldIOT.getRT(), partialFolder, totalAdapatations, false);
   }
 }

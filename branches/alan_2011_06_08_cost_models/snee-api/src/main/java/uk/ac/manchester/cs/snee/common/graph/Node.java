@@ -76,6 +76,10 @@ public interface Node extends Equivalence<Node> {
 	public void setInput(Node n, int index);
 
 	public void setOutput(Node n, int index);
+	
+	public void clearInputs();
+	
+	public void clearOutputs();
 
 	/**
 	 * Copies everything except for the inputs and output nodes (as they may not exist yet)
