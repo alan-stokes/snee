@@ -158,8 +158,10 @@ public class CandiateRouter extends Router
                                       Integer numberOfRoutingTreesToWorkOn, 
                                       ArrayList<String> disconnectedNodes)
   {
-    int counter = 0;
     ArrayList<RT> newRoutingTrees = new ArrayList<RT>();
+    try
+    {
+    int counter = 0;
     boolean first = true;
     Random randomiser = new Random();
     long max = calcuateMaxTrees(failedNodeToRoutingTreeMapping);
@@ -185,6 +187,14 @@ public class CandiateRouter extends Router
       counter ++;
     }
     return newRoutingTrees;
+    }
+    catch(Exception e)
+    {
+      System.out.println("something died: " + e.getMessage());
+      e.printStackTrace();
+      System.exit(0);
+      return newRoutingTrees; 
+    }
   }
 
   private void updateNodesEdgeArray(Tree choice, RT newRoutingTree)
@@ -201,6 +211,7 @@ public class CandiateRouter extends Router
     } 
   }
 
+  static int position = 0;
   private Tree chooseChoice(Iterator<Integer> keyIterator, HashMapList<Integer, 
                             Tree> failedNodeToRoutingTreeMapping, 
                             Random randomiser, boolean first)
@@ -208,11 +219,14 @@ public class CandiateRouter extends Router
     Integer key = keyIterator.next();
     ArrayList<Tree> choices = failedNodeToRoutingTreeMapping.get(key);
     Tree choice = null;
-    if(first)
-      choice = choices.get(0);
-    else
-      choice = choices.get(randomiser.nextInt(choices.size()));
-    choices.remove(choice);
+    if(position < choices.size())
+      choice = choices.get(position);
+    else 
+    {
+      position = 0;
+      choice = choices.get(position);
+    }
+    position++;
     choice = cloner.deepClone(choice);
     return choice;
   }
@@ -309,7 +323,8 @@ public class CandiateRouter extends Router
       String nodeID = disconnectedNodesIterator.next();
       Node toClean = oldRoutingTree.getSite(nodeID);
       oldRoutingTree.getSiteTree().removeSiteEdges(nodeID);
-      toClean.getOutput(0).removeInput(toClean);
+      if(toClean.getOutDegree() != 0)
+        toClean.getOutput(0).removeInput(toClean);
       Iterator<Node> childIterator = toClean.getInputsList().iterator();
       while(childIterator.hasNext())
       {

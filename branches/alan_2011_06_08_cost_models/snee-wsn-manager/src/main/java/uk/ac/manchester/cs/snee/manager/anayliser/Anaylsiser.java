@@ -21,6 +21,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.StrategyAbstract;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyEnum;
@@ -237,6 +238,7 @@ public class Anaylsiser
    * @throws SNCBException
    * @throws SNEECompilerException
    * @throws NumberFormatException
+   * @throws AutonomicManagerException 
    * @throws RouterException 
    */
   public List<Adaptation> runFailedNodeStragities(ArrayList<String> failedNodes) 
@@ -247,7 +249,7 @@ public class Anaylsiser
          UnsupportedAttributeTypeException, SourceMetadataException, 
          TopologyReaderException, SNEEDataSourceException, 
          CostParametersException, SNCBException, SNEECompilerException, 
-         NumberFormatException
+         NumberFormatException, AutonomicManagerException
   {
   	//create adaparatation array
   	List<Adaptation> adapatations = new ArrayList<Adaptation>();
@@ -260,6 +262,8 @@ public class Anaylsiser
   	  if(framework.canAdaptToAll(failedNodes))
   	  {
   	    List<Adaptation> frameworkOutput = framework.adapt(failedNodes);
+  	    if(frameworkOutput.size() == 0)
+  	      throw new AutonomicManagerException("framework produced no adaptations");
   	    if(frameworkOutput.size() == 0 && framework instanceof FailedNodeStrategyGlobal)
   	      feasiable = false;
   	    adapatations.addAll(frameworkOutput);
