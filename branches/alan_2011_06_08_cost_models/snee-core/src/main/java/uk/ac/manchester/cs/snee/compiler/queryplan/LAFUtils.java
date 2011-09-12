@@ -85,6 +85,22 @@ public class LAFUtils extends GraphUtils {
 			logger.debug("RETURN LAFUtils()");
 	}
 
+	public void exportAsDotFile(String outputFolder, boolean fileExtension)
+	{
+      try
+	  {
+   	    if(fileExtension)
+	      exportAsDOTFile(outputFolder + ".dot");
+   	    else
+	  	  exportAsDOTFile(outputFolder);
+	  }
+	  catch (Exception e)
+	  {
+	     // TODO Auto-generated catch block
+	     e.printStackTrace();
+	  }
+	}
+
 	/**
 	 * Generate a DOT file representation of the DLAF for Graphviz.
 	 */
