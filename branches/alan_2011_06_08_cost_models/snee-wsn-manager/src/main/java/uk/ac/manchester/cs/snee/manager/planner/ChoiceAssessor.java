@@ -454,8 +454,10 @@ public class ChoiceAssessor
     else
       routingTree= adapt.getOldQep().getRT();
     CostParameters parameters = _metadataManager.getCostParameters();
-    AvroraCostExpressions costs = 
+    AvroraCostExpressions newCosts = 
       new AvroraCostExpressions(adapt.getNewQep().getDAF(), parameters, adapt.getNewQep().getAgendaIOT());
+    AvroraCostExpressions oldCosts = 
+      new AvroraCostExpressions(adapt.getOldQep().getDAF(), parameters, adapt.getOldQep().getAgendaIOT());
     Site sink = routingTree.getRoot();
     while(redirectedSiteIterator.hasNext())
     {
@@ -468,7 +470,12 @@ public class ChoiceAssessor
         while(sitesInPath.hasNext())
         {
           Site source = sitesInPath.next();
-          double costPerPacket = costs.getPacketEnergyExpression(source, dest, false, null);
+          double costPerPacket;
+          if(!deactivedNodes)
+            costPerPacket = newCosts.getPacketEnergyExpression(source, dest, false, null);
+          else
+            costPerPacket = oldCosts.getPacketEnergyExpression(source, dest, false, null);
+          
           runningSites.get(dest.getID()).addToCurrentAdaptationEnergyCost(costPerPacket);
           runningSites.get(source.getID()).addToCurrentAdaptationEnergyCost(costPerPacket);
           dest = source;

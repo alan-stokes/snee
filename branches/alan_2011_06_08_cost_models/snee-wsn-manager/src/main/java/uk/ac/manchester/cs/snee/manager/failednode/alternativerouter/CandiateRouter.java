@@ -103,6 +103,7 @@ public class CandiateRouter extends Router
       String sink = removeExcessNodesAndEdges(workingTopology, oldRoutingTree, 
                                               setofLinkedFailedNodes, sources,
                                               disconnectedNodes);
+      System.out.println("sources are " + sources.toString());
       
       //output reduced topology for help in keeping track of progress
       new TopologyUtils(workingTopology).exportAsDOTFile(chainFolder.toString() + sep + "reducedtopology");
@@ -180,6 +181,7 @@ public class CandiateRouter extends Router
         connectChildAndParent(newRoutingTree, choice);
         updateNodesEdgeArray(choice, newRoutingTree);
       }
+      //new RTUtils(new RT(oldRoutingTree.getPAF(), "", newRoutingTree.getSiteTree(), null)).exportAsDotFile("dam");
       newRoutingTree.getSiteTree().updateNodesAndEdgesColls(newRoutingTree.getRoot());
       //store new routingTree
       newRoutingTrees.add(newRoutingTree);
@@ -259,7 +261,7 @@ public class CandiateRouter extends Router
         {
           Node input = inputs.next();
           treeChild.addInput(input);
-          input.removeOutput(choiceChild);
+          input.removeOutput(input.getOutput(0));
           input.addOutput(treeChild);
         }
       }
@@ -638,15 +640,18 @@ public class CandiateRouter extends Router
       ArrayList<String> alreadyInLink, Node node, 
       ArrayList<String> failedNodes, int currentLink)
   {
-    Iterator<Node> childrenIterator = node.getInputsList().iterator();
-    while(childrenIterator.hasNext())
+    if(node.getInDegree() != 0)
     {
-      Node child = childrenIterator.next();
-      if(failedNodes.contains(child.getID()) && !alreadyInLink.contains(child.getID()))
+      Iterator<Node> childrenIterator = node.getInputsList().iterator();
+      while(childrenIterator.hasNext())
       {
-        alreadyInLink.add(child.getID());
-        failedNodeLinkedList.add(currentLink, child.getID());
-        checkNodesChildrenAndParent(failedNodeLinkedList, alreadyInLink, child, failedNodes, currentLink);
+        Node child = childrenIterator.next();
+        if(failedNodes.contains(child.getID()) && !alreadyInLink.contains(child.getID()))
+        {
+          alreadyInLink.add(child.getID());
+          failedNodeLinkedList.add(currentLink, child.getID());
+          checkNodesChildrenAndParent(failedNodeLinkedList, alreadyInLink, child, failedNodes, currentLink);
+        }
       }
     }
     Node parent = node.getOutput(0);
@@ -683,12 +688,16 @@ public class CandiateRouter extends Router
       while(inputs.hasNext())
       {
         Node currentChild = inputs.next();
-        if(!setofLinkedFailedNodes.contains(currentChild.getID()))
+        if((!setofLinkedFailedNodes.contains(currentChild.getID()) && 
+           !disconnectedNodes.contains(currentChild.getID())) ||
+           oldRoutingTree.getSite(currentChild.getID()).isSource())
           savedChildSites.add(currentChild.getID());
       }
       //go though parent
       Node output = failedSite.getOutput(0);
-      if(!setofLinkedFailedNodes.contains(output.getID()))
+      if((!setofLinkedFailedNodes.contains(output.getID()) &&
+         !disconnectedNodes.contains(output.getID())) ||
+        oldRoutingTree.getSite(output.getID()).isSource())
         savedParentSite = output.getID();
     }
     //go though entire old routing tree, removing nodes which are not in the saved sites array

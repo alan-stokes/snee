@@ -71,7 +71,7 @@ public class TemporalAdjustment
   public String toString()
   {
     String output = "";
-    output = output.concat("S{");
+    output = output.concat("S[");
     Iterator<Site> siteIterator = affectedsitesIterator();
     while(siteIterator.hasNext())
     {
@@ -81,7 +81,7 @@ public class TemporalAdjustment
       else
         output = output.concat(concat);
     }
-    output = output.concat("} St{" + adjustmentPosition + "} By{" + adjustmentDuration + "}");
+    output = output.concat("] St[" + adjustmentPosition + "] By[" + adjustmentDuration + "]");
     return output;
   }
   

@@ -389,6 +389,11 @@ public class AutonomicManagerImpl implements AutonomicManager
     return queryName;
   }
   
+  public String getQueryID()
+  {
+    return qep.getID().substring(0, 6);
+  }
+  
   public int getAdaptionCount()
   {
     return adaptionCount;

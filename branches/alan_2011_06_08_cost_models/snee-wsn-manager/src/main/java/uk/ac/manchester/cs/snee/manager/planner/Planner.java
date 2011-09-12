@@ -48,8 +48,17 @@ public class Planner
   {
     assessor.assessChoices(choices, runningSites);
     Adaptation bestChoice = chooseBestAdaptation(choices);
-    String id = manager.getQueryName() + "-" + manager.getAdaptionCount();
-    new PlannerUtils(choices).printLatexDocument(bestChoice, id);
+    String id = manager.getQueryID() + "-" + manager.getAdaptionCount();
+    System.out.println("sucessfully chose best adaptation, printing out latex");
+    try
+    {
+      new PlannerUtils(choices).printLatexDocument(bestChoice, id);
+    }
+    catch(Exception e)
+    {
+      System.out.println(e.getMessage());
+      e.printStackTrace();
+    }
     return bestChoice;
   }
 

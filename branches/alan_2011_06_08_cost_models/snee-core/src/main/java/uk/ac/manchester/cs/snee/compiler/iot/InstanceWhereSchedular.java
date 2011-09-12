@@ -75,42 +75,60 @@ public class InstanceWhereSchedular
   {
     //make directory withoutput folder to place cost model images
     boolean success = new File(fileDirectory).mkdir();
-    if(success)
+    if(!success)
     {
-      new RTUtils(routingTree).exportAsDotFile(fileDirectory + fileSeparator + "RT.dot");
-      //output paf
-      new PAFUtils(paf).exportAsDotFile(fileDirectory + fileSeparator + "PAF.dot");
-      //generate floating operators / fixed locations
-      generatePartialDaf();
-      //produce image output so that can be validated
-      new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT.dot", "", true);
-      //do heuristic placement
-      doInstanceOperatorSiteAssignment();
-      new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "siteAssignment.dot", "", true);
-      //remove instances which are redundant
-      removeRedundantOpInstances();
-      new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "cleanedSiteAssignment.dot", "", true);
-      startFragmentation();
-      new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "fragmentedIOT.dot", "", false);
-      try
+      deleteFileContents(new File(fileDirectory));
+      new File(fileDirectory).mkdir();
+    }
+    new RTUtils(routingTree).exportAsDotFile(fileDirectory + fileSeparator + "RT.dot");
+    //output paf
+    new PAFUtils(paf).exportAsDotFile(fileDirectory + fileSeparator + "PAF.dot");
+    //generate floating operators / fixed locations
+    generatePartialDaf();
+    //produce image output so that can be validated
+    new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT.dot", "", true);
+    //do heuristic placement
+    doInstanceOperatorSiteAssignment();
+    new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "siteAssignment.dot", "", true);
+    //remove instances which are redundant
+    removeRedundantOpInstances();
+    new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "cleanedSiteAssignment.dot", "", true);
+    startFragmentation();
+    new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "fragmentedIOT.dot", "", false);
+    try
+    {
+    addExchangeParts();
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
+    //needs to be placed here, as updating links breaks the cDAF manufacture
+    cDAF = new IOTUtils(iot, costs).convertToDAF();
+    iot.setDAF(cDAF);
+    new DAFUtils(cDAF).exportAsDotFile(fileDirectory + fileSeparator + "CDAF.dot");
+    updateOperatorLinksToIncludeExchangeParts();
+    new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "IOT.dot", "", true);
+  }
+  
+  private void deleteFileContents(File firstOutputFolder)
+  {
+    if(firstOutputFolder.exists())
+    {
+      File[] contents = firstOutputFolder.listFiles();
+      for(int index = 0; index < contents.length; index++)
       {
-      addExchangeParts();
+        File delete = contents[index];
+        if(delete != null && delete.listFiles().length > 0)
+          deleteFileContents(delete);
+        else
+          delete.delete();
       }
-      catch(Exception e)
-      {
-        e.printStackTrace();
-      }
-      //needs to be placed here, as updating links breaks the cDAF manufacture
-      cDAF = new IOTUtils(iot, costs).convertToDAF();
-      iot.setDAF(cDAF);
-      new DAFUtils(cDAF).exportAsDotFile(fileDirectory + fileSeparator + "CDAF.dot");
-      updateOperatorLinksToIncludeExchangeParts();
-      new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "IOT.dot", "", true);
-    }    
+    }
     else
     {
-      System.out.println("directory " + fileDirectory + " is not makable");
-    }
+      firstOutputFolder.mkdir();
+    }  
   }
   
   private void updateOperatorLinksToIncludeExchangeParts() 
