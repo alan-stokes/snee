@@ -60,7 +60,6 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
   private static String sep = System.getProperty("file.separator");
 	protected static Logger resultsLogger;
 	private String sneeProperties;
-	private static int recoveredTestValue = 0;
 	private static boolean inRecoveryMode = false;
 	private static int queryid = 1;
 	protected static int testNo = 1;
@@ -93,6 +92,9 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	  
 		Long duration = Long.valueOf("120");
 		String queryParams = "etc/query-parameters.xml";
+		BufferedWriter failedOutput; 
+		Iterator<String> queryIterator;
+		
 		try
     {
       checkRecoveryFile();
@@ -103,11 +105,11 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
       ArrayList<String> queries = new ArrayList<String>();
       collectQueries(queries);
       
-	    Iterator<String> queryIterator = queries.iterator();
+	    queryIterator = queries.iterator();
+	    failedOutput = createFailedTestListWriter();
 	  
 	    moveQueryToRecoveryLocation(queries);
 	   
-	    BufferedWriter failedOutput = createFailedTestListWriter();
 	    
 	    while(queryIterator.hasNext())
 	    {
@@ -129,7 +131,6 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
       System.out.println("error message was " + e.getMessage());
       logger.fatal(e);
       e.printStackTrace();
-      System.exit(1);
     }
 	}
 	
@@ -147,10 +148,16 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	  }
 	  latexCoreF = new File(latexCoreF.toString() + sep + "core.tex");
 	  latexCore = new BufferedWriter(new FileWriter(latexCoreF));
-	  latexCore.write("\\documentclass[landscape, 10pt]{report} \n\\usepackage[landscape]{geometry} \n" +
-	  		            "\\begin{document}  \n");
+	  latexCore.write("\\documentclass[landscape, 10pt]{report} \n\\usepackage[landscape]{geometry} \n " +
+	  		            "\\usepackage{graphicx} \n \\usepackage{subfig} \n" + "\\begin{document}  \n");
 	  latexCore.flush();  
   }
+	
+	private static void updateLatexCore(int queryid, int testID) throws IOException
+	{
+	  latexCore.write("\\input{query" + queryid + "-" + testID + "} \n \\clearpage \n");
+	  latexCore.flush();  
+	}
 	
 	private static void deleteFileContents(File firstOutputFolder)
   {
@@ -343,7 +350,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
   private void updateSites(RT routingTree, boolean allowDeathOfAcquires) 
   throws SourceDoesNotExistException
   {
-    testNo = 0;
+    testNo = 1;
     Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
     siteIDs.clear();
     SNEEController snee = (SNEEController) controller;
@@ -414,11 +421,13 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
         {
           inRecoveryMode = false;
           client.runForTests(deadNodes, queryid ); 
+          client.updateLatexCore(queryid, testNo);
           testNo++;
         }
         else
         {
           client.runForTests(deadNodes, queryid); 
+          client.updateLatexCore(queryid, testNo);
           testNo++;
         }  
       }
@@ -454,8 +463,8 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     String path = folder.getAbsolutePath();
     //added to allow recovery from crash
     BufferedWriter recoverWriter = new BufferedWriter(new FileWriter(new File(path + "/recovery.tex")));
-    testNo = 0;
-    recoverWriter.write(testNo + "\n");
+    
+    recoverWriter.write(queryid + "\n");
     recoverWriter.flush();
     recoverWriter.close();
     
@@ -475,10 +484,8 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
       String recoverQueryTestLine = recoveryTest.readLine();
       System.out.println("recovery text located with query test value = " +  recoveryQueryIdLine + " and has test no = " + recoverQueryTestLine);
       queryid = Integer.parseInt(recoveryQueryIdLine);
-      testNo = queryid;
-      recoveredTestValue = 0;
       inRecoveryMode = true;
-      if(queryid == 0 && recoveredTestValue == 0)
+      if(queryid == 0)
       {
         boolean result;
         deleteAllFilesInResultsFolder(folder);
