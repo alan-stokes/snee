@@ -81,7 +81,7 @@ implements LogicalOperator {
 	/** 
 	 * Predicate that this operator is expected to test data against.
 	 */
-	private Expression predicate = new NoPredicate();
+	protected Expression predicate = new NoPredicate();
 
 	protected AttributeType _boolType;
 
@@ -216,7 +216,7 @@ implements LogicalOperator {
 	/**
 	 * @param newOperatorDataType New value.
 	 */
-	protected void setOperatorDataType(
+	public void setOperatorDataType(
 			OperatorDataType newOperatorDataType) {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER setOperatorDataType() with " +
@@ -231,7 +231,8 @@ implements LogicalOperator {
 
 	/** {@inheritDoc} */    
 	public String getParamStr() {
-		return getPredicate().toString();
+		Expression exp = getPredicate();
+		return exp.toString();// + " isJoinCondition=" + exp.isJoinCondition();
 	}
 
 	/** {@inheritDoc} 

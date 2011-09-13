@@ -55,45 +55,12 @@ public class ProjectOperator extends PredicateOperator {
 			AttributeType boolType){
 		super(expressions, attributes, input, boolType);
 		this.setOperatorName("PROJECT");
-//		this.setNesCTemplateName("project");
 		setOperatorDataType(input.getOperatorDataType());
 	}
 
 	public String getParamStr() {
 		return this.getExpressions().toString();
 	}
-
-//	/** 
-//	 * Sets the operator data type based on the AST token.
-//	 * 
-//	 * @param token AST token for the operator.
-//	 */
-//	private void setOperatorDataType(AST token) {
-//		switch (token.getType()) {
-//		case SNEEqlOperatorParserTokenTypes.RELPROJECT: 
-//			setOperatorDataType(OperatorDataType.RELATION);
-//			return;
-//		case SNEEqlOperatorParserTokenTypes.STRPROJECT: 
-//			setOperatorDataType(OperatorDataType.STREAM);
-//			return;
-//		case SNEEqlOperatorParserTokenTypes.WINPROJECT: 
-//			setOperatorDataType(OperatorDataType.WINDOWS);
-//			return;
-//		default: 
-//			throw new AssertionError("Unexpected AST token"); 
-//		}
-//	}
-
-//	/**
-//	 * Constructor that creates a new operator
-//	 * based on a model of an existing operator.
-//	 *
-//	 * @param model Another ProjectOperator 
-//	 *   upon which this new one will be cloned.
-//	 */
-//	protected ProjectOperator(ProjectOperator model) {
-//		super(model);
-//	}
 
 	/**
 	 * {@inheritDoc}
@@ -154,18 +121,6 @@ public class ProjectOperator extends PredicateOperator {
 		return (this.getInput(0)).getCardinality(card);
 	}
 
-//	/** {@inheritDoc} */
-//	public int getCardinality(CardinalityType card, 
-//			Site node, DAF daf) {
-//		return getInputCardinality(card, node, daf, 0);
-//	}
-
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getCardinality(CardinalityType card, 
-//			Site node, DAF daf, boolean round) {
-//		return getInputCardinality(card, node, daf, round, 0);
-//	}
-
 	/**
 	 * Used to determine if the operator is Attribute sensitive.
 	 *
@@ -175,81 +130,9 @@ public class ProjectOperator extends PredicateOperator {
 		return false;
 	}
 
-//	/** {@inheritDoc} */
-//	public ProjectOperator shallowClone() {
-//		//TODO: projectList needs to be properly cloned
-//		ProjectOperator clonedOp = new ProjectOperator(this);
-//		return clonedOp;
-//	}
-
-//	private double getTimeCost(int tuples) {
-//		return getOverheadTimeCost()
-//		+ CostParameters.getCopyTuple() * tuples;
-//	}
-
-//	/** {@inheritDoc} */
-//	public double getTimeCost(CardinalityType card, 
-//			Site node, DAF daf) {
-//		int tuples = this.getInputCardinality(card, node, daf, 0);
-//		return getTimeCost(tuples);
-//	}
-
-//	/** {@inheritDoc} */
-//	public double getTimeCost(CardinalityType card, int numberOfInstances) {
-//		int tuples = this.getInputCardinality(card, 0, numberOfInstances);
-//		return getTimeCost(tuples);
-//	}
-
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getTimeExpression(
-//			CardinalityType card, Site node, 
-//			DAF daf, boolean round) {
-//		AlphaBetaExpression result = new AlphaBetaExpression();
-//		result.addBetaTerm(getOverheadTimeCost());
-//		AlphaBetaExpression tuples 
-//		= this.getInputCardinality(card, node, daf, round, 0);
-//		tuples.multiplyBy(CostParameters.getCopyTuple());
-//		result.add(tuples);
-//		return result;
-//	}
-
 	/** {@inheritDoc} */
 	public boolean isRemoveable() {
 		return getExpressions().equals(this.getInput(0).getAttributes());
 	}
-
-//	/**
-//	 * Displays the results of the cost functions.
-//	 * @param node Physical mote on which this operator has been placed.
-//	 * @param daf Distributed query plan this operator is part of.
-//	 * @return the calculated time
-//	 */
-//	public double getTimeCost2(Site node, DAF daf) {
-//		return SharedCostFunctions.dProject(getExpressions(), 
-//				getCardinality(CardinalityType.MAX, node, daf)); 
-//	}
-
-//	/**
-//	 * Displays the results of the cost functions.
-//	 * @param node Physical mote on which this operator has been placed.
-//	 * @param daf Distributed query plan this operator is part of.
-//	 * @return OutputQueueCardinality * PhytsicalTuplesSize
-//	 */
-//	public double getEnergyCost2(Site node, DAF daf) {
-//		return SharedCostFunctions.eProject(getExpressions(), 
-//				getCardinality(CardinalityType.AVERAGE, node, daf)); 
-//	}
-
-//	/**
-//	 * Displays the results of the cost functions.
-//	 * @param node Physical mote on which this operator has been placed.
-//	 * @param daf Distributed query plan this operator is part of.
-//	 * @return OutputQueueCardinality * PhytsicalTuplesSize
-//	 */
-//	public int getDataMemoryCost2(Site node, DAF daf) {
-//		return SharedCostFunctions.mProject(
-//				getExpressions(), 
-//				getCardinality(CardinalityType.MAX, node, daf)); 
-//	}
 
 }

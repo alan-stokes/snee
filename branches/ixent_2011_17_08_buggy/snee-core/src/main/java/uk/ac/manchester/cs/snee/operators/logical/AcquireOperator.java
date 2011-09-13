@@ -148,7 +148,9 @@ public class AcquireOperator extends InputOperator {
 		return this.extentName + 
 		" (cardinality=" + getCardinality(null) +
 		" source=" + this.getSource().getSourceName() + ")\n " + 
-		getPredicate() + "\n" +
+		getPredicate() + 
+//		getPredicate().isJoinCondition() + 
+		"\n" +
 		this.getExpressions().toString();
 	}
 

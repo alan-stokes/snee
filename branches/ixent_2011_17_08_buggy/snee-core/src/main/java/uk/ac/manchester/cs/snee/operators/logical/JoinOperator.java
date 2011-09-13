@@ -74,21 +74,6 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 	private boolean rightChildIsRelation = false;
 	
 	private boolean leftChildIsRelation = false;
-	
-//	/**
-//	 * Constructor that creates a new operator
-//	 * based on a model of an existing operator.
-//	 *
-//	 * Used by both the clone method and the constuctor of the physical methods.
-//	 *
-//	 * @param model Another JoinOperator 
-//	 *   upon which this new one will be cloned.
-//	 */
-//	protected JoinOperator(JoinOperator model) {
-//		super(model);
-//		this.expressions = model.expressions;
-//		this.attributes = model.attributes;
-//	}
 
 	/**
 	 * Non Haskell constructor.
@@ -102,7 +87,7 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 	throws OptimizationException, SchemaMetadataException, SNEECompilerException {
 		super(boolType);
 		this.setOperatorName("JOIN");
-//		this.setNesCTemplateName("join");
+		predicate.setIsJoinCondition(true);
 
 		/* This is overridden when the 
 		 * child operators are a STREAM and RELATION */
@@ -270,30 +255,6 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 			logger.debug("ENTER/RETURN pushSelectIntoLeaf() return with false");
 		}
 		return false;
-		/*
-		 * Below code should work, but has not been tested and the rewriter now
-		 * moves selects down and then tries only at the very bottom to move
-		 * them in, so this is never called.
-		 */
-//		if (predicate.isJoinCondition()) {
-//			if (logger.isDebugEnabled()) {
-//				logger.debug("RETURN pushSelectIntoLeaf() with " +
-//						"false (join condition)");
-//			}
-//			return false;
-//		}
-//		if (getInput(0).pushSelectIntoLeafOp(predicate) ||
-//				getInput(1).pushSelectIntoLeafOp(predicate)) {
-//			if (logger.isDebugEnabled()) {
-//				logger.debug("RETURN pushSelectIntoLeaf() with true");
-//			}
-//			return true;
-//		} else {
-//			if (logger.isDebugEnabled()) {
-//				logger.debug("RETURN pushSelectIntoLeaf() with false");
-//			}
-//			return false;
-//		}
 	}
 
 	/** 
@@ -354,101 +315,6 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 		+ ", " + getInput(1).toString() + " ]";
 	}
 
-//	/** {@inheritDoc} */
-//	public JoinOperator shallowClone() {
-//		JoinOperator clonedOp = new JoinOperator(this);
-//		return clonedOp;
-//	}
-
-//	/** {@inheritDoc} */
-//	public double getTimeCost(int tuples) {
-//		return getOverheadTimeCost()
-//		+ CostParameters.getCopyTuple() * tuples
-//		+ CostParameters.getApplyPredicate() * tuples;
-//	}
-
-//	/** {@inheritDoc} */
-//	public double getTimeCost(CardinalityType card, 
-//			Site node, DAF daf) {
-//		int left = getInputCardinality(card, node, daf, 0);
-//		int right = getInputCardinality(card, node, daf, 0);
-//		int tuples = left * right;
-//		return getTimeCost(tuples);
-//	}
-
-//	/** {@inheritDoc} */
-//	public double getTimeCost(CardinalityType card, 
-//			int numberOfInstances) {
-//		assert (numberOfInstances == 1);
-//		int left = getInputCardinality(card, 0, 1);
-//		int right = getInputCardinality(card, 0, 1);
-//		int tuples = left * right;
-//		return getTimeCost(tuples);
-//	}
-
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getTimeExpression(
-//			CardinalityType card, Site node, 
-//			DAF daf, boolean round) {
-//		AlphaBetaExpression result = new AlphaBetaExpression();
-//		result.addBetaTerm(getOverheadTimeCost() + CostParameters.getCopyTuple());
-//		AlphaBetaExpression tuples 
-//		= this.getInputCardinality(card, node, daf, round, 0);
-//		tuples.multiplyBy(getInputCardinality(card, node, daf, round, 1));
-//		tuples.multiplyBy(CostParameters.getDoCalculation()
-//				+ CostParameters.getApplyPredicate());
-//		result.add(tuples);
-//		return result;
-//	}
-	
-//	/** {@inheritDoc} */
-//	public int getCardinality(CardinalityType card, 
-//			Site node, DAF daf) {
-//		int left = getInputCardinality(card, node, daf, 0);
-//		int right = getInputCardinality(card, node, daf, 1);
-//		if (getPredicate() instanceof NoPredicate) {
-//			return (left * right);
-//		}
-//		if ((card == CardinalityType.MAX) 
-//				|| (card == CardinalityType.PHYSICAL_MAX)) {
-//			return (left * right);
-//		} 
-//		if ((card == CardinalityType.AVERAGE) 
-//				|| (card == CardinalityType.MAX)) {
-//			return (left * right) / Constants.JOIN_PREDICATE_SELECTIVITY;
-//		}
-//		if (card == CardinalityType.MINIMUM) {
-//			return 0;
-//		} 
-//		throw new AssertionError("Unexpected CardinaliyType " + card);
-//	}
-
-	//	/** {@inheritDoc} */
-	//	public AlphaBetaExpression getCardinality(CardinalityType card, 
-	//			Site node, DAF daf, boolean round) {
-	//		AlphaBetaExpression left 
-	//		= getInputCardinality(card, node, daf, round, 0);
-	//		AlphaBetaExpression right 
-	//		= getInputCardinality(card, node, daf, round, 1);
-	//		if (getPredicate() instanceof NoPredicate) {
-	//			return AlphaBetaExpression.multiplyBy(left, right);
-	//		}
-	//		if ((card == CardinalityType.MAX) 
-	//				|| (card == CardinalityType.PHYSICAL_MAX)) {
-	//			return AlphaBetaExpression.multiplyBy(left, right);
-	//		} 
-	//		if ((card == CardinalityType.AVERAGE) 
-	//				|| (card == CardinalityType.MAX)) {
-	//			AlphaBetaExpression result 
-	//			= AlphaBetaExpression.multiplyBy(left, right);
-	//			result.divideBy(Constants.JOIN_PREDICATE_SELECTIVITY);
-	//			return result;
-	//		}
-	//		if (card == CardinalityType.MINIMUM) {
-	//			return new AlphaBetaExpression();
-	//		} 
-	//		throw new AssertionError("Unexpected CardinaliyType " + card);
-	//	}
 
 	/** {@inheritDoc} */
 	public boolean acceptsPredicates() {
@@ -467,7 +333,6 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 
 	/** {@inheritDoc} */
 	public boolean comesFromRightChild(String attrName) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -506,26 +371,4 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 		}
 	}
 	
-	//Call to default methods in OperatorImplementation
-
-	//	/** {@inheritDoc} */
-	//	public int[] getSourceSites() {
-	//		return super.defaultGetSourceSites();
-	//	}
-
-	//	/** {@inheritDoc} */    
-	//	public int getOutputQueueCardinality(Site node, DAF daf) {
-	//		return super.defaultGetOutputQueueCardinality(node, daf);
-	//	}
-
-	//	/** {@inheritDoc} */    
-	//	public int getOutputQueueCardinality(int numberOfInstances) {
-	//		return super.defaultGetOutputQueueCardinality(numberOfInstances);
-	//	}
-
-	//	/** {@inheritDoc} */    
-	//	public int getDataMemoryCost(Site node, DAF daf) {
-	//		return super.defaultGetDataMemoryCost(node, daf);
-	//	}
-
 }

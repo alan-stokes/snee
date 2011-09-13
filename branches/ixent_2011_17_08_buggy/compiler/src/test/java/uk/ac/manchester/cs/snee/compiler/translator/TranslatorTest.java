@@ -1906,7 +1906,7 @@ public class TranslatorTest {
 
 	@Test
 	@Ignore
-	public void testSimpleQuery_FuncCOUNTStar() 
+	public void testCOUNTStar_noWindow() 
 	throws ParserException, SourceDoesNotExistException,  SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, TypeMappingException, 
 	ExtentDoesNotExistException, RecognitionException, TokenStreamException, 
@@ -1916,14 +1916,30 @@ public class TranslatorTest {
 	}
 
 	@Test
-	@Ignore
-	public void testSimpleQuery_FuncSUM() 
+	(expected=OptimizationException.class)
+	public void testSUM_noWindow() 
 	throws ParserException, SourceDoesNotExistException,  SchemaMetadataException, 
 	ExpressionException, AssertionError, OptimizationException, TypeMappingException, 
 	ExtentDoesNotExistException, RecognitionException, TokenStreamException, 
 	SNEEConfigurationException, SNEECompilerException 
 	{
 		testQuery("SELECT SUM(integerColumn) FROM PushStream;");
+	}
+
+	@Test
+	public void testSimpleQuery_FuncSUM() 
+	throws ParserException, SourceDoesNotExistException,  SchemaMetadataException, 
+	ExpressionException, AssertionError, OptimizationException, TypeMappingException, 
+	ExtentDoesNotExistException, RecognitionException, TokenStreamException, 
+	SNEEConfigurationException, SNEECompilerException 
+	{
+		LAF laf = testQuery("SELECT SUM(integerColumn) FROM PushStream[NOW];");
+		Iterator<LogicalOperator> iterator = 
+			laf.operatorIterator(TraversalOrder.PRE_ORDER);
+		testOperator(iterator, "DELIVER");
+		testOperator(iterator, "AGGREGATION");
+		testOperator(iterator, "WINDOW");
+		testOperator(iterator, "RECEIVE");
 	}
 
 
@@ -1995,7 +2011,6 @@ public class TranslatorTest {
 				"pushStream[now] x, pushStream2[NOW] y " + 
 				"WHERE ( x.integerColumn - y.integerColumn) / q3.scotts < 1) od " +
 				"WHERE od.probability < 0.15;");
-		System.out.println(laf.getID());
 		Iterator<LogicalOperator> iterator = 
 			laf.operatorIterator(TraversalOrder.PRE_ORDER);
 		testOperator(iterator, "DELIVER");

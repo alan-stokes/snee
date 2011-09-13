@@ -122,7 +122,7 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		expect(mockAttr.getAttributeDisplayName()).andReturn("const");
 		expect(mockAttr.getExtentName()).andReturn("");
 		expect(mockAttr.getType()).andReturn(mockType);
-		expect(mockType.getName()).andReturn("string");
+		expect(mockType.getName()).andReturn("string").times(2);
 		List<Attribute> attrList = new ArrayList<Attribute>();
 		attrList.add(mockAttr);
 		expect(mockAttr.getRequiredAttributes()).andReturn(attrList);
@@ -148,7 +148,7 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		expect(mockAttr.getAttributeDisplayName()).andReturn("const");
 		expect(mockAttr.getExtentName()).andReturn("");
 		expect(mockAttr.getType()).andReturn(mockType);
-		expect(mockType.getName()).andReturn("integer");
+		expect(mockType.getName()).andReturn("integer").times(2);
 		List<Attribute> attrList = new ArrayList<Attribute>();
 		attrList.add(mockAttr);
 		expect(mockAttr.getRequiredAttributes()).andReturn(attrList);
@@ -175,7 +175,7 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		expect(mockAttr.getAttributeDisplayName()).andReturn("const");
 		expect(mockAttr.getExtentName()).andReturn("");
 		expect(mockAttr.getType()).andReturn(mockType);
-		expect(mockType.getName()).andReturn("float");
+		expect(mockType.getName()).andReturn("float").times(2);
 		List<Attribute> attrList = new ArrayList<Attribute>();
 		attrList.add(mockAttr);
 		expect(mockAttr.getRequiredAttributes()).andReturn(attrList);

@@ -31,6 +31,7 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
@@ -52,6 +53,8 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
@@ -188,7 +191,7 @@ public class LogicalRewriterTest extends EasyMockSupport {
 				
 		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 		
-		expect(mockPredicate.getType()).andReturn(boolType).times(2);
+		expect(mockPredicate.getType()).andReturn(boolType).anyTimes();
 		
 		replayAll();
 
@@ -715,6 +718,153 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	}
 
 	/**
+	 * Test on aggregation and select query where the select should 
+	 * be pushed below the aggregation and window
+	 * Receive -> window -> aggregation -> select -> window -> deliver
+	 * No affect
+	 * @throws TypeMappingException 
+	 * @throws AssertionError 
+	 * @throws SchemaMetadataException 
+	 * @throws SourceMetadataException 
+	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
+	 */
+	@Test
+	public void testSelectAggregationQuery() 
+	throws SchemaMetadataException, AssertionError, TypeMappingException,
+	SourceMetadataException, OptimizationException, SNEEConfigurationException {
+		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
+		Attribute mockAttribute = createMock(Attribute.class);
+		AttributeType mockType = createMock(AttributeType.class);
+		
+		expect(mockExtent.getExtentName()).andReturn("streamName");
+		expect(mockExtent.getCardinality()).andReturn(1);
+		expect(mockExtent.getRate()).andReturn(2.0);
+				
+		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
+		
+		expect(mockAttribute.getAttributeSchemaName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute.getAttributeDisplayName())
+			.andReturn("integerColumn").anyTimes();
+		expect(mockAttribute.getExtentName())
+			.andReturn("streamName").anyTimes();
+		expect(mockAttribute.getType()).andReturn(mockType).anyTimes();
+		expect(mockType.getName()).andReturn("integer").anyTimes();
+		List<Attribute> attrList1 = new ArrayList<Attribute>();
+		attrList1.add(mockAttribute);
+		expect(mockExtent.getAttributes()).andReturn(attrList1);
+		expect(mockAttribute.getRequiredAttributes()).andReturn(attrList1).anyTimes();
+
+		replayAll();
+
+		LogicalOperator receiveOp = 
+			new ReceiveOperator(mockExtent, mockSource, boolType);
+		LogicalOperator windowOp = 
+			new WindowOperator(0, 0, true, 0, 0, receiveOp, boolType);
+		
+		Expression aggExp =
+			new AggregationExpression(mockAttribute, AggregationFunction.SUM, boolType);
+		List<Expression> aggExpList = new ArrayList<Expression>();
+		aggExpList.add(aggExp);
+		AggregationOperator aggOp = 
+			new AggregationOperator(aggExpList, attrList1, windowOp, mockType);
+		
+		Expression[] expressions = new Expression[2];
+		expressions[0] = new DataAttribute(mockAttribute);
+		expressions[1] = new IntLiteral(42, types.getType("integer"));
+		Expression selectPredicate = 
+			new MultiExpression(expressions, MultiType.LESSTHANEQUALS, boolType);
+		LogicalOperator selectOp = 
+			new SelectOperator(selectPredicate, aggOp, boolType);
+		LogicalOperator deliverOp = 
+			new DeliverOperator(selectOp, boolType);
+
+		laf = new LAF(deliverOp, "agg-select");
+		rewriter.doLogicalRewriting(laf);
+		Iterator<LogicalOperator> opIt = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		testOperator(opIt, "RECEIVE");
+		testOperator(opIt, "SELECT");
+		testOperator(opIt, "WINDOW");
+		testOperator(opIt, "AGGREGATION");
+		testOperator(opIt, "DELIVER");
+		verifyAll();
+	}
+
+	/**
+	 * Test on aggregation query that is mentioned in an outer query selection condition
+	 * Selection should not be pushed below aggregation
+	 * Receive -> window -> aggregation -> select -> deliver
+	 * No affect
+	 * @throws TypeMappingException 
+	 * @throws AssertionError 
+	 * @throws SchemaMetadataException 
+	 * @throws SourceMetadataException 
+	 * @throws OptimizationException 
+	 * @throws SNEEConfigurationException 
+	 */
+	@Test
+	public void testSelectOnAggregationSubquery() 
+	throws SchemaMetadataException, AssertionError, TypeMappingException,
+	SourceMetadataException, OptimizationException, SNEEConfigurationException {
+		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
+		SourceMetadataAbstract mockSource = 
+			createMock(SourceMetadataAbstract.class);
+		
+		expect(mockExtent.getExtentName()).andReturn("streamName");
+		expect(mockExtent.getCardinality()).andReturn(1);
+		expect(mockExtent.getRate()).andReturn(2.0);
+				
+		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
+
+		Attribute integerColumn = new DataAttribute("streamName", "integerColumn", types.getType("integer"));
+		List<Attribute> attrList1 = new ArrayList<Attribute>();
+		attrList1.add(integerColumn);
+		expect(mockExtent.getAttributes()).andReturn(attrList1);
+
+		replayAll();
+
+		
+		LogicalOperator receiveOp = 
+			new ReceiveOperator(mockExtent, mockSource, boolType);
+		LogicalOperator windowOp = 
+			new WindowOperator(0, 0, true, 0, 0, receiveOp, boolType);
+		
+		Expression aggExp =
+			new AggregationExpression(integerColumn, AggregationFunction.SUM, boolType);
+		List<Expression> aggExpList = new ArrayList<Expression>();
+		aggExpList.add(aggExp);
+		List<Attribute> aggAttrList = new ArrayList<Attribute>();
+		aggAttrList.add(aggExp.toAttribute());
+		AggregationOperator aggOp = 
+			new AggregationOperator(aggExpList, aggAttrList, windowOp, boolType);
+		
+		Expression[] expressions = new Expression[2];
+		expressions[0] = aggExp.toAttribute();
+		expressions[1] = new IntLiteral(42, types.getType("integer"));
+		Expression selectPredicate = 
+			new MultiExpression(expressions, MultiType.LESSTHANEQUALS, boolType);
+		LogicalOperator selectOp = 
+			new SelectOperator(selectPredicate, aggOp, boolType);
+		LogicalOperator deliverOp = 
+			new DeliverOperator(selectOp, boolType);
+
+		laf = new LAF(deliverOp, "aggsub-select");
+		rewriter.doLogicalRewriting(laf);
+		Iterator<LogicalOperator> opIt = 
+			laf.operatorIterator(TraversalOrder.POST_ORDER);
+		testOperator(opIt, "RECEIVE");
+		testOperator(opIt, "WINDOW");
+		testOperator(opIt, "AGGREGATION");
+		testOperator(opIt, "SELECT");
+		testOperator(opIt, "DELIVER");
+		verifyAll();
+	}
+
+	/**
 	 * Test on the simplest form of select query
 	 * Receive -> select -> select -> deliver
 	 * Selects should be combined
@@ -808,20 +958,13 @@ public class LogicalRewriterTest extends EasyMockSupport {
 	throws SchemaMetadataException, TypeMappingException, 
 	SourceMetadataException, OptimizationException, AssertionError,
 	SNEEConfigurationException, SNEECompilerException {
-		ExtentMetadata mockExtent = createMock(ExtentMetadata.class);
+		ExtentMetadata mockExtentLeft = createMock(ExtentMetadata.class);
+		ExtentMetadata mockExtentRight = createMock(ExtentMetadata.class);
 		SourceMetadataAbstract mockSource = 
 			createMock(SourceMetadataAbstract.class);
 		Attribute mockAttribute = createMock(Attribute.class);
-		Attribute mockAttribute2 = createMock(Attribute.class);
+		Attribute mockAttribute1 = createMock(Attribute.class); 
 		AttributeType mockType = createMock(AttributeType.class);
-		List<Attribute> attrList = new ArrayList<Attribute>();
-		
-		expect(mockExtent.getExtentName()).andReturn("streamName").times(2);
-		expect(mockExtent.getAttributes()).andReturn(attrList).times(2);
-		expect(mockExtent.getCardinality()).andReturn(1).times(2);
-		expect(mockExtent.getRate()).andReturn(2.0).andReturn(1.0);
-				
-		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 		
 		expect(mockAttribute.getAttributeSchemaName())
 			.andReturn("integerColumn").anyTimes();
@@ -830,35 +973,52 @@ public class LogicalRewriterTest extends EasyMockSupport {
 		expect(mockAttribute.getExtentName())
 			.andReturn("streamLeft").anyTimes();
 		expect(mockAttribute.getType()).andReturn(mockType).anyTimes();
-		List<Attribute> attrList1 = new ArrayList<Attribute>();
-		attrList1.add(mockAttribute);
-		expect(mockAttribute.getRequiredAttributes()).andReturn(attrList1);
 		
-		expect(mockAttribute2.getAttributeSchemaName()).andReturn("timestamp");
-		expect(mockAttribute2.getAttributeDisplayName()).andReturn("timestamp");
-		expect(mockAttribute2.getExtentName()).andReturn("streamRight").anyTimes();
-		expect(mockAttribute2.getType()).andReturn(mockType).anyTimes();
-		List<Attribute> attrList2 = new ArrayList<Attribute>();
-		attrList2.add(mockAttribute2);
-		expect(mockAttribute2.getRequiredAttributes()).andReturn(attrList2);
+		expect(mockAttribute1.getAttributeSchemaName())
+			.andReturn("timestamp").anyTimes();
+		expect(mockAttribute1.getAttributeDisplayName())
+			.andReturn("timestamp").anyTimes();
+		expect(mockAttribute1.getExtentName())
+			.andReturn("streamRight").anyTimes();
+		expect(mockAttribute1.getType()).andReturn(mockType).anyTimes();
+
+		List<Attribute> leftAttrList = new ArrayList<Attribute>();
+		leftAttrList.add(mockAttribute);
+		List<Attribute> rightAttrList = new ArrayList<Attribute>();
+		rightAttrList.add(mockAttribute1);
+
+		expect(mockAttribute.getRequiredAttributes()).andReturn(leftAttrList).anyTimes();
+		expect(mockAttribute1.getRequiredAttributes()).andReturn(rightAttrList).anyTimes();
+		
+		expect(mockExtentLeft.getExtentName()).andReturn("streamLeft").anyTimes();
+		expect(mockExtentLeft.getAttributes()).andReturn(leftAttrList).anyTimes();
+		expect(mockExtentLeft.getCardinality()).andReturn(1).anyTimes();
+		expect(mockExtentLeft.getRate()).andReturn(2.0);
+
+		expect(mockExtentRight.getExtentName()).andReturn("streamRight").anyTimes();
+		expect(mockExtentRight.getAttributes()).andReturn(rightAttrList).anyTimes();
+		expect(mockExtentRight.getCardinality()).andReturn(1).anyTimes();
+		expect(mockExtentRight.getRate()).andReturn(1.0);
+				
+		expect(mockSource.getSourceName()).andReturn("sourceName").anyTimes();
 
 		expect(mockType.getName()).andReturn("integer").anyTimes();
 
 		replayAll();
 
 		LogicalOperator receiveOpLeft = 
-			new ReceiveOperator(mockExtent, mockSource, boolType);
+			new ReceiveOperator(mockExtentLeft, mockSource, boolType);
 		LogicalOperator windowOpLeft = 
 			new WindowOperator(0, 0, true, 0, 0, receiveOpLeft, boolType);
 		LogicalOperator receiveOpRight = 
-			new ReceiveOperator(mockExtent, mockSource, boolType);
+			new ReceiveOperator(mockExtentRight, mockSource, boolType);
 		LogicalOperator windowOpRight = 
 			new WindowOperator(0, 0, true, 0, 0, receiveOpRight, boolType);
 		LogicalOperator joinOp = 
 			new JoinOperator(windowOpLeft, windowOpRight, boolType);		
 		Expression[] attributes = new Expression[2];
 		attributes[0] = new DataAttribute(mockAttribute);
-		attributes[1] = new DataAttribute(mockAttribute2);
+		attributes[1] = new DataAttribute(mockAttribute1);
 		Expression joinPredicate = 
 			new MultiExpression(attributes, MultiType.EQUALS, boolType);
 		joinPredicate.setIsJoinCondition(true);

@@ -77,7 +77,6 @@ public class SelectOperator extends LogicalOperatorImpl {
 					" " + inputOperator);
 
 		this.setOperatorName("SELECT");
-//		this.setNesCTemplateName("select");
 		setOperatorDataType(inputOperator.getOperatorDataType());
 
 		setChildren(new LogicalOperator[] {inputOperator});
@@ -86,18 +85,6 @@ public class SelectOperator extends LogicalOperatorImpl {
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SelectOperator() " + this);
 	}  
-
-	//used by clone method
-//	/**
-//	 * Constructor that creates a new operator 
-//	 * based on a model of an existing operator.
-//	 * 
-//	 * Used by both the clone method and the constructor of the physical methods.
-//	 * @param model Operator to copy values from.
-//	 */
-//	protected SelectOperator(SelectOperator model) {
-//		super(model);
-//	}  
 
 	/**
 	 * {@inheritDoc}
@@ -248,44 +235,6 @@ public class SelectOperator extends LogicalOperatorImpl {
         throw new AssertionError("Unexpected CardinaliyType " + card);
 	}
 
-//	/** {@inheritDoc} */
-//	public int getCardinality(CardinalityType card, 
-//			Site node, DAF daf) {
-//		int input = getInputCardinality(card, node, daf, 0);
-//        if ((card == CardinalityType.MAX) 
-//        		|| (card == CardinalityType.PHYSICAL_MAX)) {
-//			return input;
-//        } 
-//        if ((card == CardinalityType.AVERAGE) 
-//        		|| (card == CardinalityType.MAX)) {
-//			return input / Constants.JOIN_PREDICATE_SELECTIVITY;
-//		}
-//        if (card == CardinalityType.MINIMUM) {
-//    		return 0;
-//        } 
-//        throw new AssertionError("Unexpected CardinaliyType " + card);
-//	}
-	
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getCardinality(CardinalityType card, 
-//			Site node, DAF daf, boolean round) {
-//		AlphaBetaExpression input = 
-//			getInputCardinality(card, node, daf, round, 0);
-//        if ((card == CardinalityType.MAX) 
-//        		|| (card == CardinalityType.PHYSICAL_MAX)) {
-//			return input;
-//        } 
-//        if ((card == CardinalityType.AVERAGE) 
-//        		|| (card == CardinalityType.MAX)) {
-//        	input.divideBy(Constants.JOIN_PREDICATE_SELECTIVITY);
-//			return input;
-//		}
-//        if (card == CardinalityType.MINIMUM) {
-//    		return new AlphaBetaExpression();
-//        } 
-//        throw new AssertionError("Unexpected CardinaliyType " + card);
-//	}
-
 	/**
 	 * Used to determine if the operator is Attribute sensitive.
 	 * 
@@ -312,45 +261,6 @@ public class SelectOperator extends LogicalOperatorImpl {
 		super.getInput(0).toString() + " ]";
     }
 
-//    /** {@inheritDoc} */
-//	public SelectOperator shallowClone() {
-//		SelectOperator clonedOp = new SelectOperator(this);
-//		return clonedOp;
-//	}
-	
-//    private double getTimeCost(int tuples) {
-//		return getOverheadTimeCost()
-//			+ (CostParameters.getCopyTuple() 
-//			+ CostParameters.getApplyPredicate()) * tuples;
-//    }
-    
-//    /** {@inheritDoc} */
-//    public double getTimeCost(CardinalityType card, 
-//    		Site node, DAF daf) {
-//		int tuples = this.getInputCardinality(card, node, daf, 0);
-//		return getTimeCost(tuples);
-//    }
-
-//    /** {@inheritDoc} */
-//	public double getTimeCost(CardinalityType card, int numberOfInstances) {
-//		int tuples = this.getInputCardinality(card, 0, numberOfInstances);
-//		return getTimeCost(tuples);
-//	}
-
-//	/** {@inheritDoc} */
-//	public AlphaBetaExpression getTimeExpression(
-//			CardinalityType card, Site node, 
-//			DAF daf, boolean round) {
-//		AlphaBetaExpression result = new AlphaBetaExpression();
-//		result.addBetaTerm(getOverheadTimeCost());
-//		AlphaBetaExpression tuples 
-//			= this.getInputCardinality(card, node, daf, round, 0);
-//		tuples.multiplyBy(CostParameters.getCopyTuple() 
-//				+ CostParameters.getApplyPredicate());
-//		result.add(tuples);
-//		return result;
-//	}
-	
      /** {@inheritDoc} */
     public boolean isRemoveable() {
     	if (getPredicate() instanceof NoPredicate)
@@ -359,21 +269,6 @@ public class SelectOperator extends LogicalOperatorImpl {
     }
 
     //Call to default methods in OperatorImplementation
-
-//    /** {@inheritDoc} */
-//    public int[] getSourceSites() {
-//    	return super.defaultGetSourceSites();
-//    }
-
-//	/** {@inheritDoc} */    
-//    public int getOutputQueueCardinality(Site node, DAF daf) {
-//    	return super.defaultGetOutputQueueCardinality(node, daf);
-//    }
-
-// 	/** {@inheritDoc} */    
-//    public int getOutputQueueCardinality(int numberOfInstances) {
-//    	return super.defaultGetOutputQueueCardinality(numberOfInstances);
-//    }
 
 	/** {@inheritDoc} */    
     public List<Attribute> getAttributes() {
@@ -384,45 +279,5 @@ public class SelectOperator extends LogicalOperatorImpl {
 	public List<Expression> getExpressions() {
 		return super.defaultGetExpressions();
 	}
-
-//	/** {@inheritDoc} */    
-//	public int getDataMemoryCost(Site node, DAF daf) {
-//		return super.defaultGetDataMemoryCost(node, daf);
-//	}
-
-//    /**
-//     * Displays the results of the cost functions.
-//     * @param node Physical mote on which this operator has been placed.
-//     * @param daf Distributed query plan this operator is part of.
-//	 * @return the calculated time
-//     */
-//	public double getTimeCost2(Site node, DAF daf) {
-//		return SharedCostFunctions.dSelect(getPredicate(), getExpressions(), 
-//				getCardinality(CardinalityType.MAX, node, daf)); 
-//	}
-
-//    /**
-//     * Displays the results of the cost functions.
-//     * @param node Physical mote on which this operator has been placed.
-//     * @param daf Distributed query plan this operator is part of.
-//     * @return OutputQueueCardinality * PhytsicalTuplesSize
-//     */
-//	public double getEnergyCost2(Site node, DAF daf) {
-//		return SharedCostFunctions.eSelect(getPredicate(), getExpressions(), 
-//				getCardinality(CardinalityType.MAX, node, daf)); 
-//	}
-
-//	/**
-//     * Displays the results of the cost functions.
-//     * @param node Physical mote on which this operator has been placed.
-//     * @param daf Distributed query plan this operator is part of.
-//     * @return OutputQueueCardinality * PhytsicalTuplesSize
-//     */
-//	public int getDataMemoryCost2(Site node, DAF daf) {
-//		return SharedCostFunctions.mSelect(
-//				getExpressions(), 
-//				getCardinality(CardinalityType.MAX, node, daf)); 
-//	}
-
 
 }

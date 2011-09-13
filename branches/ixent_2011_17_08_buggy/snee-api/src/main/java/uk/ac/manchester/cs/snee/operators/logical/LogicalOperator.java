@@ -156,6 +156,12 @@ public interface LogicalOperator extends Node {
 	OperatorDataType getOperatorDataType();
 
 	/**
+	 * Set the collection type of the data returned.
+	 * @param stream Stream, window, or relation
+	 */
+	void setOperatorDataType(OperatorDataType stream);
+
+	/**
 	 * Gets the name of this operator.
 	 * @return The name of the operator.
 	 */
@@ -228,4 +234,5 @@ public interface LogicalOperator extends Node {
 	 * @return True If and only if the operator can be safely removed. 
 	 */
 	boolean isRemoveable();
+	
 }

@@ -1,26 +1,30 @@
 package uk.ac.manchester.cs.snee.compiler.rewriter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.InputOperator;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
+import uk.ac.manchester.cs.snee.operators.logical.OperatorDataType;
 import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
@@ -41,7 +45,6 @@ public class LogicalRewriter {
 		if (logger.isInfoEnabled()) {
 			logger.info("Pushing selections down");
 		}
-		//FIXME: Issue of combining multiple copies of acquires on the same extent!!!
 		pushSelectionDown(laf);
 		if (logger.isInfoEnabled()) {
 			logger.info("Pushing projections down");
@@ -147,6 +150,8 @@ public class LogicalRewriter {
 						WindowOperator winOp = (WindowOperator) childOp;
 						if (winOp.isTimeScope()) {
 							swapOperators(laf, op, childOp);
+							//Change the data type associated with the select operator
+							op.setOperatorDataType(OperatorDataType.STREAM);
 						} else {
 							reachedBottom = true;
 						}
@@ -184,6 +189,16 @@ public class LogicalRewriter {
 						} else {
 							moveSelectBelowJoin(op, joinOp, predicate);
 						}
+					} else if (childOp instanceof AggregationOperator) {
+						if (logger.isTraceEnabled()) {
+							logger.trace("Attempt to move SELECT below AGGREGATION " + 
+									childOp.getParamStr());
+						}
+						reachedBottom = canMoveSelectBelowAggregation((SelectOperator) op, 
+								(AggregationOperator) childOp);
+						if (!reachedBottom) {
+							swapOperators(laf, op, childOp);
+						}
 					} else { //if (childOp instanceof ProjectOperator) {
 						if (logger.isTraceEnabled()) {
 							logger.trace("Move SELECT below " + 
@@ -199,43 +214,103 @@ public class LogicalRewriter {
 		}
 	}
 
+	private boolean canMoveSelectBelowAggregation(SelectOperator selectOp,
+			AggregationOperator aggOp) throws OptimizationException {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER moveSelectBelowAggregation() " +
+					"\n\t" + selectOp + "\n\t" + aggOp);
+		}
+		boolean reachedBottom = false;
+		List<Attribute> selectRequiredAttributes = selectOp.getPredicate().getRequiredAttributes();
+		List<AggregationExpression> aggregates = aggOp.getAggregates();
+		try {
+			for (AggregationExpression aggExp : aggregates) {
+				Attribute attr = aggExp.toAttribute();
+				if (selectRequiredAttributes.contains(attr)) {
+					reachedBottom = true;
+					break;
+				}
+			}
+		} catch (SchemaMetadataException e) {
+			logger.warn(e);
+			throw new OptimizationException(null, e);
+		} catch (TypeMappingException e) {
+			logger.warn(e);
+			throw new OptimizationException(null, e);
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN moveSelectBelowAggregation() with " + reachedBottom);
+		}
+		return reachedBottom;
+	}
+
 	private boolean moveJoinSelectConditionBelowJoin(LogicalOperator op,
-			JoinOperator joinOp, Expression predicate) {
+			JoinOperator joinOp, Expression predicate) 
+	throws OptimizationException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER moveJoinSelectConditionBelowJoin() with" +
 					"\n\tSELECT op " + op + "\n\tJOIN op " + joinOp);
 		}
-		boolean reachedBottom = true;
-		String extent1 = 
-			predicate.getRequiredAttributes().get(0).getExtentName();
-		String extent2 = 
-			predicate.getRequiredAttributes().get(1).getExtentName();
-		List<Node> inputsOperators = joinOp.getInputsList();
-		for (int i = 0; i < inputsOperators.size(); i++) {
-			LogicalOperator joinChildOp = 
-				(LogicalOperator) inputsOperators.get(i);
-			List<Attribute> attributes = joinChildOp.getAttributes();
-			boolean found1 = false;
-			boolean found2 = false;
-			for (Attribute attr : attributes) {
-				if (attr.getExtentName().equalsIgnoreCase(extent1)) {
-					found1 = true;
-				}
-				if (attr.getExtentName().equalsIgnoreCase(extent2)) {
-					found2 = true;
-				}
+		Set<String> extents = getExtents(predicate.getRequiredAttributes());
+		Set<String> extentsLeft = getExtents(joinOp.getInput(0).getAttributes());
+		Set<String> extentsRight = getExtents(joinOp.getInput(1).getAttributes());
+		boolean foundLeft = false;
+		boolean foundRight = false;
+		for (String extentName : extents) {
+			if (extentsLeft.contains(extentName)) {
+				foundLeft = true;
 			}
-			if (found1 && found2) {
-				//Need to swap with join child
-				swapWithJoinChildOperator(op, joinOp, i);
-				reachedBottom = false;
+			if (extentsRight.contains(extentName)) {
+				foundRight = true;
 			}
+		}
+		boolean reachedBottom;
+		if (foundLeft && !foundRight) {
+			//Swap with left join child
+			swapWithJoinChildOperator(op, joinOp, 0);
+			reachedBottom = false;
+		} else if (!foundLeft && foundRight) {
+			//Swap with right join child
+			swapWithJoinChildOperator(op, joinOp, 1);
+			reachedBottom = false;
+		} else if (foundLeft && foundRight) {
+			reachedBottom = true;
+			// Combining with join op done later in the logical rewriter
+		} else {
+			String message = "Attributes required for select operator condition " +
+					"could not be found on left or right child of join operator.";
+			logger.warn(message + "\n\tSELECT OP: " + op + "\n\tJOIN OP: " + joinOp);
+			throw new OptimizationException(message);
 		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("RETURN moveJoinSelectConditionBelowJoin() " +
 					"reachedBottom=" + reachedBottom);
 		}
 		return reachedBottom;
+	}
+
+	/**
+	 * Retrieve the extents required to populate a list of attributes, 
+	 * ignoring the system extent
+	 * @param attributes to find the extents involved
+	 * @return set of extent names
+	 */
+	private Set<String> getExtents(List<Attribute> attributes) {
+		if (logger.isTraceEnabled()) {
+			logger.trace("ENTER getExtents() with " + attributes);
+		}
+		Set<String> extents = new HashSet<String>();
+		for (Attribute attr : attributes) {
+			String extentName = attr.getExtentName();
+			// Ignore system extent
+			if (!extentName.equalsIgnoreCase("system")) {
+				extents.add(extentName);
+			}
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("RETURN getExtents() #extents=" + extents.size());
+		}
+		return extents;
 	}
 
 	private void moveSelectBelowJoin(LogicalOperator op,
@@ -272,6 +347,13 @@ public class LogicalRewriter {
 		}
 	}
 
+	/**
+	 * Swaps the given operator below the left (0) or right (1) side of a join
+	 * @param op operator to move below the join
+	 * @param joinOp join operator 
+	 * @param inputPos specifies if it is the left (0) or right (1) side of the 
+	 * join that needs to be moved below
+	 */
 	private void swapWithJoinChildOperator(LogicalOperator op, 
 			LogicalOperator joinOp, int inputPos) {
 		if (logger.isTraceEnabled()) {
@@ -292,7 +374,8 @@ public class LogicalRewriter {
 		}		
 	}
 	
-	private void swapOperators(LAF laf, LogicalOperator op, LogicalOperator childOp) throws OptimizationException {
+	private void swapOperators(LAF laf, LogicalOperator op, LogicalOperator childOp) 
+	throws OptimizationException {
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER swapOperators() with " +
 					op.toString() + " and " + childOp.toString());
@@ -306,7 +389,6 @@ public class LogicalRewriter {
 			
 			if (op == parentOp.getInput(0)) {
 				// Left child of join
-				//LogicalOperator grandChildOp = childOp.getInput(0);
 				parentOp.setInput(childOp, 0);
 				childOp.setInput(op, 0);
 				op.setInput(grandChildOp, 0);
@@ -315,7 +397,6 @@ public class LogicalRewriter {
 				grandChildOp.setOutput(op, 0);
 			} else {
 				//Right child of join
-				//LogicalOperator grandChildOp = childOp.getInput(0);
 				parentOp.setInput(childOp, 1);
 				childOp.setInput(op, 0);
 				op.setInput(grandChildOp, 0);
@@ -324,20 +405,9 @@ public class LogicalRewriter {
 				grandChildOp.setOutput(op, 0);
 			}
 		} else {
-			//LogicalOperator grandChildOp = childOp.getInput(0);			
-			//laf.removeOperator(op);
-			//laf.getOperatorTree().insertNode(grandChildOp, childOp,
-			//		op);
-			//LogicalOperator grandChildOp = childOp.getInput(0);
-			//laf.getOperatorTree().removeEdge(childOp, op);
-			//laf.getOperatorTree().removeEdge(op, parentOp);
-			//laf.getOperatorTree().removeEdge(grandChildOp, childOp);
 			parentOp.setInput(childOp, 0);
-			//laf.getOperatorTree().addEdge(childOp, parentOp);
 			childOp.setInput(op, 0);
-			//laf.getOperatorTree().addEdge(op, childOp);
 			op.setInput(grandChildOp, 0);
-			//laf.getOperatorTree().addEdge(grandChildOp, op);
 			op.setOutput(childOp, 0);
 			childOp.setOutput(parentOp, 0);
 			grandChildOp.setOutput(op, 0);

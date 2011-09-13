@@ -103,6 +103,14 @@ public class AggregationOperator extends PredicateOperator {
     	}
     }
 
+	/** {@inheritDoc} */    
+	public String getParamStr() {
+		StringBuffer outputBuffer = new StringBuffer();
+		for (AggregationExpression aggExp : aggregates) {
+			outputBuffer.append(aggExp.toString()).append(" ");
+		}
+		return outputBuffer.toString();
+	}
     
     /**
      * {@inheritDoc}

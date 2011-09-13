@@ -235,7 +235,9 @@ public class AggregationExpression implements Expression {
 		DataAttribute attribute = new DataAttribute(innerAttr.getExtentName(), innerAttr.getAttributeSchemaName()+"_"
 			+aggrFunction.toString(), innerAttr.getAttributeDisplayName()+"_"+aggrFunction.toString(), this.getType());
 		attribute.setIsConstant(false);
-		attribute.setRequiredAttributes(innerAttr.getRequiredAttributes());
+		//XXX-AG: Removed setRequiredAttributes statement as causes problems for logical rewriter
+		//Check with Ixent why he had set this!
+//		attribute.setRequiredAttributes(innerAttr.getRequiredAttributes());
 		return attribute;
 	}
 	
