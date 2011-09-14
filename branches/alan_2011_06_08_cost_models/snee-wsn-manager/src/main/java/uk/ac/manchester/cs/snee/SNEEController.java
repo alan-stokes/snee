@@ -57,7 +57,6 @@ import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
-import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
@@ -370,7 +369,7 @@ public class SNEEController implements SNEE {
 		compileQuery(queryId, query, queryParams);
 		if (logger.isInfoEnabled())
 			logger.info("Successfully compiled query " + queryId);	
-		dispatchQuery(queryId, query);
+		dispatchQuery(queryId, query, queryParams);
 		if (logger.isInfoEnabled())
 			logger.info("Successfully started evaluation of query " + queryId);
 
@@ -422,7 +421,16 @@ public class SNEEController implements SNEE {
       throw new SNEECompilerException("Null or empty query passed in.");
     }
     int queryId = _nextQueryID - 1;
-    dispatchQuery(queryId, query);
+    QueryParameters queryParams = null;
+    if (queryParamsFile != null) {
+      try {
+        queryParams = new QueryParameters(queryId, queryParamsFile);
+      } catch (Exception e) {
+        logger.warn("Error obtaining query parameters: " + e);
+        throw new SNEECompilerException(e.getLocalizedMessage());
+      }
+    }
+    dispatchQuery(queryId, query, queryParams);
     if (logger.isInfoEnabled())
       logger.info("Successfully started evaluation of query " + queryId);
 
@@ -493,7 +501,7 @@ public class SNEEController implements SNEE {
     compileQuery(queryId, query, queryParams);
     if (logger.isInfoEnabled())
       logger.info("Successfully compiled query " + queryId);  
-    dispatchQuery(queryId, query);
+    dispatchQuery(queryId, query, queryParams);
     if (logger.isInfoEnabled())
       logger.info("Successfully started evaluation of query " + queryId);
 
@@ -519,6 +527,7 @@ public class SNEEController implements SNEE {
 	/**
 	 * Dispatch the query for evaluation
 	 * @param query 
+	 * @param queryParams 
 	 * 
 	 * @return the query identifier generated for the query
 	 * @throws SNEEException Problem starting the query evaluation
@@ -537,7 +546,7 @@ public class SNEEController implements SNEE {
 	 * @throws IOException 
 	 * @throws SNEEConfigurationException 
 	 */
-	private int dispatchQuery(int queryId, String query) 
+	private int dispatchQuery(int queryId, String query, QueryParameters queryParams) 
 	throws SNEEException, MetadataException, EvaluatorException,
 	SNEEConfigurationException
 	{
@@ -548,6 +557,7 @@ public class SNEEController implements SNEE {
 		QueryExecutionPlan queryPlan = _queryPlans.get(queryId);
 		ResultStore resultSet = createStreamResultSet(query, queryPlan);
 		_dispatcher.giveAutonomicManagerQuery(query);
+		_dispatcher.giveAutonomicManagerQueryParams(queryParams);
 		_dispatcher.startQuery(queryId, resultSet, queryPlan);
 		_queryResults.put(queryId, resultSet);
 		

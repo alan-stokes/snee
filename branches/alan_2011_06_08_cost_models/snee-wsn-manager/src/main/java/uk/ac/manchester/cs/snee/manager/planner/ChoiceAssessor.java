@@ -146,7 +146,14 @@ public class ChoiceAssessor
         double agendaLength = Agenda.bmsToMs(adapt.getNewQep().getAgendaIOT().getLength_bms(false))/1000.0; // ms to s
         double energyConsumptionRate = siteEnergyCons/agendaLength; // J/s
         double siteLifetime = siteEnergySupply / energyConsumptionRate; //s
-        shortestLifetime = Math.min((double)shortestLifetime, siteLifetime);
+        if(shortestLifetime > siteLifetime)
+        {
+          if(!site.isDeadInSimulation())
+          {
+            shortestLifetime = siteLifetime;
+            adapt.setNodeIdWhichEndsQuery(site.getID());
+          }
+        }
       }
     }
     return shortestLifetime;
@@ -155,10 +162,10 @@ public class ChoiceAssessor
   /**
    * calcuates how mnay hops are needed to get data from the sink to the reprogrammed node
    * @param adapt
-   * @param reprogrammedSite
+   * @param site
    * @return
    */
-  private int calculateNoHops(Adaptation adapt, Site reprogrammedSite, boolean deactivatedNodesChecking)
+  private int calculateNoHops(Adaptation adapt, String site, boolean deactivatedNodesChecking)
   {
     RT routingTree = null;
     if(!deactivatedNodesChecking)
@@ -168,10 +175,10 @@ public class ChoiceAssessor
     
     Site sink = routingTree.getRoot();
     //checking not jumping unpon itself
-    if(sink.getID().equals(reprogrammedSite.getID()))
+    if(sink.getID().equals(site))
       return 0;
     //find path between the two nodes
-    Path path = routingTree.getPath(reprogrammedSite.getID(), sink.getID());
+    Path path = routingTree.getPath(site, sink.getID());
     //if no path return 0
     if(path.getNodes().length == 1)
       return 0;
@@ -188,7 +195,7 @@ public class ChoiceAssessor
    * @throws SchemaMetadataException 
    * @throws IOException 
    */
-  private Long calculateMemorySizeOfSiteQEP(Adaptation adapt, Site reprogrammedSite) 
+  private Long calculateMemorySizeOfSiteQEP(Adaptation adapt, String reprogrammedSite) 
   throws 
   IOException, SchemaMetadataException, 
   TypeMappingException, OptimizationException, 
@@ -203,7 +210,7 @@ public class ChoiceAssessor
       imageGenerator.compileNesCCode(adaptFolder.toString()+ sep);
       compiledAlready = true;
     }
-    File moteQEP = new File(adaptFolder.toString() + sep + "avrora_mica2_t2" + sep + "mote" + reprogrammedSite.getID() + ".elf");
+    File moteQEP = new File(adaptFolder.toString() + sep + "avrora_mica2_t2" + sep + "mote" + reprogrammedSite + ".elf");
     Long fileSize = moteQEP.length();
     return fileSize;
   }
@@ -220,23 +227,23 @@ public class ChoiceAssessor
   {
     CostParameters parameters = _metadataManager.getCostParameters();
     //do each reprogrammed site (most expensive cost)
-    Iterator<Site> reporgrammedSitesIterator = adapt.reprogrammingSitesIterator();
+    Iterator<String> reporgrammedSitesIterator = adapt.reprogrammingSitesIterator();
     while(reporgrammedSitesIterator.hasNext())
     {
-      Site reprogrammedSite = reporgrammedSitesIterator.next();
+      String reprogrammedSite = reporgrammedSitesIterator.next();
       Long SiteImageMemorySize = calculateMemorySizeOfSiteQEP(adapt, reprogrammedSite);
       int packetSize = parameters.getDeliverPayloadSize();
       Long packets = SiteImageMemorySize / packetSize;
       calculateEnergyCostForDataHops(adapt, reprogrammedSite, packets);
       
-      runningSites.get(reprogrammedSite.getID())
+      runningSites.get(reprogrammedSite)
       .addToCurrentAdaptationEnergyCost(packetSize * AvroraCostParameters.FlashWRITEAMPERE);
     }
     
     //do for each of redirect, deact, act site
-    Iterator<Site> redirectedSiteIterator = adapt.redirectedionSitesIterator();
-    Iterator<Site> deactivatedSiteIterator = adapt.deactivationSitesIterator();
-    Iterator<Site> activatedSiteIterator = adapt.activateSitesIterator();
+    Iterator<String> redirectedSiteIterator = adapt.redirectedionSitesIterator();
+    Iterator<String> deactivatedSiteIterator = adapt.deactivationSitesIterator();
+    Iterator<String> activatedSiteIterator = adapt.activateSitesIterator();
     
     calcOnePacketEnergyCost(redirectedSiteIterator, adapt, false);
     calcOnePacketEnergyCost(deactivatedSiteIterator, adapt, true);
@@ -247,7 +254,7 @@ public class ChoiceAssessor
     while(temporalSiteIterator.hasNext())
     {
       TemporalAdjustment adjustment = temporalSiteIterator.next();
-      Iterator<Site> affectedsitesIterator = adjustment.affectedsitesIterator();
+      Iterator<String> affectedsitesIterator = adjustment.affectedsitesIterator();
       calcOnePacketEnergyCost(affectedsitesIterator, adapt, false);
     }
     if(!underSpareTime)
@@ -291,7 +298,7 @@ public class ChoiceAssessor
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    */
-  private void calculateEnergyCostForDataHops(Adaptation adapt, Site reprogrammedSite, Long packets) 
+  private void calculateEnergyCostForDataHops(Adaptation adapt, String reprogrammedSite, Long packets) 
   throws 
   OptimizationException, SchemaMetadataException, 
   TypeMappingException 
@@ -301,7 +308,7 @@ public class ChoiceAssessor
     AvroraCostExpressions costs = 
       new AvroraCostExpressions(adapt.getNewQep().getDAF(), parameters, adapt.getNewQep().getAgendaIOT());
     Site sink = routingTree.getRoot();
-    Path path = routingTree.getPath(reprogrammedSite.getID(), sink.getID());
+    Path path = routingTree.getPath(reprogrammedSite, sink.getID());
     Iterator<Site> sitesInPath = path.iterator();
     if(path.getNodes().length != 1)
     {
@@ -333,10 +340,10 @@ public class ChoiceAssessor
     Long timeTakesSoFar = new Long(0);
     
     //do for type of adaptation
-    Iterator<Site> reporgrammedSitesIterator = adapt.reprogrammingSitesIterator();
-    Iterator<Site> redirectedSiteIterator = adapt.redirectedionSitesIterator();
-    Iterator<Site> deactivatedSiteIterator = adapt.deactivationSitesIterator();
-    Iterator<Site> activatedSiteIterator = adapt.activateSitesIterator();
+    Iterator<String> reporgrammedSitesIterator = adapt.reprogrammingSitesIterator();
+    Iterator<String> redirectedSiteIterator = adapt.redirectedionSitesIterator();
+    Iterator<String> deactivatedSiteIterator = adapt.deactivationSitesIterator();
+    Iterator<String> activatedSiteIterator = adapt.activateSitesIterator();
     
     timeTakesSoFar += calcPacketsTimeCost(redirectedSiteIterator, parameters, adapt, new Long(1), false);
     timeTakesSoFar += calcPacketsTimeCost(deactivatedSiteIterator, parameters, adapt, new Long(1), true);
@@ -348,7 +355,7 @@ public class ChoiceAssessor
     while(temporalSiteIterator.hasNext())
     {
       TemporalAdjustment adjustment = temporalSiteIterator.next();
-      Iterator<Site> affectedsitesIterator = adjustment.affectedsitesIterator();
+      Iterator<String> affectedsitesIterator = adjustment.affectedsitesIterator();
       timeTakesSoFar += calcPacketsTimeCost(affectedsitesIterator, parameters, adapt, new Long(1), false);
     }
     long goldenFrame = calculateGolderTime(adapt.getOldQep().getAgendaIOT());
@@ -394,7 +401,7 @@ public class ChoiceAssessor
   /**
    * calculates the time cost of sending one packet down to a node 
    * (used for redircet, deact, and act adaptations) if no packets, then calculates the packet size
-   * @param siteIterator
+   * @param redirectedSiteIterator
    * @param parameters
    * @param adapt
    * @param packets
@@ -405,7 +412,7 @@ public class ChoiceAssessor
    * @throws SchemaMetadataException 
    * @throws IOException 
    */
-  private Long calcPacketsTimeCost(Iterator<Site> siteIterator,
+  private Long calcPacketsTimeCost(Iterator<String> redirectedSiteIterator,
                                  CostParameters parameters, Adaptation adapt,
                                  Long packets, boolean deactivatedNodesChecking) 
   throws 
@@ -414,9 +421,9 @@ public class ChoiceAssessor
   CodeGenerationException
   {
     Long time = new Long(0);
-    while(siteIterator.hasNext())
+    while(redirectedSiteIterator.hasNext())
     {
-      Site site = siteIterator.next();
+      String site = redirectedSiteIterator.next();
       int hops = calculateNoHops(adapt, site, deactivatedNodesChecking);
       long timePerHop = (long) Math.ceil(parameters.getCallMethod() + parameters.getSignalEvent() + 
           parameters.getTurnOnRadio()+ parameters.getRadioSyncWindow() * 2
@@ -441,7 +448,7 @@ public class ChoiceAssessor
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    */
-  private void calcOnePacketEnergyCost(Iterator<Site> redirectedSiteIterator, Adaptation adapt, 
+  private void calcOnePacketEnergyCost(Iterator<String> redirectedSiteIterator, Adaptation adapt, 
                                        boolean deactivedNodes) 
   throws 
   OptimizationException, SchemaMetadataException, 
@@ -461,8 +468,8 @@ public class ChoiceAssessor
     Site sink = routingTree.getRoot();
     while(redirectedSiteIterator.hasNext())
     {
-      Site maindest = redirectedSiteIterator.next();
-      Path path = routingTree.getPath(maindest.getID(), sink.getID());
+      String maindest = redirectedSiteIterator.next();
+      Path path = routingTree.getPath(maindest, sink.getID());
       Iterator<Site> sitesInPath = path.iterator();
       if(path.getNodes().length != 0)
       {
@@ -491,6 +498,23 @@ public class ChoiceAssessor
   public void updateStorageLocation(File outputFolder)
   {
    this.outputFolder = outputFolder;
+    
+  }
+
+  public void assess(Adaptation orginal, HashMap<String, RunTimeSite> runningSites)
+  throws 
+  IOException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException, 
+  CodeGenerationException
+  {
+    this.runningSites = runningSites;
+    resetRunningSitesAdaptCost();
+    Adaptation adapt = orginal;
+    adapt.setTimeCost(this.timeCost(adapt));
+    adapt.setEnergyCost(this.energyCost(adapt));
+    adapt.setLifetimeEstimate(this.estimatedLifetime(adapt));
+    adapt.setRuntimeCost(calculateQEPExecutionEnergyCost());
+    resetRunningSitesAdaptCost(); 
     
   }
 }

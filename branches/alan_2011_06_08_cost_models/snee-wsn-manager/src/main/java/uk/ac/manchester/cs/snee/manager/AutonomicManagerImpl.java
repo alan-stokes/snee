@@ -23,12 +23,13 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.anayliser.Anaylsiser;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationUtils;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.executer.Executer;
@@ -51,14 +52,18 @@ import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 
 public class AutonomicManagerImpl implements AutonomicManager 
 {
-  private String sep = System.getProperty("file.separator");
+  private final String sep = System.getProperty("file.separator");
   private Anaylsiser anyliser;
   private Monitor monitor;
   private Planner planner;
   private Executer executer;
+  //data structures needed for manager
   private QueryExecutionPlan qep;
   private MetadataManager _metadataManager;
   private SourceMetadataAbstract _metadata;
+  private QoSExpectations queryQoS;
+  
+  //data stores
   private ArrayList<String> deadNodes = null;
   private int noDeadNodes = 0;
   private int adaptionCount = 1;
@@ -73,7 +78,7 @@ public class AutonomicManagerImpl implements AutonomicManager
   
   public AutonomicManagerImpl(MetadataManager _metadataManager)
   {
-    this._metadataManager = _metadataManager;    
+    this._metadataManager = _metadataManager; 
     monitor = new Monitor(this);
     executer = new Executer(this);
   }
@@ -191,11 +196,12 @@ public class AutonomicManagerImpl implements AutonomicManager
     planner.updateStorageLocation(outputFolder);
     removeFailedNodesFromRunningNodes(failedNodes);
     recordFailedNodes(failedNodes);
-    List<Adaptation> choices = anyliser.runFailedNodeStragities(failedNodes);
-    if(choices.size() !=0)
+    setFailedNodesToDeadInQEP(failedNodes);
+    AdaptationCollection choices = anyliser.runFailedNodeStragities(failedNodes);
+    if(choices.getSize() !=0)
     {
-      new AdaptationUtils(choices, _metadataManager.getCostParameters()).FileOutput(outputFolder);
-      new AdaptationUtils(choices, _metadataManager.getCostParameters()).systemOutput();
+      new AdaptationUtils(choices.getAll(), _metadataManager.getCostParameters()).FileOutput(outputFolder);
+      new AdaptationUtils(choices.getAll(), _metadataManager.getCostParameters()).systemOutput();
       Adaptation finalChoice = planner.assessChoices(choices);
       new AdaptationUtils(finalChoice,  _metadataManager.getCostParameters()).FileOutputFinalChoice(outputFolder);
       executer.adapt(finalChoice);
@@ -209,6 +215,21 @@ public class AutonomicManagerImpl implements AutonomicManager
     //new AgendaIOTUtils( newQEP.getAgendaIOT(), newQEP.getIOT(), true).generateImage();
   }
   
+  /**
+   * method used to define dead olds in qep. (used in cardianlity cost models
+   * @param failedNodes
+   */
+  private void setFailedNodesToDeadInQEP(ArrayList<String> failedNodes)
+  {
+    Iterator<String> failedNodesIterator = failedNodes.iterator();
+    SensorNetworkQueryPlan sqep = (SensorNetworkQueryPlan) qep;
+    while(failedNodesIterator.hasNext())
+    {
+      String failedNode = failedNodesIterator.next();
+      sqep.getRT().getSite(failedNode).setisDead(true);
+    }
+  }
+
   /**
    * outputs failed nodes in a text file for easy tracking after execution
    * @param failedNodes
@@ -397,6 +418,23 @@ public class AutonomicManagerImpl implements AutonomicManager
   public int getAdaptionCount()
   {
     return adaptionCount;
+  }
+
+  @Override
+  public void setQueryParams(QoSExpectations qoS)
+  {
+    this.setQueryQoS(qoS);
+    
+  }
+
+  public void setQueryQoS(QoSExpectations queryQoS)
+  {
+    this.queryQoS = queryQoS;
+  }
+
+  public QoSExpectations getQueryQoS()
+  {
+    return queryQoS;
   }
 
 }

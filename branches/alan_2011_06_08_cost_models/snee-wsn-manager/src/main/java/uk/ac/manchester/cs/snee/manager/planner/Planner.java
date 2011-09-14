@@ -2,14 +2,18 @@ package uk.ac.manchester.cs.snee.manager.planner;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
+import uk.ac.manchester.cs.snee.manager.common.StrategyID;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -40,26 +44,70 @@ public class Planner
    * @throws OptimizationException 
    * @throws CodeGenerationException 
    */
-  public Adaptation assessChoices(List<Adaptation> choices) 
+  public Adaptation assessChoices(AdaptationCollection choices) 
   throws 
   IOException, OptimizationException, 
   SchemaMetadataException, TypeMappingException, 
   CodeGenerationException
   {
-    assessor.assessChoices(choices, runningSites);
-    Adaptation bestChoice = chooseBestAdaptation(choices);
-    String id = manager.getQueryID() + "-" + manager.getAdaptionCount();
-    System.out.println("sucessfully chose best adaptation, printing out latex");
+    Adaptation bestOverall = null;
+    Adaptation orginal = null;
     try
     {
-      new PlannerUtils(choices).printLatexDocument(bestChoice, id);
+      Adaptation bestPartial = null;
+      Adaptation bestLocal = null;
+      List<Adaptation> partialAds = choices.getPartialAdaptations();
+      List<Adaptation> localAds = choices.getLocalAdaptations();
+      orginal = new Adaptation(choices.getGlobalAdaptation().getOldQep(), StrategyID.Orginal, 1);
+      doOrginalAssessment(orginal, choices.getGlobalAdaptation().getOldQep());
+      
+      //find the best of each framework
+      if(!partialAds.isEmpty())
+      {
+        assessor.assessChoices(partialAds, runningSites);
+        bestPartial = chooseBestAdaptation(partialAds);
+      }
+      
+      if(!localAds.isEmpty())
+      {
+        assessor.assessChoices(localAds, runningSites);
+        bestLocal = chooseBestAdaptation(localAds);
+      }
+      //set up new colelction for the assessor
+      List<Adaptation> bestChoices = new ArrayList<Adaptation>();
+      if(bestLocal != null)
+        bestChoices.add(bestLocal);
+      if(bestPartial != null)
+        bestChoices.add(bestPartial);
+      bestChoices.add(choices.getGlobalAdaptation());
+      //assess to find best overall adaptation
+      assessor.assessChoices(bestChoices, runningSites);
+      bestOverall = chooseBestAdaptation(bestChoices);
+      //output bests, then all.
+      new PlannerUtils(bestChoices, manager).printLatexDocument(orginal, bestOverall, false);
+      if(!partialAds.isEmpty())
+        new PlannerUtils(partialAds, manager).printLatexDocument(orginal, bestPartial, true);
+      if(!localAds.isEmpty())
+        new PlannerUtils(localAds, manager).printLatexDocument(orginal, bestLocal, true);
+      System.out.println("sucessfully chose best adaptation, printing out latex");
+
     }
     catch(Exception e)
     {
       System.out.println(e.getMessage());
       e.printStackTrace();
     }
-    return bestChoice;
+    return bestOverall;
+  }
+
+  private void doOrginalAssessment(Adaptation orginal, SensorNetworkQueryPlan oldQEP) 
+  throws 
+  IOException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException, 
+  CodeGenerationException
+  {
+    orginal.setNewQep(oldQEP);
+    assessor.assess(orginal, runningSites);
   }
 
   private Adaptation chooseBestAdaptation(List<Adaptation> choices)

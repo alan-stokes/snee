@@ -23,6 +23,7 @@ import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
 import uk.ac.manchester.cs.snee.manager.common.StrategyAbstract;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyGlobal;
@@ -241,7 +242,7 @@ public class Anaylsiser
    * @throws AutonomicManagerException 
    * @throws RouterException 
    */
-  public List<Adaptation> runFailedNodeStragities(ArrayList<String> failedNodes) 
+  public AdaptationCollection runFailedNodeStragities(ArrayList<String> failedNodes) 
   throws OptimizationException, SchemaMetadataException, 
          TypeMappingException, AgendaException, 
          SNEEException, SNEEConfigurationException, 
@@ -251,8 +252,8 @@ public class Anaylsiser
          CostParametersException, SNCBException, SNEECompilerException, 
          NumberFormatException, AutonomicManagerException
   {
-  	//create adaparatation array
-  	List<Adaptation> adapatations = new ArrayList<Adaptation>();
+  	//create adaptation collection
+    AdaptationCollection adapatations = new AdaptationCollection();
   	Iterator<StrategyAbstract> frameworkIterator = frameworks.iterator();
   	boolean feasiable = true;
   	//go though methodologyies till located a adapatation.
@@ -268,36 +269,8 @@ public class Anaylsiser
   	      feasiable = false;
   	    adapatations.addAll(frameworkOutput);
   	  }
-  	  else
-  	  {
-  	    if(framework instanceof FailedNodeStrategyLocal)
-  	    {
-  	      checkEachFailureIndividually(failedNodes, adapatations);
-  	    }
-  	  }
   	}
-    
-    //output adapatations in a String format
-    Iterator<Adaptation> adapatationIterator = adapatations.iterator();
     return adapatations;
-  }
-
-  /**
-   * method which runs each framework seperately
-   * @param failedNodes
-   * @param adapatations
-   */
-  private void checkEachFailureIndividually(ArrayList<String> failedNodes,
-      List<Adaptation> adapatations)
-  {
-    /*can't adapt to them all, so check to see if any are adpatable, 
-    if so, remove them from next frameworks scope as local framework safer*/
-    Iterator<String> failedNodeIterator = failedNodes.iterator();
-    while(failedNodeIterator.hasNext())
-    {
-      String failedNodeID = failedNodeIterator.next();
-      //TODO CHECK EACH FAILED NODE IN LOCAL, BEFORE SENDING TO PARTIAL
-    }
   }
 
   public Double calculateQepRunningCostForSite(Site currentSite) 

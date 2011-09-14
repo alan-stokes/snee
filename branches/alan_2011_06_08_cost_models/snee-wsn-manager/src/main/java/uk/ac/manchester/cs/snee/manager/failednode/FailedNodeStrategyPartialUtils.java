@@ -18,12 +18,12 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyUtils;
 public class FailedNodeStrategyPartialUtils 
 {
 
-  private FailedNodeStrategyPartial ad;
+  private FailedNodeStrategyPartial frameworkPartial;
   private String sep = System.getProperty("file.separator");
   
   public FailedNodeStrategyPartialUtils(FailedNodeStrategyPartial ad)
   {
-    this.ad = ad;
+    this.frameworkPartial = ad;
   }
   
   /**
@@ -35,8 +35,8 @@ public class FailedNodeStrategyPartialUtils
   {
     try
     {
-      ad.getOldAgenda().setID("newAgenda");
-      AgendaIOTUtils output = new AgendaIOTUtils(ad.getOldAgenda(), iot, true);
+      frameworkPartial.getOldAgenda().setID("newAgenda");
+      AgendaIOTUtils output = new AgendaIOTUtils(frameworkPartial.getOldAgenda(), iot, true);
       File agendaFolder = new File(outputFolder.toString() + sep + "Agendas");
       agendaFolder.mkdir();
       output.generateImage(agendaFolder.toString());
@@ -61,7 +61,7 @@ public class FailedNodeStrategyPartialUtils
       
       File topFolder = new File(outputFolder.toString() + sep + "Topology");
       topFolder.mkdir();
-      new TopologyUtils(ad.getWsnTopology()).exportAsDOTFile(topFolder.toString() + string);
+      new TopologyUtils(frameworkPartial.getWsnTopology()).exportAsDOTFile(topFolder.toString() + string);
     }
     catch (SchemaMetadataException e)
     {

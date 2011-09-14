@@ -149,11 +149,12 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	  latexCoreF = new File(latexCoreF.toString() + sep + "core.tex");
 	  latexCore = new BufferedWriter(new FileWriter(latexCoreF));
 	  latexCore.write("\\documentclass[landscape, 10pt]{report} \n\\usepackage[landscape]{geometry} \n " +
-	  		            "\\usepackage{graphicx} \n \\usepackage{subfig} \n" + "\\begin{document}  \n");
+	  		            "\\usepackage{graphicx} \n \\usepackage{subfig} \n \\usepackage[cm]{fullpage} \n" + 
+	  		            "\\begin{document}  \n");
 	  latexCore.flush();  
   }
 	
-	private static void updateLatexCore(int queryid, int testID) throws IOException
+	private void updateLatexCore(int queryid, int testID) throws IOException
 	{
 	  latexCore.write("\\input{query" + queryid + "-" + testID + "} \n \\clearpage \n");
 	  latexCore.flush();  

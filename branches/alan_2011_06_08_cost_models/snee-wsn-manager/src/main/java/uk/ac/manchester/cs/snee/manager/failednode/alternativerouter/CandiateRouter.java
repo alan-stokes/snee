@@ -115,6 +115,7 @@ public class CandiateRouter extends Router
       
       //adds routes to system
       failedNodeToRoutingTreeMapping.addAll(key, routesForFailedNode);
+      chainCounter++;
     }
     //merges new routes to create whole entire routingTrees
     newRoutingTrees =  mergeSections(failedNodeToRoutingTreeMapping, oldRoutingTree, 

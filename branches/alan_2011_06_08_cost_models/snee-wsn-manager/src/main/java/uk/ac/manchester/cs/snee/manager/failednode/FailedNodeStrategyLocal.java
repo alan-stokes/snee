@@ -290,7 +290,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     {
       String failedNodeID = failedNodeIDsIterator.next();
       String equivilentNodeID = retrieveNewClusterHead(failedNodeID);
-      adapt.addActivatedSite(network.getSite(equivilentNodeID));
+      adapt.addActivatedSite(equivilentNodeID);
       rewireRoutingTree(failedNodeID, equivilentNodeID, currentRoutingTree);
       //rewire children
       rewireNodes(clonedIOT, failedNodeID, equivilentNodeID);

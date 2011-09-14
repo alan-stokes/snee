@@ -176,7 +176,7 @@ public abstract class StrategyAbstract
       Site failedSite  = (Site) oldIOT.getNode(failedNodesIterator.next());
       ArrayList<Node> children = oldIOT.getInputSites(failedSite);
       Iterator<Node> childrenIterator = children.iterator();
-      ArrayList<Site> affectedSites = new ArrayList<Site>();
+      ArrayList<String> affectedSites = new ArrayList<String>();
       long startTime = 0;
       long duration = 0;
       boolean reprogrammed = true;
@@ -225,10 +225,10 @@ public abstract class StrategyAbstract
    * @param ad
    * @param adjust
    */
-  private void findAffectedSites(Node start, ArrayList<Site> affectedSites, AgendaIOT newAgenda,
+  private void findAffectedSites(Node start, ArrayList<String> affectedSites, AgendaIOT newAgenda,
                              Adaptation ad, TemporalAdjustment adjust)
   {
-    affectedSites.add((Site) start);
+    affectedSites.add(start.getID());
     if(!newAgenda.getIOT().getRT().getRoot().getID().equals(start.getID()))
     {
       Task comm = newAgenda.getTransmissionTask(start); 
@@ -237,19 +237,19 @@ public abstract class StrategyAbstract
       while(siteIterator.hasNext())
       {
         start = siteIterator.next();
-        ArrayList<Site> allAffectedSites = ad.getSitesAffectedByAllTemporalChanges();
-        if(allAffectedSites.contains(start))
+        ArrayList<String> allAffectedSites = ad.getSitesAffectedByAllTemporalChanges();
+        if(allAffectedSites.contains(start.getID()))
         {
           TemporalAdjustment otherAdjust = ad.getAdjustmentContainingSite((Site) start);
           if(otherAdjust.getAdjustmentDuration() < adjust.getAdjustmentDuration())
           {
-            affectedSites.add((Site) start);
-            otherAdjust.removeSiteFromAffectedSites((Site) start);
+            affectedSites.add(start.getID());
+            otherAdjust.removeSiteFromAffectedSites(start.getID());
           }
         }
         else
         {
-          affectedSites.add((Site) start); 
+          affectedSites.add(start.getID()); 
         }
       }   
     }
@@ -346,7 +346,7 @@ public abstract class StrategyAbstract
       ArrayList<InstanceOperator> instanceOperatorsNew = newIOT.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
       if(instanceOperatorsNew.size() == 0 && !failedNodes.contains(site.getID()))
       {
-        ad.addDeactivatedSite(site);
+        ad.addDeactivatedSite(site.getID());
       }
     }
   }
@@ -377,9 +377,10 @@ public abstract class StrategyAbstract
       else
       {
         exchangeOld = (InstanceExchangePart) instanceOperatorsOld.get(0);
-        if(!exchangeNew.getNext().getSite().getID().equals(exchangeOld.getNext().getSite().getID()))
+        if(!exchangeNew.getNext().getSite().getID().equals(exchangeOld.getNext().getSite().getID())
+            && !ad.getReprogrammingSites().contains(site))
         {
-          ad.addRedirectedSite(site);
+          ad.addRedirectedSite(site.getID());
         }
       }
     }
@@ -394,8 +395,10 @@ public abstract class StrategyAbstract
   private void checkForReProgrammedNodes(IOT newIOT, IOT oldIOT,
       Adaptation ad)
   {
-    RT rt = newIOT.getRT();
-    Iterator<Site> siteIterator = rt.siteIterator(TraversalOrder.POST_ORDER);
+    RT newRT = newIOT.getRT();
+    RT oldRT = oldIOT.getRT();
+    
+    Iterator<Site> siteIterator = newRT.siteIterator(TraversalOrder.POST_ORDER);
     while(siteIterator.hasNext())
     {
       Site site = siteIterator.next();
@@ -415,11 +418,14 @@ public abstract class StrategyAbstract
       }
       Iterator<SensornetOperator> newSenOpIterator = physicalOpsNew.iterator();
       Iterator<SensornetOperator> oldSenOpIterator = physicalOpsOld.iterator();
-      if(physicalOpsNew.size() != physicalOpsOld.size())
-      {
-        ad.addReprogrammedSite(site); 
-      }
-      else
+      Site oldSite = oldRT.getSite(site.getID());
+      if(oldSite == null && !ad.getActivateSites().contains(oldSite))
+        ad.addReprogrammedSite(site.getID()); 
+      else if(physicalOpsNew.size() != physicalOpsOld.size())
+        ad.addReprogrammedSite(site.getID()); 
+      else if(site.getInDegree() != oldSite.getInDegree())
+        ad.addReprogrammedSite(site.getID()); 
+      else 
       {
         boolean notSame = false;
         while(newSenOpIterator.hasNext() && notSame)
@@ -428,11 +434,12 @@ public abstract class StrategyAbstract
           SensornetOperator oldSenOp = oldSenOpIterator.next();
           if(!newSenOp.getID().equals(oldSenOp.getID()))
           {
-            ad.addReprogrammedSite(site); 
+            ad.addReprogrammedSite(site.getID()); 
             notSame = true;
           }
         }
       }
+      
     }
   }
   

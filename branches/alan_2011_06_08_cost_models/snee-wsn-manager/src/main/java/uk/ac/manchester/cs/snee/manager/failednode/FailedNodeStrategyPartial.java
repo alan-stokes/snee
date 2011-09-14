@@ -319,7 +319,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     }
     catch(Exception e)
     {
-      e.printStackTrace();
+     // e.printStackTrace();
       chooseDisconnectedNode(oldIOT, failedNodes, disconnectedNodes);
       System.out.println("No routes avilable, so disconnecting nodes" + disconnectedNodes.toString());
       return genereateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, queryName, 

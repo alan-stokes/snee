@@ -225,10 +225,15 @@ public class SNEEProperties {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getSetting() with " + propName);
 		String property = _props.getProperty(propName);
-		if (property == null) {
-			String message = "Unknown property \'" + propName + "\'";
-			logger.warn(message);
-			throw new SNEEConfigurationException(message);
+		if (property == null)
+		{
+		  property = getDefaultProperty(propName);
+		  if(property == null)
+		  {
+  			String message = "Unknown property \'" + propName + "\'";
+  			logger.warn(message);
+  			throw new SNEEConfigurationException(message);
+		  }
 		}
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN getSetting() " + propName + 
@@ -236,7 +241,15 @@ public class SNEEProperties {
 		return property;
 	}
 	
-	public static int getIntSetting(String propName) 
+	private static String getDefaultProperty(String propName)
+  {
+    if(propName.equals("wsn_manager.strategies"))
+      return "FP";
+    else
+      return null;
+  }
+
+  public static int getIntSetting(String propName) 
 	throws SNEEConfigurationException 
 	{
 		if (logger.isDebugEnabled()) {

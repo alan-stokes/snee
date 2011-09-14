@@ -9,11 +9,11 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class Adaptation
 {
-  private ArrayList<Site> reprogrammingSites;
-  private ArrayList<Site> redirectedionSites;
+  private ArrayList<String> reprogrammingSites;
+  private ArrayList<String> redirectedionSites;
   private ArrayList<TemporalAdjustment> temporalSites;
-  private ArrayList<Site> deactivationSites;
-  private ArrayList<Site> activateSites;
+  private ArrayList<String> deactivationSites;
+  private ArrayList<String> activateSites;
   private ArrayList<String> failedNodes;
   private SensorNetworkQueryPlan newQep = null;
   private SensorNetworkQueryPlan oldQep = null;
@@ -24,14 +24,15 @@ public class Adaptation
   private Double lifetimeEstimate = null; //done in agenda cycles
   private StrategyID id;
   private int numberID;
+  private String nodeIdWhichEndsQuery = null;
   
   public Adaptation(SensorNetworkQueryPlan oldQep, StrategyID id, int numberID)
   {
-    reprogrammingSites = new ArrayList<Site>();
-    redirectedionSites = new ArrayList<Site>();
+    reprogrammingSites = new ArrayList<String>();
+    redirectedionSites = new ArrayList<String>();
     temporalSites = new ArrayList<TemporalAdjustment>();
-    deactivationSites = new ArrayList<Site>();
-    activateSites = new ArrayList<Site>();
+    deactivationSites = new ArrayList<String>();
+    activateSites = new ArrayList<String>();
     this.setOldQep(oldQep);
     this.setId(id);
     this.numberID = numberID;
@@ -42,9 +43,9 @@ public class Adaptation
    * does not reduce duplicates
    * @return
    */
-  public ArrayList<Site> getSitesAffectedByAllTemporalChanges()
+  public ArrayList<String> getSitesAffectedByAllTemporalChanges()
   {
-	ArrayList<Site> affectedSites = new ArrayList<Site>();
+	ArrayList<String> affectedSites = new ArrayList<String>();
 	Iterator<TemporalAdjustment> adjustmentIterator = temporalSitesIterator();
 	while(adjustmentIterator.hasNext())
 	{
@@ -70,12 +71,12 @@ public class Adaptation
 	return null;
   }
   
-  public void addReprogrammedSite(Site site)
+  public void addReprogrammedSite(String site)
   {
     reprogrammingSites.add(site);
   }
   
-  public void addRedirectedSite(Site site)
+  public void addRedirectedSite(String site)
   {
     redirectedionSites.add(site);
   }
@@ -85,22 +86,22 @@ public class Adaptation
     temporalSites.add(site);
   }
   
-  public void addDeactivatedSite(Site site)
+  public void addDeactivatedSite(String site)
   {
     deactivationSites.add(site);
   }
   
-  public void addActivatedSite(Site site)
+  public void addActivatedSite(String site)
   {
     activateSites.add(site);
   }
   
-  public Iterator<Site> reprogrammingSitesIterator()
+  public Iterator<String> reprogrammingSitesIterator()
   {
     return reprogrammingSites.iterator();
   }
   
-  public Iterator<Site> redirectedionSitesIterator()
+  public Iterator<String> redirectedionSitesIterator()
   {
     return redirectedionSites.iterator();
   }
@@ -110,12 +111,12 @@ public class Adaptation
     return temporalSites.iterator();
   }
   
-  public Iterator<Site> deactivationSitesIterator()
+  public Iterator<String> deactivationSitesIterator()
   {
     return deactivationSites.iterator();
   }
   
-  public Iterator<Site> activateSitesIterator()
+  public Iterator<String> activateSitesIterator()
   {
     return activateSites.iterator();
   }
@@ -150,12 +151,12 @@ public class Adaptation
     return reprogrammingSites.contains(find);
   }
   
-  public ArrayList<Site> getReprogrammingSites()
+  public ArrayList<String> getReprogrammingSites()
   {
     return reprogrammingSites;
   }
 
-  public ArrayList<Site> getRedirectedionSites()
+  public ArrayList<String> getRedirectedionSites()
   {
     return redirectedionSites;
   }
@@ -165,12 +166,12 @@ public class Adaptation
     return temporalSites;
   }
 
-  public ArrayList<Site> getDeactivationSites()
+  public ArrayList<String> getDeactivationSites()
   {
     return deactivationSites;
   }
 
-  public ArrayList<Site> getActivateSites()
+  public ArrayList<String> getActivateSites()
   {
     return activateSites;
   }
@@ -262,15 +263,15 @@ public class Adaptation
   public String toString()
   {
     String output = "";
-    Iterator<Site> reporgramIterator = reprogrammingSitesIterator();
-    Iterator<Site> redirectedIterator = redirectedionSitesIterator();
+    Iterator<String> reporgramIterator = reprogrammingSitesIterator();
+    Iterator<String> redirectedIterator = redirectedionSitesIterator();
     Iterator<TemporalAdjustment> temporalIterator = temporalSitesIterator();
-    Iterator<Site> deactivatedIterator = deactivationSitesIterator();
-    Iterator<Site> activateIterator = activateSites.iterator();
+    Iterator<String> deactivatedIterator = deactivationSitesIterator();
+    Iterator<String> activateIterator = activateSites.iterator();
     output = output.concat("Reprogrammed[");
     while(reporgramIterator.hasNext())
     {
-      String concat = reporgramIterator.next().getID();
+      String concat = reporgramIterator.next();
       if(reporgramIterator.hasNext())
         output = output.concat(concat + ", ");
       else
@@ -279,7 +280,7 @@ public class Adaptation
     output = output.concat("] Redirected[");
     while(redirectedIterator.hasNext())
     {
-      String concat = redirectedIterator.next().getID();
+      String concat = redirectedIterator.next();
       if(redirectedIterator.hasNext())
         output = output.concat(concat + ", ");
       else
@@ -288,7 +289,7 @@ public class Adaptation
     output = output.concat("] Deactivated[");
     while(deactivatedIterator.hasNext())
     {
-      String concat = deactivatedIterator.next().getID();
+      String concat = deactivatedIterator.next();
       if(deactivatedIterator.hasNext())
         output = output.concat(concat + ", ");
       else
@@ -297,7 +298,7 @@ public class Adaptation
     output = output.concat("] activate[");
     while(activateIterator.hasNext())
     {
-      String concat = activateIterator.next().getID();
+      String concat = activateIterator.next();
       if(activateIterator.hasNext())
         output = output.concat(concat + ", ");
       else
@@ -325,6 +326,8 @@ public class Adaptation
     if(lifetimeEstimate != null)
       output  = output.concat(" lifetimeEstimate [" + lifetimeEstimate.toString() + " ms]");
     output  = output.concat(" ID [" + id.toString() + ":" + numberID + "]");
+    if(this.nodeIdWhichEndsQuery != null)
+      output  = output.concat("LifetimeFailedNode[" + nodeIdWhichEndsQuery + "]");
     return output;
   }
 
@@ -336,5 +339,15 @@ public class Adaptation
   public ArrayList<String> getFailedNodes()
   {
     return failedNodes;
+  }
+
+  public void setNodeIdWhichEndsQuery(String nodeIdWhichEndsQuery)
+  {
+    this.nodeIdWhichEndsQuery = nodeIdWhichEndsQuery;
+  }
+
+  public String getNodeIdWhichEndsQuery()
+  {
+    return nodeIdWhichEndsQuery;
   }
 }

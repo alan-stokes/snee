@@ -8,11 +8,11 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 public class TemporalAdjustment
 {
 
-  private ArrayList<Site> sitesAffected = new ArrayList<Site>();
+  private ArrayList<String> sitesAffected = new ArrayList<String>();
   private long adjustmentPosition = 0;
   private long adjustmentDuration = 0;
   
-  public TemporalAdjustment(long adjustmentPosition, long adjustmentDuration, ArrayList<Site> affectedSites)
+  public TemporalAdjustment(long adjustmentPosition, long adjustmentDuration, ArrayList<String> affectedSites)
   {
     this.adjustmentDuration = adjustmentDuration;
     this.adjustmentPosition = adjustmentPosition;
@@ -23,17 +23,17 @@ public class TemporalAdjustment
   {
   }
   
-  public void addAffectedSite(Site affectedSite)
+  public void addAffectedSite(String affectedSite)
   {
     sitesAffected.add(affectedSite);
   }
   
-  public ArrayList<Site> getAffectedSites()
+  public ArrayList<String> getAffectedSites()
   {
     return sitesAffected;
   }
   
-  public void setAffectedSites(ArrayList<Site> affectedSites)
+  public void setAffectedSites(ArrayList<String> affectedSites)
   {
     this.sitesAffected = affectedSites;
   }
@@ -43,7 +43,7 @@ public class TemporalAdjustment
     return adjustmentPosition;
   }
 
-  public void removeSiteFromAffectedSites(Site site)
+  public void removeSiteFromAffectedSites(String site)
   {
     sitesAffected.remove(site);
   }
@@ -63,7 +63,7 @@ public class TemporalAdjustment
     this.adjustmentDuration = adjustmentDuration;
   }
   
-  public Iterator<Site> affectedsitesIterator()
+  public Iterator<String> affectedsitesIterator()
   {
     return sitesAffected.iterator();
   }
@@ -72,10 +72,10 @@ public class TemporalAdjustment
   {
     String output = "";
     output = output.concat("S[");
-    Iterator<Site> siteIterator = affectedsitesIterator();
+    Iterator<String> siteIterator = affectedsitesIterator();
     while(siteIterator.hasNext())
     {
-      String concat = siteIterator.next().getID();
+      String concat = siteIterator.next();
       if(siteIterator.hasNext())
         output = output.concat(concat + ", ");
       else

@@ -54,6 +54,7 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
@@ -310,6 +311,12 @@ public class Dispatcher {
   CodeGenerationException, AutonomicManagerException
   {
     _autonomicManager.runFailedNodeFramework(failedNodesID);
+  }
+
+  public void giveAutonomicManagerQueryParams(QueryParameters queryParams)
+  {
+    _autonomicManager.setQueryParams(queryParams.getQoS());
+    
   }
 
 }

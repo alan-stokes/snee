@@ -97,6 +97,11 @@ public class RT extends SNEEAlgebraicForm {
 			logger.debug("ENTER RT()"); 
 	}
     
+    public Topology getNetwork()
+    {
+      return network;
+    }
+
     /**
      * Resets the counter; use prior to compiling the next query.
      */
