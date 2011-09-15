@@ -11,6 +11,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.Edge;
+import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 
 public class TopologyUtils 
@@ -23,10 +24,10 @@ public class TopologyUtils
     this.network = network;
   }
   
-  public void exportAsDOTFile(String fname) 
+  public void exportAsDOTFile(String fname, boolean labels) 
   throws SchemaMetadataException 
   {
-    exportAsDOTFile(fname, "");
+    exportAsDOTFile(fname, "", labels);
   }
   
   /**
@@ -36,7 +37,7 @@ public class TopologyUtils
    * @param fname   the name of the output file
    * @throws SchemaMetadataException 
    */
-  public void exportAsDOTFile(String fname, String label) 
+  public void exportAsDOTFile(String fname, String label, boolean labels) 
   throws SchemaMetadataException {
     if (logger.isDebugEnabled())
       logger.debug("ENTER exportAsDOTFile() with " + fname + " " +
@@ -64,9 +65,15 @@ public class TopologyUtils
         Edge e = network.getEdges().get((String) i.next());
         if(!alreadyOutputted(edgesAlreadyOutputted, e))
         {
-          out.println("\"" + network.getAllNodes().get(e.getSourceID()).getID()
+          out.print("\"" + network.getAllNodes().get(e.getSourceID()).getID()
             + "\"" + edgeSymbol + "\""
-            + network.getAllNodes().get(e.getDestID()).getID() + "\" [arrowhead = \"both\"] ");
+            + network.getAllNodes().get(e.getDestID()).getID() + "\" [arrowhead = \"both\"");
+          if(labels)
+            out.print("label = \"" + network.getLinkEnergyCost(network.getSite(e.getSourceID()), 
+                                                               network.getSite(e.getDestID())) + "\" ] ");
+          else
+            out.print("]");
+          out.print("\n");
           edgesAlreadyOutputted.add(e);
         }
       }

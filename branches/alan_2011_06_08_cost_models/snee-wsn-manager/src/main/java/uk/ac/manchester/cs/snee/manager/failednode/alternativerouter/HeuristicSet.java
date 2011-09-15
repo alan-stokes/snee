@@ -17,12 +17,17 @@ public class HeuristicSet
   private LinkMatrexChoiceHeuristic choice;
   private HashMap<String, LinkMatrexChoiceHeuristic> edgeChoices = new HashMap<String, LinkMatrexChoiceHeuristic>();
 
-  public HeuristicSet(SecondNodeHeuristic chi, FirstNodeHeuristic phi, LinkMatrexChoiceHeuristic psi, PenaliseNodeHeuristic omega, Topology workingTopology)
+  public HeuristicSet(SecondNodeHeuristic chi, FirstNodeHeuristic phi, LinkMatrexChoiceHeuristic psi, PenaliseNodeHeuristic omega)
   {
     this.chi = chi;
     this.phi = phi;
     this.psi = psi;
     this.omega = omega;
+  }
+  
+  
+  public void setup(Topology workingTopology)
+  {
     switch(psi)
     {
       case ENERGY:
@@ -68,6 +73,10 @@ public class HeuristicSet
         }
       break;
     }
+  }
+
+  public HeuristicSet()
+  {
   }
 
   public SecondNodeHeuristic getSecondNodeHeuristic()

@@ -4,10 +4,10 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class RunTimeSite
 {
-  private Double currentEnergy = new Double(0);
-  private Double currentAdaptationEnergyCost = new Double (0);
-  private Double qepExecutionCost = new Double(0);;
-  private Site representativeSite;
+  private Double currentEnergy = new Double(0); //J
+  private Double currentAdaptationEnergyCost = new Double (0); //J
+  private Double qepExecutionCost = new Double(0);;  //J
+  private Site representativeSite; 
   
   public RunTimeSite(Double currentEnergy, Site representativeSite, Double qepExecutionCost)
   {
@@ -75,6 +75,11 @@ public class RunTimeSite
   public void removeQEPExecutionCost()
   {
     currentEnergy = currentEnergy - qepExecutionCost;
+  }
+  
+  public void removeReprogrammingCostCost()
+  {
+    currentEnergy = currentEnergy - currentAdaptationEnergyCost;
   }
   
   public String toString()

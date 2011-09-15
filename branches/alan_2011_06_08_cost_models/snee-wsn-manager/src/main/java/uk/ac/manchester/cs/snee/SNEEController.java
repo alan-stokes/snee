@@ -341,7 +341,9 @@ public class SNEEController implements SNEE {
 	 */
 	public int addQuery(String query, String queryParamsFile) 
 	throws EvaluatorException, SNEECompilerException, SNEEException,
-	MetadataException, SNEEConfigurationException 
+	MetadataException, SNEEConfigurationException,
+	SchemaMetadataException, TypeMappingException, 
+	OptimizationException, IOException, CodeGenerationException 
 	{
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER addQuery() with " + query);
@@ -411,7 +413,9 @@ public class SNEEController implements SNEE {
 	
   public int addQueryWithoutCompilation(String query, String queryParamsFile)
   throws EvaluatorException, SNEECompilerException, SNEEException,
-  MetadataException, SNEEConfigurationException 
+  MetadataException, SNEEConfigurationException,
+  SchemaMetadataException, TypeMappingException, 
+  OptimizationException, IOException, CodeGenerationException 
   {
     if (logger.isDebugEnabled()) {
       logger.debug("ENTER addQuery() with " + query);
@@ -472,7 +476,8 @@ public class SNEEController implements SNEE {
   
 	public int addQuery(String query, String queryParamsFile, int currentQueryID)
 	throws EvaluatorException, SNEECompilerException, SNEEException,
-  MetadataException, SNEEConfigurationException
+  MetadataException, SNEEConfigurationException, SchemaMetadataException, 
+  TypeMappingException, OptimizationException, IOException, CodeGenerationException
 	{
 	  if (logger.isDebugEnabled()) {
       logger.debug("ENTER addQuery() with " + query);
@@ -548,7 +553,8 @@ public class SNEEController implements SNEE {
 	 */
 	private int dispatchQuery(int queryId, String query, QueryParameters queryParams) 
 	throws SNEEException, MetadataException, EvaluatorException,
-	SNEEConfigurationException
+	SNEEConfigurationException, SchemaMetadataException, 
+	TypeMappingException, OptimizationException, IOException, CodeGenerationException
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER dispatchQuery() with " + queryId +
@@ -556,6 +562,7 @@ public class SNEEController implements SNEE {
 		}
 		QueryExecutionPlan queryPlan = _queryPlans.get(queryId);
 		ResultStore resultSet = createStreamResultSet(query, queryPlan);
+		_dispatcher.initiliseAutonomicManager(queryId, resultSet, queryPlan);
 		_dispatcher.giveAutonomicManagerQuery(query);
 		_dispatcher.giveAutonomicManagerQueryParams(queryParams);
 		_dispatcher.startQuery(queryId, resultSet, queryPlan);

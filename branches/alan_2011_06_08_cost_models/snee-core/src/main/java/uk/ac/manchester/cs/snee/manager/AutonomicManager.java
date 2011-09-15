@@ -61,7 +61,7 @@ public interface AutonomicManager
                                  ResultStore resultSet) 
   throws SNEEException, SNEEConfigurationException, 
   SchemaMetadataException, TypeMappingException, 
-  OptimizationException, IOException;
+  OptimizationException, IOException, CodeGenerationException;
 
   //no tuples received this query
   public abstract void callAnaysliserAnaylsisSNEECard();

@@ -1144,7 +1144,17 @@ public class AgendaIOT extends SNEEAlgebraicForm{
           sensorEnergy += AvroraCostParameters.getSensorEnergyCost();
         }
         sumEnergy += sensorEnergy;
-      } else if (t instanceof CommunicationTask) {
+      }
+      else if(t instanceof InstanceFragmentTask)
+      {
+        InstanceFragmentTask ft = (InstanceFragmentTask)t;
+        InstanceFragment f = ft.getFragment();
+        if (f.containsOperatorType(SensornetAcquireOperator.class)) {
+          sensorEnergy += AvroraCostParameters.getSensorEnergyCost();
+        }
+        sumEnergy += sensorEnergy;
+      }
+      else if (t instanceof CommunicationTask) {
         CommunicationTask ct = (CommunicationTask)t;
         double RadioEnergy = getRadioEnergy(ct);
         sumEnergy += getRadioEnergy(ct);

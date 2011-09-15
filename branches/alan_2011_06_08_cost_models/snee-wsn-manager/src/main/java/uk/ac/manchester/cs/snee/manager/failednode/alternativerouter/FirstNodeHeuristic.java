@@ -1,14 +1,30 @@
 package uk.ac.manchester.cs.snee.manager.failednode.alternativerouter;
 
-import java.util.Random;
-
 public enum FirstNodeHeuristic
 {
   SINK,RANDOM;
   
-  public static FirstNodeHeuristic RandomEnum()
+  private static int position = 0;
+  
+  public static FirstNodeHeuristic next()
   { 
     FirstNodeHeuristic[] values = (FirstNodeHeuristic[]) values();
-    return values[new Random().nextInt(values.length)];
+    FirstNodeHeuristic value = values[position];
+    position++;
+    return value;
   }
+  
+  public static boolean hasNext()
+  { 
+    if(position < values().length)
+      return true;
+    else
+      return false;
+  }
+  
+  public static void resetCounter()
+  {
+    position = 0;
+  }
+  
 }

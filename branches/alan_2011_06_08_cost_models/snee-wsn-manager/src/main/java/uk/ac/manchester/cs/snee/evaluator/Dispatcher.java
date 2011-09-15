@@ -168,9 +168,9 @@ public class Dispatcher {
 				sncb = snQueryPlan.getSNCB();
 				SourceMetadataAbstract metadata = _metadata.getSource(snQueryPlan.getMetaData().getOutputAttributes().get(1).getExtentName());
 				_autonomicManager.initilise(metadata, queryPlan, resultSet);
-        _autonomicManager.runCostModels();
+        //_autonomicManager.runCostModels();
         _autonomicManager.runSimulatedNodeFailure();
-        _autonomicManager.runAnyliserWithDeadNodes();
+       // _autonomicManager.runAnyliserWithDeadNodes();
 				SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, _metadata);
 				_autonomicManager.setListener(mr);
 				InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
@@ -195,7 +195,7 @@ public class Dispatcher {
   SNEEException, MetadataException, 
   EvaluatorException, SNEEConfigurationException, 
   SchemaMetadataException, TypeMappingException, 
-  OptimizationException, IOException 
+  OptimizationException, IOException, CodeGenerationException 
   {
 	  SensorNetworkQueryPlan snQueryPlan = (SensorNetworkQueryPlan)queryPlan;
     String sep = System.getProperty("file.separator");

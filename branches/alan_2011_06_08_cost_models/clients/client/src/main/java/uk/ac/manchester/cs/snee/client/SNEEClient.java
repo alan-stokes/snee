@@ -38,6 +38,9 @@ import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public abstract class SNEEClient implements Observer {
 
@@ -222,7 +225,9 @@ public abstract class SNEEClient implements Observer {
 	
 	public void run() 
 	throws SNEECompilerException, MetadataException, EvaluatorException,
-	SNEEException, SQLException, SNEEConfigurationException, FileNotFoundException {
+	SNEEException, SQLException, SNEEConfigurationException,
+	SchemaMetadataException, TypeMappingException, OptimizationException, 
+	IOException, CodeGenerationException {
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER");
 		

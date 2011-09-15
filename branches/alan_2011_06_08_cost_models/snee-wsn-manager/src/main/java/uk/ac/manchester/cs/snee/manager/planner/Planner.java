@@ -107,7 +107,7 @@ public class Planner
   CodeGenerationException
   {
     orginal.setNewQep(oldQEP);
-    assessor.assess(orginal, runningSites);
+    assessor.assess(orginal, runningSites, true);
   }
 
   private Adaptation chooseBestAdaptation(List<Adaptation> choices)

@@ -15,6 +15,7 @@ public class Executer
 
   public void adapt(Adaptation finalChoice)
   {
+   // System.exit(0);
     // TODO Auto-generated method stub
     
   }

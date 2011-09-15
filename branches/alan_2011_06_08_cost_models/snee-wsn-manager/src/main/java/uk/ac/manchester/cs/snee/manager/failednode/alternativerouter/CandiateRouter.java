@@ -15,8 +15,6 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
-import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
@@ -38,6 +36,9 @@ public class CandiateRouter extends Router
   private File failedChainMain;
   private File outputFolder;
   private File desintatedOutputFolder;
+  private File chainFolder;
+  private List<HeuristicSet> heuristics = new ArrayList<HeuristicSet>();
+  private int heuristicsPosition = 0;
   /**
    * constructor
    * @param network 
@@ -56,8 +57,57 @@ public class CandiateRouter extends Router
     this.outputFolder = outputFolder;
     failedChainMain = new File(outputFolder.toString() + sep + "chains");
     failedChainMain.mkdir();
+    setupHeuristicsets(1, new HeuristicSet());
   }
   
+  /**
+   * recursive method to set up sets
+   */
+  private void setupHeuristicsets(int position, HeuristicSet set)
+  {
+    switch(position)
+    {
+      case 1:
+        while(FirstNodeHeuristic.hasNext())
+        {
+          set.setFirstNodeHeuristic(FirstNodeHeuristic.next());
+          setupHeuristicsets(position+ 1, set);
+        }
+        FirstNodeHeuristic.resetCounter();
+      break;        
+      case 2:
+        while(SecondNodeHeuristic.hasNext())
+        {
+          set.setSecondNodeHeuristic(SecondNodeHeuristic.next());
+          setupHeuristicsets(position+ 1, set);
+        }
+        SecondNodeHeuristic.resetCounter();
+      break;
+      case 3:
+        while(PenaliseNodeHeuristic.hasNext())
+        {
+          set.setPenaliseNodeHeuristic(PenaliseNodeHeuristic.next());
+          setupHeuristicsets(position+ 1, set);
+        }
+        PenaliseNodeHeuristic.resetCounter();
+      break;
+      case 4:
+        while(LinkMatrexChoiceHeuristic.hasNext())
+        {
+          set.setLinkMatrexChoiceHeuristic(LinkMatrexChoiceHeuristic.next());
+          heuristics.add(new HeuristicSet(set.getSecondNodeHeuristic(), 
+                                          set.getFirstNodeHeuristic(), 
+                                          set.getLinkMatrexChoiceHeuristic(),
+                                          set.getPenaliseNodeHeuristic()));
+        }
+        LinkMatrexChoiceHeuristic.resetCounter();
+      break;
+      default:
+      break;
+    }
+    
+  }
+
   /**
    * calculates all routes which replace the failed nodes.
    * @param disconnectedNodes 
@@ -90,7 +140,7 @@ public class CandiateRouter extends Router
     //removes excess nodes and edges off the working topolgy, calculates new routes, and adds them to hashmap
     while(failedLinkIterator.hasNext())
     {    
-      File chainFolder = new File(failedChainMain.toString() + sep + "chain" + chainCounter);
+      chainFolder = new File(failedChainMain.toString() + sep + "chain" + chainCounter);
       chainFolder.mkdir();
       //set up folder to hold alternative routes
       desintatedOutputFolder = new File(chainFolder.toString() + sep + "AllAlternatives");
@@ -106,7 +156,7 @@ public class CandiateRouter extends Router
       System.out.println("sources are " + sources.toString());
       
       //output reduced topology for help in keeping track of progress
-      new TopologyUtils(workingTopology).exportAsDOTFile(chainFolder.toString() + sep + "reducedtopology");
+      new TopologyUtils(workingTopology).exportAsDOTFile(chainFolder.toString() + sep + "reducedtopology", true);
 
       //calculate different routes around linked failed site.
       ArrayList<Tree> routesForFailedNode = 
@@ -413,40 +463,46 @@ public class CandiateRouter extends Router
          exportAsTextFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
     routes.add(steinerTree);
     //container for currently tested heuristics
-    ArrayList<HeuristicSet> testedHeuristics = new ArrayList<HeuristicSet>();  
-    while(routes.size() < numberOfRoutingTreesToWorkOn)
-    {
-      HeuristicSet set = collectNextHeuristicSet(workingTopology, testedHeuristics);
-      //produce tree for set of heuristics
-      MetaSteinerTree treeGenerator = new MetaSteinerTree();
-      Tree currentTree = treeGenerator.produceTree(set, sources, sink, workingTopology, paf, oldRoutingTree);
-      new RTUtils(new RT(paf, "", currentTree, null)).
-           exportAsDotFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
-      new RTUtils(new RT(paf, "", currentTree, null)).
-           exportAsTextFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
-      routes.add(currentTree);
-    }
-    routes = removeDuplicates(routes);
-    outputCleanedRoutes(routes, outputFolder, paf);
-    return routes;
+    heuristicsPosition = 0;
+    return recursivelyDoRoutes(routes, workingTopology, sources, sink, paf, 
+                               oldRoutingTree);
   }
 
-  private HeuristicSet collectNextHeuristicSet(Topology workingTopology, 
-                                               ArrayList<HeuristicSet> testedHeuristics)
+  private ArrayList<Tree> recursivelyDoRoutes(ArrayList<Tree> routes, 
+                                              Topology workingTopology, ArrayList<String> sources, 
+                                              String sink, PAF paf, RT oldRoutingTree)
   {
-    boolean alreadyDone = false;
-    //get new set of heuristics
-    HeuristicSet set;
-    do
+    try
     {
-      FirstNodeHeuristic phi = FirstNodeHeuristic.RandomEnum();
-      SecondNodeHeuristic chi = SecondNodeHeuristic.RandomEnum();
-      LinkMatrexChoiceHeuristic psi = LinkMatrexChoiceHeuristic.RandomEnum();
-      PenaliseNodeHeuristic omega = PenaliseNodeHeuristic.RandomEnum();
-      set = new HeuristicSet(chi, phi, psi, omega, workingTopology);
-      alreadyDone = comparison(testedHeuristics, set);
-    }while(alreadyDone);
-    testedHeuristics.add(set);
+      while(heuristicsPosition < heuristics.size() -1)
+      {
+        HeuristicSet set = collectNextHeuristicSet(workingTopology);
+        //produce tree for set of heuristics
+        MetaSteinerTree treeGenerator = new MetaSteinerTree();
+        Tree currentTree = treeGenerator.produceTree(set, sources, sink, workingTopology, paf, oldRoutingTree);
+        new RTUtils(new RT(paf, "", currentTree, null)).
+             exportAsDotFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
+        new RTUtils(new RT(paf, "", currentTree, null)).
+             exportAsTextFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
+        routes.add(currentTree);
+      }
+      routes = removeDuplicates(routes);
+      outputCleanedRoutes(routes, chainFolder, paf);
+      return routes;
+    }
+    catch(Exception e)
+    {
+      return recursivelyDoRoutes(routes, workingTopology, sources, sink, paf, 
+          oldRoutingTree);
+    }
+    
+  }
+
+  private HeuristicSet collectNextHeuristicSet(Topology workingTopology)
+  {
+    HeuristicSet set = heuristics.get(heuristicsPosition);
+    heuristicsPosition++;
+    set.setup(workingTopology);
     return set;
   }
 

@@ -54,6 +54,7 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 			//query = "SELECT avg(light) FROM Castilla[now];";
 			//query = "SELECT * FROM Castilla[now];";
 			query = "SELECT * FROM River[now];";
+			//query = "SELECT avg(rain) FROM River[now];";
 			//query = "SELECT * FROM Castilla[now] c, Forest[now] f WHERE c.light < f.light";
 			//query = "SELECT e.light FROM Castilla[now] e;";
 			//query = "SELECT e.seaLevel FROM SeaDefenceEast[NOW] e, SeaDefenceWest[NOW] w WHERE e.seaLevel > w.seaLevel;";

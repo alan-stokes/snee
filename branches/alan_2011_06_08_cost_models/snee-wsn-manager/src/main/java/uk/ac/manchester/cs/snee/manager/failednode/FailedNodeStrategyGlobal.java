@@ -112,7 +112,6 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
 	  Adaptation adapt = new Adaptation(qep, StrategyID.FailedNodeGlobal, 1);
 	  //remove nodes from topology
 		network = this.getWsnTopology();
-		makeNetworkFile(network);
 		network = cloner.deepClone(network);
 		Iterator<String> failedNodeIterator = failedNodes.iterator();
 		while(failedNodeIterator.hasNext())
@@ -120,6 +119,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
 		  String nodeID = failedNodeIterator.next();
 		  network.removeNode(nodeID);
 		}
+	  makeNetworkFile(network);
 		//remove exchanges from PAF
 		PAF paf = cloner.deepClone(qep.getIOT().getPAF());
 		paf = this.removeExchangesFromPAF(paf);

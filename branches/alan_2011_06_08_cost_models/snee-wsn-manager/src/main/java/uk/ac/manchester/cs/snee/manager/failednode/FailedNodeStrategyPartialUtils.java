@@ -61,7 +61,7 @@ public class FailedNodeStrategyPartialUtils
       
       File topFolder = new File(outputFolder.toString() + sep + "Topology");
       topFolder.mkdir();
-      new TopologyUtils(frameworkPartial.getWsnTopology()).exportAsDOTFile(topFolder.toString() + string);
+      new TopologyUtils(frameworkPartial.getWsnTopology()).exportAsDOTFile(topFolder.toString() + string, true);
     }
     catch (SchemaMetadataException e)
     {

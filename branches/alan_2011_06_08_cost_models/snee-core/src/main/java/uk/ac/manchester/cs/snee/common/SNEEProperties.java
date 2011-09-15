@@ -244,7 +244,7 @@ public class SNEEProperties {
 	private static String getDefaultProperty(String propName)
   {
     if(propName.equals("wsn_manager.strategies"))
-      return "FP";
+      return "FailedNodePartial";
     else
       return null;
   }

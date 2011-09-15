@@ -138,9 +138,9 @@ public class ChoiceAssessor
       Site site = siteIter.next();
       if (site!=adapt.getNewQep().getIOT().getRT().getRoot()) 
       {
-        double currentEnergySupply = runningSites.get(site.getID()).getCurrentEnergy() - 
-                                     runningSites.get(site.getID()).getCurrentAdaptationEnergyCost();
-        double siteEnergySupply = currentEnergySupply /1000.0; // mJ to J 
+        RunTimeSite rSite = runningSites.get(site.getID());
+        double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
+        double siteEnergySupply = currentEnergySupply; 
         double siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site); // J
         runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
         double agendaLength = Agenda.bmsToMs(adapt.getNewQep().getAgendaIOT().getLength_bms(false))/1000.0; // ms to s
@@ -501,12 +501,17 @@ public class ChoiceAssessor
     
   }
 
-  public void assess(Adaptation orginal, HashMap<String, RunTimeSite> runningSites)
+  public void assess(Adaptation orginal, HashMap<String, RunTimeSite> runningSites, boolean reset)
   throws 
   IOException, OptimizationException, 
   SchemaMetadataException, TypeMappingException, 
   CodeGenerationException
   {
+    AssessmentFolder = new File(outputFolder.toString() + sep + "assessment");
+    AssessmentFolder.mkdir();
+    imageGenerationFolder = new File(AssessmentFolder.toString() + sep + "Adaptations");
+    imageGenerationFolder.mkdir();
+    
     this.runningSites = runningSites;
     resetRunningSitesAdaptCost();
     Adaptation adapt = orginal;
@@ -514,7 +519,7 @@ public class ChoiceAssessor
     adapt.setEnergyCost(this.energyCost(adapt));
     adapt.setLifetimeEstimate(this.estimatedLifetime(adapt));
     adapt.setRuntimeCost(calculateQEPExecutionEnergyCost());
-    resetRunningSitesAdaptCost(); 
-    
+    if(reset)
+      resetRunningSitesAdaptCost();   
   }
 }

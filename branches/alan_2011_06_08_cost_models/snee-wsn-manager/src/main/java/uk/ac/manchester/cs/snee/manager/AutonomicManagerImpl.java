@@ -8,7 +8,6 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 //import org.apache.log4j.Logger;
@@ -32,8 +31,10 @@ import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationUtils;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
+import uk.ac.manchester.cs.snee.manager.common.StrategyID;
 import uk.ac.manchester.cs.snee.manager.executer.Executer;
 import uk.ac.manchester.cs.snee.manager.monitor.Monitor;
+import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessor;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -74,7 +75,7 @@ public class AutonomicManagerImpl implements AutonomicManager
   //private static Logger resultsLogger = Logger.getLogger("results.autonomicManager");
 
   //fixed parameters of autonomic calculations
-  private final int numberOfTreesToUse = 10;
+  private final int numberOfTreesToUse = 48;
   
   public AutonomicManagerImpl(MetadataManager _metadataManager)
   {
@@ -87,7 +88,7 @@ public class AutonomicManagerImpl implements AutonomicManager
                         ResultStore resultSet) 
   throws SNEEException, SNEEConfigurationException, 
   SchemaMetadataException, TypeMappingException, 
-  OptimizationException, IOException
+  OptimizationException, IOException, CodeGenerationException
   {
     this.qep = qep;
     setupOutputFolder();
@@ -104,16 +105,40 @@ public class AutonomicManagerImpl implements AutonomicManager
   private void setupRunningSites() 
   throws 
   OptimizationException, SchemaMetadataException, 
-  TypeMappingException
+  TypeMappingException, IOException, CodeGenerationException
   {
     Iterator<Node> siteIterator = this.getWsnTopology().getNodes().iterator();
     while(siteIterator.hasNext())
     {
       Site currentSite = (Site) siteIterator.next();
-      Double energyStock = new Double(currentSite.getEnergyStock());
+      Double energyStock = new Double(currentSite.getEnergyStock() / 1000);// (mj -> J)
       Double qepExecutionCost = anyliser.calculateQepRunningCostForSite(currentSite);
-      runningSites.put(currentSite.getID(), new RunTimeSite(energyStock,currentSite, qepExecutionCost));
+      runningSites.put(currentSite.getID(), 
+                       new RunTimeSite(energyStock,currentSite,qepExecutionCost));
     }
+    
+    //remove OTA effects from running sites
+    SensorNetworkQueryPlan sqep = (SensorNetworkQueryPlan)qep;
+    Adaptation orgianlOTAProgramCost = new Adaptation(sqep, StrategyID.Orginal, 0);
+    Iterator<Integer> siteIdIterator = sqep.getRT().getSiteIDs().iterator();
+    while(siteIdIterator.hasNext())
+    {
+      Integer siteIDInt = siteIdIterator.next();
+      orgianlOTAProgramCost.addReprogrammedSite(siteIDInt.toString());
+    }
+    orgianlOTAProgramCost.setNewQep(sqep);
+    File output = new File(outputFolder + sep + "OTASection");
+    output.mkdir();
+    ChoiceAssessor assessor =  new ChoiceAssessor(_metadata, _metadataManager, output);
+    assessor.assess(orgianlOTAProgramCost, runningSites, false);
+    // update running sites energy stores
+    siteIdIterator = sqep.getRT().getSiteIDs().iterator();
+    while(siteIdIterator.hasNext())
+    {
+      Integer siteIDInt = siteIdIterator.next();
+      runningSites.get(siteIDInt.toString()).removeReprogrammingCostCost();
+      runningSites.get(siteIDInt.toString()).resetEnergyCosts();
+    }  
   }
 
   private void setupOutputFolder() throws SNEEConfigurationException

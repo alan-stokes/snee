@@ -1,11 +1,16 @@
 package uk.ac.manchester.cs.snee;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collection;
 
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 
 public interface SNEE {
@@ -55,10 +60,17 @@ public interface SNEE {
 	 * @throws EvaluatorException 
 	 * @throws SNEECompilerException 
 	 * @throws SNEEConfigurationException 
+	 * @throws IOException 
+	 * @throws OptimizationException 
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 * @throws CodeGenerationException 
 	 */
 	public int addQuery(String query, String parametersFile) 
 	throws SNEECompilerException, MetadataException, 
-	EvaluatorException, SNEEException, SNEEConfigurationException;
+	EvaluatorException, SNEEException, SNEEConfigurationException,
+	SchemaMetadataException, TypeMappingException, OptimizationException, 
+	IOException, CodeGenerationException;
 
 	/**
    * Adds a query to the set of registered queries and returns the 
@@ -77,11 +89,18 @@ public interface SNEE {
    * @throws EvaluatorException 
    * @throws SNEECompilerException 
    * @throws SNEEConfigurationException 
+	 * @throws IOException 
+	 * @throws OptimizationException 
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 * @throws CodeGenerationException 
    */
 	
 	public int addQuery(String query, String parametersFile, int queryID)
 	throws SNEECompilerException, MetadataException, 
-  EvaluatorException, SNEEException, SNEEConfigurationException;
+  EvaluatorException, SNEEException, SNEEConfigurationException, 
+  SchemaMetadataException, TypeMappingException, OptimizationException, 
+  IOException, CodeGenerationException;
 	
   /**
    * Adds a query to the set of registered queries and returns the 
@@ -100,11 +119,17 @@ public interface SNEE {
    * @throws EvaluatorException 
    * @throws SNEECompilerException 
    * @throws SNEEConfigurationException 
+   * @throws IOException 
+   * @throws OptimizationException 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws CodeGenerationException 
    */	
 	
 	public int addQueryWithoutCompilation(String query, String queryParamsFile)
 	throws SNEECompilerException, MetadataException, 
-  EvaluatorException, SNEEException, SNEEConfigurationException;
+  EvaluatorException, SNEEException, SNEEConfigurationException, SchemaMetadataException, 
+  TypeMappingException, OptimizationException, IOException, CodeGenerationException;
 	
 	/**
 	 * Retrieve the ResultStore for a specified query if it exists.
