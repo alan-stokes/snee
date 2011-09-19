@@ -431,6 +431,27 @@ public class Graph implements Cloneable {
 			}
 		}
 	}
+	
+	
+	public void removeNodeWithoutLinkage(Node remove) 
+	{
+    //remove the node from the nodes collection
+    nodes.remove(remove);
+    logger.trace("removing node:" + remove.getID());
+    //remove any edges which reference the node
+    //Iterator<String> edgeIter = edges.keySet().iterator();
+    Iterator<Entry<String, Edge>> edgeIter = edges.entrySet().iterator();
+    while (edgeIter.hasNext()) 
+    {
+      Entry<String, Edge> eid = edgeIter.next();
+      Edge e = eid.getValue();
+      if (e.getSourceID().equals(remove.getID()) || e.getDestID().equals(remove.getID())) 
+      {
+        edgeIter.remove();
+        logger.trace("removing edge");
+      }
+    }
+  }
 
 	/**
 	 * Removes node from the graph

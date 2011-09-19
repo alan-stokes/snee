@@ -45,7 +45,6 @@ import java.util.Iterator;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
-import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
@@ -542,6 +541,15 @@ public final class AvroraCostExpressions{
     }
     return expression;
   }
+  
+  public AlphaBetaExpression getPacketsSent(double packetsSent, final boolean round) 
+  {
+    AlphaBetaExpression expression = new AlphaBetaExpression();
+    AlphaBetaExpression packets = new AlphaBetaExpression(packetsSent);
+    expression.add(packets);
+    return expression;
+  }
+  
   
   /** 
    * Generates an expression for the total time spent in Radio Transmit (Tx) 

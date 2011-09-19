@@ -85,10 +85,10 @@ public class Planner
       bestOverall = chooseBestAdaptation(bestChoices);
       //output bests, then all.
       new PlannerUtils(bestChoices, manager).printLatexDocument(orginal, bestOverall, false);
-      if(!partialAds.isEmpty())
+     /* if(!partialAds.isEmpty())
         new PlannerUtils(partialAds, manager).printLatexDocument(orginal, bestPartial, true);
       if(!localAds.isEmpty())
-        new PlannerUtils(localAds, manager).printLatexDocument(orginal, bestLocal, true);
+        new PlannerUtils(localAds, manager).printLatexDocument(orginal, bestLocal, true);*/
       System.out.println("sucessfully chose best adaptation, printing out latex");
 
     }
@@ -107,7 +107,7 @@ public class Planner
   CodeGenerationException
   {
     orginal.setNewQep(oldQEP);
-    assessor.assess(orginal, runningSites, true);
+    assessor.assessChoice(orginal, runningSites, true);
   }
 
   private Adaptation chooseBestAdaptation(List<Adaptation> choices)

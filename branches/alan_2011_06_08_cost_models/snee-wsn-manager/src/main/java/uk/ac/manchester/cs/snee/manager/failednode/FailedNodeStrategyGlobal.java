@@ -119,7 +119,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
 		  String nodeID = failedNodeIterator.next();
 		  network.removeNode(nodeID);
 		}
-	  makeNetworkFile(network);
+	  makeNetworkFile();
 		//remove exchanges from PAF
 		PAF paf = cloner.deepClone(qep.getIOT().getPAF());
 		paf = this.removeExchangesFromPAF(paf);
@@ -168,7 +168,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
 		return adaptation;
 	}
 
-  private void makeNetworkFile(Topology network2) 
+  private void makeNetworkFile() 
   throws SchemaMetadataException
   {
     File top = new File(globalFile.toString() + sep + "topology");

@@ -57,7 +57,7 @@ public final class AvroraCostParameters {
   /**
    * Cycle Time is the inverse of the Frequency.
    */
-  static final double CYCLETIME = 1 / FREQUENCY;
+  public static final double CYCLETIME = 1 / FREQUENCY;
   
   //TODO Verify this.
   //Cycles per byte may prove better.
@@ -147,6 +147,11 @@ public final class AvroraCostParameters {
    * See ExternalFlash.java
    */
   public static final double FlashWRITEAMPERE = 0.015; //write
+  
+  /**Ampere Level copied from Avrora Source Code.
+   * See ExternalFlash.java
+   */
+  public static final double FlashWRITECYCLES = 0.02; //write
   
   /**
    * Getter method for radio ampere level while receiving

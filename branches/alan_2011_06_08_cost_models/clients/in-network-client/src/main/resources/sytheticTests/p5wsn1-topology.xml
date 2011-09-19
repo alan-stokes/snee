@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<network-topology
+xmlns="http://snee.cs.manchester.ac.uk"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://snee.cs.manchester.ac.uk network-topology.xsd">
+
+<units>
+	<energy>MILLIJOULES</energy>
+	<memory>BYTES</memory>
+	<time>MILLISECONDS</time>
+</units>
+
+<radio-links>
+	<radio-link source="0" dest="1" bidirectional="true" energy="40" time="5" radio-loss="0"/>
+	<radio-link source="1" dest="2" bidirectional="true" energy="40" time="5" radio-loss="0"/>	
+	<radio-link source="2" dest="3" bidirectional="true" energy="40" time="5" radio-loss="0"/>
+	<radio-link source="4" dest="3" bidirectional="true" energy="40" time="5" radio-loss="0"/>
+	<radio-link source="5" dest="4" bidirectional="true" energy="50" time="5" radio-loss="0"/>
+	<radio-link source="5" dest="6" bidirectional="true" energy="60" time="5" radio-loss="0"/>
+	<radio-link source="6" dest="7" bidirectional="true" energy="40" time="5" radio-loss="0"/>
+	<radio-link source="4" dest="2" bidirectional="true" energy="88" time="10" radio-loss="0"/>
+	<radio-link source="5" dest="2" bidirectional="true" energy="137" time="10" radio-loss="0"/>
+	<radio-link source="6" dest="1" bidirectional="true" energy="187" time="10" radio-loss="0"/>
+	<radio-link source="7" dest="2" bidirectional="true" energy="247" time="10" radio-loss="0"/>
+</radio-links>
+		
+</network-topology>	
+

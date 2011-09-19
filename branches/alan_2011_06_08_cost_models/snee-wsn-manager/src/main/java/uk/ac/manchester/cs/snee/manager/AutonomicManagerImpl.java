@@ -130,7 +130,7 @@ public class AutonomicManagerImpl implements AutonomicManager
     File output = new File(outputFolder + sep + "OTASection");
     output.mkdir();
     ChoiceAssessor assessor =  new ChoiceAssessor(_metadata, _metadataManager, output);
-    assessor.assess(orgianlOTAProgramCost, runningSites, false);
+    assessor.assessChoice(orgianlOTAProgramCost, runningSites, false);
     // update running sites energy stores
     siteIdIterator = sqep.getRT().getSiteIDs().iterator();
     while(siteIdIterator.hasNext())
@@ -150,8 +150,8 @@ public class AutonomicManagerImpl implements AutonomicManager
         SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
         sep + sQep.getAgendaIOT().getQueryName();
     setQueryName(sQep.getAgendaIOT().getQueryName());
-    File firstOutputFolder = new File(outputDir + sep + "AutonomicManData");
-    deleteFileContents(firstOutputFolder);
+    outputFolder = new File(outputDir + sep + "AutonomicManData");
+    deleteFileContents(outputFolder);
   }
 
   private void setupAdapatationFolder() throws SNEEConfigurationException

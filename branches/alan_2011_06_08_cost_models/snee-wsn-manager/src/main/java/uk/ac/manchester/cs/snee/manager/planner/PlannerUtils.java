@@ -49,8 +49,11 @@ public class PlannerUtils
   {
     Iterator<Adaptation> adIterator = adaptations.iterator();
     BufferedWriter out = new BufferedWriter(new FileWriter(outputFolder, append));
-    out.write("\\begin{table} \n \\renewcommand\\thetable{} \n \\begin{tabular}{|p{3.4cm}|p{2.2cm}|p{2.2cm}|p{2.2cm}|p{2.7cm}|p{2.5cm}|p{2.5cm}|p{1.5cm}|p{3cm}|} \n \\hline \n");
-    out.write("Adaptation ID & AD Time & AD energy & QEP Cost & lifetime (node) & cycles burned & cycles left & tuples & changes \\\\ \n \\hline \n");
+    out.write("\\begin{table} \n \\renewcommand\\thetable{} \n \\begin{tabular}{|p{3.4cm}" +
+    		"|p{2.2cm}|p{2.2cm}|p{2.2cm}|p{2.7cm}|p{2.5cm}|p{2.5cm}|p{1.5cm}|p{3cm}|} \n \\hline \n");
+    out.write("Adaptation ID & AD Time & AD energy & QEP Cost & lifetime (node) & cycles burned " +
+    		"\\& \\newline missed & cycles left & tuples left \\& \\newline missed & changes \\\\ \n " +
+    		"\\hline \n");
     DecimalFormat df = new DecimalFormat("#.#####");
     Long agendaTime = best.getNewQep().getAgendaIOT().getLength_bms(false);
 
@@ -59,14 +62,17 @@ public class PlannerUtils
       Adaptation ad = adIterator.next();
       CardinalityEstimatedCostModel tupleModel = new CardinalityEstimatedCostModel(ad.getNewQep());
       tupleModel.runModel();
-      out.write(ad.getOverallID() + " & " + df.format(ad.getTimeCost()) + "ms & " + 
+      out.write(ad.getOverallID() + " & " + df.format(ad.getTimeCost() /1000/60) + "m & " + 
                 df.format(ad.getEnergyCost()) + "J & " + df.format(ad.getRuntimeCost()) + "J & " + 
                 df.format((ad.getLifetimeEstimate() /1000/60))  + "m ( " + 
                 ad.getNodeIdWhichEndsQuery() + " ) & " +
-                df.format(ad.getEnergyCost() / ad.getRuntimeCost()) + "cycles & " +
+                df.format(ad.getEnergyCost() / ad.getRuntimeCost()) + "cycles \\newline \\newline " +
+                df.format(ad.getTimeCost() / agendaTime) + "cycles & " +
                 df.format(ad.getLifetimeEstimate() / agendaTime) + "cycles & " +
-                df.format(tupleModel.returnAgendaExecutionResult() * 
-                          (ad.getLifetimeEstimate() / agendaTime)) + " tuples & " +
+                df.format(tupleModel.returnAgendaExecutionResult() * (ad.getLifetimeEstimate() / agendaTime)) 
+                + " tuples  \\newline \\newline " +	
+                df.format((ad.getTimeCost() / agendaTime) * tupleModel.returnAgendaExecutionResult()) + 
+                " tuples & " +
                 "rep " + ad.getReprogrammingSites().toString() + " \\newline " + 
                 "Red " + ad.getRedirectedionSites().toString() + " \\newline " +
                 "dea " + ad.getDeactivationSites().toString() + " \\newline " +

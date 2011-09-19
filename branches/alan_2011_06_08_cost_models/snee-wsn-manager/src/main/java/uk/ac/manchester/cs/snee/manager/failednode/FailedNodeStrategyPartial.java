@@ -97,13 +97,13 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
    * dynamically remove a site to allow adaptation.
    * @param oldIOT2
    * @param failedNodes
-   * @param disconnectedNodes
+   * @param depinnedNodes
    * @throws SNEEConfigurationException 
    * @throws NumberFormatException 
    * @throws RouterException 
    */
-  private void chooseDisconnectedNode(IOT oldIOT, ArrayList<String> failedNodes,
-                                      ArrayList<String> disconnectedNodes) 
+  private void chooseNodeToDepin(IOT oldIOT, ArrayList<String> failedNodes,
+                                      ArrayList<String> depinnedNodes) 
   throws 
   NumberFormatException, SNEEConfigurationException, 
   RouterException
@@ -130,7 +130,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     {
       nextSite = qepSiteIterator.next();
       if(!globalSiteIDs.contains(nextSite) && 
-         !disconnectedNodes.contains(new Integer(nextSite).toString()) &&
+         !depinnedNodes.contains(new Integer(nextSite).toString()) &&
          !failedNodes.contains(new Integer(nextSite).toString()))
         found = true;
     }
@@ -147,11 +147,11 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
           Node parent = failedSite.getOutput(0);
           while(parent != null && !foundParent)
           {
-            if(!disconnectedNodes.contains(parent.getID()) &&
+            if(!depinnedNodes.contains(parent.getID()) &&
                !failedNodes.contains(parent.getID()) &&
                !globalRT.getRoot().getID().equals(parent.getID()))   
             {
-              disconnectedNodes.add(parent.getID());
+              depinnedNodes.add(parent.getID());
               foundParent = true;
               found = true;
             }
@@ -172,7 +172,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
           {
             globalSiteIDs.remove(new Integer(failedNodeIDIterator.next()));
           }
-          Iterator<String> disconnectedNodeIDIterator = disconnectedNodes.iterator();
+          Iterator<String> disconnectedNodeIDIterator = depinnedNodes.iterator();
           while(disconnectedNodeIDIterator.hasNext())
           {
             globalSiteIDs.remove(new Integer(disconnectedNodeIDIterator.next()));
@@ -182,7 +182,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
           if(globalSiteIDs.size() == 0)
             throw new RouterException("No possible adapatation as all nodes disconnected and still no avilable routes");
           
-          disconnectedNodes.add(
+          depinnedNodes.add(
               new Integer(globalSiteIDs.get(random.nextInt(globalSiteIDs.size()))).toString());
           found = true;
           foundParent = true;
@@ -191,14 +191,14 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     }
     else
     {
-      disconnectedNodes.add(nextSite.toString()); 
+      depinnedNodes.add(nextSite.toString()); 
     }
   }
 
   /**
    * uses new routes to determine new QEP/adaptations
    * @param routeIterator @param failedNodes
-   * @param disconnectedNodes @param totalAdapatations
+   * @param depinnedNodes @param totalAdapatations
    * @throws SNEEException @throws SchemaMetadataException
    * @throws OptimizationException @throws SNEEConfigurationException
    * @throws MalformedURLException @throws WhenSchedulerException
@@ -208,8 +208,8 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
    * @throws CostParametersException @throws SNCBException
    * @throws SNEECompilerException 
    */
-  private void tryGoingThoughRoutes(Iterator<RT> routeIterator, ArrayList<String> failedNodes, 
-                                    ArrayList<String> disconnectedNodes, 
+  private void generateQEPs(Iterator<RT> routeIterator, ArrayList<String> failedNodes, 
+                                    ArrayList<String> depinnedNodes, 
                                     List<Adaptation> totalAdapatations)
   throws SNEEException, SchemaMetadataException, 
          OptimizationException, SNEEConfigurationException, 
@@ -232,7 +232,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
       File choiceFolder = new File(choiceFolderMain.toString() + sep + "choice" + choice);
       choiceFolder.mkdir();
       //create pinned paf
-      PAF paf = pinPhysicalOperators(oldIOT, failedNodes, disconnectedNodes);
+      PAF paf = pinPhysicalOperators(oldIOT, failedNodes, depinnedNodes);
       //run fragment paf though where scheduler.
       InstanceWhereSchedular instanceWhere = 
         new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), choiceFolder.toString());
@@ -257,7 +257,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
    * @param agenda2
    * @param iot2
    * @param failedNodes
-   * @param disconnectedNodes 
+   * @param depinnedNodes 
    * @param paf 
    * @param outputFolder2 
    * @throws SNEEConfigurationException 
@@ -267,7 +267,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
    * @throws MetaSteinerTreeException 
    */
   private ArrayList<RT> createNewRoutingTrees(ArrayList<String> failedNodes, 
-      ArrayList<String> disconnectedNodes, PAF paf, RT oldRoutingTree, File outputFolder,
+      ArrayList<String> depinnedNodes, PAF paf, RT oldRoutingTree, File outputFolder,
       boolean previousDidntMeetQoSExpectations) 
   throws 
   NumberFormatException, SNEEConfigurationException, 
@@ -275,7 +275,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
   {
     Topology network = this.getWsnTopology();
     CandiateRouter router = new CandiateRouter(network, outputFolder);
-    return genereateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, "", 
+    return genereateRouteingTrees(oldRoutingTree, failedNodes, depinnedNodes, "", 
                             numberOfRoutingTreesToWorkOn, router, previousDidntMeetQoSExpectations);
   }
 
@@ -284,7 +284,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
    * and disconnected nodes which allow new routes to be generated
    * @param oldRoutingTree
    * @param failedNodes
-   * @param disconnectedNodes
+   * @param depinnedNodes
    * @param queryName
    * @param numberOfRoutingTreesToWorkOn
    * @param router
@@ -294,8 +294,8 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
    * @throws SNEEConfigurationException
    * @throws RouterException
    */
-  private ArrayList<RT> genereateRoutes(RT oldRoutingTree, ArrayList<String> failedNodes, 
-                                         ArrayList<String> disconnectedNodes, String queryName, 
+  private ArrayList<RT> genereateRouteingTrees(RT oldRoutingTree, ArrayList<String> failedNodes, 
+                                         ArrayList<String> depinnedNodes, String queryName, 
                                          Integer numberOfRoutingTreesToWorkOn, CandiateRouter router,
                                          boolean previousDidntMeetQoSExpectations) 
   throws
@@ -306,13 +306,13 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     try
     {
       if(!previousDidntMeetQoSExpectations)
-        routes = router.generateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, 
+        routes = router.generateCompleteRouteingTrees(oldRoutingTree, failedNodes, depinnedNodes, 
                                        queryName, numberOfRoutingTreesToWorkOn);
       if(routes.size() == 0)
       {
-        chooseDisconnectedNode(oldIOT, failedNodes, disconnectedNodes);
-        System.out.println("No routes avilable, so disconnecting nodes" + disconnectedNodes.toString());
-        return genereateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, queryName, 
+        chooseNodeToDepin(oldIOT, failedNodes, depinnedNodes);
+        System.out.println("No routes avilable, so disconnecting nodes" + depinnedNodes.toString());
+        return genereateRouteingTrees(oldRoutingTree, failedNodes, depinnedNodes, queryName, 
                                numberOfRoutingTreesToWorkOn, router, false);
       }
       return routes;
@@ -320,9 +320,9 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     catch(Exception e)
     {
      // e.printStackTrace();
-      chooseDisconnectedNode(oldIOT, failedNodes, disconnectedNodes);
-      System.out.println("No routes avilable, so disconnecting nodes" + disconnectedNodes.toString());
-      return genereateRoutes(oldRoutingTree, failedNodes, disconnectedNodes, queryName, 
+      chooseNodeToDepin(oldIOT, failedNodes, depinnedNodes);
+      System.out.println("No routes avilable, so disconnecting nodes" + depinnedNodes.toString());
+      return genereateRouteingTrees(oldRoutingTree, failedNodes, depinnedNodes, queryName, 
                              numberOfRoutingTreesToWorkOn, router, false);
     }
   }
@@ -353,8 +353,8 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
    * method used to recover from all types of failures (no routes, routes which break QoS 
    * expectations etc
    */
-  private  List<Adaptation> recursivelyReTryCalculation(ArrayList<String> failedNodes,
-                                                        ArrayList<String> disconnectedNodes, 
+  private  List<Adaptation> adaptationAttempt(ArrayList<String> failedNodes,
+                                                        ArrayList<String> depinnedNodes, 
                                                         PAF paf, RT rt, File partialFolder2, 
                                                         List<Adaptation> totalAdapatations,
                                                         boolean previouslyFailedToMeetQoSExpectations) 
@@ -365,7 +365,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     ArrayList<RT> routingTrees;
     try
     {
-      routingTrees = createNewRoutingTrees(failedNodes, disconnectedNodes, paf, oldIOT.getRT(), 
+      routingTrees = createNewRoutingTrees(failedNodes, depinnedNodes, paf, oldIOT.getRT(), 
                                            partialFolder, previouslyFailedToMeetQoSExpectations);
     }
     catch (RouterException e)
@@ -376,13 +376,13 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     choice = 0;
     try
     {
-      tryGoingThoughRoutes(routeIterator, failedNodes, disconnectedNodes, totalAdapatations);
+      generateQEPs(routeIterator, failedNodes, depinnedNodes, totalAdapatations);
       return totalAdapatations;
     }
     catch(Exception e)
     {
       System.out.println("Routes generated didnt agree with QoS trying with larger scope");
-      return recursivelyReTryCalculation(failedNodes, disconnectedNodes, paf, oldIOT.getRT(), 
+      return adaptationAttempt(failedNodes, depinnedNodes, paf, oldIOT.getRT(), 
                                          partialFolder, totalAdapatations, true);
     }
   }  
@@ -402,12 +402,13 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
   { 
     System.out.println("Running Failed Node FrameWork Partial"); 
     setUpFolders(manager);
-    new FailedNodeStrategyPartialUtils(this).outputTopologyAsDotFile(partialFolder,  sep + "topology.dot");
+    new FailedNodeStrategyPartialUtils(this).outputTopologyAsDotFile(partialFolder, 
+                                                                     sep + "topology.dot");
     //setup collectors
     PAF paf = oldIOT.getPAF(); 
     ArrayList<String> disconnectedNodes = new ArrayList<String>();
     List<Adaptation> totalAdapatations = new ArrayList<Adaptation>();
-    return recursivelyReTryCalculation(failedNodes, disconnectedNodes, paf, 
-                                       oldIOT.getRT(), partialFolder, totalAdapatations, false);
+    return adaptationAttempt(failedNodes, disconnectedNodes, paf, oldIOT.getRT(), partialFolder, 
+                             totalAdapatations, false);
   }
 }

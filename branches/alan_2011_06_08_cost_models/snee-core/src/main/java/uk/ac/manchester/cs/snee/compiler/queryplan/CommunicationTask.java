@@ -100,6 +100,17 @@ public class CommunicationTask extends Task implements Comparable{
 	this.alpha = alpha;
     }
     
+    public CommunicationTask(final long startTime, final Site sourceNode,
+        final Site destNode, final int mode, Long packets, CostParameters costParams) 
+    throws OptimizationException, SchemaMetadataException, TypeMappingException {
+    super(startTime, costParams);
+    this.sourceNode = sourceNode;
+    this.destNode = destNode;
+    this.endTime = startTime + this.getTimeCost(packets);
+    this.mode = mode;
+    this.alpha = alpha;
+      }
+    
     /**
      * Create an instance of a CommunicationTask.
      * @param startTime
@@ -262,6 +273,23 @@ public class CommunicationTask extends Task implements Comparable{
     	*/
     }
 
+    
+    /**
+     * Returns the duration of this task (not daf related).
+     * @throws TypeMappingException 
+     * @throws SchemaMetadataException 
+     * @throws OptimizationException 
+     */
+
+  protected final long getTimeCost(final Long packets) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException 
+  {
+    long result = 0;
+    result += (long) Math.ceil(costParams.getSendPacket() * packets);
+    result += getTimeCostOverhead(costParams);
+    return result;
+  }
+    
 
     /**
      * String representation.

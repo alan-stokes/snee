@@ -560,6 +560,9 @@ public class AlphaBetaTerm {
       Math.pow(beta, this.betaExponent);
   }
   
+  protected final double evaluate() {
+    return (this.numerator / this.denominator);
+  }
   /**
    * Testing funtion.
    * @param args No Testing parameters.

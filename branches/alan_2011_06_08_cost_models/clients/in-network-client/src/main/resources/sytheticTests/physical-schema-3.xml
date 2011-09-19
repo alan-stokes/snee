@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../schema/physical-schema.xsd ">
 
 	<sensor_network name="wsn1">
-		<topology>sytheticTests/wsn5-topology.xml</topology>
+		<topology>sytheticTests/p3wsn1-topology.xml</topology>
 		<site-resources>etc/common/telosb.xml</site-resources>
 		<gateways>0</gateways>
 		<extents>

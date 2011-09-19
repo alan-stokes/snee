@@ -24,12 +24,12 @@ public class RTUtils extends PAFUtils {
 	/**
 	 * Routing tree to be displayed.
 	 */
-	private RT rt;
+	protected RT rt;
 
 	/**
 	 * Determines whether site properties are displayed.
 	 */
-	private boolean displaySiteProperties = false;
+	protected boolean displaySiteProperties = false;
 
 //	/**
 //	 * Determines whether link properties are displayed.

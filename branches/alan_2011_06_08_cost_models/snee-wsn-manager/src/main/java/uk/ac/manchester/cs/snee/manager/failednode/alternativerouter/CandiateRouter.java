@@ -2,10 +2,8 @@ package uk.ac.manchester.cs.snee.manager.failednode.alternativerouter;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.log4j.Logger;
 
@@ -14,10 +12,10 @@ import com.rits.cloning.Cloner;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
-import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
@@ -121,7 +119,7 @@ public class CandiateRouter extends Router
    * @throws RouterException 
    */
   
-  public ArrayList<RT> generateRoutes(RT oldRoutingTree, ArrayList<String> failedNodes, 
+  public ArrayList<RT> generateCompleteRouteingTrees(RT oldRoutingTree, ArrayList<String> failedNodes, 
                                      ArrayList<String> disconnectedNodes, String queryName, 
                                      Integer numberOfRoutingTreesToWorkOn)                                
   throws 
@@ -133,7 +131,7 @@ public class CandiateRouter extends Router
     /*remove failed nodes from the failed node list, which are parents of a failed node already.
     * this allows routes calculated to be completely independent of other routes */
     HashMapList<Integer ,String> failedNodeLinks =
-                          createLinkedFailedNodes(failedNodes, oldRoutingTree, disconnectedNodes);
+                          createSetsOfLinkedFailedNodes(failedNodes, oldRoutingTree, disconnectedNodes);
     
     Iterator<Integer> failedLinkIterator = failedNodeLinks.keySet().iterator();
     int chainCounter = 1;
@@ -150,49 +148,27 @@ public class CandiateRouter extends Router
       ArrayList<String> setofLinkedFailedNodes = failedNodeLinks.get(key);
       //sources used as a carrier to retrieve all input nodes
       ArrayList<String> sources = new ArrayList<String>();
-      String sink = removeExcessNodesAndEdges(workingTopology, oldRoutingTree, 
-                                              setofLinkedFailedNodes, sources,
-                                              disconnectedNodes);
-      System.out.println("sources are " + sources.toString());
+      String sink = removeExcessNodesAndEdges(workingTopology, oldRoutingTree, setofLinkedFailedNodes, 
+                                              sources, disconnectedNodes);
       
       //output reduced topology for help in keeping track of progress
-      new TopologyUtils(workingTopology).exportAsDOTFile(chainFolder.toString() + sep + "reducedtopology", true);
+      new TopologyUtils(workingTopology).exportAsDOTFile(chainFolder.toString() + sep + 
+                                                         "reducedtopology", true);
 
       //calculate different routes around linked failed site.
       ArrayList<Tree> routesForFailedNode = 
-        createRoutes(workingTopology, numberOfRoutingTreesToWorkOn, sources, 
-                     sink, oldRoutingTree.getPAF(), oldRoutingTree, chainFolder);
+        startOfRouteGeneration(workingTopology, numberOfRoutingTreesToWorkOn, sources, 
+                               sink, oldRoutingTree.getPAF(), oldRoutingTree, chainFolder);
       
       //adds routes to system
       failedNodeToRoutingTreeMapping.addAll(key, routesForFailedNode);
       chainCounter++;
     }
     //merges new routes to create whole entire routingTrees
-    newRoutingTrees =  mergeSections(failedNodeToRoutingTreeMapping, oldRoutingTree, 
+    newRoutingTrees =  mergeRoutingTreesFragments(failedNodeToRoutingTreeMapping, oldRoutingTree, 
                                      failedNodes, numberOfRoutingTreesToWorkOn, disconnectedNodes);
-    outputcompleteTrees(newRoutingTrees, outputFolder);
+    new CandiateRouterUtils(network).exportCompleteTrees(newRoutingTrees, outputFolder);
     return newRoutingTrees;
-  }
-
-  /**
-   * outputs all routing trees to autonomic folder
-   * @param newRoutingTrees
-   * @param outputFolder 
-   */
-  private void outputcompleteTrees(ArrayList<RT> newRoutingTrees, File outputFolder)
-  {
-    File output = new File(outputFolder.toString() + sep + "completeRoutingTrees");
-    output.mkdir();
-    Iterator<RT> routes = newRoutingTrees.iterator();
-    int counter = 1;
-    while(routes.hasNext())
-    {
-      RT route = routes.next();
-      new RTUtils(route).exportAsDotFile(output.toString() + sep + "completeRoute" + counter);
-      new RTUtils(route).exportAsTextFile(output.toString() + sep + "completeRoute" + counter);
-      counter ++;
-    }
-    
   }
 
   /**
@@ -204,7 +180,7 @@ public class CandiateRouter extends Router
    * @param disconnectedNodes 
    * @return
    */
-  private ArrayList<RT> mergeSections(
+  private ArrayList<RT> mergeRoutingTreesFragments(
                                       HashMapList<Integer, Tree> failedNodeToRoutingTreeMapping,
                                       RT oldRoutingTree, ArrayList<String> failedNodes, 
                                       Integer numberOfRoutingTreesToWorkOn, 
@@ -213,41 +189,63 @@ public class CandiateRouter extends Router
     ArrayList<RT> newRoutingTrees = new ArrayList<RT>();
     try
     {
-    int counter = 0;
-    boolean first = true;
-    Random randomiser = new Random();
-    long max = calcuateMaxTrees(failedNodeToRoutingTreeMapping);
     RT clonedOldRoutingTree = cloner.deepClone(oldRoutingTree);
     removeFailedNodesFromOldRT(clonedOldRoutingTree, failedNodes, disconnectedNodes);
-    while(counter < numberOfRoutingTreesToWorkOn && counter < max)
-    {
-
-      Iterator<Integer> keyIterator = failedNodeToRoutingTreeMapping.keySet().iterator();
-      //get new routing tree
-      RT newRoutingTree = cloner.deepClone(clonedOldRoutingTree);
-      //for each chain, connect a tree to complete it.
-      while(keyIterator.hasNext())
-      {
-        Tree choice = chooseChoice(keyIterator, failedNodeToRoutingTreeMapping, randomiser, first);
-        connectChildAndParent(newRoutingTree, choice);
-        updateNodesEdgeArray(choice, newRoutingTree);
-      }
-      //new RTUtils(new RT(oldRoutingTree.getPAF(), "", newRoutingTree.getSiteTree(), null)).exportAsDotFile("dam");
-      newRoutingTree.getSiteTree().updateNodesAndEdgesColls(newRoutingTree.getRoot());
-      //store new routingTree
-      newRoutingTrees.add(newRoutingTree);
-      first = false;
-      counter ++;
-    }
+    ArrayList<Integer> keys = new ArrayList<Integer>(failedNodeToRoutingTreeMapping.keySet());
+    mergeRoutingTreeFragmentsRecursively(keys, failedNodeToRoutingTreeMapping, clonedOldRoutingTree,
+                                         newRoutingTrees, 0);
     return newRoutingTrees;
     }
     catch(Exception e)
     {
-      System.out.println("something died: " + e.getMessage());
+      System.out.println("something died in the recursive mergement of routing tree fragments: " + e.getMessage());
       e.printStackTrace();
       System.exit(0);
       return newRoutingTrees; 
     }
+  }
+
+  /**
+   * recursively merges route fragments till no more mixes are possible
+   * @param failedNodeToRoutingTreeMapping
+   * @param failedNodeToRoutingTreeMapping 
+   * @param clonedOldRoutingTree
+   * @param newRoutingTrees
+   * @param i 
+   * @throws OptimizationException 
+   */
+  private void mergeRoutingTreeFragmentsRecursively(
+      ArrayList<Integer> keys, HashMapList<Integer, Tree> failedNodeToRoutingTreeMapping, 
+      RT fragmentedTree, ArrayList<RT> newRoutingTrees, int position) throws OptimizationException
+  {
+    
+    if(position < keys.size() -1)
+    {
+      ArrayList<Tree> routingTreeFragments =  failedNodeToRoutingTreeMapping.get(keys.get(position));
+      Iterator<Tree> treeFragmentIterator = routingTreeFragments.iterator();
+      while(treeFragmentIterator.hasNext())
+      {
+        RT clonedFragmentedTree = cloner.deepClone(fragmentedTree);
+        Tree treeFragment = treeFragmentIterator.next();
+        connectChildAndParentOfFragment(clonedFragmentedTree, treeFragment);
+        updateNodesEdgeArray(treeFragment, clonedFragmentedTree);
+        mergeRoutingTreeFragmentsRecursively(keys, failedNodeToRoutingTreeMapping, clonedFragmentedTree,
+                                             newRoutingTrees, position+1);
+      }
+    }
+    else
+    {
+      ArrayList<Tree> routingTreeFragments =  failedNodeToRoutingTreeMapping.get(keys.get(position));
+      Iterator<Tree> treeFragmentIterator = routingTreeFragments.iterator();
+      while(treeFragmentIterator.hasNext())
+      {
+        RT clonedFragmentedTree = cloner.deepClone(fragmentedTree);
+        Tree treeFragment = treeFragmentIterator.next();
+        connectChildAndParentOfFragment(clonedFragmentedTree, treeFragment);
+        updateNodesEdgeArray(treeFragment, clonedFragmentedTree);
+        newRoutingTrees.add(clonedFragmentedTree);
+      }
+    }   
   }
 
   private void updateNodesEdgeArray(Tree choice, RT newRoutingTree)
@@ -262,29 +260,10 @@ public class CandiateRouter extends Router
         newRoutingTree.getSiteTree().addNode(choiceNode);
       }
     } 
+    newRoutingTree.getSiteTree().updateNodesAndEdgesColls(newRoutingTree.getRoot());
   }
 
-  static int position = 0;
-  private Tree chooseChoice(Iterator<Integer> keyIterator, HashMapList<Integer, 
-                            Tree> failedNodeToRoutingTreeMapping, 
-                            Random randomiser, boolean first)
-  {
-    Integer key = keyIterator.next();
-    ArrayList<Tree> choices = failedNodeToRoutingTreeMapping.get(key);
-    Tree choice = null;
-    if(position < choices.size())
-      choice = choices.get(position);
-    else 
-    {
-      position = 0;
-      choice = choices.get(position);
-    }
-    position++;
-    choice = cloner.deepClone(choice);
-    return choice;
-  }
-
-  private void connectChildAndParent(RT newRoutingTree, Tree choice)
+  private void connectChildAndParentOfFragment(RT newRoutingTree, Tree choice)
   {
     //connect parent
     Site treeParent =  newRoutingTree.getSite(choice.getRoot().getID());
@@ -293,11 +272,20 @@ public class CandiateRouter extends Router
     {
       Node choiceChild = choiceInputIterator.next();
       treeParent.addInput(choiceChild);
-      choiceChild.removeOutput(choiceChild.getOutput(0));
+      Node treeNode = newRoutingTree.getSiteTree().getNode(choiceChild.getID());
+      if(treeNode != null)
+      {
+        if(treeNode.getOutDegree() != 0)
+          treeNode.getOutput(0).removeInput(treeNode);
+      }
+        
+      choiceChild.clearOutputs();
       choiceChild.addOutput(treeParent);
     }
+    choice.getRoot().clearInputs();
+    
     //get children of choice.
-    Iterator<Node> choiceChildrenIterator = getLeafSourceIterator(choice);//choice.getLeafNodes().iterator();
+    Iterator<Node> choiceChildrenIterator = locateSourceNodes(choice);//choice.getLeafNodes().iterator();
     //connect children
     while(choiceChildrenIterator.hasNext())
     {
@@ -312,9 +300,11 @@ public class CandiateRouter extends Router
         {
           Node input = inputs.next();
           treeChild.addInput(input);
-          input.removeOutput(input.getOutput(0));
+          Node inputOutput = input.getOutput(0);
+          input.removeOutput(inputOutput);
           input.addOutput(treeChild);
         }
+        choiceChild.clearInputs();
       }
       choiceParent.removeInput(choiceChild);
       choiceParent.addInput(treeChild);
@@ -326,7 +316,7 @@ public class CandiateRouter extends Router
    * @param choice
    * @return
    */
-  private Iterator<Node> getLeafSourceIterator(Tree choice)
+  private Iterator<Node> locateSourceNodes(Tree choice)
   {
     Iterator<Node> nodeIterator = choice.getNodes().iterator();
     List<Node> sources = new ArrayList<Node>();
@@ -396,41 +386,7 @@ public class CandiateRouter extends Router
       node.clearExchangeComponents();
     }
   }
-
-  /**
-   * calculates what the maxiumum number of rotuign trees can be calculated from the sections.
-   * @param failedNodeToRoutingTreeMapping
-   * @return
-   */
-  private long calcuateMaxTrees(
-      HashMapList<Integer, Tree> failedNodeToRoutingTreeMapping)
-  {
-    int items = 0;
-    long max = 0;
-    int r = failedNodeToRoutingTreeMapping.keySet().size();
-    Iterator<Integer> keyIterator = failedNodeToRoutingTreeMapping.keySet().iterator();
-    while(keyIterator.hasNext())
-    {
-      Integer key = keyIterator.next();
-      ArrayList<Tree> choices = failedNodeToRoutingTreeMapping.get(key);
-      items += choices.size();
-    }
-    max = (factorial(items) / (factorial(r) * factorial(items - r)));
-    return max;
-  }
-
-  /**
-   * basic factorial formula (as no built in java function)
-   * @param n
-   * @return
-   */
-  private long factorial( int n )
-  {
-      if( n <= 1 )     // base case
-          return 1;
-      else
-          return n * factorial( n - 1 );
-  }
+  
   /**
    * method which creates at maximum numberOfRoutingTreesToWorkOn routes if possible. 
    * First uses basic steiner-tree algorithm to determine if a route exists between 
@@ -447,7 +403,7 @@ public class CandiateRouter extends Router
    * @throws MetaSteinerTreeException 
    * @throws RouterException 
    */
-  private ArrayList<Tree> createRoutes(Topology workingTopology,
+  private ArrayList<Tree> startOfRouteGeneration(Topology workingTopology,
       Integer numberOfRoutingTreesToWorkOn, ArrayList<String> sources, String sink, PAF paf, 
       RT oldRoutingTree, File outputFolder) 
   throws
@@ -457,18 +413,14 @@ public class CandiateRouter extends Router
     Tree steinerTree = null;
     //checks that global route can generate a route between nodes.
     steinerTree = computeSteinerTree(workingTopology, sink, sources, paf); 
-    new RTUtils(new RT(paf, "", steinerTree, workingTopology)).
-         exportAsDotFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
-    new RTUtils(new RT(paf, "", steinerTree, workingTopology)).
-         exportAsTextFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
+    new CandiateRouterUtils(workingTopology).exportRouteFragments(desintatedOutputFolder, routes, paf, steinerTree);
     routes.add(steinerTree);
     //container for currently tested heuristics
     heuristicsPosition = 0;
-    return recursivelyDoRoutes(routes, workingTopology, sources, sink, paf, 
-                               oldRoutingTree);
+    return generateRoutesRecursively(routes, workingTopology, sources, sink, paf, oldRoutingTree);
   }
 
-  private ArrayList<Tree> recursivelyDoRoutes(ArrayList<Tree> routes, 
+  private ArrayList<Tree> generateRoutesRecursively(ArrayList<Tree> routes, 
                                               Topology workingTopology, ArrayList<String> sources, 
                                               String sink, PAF paf, RT oldRoutingTree)
   {
@@ -480,19 +432,16 @@ public class CandiateRouter extends Router
         //produce tree for set of heuristics
         MetaSteinerTree treeGenerator = new MetaSteinerTree();
         Tree currentTree = treeGenerator.produceTree(set, sources, sink, workingTopology, paf, oldRoutingTree);
-        new RTUtils(new RT(paf, "", currentTree, null)).
-             exportAsDotFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
-        new RTUtils(new RT(paf, "", currentTree, null)).
-             exportAsTextFile(desintatedOutputFolder.toString() + sep + "route" + (routes.size() + 1)); 
+        new CandiateRouterUtils(workingTopology).exportRouteFragments(desintatedOutputFolder, routes, paf, currentTree);
         routes.add(currentTree);
       }
       routes = removeDuplicates(routes);
-      outputCleanedRoutes(routes, chainFolder, paf);
+      new CandiateRouterUtils(network).exportSavedRoutes(routes, chainFolder, paf);
       return routes;
     }
     catch(Exception e)
     {
-      return recursivelyDoRoutes(routes, workingTopology, sources, sink, paf, 
+      return generateRoutesRecursively(routes, workingTopology, sources, sink, paf, 
           oldRoutingTree);
     }
     
@@ -504,45 +453,6 @@ public class CandiateRouter extends Router
     heuristicsPosition++;
     set.setup(workingTopology);
     return set;
-  }
-
-  private void outputCleanedRoutes(ArrayList<Tree> routes, File outputFolder, PAF paf)
-  {
-    Iterator<Tree> routeIterator = routes.iterator();
-    File cleaned = new File(outputFolder.toString() + sep + "reducedPossible");
-    cleaned.mkdir();
-    int counter = 0;
-    while(routeIterator.hasNext())
-    {
-      Tree currentTree = routeIterator.next();
-      new RTUtils(new RT(paf, "", currentTree, network)).
-            exportAsDotFile(cleaned.toString() + sep + "route" + counter); 
-      new RTUtils(new RT(paf, "", currentTree, network)).
-            exportAsTextFile(cleaned.toString() + sep + "route" + counter); 
-      counter++;
-    }
-  }
-
-  /**
-   * searches though already chosen heuristics and looks to see if set has been used before
-   * @param testedHeuristics
-   * @param set
-   * @return
-   */
-  private boolean comparison(ArrayList<HeuristicSet> testedHeuristics,
-      HeuristicSet set)
-  {
-    Iterator<HeuristicSet> setIterator = testedHeuristics.iterator();
-    while(setIterator.hasNext())
-    {
-      HeuristicSet usedSet= setIterator.next();
-      if(usedSet.getFirstNodeHeuristic() == set.getFirstNodeHeuristic() &&
-         usedSet.getLinkMatrexChoiceHeuristic() == set.getLinkMatrexChoiceHeuristic() &&
-         usedSet.getPenaliseNodeHeuristic() == set.getPenaliseNodeHeuristic() &&
-         usedSet.getSecondNodeHeuristic() == set.getSecondNodeHeuristic())
-        return true;
-    }
-    return false;
   }
 
   /**
@@ -659,7 +569,7 @@ public class CandiateRouter extends Router
    * @param oldRoutingTree 
    * @return
    */
-  private HashMapList<Integer, String> createLinkedFailedNodes(
+  private HashMapList<Integer, String> createSetsOfLinkedFailedNodes(
       ArrayList<String> failedNodes, RT RT, ArrayList<String> disconnectedNodes)
   {
     ArrayList<String> combinedNodes = new ArrayList<String>();

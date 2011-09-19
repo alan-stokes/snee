@@ -1163,13 +1163,13 @@ public class AgendaIOT extends SNEEAlgebraicForm{
         double taskDuration = bmsToMs(t.getDuration())/1000.0;
         double radioRXAmp = AvroraCostParameters.getRadioReceiveAmpere(); 
         double voltage = AvroraCostParameters.VOLTAGE;
-        double taskEnergy = taskDuration * radioRXAmp * voltage;        ; 
+        double taskEnergy = taskDuration * radioRXAmp * voltage;        
         sumEnergy += taskEnergy;
       }
     }
     sumEnergy += getCPUEnergy(cpuActiveTimeBms);
     return sumEnergy;
-  }
+  } 
   
   /**
    * Returns radio energy for communication tasks (J) for agenda according to model.
@@ -1180,7 +1180,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    */
-  private double getRadioEnergy(CommunicationTask ct) 
+  public double getRadioEnergy(CommunicationTask ct) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException 
   {
@@ -1212,6 +1212,8 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     return (txEnergy+rxEnergy); 
   }
   
+  
+  
   /**
    * Return the CPU energy cost for an agenda, in Joules.
    * @param cpuActiveTimeBms
@@ -1228,5 +1230,72 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     double cpuActiveEnergy = cpuActiveTime * activeCurrent * voltage; //J
     double cpuSleepEnergy = cpuSleepTime * sleepCurrent * voltage; //J
     return cpuActiveEnergy + cpuSleepEnergy;
+  }
+
+  /**
+   * Evaluates the energy cost of a packets transmission between 2 nodes (includes radio on cost)
+   * @param task
+   * @param packets
+   * @return
+   * @throws OptimizationException
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   */
+  public double evaluateCommunicationTask(CommunicationTask task, double packets)
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
+    double sumEnergy = 0;
+    long cpuActiveTimeBms = task.getDuration();
+    double RadioEnergy = getRadioEnergy(task, packets);
+    sumEnergy += RadioEnergy; 
+    sumEnergy += getCPUEnergy(cpuActiveTimeBms);
+    double taskDuration = bmsToMs(task.getDuration())/1000.0;
+    double radioRXAmp = AvroraCostParameters.getRadioReceiveAmpere(); 
+    double voltage = AvroraCostParameters.VOLTAGE;
+    double taskEnergy = taskDuration * radioRXAmp * voltage;        
+    sumEnergy += taskEnergy;
+    return sumEnergy;
+  }
+  
+  
+  /**
+   * Returns radio energy for communication tasks (J) for agenda according to model.
+   * Excludes radio switch on.
+   * @param ct
+   * @return
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
+   */
+  public double getRadioEnergy(CommunicationTask ct, double packets) 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
+    double taskDuration = bmsToMs(ct.getDuration())/1000.0;
+    double voltage = AvroraCostParameters.VOLTAGE;
+    
+    double radioRXAmp = AvroraCostParameters.getRadioReceiveAmpere();
+    if (ct.getMode()==CommunicationTask.RECEIVE) {
+       
+      double taskEnergy = taskDuration*radioRXAmp*voltage; 
+      return taskEnergy;
+    }
+    Site sender = ct.getSourceNode();
+    Site receiver = (Site)sender.getOutput(0);
+    int txPower = (int)iot.getRT().getRadioLink(sender, receiver).getEnergyCost();
+    double radioTXAmp = AvroraCostParameters.getTXAmpere(txPower);
+    
+    AvroraCostExpressions  costExpressions = new AvroraCostExpressions(daf, costParams, this);
+    AlphaBetaExpression txTimeExpr = AlphaBetaExpression.multiplyBy(
+        costExpressions.getPacketsSent(packets, true),
+        AvroraCostParameters.PACKETTRANSMIT);
+    double txTime = (txTimeExpr.evaluate())/1000.0;
+    double rxTime = taskDuration-txTime;
+    assert(rxTime>=0);
+    
+    double txEnergy = txTime*radioTXAmp*voltage; 
+    double rxEnergy = rxTime*radioRXAmp*voltage; 
+    return (txEnergy+rxEnergy); 
   }
 }

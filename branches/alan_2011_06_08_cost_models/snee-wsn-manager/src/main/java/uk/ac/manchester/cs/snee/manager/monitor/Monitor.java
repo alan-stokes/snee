@@ -185,7 +185,7 @@ public class Monitor implements Observer
   SNEECompilerException, IOException, AutonomicManagerException
   {
     ArrayList<String> failedNodes = new ArrayList<String>();
-    Node failedNode = qep.getIOT().getNode(new Integer(4).toString());
+    Node failedNode = qep.getIOT().getNode(new Integer(2).toString());
     failedNodes.add(failedNode.getID());
     System.out.println("running fake node failure simulation");
     System.out.println("simulated failure of node 3");

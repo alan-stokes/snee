@@ -650,6 +650,17 @@ public final class AlphaBetaExpression {
     return total;
   }
   
+  public double evaluate() {
+    double total = 0;
+  
+    Iterator<AlphaBetaTerm> termsIter = termsCollection.iterator();
+    while (termsIter.hasNext()) {
+      AlphaBetaTerm term = termsIter.next();
+      total = total + term.evaluate();
+    }
+    
+    return total;
+  }
   /**
    * Factory method
    * @return An AlphaBetaExpression with value 0 

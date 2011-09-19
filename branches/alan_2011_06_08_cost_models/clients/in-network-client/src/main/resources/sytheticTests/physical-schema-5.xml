@@ -4,12 +4,12 @@
 	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../schema/physical-schema.xsd ">
 
 	<sensor_network name="wsn1">
-		<topology>sytheticTests/p4wsn1-topology.xml</topology>
+		<topology>sytheticTests/p5wsn1-topology.xml</topology>
 		<site-resources>etc/common/telosb.xml</site-resources>
 		<gateways>0</gateways>
 		<extents>
 			<extent name="River">
-				<sites>5,2,3</sites>
+				<sites>2,4,5,6,7</sites>
 			</extent>
 		</extents>
 	</sensor_network>
