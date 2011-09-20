@@ -33,5 +33,5 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk network-topology.xsd">
 	<radio-link source="12" dest="13" bidirectional="true" energy="50" time="5" radio-loss="0"/>
 	<radio-link source="13" dest="1" bidirectional="true" energy="50" time="5" radio-loss="0"/>
 </radio-links>
-		
+		<!-- Node 7 -->
 </network-topology>	

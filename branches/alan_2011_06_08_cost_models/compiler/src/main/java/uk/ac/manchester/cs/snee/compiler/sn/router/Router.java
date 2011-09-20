@@ -188,7 +188,6 @@ public class Router {
 		    LinkCostMetric linkCostMetric = LinkCostMetric.ENERGY;
 		    Path shortestPath;
 		    if (first) {
-		      System.out.println("route between " + sourceNodeID + "and sink");
 				//the first time, get the path from the currentSource to the sink
 				shortestPath = network.getShortestPath(sourceNodeID, new Integer(
 					sink).toString(), linkCostMetric);

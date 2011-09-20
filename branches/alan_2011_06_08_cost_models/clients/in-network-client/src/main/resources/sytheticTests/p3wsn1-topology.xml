@@ -24,6 +24,6 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk network-topology.xsd">
 	<radio-link source="5" dest="7" bidirectional="true" energy="20" time="5" radio-loss="0"/>	
 	<radio-link source="7" dest="8" bidirectional="true" energy="60" time="5" radio-loss="0"/>	
 </radio-links>
-		
+		<!-- Node 3 -->
 </network-topology>	
 

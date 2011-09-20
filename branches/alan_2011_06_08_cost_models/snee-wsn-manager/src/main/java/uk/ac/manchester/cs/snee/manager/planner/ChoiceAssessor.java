@@ -396,8 +396,9 @@ public class ChoiceAssessor
   throws IOException, SchemaMetadataException, TypeMappingException, 
   OptimizationException, CodeGenerationException
   {
+    CostParameters parameters = _metadataManager.getCostParameters();
     double packets = calculateNumberOfPacketsForSiteQEP(adapt, site);
-    return packets * AvroraCostParameters.FlashWRITECYCLES * 100;
+    return packets * parameters.getDeliverPayloadSize() * AvroraCostParameters.FlashWRITECYCLES;
   }
 
   /**
@@ -465,7 +466,7 @@ public class ChoiceAssessor
         packets = calculateNumberOfPacketsForSiteQEP(adapt, site);
       }
       Long packetTime = (long) Math.ceil(parameters.getSendPacket() * packets);
-      time += packetTime * hops * timePerHop;
+      time += (packetTime + timePerHop) * hops;
     }
     return time;
   }

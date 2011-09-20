@@ -378,7 +378,7 @@ public abstract class StrategyAbstract
       {
         exchangeOld = (InstanceExchangePart) instanceOperatorsOld.get(0);
         if(!exchangeNew.getNext().getSite().getID().equals(exchangeOld.getNext().getSite().getID())
-            && !ad.getReprogrammingSites().contains(site))
+            && !ad.getReprogrammingSites().contains(site.getID()))
         {
           ad.addRedirectedSite(site.getID());
         }

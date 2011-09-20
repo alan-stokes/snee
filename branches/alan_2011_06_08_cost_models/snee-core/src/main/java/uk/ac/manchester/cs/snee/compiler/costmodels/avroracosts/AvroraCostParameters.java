@@ -151,7 +151,7 @@ public final class AvroraCostParameters {
   /**Ampere Level copied from Avrora Source Code.
    * See ExternalFlash.java
    */
-  public static final double FlashWRITECYCLES = 0.02; //write
+  public static final long FlashWRITECYCLES = 20; //write
   
   /**
    * Getter method for radio ampere level while receiving
