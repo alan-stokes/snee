@@ -51,6 +51,10 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 public class EvaluatorAttribute extends DataAttribute {
 	
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -7915988722541651322L;
+  /**
 	 * The value of the field 
 	 */
 	private Object _data;

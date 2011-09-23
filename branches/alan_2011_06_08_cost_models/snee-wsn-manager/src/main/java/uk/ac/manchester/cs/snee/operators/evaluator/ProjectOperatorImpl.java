@@ -33,12 +33,17 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 
 	//FIXME: Add constants as outputs
 
-	/*
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 1723936897680289595L;
+
+  /*
 	 * Testing of this class is not having the desired effect.
 	 * The test does not fail even though the project is not doing its
 	 * job 	
 	 */
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	private static final Logger logger = Logger.getLogger(ProjectOperatorImpl.class.getName());
 
 	ProjectOperator project;
 	List<Attribute> attributes;
@@ -75,7 +80,8 @@ public class ProjectOperatorImpl extends EvaluationOperator {
 		logger.debug("RETURN ProjectOperatorImpl()");
 	}
 
-	@Override
+	@SuppressWarnings("unchecked")
+  @Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER update() for query " + m_qid + " " +

@@ -18,8 +18,12 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 public abstract class InputOperator extends LogicalOperatorImpl
 implements LogicalOperator {
 
-	private Logger logger = 
-		Logger.getLogger(InputOperator.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 1186750534223272621L;
+
+  private static final Logger logger = Logger.getLogger(InputOperator.class.getName());
 		
 	/** List of input attributes */
 	protected List<Attribute> inputAttributes;

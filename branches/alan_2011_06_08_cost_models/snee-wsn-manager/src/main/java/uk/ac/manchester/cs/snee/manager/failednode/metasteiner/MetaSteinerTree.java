@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.failednode.metasteiner;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,9 +22,14 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
-public class MetaSteinerTree
+public class MetaSteinerTree implements Serializable
 {
   
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 53208419580277179L;
+
   public MetaSteinerTree()
   {
     

@@ -11,12 +11,11 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.Edge;
-import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 
 public class TopologyUtils 
 {
-  Logger logger = Logger.getLogger(TopologyUtils.class.getName());
+  private static final Logger logger = Logger.getLogger(TopologyUtils.class.getName());
   private Topology network;
   
   public TopologyUtils(Topology network)

@@ -30,11 +30,9 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
-public class StreamResultSet 
-implements ResultSet {
+public class StreamResultSet implements ResultSet {
 
-	private Logger logger = 
-		Logger.getLogger(this.getClass().getName());
+	private static final Logger logger = Logger.getLogger(StreamResultSet.class.getName());
 	
 	private int cursorPosition = 0;
 	int numRows = 0;
@@ -62,6 +60,7 @@ implements ResultSet {
 		}
 	}
 
+	/*
 	private String printData() {
 		StringBuffer output = new StringBuffer("Data:");
 		for (int i = 1; i < data.length; i++) {
@@ -72,7 +71,7 @@ implements ResultSet {
 			}
 		}
 		return output.toString();
-	}
+	}*/
 
 	@Override
 	public boolean absolute(int row) throws SQLException {
@@ -1222,7 +1221,8 @@ implements ResultSet {
 		return response;
 	}
 
-	@Override
+	@SuppressWarnings("unchecked")
+  @Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
 		if(isWrapperFor(iface)) {
 			return (T) this;

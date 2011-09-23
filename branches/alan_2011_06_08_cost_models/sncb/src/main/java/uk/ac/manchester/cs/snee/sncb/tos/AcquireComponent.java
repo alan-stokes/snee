@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -63,7 +62,12 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
  */
 public class AcquireComponent extends NesCComponent {
 
-	/** Operator class code is being build for. */
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -8953020798887544163L;
+
+  /** Operator class code is being build for. */
     private SensornetAcquireOperator op;
 
     /** Plan this Operator is in. */

@@ -59,7 +59,7 @@ import antlr.collections.AST;
 
 public class Translator {
 
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	private static final Logger logger = Logger.getLogger(Translator.class.getName());
 
 	private	MetadataManager _metadata;
 

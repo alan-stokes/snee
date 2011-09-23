@@ -1,13 +1,17 @@
 package uk.ac.manchester.cs.snee.manager.common;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-
-public class TemporalAdjustment
+public class TemporalAdjustment implements Serializable
 {
 
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 8454758654102558798L;
+  
   private ArrayList<String> sitesAffected = new ArrayList<String>();
   private long adjustmentPosition = 0;
   private long adjustmentDuration = 0;

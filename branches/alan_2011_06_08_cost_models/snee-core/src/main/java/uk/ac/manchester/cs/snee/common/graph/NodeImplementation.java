@@ -34,8 +34,8 @@
 
 package uk.ac.manchester.cs.snee.common.graph;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -49,9 +49,14 @@ import java.util.List;
  *    
  */
 
-public class NodeImplementation implements Node {
+public class NodeImplementation implements Node, Serializable {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2950154515604855704L;
+
+  /**
 	 * Identifier of the node
 	 */
 	protected String id;

@@ -39,6 +39,11 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 public class DataAttribute extends Attribute {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -3556321047235699674L;
+
+  /**
 	 * Construct a DataAttribute instance
 	 * 
 	 * @param extentName name of the extent the attribute appears in

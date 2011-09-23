@@ -1,33 +1,31 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Expression;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class SensornetAcquireOperator extends SensornetOperatorImpl {
 
-	private static Logger logger 
-	= Logger.getLogger(SensornetAcquireOperator.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 4424935445543873310L;
+
+  private static final Logger logger = Logger.getLogger(SensornetAcquireOperator.class.getName());
 	
 	AcquireOperator acqOp;
 	

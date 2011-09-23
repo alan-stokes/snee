@@ -25,7 +25,7 @@ public class ReceiveOperatorImplTest {
 
 	private static Types types;
 	private ReceiveOperator mockOp;
-	private ReceiveOperatorImpl mReceiveOp;
+//	private ReceiveOperatorImpl mReceiveOp;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -52,7 +52,7 @@ public class ReceiveOperatorImplTest {
 		
 		expect(mockOp.getInputAttributes()).andReturn(attributes);
 		
-		mReceiveOp = new ReceiveOperatorImpl(mockOp, 20);
+		new ReceiveOperatorImpl(mockOp, 20);
 	}
 
 	@After

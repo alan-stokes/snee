@@ -49,8 +49,7 @@ import uk.ac.manchester.cs.snee.sncb.SerialPortMessageReceiver;
 
 public class InNetworkQueryEvaluator extends QueryEvaluator {//Runnable {
 
-	private Logger logger = 
-		Logger.getLogger(InNetworkQueryEvaluator.class.getName());
+	private static final Logger logger = Logger.getLogger(InNetworkQueryEvaluator.class.getName());
 
 	private SerialPortMessageReceiver _serialPortMessageReceiver;
 	

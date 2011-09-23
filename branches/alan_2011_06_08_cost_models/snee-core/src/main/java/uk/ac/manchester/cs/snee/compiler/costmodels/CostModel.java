@@ -1,7 +1,5 @@
 package uk.ac.manchester.cs.snee.compiler.costmodels;
 
-import java.util.ArrayList;
-
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityDataStructure;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;

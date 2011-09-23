@@ -24,8 +24,12 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class SensornetAggrInitOperator extends SensornetIncrementalAggregationOperator {
 
-	private static Logger logger 
-	= Logger.getLogger(SensornetAggrInitOperator.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -3495147217949546780L;
+
+  private static final Logger logger = Logger.getLogger(SensornetAggrInitOperator.class.getName());
 	
 	private ArrayList<Attribute> outputAttributes = new ArrayList<Attribute>();
 	

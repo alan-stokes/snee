@@ -1,7 +1,6 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -9,19 +8,20 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
-import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
-import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class SensornetAggrEvalOperator extends SensornetIncrementalAggregationOperator {
 
-	private static Logger logger 
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -8163294728229029146L;
+  
+  private static final Logger logger 
 	= Logger.getLogger(SensornetAggrEvalOperator.class.getName());
 	
 	public SensornetAggrEvalOperator(LogicalOperator op, CostParameters costParams) throws SNEEException,

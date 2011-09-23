@@ -33,12 +33,14 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
-
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public class TimerComponent extends GenericNesCComponent {
 
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -6341118230379746925L;
     public static String TYPE_NAME = "TimerMilliC";
 
     public TimerComponent(final String name, final NesCConfiguration config,

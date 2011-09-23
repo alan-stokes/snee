@@ -1,14 +1,12 @@
 package uk.ac.manchester.cs.snee.compiler.iot;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeMap;
+
+import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
@@ -18,7 +16,6 @@ import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
-import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SNEEAlgebraicForm;
@@ -33,6 +30,13 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperatorImpl;
 
 public class IOT extends SNEEAlgebraicForm
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 6858173999910587706L;
+  private final static Logger logger = Logger.getLogger(IOT.class.getName());
+  
+  
   private HashMapList<Site,InstanceOperator> siteToOpInstMap 
       = new HashMapList<Site,InstanceOperator>();
   private HashMapList<String,InstanceOperator> opInstMapping 

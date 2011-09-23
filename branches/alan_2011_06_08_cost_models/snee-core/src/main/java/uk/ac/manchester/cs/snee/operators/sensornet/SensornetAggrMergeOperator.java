@@ -1,6 +1,5 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -12,16 +11,17 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
-import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class SensornetAggrMergeOperator extends SensornetIncrementalAggregationOperator {
 
-	private static Logger logger 
-	= Logger.getLogger(SensornetAggrMergeOperator.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -738590753176258953L;
+  
+  private static final Logger logger = Logger.getLogger(SensornetAggrMergeOperator.class.getName());
 	
 	public SensornetAggrMergeOperator(LogicalOperator op, CostParameters costParams)
 	throws SNEEException, SchemaMetadataException {

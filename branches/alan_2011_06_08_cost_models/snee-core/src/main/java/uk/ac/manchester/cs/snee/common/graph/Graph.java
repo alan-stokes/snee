@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -48,8 +49,6 @@ import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-
-import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
@@ -67,9 +66,14 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
  * 
  */
 
-public class Graph implements Cloneable {
+public class Graph implements Cloneable, Serializable{
 
-	Logger logger = Logger.getLogger(Graph.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 5022829555891626720L;
+
+  private static final Logger logger = Logger.getLogger(Graph.class.getName());
 
 	/**
 	 * The name of the graph
@@ -751,9 +755,10 @@ public class Graph implements Cloneable {
 			InputStream stderr = proc.getErrorStream();
 			InputStreamReader isr = new InputStreamReader(stderr);
 			BufferedReader br = new BufferedReader(isr);
-			String line = null;
-			while ((line = br.readLine()) != null) {
-			}
+			@SuppressWarnings("unused")
+      String line = null;
+			while ((line = br.readLine()) != null) 
+			{}
 			int exitVal = proc.waitFor();
 			if (logger.isTraceEnabled())
 				logger.trace("Dotfile to PNG process exitValue: " + 
@@ -778,7 +783,8 @@ public class Graph implements Cloneable {
 		return clone;
 	}
 
-	private void copyNodesAndEdges(Graph clone) {
+	@SuppressWarnings("unchecked")
+  private void copyNodesAndEdges(Graph clone) {
 		// create shallow clones of each node in the graph, and add them to the nodes collection
 		Iterator<String> nodeIDIter = this.nodes.keySet().iterator();
 		while (nodeIDIter.hasNext()) {

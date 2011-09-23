@@ -32,8 +32,7 @@ public class OgsadaiSchemaParser extends SchemaParserAbstract {
 	private static final String XML_HEADER =
 		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
-	private Logger logger = 
-		Logger.getLogger(OgsadaiSchemaParser.class.getName());
+	private static final Logger logger = Logger.getLogger(OgsadaiSchemaParser.class.getName());
 
 	private Map<String, List<Attribute>> extents = 
 		new HashMap<String, List<Attribute>>();

@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.failednode.metasteiner;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -12,8 +13,13 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
-public class MetaTopology 
+public class MetaTopology implements Serializable
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -8179651442599719941L;
+  
   Topology basicTopology;
 
   public MetaTopology(Topology top)

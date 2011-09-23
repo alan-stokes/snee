@@ -80,7 +80,7 @@ import org.xml.sax.SAXException;
 
 public class Types {
 	
-	private Logger logger = Logger.getLogger(Types.class.getName());
+	private static final Logger logger = Logger.getLogger(Types.class.getName());
 
 	private Map<String, AttributeType> _types = 
 		new Hashtable<String, AttributeType>();;

@@ -54,7 +54,12 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
  */
 public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator {
 
-   private Logger logger = Logger.getLogger(JoinOperator.class.getName());
+   /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -3651771617937622009L;
+
+  private static final Logger logger = Logger.getLogger(JoinOperator.class.getName());
 
    /** 
 	 * List of the expressions to create the output attributes.
@@ -206,13 +211,17 @@ public class JoinOperator extends LogicalOperatorImpl implements LogicalOperator
 				accepted = true;
 			}
 		}
-		ArrayList<Attribute> leftAttributes =  (ArrayList) getInput(0).getAttributes();
-		List<Attribute> requiredLeftAttributes = (List<Attribute>) leftAttributes.clone();
-		List<Attribute> unrequiredLeftAttributes = (List<Attribute>)leftAttributes.clone();
+		ArrayList<Attribute> leftAttributes =  new ArrayList<Attribute>(getInput(0).getAttributes());
+	  List<Attribute> requiredLeftAttributes = new ArrayList<Attribute>(leftAttributes);
+		//List<Attribute> requiredLeftAttributes = (List<Attribute>) leftAttributes.clone();
+	  List<Attribute> unrequiredLeftAttributes = new ArrayList<Attribute>(leftAttributes);
+		//List<Attribute> unrequiredLeftAttributes = (List<Attribute>)leftAttributes.clone();
 		
-		ArrayList<Attribute> rightAttributes = (ArrayList) getInput(1).getAttributes();
-		List<Attribute> requiredRightAttributes = (ArrayList<Attribute>)rightAttributes.clone();
-		List<Attribute> unrequiredRightAttributes = (ArrayList<Attribute>)rightAttributes.clone();
+		ArrayList<Attribute> rightAttributes = new ArrayList<Attribute>(getInput(1).getAttributes());
+		List<Attribute> requiredRightAttributes = new ArrayList<Attribute>(rightAttributes);
+		//List<Attribute> requiredRightAttributes = (ArrayList<Attribute>)rightAttributes.clone();
+		List<Attribute> unrequiredRightAttributes = new ArrayList<Attribute>(rightAttributes);
+		//List<Attribute> unrequiredRightAttributes = (ArrayList<Attribute>)rightAttributes.clone();
 
 		//Remove any attribute used by any output expression from the unrequired attribute Lists
 		List<Attribute> requiredAttributes;

@@ -49,7 +49,12 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
  */
 public class ProjectOperator extends PredicateOperator {
 
-	public ProjectOperator (List <Expression> expressions, 
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 8511279741545504268L;
+
+  public ProjectOperator (List <Expression> expressions, 
 			List <Attribute> attributes, LogicalOperator input, 
 			AttributeType boolType){
 		super(expressions, attributes, input, boolType);

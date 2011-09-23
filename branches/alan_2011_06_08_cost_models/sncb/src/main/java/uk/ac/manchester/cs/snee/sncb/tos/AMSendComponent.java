@@ -33,13 +33,16 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
-
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 
 public class AMSendComponent extends GenericNesCComponent {
+
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -1130485890733344997L;
 
     public static String TYPE_NAME = "AMSenderC";
 

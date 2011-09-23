@@ -8,10 +8,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.NodeImplementation;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -26,7 +24,6 @@ import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.logical.JoinOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
-import uk.ac.manchester.cs.snee.operators.logical.LogicalOperatorImpl;
 import uk.ac.manchester.cs.snee.operators.logical.ProjectOperator;
 import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
@@ -36,9 +33,14 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 		SensornetOperator {
   
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2610437787825804301L;
+
+  /**
 	 * Logger for this class.
 	 */
-	protected Logger logger = Logger.getLogger(this.getClass().getName());
+	private static final Logger logger = Logger.getLogger(SensornetOperatorImpl.class.getName());
 	
 	/**
 	 * The name of the operator, e.g., ACQUIRE, JOIN.
@@ -452,7 +454,7 @@ public CostParameters getCostParams()
 	 * @return The size of the tuple
 	 * @throws TypeMappingException 
 	 * @throws SchemaMetadataException 
-	 */
+	 */ /*
 	private int getPurePhysicalTupleSize() 
 	throws SchemaMetadataException, TypeMappingException {
 		List<Attribute> attributes = this.getLogicalOperator().getAttributes();
@@ -462,7 +464,7 @@ public CostParameters getCostParams()
 			totalSize = totalSize + size;
 		}
 		return totalSize;
-	}    
+	}    */
 
 	/** {@inheritDoc} 
 	 * @throws OptimizationException */    
@@ -636,7 +638,7 @@ public CostParameters getCostParams()
                     i++;
                 }
             }
-            this.logger.trace("result = " + Arrays.toString(result));
+            logger.trace("result = " + Arrays.toString(result));
             Arrays.sort(result);
             return result;
         } else {

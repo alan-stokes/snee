@@ -1,22 +1,26 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
+import java.io.Serializable;
+
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 /**
  * Abstract Query Plan class.
  */
-public abstract class QueryExecutionPlanAbstract implements QueryExecutionPlan {
+public abstract class QueryExecutionPlanAbstract implements QueryExecutionPlan, Serializable {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -6936220733978504674L;
+
+  /**
 	 * Logger for this class.
 	 */
-	private Logger logger = 
-		Logger.getLogger(QueryExecutionPlanAbstract.class.getName());
+	private static final Logger logger = Logger.getLogger(QueryExecutionPlanAbstract.class.getName());
 	
 	/**
 	 * Identifier of this query plan.

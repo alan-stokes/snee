@@ -9,17 +9,13 @@ import uk.ac.manchester.cs.snee.metadata.schema.Types;
 
 public abstract class SchemaParserAbstract implements SchemaParser {
 
-	private Logger logger = 
-		Logger.getLogger(SchemaParserAbstract.class.getName());
-	
-	private Types _types;
+	private static final Logger logger = Logger.getLogger(SchemaParserAbstract.class.getName());
 
 	private SQLUtils sqlUtils;
 	
 	protected SchemaParserAbstract(Types types) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER SchemaParserAbstract()");
-		_types = types;
 		sqlUtils = new SQLUtils(types);
 		if (logger.isDebugEnabled()) {
 			logger.debug("RETURN SchemaParserAbstract()");

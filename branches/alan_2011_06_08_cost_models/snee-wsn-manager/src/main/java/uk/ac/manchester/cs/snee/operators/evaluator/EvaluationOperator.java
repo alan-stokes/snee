@@ -17,11 +17,14 @@ import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
-public abstract class EvaluationOperator 
-extends EvaluatorPhysicalOperator {
+public abstract class EvaluationOperator extends EvaluatorPhysicalOperator {
 	//TODO: Make all evaluations make use of evaluator class.
 	
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 6688296437590986723L;
+  private static final Logger logger = Logger.getLogger(EvaluationOperator.class.getName());
 	
 	public EvaluationOperator(){
 		

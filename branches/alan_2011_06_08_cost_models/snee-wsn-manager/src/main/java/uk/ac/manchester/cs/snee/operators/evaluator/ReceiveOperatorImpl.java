@@ -54,7 +54,6 @@ import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.metadata.source.SourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
@@ -69,38 +68,20 @@ import uk.ac.manchester.cs.snee.operators.logical.ReceiveOperator;
 public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 	//XXX: Write test for receive operator
 
-	Logger logger = 
-		Logger.getLogger(ReceiveOperatorImpl.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 7981935734299956457L;
+
+  private static final Logger logger = Logger.getLogger(ReceiveOperatorImpl.class.getName());
 
 	private SourceReceiver _streamReceiver;
 
 	// streamName is the variable that stores the local extent name.
 	private String _streamName;
 
-	private boolean executing = false;
-
-	/**
-	 * Indicates when a tuple has been received by the 
-	 * background thread
-	 */
-	private boolean receive = true;
-
-	/**
-	 * Once a tuple is received it is processed and this indicates 
-	 * that it is ready for the parent operator
-	 */
-	private boolean newTupleReceived = false;
-
-	/**
-	 * Maintains a count of all the tuples received in the stream
-	 */
-	private long totalTuplesReceived;
-
 	List<Attribute> attributes ;
 	double rate;
-
-	private int _tupleIndex = 0;
-	private int currentTupleIndex = 0;
 
 	private ReceiveOperator receiveOp;
 
@@ -150,7 +131,6 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			initializeStreamReceiver();
 
 			// Start the receive operator to run immediately
-			executing = true;
 			_receiverTaskTimer = new Timer();
 			ReceiverTask task = new ReceiverTask();
 			_receiverTaskTimer.schedule(task, 0 //initial delay
@@ -252,7 +232,6 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 		}
 		_receiverTaskTimer.cancel();
 		_receiverTaskTimer.purge();
-		executing = false;
 		// Close the stream
 		_streamReceiver.close();
 		if (logger.isDebugEnabled()) {
@@ -353,21 +332,21 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 				notifyObservers(taggedTuple);
 			} catch (ReceiveTimeoutException e) {
 				logger.warn("Receive Timeout Exception.", e);
-				receive = false;
+
 			} catch (SNEEException e) {
 				logger.warn("Received a SNEEException.", e);
-				receive = false;
+
 			} catch (EndOfResultsException e) {
-				executing = false;
+
 			} catch (SNEEDataSourceException e) {
 				logger.warn("Received a SNEEDataSourceException.", e);
-				receive = false;
+
 			} catch (TypeMappingException e) {
 				logger.warn("Received a TypeMappingException.", e);
-				receive = false;
+
 			} catch (SchemaMetadataException e) {
 				logger.warn("Received a SchemaMetadataException.", e);
-				receive = false;
+
 			}
 			if (logger.isDebugEnabled()) {
 				logger.debug("RETURN run() time to next execution: " + 
@@ -383,7 +362,7 @@ public class ReceiveOperatorImpl extends EvaluatorPhysicalOperator {
 			logger.debug("ENTER update() for query " + m_qid);
 		}
 		logger.error("Receiver cannot be the parent of another operator");
-		executing = false;
+
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN update()");
 	}

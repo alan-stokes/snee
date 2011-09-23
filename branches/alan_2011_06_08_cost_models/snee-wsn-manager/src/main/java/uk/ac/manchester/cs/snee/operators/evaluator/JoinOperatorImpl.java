@@ -34,7 +34,12 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class JoinOperatorImpl extends EvaluationOperator {
 
-	Logger logger = Logger.getLogger(JoinOperatorImpl.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 5017264367203082114L;
+
+  private static final Logger logger = Logger.getLogger(JoinOperatorImpl.class.getName());
 
 	EvaluatorPhysicalOperator leftOperator, rightOperator;
 	JoinOperator join;
@@ -171,7 +176,8 @@ public class JoinOperatorImpl extends EvaluationOperator {
 //		return resultWindows;
 //	}
 
-	@Override
+	@SuppressWarnings("unchecked")
+  @Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER update() for query " + m_qid + " " +

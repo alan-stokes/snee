@@ -49,6 +49,11 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 public abstract class PredicateOperator extends LogicalOperatorImpl {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 7588249038823984649L;
+
+  /**
 	 * The expressions for building the attributes.
 	 */
 	private List <Expression> expressions;

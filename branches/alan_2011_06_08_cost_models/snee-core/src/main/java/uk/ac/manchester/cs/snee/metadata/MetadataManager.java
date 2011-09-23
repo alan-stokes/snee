@@ -84,8 +84,7 @@ import uk.ac.manchester.cs.snee.sncb.SensorType;
 
 public class MetadataManager {
 
-	private Logger logger = 
-		Logger.getLogger(MetadataManager.class.getName());
+	private static final Logger logger = Logger.getLogger(MetadataManager.class.getName());
 	
 	private SourceManager _sources;
 

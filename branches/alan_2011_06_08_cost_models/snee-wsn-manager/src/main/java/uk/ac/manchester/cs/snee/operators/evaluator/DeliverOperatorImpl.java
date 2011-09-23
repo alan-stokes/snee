@@ -52,8 +52,12 @@ public class DeliverOperatorImpl
 extends EvaluatorPhysicalOperator {
 	//XXX: Write test for deliver operator
 	
-	Logger logger =
-		Logger.getLogger(DeliverOperatorImpl.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -3872984761041563409L;
+
+  private static final Logger logger = Logger.getLogger(DeliverOperatorImpl.class.getName());
 
 	DeliverOperator deliverOp;
 	
@@ -102,7 +106,8 @@ extends EvaluatorPhysicalOperator {
 //		return result;
 //	}
 
-	@Override
+	@SuppressWarnings("unchecked")
+  @Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER update() for query " + m_qid + " " +

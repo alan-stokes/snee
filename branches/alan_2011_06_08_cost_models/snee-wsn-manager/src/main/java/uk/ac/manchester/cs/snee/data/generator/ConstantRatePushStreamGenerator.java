@@ -73,9 +73,8 @@ import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public class ConstantRatePushStreamGenerator {
 
-	Logger logger = 
-		Logger.getLogger(
-				ConstantRatePushStreamGenerator.class.getName());
+	private static final Logger logger = 
+	  Logger.getLogger(ConstantRatePushStreamGenerator.class.getName());
 	
 	/**
 	 * The list of streams

@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
+import java.io.Serializable;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
@@ -44,7 +45,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
  * Includes arithmetic, aggregation, and boolean expressions.
  * @author Christian
  */
-public interface Expression {
+public interface Expression extends Serializable{
 
 	/** 
 	 * List of the attributes required to produce this expression.

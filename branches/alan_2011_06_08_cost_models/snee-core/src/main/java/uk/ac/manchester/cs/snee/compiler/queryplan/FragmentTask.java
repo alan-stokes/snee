@@ -38,7 +38,6 @@ import java.util.logging.Logger;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 
 /**
  * This class represents a tasks which involves executing a query plan fragment.
@@ -47,7 +46,12 @@ import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
  */
 public class FragmentTask extends Task {
 
-    static Logger logger = Logger.getLogger(FragmentTask.class.getName());
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 6358346108795704605L;
+
+    private static final Logger logger = Logger.getLogger(FragmentTask.class.getName());
 
     //The query plan fragment
     private Fragment fragment;
@@ -60,7 +64,7 @@ public class FragmentTask extends Task {
     //If a leaf fragment, the occurrence (i.e., evaluation) of the node.
     private long occurrence;
 
-    private long alpha;
+    //private long alpha;
     
     private long beta;
 
@@ -78,7 +82,7 @@ public class FragmentTask extends Task {
 	super(startTime, costParams);
 	this.fragment = fragment;
 	this.daf = daf;
-	this.alpha = alpha;
+	//this.alpha = alpha;
 	this.beta = beta;
 	this.site = site;
 	this.endTime = startTime + this.getTimeCost(daf);

@@ -20,6 +20,7 @@ import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
+import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
@@ -39,9 +40,13 @@ import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 import uk.ac.manchester.cs.snee.sncb.SerialPortMessageReceiver;
 
-public class Monitor implements Observer
+public class Monitor  extends AutonomicManagerComponent implements Observer 
 {
-  private AutonomicManagerImpl manager;
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2289795095102719034L;
+  
   private SerialPortMessageReceiver listener;
   private ResultStore _results;
   private boolean recievedPacketsThisQuery = false;

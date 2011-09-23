@@ -618,6 +618,7 @@ public final class AlphaBetaExpression {
    * @return the string representation in latex format.
    */
   public String toLatexString() {
+    @SuppressWarnings("unused")
     String latex = this.toString(OutputFormat.Latex);
     return this.toString(OutputFormat.Latex);
   }

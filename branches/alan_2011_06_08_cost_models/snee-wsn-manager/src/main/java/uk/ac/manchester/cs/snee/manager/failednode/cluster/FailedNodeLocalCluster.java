@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.failednode.cluster;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
@@ -11,8 +12,14 @@ import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
  * @author alan
  *
  */
-public class FailedNodeLocalCluster 
+public class FailedNodeLocalCluster implements Serializable
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2290495984293624164L;
+  
+  
   // cluster rep
   private HashMapList<String, String> equivilentNodes; 
   

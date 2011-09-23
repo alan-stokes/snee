@@ -33,11 +33,8 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
@@ -46,6 +43,11 @@ import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class WindowComponent extends NesCComponent {
+
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 4739441860817569850L;
 
     SensornetWindowOperator op;
 

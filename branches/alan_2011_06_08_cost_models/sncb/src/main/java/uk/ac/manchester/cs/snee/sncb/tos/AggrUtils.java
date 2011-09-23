@@ -7,7 +7,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpres
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.IncrementalAggregationAttribute;
-import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
@@ -26,7 +25,7 @@ public class AggrUtils {
        				(IncrementalAggregationAttribute)attr;
        			String attrName = 
        				CodeGenUtils.getNescAttrName(incrAttr);
-	  		   	final AttributeType attrType = incrAttr.getType();	  		   	
+	  		   //	final AttributeType attrType = incrAttr.getType();	  		   	
 	  		   	
 //	  		   	String nesCType = attrType.getNesCName();
 //	  		   	if (incrAttr.getAggrFunction() == AggregationFunction.SUM) {

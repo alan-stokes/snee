@@ -47,16 +47,18 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.metadata.schema.Types;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 
 public class AcquireOperator extends InputOperator {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 3475469912979592262L;
+  /**
 	 *  Logger for this class.
 	 */
-	private Logger logger = 
-		Logger.getLogger(AcquireOperator.class.getName());
+	private static final Logger logger = Logger.getLogger(AcquireOperator.class.getName());
 
     /** 
      * List of the attributes that are sensed by this operator. 

@@ -33,17 +33,16 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 
 public class FragmentComponent extends NesCComponent {
+
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 3485592895186290089L;
 
     Fragment frag;
 

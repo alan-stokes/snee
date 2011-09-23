@@ -13,8 +13,7 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 public class SNEEClientMixed extends SNEEClient {
 	
-	private static Logger logger = 
-		Logger.getLogger(SNEEClientMixed.class.getName());
+	private static final Logger logger = Logger.getLogger(SNEEClientMixed.class.getName());
 	
 //	private static ConstantRatePushStreamGenerator _myDataSource;
 	

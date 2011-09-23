@@ -33,11 +33,15 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
 
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public class UserButtonComponent extends NesCComponent {
+
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 2849993053827346629L;
 
     public UserButtonComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {

@@ -18,9 +18,14 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 public class DLAF extends SNEEAlgebraicForm {
 
     /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 284743245132900838L;
+
+    /**
      * Logger for this class.
      */
-    private Logger logger = Logger.getLogger(DLAF.class.getName());
+    private final static Logger logger = Logger.getLogger(DLAF.class.getName());
 	
 	/**
 	 * The logical-algebraic form of the query plan operator tree 

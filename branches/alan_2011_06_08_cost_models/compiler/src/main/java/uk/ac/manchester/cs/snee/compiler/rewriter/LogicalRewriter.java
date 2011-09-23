@@ -19,7 +19,7 @@ import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
 public class LogicalRewriter {
 
 	
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	private static final Logger logger = Logger.getLogger(LogicalRewriter.class.getName());
 	
 	public LogicalRewriter () {
 		if (logger.isDebugEnabled())

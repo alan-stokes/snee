@@ -41,8 +41,7 @@ import eu.semsorgrid4env.service.wsdai.ServiceBusyFault;
 public class PullSourceWrapperImpl extends SourceWrapperAbstract
 implements PullSourceWrapper {
 
-	private static Logger logger = 
-		Logger.getLogger(PullSourceWrapperImpl.class.getName());
+	private static final Logger logger = Logger.getLogger(PullSourceWrapperImpl.class.getName());
 
 	private DateFormat dateFormat = 
 		new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");

@@ -16,14 +16,12 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
 import uk.ac.manchester.cs.snee.evaluator.types.TaggedTuple;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.sncb.tos.CodeGenUtils;
 
@@ -31,8 +29,7 @@ import uk.ac.manchester.cs.snee.sncb.tos.CodeGenUtils;
 public class SerialPortMessageReceiver extends Observable 
 implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 
-	private Logger logger = 
-		Logger.getLogger(TinyOS_SNCB_TelosB.class.getName());
+	private static final Logger logger = Logger.getLogger(TinyOS_SNCB_TelosB.class.getName());
 	
 	private MoteIF moteIF;
 	  
@@ -100,7 +97,7 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 	throws SecurityException, NoSuchMethodException, IllegalArgumentException, 
 	IllegalAccessException, InvocationTargetException {
 		//This bit of code is based on http://java.sun.com/developer/technicalArticles/ALT/Reflection/
-		Class msgClass = message.getClass();
+		Class<? extends Message> msgClass = message.getClass();
 		Method meth = msgClass.getMethod("numElements_tuples_evalEpoch", new Class[0]);
 		//Method meth = msgClass.getMethod("numElements_tuples_evalEpoch", new Class[]{Integer.TYPE});
 		Integer tuplesPerMessage = (Integer) meth.invoke(message, new Object[0]);		
@@ -131,10 +128,10 @@ implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 				logger.trace("ENTER getAttribute()");
 		String nesCAttrName = CodeGenUtils.getNescAttrName(attr);
 		String methodName = "getElement_tuples_"+nesCAttrName;
-		Class paramTypes[] = new Class[1];
+		Class<?> paramTypes[] = new Class[1];
 		paramTypes[0] = Integer.TYPE;
 		//This bit of code is based on http://java.sun.com/developer/technicalArticles/ALT/Reflection/
-		Class msgClass = message.getClass();
+		Class<? extends Message> msgClass = message.getClass();
 		Method meth = msgClass.getMethod(methodName, paramTypes);
 		Object argList[] = new Object[1];
 		argList[0] = new Integer(index);

@@ -12,6 +12,10 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 public class EvaluatorQueryPlan extends QueryExecutionPlanAbstract {
 
     /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -5257462150066302329L;
+    /**
      * Logger for this class.
      */
     private static  Logger logger = Logger.getLogger(

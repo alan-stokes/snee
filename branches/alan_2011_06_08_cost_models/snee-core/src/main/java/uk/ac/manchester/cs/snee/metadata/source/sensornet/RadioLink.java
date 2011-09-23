@@ -39,6 +39,11 @@ import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 public class RadioLink extends EdgeImplementation implements Edge {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 723292279904225020L;
+
+  /**
 	 * The radio loss cost, expressed as the probability that a radio packet 
 	 * is lost along the link.  This is the default metric used in TOSSIM.  
 	 * The value may be in the range [0-1], where 0=perfect communication, and 

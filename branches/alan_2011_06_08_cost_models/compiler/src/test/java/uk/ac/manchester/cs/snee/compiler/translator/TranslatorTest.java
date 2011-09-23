@@ -59,7 +59,7 @@ import antlr.collections.AST;
 
 public class TranslatorTest {
 
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	private static final Logger logger = Logger.getLogger(TranslatorTest.class.getName());
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -606,7 +606,8 @@ public class TranslatorTest {
 	ExpressionException, AssertionError, 
 	OptimizationException, TypeMappingException 
 	{
-		LAF laf = testQuery("SELECT \'constant\' AS Something, * " +
+		@SuppressWarnings("unused")
+    LAF laf = testQuery("SELECT \'constant\' AS Something, * " +
 				"FROM TestStream;");
 	}
 	
@@ -846,7 +847,8 @@ public class TranslatorTest {
 				"NOW SLIDE 10 SECOND] p;");
 		
 		// Verify result
-		Iterator<LogicalOperator> it = 
+		@SuppressWarnings("unused")
+    Iterator<LogicalOperator> it = 
 			laf.operatorIterator(TraversalOrder.PRE_ORDER);
 		LogicalOperator rootOperator = laf.getRootOperator();
 		List<Attribute> attributes = rootOperator.getAttributes();

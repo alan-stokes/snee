@@ -42,6 +42,11 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 public class TimeAttribute extends Attribute {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 241407901567524336L;
+
+  /**
 	 * Construct a TimeAttribute instance
 	 * 
 	 * @param extentName name of the extent the attribute appears in

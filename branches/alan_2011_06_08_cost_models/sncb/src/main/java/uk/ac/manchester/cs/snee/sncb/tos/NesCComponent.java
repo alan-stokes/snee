@@ -51,6 +51,11 @@ import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public abstract class NesCComponent extends NodeImplementation implements Node {
 
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 3292043565700777078L;
+
     String description;
     
     boolean tossimFlag;

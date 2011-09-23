@@ -35,6 +35,11 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 public abstract class GenericNesCComponent extends NesCComponent {
 
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 7903753452149648996L;
+
     String type;
 
     String activeMessageID;

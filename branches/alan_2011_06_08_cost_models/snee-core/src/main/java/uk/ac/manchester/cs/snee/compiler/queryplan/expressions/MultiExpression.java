@@ -47,7 +47,12 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
  */
 public class MultiExpression implements Expression {
 
-	/** List of the expression.*/
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -3292639541898090668L;
+
+  /** List of the expression.*/
 	private Expression[] expressions;
 
 	/** The operator used to combining the expressions.*/

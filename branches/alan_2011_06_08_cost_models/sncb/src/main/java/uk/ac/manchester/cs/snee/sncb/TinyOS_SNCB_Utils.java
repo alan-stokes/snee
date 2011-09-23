@@ -1,8 +1,5 @@
 package uk.ac.manchester.cs.snee.sncb;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Iterator;
 
 import uk.ac.manchester.cs.snee.common.Utils;

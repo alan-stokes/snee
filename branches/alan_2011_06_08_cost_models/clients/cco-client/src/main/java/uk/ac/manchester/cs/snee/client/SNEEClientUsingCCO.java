@@ -13,8 +13,7 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 public class SNEEClientUsingCCO extends SNEEClient {
 	
-	private static Logger logger = 
-		Logger.getLogger(SNEEClientUsingCCO.class.getName());
+	private static final Logger logger = Logger.getLogger(SNEEClientUsingCCO.class.getName());
 	
 	private String serviceUrl = 
 		"http://webgis1.geodata.soton.ac.uk:8080/CCO/services/PullStream?wsdl";

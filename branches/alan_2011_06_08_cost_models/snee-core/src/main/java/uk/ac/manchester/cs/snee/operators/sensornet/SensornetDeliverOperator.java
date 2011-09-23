@@ -1,15 +1,11 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.iot.IOT;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.EvalTimeAttribute;
@@ -24,7 +20,12 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class SensornetDeliverOperator extends SensornetOperatorImpl {
 	
-	Logger logger = Logger.getLogger(SensornetDeliverOperator.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2427342824331768901L;
+
+  private static final Logger logger = Logger.getLogger(SensornetDeliverOperator.class.getName());
 	
 	DeliverOperator delOp;
 	

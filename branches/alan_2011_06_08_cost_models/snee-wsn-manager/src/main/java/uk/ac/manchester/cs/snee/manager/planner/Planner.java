@@ -12,6 +12,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
+import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyID;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -20,18 +21,40 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
-public class Planner 
+public class Planner extends AutonomicManagerComponent
 {
 
-  private AutonomicManagerImpl manager;
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -8013340359332149778L;
   private ChoiceAssessor assessor;
   private HashMap<String, RunTimeSite> runningSites;
+  private File plannerFolder = null;
+  private Plotter plotter;
   
-  public Planner(AutonomicManagerImpl autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager)
+  public Planner(AutonomicManagerImpl autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager)   
   {
     manager = autonomicManager;
-    assessor = new ChoiceAssessor(_metadata, _metadataManager, manager.getOutputFolder());
+    assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder);
     runningSites = manager.getRunningSites();
+  }
+  
+/**
+ * sets up folder to store output from the planner and its sub functions
+ * @param outputFolder
+ */
+  private void setupFolders()
+  {
+    if(plannerFolder.exists())
+    {
+      this.deleteFolder(plannerFolder);
+      plannerFolder.mkdir();
+    }
+    else
+    {
+      plannerFolder.mkdir();
+    }
   }
 
   /**
@@ -84,12 +107,13 @@ public class Planner
       assessor.assessChoices(bestChoices, runningSites);
       bestOverall = chooseBestAdaptation(bestChoices);
       //output bests, then all.
-      new PlannerUtils(bestChoices, manager).printLatexDocument(orginal, bestOverall, false);
+      new PlannerUtils(bestChoices, manager, plannerFolder).writeObjectsToFile();
+      new PlannerUtils(bestChoices, manager, plannerFolder).printLatexDocument(orginal, bestOverall, false);
+      plotter.plot(choices.getGlobalAdaptation(), bestPartial, bestLocal);
      /* if(!partialAds.isEmpty())
         new PlannerUtils(partialAds, manager).printLatexDocument(orginal, bestPartial, true);
       if(!localAds.isEmpty())
         new PlannerUtils(localAds, manager).printLatexDocument(orginal, bestLocal, true);*/
-      System.out.println("sucessfully chose best adaptation, printing out latex");
 
     }
     catch(Exception e)
@@ -129,9 +153,12 @@ public class Planner
     return finalChoice;
   }
 
-  public void updateStorageLocation(File outputFolder)
+  public void updateStorageLocation(File outputFolder) throws IOException
   {
-    this.assessor.updateStorageLocation(outputFolder);
+    plannerFolder = new File(outputFolder.toString() + sep + "Planner");
+    setupFolders();
+    plotter = new Plotter(plannerFolder, manager.getActiveStrategies(), manager);
+    this.assessor.updateStorageLocation(plannerFolder);
   }
   
 }

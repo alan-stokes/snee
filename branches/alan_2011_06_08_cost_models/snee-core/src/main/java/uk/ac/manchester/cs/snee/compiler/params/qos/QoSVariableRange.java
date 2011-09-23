@@ -45,8 +45,7 @@ public class QoSVariableRange {
 	/**
      * Logger for this class.
      */
-    private Logger logger = 
-            Logger.getLogger(QoSVariableRange.class.getName());
+    private static final Logger logger = Logger.getLogger(QoSVariableRange.class.getName());
 	
 	/**
 	 * The lower bound of the QoS Variable.

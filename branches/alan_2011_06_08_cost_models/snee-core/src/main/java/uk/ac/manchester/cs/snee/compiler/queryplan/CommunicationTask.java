@@ -42,16 +42,20 @@ import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 
 /**
  * This class represents a tasks which involves communication between two nodes in the query plan.
  * @author Ixent Galpin
  *
  */
-public class CommunicationTask extends Task implements Comparable{
+public class CommunicationTask extends Task implements Comparable<CommunicationTask>{
 
-	//TODO move to task.
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -7823982575600894710L;
+
+    //TODO move to task.
     //The site which is transmitting data
     private Site sourceNode = null;
 
@@ -68,7 +72,7 @@ public class CommunicationTask extends Task implements Comparable{
 
     public static final int TRANSMIT = 1;
 
-    private long alpha;
+   // private long alpha;
 
     private long beta;
 
@@ -97,7 +101,7 @@ public class CommunicationTask extends Task implements Comparable{
 	this.beta = bufferingFactor;
 	this.endTime = startTime + this.getTimeCost(daf);
 	this.mode = mode;
-	this.alpha = alpha;
+	
     }
     
     public CommunicationTask(final long startTime, final Site sourceNode,
@@ -108,7 +112,6 @@ public class CommunicationTask extends Task implements Comparable{
     this.destNode = destNode;
     this.endTime = startTime + this.getTimeCost(packets);
     this.mode = mode;
-    this.alpha = alpha;
       }
     
     /**
@@ -134,7 +137,7 @@ public class CommunicationTask extends Task implements Comparable{
   this.beta = bufferingFactor;
   this.endTime = startTime + this.getTimeCost(daf);
   this.mode = mode;
-  this.alpha = alpha;
+
     }
 
     public final Site getSourceNode() {
@@ -303,12 +306,11 @@ public class CommunicationTask extends Task implements Comparable{
     }
 
   @Override
-  public int compareTo(Object o)
+  public int compareTo(CommunicationTask other)
   {
     final int BEFORE = -1;
     final int EQUAL = 0;
     final int AFTER = 1;
-    CommunicationTask other = (CommunicationTask) o;
     if(other.startTime < this.startTime)
       return BEFORE;
     else if(other.startTime == this.startTime)

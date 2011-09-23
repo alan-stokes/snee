@@ -53,7 +53,12 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
  */
 public class AggregationOperator extends PredicateOperator {
 
-	private Logger logger = Logger.getLogger(AggregationOperator.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -7560591745032970275L;
+
+  private static final Logger logger = Logger.getLogger(AggregationOperator.class.getName());
 	
 	/** 
 	 * List of aggregate expressions within the requested expression.

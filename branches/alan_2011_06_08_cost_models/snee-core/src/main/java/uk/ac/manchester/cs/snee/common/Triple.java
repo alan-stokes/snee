@@ -33,7 +33,14 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.common;
 
-public class Triple<S1, S2, S3> {
+import java.io.Serializable;
+
+public class Triple<S1, S2, S3> implements Serializable{
+
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -7328023396239587100L;
 
     S1 s1;
 

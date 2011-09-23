@@ -53,7 +53,6 @@ import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
-import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.evaluator.EndOfResultsException;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
@@ -65,7 +64,7 @@ import uk.ac.manchester.cs.snee.operators.evaluator.EvaluatorPhysicalOperator;
 
 public class UDPStreamReceiver implements SourceReceiver {
 
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	private static final Logger logger = Logger.getLogger(UDPStreamReceiver.class.getName());
 
 	private String _host;
 	private int _port;

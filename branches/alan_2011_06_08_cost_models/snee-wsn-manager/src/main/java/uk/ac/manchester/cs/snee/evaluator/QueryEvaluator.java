@@ -79,8 +79,7 @@ public class QueryEvaluator implements Observer {
 
 	private EvaluatorPhysicalOperator _rootOper;
 
-	private Logger logger = 
-		Logger.getLogger(QueryEvaluator.class.getName());
+	private static final Logger logger = Logger.getLogger(QueryEvaluator.class.getName());
 
 	private boolean failure = false;
 

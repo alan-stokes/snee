@@ -52,7 +52,12 @@ import uk.ac.manchester.cs.snee.operators.logical.UnionOperator;
 public class UnionOperatorImpl extends EvaluatorPhysicalOperator {
 	//XXX: Write test for union operator
 	
-	Logger logger = Logger.getLogger(UnionOperatorImpl.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 6369200947259944800L;
+
+  private static final Logger logger = Logger.getLogger(UnionOperatorImpl.class.getName());
 
 	UnionOperator unionOp;
 	

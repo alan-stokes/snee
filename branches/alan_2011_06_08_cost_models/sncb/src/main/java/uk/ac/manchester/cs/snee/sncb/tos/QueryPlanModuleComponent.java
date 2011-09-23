@@ -35,7 +35,6 @@ package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -47,12 +46,10 @@ import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragment;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragmentTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EndManagementTask;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.FragmentTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ManagementTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RadioOffTask;
@@ -60,13 +57,17 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RadioOnTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 
 public class QueryPlanModuleComponent extends NesCComponent {
+
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 7910522500225164680L;
 
     SensorNetworkQueryPlan plan;
 
@@ -86,7 +87,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 
 	private boolean enablePrintf;
 
-	private boolean enableLeds;
+//	private boolean enableLeds;
 
 	private boolean useControllerComponent;
     
@@ -109,7 +110,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 
 		this.controlRadio =controlRadio;
 		this.enablePrintf = enablePrintf;
-		this.enableLeds = enableLeds;
+		//this.enableLeds = enableLeds;
 		this.useControllerComponent = useControllerComponent;
 		
 	    tosSiteAddress = "TOS_NODE_ID";
@@ -395,6 +396,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	out.close();
     }
 
+    
     /**
      * Performs Tossim synchronization by incrementing a global variable.  Note that
      * this doesn't need to be done for TinyOS2 because we can control the time
@@ -402,7 +404,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
      * @param sink
      * @param out
      * @param firstDelta
-     */
+     *//*
     private void doTossimSynchronization(
     		Integer sink, 
     		final PrintWriter out, 
@@ -423,7 +425,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		out.println("\t\treturn SUCCESS;\n");
 	
 		out.println("\t}\n"); //end of sync time fired
-    }
+    }*/
 
     private void doAgendaTimerFired(final PrintWriter out) {
     out.println("\tevent void AgendaTimer.fired()");
@@ -753,7 +755,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	if (fragTask.getOccurrence() == 1) {
 	    firedTimerTaskBuff.append("\ttask void " + taskName + "Task()\n");
 	    firedTimerTaskBuff.append("\t{\n");
-	    Fragment frag = fragTask.getFragment();
+	   // Fragment frag = fragTask.getFragment();
 	    firedTimerTaskBuff.append("\t\t\tcall "
 	    		+ CodeGenUtils.generateUserAsDoTaskName(fragTask
 			    .getFragment(), fragTask.getSiteID())
@@ -801,7 +803,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
     	if (fragTask.getOccurrence() == 1) {
     	    firedTimerTaskBuff.append("\ttask void " + taskName + "Task()\n");
     	    firedTimerTaskBuff.append("\t{\n");
-    	    InstanceFragment frag = fragTask.getFragment();
+    	  //  InstanceFragment frag = fragTask.getFragment();
     	    firedTimerTaskBuff.append("\t\t\tcall "
     	    		+ CodeGenUtils.generateUserAsDoTaskName(fragTask
     			    .getFragment(), fragTask.getSite())

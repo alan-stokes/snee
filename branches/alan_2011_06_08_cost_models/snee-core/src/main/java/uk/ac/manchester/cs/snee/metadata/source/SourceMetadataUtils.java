@@ -12,8 +12,7 @@ public class SourceMetadataUtils {
 	/**
 	 * Logger for this class.
 	 */
-	private static Logger logger = 
-		Logger.getLogger(SNEEProperties.class.getName());
+	private static final Logger logger = Logger.getLogger(SNEEProperties.class.getName());
 	
 	
 	private static int countTokens(StringTokenizer tokens)

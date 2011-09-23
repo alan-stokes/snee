@@ -62,7 +62,13 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
  */
 public class InstanceExchangePart extends InstanceOperator{
 
-    static Logger logger = Logger.getLogger(InstanceExchangePart.class.getName());
+   /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -1869780661146233636L;
+
+  @SuppressWarnings("unused")
+  private static final Logger logger = Logger.getLogger(InstanceExchangePart.class.getName());
 
     /**
      * The source fragment of the exchange.

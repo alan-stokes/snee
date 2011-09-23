@@ -33,23 +33,14 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 
-import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetIncrementalAggregationOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSingleStepAggregationOperator;
 import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
@@ -58,7 +49,12 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class AggrSingleStepComponent extends NesCComponent {
 
-	SensornetSingleStepAggregationOperator op;
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -6724058245177179201L;
+
+  SensornetSingleStepAggregationOperator op;
 
     SensorNetworkQueryPlan plan;
 
@@ -95,8 +91,8 @@ public class AggrSingleStepComponent extends NesCComponent {
 			replacements.put("__CHILD_TUPLE_PTR_TYPE__", CodeGenUtils
 				.generateOutputTuplePtrType((SensornetOperator)this.op.getInput(0)));
 		
-			SensornetOperator input = op.getLeftChild();
-			List <Attribute> inputAttributes = input.getAttributes();
+			//SensornetOperator input = op.getLeftChild();
+			//List <Attribute> inputAttributes = input.getAttributes();
 			List <Attribute> incrAggrAttributes = op.getIncrAggrAttributes();
 			List <Attribute> outputAttributes = op.getAttributes();
 			

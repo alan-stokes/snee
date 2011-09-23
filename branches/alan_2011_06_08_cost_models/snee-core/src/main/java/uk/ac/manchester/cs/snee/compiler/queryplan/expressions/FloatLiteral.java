@@ -45,7 +45,12 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
  */
 public class FloatLiteral implements Expression {
 
-	private boolean isConstant = true;
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 6882554183190436302L;
+
+  private boolean isConstant = true;
 	
 	/** Value of the constant. */
 	private float value;

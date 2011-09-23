@@ -1,17 +1,18 @@
 package uk.ac.manchester.cs.snee.sncb;
 
-import java.util.HashMap;
+import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
-import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 
 public class TinyOS_SNCB_TelosB extends TinyOS_SNCB implements SNCB {
 
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -5687714259713060991L;
   private double duration = 0;
+  private static final Logger logger = Logger.getLogger(TinyOS_SNCB_TelosB.class.getName());
   
 	public TinyOS_SNCB_TelosB(double duration) throws SNCBException {
 	  this.duration = duration;
@@ -100,8 +101,14 @@ public class TinyOS_SNCB_TelosB extends TinyOS_SNCB implements SNCB {
   public void waitForQueryEnd() throws InterruptedException
   {
     if(duration == Double.POSITIVE_INFINITY)
-      Thread.currentThread().sleep((long)duration); 
+    {
+      Thread.currentThread();
+      Thread.sleep((long)duration); 
+    }
     else
-      Thread.currentThread().sleep((long)duration * 1000); 
+    {
+      Thread.currentThread();
+      Thread.sleep((long)duration * 1000); 
+    }
   }
 }

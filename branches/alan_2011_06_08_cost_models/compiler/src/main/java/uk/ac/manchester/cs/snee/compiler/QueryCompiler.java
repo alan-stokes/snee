@@ -39,7 +39,6 @@ import java.io.StringReader;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
@@ -59,7 +58,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
-import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.rewriter.LogicalRewriter;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
@@ -83,8 +81,7 @@ public class QueryCompiler {
 	/**
 	 * Logger for this class.
 	 */
-	private Logger logger = 
-		Logger.getLogger(QueryCompiler.class.getName());
+	private static final Logger logger = Logger.getLogger(QueryCompiler.class.getName());
 
 	/**
 	 * The metadata being used. 

@@ -18,7 +18,7 @@ import uk.ac.manchester.cs.snee.operators.logical.ScanOperator;
 
 public class SourceAllocator {
 
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	private static final Logger logger = Logger.getLogger(SourceAllocator.class.getName());
 
 	public SourceAllocator () 
 	{

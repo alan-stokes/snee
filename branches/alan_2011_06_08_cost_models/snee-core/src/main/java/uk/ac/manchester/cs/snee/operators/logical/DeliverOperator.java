@@ -51,9 +51,14 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
  */
 public class DeliverOperator extends LogicalOperatorImpl {
 
-	/** Standard Java Logger. */
-	private Logger logger = 
-		Logger.getLogger(DeliverOperator.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -1185512809138087600L;
+  
+  /** Standard Java Logger. */
+	@SuppressWarnings("unused")
+  private static final Logger logger = Logger.getLogger(DeliverOperator.class.getName());
 
 	/**
 	 * Constructor that places a Deliver at the top of a tree.
@@ -61,16 +66,16 @@ public class DeliverOperator extends LogicalOperatorImpl {
 	 */
 	public DeliverOperator(LogicalOperator inputOperator, AttributeType boolType) {
 		super(boolType);
-
+		
+    if (inputOperator == null) 
+      throw new AssertionError("input operator can not be null.");
+    
 		this.setOperatorName("DELIVER");
 //		this.setNesCTemplateName("deliver");
 		this.setOperatorDataType(inputOperator.getOperatorDataType());
 		this.setParamStr("");
 
 		setChildren(new LogicalOperator[] {inputOperator});
-		if (inputOperator == null) {
-			throw new AssertionError("input operator can not be null.");
-		}
 	}  
 
 

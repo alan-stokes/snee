@@ -5,13 +5,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
-import java.util.List;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.graph.Node;
-import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class RTUtils extends PAFUtils {
@@ -19,7 +17,7 @@ public class RTUtils extends PAFUtils {
 	/**
 	 * Logger for this class.
 	 */
-	private Logger logger = Logger.getLogger(RTUtils.class.getName());
+	private static final Logger logger = Logger.getLogger(RTUtils.class.getName());
 	
 	/**
 	 * Routing tree to be displayed.

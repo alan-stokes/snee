@@ -33,17 +33,20 @@ package uk.ac.manchester.cs.snee.compiler.costmodels;
 *                                                                            *
 \****************************************************************************/
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
-
-public class HashMapList<K,V> {
+public class HashMapList<K,V> implements Serializable{
 
     
+    /**
+   * 6398551926792184048L
+   */
+  private static final long serialVersionUID = -6398551926792184048L;
     private HashMap<K, ArrayList<V>> mapping = 
       new HashMap<K, ArrayList<V>>();  
     

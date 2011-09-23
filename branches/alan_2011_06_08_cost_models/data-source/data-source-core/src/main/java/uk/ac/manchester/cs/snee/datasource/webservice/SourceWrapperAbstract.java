@@ -27,10 +27,10 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 
 import com.sun.rowset.WebRowSetImpl;
 
+@SuppressWarnings("restriction")
 public abstract class SourceWrapperAbstract implements SourceWrapper {
 
-	private static Logger logger = 
-		Logger.getLogger(SourceWrapperAbstract.class.getName());
+	private static final Logger logger = Logger.getLogger(SourceWrapperAbstract.class.getName());
 	
 	protected static final String DATASET_FORMAT = 
 		"http://java.sun.com/xml/ns/jdbc";
@@ -79,7 +79,7 @@ public abstract class SourceWrapperAbstract implements SourceWrapper {
 		return extents;
 	}
 
-	protected List<Tuple> processWRSDataset(String data)
+  protected List<Tuple> processWRSDataset(String data)
 	throws TypeMappingException, SchemaMetadataException,
 			SNEEDataSourceException, SNEEException {
 		if (logger.isTraceEnabled()) {
@@ -122,7 +122,7 @@ public abstract class SourceWrapperAbstract implements SourceWrapper {
 			//Loop through webrowset
 			while (wrs.next()) {
 				//Retrieve the next row from the webrowset
-				int rowNumber = wrs.getRow();
+			//	int rowNumber = wrs.getRow();
 				//Create tuple
 				Tuple tuple = new Tuple();
 				for (int i = 1; i <= numberColumns; i++) {

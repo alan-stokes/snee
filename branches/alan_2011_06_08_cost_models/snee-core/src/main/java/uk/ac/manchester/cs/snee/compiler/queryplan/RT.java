@@ -38,8 +38,6 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.graph.Edge;
-import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
@@ -54,10 +52,14 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 public class RT extends SNEEAlgebraicForm {
 
     /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -7555772489095973854L;
+
+    /**
      * Logger for this class.
      */
-    private Logger logger = Logger.getLogger(
-    		RT.class.getName());    
+    private static final Logger logger = Logger.getLogger(RT.class.getName());    
     
     /**
      * Counter to assign unique id to different candidates.

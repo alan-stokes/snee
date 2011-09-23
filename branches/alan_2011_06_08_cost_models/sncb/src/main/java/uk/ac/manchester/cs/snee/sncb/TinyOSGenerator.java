@@ -89,7 +89,6 @@ import uk.ac.manchester.cs.snee.sncb.tos.ExchangeProducerComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.FragmentComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.JoinComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.LedComponent;
-import uk.ac.manchester.cs.snee.sncb.tos.LocalTimeComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.MainComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.NesCComponent;
 import uk.ac.manchester.cs.snee.sncb.tos.NesCConfiguration;
@@ -121,7 +120,7 @@ import uk.ac.manchester.cs.snee.sncb.tos.WindowComponent;
  */
 public class TinyOSGenerator {
 
-    Logger logger = Logger.getLogger(TinyOSGenerator.class.getName());
+    private static final Logger logger = Logger.getLogger(TinyOSGenerator.class.getName());
 
 	/**
 	 * The directory where nesC interfaces, used as input to the generator,
@@ -184,7 +183,7 @@ public class TinyOSGenerator {
     // TinyOS2 Only
     private static String COMPONENT_AGENDA_TIMER;
 
-    private static String COMPONENT_LOCAL_TIME;
+    //private static String COMPONENT_LOCAL_TIME;
     
     private static String COMPONENT_RADIOTX;
 
@@ -302,7 +301,7 @@ public class TinyOSGenerator {
      */
     private void initConstants() {
 	    COMPONENT_AGENDA_TIMER = "AgendaTimer";
-	    COMPONENT_LOCAL_TIME = "LocalTimeMilliC";
+	    //COMPONENT_LOCAL_TIME = "LocalTimeMilliC";
 	    COMPONENT_MAIN = "MainC";
 	    COMPONENT_NODE_CONTROLLER = "CommandServerAppC";
 	    COMPONENT_QUERY_PLAN = "QueryPlanC";
@@ -357,8 +356,8 @@ public class TinyOSGenerator {
 		    assert (tupleSize > 0);
 
 		    if (tupleSize != op.getPhysicalTupleSize()) {
-				final OptimizationException e = new OptimizationException(
-					"Tuple size calculated by NesCGeneration != tuple size reported by operator");
+				//final OptimizationException e = new OptimizationException(
+				//	"Tuple size calculated by NesCGeneration != tuple size reported by operator");
 		    }
 		    CodeGenUtils.outputTypeSize.put(CodeGenUtils
 			    .generateOutputTupleType(op), new Integer(tupleSize));
@@ -861,6 +860,7 @@ public class TinyOSGenerator {
 		}
 	}
 
+	/*
 	private void wireFragToLocalTime(final Site currentSite, 
 	final NesCConfiguration config, final FragmentComponent fragComp, final SensornetOperator op)
 	throws CodeGenerationException {
@@ -871,7 +871,7 @@ public class TinyOSGenerator {
 
 			config.addWiring(fragComp.getID(), COMPONENT_LOCAL_TIME,
 					INTERFACE_LOCAL_TIME, TYPE_TMILLI, INTERFACE_LOCAL_TIME, INTERFACE_LOCAL_TIME);
-	}
+	}*/
 
 	private void addTXComponent(final NesCConfiguration config, final ExchangePart exchPart,
 			final Fragment sourceFrag, final Fragment destFrag,
@@ -1375,6 +1375,7 @@ public class TinyOSGenerator {
 		}
 	}
 
+	/*
 	private void addExternalLocalTimeWiring(final Site site, final Fragment frag,
 			final NesCConfiguration fragConfig) throws CodeGenerationException {
 		Iterator<SensornetOperator> opIter;
@@ -1390,7 +1391,7 @@ public class TinyOSGenerator {
 						INTERFACE_LOCAL_TIME, INTERFACE_LOCAL_TIME);		    	
 		    }
 		}
-	}
+	}*/
 		
     /**
      * Creates and writes the nesC files with the code for the tossim
@@ -1559,7 +1560,7 @@ public class TinyOSGenerator {
 		for (int i = 0; i < attributes.size(); i++) {
 		    String attrName = CodeGenUtils.getNescAttrName(attributes.get(i));
 
-			final AttributeType attrType = attributes.get(i).getType();
+			//final AttributeType attrType = attributes.get(i).getType();
 
 			//avoid duplicate evalTime attributes
 			if (attributes.get(i) instanceof EvalTimeAttribute) {

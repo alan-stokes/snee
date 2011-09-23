@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.common;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -7,8 +8,13 @@ import java.util.Iterator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
-public class Adaptation
+public class Adaptation implements Serializable
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 3094111092521934407L;
+  
   private ArrayList<String> reprogrammingSites;
   private ArrayList<String> redirectedionSites;
   private ArrayList<TemporalAdjustment> temporalSites;

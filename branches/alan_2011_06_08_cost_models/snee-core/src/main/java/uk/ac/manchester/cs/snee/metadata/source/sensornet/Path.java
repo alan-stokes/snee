@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.metadata.source.sensornet;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -43,9 +44,13 @@ import uk.ac.manchester.cs.snee.common.graph.Node;
  * 
  * @author galpini
  */
-public class Path {
+public class Path implements Serializable{
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -4094589353302683399L;
+  /**
 	 * List to represent the path of sites.
 	 */
 	private ArrayList<Site> path = new ArrayList<Site>();

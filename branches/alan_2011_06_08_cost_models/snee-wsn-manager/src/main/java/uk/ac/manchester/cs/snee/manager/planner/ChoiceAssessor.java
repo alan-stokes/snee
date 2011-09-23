@@ -2,12 +2,12 @@ package uk.ac.manchester.cs.snee.manager.planner;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostExpressions;
 import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostParameters;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
@@ -29,8 +29,13 @@ import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB_Controller;
 
-public class ChoiceAssessor
+public class ChoiceAssessor implements Serializable
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 4727493480043344592L;
+  
   private String sep = System.getProperty("file.separator");
   private File AssessmentFolder;
   private MetadataManager _metadataManager;

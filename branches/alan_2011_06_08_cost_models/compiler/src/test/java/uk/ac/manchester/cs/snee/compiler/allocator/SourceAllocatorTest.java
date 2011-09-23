@@ -4,7 +4,6 @@ import static org.easymock.EasyMock.expect;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Iterator;
-import java.util.List;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.easymock.classextension.EasyMockSupport;
@@ -45,7 +44,8 @@ public class SourceAllocatorTest extends EasyMockSupport {
 	private ScanOperator mockScanOperator;
 	private SourceMetadataAbstract mockSourceMetadata;
 
-	@Before
+	@SuppressWarnings("unchecked")
+  @Before
 	public void setUp() throws Exception {
 		mockLaf = createMock(LAF.class);
 		mockIterator = createMock(Iterator.class);

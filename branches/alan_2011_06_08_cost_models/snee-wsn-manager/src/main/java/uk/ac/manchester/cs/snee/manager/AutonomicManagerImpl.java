@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,8 +52,12 @@ import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 
-public class AutonomicManagerImpl implements AutonomicManager 
+public class AutonomicManagerImpl implements AutonomicManager, Serializable
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 4795008182764122006L;
   private final String sep = System.getProperty("file.separator");
   private Anaylsiser anyliser;
   private Monitor monitor;
@@ -169,7 +174,7 @@ public class AutonomicManagerImpl implements AutonomicManager
    * cleaning method
    * @param firstOutputFolder
    */
-  private void deleteFileContents(File firstOutputFolder)
+  public void deleteFileContents(File firstOutputFolder)
   {
     if(firstOutputFolder.exists())
     {
@@ -177,8 +182,11 @@ public class AutonomicManagerImpl implements AutonomicManager
       for(int index = 0; index < contents.length; index++)
       {
         File delete = contents[index];
-        if(delete != null && delete.listFiles().length > 0)
-          deleteFileContents(delete);
+        if(delete.isDirectory())
+          if(delete != null && delete.listFiles().length > 0)
+            deleteFileContents(delete);
+          else
+            delete.delete();
         else
           delete.delete();
       }
@@ -460,6 +468,11 @@ public class AutonomicManagerImpl implements AutonomicManager
   public QoSExpectations getQueryQoS()
   {
     return queryQoS;
+  }
+  
+  public int getActiveStrategies()
+  {
+    return anyliser.getOperatingStrategies();
   }
 
 }

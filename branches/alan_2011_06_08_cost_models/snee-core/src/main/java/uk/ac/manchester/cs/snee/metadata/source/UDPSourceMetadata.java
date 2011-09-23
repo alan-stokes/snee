@@ -50,8 +50,12 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
  */
 public class UDPSourceMetadata extends SourceMetadata {
 
-	Logger logger = 
-		Logger.getLogger(UDPSourceMetadata.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 4979087574645585979L;
+
+  private static final Logger logger = Logger.getLogger(UDPSourceMetadata.class.getName());
 	
 	/**
 	 * Host name of this UDP source

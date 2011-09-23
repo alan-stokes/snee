@@ -190,7 +190,8 @@ public class ResultStoreImplTest extends EasyMockSupport {
 
 	private void recordWindowStreamResultSet(int numResults)
 	throws SNEEException, SQLException {
-		List<Tuple> mockTupleList = createMock(List.class);
+		@SuppressWarnings("unchecked")
+    List<Tuple> mockTupleList = createMock(List.class);
 		expect(((Window) mockOutput).getTuples()).
 			andReturn(mockTupleList).times(numResults);
 	}

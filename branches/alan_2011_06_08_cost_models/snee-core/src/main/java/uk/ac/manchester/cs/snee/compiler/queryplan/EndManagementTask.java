@@ -38,6 +38,10 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class EndManagementTask extends Task {
 
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 5816929008243500591L;
     Site site;
 
     public EndManagementTask(final long start, final long end,

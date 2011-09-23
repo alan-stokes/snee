@@ -25,9 +25,13 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class AggregationOperatorImpl
 extends EvaluatorPhysicalOperator {
-	//TODO: Refactor to form specific implementations for each operator
-	Logger logger = 
-		Logger.getLogger(AggregationOperatorImpl.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -6928424627747332876L;
+
+  //TODO: Refactor to form specific implementations for each operator
+	private static final Logger logger = Logger.getLogger(AggregationOperatorImpl.class.getName());
 
 	AggregationOperator aggregation;
 
@@ -136,7 +140,7 @@ extends EvaluatorPhysicalOperator {
 		try {
 			List<Output> result = new ArrayList<Output>();
 			if (observed instanceof List<?>) {
-				for (Object ob : (List)observed) 
+				for (Object ob : (List<?>)observed) 
 					processOutput(ob, result);
 			} else if (observed instanceof Output) {
 				processOutput(observed, result);

@@ -1,25 +1,24 @@
 package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.BufferedInputStream;
-import java.util.HashMap;
 
-import avrora.Avrora;
-import avrora.Main;
+import org.apache.log4j.Logger;
 
 import net.tinyos.message.Message;
 
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 
 public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB 
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -8862168638276451033L;
   private Process avrora = null;
-  private double duration;
+  private static final Logger logger = Logger.getLogger(TinyOS_SNCB_Avrora.class.getName());
   
   public TinyOS_SNCB_Avrora(double duration)throws SNCBException 
   {
@@ -84,8 +83,8 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
         
         avroraThread.start();
         */
-        String nescOutputDir = System.getProperty("user.dir") + "/"
-        + queryOutputDir + targetDirName;
+      //  String nescOutputDir = System.getProperty("user.dir") + "/"
+       // + queryOutputDir + targetDirName;
         
         Runtime rt = Runtime.getRuntime();
         avrora = rt.exec("java avrora.Main " + avroraCommand);
@@ -104,7 +103,10 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
           if(outputString.contains(test))
             found = true;
           else
-            Thread.currentThread().sleep(5000);
+          {
+            Thread.currentThread();
+            Thread.sleep(5000);
+          }
         }
         System.out.println("avrora ready");
         avroraReader.close();
@@ -180,7 +182,7 @@ public class TinyOS_SNCB_Avrora extends TinyOS_SNCB implements SNCB
     // System.getProperty("user.dir")+"/src/mai)");
     MemoryClassLoader mcl = new MemoryClassLoader("DeliverMessage",
         deliverMessageJavaClassContent, parentClassLoader);
-    Class msgClass = mcl.loadClass("DeliverMessage");
+    Class<?> msgClass = mcl.loadClass("DeliverMessage");
     // Class msgClass = Class.forName("DeliverMessage", true, mcl);
     Object msgObj = msgClass.newInstance();
     // Message msg = new DeliverMessage(); // needed for web service, for

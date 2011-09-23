@@ -40,9 +40,10 @@ public class EvaluationOperatorTest extends EasyMockSupport {
 	final Expression mockExpression = createMock(Expression.class);
 	final Tuple mockTuple = createMock(Tuple.class);
 	final LogicalOperator mockOp = createMock(LogicalOperator.class);
-	final Iterator mockIt = createMock(Iterator.class);
+	final Iterator<?> mockIt = createMock(Iterator.class);
 	final EvaluatorPhysicalOperator mockPhyOp = createMock(EvaluatorPhysicalOperator.class);
-	final List<Attribute> mockQPAttributesList = createMock(List.class);
+	@SuppressWarnings("unchecked")
+  final List<Attribute> mockQPAttributesList = createMock(List.class);
 	final Attribute mockAttr = createMock(Attribute.class);
 	final EvaluatorAttribute mockField = createMock(EvaluatorAttribute.class);
 
@@ -168,7 +169,12 @@ public class EvaluationOperatorTest extends EasyMockSupport {
 	private EvaluationOperator instantiateEvalOp() {
 		EvaluationOperator op = new EvaluationOperator(mockPhyOp) {
 			
-			@Override
+			/**
+       * 
+       */
+      private static final long serialVersionUID = 1702536419660978604L;
+
+      @Override
 			public void update(Observable obj, Object observed) {
 				// TODO Auto-generated method stub
 				

@@ -13,8 +13,7 @@ public class SNEEProperties {
 	/**
 	 * Logger for this class.
 	 */
-	private static Logger logger = 
-		Logger.getLogger(SNEEProperties.class.getName());
+	private static final Logger logger = Logger.getLogger(SNEEProperties.class.getName());
 	
 	private static Properties _props;	
 

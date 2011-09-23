@@ -396,7 +396,8 @@ public class MetadataManagerTest extends EasyMockSupport {
 		//Test
 		replayAll();
 		MetadataManager schema = new MetadataManager(null) {
-			protected PullSourceWrapper createPullSource(String url)
+			@SuppressWarnings("unused")
+      protected PullSourceWrapper createPullSource(String url)
 			throws MalformedURLException {
 				return mockSourceWrapper;
 			}

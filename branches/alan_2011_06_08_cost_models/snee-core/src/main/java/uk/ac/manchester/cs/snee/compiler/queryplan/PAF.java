@@ -1,23 +1,14 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.common.graph.Graph;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
-import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
 /**
@@ -26,9 +17,14 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 public class PAF extends SNEEAlgebraicForm {
 
     /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 3344432876760718777L;
+
+    /**
      * Logger for this class.
      */
-    private static  Logger logger = Logger.getLogger(PAF.class.getName());
+    private final static  Logger logger = Logger.getLogger(PAF.class.getName());
 	
 	/**
 	 * The logical-algebraic form of the query plan operator tree from which

@@ -43,13 +43,18 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 
-public class Site extends NodeImplementation implements Comparable{
+public class Site extends NodeImplementation implements Comparable<Site> {
+
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 8849227930355143144L;
 
     /**
      * Logger for this class.
      */
-	private static Logger logger = 
-		Logger.getLogger(Site.class.getName());
+	@SuppressWarnings("unused")
+  private static final Logger logger = Logger.getLogger(Site.class.getName());
 	
     /**
      * The RAM available on a node, in bytes
@@ -318,9 +323,8 @@ public class Site extends NodeImplementation implements Comparable{
     }
     
     @Override
-    public int compareTo(Object arg0)
+    public int compareTo(Site other)
     {
-      Site other = (Site) arg0;
       if(this.id.equals(other.id))
         return 0;
       else

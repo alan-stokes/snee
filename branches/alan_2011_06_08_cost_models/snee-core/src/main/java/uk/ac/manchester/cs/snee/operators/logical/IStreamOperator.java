@@ -70,6 +70,11 @@ implements LogicalOperator {
 //	}  
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 1614914143101883123L;
+
+  /**
 	 * Constructor.
 	 * @param inputOperator previous Operator.
 	 */

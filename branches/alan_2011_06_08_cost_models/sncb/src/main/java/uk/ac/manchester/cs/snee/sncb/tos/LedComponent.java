@@ -38,6 +38,11 @@ import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public class LedComponent extends NesCComponent {
 
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 7420894424467063617L;
+
     public LedComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {
     	super(config, tossimFlag);

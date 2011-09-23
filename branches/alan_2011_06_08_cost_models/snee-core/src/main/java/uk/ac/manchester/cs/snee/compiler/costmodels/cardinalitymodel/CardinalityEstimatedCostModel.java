@@ -2,29 +2,15 @@ package uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetRStreamOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSelectOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
 import uk.ac.manchester.cs.snee.compiler.costmodels.CostModel;
 import uk.ac.manchester.cs.snee.compiler.costmodels.CostModelDataStructure;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
-import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 

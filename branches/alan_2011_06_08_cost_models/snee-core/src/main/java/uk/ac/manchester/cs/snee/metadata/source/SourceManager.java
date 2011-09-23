@@ -40,8 +40,7 @@ import uk.ac.manchester.cs.snee.sncb.SensorType;
 
 public class SourceManager {
 
-	private Logger logger = 
-		Logger.getLogger(this.getClass().getName());
+	private static final Logger logger = Logger.getLogger(SourceManager.class.getName());
 
 	/**
 	 * Metadata about the sources

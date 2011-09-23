@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 
+import org.apache.log4j.Logger;
+
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.evaluator.types.Output;
@@ -15,7 +17,12 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class TupleWindowOperatorImpl extends WindowOperatorImpl {
 	
-	private int windowSize;
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 1191917460879844306L;
+  private static final Logger logger = Logger.getLogger(TupleWindowOperatorImpl.class.getName());
+  private int windowSize;
 	private Tuple[] buffer;
 	private int nextIndex = 0;
 
@@ -47,7 +54,8 @@ public class TupleWindowOperatorImpl extends WindowOperatorImpl {
 		return false;
 	}
 
-	@Override
+	@SuppressWarnings("unchecked")
+  @Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER update() for query " + m_qid + " " +

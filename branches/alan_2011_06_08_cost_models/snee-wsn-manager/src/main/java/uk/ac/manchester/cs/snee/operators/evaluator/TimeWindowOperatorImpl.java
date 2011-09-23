@@ -21,7 +21,12 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2969159149363573730L;
+
+  private static final Logger logger = Logger.getLogger(TimeWindowOperatorImpl.class.getName());
 
 	private long lastWindowEvalTime;
 
@@ -143,7 +148,7 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 		 * current timestamp and the units of the window slide.
 		 *  
 		 * @param currentTimeMillis
-		 * @return
+		 * @returnobserved
 		 */
 		private long calculateFirstWindowEvalTime(long currentTimeMillis) {
 			if (logger.isTraceEnabled()) {
@@ -175,7 +180,8 @@ public class TimeWindowOperatorImpl extends WindowOperatorImpl {
 		return true;
 	}
 
-	@Override
+	@SuppressWarnings("unchecked")
+  @Override
 	public void update(Observable obj, Object observed) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER update() for query " + m_qid + " " +

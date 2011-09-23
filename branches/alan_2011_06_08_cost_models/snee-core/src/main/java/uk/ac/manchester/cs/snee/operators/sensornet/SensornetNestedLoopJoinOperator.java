@@ -1,14 +1,11 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
-import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.Constants;
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
@@ -21,7 +18,12 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class SensornetNestedLoopJoinOperator extends SensornetOperatorImpl {
 	
-	Logger logger = Logger.getLogger(SensornetNestedLoopJoinOperator.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 2869816332870339845L;
+
+  private static final Logger logger = Logger.getLogger(SensornetNestedLoopJoinOperator.class.getName());
 	
 	JoinOperator joinOp;
 	

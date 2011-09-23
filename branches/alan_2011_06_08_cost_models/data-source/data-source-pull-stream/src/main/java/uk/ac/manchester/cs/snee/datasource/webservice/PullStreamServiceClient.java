@@ -30,8 +30,7 @@ import eu.semsorgrid4env.service.wsdai.ServiceBusyFault;
 
 public class PullStreamServiceClient {
 
-	private static Logger logger = 
-		Logger.getLogger(PullStreamServiceClient.class.getName());
+	private static final Logger logger = Logger.getLogger(PullStreamServiceClient.class.getName());
 
 	private static final QName SERVICE_NAME = 
 		new QName("http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Pull", 

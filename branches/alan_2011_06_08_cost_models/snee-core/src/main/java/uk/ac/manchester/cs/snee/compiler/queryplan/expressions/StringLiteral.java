@@ -45,7 +45,12 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
  */
 public class StringLiteral implements Expression {
 
-	private boolean isConstant = true;
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -5856537282108372015L;
+
+  private boolean isConstant = true;
 	
 	/** Value of the constant. */
 	private String value;

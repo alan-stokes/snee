@@ -74,7 +74,7 @@ import org.xml.sax.SAXException;
 
 public class Utils {
 
-	static Logger logger = Logger.getLogger(Utils.class.getName());
+	private static final Logger logger = Logger.getLogger(Utils.class.getName());
 
 	/**
 	 * Given a relative or absolute filename, ensures file exists.
@@ -440,7 +440,7 @@ public class Utils {
 	    
 		  int array[] = new int[hs.size()];  
 		    
-		  Iterator itr = hs.iterator();  
+		  Iterator<Integer> itr = hs.iterator();  
 		  
 		  int i=0;  
 		  

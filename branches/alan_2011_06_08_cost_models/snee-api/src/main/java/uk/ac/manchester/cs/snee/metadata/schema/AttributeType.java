@@ -34,13 +34,19 @@
 package uk.ac.manchester.cs.snee.metadata.schema;
 
 
+import java.io.Serializable;
+
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 
-public class AttributeType { 
+public class AttributeType implements Serializable{ 
 
-	private static Logger logger = 
-		Logger.getLogger(AttributeType.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 4112341212135323045L;
+
+  private static final Logger logger = Logger.getLogger(AttributeType.class.getName());
 
 	/**
 	 * Name of the type as found in the schema document.

@@ -9,8 +9,7 @@ import org.apache.log4j.Logger;
 
 public class CircularArray<E> implements Iterable<E> {
 
-	private Logger logger = 
-		Logger.getLogger(this.getClass().getName());
+	private static final Logger logger = Logger.getLogger(CircularArray.class.getName());
 	
 	private E[] array;
 	private int firstIndex;

@@ -18,9 +18,6 @@ public class AlphaBetaTerm {
   private double alphaExponent; 
   /** Exponent of Beta. */
   private double betaExponent;
-  
-  /** Format for showing decimal numbers */
-    private final DecimalFormat df = new DecimalFormat("0.000000");
 
   /** Constant only constructor.
    * @param theNumerator The constant part of term.

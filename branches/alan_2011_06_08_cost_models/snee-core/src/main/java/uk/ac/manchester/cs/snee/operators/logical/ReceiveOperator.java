@@ -49,10 +49,14 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 public class ReceiveOperator extends InputOperator {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -750013070112605241L;
+
+  /**
 	 *  Logger for this class.
 	 */
-	private Logger logger = 
-		Logger.getLogger(ReceiveOperator.class.getName());
+	private static final Logger logger = Logger.getLogger(ReceiveOperator.class.getName());
 	
 	private double rate;
 	

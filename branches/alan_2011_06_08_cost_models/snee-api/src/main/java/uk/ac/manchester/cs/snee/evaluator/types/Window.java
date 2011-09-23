@@ -43,7 +43,8 @@ import org.apache.log4j.Logger;
 
 public class Window implements Output {
 
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	@SuppressWarnings("unused")
+  private static final Logger logger = Logger.getLogger(Window.class.getName());
 
 	private int _index = -1;
 	private long _evalTime;

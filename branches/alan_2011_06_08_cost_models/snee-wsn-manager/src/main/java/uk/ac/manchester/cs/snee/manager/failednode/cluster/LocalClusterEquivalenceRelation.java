@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.failednode.cluster;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,8 +21,13 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
  *
  */
 
-public class LocalClusterEquivalenceRelation
+public class LocalClusterEquivalenceRelation implements Serializable
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 6395221901543118715L;
+
   /**
    * compares two nodes, by checking memory capacity, if the second node is not in the QEP, 
    * the first must be in the QEP, and all connections must be the same.

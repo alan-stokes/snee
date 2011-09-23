@@ -49,6 +49,11 @@ public class RStreamOperator extends LogicalOperatorImpl
 implements LogicalOperator {
 
     /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 5735859402314284293L;
+
+    /**
      * Constructor.
      * @param inputOperator Previous Operator.
      */

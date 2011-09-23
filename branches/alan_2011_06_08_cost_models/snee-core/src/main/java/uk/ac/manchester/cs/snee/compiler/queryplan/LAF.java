@@ -44,9 +44,14 @@ import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 public class LAF extends SNEEAlgebraicForm {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -6414079854409999778L;
+
+  /**
 	 * Logger for this class.
 	 */
-	private Logger logger = Logger.getLogger(LAF.class.getName());
+	private final static Logger logger = Logger.getLogger(LAF.class.getName());
 
 	/**
 	 * Counter used to assign unique id to different candidates.

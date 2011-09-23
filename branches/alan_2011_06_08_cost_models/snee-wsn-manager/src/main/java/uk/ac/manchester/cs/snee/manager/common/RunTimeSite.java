@@ -1,9 +1,16 @@
 package uk.ac.manchester.cs.snee.manager.common;
 
+import java.io.Serializable;
+
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
-public class RunTimeSite
+public class RunTimeSite implements Serializable
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 2685187341478842025L;
+  
   private Double currentEnergy = new Double(0); //J
   private Double currentAdaptationEnergyCost = new Double (0); //J
   private Double qepExecutionCost = new Double(0);;  //J

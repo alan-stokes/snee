@@ -33,12 +33,18 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
+import java.io.Serializable;
+
 import uk.ac.manchester.cs.snee.common.Triple;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
-public class RoutingTableEntry {
+public class RoutingTableEntry implements Serializable{
 
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2914016519194307853L;
     Triple<Site, Fragment, Path> entry;
 
     public RoutingTableEntry(final Site node, final Fragment frag,

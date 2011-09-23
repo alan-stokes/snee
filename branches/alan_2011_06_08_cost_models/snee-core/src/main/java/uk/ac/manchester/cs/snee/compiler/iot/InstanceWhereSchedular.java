@@ -11,13 +11,11 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
-import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
@@ -28,11 +26,9 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperatorImpl;
 
@@ -58,13 +54,12 @@ public class InstanceWhereSchedular
     IOT();
   }
   
-  @SuppressWarnings("static-access")
   public InstanceWhereSchedular(PAF paf, RT rt, CostParameters costParams,
       String outputFolder) throws SNEEException, SchemaMetadataException, OptimizationException, SNEEConfigurationException
   {
     this.paf = paf;
     this.routingTree = rt;
-    this.costs = costs;
+    this.costs = costParams;
     fileDirectory = outputFolder + fileSeparator + "costModelImages";
     InstanceFragment.resetFragmentCounter();
     IOT();
@@ -259,12 +254,6 @@ public class InstanceWhereSchedular
       }
     }
     return InstanceOperatorIterator;
-  }
-  
-  private int findPreviousFrag(InstanceFragment currentFragment)
-  {
-    // TODO Auto-generated method stub
-    return 0;
   }
 
   private void checkRoot(InstanceFragment currentFragment, InstanceOperator instance )
@@ -831,13 +820,12 @@ private void addOtherOpTypeInstances(SensornetOperator op,
   private void removeRedundantOpInstances() 
   throws OptimizationException, SchemaMetadataException
   {
-    boolean changed = true;
     //move duplicate aggerates upwards
-    boolean firstPhase = moveAggeratesInitsUpwards();
+    moveAggeratesInitsUpwards();
     new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "movedInitsUpwards.dot", "", true);
-    boolean secondPhase = removeRedundantAggrIterOpInstances();
-    boolean thirdPhase = removeRedundantSiblingOpInstances();  
-    boolean forthPhase = removeRedundantAggrIterOpAfterInitMergeInstances();
+    removeRedundantAggrIterOpInstances();
+    removeRedundantSiblingOpInstances();  
+    removeRedundantAggrIterOpAfterInitMergeInstances();
   }
    
   private boolean removeRedundantAggrIterOpAfterInitMergeInstances() 

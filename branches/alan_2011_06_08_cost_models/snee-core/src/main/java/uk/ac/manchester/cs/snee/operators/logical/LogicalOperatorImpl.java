@@ -57,10 +57,14 @@ public abstract class LogicalOperatorImpl extends NodeImplementation
 implements LogicalOperator {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -765877135458742382L;
+
+  /**
 	 * See java.util.logging.Logger.
 	 */
-	private Logger logger = 
-		Logger.getLogger(LogicalOperatorImpl.class.getName());
+	private static final Logger logger = Logger.getLogger(LogicalOperatorImpl.class.getName());
 
 	/**
 	 * The name of the operator, e.g., ACQUIRE, JOIN.

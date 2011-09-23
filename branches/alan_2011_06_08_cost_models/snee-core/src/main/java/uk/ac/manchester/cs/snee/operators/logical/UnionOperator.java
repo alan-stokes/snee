@@ -47,8 +47,12 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 public class UnionOperator extends LogicalOperatorImpl 
 implements LogicalOperator {
 
-	private Logger logger = 
-		Logger.getLogger(UnionOperator.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -680942638289234166L;
+  @SuppressWarnings("unused")
+  private static final Logger logger = Logger.getLogger(UnionOperator.class.getName());
 
 	public UnionOperator(LogicalOperator left, LogicalOperator right, AttributeType boolType) {
 		super(boolType);

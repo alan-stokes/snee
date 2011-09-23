@@ -193,7 +193,9 @@ public class SNEEControllerTest extends EasyMockSupport {
 		_snee.resetQueryId();
 		expect(mockQueryCompiler.compileQuery(1, mQuery, null)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
+		mockDispatcher.initiliseAutonomicManager(1, mockResultset, mockPlan);
 		mockDispatcher.giveAutonomicManagerQuery(mQuery);
+		mockDispatcher.giveAutonomicManagerQueryParams(null);
 		expect(mockDispatcher.stopQuery(1)).andReturn(true);
 
 		//Test
@@ -215,10 +217,14 @@ public class SNEEControllerTest extends EasyMockSupport {
 		_snee.resetQueryId();
 		expect(mockQueryCompiler.compileQuery(1, mQuery, null)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
-		mockDispatcher.giveAutonomicManagerQuery(mQuery);
+		mockDispatcher.initiliseAutonomicManager(1, mockResultset, mockPlan);
+    mockDispatcher.giveAutonomicManagerQuery(mQuery);
+    mockDispatcher.giveAutonomicManagerQueryParams(null);
 		expect(mockQueryCompiler.compileQuery(2, mQuery, null)).andReturn(mockPlan);
 		mockDispatcher.startQuery(2, mockResultset, mockPlan);
-		mockDispatcher.giveAutonomicManagerQuery(mQuery);
+		mockDispatcher.initiliseAutonomicManager(2, mockResultset, mockPlan);
+    mockDispatcher.giveAutonomicManagerQuery(mQuery);
+    mockDispatcher.giveAutonomicManagerQueryParams(null);
 		mockDispatcher.close();
 
 		//Test
@@ -259,7 +265,9 @@ public class SNEEControllerTest extends EasyMockSupport {
 		_snee.resetQueryId();
 		expect(mockQueryCompiler.compileQuery(1, mQuery, null)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
+		mockDispatcher.initiliseAutonomicManager(1, mockResultset, mockPlan);
 		mockDispatcher.giveAutonomicManagerQuery(mQuery);
+		mockDispatcher.giveAutonomicManagerQueryParams(null);
 		
 		//Test
 		replayAll();		

@@ -17,6 +17,10 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
 public class InstanceOperator extends NodeImplementation implements Node
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -4582709096587603421L;
   private SensornetOperator sensornetOperator;
   private Site site = null;
   private Site getDeepestConfluenceSite;

@@ -34,6 +34,8 @@
 package uk.ac.manchester.cs.snee.metadata;
 
 
+import java.io.Serializable;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -44,10 +46,14 @@ import org.w3c.dom.NodeList;
 
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 
-public class CostParameters{
+public class CostParameters implements Serializable {
 
-    private final Logger logger = Logger.getLogger(CostParameters.class
-	    .getName());
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 3941354199366208108L;
+
+    private final static Logger logger = Logger.getLogger(CostParameters.class.getName());
 
     private float copyTuple;
 

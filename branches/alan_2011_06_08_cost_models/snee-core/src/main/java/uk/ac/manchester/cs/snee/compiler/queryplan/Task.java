@@ -33,6 +33,8 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
+import java.io.Serializable;
+
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -46,7 +48,12 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
  *
  */
 
-public abstract class Task {
+public abstract class Task implements Serializable {
+
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 7071433327221957798L;
 
     /**
      * 	The start time of this task.

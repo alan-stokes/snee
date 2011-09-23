@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.manager.common;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -42,8 +43,13 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderExceptio
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
-public abstract class StrategyAbstract
+public abstract class StrategyAbstract implements Serializable
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2749736705430307089L;
+  
   protected SensorNetworkQueryPlan qep;
   protected AutonomicManager manager;
   protected SourceMetadataAbstract _metadata;

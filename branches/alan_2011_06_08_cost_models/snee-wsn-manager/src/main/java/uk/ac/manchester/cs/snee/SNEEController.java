@@ -82,8 +82,7 @@ import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB_Controller;
  */
 public class SNEEController implements SNEE {
 //FIXME: This should really be in the core module with interfaces used for the various snee modules
-	private static Logger logger = 
-		Logger.getLogger(SNEEController.class.getName());
+	private static final Logger logger = Logger.getLogger(SNEEController.class.getName());
 	
 	/**
 	 * Sensor Network Connectivity Bridge.  For now, assume that there 

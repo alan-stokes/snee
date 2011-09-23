@@ -1,28 +1,27 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
-import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
-import uk.ac.manchester.cs.snee.operators.logical.IStreamOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
 
 public class SensornetRStreamOperator extends SensornetOperatorImpl {
 	
-	Logger logger = Logger.getLogger(SensornetRStreamOperator.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -8030389911422834436L;
+
+  private static final Logger logger = Logger.getLogger(SensornetRStreamOperator.class.getName());
 	
 	RStreamOperator rStrOp;
 	

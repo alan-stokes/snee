@@ -3,22 +3,16 @@ package uk.ac.manchester.snee.client;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 import org.apache.log4j.PropertyConfigurator;
 
@@ -42,8 +36,9 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
 	private static ArrayList<Integer> siteIDs = new ArrayList<Integer>();
 	private static RT routingTree;
 	
-	protected static Logger resultsLogger;
-	private String sneeProperties;
+	@SuppressWarnings("unused")
+  private static final Logger resultsLogger = Logger.getLogger(SNEECostModelClientUsingInNetworkSource.class.getName());
+	//private String sneeProperties;
 	private static int testNo = 1;
 	private static int recoveredTestValue = 0;
 	private static boolean inRecoveryMode = false;
@@ -59,7 +54,7 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
 		
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEECostModelClientUsingInNetworkSource()");		
-		this.sneeProperties = sneeProperties;
+		//this.sneeProperties = sneeProperties;
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN SNEECostModelClientUsingInNetworkSource()");
 	}
@@ -270,7 +265,8 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
     }
     
     while (System.currentTimeMillis() < endTime) {
-      Thread.currentThread().yield();
+      Thread.currentThread();
+      Thread.yield();
     }
     
   //  List<ResultSet> results1 = resultStore.getResults();
@@ -388,10 +384,9 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
       inRecoveryMode = true;
       if(queryid == 0 && recoveredTestValue == 0)
       {
-        boolean result;
         deleteAllFilesInResultsFolder(folder);
-        result = resultsFile.createNewFile();
-        result = recoveryFile.createNewFile();
+        resultsFile.createNewFile();
+        recoveryFile.createNewFile();
         inRecoveryMode = false;
       }
     }

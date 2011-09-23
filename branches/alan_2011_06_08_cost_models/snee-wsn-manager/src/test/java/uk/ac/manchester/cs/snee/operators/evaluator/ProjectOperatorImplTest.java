@@ -46,7 +46,8 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 	final Tuple mockTuple = createMock(Tuple.class);
 	final ProjectOperator mockProjOp = 
 		createMock(ProjectOperator.class);
-	final List<Attribute> mockQPAttributesList = 
+	@SuppressWarnings("unchecked")
+  final List<Attribute> mockQPAttributesList = 
 		createMock(List.class);
 	final Attribute mockAttr = createMock(Attribute.class);
 	final EvaluatorAttribute mockField = 
@@ -189,7 +190,8 @@ public class ProjectOperatorImplTest extends EasyMockSupport {
 		 */
 		DataAttribute mockDA = createMock(DataAttribute.class);
 		IntLiteral mockInt = createMock(IntLiteral.class);
-		List<String> mockAttrNames = createMock(List.class);
+		@SuppressWarnings({ "unchecked", "unused" })
+    List<String> mockAttrNames = createMock(List.class);
 		AttributeType mockAttrType = createMock(AttributeType.class);
 		
 		// Record behaviour

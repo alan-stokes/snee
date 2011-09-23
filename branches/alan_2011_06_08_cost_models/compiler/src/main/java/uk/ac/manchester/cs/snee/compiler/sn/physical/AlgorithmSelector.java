@@ -8,7 +8,6 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
-import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
@@ -29,8 +28,7 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
 
 public class AlgorithmSelector {
 
-	private Logger logger = 
-		Logger.getLogger(AlgorithmSelector.class.getName());
+	private static final Logger logger = Logger.getLogger(AlgorithmSelector.class.getName());
 	
 	public PAF doPhysicalOptimizaton(DLAF dlaf, QoSExpectations qos, 
 	CostParameters costParams, String queryName) 

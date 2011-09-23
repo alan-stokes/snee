@@ -1,7 +1,6 @@
 package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -10,27 +9,26 @@ import net.tinyos.message.Message;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
-import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
-import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 
 public abstract class TinyOS_SNCB implements SNCB {
 
-	protected Logger logger = Logger.getLogger(TinyOS_SNCB.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2804422465220527355L;
+
+  private static final Logger logger = Logger.getLogger(TinyOS_SNCB.class.getName());
 
 	protected Map<String, String> tinyOSEnvVars;
 
@@ -49,6 +47,8 @@ public abstract class TinyOS_SNCB implements SNCB {
 	protected String targetDirName; 
 
 	private boolean controlRadio = true;
+	
+  protected double duration;
 
 	// Is the network running?
 	protected static boolean isStarted = false;
@@ -306,7 +306,7 @@ public abstract class TinyOS_SNCB implements SNCB {
 		// System.getProperty("user.dir")+"/src/mai)");
 		MemoryClassLoader mcl = new MemoryClassLoader("DeliverMessage",
 				deliverMessageJavaClassContent, parentClassLoader);
-		Class msgClass = mcl.loadClass("DeliverMessage");
+		Class<?> msgClass = mcl.loadClass("DeliverMessage");
 		// Class msgClass = Class.forName("DeliverMessage", true, mcl);
 		Object msgObj = msgClass.newInstance();
 		// Message msg = new DeliverMessage(); // needed for web service, for
@@ -466,6 +466,7 @@ public abstract class TinyOS_SNCB implements SNCB {
 			logger.debug("RETURN deregister()");
 	}
 
+	/*
 	private void pause() throws SNCBException {
 		if (!isStarted) return;
 		
@@ -514,7 +515,7 @@ public abstract class TinyOS_SNCB implements SNCB {
 		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN resume()");
-	}
+	}*/
 	
 	protected void setup()
 	{

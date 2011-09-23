@@ -31,8 +31,7 @@ public class WhereScheduler {
 	/**
 	 * Logger for this class.
 	 */
-	private Logger logger = 
-		Logger.getLogger(WhereScheduler.class.getName());
+	private static final Logger logger = Logger.getLogger(WhereScheduler.class.getName());
 
 	private boolean removeRedundantExchanges;
 	

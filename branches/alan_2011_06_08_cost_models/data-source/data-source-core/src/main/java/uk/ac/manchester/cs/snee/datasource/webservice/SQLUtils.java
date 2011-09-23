@@ -9,8 +9,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.Types;
 
 public class SQLUtils {
 
-	private Logger logger = 
-		Logger.getLogger(SQLUtils.class.getName());
+	private static final Logger logger = Logger.getLogger(SQLUtils.class.getName());
 	
 	private Types _types;
 	

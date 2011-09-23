@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
@@ -9,7 +10,7 @@ import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 
-public interface SNCB {
+public interface SNCB extends Serializable{
 
 	public void init(String topFile, String resFile) 
 	throws SNCBException;

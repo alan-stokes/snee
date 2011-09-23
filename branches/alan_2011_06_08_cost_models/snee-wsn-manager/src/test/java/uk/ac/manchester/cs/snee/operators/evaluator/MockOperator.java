@@ -15,7 +15,7 @@ import uk.ac.manchester.cs.snee.operators.logical.OperatorDataType;
 
 public class MockOperator implements LogicalOperator {
 		
-		private String mOperatorName = "MOCKOPERATOR";
+		//private String mOperatorName = "MOCKOPERATOR";
 
 		public MockOperator() {
 			System.out.println("ENTER MockOperator");

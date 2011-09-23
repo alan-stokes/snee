@@ -18,9 +18,11 @@ import uk.ac.manchester.cs.snee.operators.evaluator.WindowOperatorImpl;
 
 public class WindowOperatorImplTest {
 	
-	Logger logger = Logger.getLogger(DeliverOperatorImpl.class.getName());
+	@SuppressWarnings("unused")
+  private static final Logger logger = Logger.getLogger(DeliverOperatorImpl.class.getName());
 
-	private WindowOperatorImpl tupleWindowOp;
+	@SuppressWarnings("unused")
+  private WindowOperatorImpl tupleWindowOp;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {

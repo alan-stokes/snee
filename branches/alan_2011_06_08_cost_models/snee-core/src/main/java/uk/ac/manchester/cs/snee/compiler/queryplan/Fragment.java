@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -43,19 +44,22 @@ import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
-import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
  
-public class Fragment {
+public class Fragment implements Serializable{
+
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 1394981526483248010L;
 
     /**
      * Logger for this class.
      */
-    static Logger logger = Logger.getLogger(Fragment.class.getName());
+    private static final Logger logger = Logger.getLogger(Fragment.class.getName());
 
     /**
      * Counter to assign unique id to different fragments.
@@ -214,7 +218,7 @@ public class Fragment {
     	return this.getRootOperator().getSourceSites();
     }
 
-    public final boolean containsOperatorType(final Class c) {
+    public final boolean containsOperatorType(final Class<?> c) {
 		final Iterator<SensornetOperator> i = this.operators.iterator();
 		while (i.hasNext()) {
 		    final SensornetOperator op = i.next();

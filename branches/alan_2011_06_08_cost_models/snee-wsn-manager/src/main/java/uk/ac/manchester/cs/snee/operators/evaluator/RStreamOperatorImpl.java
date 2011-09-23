@@ -54,7 +54,12 @@ import uk.ac.manchester.cs.snee.operators.logical.RStreamOperator;
 public class RStreamOperatorImpl extends EvaluatorPhysicalOperator {
 	//XXX: Write test for rstream operator
 	
-	Logger logger = Logger.getLogger(RStreamOperatorImpl.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -3384242257088656193L;
+
+  private static final Logger logger = Logger.getLogger(RStreamOperatorImpl.class.getName());
 
 	RStreamOperator rstreamOp;
 
@@ -118,7 +123,7 @@ public class RStreamOperatorImpl extends EvaluatorPhysicalOperator {
 					" with " + observed);
 		List<Output> result = new ArrayList<Output>();
 		if (observed instanceof List<?>) {
-			for (Object ob : (List) observed) 
+			for (Object ob : (List<?>) observed) 
 				processOutput(ob, result);
 		} else if (observed instanceof Window) {
 			processOutput(observed, result);

@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 
 import org.apache.log4j.Logger;
@@ -54,7 +53,11 @@ import uk.ac.manchester.cs.snee.common.graph.Node;
  */
 public class Topology extends Graph {
 
-    private Logger logger = Logger.getLogger(Topology.class.getName());
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2381466773289438786L;
+    private static final Logger logger = Logger.getLogger(Topology.class.getName());
 
     /** 	
      * Constructor.

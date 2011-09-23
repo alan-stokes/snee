@@ -49,8 +49,11 @@ import uk.ac.manchester.cs.snee.types.Duration;
 
 public class ScanOperator extends InputOperator {
 
-	private Logger logger = 
-		Logger.getLogger(ScanOperator.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 8372877412118498967L;
+  private static final Logger logger = Logger.getLogger(ScanOperator.class.getName());
 	private Duration rescanInterval;
 		
 	public ScanOperator(ExtentMetadata extentMetadata,

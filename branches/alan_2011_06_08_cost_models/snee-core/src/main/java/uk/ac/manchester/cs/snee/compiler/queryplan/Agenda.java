@@ -35,7 +35,6 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,14 +42,10 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -65,9 +60,14 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 public class Agenda extends SNEEAlgebraicForm{
 
     /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -4391275568035871005L;
+
+    /**
      * Logger for this class.
      */
-    private Logger logger = Logger.getLogger(Agenda.class.getName());
+    private final static Logger logger = Logger.getLogger(Agenda.class.getName());
 	
     /**
      * The acquisition interval, in binary ms.  The finest granularity that 
@@ -159,6 +159,7 @@ public class Agenda extends SNEEAlgebraicForm{
 		}
     }
 
+    /*
     private void scheduleNetworkManagementSection() throws AgendaException {
 		final long start = this.getLength_bms(Agenda.INCLUDE_SLEEP);
 		final long end = start + costParams.getManagementSectionDuration();
@@ -191,7 +192,7 @@ public class Agenda extends SNEEAlgebraicForm{
 		    EndManagementTask mt = new EndManagementTask(start, end, site, this.costParams);
 		    this.addTask(mt, site);
 		}
-	}
+	}*/
     
 	/**
      * Resets the counter; use prior to compiling the next query.

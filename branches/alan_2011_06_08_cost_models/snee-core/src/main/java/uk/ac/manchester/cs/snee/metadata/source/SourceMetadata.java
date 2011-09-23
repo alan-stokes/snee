@@ -1,12 +1,15 @@
 package uk.ac.manchester.cs.snee.metadata.source;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public abstract class SourceMetadata extends SourceMetadataAbstract {
 
-	public SourceMetadata(String sourceName, List<String> extentNames,
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -5648396445597689774L;
+
+  public SourceMetadata(String sourceName, List<String> extentNames,
 			SourceType sourceType) {
 		super(sourceName, extentNames, sourceType);
 	}

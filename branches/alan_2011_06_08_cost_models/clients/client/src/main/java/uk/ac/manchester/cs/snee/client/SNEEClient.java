@@ -1,12 +1,8 @@
 package uk.ac.manchester.cs.snee.client;
 
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -31,10 +27,7 @@ import uk.ac.manchester.cs.snee.SNEEController;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
-import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
@@ -44,8 +37,7 @@ import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public abstract class SNEEClient implements Observer {
 
-	protected static Logger logger = 
-		Logger.getLogger(SNEEClient.class.getName());
+	protected static final Logger logger = Logger.getLogger(SNEEClient.class.getName());
 	protected SNEE controller;
 	protected String _query;
 	protected double _duration;
@@ -203,7 +195,8 @@ public abstract class SNEEClient implements Observer {
 		out.println(buffer.toString());
 	}
 
-	public void update (Observable observation, Object arg) {
+	@SuppressWarnings("unchecked")
+  public void update (Observable observation, Object arg) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER update() with " + observation + " " + 
 					arg);
@@ -259,10 +252,12 @@ public abstract class SNEEClient implements Observer {
 
 		while (keepOn) {
 			try {
-				Thread.currentThread().sleep(10000);
+				Thread.currentThread();
+        Thread.sleep(10000);
 			} catch (InterruptedException e) {
 			}
-			Thread.currentThread().yield();
+			Thread.currentThread();
+      Thread.yield();
 		}
 		
 		System.err.println("You should never see this");
@@ -275,12 +270,14 @@ public abstract class SNEEClient implements Observer {
 		System.out.println("Running query for " + _duration + " seconds. Scheduled end time " + new Date(endTime));
 		
 		try {			
-			Thread.currentThread().sleep((long)_duration * 1000);
+			Thread.currentThread();
+      Thread.sleep((long)_duration * 1000);
 		} catch (InterruptedException e) {
 		}
 		
 		while (System.currentTimeMillis() < endTime) {
-			Thread.currentThread().yield();
+			Thread.currentThread();
+      Thread.yield();
 		}
 	}
 

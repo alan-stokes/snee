@@ -48,8 +48,12 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
  */
 public class WebServiceSourceMetadata extends SourceMetadata {
 
-	Logger logger = 
-		Logger.getLogger(WebServiceSourceMetadata.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 6850767324052003664L;
+
+  private static final Logger logger = Logger.getLogger(WebServiceSourceMetadata.class.getName());
 	
 	private String _url;
 

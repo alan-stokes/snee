@@ -165,7 +165,8 @@ public class DispatcherTest extends EasyMockSupport {
 			_queryId = queryId;
 		}
 		
-		public void run() {
+		@SuppressWarnings("unused")
+    public void run() {
 //			System.out.println("MockEvaluator running");
 			isExecuting = true;
 		}

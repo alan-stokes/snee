@@ -33,8 +33,7 @@ public class AgendaIOTUtils {
 	/**
 	 * Logger for this class.
 	 */
-	private Logger logger = 
-		Logger.getLogger(AgendaIOTUtils.class.getName());
+	private static final Logger logger = Logger.getLogger(AgendaIOTUtils.class.getName());
 	
 	
     private static final int CELL_WIDTH = 100;

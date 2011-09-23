@@ -49,6 +49,10 @@ import com.rits.cloning.Cloner;
 
 public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 1161096834465452081L;
   @SuppressWarnings("unused")
   private boolean spacePinned;
   private boolean timePinned;

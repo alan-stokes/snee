@@ -78,8 +78,7 @@ import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 
 public class Dispatcher {
 
-	private Logger logger = 
-		Logger.getLogger(Dispatcher.class.getName());
+	private static final Logger logger = Logger.getLogger(Dispatcher.class.getName());
 	
 	private MetadataManager _metadata;
 	
@@ -166,7 +165,6 @@ public class Dispatcher {
 			  String sep = System.getProperty("file.separator");
 				String outputDir = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + sep + queryPlan.getQueryName() + sep;
 				sncb = snQueryPlan.getSNCB();
-				SourceMetadataAbstract metadata = _metadata.getSource(snQueryPlan.getMetaData().getOutputAttributes().get(1).getExtentName());
         //_autonomicManager.runCostModels();
         _autonomicManager.runSimulatedNodeFailure();
        // _autonomicManager.runAnyliserWithDeadNodes();
@@ -197,8 +195,6 @@ public class Dispatcher {
   OptimizationException, IOException, CodeGenerationException 
   {
 	  SensorNetworkQueryPlan snQueryPlan = (SensorNetworkQueryPlan)queryPlan;
-    String sep = System.getProperty("file.separator");
-    String outputDir = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + sep + queryPlan.getQueryName() + sep;
     sncb = snQueryPlan.getSNCB();
     SourceMetadataAbstract metadata = _metadata.getSource(snQueryPlan.getMetaData().getOutputAttributes().get(1).getExtentName());
     _autonomicManager.initilise(metadata, queryPlan, resultSet);

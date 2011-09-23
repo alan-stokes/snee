@@ -21,9 +21,14 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 public class DAF extends SNEEAlgebraicForm {
 
     /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -4987166896867950006L;
+
+    /**
      * Logger for this class.
      */
-    private static  Logger logger = Logger.getLogger(DAF.class.getName());
+    private final static  Logger logger = Logger.getLogger(DAF.class.getName());
 	
 	/**
 	 * The physical-algebraic form of the query plan operator tree from which

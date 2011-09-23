@@ -32,8 +32,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 
 public class WSDAIRAccessServiceClient {
 
-	private static Logger logger = 
-		Logger.getLogger(WSDAIRAccessServiceClient.class.getName());
+	private static final Logger logger = Logger.getLogger(WSDAIRAccessServiceClient.class.getName());
 
 	/**
 	 * EPR for all of the services offered, i.e. not the one including 

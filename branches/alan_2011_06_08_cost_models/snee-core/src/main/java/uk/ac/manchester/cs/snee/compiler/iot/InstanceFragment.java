@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.compiler.iot;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -19,12 +20,17 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
 
-public class InstanceFragment
+public class InstanceFragment implements Serializable
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 66554258383409680L;
+
   /**
    * Logger for this class.
    */
-  static Logger logger = Logger.getLogger(Fragment.class.getName());
+  private static final Logger logger = Logger.getLogger(Fragment.class.getName());
 
   /**
    * Counter to assign unique id to different fragments.

@@ -20,7 +20,12 @@ import uk.ac.manchester.cs.snee.operators.logical.SelectOperator;
 public class SelectOperatorImpl extends EvaluationOperator {
 	//XXX: Write test for select operator
 	
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -7273255959767110927L;
+
+  private static final Logger logger = Logger.getLogger(SelectOperatorImpl.class.getName());
 
 	private SelectOperator _select;
 
@@ -50,7 +55,7 @@ public class SelectOperatorImpl extends EvaluationOperator {
 			//FIXME: Cope with bag of results being passed up!
 			List<Output> result = new ArrayList<Output>();
 			if (observed instanceof List<?>) {
-				for (Object ob : (List)observed) {
+				for (Object ob : (List<?>)observed) {
 					processOutput(ob, result);
 				}
 			} else if (observed instanceof Output) {

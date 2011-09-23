@@ -2,8 +2,10 @@ package uk.ac.manchester.cs.snee.manager.planner;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.List;
@@ -20,13 +22,17 @@ public class PlannerUtils
 {
    private List<Adaptation> adaptations;
    private File outputFolder = null;
+   private File plannerOutputFolder = null;
+   
    private String sep = System.getProperty("file.separator");
    private AutonomicManagerImpl manager;
     
-   public PlannerUtils(List<Adaptation> adaptations, AutonomicManagerImpl manager)
+   public PlannerUtils(List<Adaptation> adaptations, AutonomicManagerImpl manager, 
+                       File plannerOutputFolder)
    {
      this.adaptations = adaptations;
      this.manager = manager;
+     this.plannerOutputFolder = plannerOutputFolder;
    }
    
    public void printLatexDocument(Adaptation orginal, Adaptation best, boolean append) throws IOException
@@ -55,11 +61,12 @@ public class PlannerUtils
     		"\\& \\newline missed & cycles left & tuples left \\& \\newline missed & changes \\\\ \n " +
     		"\\hline \n");
     DecimalFormat df = new DecimalFormat("#.#####");
-    Long agendaTime = best.getNewQep().getAgendaIOT().getLength_bms(false);
+    Long agendaTime = new Long(0);
 
     while(adIterator.hasNext())
     {
       Adaptation ad = adIterator.next();
+      agendaTime = ad.getNewQep().getAgendaIOT().getLength_bms(false);
       CardinalityEstimatedCostModel tupleModel = new CardinalityEstimatedCostModel(ad.getNewQep());
       tupleModel.runModel();
       out.write(ad.getOverallID() + " & " + df.format(ad.getTimeCost() /1000/60) + "m & " + 
@@ -136,7 +143,8 @@ public class PlannerUtils
 
   private void makeFolder()
   {
-    outputFolder = new File("LatexSections");
+    outputFolder = new File(plannerOutputFolder.toString() + sep + "LatexSections");
+    
     if(!outputFolder.exists())
     {
       outputFolder.mkdir();
@@ -144,4 +152,26 @@ public class PlannerUtils
     String id = manager.getQueryID() + "-" + manager.getAdaptionCount();
     outputFolder = new File(outputFolder.toString() + sep + id + ".tex");
   }
+
+  public void writeObjectsToFile()
+  {
+    Iterator<Adaptation> adIterator = adaptations.iterator();
+    while(adIterator.hasNext())
+    {
+      Adaptation ad = adIterator.next();
+      try
+      {
+        ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(plannerOutputFolder.toString() + sep + ad.getOverallID()));
+        outputStream.writeObject(ad);
+        outputStream.flush();
+        outputStream.close();
+      }
+      catch(Exception e)
+      {
+        e.printStackTrace();
+      }
+    }
+    
+  }
+
 }

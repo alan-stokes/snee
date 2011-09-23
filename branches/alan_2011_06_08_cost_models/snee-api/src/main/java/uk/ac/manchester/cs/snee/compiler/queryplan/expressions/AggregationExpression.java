@@ -44,7 +44,12 @@ import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
 /** Expression to hold an aggregation. */
 public class AggregationExpression implements Expression {
 
-	/** 
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 9182947841045429824L;
+
+  /** 
 	 * Keeps track of the next aggregation numeration to assign.
 	 */
 	private static int aggrCount = 1;

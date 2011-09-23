@@ -1,13 +1,20 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
+import java.io.Serializable;
+
 import org.apache.log4j.Logger;
 
-public abstract class SNEEAlgebraicForm {
+public abstract class SNEEAlgebraicForm implements Serializable {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 7529399950851544660L;
+
+  /**
 	 * Logger for this class.
 	 */
-	protected Logger logger = Logger.getLogger(SNEEAlgebraicForm.class.getName());
+	private static final Logger logger = Logger.getLogger(SNEEAlgebraicForm.class.getName());
 	
 	/**
 	 * The identifier of this *AF.

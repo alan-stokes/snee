@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.metadata.source;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,9 +42,14 @@ import org.apache.log4j.Logger;
 /**
  * Generic information known about all data sources
  */
-public abstract class SourceMetadataAbstract {
+public abstract class SourceMetadataAbstract  implements Serializable{
 
-	Logger logger = Logger.getLogger(SourceMetadataAbstract.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2791730352565295166L;
+
+  private final static Logger logger = Logger.getLogger(SourceMetadataAbstract.class.getName());
 
 	/**
 	 * Name used to identify the source

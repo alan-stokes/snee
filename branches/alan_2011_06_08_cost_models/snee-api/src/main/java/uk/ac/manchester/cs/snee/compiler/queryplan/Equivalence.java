@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
+@SuppressWarnings("rawtypes")
 public interface Equivalence<T extends Equivalence> {
 
 	public boolean isEquivalentTo(T other);

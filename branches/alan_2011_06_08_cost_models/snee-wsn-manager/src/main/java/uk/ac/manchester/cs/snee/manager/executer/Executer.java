@@ -1,14 +1,18 @@
 package uk.ac.manchester.cs.snee.manager.executer;
 
-import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 
-public class Executer 
+public class Executer extends AutonomicManagerComponent
 {
 
-  private AutonomicManager manager;
-  
-  public Executer(AutonomicManager autonomicManager)
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -5028022484881855975L;
+
+  public Executer(AutonomicManagerImpl autonomicManager)
   {
     manager = autonomicManager;
   }

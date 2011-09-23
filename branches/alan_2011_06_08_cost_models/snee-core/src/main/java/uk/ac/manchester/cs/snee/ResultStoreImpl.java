@@ -30,7 +30,7 @@ import uk.ac.manchester.cs.snee.types.Duration;
 public class ResultStoreImpl 
 extends Observable implements ResultStore {
 	
-	private static Logger logger = 
+	private static final Logger logger = 
 		Logger.getLogger(ResultStoreImpl.class.getName());
 
 	private CircularArray<Output> _data;

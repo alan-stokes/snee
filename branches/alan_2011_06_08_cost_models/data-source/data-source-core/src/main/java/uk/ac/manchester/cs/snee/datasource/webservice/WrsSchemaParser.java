@@ -5,10 +5,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import javax.sql.rowset.WebRowSet;
 
@@ -23,14 +21,14 @@ import uk.ac.manchester.cs.snee.metadata.schema.Types;
 
 import com.sun.rowset.WebRowSetImpl;
 
+@SuppressWarnings("restriction")
 public class WrsSchemaParser extends SchemaParserAbstract {
 
-	private Logger logger = 
-		Logger.getLogger(WrsSchemaParser.class.getName());
+	private static final Logger logger = Logger.getLogger(WrsSchemaParser.class.getName());
 
 	private ResultSetMetaData metadata;
 	
-	public WrsSchemaParser(String schemaDoc, Types types) 
+  public WrsSchemaParser(String schemaDoc, Types types) 
 	throws SchemaMetadataException {
 		super(types);
 		//Only print schema doc if trace level set

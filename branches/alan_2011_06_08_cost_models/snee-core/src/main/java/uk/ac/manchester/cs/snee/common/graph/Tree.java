@@ -5,17 +5,20 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class Tree extends Graph {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -3283091530591159897L;
+
+  /**
 	 * Logger for this class.
 	 */
-	private Logger logger = 
-		Logger.getLogger(Tree.class.getName());
+	private static final Logger logger = Logger.getLogger(Tree.class.getName());
 	
 	/**
 	 * The root of the tree.

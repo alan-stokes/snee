@@ -3,29 +3,21 @@ package uk.ac.manchester.snee.client;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 import org.apache.log4j.PropertyConfigurator;
 
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.MetadataException;
-import uk.ac.manchester.cs.snee.ResultStoreImpl;
 import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEController;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
@@ -58,8 +50,11 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	private static ArrayList<String> siteIDs = new ArrayList<String>();
 	private static RT routingTree;
   private static String sep = System.getProperty("file.separator");
-	protected static Logger resultsLogger;
-	private String sneeProperties;
+	@SuppressWarnings("unused")
+  private static final Logger resultsLogger = 
+	  Logger.getLogger(SNEEFailedNodeEvalClientUsingInNetworkSource.class.getName());
+	@SuppressWarnings("unused")
+  private String sneeProperties;
 	private static boolean inRecoveryMode = false;
 	private static int queryid = 1;
 	protected static int testNo = 1;
@@ -134,7 +129,6 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
     }
 	}
 	
-	
 	private static void generateLatexCore() throws IOException
   {
 	  File latexCoreF = new File("LatexSections");
@@ -185,7 +179,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 
   private static BufferedWriter createFailedTestListWriter() throws IOException
   {
-	  File folder = new File("results"); 
+	  File folder = new File("recovery"); 
 	  File file = new File(folder + sep + "failedTests");
     return new BufferedWriter(new FileWriter(file));
   }
@@ -460,7 +454,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
   
   private static void updateRecoveryFile() throws IOException
   {
-    File folder = new File("results"); 
+    File folder = new File("recovery"); 
     String path = folder.getAbsolutePath();
     //added to allow recovery from crash
     BufferedWriter recoverWriter = new BufferedWriter(new FileWriter(new File(path + "/recovery.tex")));
@@ -474,9 +468,8 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
   private static void checkRecoveryFile() throws IOException
   {
     //added to allow recovery from crash
-    File folder = new File("results"); 
+    File folder = new File("recovery"); 
     String path = folder.getAbsolutePath();
-    File resultsFile = new File(path + "/results.tex");
     File recoveryFile = new File(path + "/recovery.tex");
     if(recoveryFile.exists())
     {
@@ -488,10 +481,8 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
       inRecoveryMode = true;
       if(queryid == 0)
       {
-        boolean result;
         deleteAllFilesInResultsFolder(folder);
-        result = resultsFile.createNewFile();
-        result = recoveryFile.createNewFile();
+        recoveryFile.createNewFile();
         inRecoveryMode = false;
       }
     }

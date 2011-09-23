@@ -1,13 +1,20 @@
 package uk.ac.manchester.cs.snee.manager.failednode.metasteiner;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
 import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.HeuristicSet;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
-public class MetaPath
+public class MetaPath implements Serializable
+
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -98999209171463234L;
+  
   Path path;
   
   public MetaPath(Path path)

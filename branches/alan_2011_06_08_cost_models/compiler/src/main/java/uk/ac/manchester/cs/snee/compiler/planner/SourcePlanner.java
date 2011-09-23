@@ -7,17 +7,11 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
-import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceWhereSchedular;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
-import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaUtils;
-import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
-import uk.ac.manchester.cs.snee.compiler.queryplan.DAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
@@ -31,7 +25,6 @@ import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
-import uk.ac.manchester.cs.snee.compiler.sn.where.WhereScheduler;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -48,7 +41,7 @@ public class SourcePlanner {
 	/**
 	 * Logger for this class.
 	 */
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	private static final Logger logger = Logger.getLogger(SourcePlanner.class.getName());
 	
 	MetadataManager metadata;
 	
@@ -216,6 +209,7 @@ public class SourcePlanner {
 		return rt;
 	}
 
+	/*
 	private DAF doSNWhereScheduling(RT rt, PAF paf, CostParameters costParams, 
 	String queryID) 
 	throws SNEEConfigurationException, SNEEException, SchemaMetadataException, 
@@ -258,7 +252,7 @@ public class SourcePlanner {
 		if (logger.isTraceEnabled())
 			logger.debug("RETURN doSNWhenScheduling()");
 		return agenda;
-	}
+	}*/
 	
 	/**
 	 * Invokes the evaluator query planning steps.

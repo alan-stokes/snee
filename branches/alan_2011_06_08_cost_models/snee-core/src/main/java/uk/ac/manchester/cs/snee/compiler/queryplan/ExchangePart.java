@@ -33,9 +33,10 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
+import java.io.Serializable;
+
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -58,9 +59,15 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
  * If they are on different sites, a relay part is placed along each site along the
  * multi-hop path.
  */
-public class ExchangePart {
+public class ExchangePart implements Serializable{
 
-    static Logger logger = Logger.getLogger(ExchangePart.class.getName());
+    /**
+   * serialVersionUID  
+   */
+  private static final long serialVersionUID = -7403917436081356691L;
+
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger.getLogger(ExchangePart.class.getName());
 
     /**
      * The source fragment of the exchange.

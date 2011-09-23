@@ -38,6 +38,11 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class SleepTask extends Task {
 
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2258190708957158409L;
+
     Site site;
 
     boolean lastInAgenda;

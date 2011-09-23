@@ -51,6 +51,11 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class AggrEvalComponent extends NesCComponent {
 
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 6243537855941379439L;
+
     SensornetAggrEvalOperator op;
 
     SensorNetworkQueryPlan plan;

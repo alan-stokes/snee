@@ -63,8 +63,12 @@ import uk.ac.manchester.cs.snee.types.Duration;
 
 public class ScanOperatorImpl extends EvaluatorPhysicalOperator {
 
-	Logger logger = 
-		Logger.getLogger(ScanOperatorImpl.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 5912089589818107292L;
+
+  private static final Logger logger = Logger.getLogger(ScanOperatorImpl.class.getName());
 
 	/**
 	 * Stores the local extent name.

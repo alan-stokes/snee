@@ -39,7 +39,11 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class RadioOffTask extends Task {
 
-	Site site;
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 7113164203588411809L;
+  Site site;
 	
 	public RadioOffTask(long startTime, Site site, CostParameters costParams) {
 		super(startTime, costParams);

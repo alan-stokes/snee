@@ -37,15 +37,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-
-import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.DataAttribute;
 
 public class ExtentMetadata {
 	
-	private Logger logger = 
-		Logger.getLogger(ExtentMetadata.class.getName());
+	private static final Logger logger = Logger.getLogger(ExtentMetadata.class.getName());
 
 	/**
 	 * List of the attributes in this extent

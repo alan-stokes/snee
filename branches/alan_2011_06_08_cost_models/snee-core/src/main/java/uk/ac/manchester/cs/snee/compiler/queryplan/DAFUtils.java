@@ -18,7 +18,7 @@ public class DAFUtils extends PAFUtils {
 	/**
 	 * Logger for this class.
 	 */
-	private Logger logger = Logger.getLogger(DAFUtils.class.getName());
+	private static final Logger logger = Logger.getLogger(DAFUtils.class.getName());
 	
 	/**
 	 * PAF to be displayed.

@@ -33,12 +33,10 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee;
 
-import java.io.IOException;
-
 public class SNEEDataSourceException extends Exception {
 
     /**
-	 * 
+	 * serialVersionUID
 	 */
 	private static final long serialVersionUID = 3578018345050380642L;
 

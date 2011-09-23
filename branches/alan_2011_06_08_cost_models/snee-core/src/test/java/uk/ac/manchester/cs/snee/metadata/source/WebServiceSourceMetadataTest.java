@@ -11,7 +11,6 @@ import org.easymock.classextension.EasyMockSupport;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import uk.ac.manchester.cs.snee.datasource.webservice.PullSourceWrapper;
@@ -38,8 +37,10 @@ public class WebServiceSourceMetadataTest extends EasyMockSupport {
 
 	@Test
 	public void testGetServiceUrl() {
-		List<String> mockList = createMock(List.class);
-		Map<String, String> mockMap = createMock(Map.class);
+		@SuppressWarnings("unchecked")
+    List<String> mockList = createMock(List.class);
+		@SuppressWarnings("unchecked")
+    Map<String, String> mockMap = createMock(Map.class);
 		PullSourceWrapper mockSource = createMock(PullSourceWrapper.class);
 
 		//Record
@@ -59,8 +60,10 @@ public class WebServiceSourceMetadataTest extends EasyMockSupport {
 	throws ExtentDoesNotExistException {
 		String streamName = "testStream";
 		String resourceName = "test:pull:resource";
-		List<String> mockList = createMock(List.class);
-		Map<String, String> mockMap = createMock(Map.class);
+		@SuppressWarnings("unchecked")
+    List<String> mockList = createMock(List.class);
+		@SuppressWarnings("unchecked")
+    Map<String, String> mockMap = createMock(Map.class);
 		PullSourceWrapper mockSource = createMock(PullSourceWrapper.class);
 
 		//Record
@@ -82,8 +85,10 @@ public class WebServiceSourceMetadataTest extends EasyMockSupport {
 	throws ExtentDoesNotExistException {
 		String streamName = "testStream";
 		String resourceName = "test:pull:resource";
-		List<String> mockList = createMock(List.class);
-		Map<String, String> mockMap = createMock(Map.class);
+		@SuppressWarnings("unchecked")
+    List<String> mockList = createMock(List.class);
+		@SuppressWarnings("unchecked")
+    Map<String, String> mockMap = createMock(Map.class);
 		PullSourceWrapper mockSource = createMock(PullSourceWrapper.class);
 
 		//Record
@@ -102,8 +107,10 @@ public class WebServiceSourceMetadataTest extends EasyMockSupport {
 
 	@Test
 	public void testGetSource() {
-		List<String> mockList = createMock(List.class);
-		Map<String, String> mockMap = createMock(Map.class);
+		@SuppressWarnings("unchecked")
+    List<String> mockList = createMock(List.class);
+		@SuppressWarnings("unchecked")
+    Map<String, String> mockMap = createMock(Map.class);
 		PullSourceWrapper mockSource = createMock(PullSourceWrapper.class);
 
 		//Record

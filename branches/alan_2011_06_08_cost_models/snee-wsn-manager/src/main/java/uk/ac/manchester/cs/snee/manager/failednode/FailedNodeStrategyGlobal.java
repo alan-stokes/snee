@@ -47,6 +47,10 @@ import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract 
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -4443257551168408228L;
   private IOT oldIOT;
   private AgendaIOT oldAgenda;
   private MetadataManager _metadataManager;

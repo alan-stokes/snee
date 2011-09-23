@@ -35,7 +35,6 @@ package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
 
 /**
@@ -46,6 +45,11 @@ import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
 public class IncrementalAggregationAttribute extends DataAttribute {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -7816407231998440997L;
+
+  /**
 	 * The attribute that this one is derived from.
 	 */
 	private DataAttribute baseAttribute;

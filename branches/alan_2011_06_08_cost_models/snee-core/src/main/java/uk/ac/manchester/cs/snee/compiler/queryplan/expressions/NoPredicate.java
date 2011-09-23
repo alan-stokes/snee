@@ -45,7 +45,12 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
  */
 public class NoPredicate implements Expression {
 	
-	/** 
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -8116601674765538653L;
+
+  /** 
 	 * Required by interface.
 	 * Causes an error if ever called.
 	 * @return Throws an AssertionError

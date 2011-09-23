@@ -6,8 +6,6 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
@@ -31,8 +29,7 @@ public class WhenScheduler {
 	/**
 	 * Logger for this class.
 	 */
-	private Logger logger = 
-		Logger.getLogger(WhenScheduler.class.getName());
+	private static final Logger logger = Logger.getLogger(WhenScheduler.class.getName());
 	
 	private CostParameters costParams;
 

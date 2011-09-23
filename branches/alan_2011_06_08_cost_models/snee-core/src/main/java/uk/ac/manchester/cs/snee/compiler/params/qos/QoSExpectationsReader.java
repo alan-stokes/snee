@@ -47,10 +47,14 @@ import uk.ac.manchester.cs.snee.metadata.units.UnrecognizedUnitException;
 public class QoSExpectationsReader extends QoSExpectations {
 
     /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -4422311185692368268L;
+
+    /**
      * Logger for this class.
      */
-    private Logger logger = 
-            Logger.getLogger(QoSExpectationsReader.class.getName());
+    private static final Logger logger = Logger.getLogger(QoSExpectationsReader.class.getName());
 	
     private String _queryParamsFile;
 

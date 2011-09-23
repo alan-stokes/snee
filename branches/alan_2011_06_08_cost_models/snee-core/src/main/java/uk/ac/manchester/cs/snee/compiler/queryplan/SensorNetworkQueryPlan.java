@@ -14,7 +14,6 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 
@@ -24,9 +23,14 @@ import uk.ac.manchester.cs.snee.sncb.SNCB;
 public class SensorNetworkQueryPlan extends QueryExecutionPlanAbstract {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -6153219169651756470L;
+
+  /**
 	 * Logger for this class.
 	 */
-	private Logger logger = Logger.getLogger(SensorNetworkQueryPlan.class.getName());
+	private final static Logger logger = Logger.getLogger(SensorNetworkQueryPlan.class.getName());
 	
 	private DAF daf;
 	

@@ -40,6 +40,10 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
  */
 public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -7562607134737502147L;
   private Topology network = null;
   private FailedNodeLocalCluster clusters;
   private File localFolder;

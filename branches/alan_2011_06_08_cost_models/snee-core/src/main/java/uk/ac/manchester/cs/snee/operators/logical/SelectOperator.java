@@ -55,8 +55,11 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
  */
 public class SelectOperator extends LogicalOperatorImpl {    
 
-	private Logger logger =
-		Logger.getLogger(SelectOperator.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 5921343878012522965L;
+  private static final Logger logger = 	Logger.getLogger(SelectOperator.class.getName());
 	
 	/**
 	 * Constructs a new Select Operator.

@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
-import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -15,7 +14,11 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 
 public class TinyOS_SNCB_Controller implements SNCB 
 {
-  private Logger logger = Logger.getLogger(TinyOS_SNCB_Controller.class.getName());
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 6574875474656042325L;
+  private static final Logger logger = Logger.getLogger(TinyOS_SNCB_Controller.class.getName());
   private SNCB sncb;
   
   

@@ -1,17 +1,21 @@
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
-import java.util.Collection;
 import java.util.Observable;
 
-import uk.ac.manchester.cs.snee.SNEEException;
-import uk.ac.manchester.cs.snee.evaluator.types.Output;
-import uk.ac.manchester.cs.snee.evaluator.types.ReceiveTimeoutException;
+import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.operators.evaluator.EvaluatorPhysicalOperator;
 import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 
 public class MockPhysicalOperator extends EvaluatorPhysicalOperator {
 
-	private MockOperator mockOp;
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2170163651568235694L;
+  @SuppressWarnings("unused")
+  private MockOperator mockOp;
+  private static final Logger logger = Logger.getLogger(MockPhysicalOperator.class.getName());
+	
 
 	public MockPhysicalOperator(LogicalOperator op) {
 		if (logger.isDebugEnabled()) {

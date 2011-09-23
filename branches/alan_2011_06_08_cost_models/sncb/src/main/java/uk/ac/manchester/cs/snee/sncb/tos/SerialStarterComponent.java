@@ -38,6 +38,11 @@ import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public class SerialStarterComponent extends NesCComponent {
 
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2349025464290726802L;
+
     public SerialStarterComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {
 	super(config, tossimFlag);

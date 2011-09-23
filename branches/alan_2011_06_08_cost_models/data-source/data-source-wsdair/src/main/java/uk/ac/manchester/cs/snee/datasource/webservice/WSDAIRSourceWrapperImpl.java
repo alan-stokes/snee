@@ -2,7 +2,6 @@ package uk.ac.manchester.cs.snee.datasource.webservice;
 
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,8 +45,7 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 public class WSDAIRSourceWrapperImpl extends SourceWrapperAbstract 
 implements SourceWrapper {
 
-	private static Logger logger = 
-		Logger.getLogger(WSDAIRSourceWrapperImpl.class.getName());
+	private static final Logger logger = Logger.getLogger(WSDAIRSourceWrapperImpl.class.getName());
 	
 	private static String SQL_LANGUAGE_URI =
 		"http://www.sqlquery.org/sql-92";

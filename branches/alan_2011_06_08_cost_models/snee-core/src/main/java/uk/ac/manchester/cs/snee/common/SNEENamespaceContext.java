@@ -55,7 +55,7 @@ public class SNEENamespaceContext implements NamespaceContext {
 	throw new UnsupportedOperationException();
     }
 
-    public Iterator getPrefixes(final String namespaceURI) {
+    public Iterator<?> getPrefixes(final String namespaceURI) {
 	throw new UnsupportedOperationException();
     }
 

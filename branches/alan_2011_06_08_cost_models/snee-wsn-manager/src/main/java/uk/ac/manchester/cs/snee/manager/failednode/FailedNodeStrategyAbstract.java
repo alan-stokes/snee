@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.failednode;
 
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -40,8 +41,13 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperatorImpl;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
-public abstract class FailedNodeStrategyAbstract extends StrategyAbstract
+public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implements Serializable
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -1326297492822951325L;
+
   /**
    * bog standard constructor
    * @param manager

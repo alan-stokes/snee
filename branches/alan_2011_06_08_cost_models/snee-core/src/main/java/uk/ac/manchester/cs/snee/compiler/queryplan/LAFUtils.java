@@ -2,10 +2,8 @@ package uk.ac.manchester.cs.snee.compiler.queryplan;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -13,7 +11,6 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
-import uk.ac.manchester.cs.snee.common.graph.Edge;
 import uk.ac.manchester.cs.snee.common.graph.GraphUtils;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
@@ -29,7 +26,7 @@ public class LAFUtils extends GraphUtils {
 	/**
 	 * Logger for this class.
 	 */
-	private Logger logger = Logger.getLogger(LAFUtils.class.getName());
+	private static final Logger logger = Logger.getLogger(LAFUtils.class.getName());
 	
 	/**
 	 * LAF to be displayed.

@@ -13,8 +13,7 @@ public class QueryParameters {
 	/**
      * Logger for this class.
      */
-    private Logger logger = 
-            Logger.getLogger(QueryParameters.class.getName());
+    private static final Logger logger = Logger.getLogger(QueryParameters.class.getName());
 
 	
 	QoSExpectations _qos;

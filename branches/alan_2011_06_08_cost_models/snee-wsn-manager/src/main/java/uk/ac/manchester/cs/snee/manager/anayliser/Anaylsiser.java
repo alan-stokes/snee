@@ -20,10 +20,11 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
-import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
+import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
+import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.StrategyAbstract;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyGlobal;
@@ -40,12 +41,15 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
-public class Anaylsiser 
+public class Anaylsiser extends AutonomicManagerComponent
 {
  
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 3921928737218887964L;
   private AnayliserCostModelAssessor CMA;
   private SensorNetworkQueryPlan qep;
-  private AutonomicManager manager;
   private boolean anaylisieCECM = true;
   private String deadSitesList = "";  
   ArrayList<StrategyAbstract> frameworks;
@@ -57,7 +61,7 @@ public class Anaylsiser
    * @param _metadataManager
    * @throws SNEEConfigurationException 
    */
-  public Anaylsiser(AutonomicManager autonomicManager, 
+  public Anaylsiser(AutonomicManagerImpl autonomicManager, 
                     SourceMetadataAbstract _metadata, MetadataManager _metadataManager) 
   throws SNEEConfigurationException
   {
@@ -72,6 +76,7 @@ public class Anaylsiser
         new FailedNodeStrategyLocal(manager, _metadata);
       frameworks.add(failedNodeFrameworkGlobal);
       frameworks.add(failedNodeFrameworkLocal);
+      
     }
     if(prop.equals(FailedNodeStrategyEnum.FailedNodePartial.toString()))
     {
@@ -149,6 +154,14 @@ public class Anaylsiser
   throws OptimizationException
   {
     CMA.runCardinalityCostModel();
+  }
+  
+  /**
+   * method to give operating strategies
+   */
+  public int getOperatingStrategies()
+  {
+    return frameworks.size();
   }
   
   /**

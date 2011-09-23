@@ -58,7 +58,12 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
  */
 public class WindowOperator extends LogicalOperatorImpl {
 
-	private Logger logger = Logger.getLogger(this.getClass().getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -5648351237465828314L;
+
+  private static final Logger logger = Logger.getLogger(WindowOperator.class.getName());
 
 	/** Number of rows or tick relative to now to start window at. */
 	private int from;

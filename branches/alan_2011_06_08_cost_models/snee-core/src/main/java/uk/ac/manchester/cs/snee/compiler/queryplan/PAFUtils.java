@@ -9,12 +9,9 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.manchester.cs.snee.common.graph.Edge;
 import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.operators.logical.LogicalOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperatorImpl;
@@ -27,7 +24,7 @@ public class PAFUtils extends DLAFUtils {
 	/**
 	 * Logger for this class.
 	 */
-	private Logger logger = Logger.getLogger(PAFUtils.class.getName());
+	private static final Logger logger = Logger.getLogger(PAFUtils.class.getName());
 	
 	/**
 	 * PAF to be displayed.

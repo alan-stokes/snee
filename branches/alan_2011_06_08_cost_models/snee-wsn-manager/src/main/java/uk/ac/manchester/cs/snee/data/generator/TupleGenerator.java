@@ -53,7 +53,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 
 public class TupleGenerator {
 
-	Logger logger = Logger.getLogger(TupleGenerator.class.getName());
+	private static final Logger logger = Logger.getLogger(TupleGenerator.class.getName());
 	private String _streamName;
 	private List<Attribute> _columns;
 	

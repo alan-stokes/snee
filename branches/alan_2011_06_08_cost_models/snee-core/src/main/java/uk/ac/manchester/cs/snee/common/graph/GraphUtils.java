@@ -54,8 +54,7 @@ import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 
 public class GraphUtils {
 
-    private static Logger logger = Logger.getLogger(GraphUtils.class
-	    .getName());
+    private static final Logger logger = Logger.getLogger(GraphUtils.class.getName());
 
     /**
      * Converts a file in the DOT, the Graphviz graph specification 
@@ -82,7 +81,8 @@ public class GraphUtils {
 		    InputStream stderr = proc.getErrorStream();
 		    InputStreamReader isr = new InputStreamReader(stderr);
 		    BufferedReader br = new BufferedReader(isr);
-		    String line = null;
+		    @SuppressWarnings("unused")
+        String line = null;
 		    while ((line = br.readLine()) != null) { }
 		    int exitVal = proc.waitFor();
 		    logger.trace("Dotfile to PNG process exitValue: " + exitVal);

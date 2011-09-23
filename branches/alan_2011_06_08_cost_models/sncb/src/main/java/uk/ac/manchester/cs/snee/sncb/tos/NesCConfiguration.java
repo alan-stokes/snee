@@ -57,6 +57,11 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 public class NesCConfiguration extends Graph {
 	
     /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 720200787048437034L;
+
+    /**
      * 	The site that this configuration pertains to, null if N/A 
      * 
      * */
@@ -369,7 +374,7 @@ public class NesCConfiguration extends Graph {
 		final Wiring w = wiringsIter.next();
 
 		//the key is used for sorting the wirings to improve legibility
-		final String key = w.getID();
+		//final String key = w.getID();
 
 		if (w.getUser().equals(OutsideWorldComponent.OUTSIDE_WORLD)) {
 		    if (externalProvidesBuffer.length() == 0) {

@@ -13,7 +13,12 @@ import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 public abstract class WindowOperatorImpl extends EvaluatorPhysicalOperator {
 	//XXX test for window operator
 
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -8465415849797641614L;
+
+  private static final Logger logger = Logger.getLogger(WindowOperatorImpl.class.getName());
 
 	//XXX: This used to be in the helper class, may need to move it back if needed by more than this operator
 	protected final static int MAX_BUFFER_SIZE = 20000; 

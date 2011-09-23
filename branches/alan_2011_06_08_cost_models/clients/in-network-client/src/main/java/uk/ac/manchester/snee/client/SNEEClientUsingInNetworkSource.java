@@ -7,13 +7,10 @@ import org.apache.log4j.PropertyConfigurator;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.client.SNEEClient;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.Utils;
-import uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator;
 
 public class SNEEClientUsingInNetworkSource extends SNEEClient {
 	
-	private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;
+	//private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;
 
 	public SNEEClientUsingInNetworkSource(String query, 
 			double duration, String queryParams, String csvFile) 

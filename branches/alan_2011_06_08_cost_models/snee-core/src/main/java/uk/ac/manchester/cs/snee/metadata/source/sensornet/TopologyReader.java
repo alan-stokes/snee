@@ -49,7 +49,7 @@ import uk.ac.manchester.cs.snee.metadata.units.Units;
 
 public class TopologyReader {
 
-    static Logger logger = Logger.getLogger(TopologyReader.class.getName());
+    private static final Logger logger = Logger.getLogger(TopologyReader.class.getName());
 
     public static Topology readNetworkTopology(final String topologyFile,
 	    final String siteResourceFile) throws TopologyReaderException {

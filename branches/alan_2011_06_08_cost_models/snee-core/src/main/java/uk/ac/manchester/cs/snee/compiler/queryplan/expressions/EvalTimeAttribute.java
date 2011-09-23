@@ -34,18 +34,19 @@
 package uk.ac.manchester.cs.snee.compiler.queryplan.expressions;
 
 import uk.ac.manchester.cs.snee.common.Constants;
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
-import uk.ac.manchester.cs.snee.metadata.schema.Types;
 
 /** Extension of the Attribute for the special case 
  * 		when the Attribute is the EvalTime. 
  */
 public class EvalTimeAttribute extends Attribute {
 
-	//This is bad but we need to get rid of the AttributeType class
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 3598559477846620912L;
+  //This is bad but we need to get rid of the AttributeType class
 	static AttributeType timeType = null;
 	
 	/** 

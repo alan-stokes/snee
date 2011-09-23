@@ -33,11 +33,8 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
@@ -50,6 +47,11 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 public class TXComponent extends NesCComponent {
 
 	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -6460937695122275476L;
+
+  /**
 	 * The fragment that tuples originate from (i.e., the tuple type)
 	 */
     Fragment sourceFrag;

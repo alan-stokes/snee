@@ -54,12 +54,9 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
-import uk.ac.manchester.cs.snee.compiler.queryplan.EndManagementTask;
-import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.FragmentTask;
-import uk.ac.manchester.cs.snee.compiler.queryplan.ManagementTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RadioOnTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SNEEAlgebraicForm;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
@@ -80,9 +77,14 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 public class AgendaIOT extends SNEEAlgebraicForm{
 
     /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -271011672606150076L;
+
+    /**
      * Logger for this class.
      */
-    private Logger logger = Logger.getLogger(AgendaIOT.class.getName());
+    private static final Logger logger = Logger.getLogger(AgendaIOT.class.getName());
 	
     /**
      * The acquisition interval, in binary ms.  The finest granularity that 
@@ -169,40 +171,6 @@ public class AgendaIOT extends SNEEAlgebraicForm{
 			
 		}
     }
-
-    private void scheduleNetworkManagementSection() throws AgendaException {
-		final long start = this.getLength_bms(AgendaIOT.INCLUDE_SLEEP);
-		final long end = start + costParams.getManagementSectionDuration();
-		
-		if (start < 0) {
-		    throw new AgendaException("Start time < 0");
-		}
-		final Iterator<Site> siteIter = this.iot.getRT()
-			.siteIterator(TraversalOrder.POST_ORDER);
-		while (siteIter.hasNext()) {
-		    final Site site = siteIter.next();
-		    this.assertConsistentStartTime(start, site);
-		    ManagementTask mt = new ManagementTask(start, end, site, this.costParams);
-		    this.addTask(mt, site);
-		}
-	}
-
-    private void scheduleEndNetworkManagementSection() throws AgendaException {
-		final long start = this.getLength_bms(AgendaIOT.INCLUDE_SLEEP);
-		final long end = start + costParams.getEndManagementSectionDuration();
-		
-		if (start < 0) {
-		    throw new AgendaException("Start time < 0");
-		}
-		final Iterator<Site> siteIter = this.iot.getRT()
-			.siteIterator(TraversalOrder.POST_ORDER);
-		while (siteIter.hasNext()) {
-		    final Site site = siteIter.next();
-		    this.assertConsistentStartTime(start, site);
-		    EndManagementTask mt = new EndManagementTask(start, end, site, this.costParams);
-		    this.addTask(mt, site);
-		}
-	}
     
 	/**
      * Resets the counter; use prior to compiling the next query.
@@ -1156,7 +1124,6 @@ public class AgendaIOT extends SNEEAlgebraicForm{
       }
       else if (t instanceof CommunicationTask) {
         CommunicationTask ct = (CommunicationTask)t;
-        double RadioEnergy = getRadioEnergy(ct);
         sumEnergy += getRadioEnergy(ct);
         
       } else if (t instanceof RadioOnTask) {

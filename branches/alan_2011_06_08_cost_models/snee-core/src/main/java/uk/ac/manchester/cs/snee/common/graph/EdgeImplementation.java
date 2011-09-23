@@ -34,6 +34,8 @@
 
 package uk.ac.manchester.cs.snee.common.graph;
 
+import java.io.Serializable;
+
 /**
  * @author Ixent Galpin
  * 
@@ -43,9 +45,14 @@ package uk.ac.manchester.cs.snee.common.graph;
  * 
  */
 
-public class EdgeImplementation implements Edge, Comparable{
+public class EdgeImplementation implements Edge, Comparable<EdgeImplementation>, Serializable{
 
-	private String id;
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -2829041880665829640L;
+
+  private String id;
 
 	private String sourceID;
 
@@ -104,9 +111,8 @@ public class EdgeImplementation implements Edge, Comparable{
 	}
 
   @Override
-  public int compareTo(Object o)
+  public int compareTo(EdgeImplementation  other)
   {
-    EdgeImplementation other = (EdgeImplementation) o;
     if( this.id.equals((other.id)))
       return 0;
     else

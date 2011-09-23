@@ -33,13 +33,20 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.params.qos;
 
+import java.io.Serializable;
 import java.util.Formatter;
 import java.util.Locale;
 import org.apache.log4j.Logger;
 
-public class QoSExpectations {
+public class QoSExpectations implements Serializable{
 
-    Logger logger = Logger.getLogger(QoSExpectations.class.getName());
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 4546548829649007077L;
+
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger.getLogger(QoSExpectations.class.getName());
 
     private QoSVariable optimizationVariable;
 

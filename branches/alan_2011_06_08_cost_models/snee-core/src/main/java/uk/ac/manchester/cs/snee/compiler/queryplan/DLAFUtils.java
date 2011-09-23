@@ -15,7 +15,7 @@ public class DLAFUtils extends LAFUtils {
     /**
      * Logger for this class.
      */
-    private static Logger logger = Logger.getLogger(DLAFUtils.class.getName());
+    private static final Logger logger = Logger.getLogger(DLAFUtils.class.getName());
 	
 	/**
 	 * The DLAF to be displayed.

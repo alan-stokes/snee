@@ -45,7 +45,11 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
  */
 public class TrueAttribute implements Expression {
 
-	private boolean isConstant = true;
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 7702535323701037553L;
+  private boolean isConstant = true;
 
 	/**
 	 * Constructor.

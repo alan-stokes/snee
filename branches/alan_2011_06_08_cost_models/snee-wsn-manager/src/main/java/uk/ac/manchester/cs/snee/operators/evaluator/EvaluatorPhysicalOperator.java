@@ -35,6 +35,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.operators.evaluator;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -63,10 +64,15 @@ import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 
 public abstract class EvaluatorPhysicalOperator 
 extends Observable 
-implements Observer 
+implements Observer, Serializable
 {
 
-	protected Logger logger = Logger.getLogger(this.getClass().getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 476973892693583401L;
+
+  private static final Logger logger = Logger.getLogger(EvaluatorPhysicalOperator.class.getName());
 
 	private MetadataManager _schema;
 	
@@ -178,7 +184,7 @@ implements Observer
 		} else if (op instanceof AggregationOperator) {
 			phyOp = new AggregationOperatorImpl(op, m_qid);
 		} else if (op instanceof JoinOperator) {
-			JoinOperator joinOp = (JoinOperator) op;
+			//JoinOperator joinOp = (JoinOperator) op;
 //			if (joinOp.isRelationJoin()) {
 //				String msg = "Relation join not implemented!";
 //				logger.warn(msg);

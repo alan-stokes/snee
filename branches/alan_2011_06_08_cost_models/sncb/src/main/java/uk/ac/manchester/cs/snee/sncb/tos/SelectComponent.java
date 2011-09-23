@@ -46,6 +46,11 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class SelectComponent extends NesCComponent {
 
+    /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -8034133905101344139L;
+
     SensornetSelectOperator op;
 
     SensorNetworkQueryPlan plan;

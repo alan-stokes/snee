@@ -1,11 +1,17 @@
 package uk.ac.manchester.cs.snee.manager.common;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class AdaptationCollection
+public class AdaptationCollection implements Serializable
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -8374248405714847380L;
+  
   private ArrayList<Adaptation> PartialAdaptations;
   private Adaptation GlobalAdaptation = null;
   private ArrayList<Adaptation> LocalAdaptations;

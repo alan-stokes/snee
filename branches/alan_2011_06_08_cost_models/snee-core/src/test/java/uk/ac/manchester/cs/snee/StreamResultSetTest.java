@@ -32,6 +32,7 @@ import org.junit.Test;
 import uk.ac.manchester.cs.snee.evaluator.types.EvaluatorAttribute;
 import uk.ac.manchester.cs.snee.evaluator.types.Tuple;
 
+@SuppressWarnings("deprecation")
 public class StreamResultSetTest extends EasyMockSupport {
 
 	@BeforeClass

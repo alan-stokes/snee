@@ -1,6 +1,8 @@
 package uk.ac.manchester.cs.snee.manager.common;
 
-public enum StrategyID
+import java.io.Serializable;
+
+public enum StrategyID implements Serializable
 {
   FailedNodeGlobal, FailedNodePartial, FailedNodeLocal, Orginal;
 }

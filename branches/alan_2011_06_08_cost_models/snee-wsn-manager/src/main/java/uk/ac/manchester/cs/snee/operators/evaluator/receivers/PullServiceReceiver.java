@@ -19,8 +19,7 @@ import uk.ac.manchester.cs.snee.metadata.source.WebServiceSourceMetadata;
 
 public class PullServiceReceiver implements SourceReceiver {
 
-	Logger logger = 
-		Logger.getLogger(PullServiceReceiver.class.getName());
+	private static final Logger logger = Logger.getLogger(PullServiceReceiver.class.getName());
 
 	private String _resourceName;
 

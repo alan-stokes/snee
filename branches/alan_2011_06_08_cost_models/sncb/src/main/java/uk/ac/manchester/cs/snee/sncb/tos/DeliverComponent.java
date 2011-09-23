@@ -51,7 +51,12 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class DeliverComponent extends NesCComponent {
 
-	SensornetDeliverOperator op;
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -8801772558549733041L;
+
+  SensornetDeliverOperator op;
 
     SensorNetworkQueryPlan plan;
     

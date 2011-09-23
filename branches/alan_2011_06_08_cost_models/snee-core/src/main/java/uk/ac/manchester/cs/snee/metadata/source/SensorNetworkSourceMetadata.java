@@ -54,7 +54,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReader;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
-import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
@@ -66,8 +65,12 @@ import uk.ac.manchester.cs.snee.sncb.SNCBException;
  */
 public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 
-	Logger logger = 
-		Logger.getLogger(SensorNetworkSourceMetadata.class.getName());
+	/**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = 3539742069123463444L;
+
+  private static final Logger logger = Logger.getLogger(SensorNetworkSourceMetadata.class.getName());
 
 	/**
 	 * Source sites in the sensor network.
