@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner;
+package uk.ac.manchester.snee.client;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -55,30 +55,31 @@ public class Plotter implements Serializable
   private BufferedWriter tuplesMissedWriter;
   private BufferedWriter tuplesBurnedWriter;
   
-  public Plotter (File outputFolder, int numberOfAdaptations, AutonomicManagerImpl manager) 
+  
+  
+  public Plotter (File outputFolder, AutonomicManagerImpl manager) 
   throws IOException
   {
     this.outputFolder = outputFolder;
-    outputFolder = new File("plots");
-    if(outputFolder.exists())
+    this.outputFolder = new File("plots");
+    if(this.outputFolder.exists())
     {
       manager.deleteFileContents(outputFolder);
-      outputFolder.mkdir();
+      this.outputFolder.mkdir();
     }
     else
-      outputFolder.mkdir();
+      this.outputFolder.mkdir();
     
-    energyPlotFile = new File(outputFolder.toString() + sep + "energyPlot");
-    timePlotFile = new File(outputFolder.toString() + sep + "timePlot");
-    qepCostPlotFile = new File(outputFolder.toString() + sep + "qepPlot");
-    lifetimePlotFile = new File(outputFolder.toString() + sep + "lifetimePlot");
-    cyclesBurnedPlotFile = new File(outputFolder.toString() + sep + "cyclesBurnedPlot");
-    cyclesMissedPlotFile = new File(outputFolder.toString() + sep + "cyclesMissedPlot");
-    cyclesLeftPlotFile = new File(outputFolder.toString() + sep + "cyclesLeftPlot");
-    tuplesLeftPlotFile = new File(outputFolder.toString() + sep + "tuplesLeftPlot");
-    tuplesMissedPlotFile = new File(outputFolder.toString() + sep + "tuplesMissedPlot");
-    tuplesBurnedPlotFile = new File(outputFolder.toString() + sep + "tuplesBurnedPlot");
-    this.numberOfAdaptations = numberOfAdaptations;
+    energyPlotFile = new File(this.outputFolder.toString() + sep + "energyPlot.tex");
+    timePlotFile = new File(this.outputFolder.toString() + sep + "timePlot.tex");
+    qepCostPlotFile = new File(this.outputFolder.toString() + sep + "qepPlot.tex");
+    lifetimePlotFile = new File(this.outputFolder.toString() + sep + "lifetimePlot.tex");
+    cyclesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "cyclesBurnedPlot.tex");
+    cyclesMissedPlotFile = new File(this.outputFolder.toString() + sep + "cyclesMissedPlot.tex");
+    cyclesLeftPlotFile = new File(this.outputFolder.toString() + sep + "cyclesLeftPlot.tex");
+    tuplesLeftPlotFile = new File(this.outputFolder.toString() + sep + "tuplesLeftPlot.tex");
+    tuplesMissedPlotFile = new File(this.outputFolder.toString() + sep + "tuplesMissedPlot.tex");
+    tuplesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "tuplesBurnedPlot.tex");
     if(energyPlotFile.exists())
     {
       energyPlotFile.delete();
@@ -132,6 +133,84 @@ public class Plotter implements Serializable
     tuplesBurnedWriter = new BufferedWriter(new FileWriter(tuplesBurnedPlotFile, true));
   }
   
+  public Plotter (File outputFolder) 
+  throws IOException
+  {
+    this.outputFolder = outputFolder;
+    this.outputFolder = new File("plots");
+    if(this.outputFolder.exists())
+    {
+      deleteFileContents(outputFolder);
+      this.outputFolder.mkdir();
+    }
+    else
+      this.outputFolder.mkdir();
+    
+    energyPlotFile = new File(this.outputFolder.toString() + sep + "energyPlot.tex");
+    timePlotFile = new File(this.outputFolder.toString() + sep + "timePlot.tex");
+    qepCostPlotFile = new File(this.outputFolder.toString() + sep + "qepPlot.tex");
+    lifetimePlotFile = new File(this.outputFolder.toString() + sep + "lifetimePlot.tex");
+    cyclesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "cyclesBurnedPlot.tex");
+    cyclesMissedPlotFile = new File(this.outputFolder.toString() + sep + "cyclesMissedPlot.tex");
+    cyclesLeftPlotFile = new File(this.outputFolder.toString() + sep + "cyclesLeftPlot.tex");
+    tuplesLeftPlotFile = new File(this.outputFolder.toString() + sep + "tuplesLeftPlot.tex");
+    tuplesMissedPlotFile = new File(this.outputFolder.toString() + sep + "tuplesMissedPlot.tex");
+    tuplesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "tuplesBurnedPlot.tex");
+    if(energyPlotFile.exists())
+    {
+      energyPlotFile.delete();
+    }
+    if(timePlotFile.exists())
+    {
+      timePlotFile.delete();
+    }
+    if(qepCostPlotFile.exists())
+    {
+      qepCostPlotFile.delete();
+    }
+    if(lifetimePlotFile.exists())
+    {
+      lifetimePlotFile.delete();
+    }
+    if(cyclesBurnedPlotFile.exists())
+    {
+      cyclesBurnedPlotFile.delete();
+    }
+    if(cyclesMissedPlotFile.exists())
+    {
+      cyclesMissedPlotFile.delete();
+    }
+    if(cyclesLeftPlotFile.exists())
+    {
+      cyclesLeftPlotFile.delete();
+    }
+    if(tuplesLeftPlotFile.exists())
+    {
+      tuplesLeftPlotFile.delete();
+    }
+    if(tuplesMissedPlotFile.exists())
+    {
+      tuplesMissedPlotFile.delete();
+    }
+    if(tuplesBurnedPlotFile.exists())
+    {
+      tuplesBurnedPlotFile.delete();
+    }
+    
+    energyWriter = new BufferedWriter(new FileWriter(energyPlotFile, true));
+    timeWriter = new BufferedWriter(new FileWriter(timePlotFile, true));
+    qepWriter = new BufferedWriter(new FileWriter(qepCostPlotFile, true));
+    lifetimeWriter = new BufferedWriter(new FileWriter(lifetimePlotFile));
+    cyclesBurnedWriter =  new BufferedWriter(new FileWriter(cyclesBurnedPlotFile, true));
+    cyclesMissedWriter = new BufferedWriter(new FileWriter(cyclesMissedPlotFile, true));
+    cyclesLeftWriter = new BufferedWriter(new FileWriter(cyclesLeftPlotFile, true));
+    tuplesLeftWriter = new BufferedWriter(new FileWriter(tuplesLeftPlotFile, true));
+    tuplesMissedWriter = new BufferedWriter(new FileWriter(tuplesMissedPlotFile, true));
+    tuplesBurnedWriter = new BufferedWriter(new FileWriter(tuplesBurnedPlotFile, true));
+  }
+  
+  
+  
   public void plot(Adaptation global, Adaptation partial, Adaptation local) 
   throws 
   IOException, OptimizationException
@@ -143,34 +222,37 @@ public class Plotter implements Serializable
     {
       energyWriter.write(df.format(global.getEnergyCost()) + " ");
       energyYMax = Math.max(energyYMax, global.getEnergyCost());
+      numberOfAdaptations++;
     }
     if(partial != null)
     {
       energyWriter.write(df.format(partial.getEnergyCost()) + " ");
       energyYMax = Math.max(energyYMax, partial.getEnergyCost());
+      numberOfAdaptations++;
     }
     if(local != null)
     {
       energyWriter.write(df.format(local.getEnergyCost()) + " ");
       energyYMax = Math.max(energyYMax, local.getEnergyCost());
+      numberOfAdaptations++;
     }
     energyWriter.write("\n");
     
     timeWriter.write(queryID + " ");
     if(global != null)
     {
-      timeWriter.write(df.format(global.getTimeCost()) + " ");
-      timeYMax = Math.max(timeYMax, global.getTimeCost());
+      timeWriter.write(df.format(global.getTimeCost() / 1000) + " ");
+      timeYMax = Math.max(timeYMax, global.getTimeCost() / 1000);
     }
     if(partial != null)
     {
-      timeWriter.write(df.format(partial.getTimeCost()) + " ");
-      timeYMax = Math.max(timeYMax, partial.getTimeCost());
+      timeWriter.write(df.format(partial.getTimeCost() / 1000) + " ");
+      timeYMax = Math.max(timeYMax, partial.getTimeCost() / 1000);
     }
     if(local != null)
     {
-      timeWriter.write(df.format(local.getTimeCost()) + " ");
-      timeYMax = Math.max(timeYMax, local.getTimeCost());
+      timeWriter.write(df.format(local.getTimeCost() / 1000) + " ");
+      timeYMax = Math.max(timeYMax, local.getTimeCost() / 1000);
     }
     timeWriter.write("\n");
     
@@ -195,18 +277,18 @@ public class Plotter implements Serializable
     lifetimeWriter.write(queryID + " ");
     if(global != null)
     {
-      lifetimeWriter.write(df.format(global.getLifetimeEstimate()) + " ");
-      lifetimeYMax = Math.max(lifetimeYMax, global.getLifetimeEstimate());
+      lifetimeWriter.write(df.format(global.getLifetimeEstimate() / 1000) + " ");
+      lifetimeYMax = Math.max(lifetimeYMax, global.getLifetimeEstimate() / 1000);
     }
     if(partial != null)
     {
-      lifetimeWriter.write(df.format(partial.getLifetimeEstimate()) + " ");
-      lifetimeYMax = Math.max(lifetimeYMax, partial.getLifetimeEstimate());
+      lifetimeWriter.write(df.format(partial.getLifetimeEstimate() / 1000) + " ");
+      lifetimeYMax = Math.max(lifetimeYMax, partial.getLifetimeEstimate() / 1000);
     }
     if(local != null)
     {
-      lifetimeWriter.write(df.format(local.getLifetimeEstimate()) + " ");
-      lifetimeYMax = Math.max(lifetimeYMax, local.getLifetimeEstimate());
+      lifetimeWriter.write(df.format(local.getLifetimeEstimate() / 1000) + " ");
+      lifetimeYMax = Math.max(lifetimeYMax, local.getLifetimeEstimate() / 1000);
     }
     lifetimeWriter.write("\n");
     
@@ -353,28 +435,151 @@ public class Plotter implements Serializable
     
     try
     {
-    if(numberOfAdaptations == 3)
-    {
-      Runtime rt = Runtime.getRuntime();
-      File bash = new File("src/main/resources/bashScript/plotGnuplot3");
-      String location = bash.getAbsolutePath();
-      String command = location + " \"topologies\" \"adaptation cost (J)\" " + 
-      new Integer(queryID+1).toString() + " " + new Double(this.energyYMax).toString() +
-      " \"" + outputFolder.getAbsolutePath() + sep + "energy" + "\" \"" +
-      energyPlotFile.getAbsolutePath() + "\"  \"global\" " + "\"partial\" \"local\"";
-      rt.exec(command);
-    }
-    else
-    {
-      Runtime rt = Runtime.getRuntime();
-      File bash = new File("src/main/resources/bashScript/plotGnuplot2");
-      String location = bash.getAbsolutePath();
-      String command = location + " \"topologies\" \"adaptation cost (J)\" " +
-      new Integer(queryID+1).toString() + " " + new Double(this.energyYMax).toString() +
-      " \"" + outputFolder.getAbsolutePath() + sep + "energy" + "\" \"" +
-      energyPlotFile.getAbsolutePath() + "\"  \"global\" " + "\"partial\"";
-      rt.exec(command);
-    }
+      if(numberOfAdaptations == 3)
+      {
+        Runtime rt = Runtime.getRuntime();
+        File bash = new File("src/main/resources/bashScript/plotGnuplot3");
+        String location = bash.getAbsolutePath();
+        String [] commandArg = new String[9];
+        commandArg[0] = location;
+        commandArg[1] = "topologies";
+        commandArg[2] = "adaptation_cost_(J)";
+        commandArg[3] = new Integer(queryID+1).toString();
+        commandArg[4] = new Double(this.energyYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "energy";
+        commandArg[6] = energyPlotFile.getAbsolutePath();
+        commandArg[7] = "global";
+        commandArg[8] = "partial";
+        rt.exec(commandArg);
+        //time
+        commandArg[2] = "adaptation_cost_(1000 s)";
+        commandArg[4] = new Double(this.timeYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "time";
+        commandArg[6] = timePlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        //qep
+        commandArg[2] = "qep_cost_(J)";
+        commandArg[4] = new Double(this.qepYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "qep";
+        commandArg[6] = qepCostPlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        //lifetime
+        commandArg[2] = "lifetime (1000 s)";
+        commandArg[4] = new Double(this.lifetimeYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "lifetime";
+        commandArg[6] = lifetimePlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        //cycles burned
+        commandArg[2] = "cycles_burned";
+        commandArg[4] = new Double(this.cyclesBurnedYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "cyclesburned";
+        commandArg[6] = cyclesBurnedPlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        //cycles missed
+        commandArg[2] = "cycles_missed";
+        commandArg[4] = new Double(this.cyclesMissedYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "cyclesMissed";
+        commandArg[6] = cyclesMissedPlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        // cycles left
+        commandArg[2] = "cycles_left";
+        commandArg[4] = new Double(this.cyclesLeftYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "cyclesleft";
+        commandArg[6] = cyclesLeftPlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        // tuples left        
+        commandArg[2] = "tuples_left";
+        commandArg[4] = new Double(this.tuplesLeftYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "tuplesleft";
+        commandArg[6] = tuplesLeftPlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        // tuples missed
+        commandArg[2] = "tuples_missed";
+        commandArg[4] = new Double(this.tuplesMissedYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "tuplesMissed";
+        commandArg[6] = tuplesMissedPlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        // tuples burned
+        commandArg[2] = "tuples_burned";
+        commandArg[4] = new Double(this.tuplesBurnedYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "tuplesBurned";
+        commandArg[6] = tuplesBurnedPlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+      }
+      else
+      {
+        //energy
+        Runtime rt = Runtime.getRuntime();
+        File bash = new File("src/main/resources/bashScript/plotGnuplot2");
+        String location = bash.getAbsolutePath();
+        String [] commandArg = new String[10];
+        commandArg[0] = location;
+        commandArg[1] = "topologies";
+        commandArg[2] = "adaptation_cost_(J)";
+        commandArg[3] = new Integer(queryID+1).toString();
+        commandArg[4] = new Double(this.energyYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "energy";
+        commandArg[6] = energyPlotFile.getAbsolutePath();
+        commandArg[7] = "global";
+        commandArg[8] = "partial";
+        commandArg[9] = "local";
+        rt.exec(commandArg);
+        //time
+        commandArg[2] = "adaptation_cost_(s)";
+        commandArg[4] = new Double(this.timeYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "time";
+        commandArg[6] = timePlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        //qep
+        commandArg[2] = "qep_cost_(J)";
+        commandArg[4] = new Double(this.qepYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "qep";
+        commandArg[6] = qepCostPlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        //lifetime
+        commandArg[2] = "lifetime (s)";
+        commandArg[4] = new Double(this.lifetimeYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "lifetime";
+        commandArg[6] = lifetimePlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        //cycles burned
+        commandArg[2] = "cycles_burned";
+        commandArg[4] = new Double(this.cyclesBurnedYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "cyclesburned";
+        commandArg[6] = cyclesBurnedPlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        //cycles missed
+        commandArg[2] = "cycles_missed";
+        commandArg[4] = new Double(this.cyclesMissedYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "cyclesMissed";
+        commandArg[6] = cyclesMissedPlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        // cycles left
+        commandArg[2] = "cycles_left";
+        commandArg[4] = new Double(this.cyclesLeftYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "cyclesleft";
+        commandArg[6] = cyclesLeftPlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        // tuples left        
+        commandArg[2] = "tuples_left";
+        commandArg[4] = new Double(this.tuplesLeftYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "tuplesleft";
+        commandArg[6] = tuplesLeftPlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        // tuples missed
+        commandArg[2] = "tuples_missed";
+        commandArg[4] = new Double(this.tuplesMissedYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "tuplesMissed";
+        commandArg[6] = tuplesMissedPlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+        // tuples burned
+        commandArg[2] = "tuples_burned";
+        commandArg[4] = new Double(this.tuplesBurnedYMax).toString();
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "tuplesBurned";
+        commandArg[6] = tuplesBurnedPlotFile.getAbsolutePath();
+        rt.exec(commandArg);
+      }
+      queryID ++;
     }
     catch(Exception e)
     {
@@ -382,7 +587,29 @@ public class Plotter implements Serializable
       e.printStackTrace();
       System.exit(0);
     }
-    
+  }
+  
+  private static void deleteFileContents(File firstOutputFolder)
+  {
+    if(firstOutputFolder.exists())
+    {
+      File[] contents = firstOutputFolder.listFiles();
+      for(int index = 0; index < contents.length; index++)
+      {
+        File delete = contents[index];
+        if(delete.isDirectory())
+          if(delete != null && delete.listFiles().length > 0)
+            deleteFileContents(delete);
+          else
+            delete.delete();
+        else
+          delete.delete();
+      }
+    }
+    else
+    {
+      firstOutputFolder.mkdir();
+    }  
   }
   
 }

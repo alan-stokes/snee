@@ -26,5 +26,5 @@ echo \)
 
 echo set term png
 echo set output \"$5.png\"
-echo plot \"$6.tex\" u 1\:2 w boxes lc rgb\"blue\" title \"$7\"\, \"$6.tex\" u \(\$1+d_width\)\:3 w boxes lc rgb\"red\" title \"$8\" 
+echo plot \"$6\" u 1\:2 w boxes lc rgb\"blue\" title \"$7\"\, \"$6\" u \(\$1+d_width\)\:3 w boxes lc rgb\"red\" title \"$8\" 
 ) | gnuplot -persist 

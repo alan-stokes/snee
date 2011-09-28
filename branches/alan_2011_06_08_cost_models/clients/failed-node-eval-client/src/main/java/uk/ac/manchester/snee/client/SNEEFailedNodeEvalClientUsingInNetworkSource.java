@@ -60,6 +60,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	protected static int testNo = 1;
 	private static SensorNetworkQueryPlan qep;
 	private static BufferedWriter latexCore = null;
+	private static ClientUtils utils = new ClientUtils();
 	
 	public SNEEFailedNodeEvalClientUsingInNetworkSource(String query, 
 			double duration, String queryParams, String csvFile, String sneeProperties) 
@@ -95,7 +96,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
       checkRecoveryFile();
 
       runIxentsScripts();
-      generateLatexCore();
+      utils.writeLatexCore();
       //holds all 30 queries produced by python script.
       ArrayList<String> queries = new ArrayList<String>();
       collectQueries(queries);
@@ -128,54 +129,6 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
       e.printStackTrace();
     }
 	}
-	
-	private static void generateLatexCore() throws IOException
-  {
-	  File latexCoreF = new File("LatexSections");
-	  if(!latexCoreF.exists())
-    {
-	    latexCoreF.mkdir();
-    }
-	  else
-	  {
-	    deleteFileContents(latexCoreF);
-	  }
-	  latexCoreF = new File(latexCoreF.toString() + sep + "core.tex");
-	  latexCore = new BufferedWriter(new FileWriter(latexCoreF));
-	  latexCore.write("\\documentclass[landscape, 10pt]{report} \n\\usepackage[landscape]{geometry} \n " +
-	  		            "\\usepackage{graphicx} \n \\usepackage{subfig} \n \\usepackage[cm]{fullpage} \n" + 
-	  		            "\\begin{document}  \n");
-	  latexCore.flush();  
-  }
-	
-	private void updateLatexCore(int queryid, int testID) throws IOException
-	{
-	  latexCore.write("\\input{query" + queryid + "-" + testID + "} \n \\clearpage \n");
-	  latexCore.flush();  
-	}
-	
-	private static void deleteFileContents(File firstOutputFolder)
-  {
-    if(firstOutputFolder.exists())
-    {
-      File[] contents = firstOutputFolder.listFiles();
-      for(int index = 0; index < contents.length; index++)
-      {
-        File delete = contents[index];
-        if(delete.isDirectory())
-          if(delete != null && delete.listFiles().length > 0)
-            deleteFileContents(delete);
-          else
-            delete.delete();
-        else
-          delete.delete();
-      }
-    }
-    else
-    {
-      firstOutputFolder.mkdir();
-    }  
-  }
 
   private static BufferedWriter createFailedTestListWriter() throws IOException
   {
@@ -416,13 +369,13 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
         {
           inRecoveryMode = false;
           client.runForTests(deadNodes, queryid ); 
-          client.updateLatexCore(queryid, testNo);
+          utils.updateLatexCore(queryid, testNo );
           testNo++;
         }
         else
         {
           client.runForTests(deadNodes, queryid); 
-          client.updateLatexCore(queryid, testNo);
+          utils.updateLatexCore(queryid, testNo );
           testNo++;
         }  
       }

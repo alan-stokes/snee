@@ -285,49 +285,37 @@ public class CandiateRouter extends Router
     choice.getRoot().clearInputs();
     
     //get children of choice.
-    Iterator<Node> choiceChildrenIterator = locateSourceNodes(choice);//choice.getLeafNodes().iterator();
+    Iterator<Node> choiceChildrenIterator = choice.getNodes().iterator();
+    //Iterator<Node> choiceChildrenIterator = locateSourceNodes(choice);//choice.getLeafNodes().iterator();
     //connect children
     while(choiceChildrenIterator.hasNext())
     {
       Node choiceChild = choiceChildrenIterator.next();
-      Node choiceParent = choiceChild.getOutput(0);
-      Site treeChild =  newRoutingTree.getSite(choiceChild.getID());
-      treeChild.addOutput(choiceParent);
-      if(choiceChild.getInDegree() > 0)
+      if(choiceChild.getOutDegree() != 0)
       {
-        Iterator<Node> inputs = choiceChild.getInputsList().iterator();
-        while(inputs.hasNext())
+        Node choiceParent = choiceChild.getOutput(0);
+        Site treeChild =  newRoutingTree.getSite(choiceChild.getID());
+        if(treeChild != null)
         {
-          Node input = inputs.next();
-          treeChild.addInput(input);
-          Node inputOutput = input.getOutput(0);
-          input.removeOutput(inputOutput);
-          input.addOutput(treeChild);
-        }
-        choiceChild.clearInputs();
+          treeChild.addOutput(choiceParent);
+          if(choiceChild.getInDegree() > 0)
+          {
+            Iterator<Node> inputs = choiceChild.getInputsList().iterator();
+            while(inputs.hasNext())
+            {
+              Node input = inputs.next();
+              treeChild.addInput(input);
+              Node inputOutput = input.getOutput(0);
+              input.removeOutput(inputOutput);
+              input.addOutput(treeChild);
+            }
+            choiceChild.clearInputs();
+          }
+          choiceParent.removeInput(choiceChild);
+          choiceParent.addInput(treeChild);
+        }   
       }
-      choiceParent.removeInput(choiceChild);
-      choiceParent.addInput(treeChild);
-    }   
-  }
-
-  /**
-   * goes though tree looking for sources which are not the sink and palces them in a list
-   * @param choice
-   * @return
-   */
-  private Iterator<Node> locateSourceNodes(Tree choice)
-  {
-    Iterator<Node> nodeIterator = choice.getNodes().iterator();
-    List<Node> sources = new ArrayList<Node>();
-    while(nodeIterator.hasNext())
-    {
-      Node node = nodeIterator.next();
-      Site site = (Site) node;
-      if(site.isSource() && !site.getID().equals(choice.getRoot().getID()))
-        sources.add(node);
     }
-    return sources.iterator();
   }
 
   /**

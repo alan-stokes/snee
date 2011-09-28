@@ -31,7 +31,6 @@ public class Planner extends AutonomicManagerComponent
   private ChoiceAssessor assessor;
   private HashMap<String, RunTimeSite> runningSites;
   private File plannerFolder = null;
-  private Plotter plotter;
   
   public Planner(AutonomicManagerImpl autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager)   
   {
@@ -107,9 +106,7 @@ public class Planner extends AutonomicManagerComponent
       assessor.assessChoices(bestChoices, runningSites);
       bestOverall = chooseBestAdaptation(bestChoices);
       //output bests, then all.
-      new PlannerUtils(bestChoices, manager, plannerFolder).writeObjectsToFile();
-      new PlannerUtils(bestChoices, manager, plannerFolder).printLatexDocument(orginal, bestOverall, false);
-      plotter.plot(choices.getGlobalAdaptation(), bestPartial, bestLocal);
+      new PlannerUtils(bestChoices, manager, plannerFolder, orginal).writeObjectsToFile();
      /* if(!partialAds.isEmpty())
         new PlannerUtils(partialAds, manager).printLatexDocument(orginal, bestPartial, true);
       if(!localAds.isEmpty())
@@ -157,7 +154,6 @@ public class Planner extends AutonomicManagerComponent
   {
     plannerFolder = new File(outputFolder.toString() + sep + "Planner");
     setupFolders();
-    plotter = new Plotter(plannerFolder, manager.getActiveStrategies(), manager);
     this.assessor.updateStorageLocation(plannerFolder);
   }
   
