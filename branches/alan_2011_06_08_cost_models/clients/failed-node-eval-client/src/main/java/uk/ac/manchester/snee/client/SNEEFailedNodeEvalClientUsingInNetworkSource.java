@@ -59,7 +59,6 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	private static int queryid = 1;
 	protected static int testNo = 1;
 	private static SensorNetworkQueryPlan qep;
-	private static BufferedWriter latexCore = null;
 	private static ClientUtils utils = new ClientUtils();
 	
 	public SNEEFailedNodeEvalClientUsingInNetworkSource(String query, 
@@ -370,12 +369,14 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
           inRecoveryMode = false;
           client.runForTests(deadNodes, queryid ); 
           utils.updateLatexCore(queryid, testNo );
+          System.gc();
           testNo++;
         }
         else
         {
           client.runForTests(deadNodes, queryid); 
           utils.updateLatexCore(queryid, testNo );
+          System.gc();
           testNo++;
         }  
       }

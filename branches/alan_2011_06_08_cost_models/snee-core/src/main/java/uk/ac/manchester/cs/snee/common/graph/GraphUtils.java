@@ -81,9 +81,7 @@ public class GraphUtils {
 		    InputStream stderr = proc.getErrorStream();
 		    InputStreamReader isr = new InputStreamReader(stderr);
 		    BufferedReader br = new BufferedReader(isr);
-		    @SuppressWarnings("unused")
-        String line = null;
-		    while ((line = br.readLine()) != null) { }
+		    while ((br.readLine()) != null) { }
 		    int exitVal = proc.waitFor();
 		    logger.trace("Dotfile to PNG process exitValue: " + exitVal);
 		} catch (Exception e) {

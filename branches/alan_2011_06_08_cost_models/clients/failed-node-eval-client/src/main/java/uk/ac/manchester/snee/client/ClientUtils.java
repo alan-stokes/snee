@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -26,7 +25,7 @@ public class ClientUtils
   private Adaptation global = null;
   private Adaptation partial = null;
   private Adaptation local = null;
-  private Adaptation orginal = null;
+  //private Adaptation original = null;
   private Plotter plot = null;
   
   public ClientUtils()
@@ -84,10 +83,11 @@ public class ClientUtils
         "\\hline \n");
     DecimalFormat df = new DecimalFormat("#.#####");
     Long agendaTime = new Long(0);
-
+    Adaptation ad = null;
+    
     while(adIterator.hasNext())
     {
-      Adaptation ad = adIterator.next();
+      ad = adIterator.next();
       agendaTime = ad.getNewQep().getAgendaIOT().getLength_bms(false);
       CardinalityEstimatedCostModel tupleModel = new CardinalityEstimatedCostModel(ad.getNewQep());
       tupleModel.runModel();
@@ -108,6 +108,11 @@ public class ClientUtils
                 "act " + ad.getActivateSites().toString() + " \\newline " + 
                 "tem " + ad.getTemporalSites().toString() + " \\\\ \n \\hline \n");
     }
+    String id = queryid + "-" + testID;
+    out.write("\\end{tabular} \n \\caption{query " + id + " with failed nodes " + 
+              ad.getFailedNodes().toString() + "} \n");
+    out.write("\\end{table} \n\n\n");
+    
     out.flush();
     moveImagesToLatexFolder(out, adaptations, testID, queryid);
     sortout(adaptations);
@@ -127,7 +132,7 @@ public class ClientUtils
       else if(ad.getOverallID().contains("Local"))
         local = ad;
       else if(ad.getOverallID().contains("Orginal"))
-        orginal = ad;
+      {/*original = ad;*/}
       else
         throw new NoSuchElementException("there is no overall id");
     } 
@@ -140,7 +145,6 @@ public class ClientUtils
       ArrayList<Adaptation> adapts = new ArrayList<Adaptation>();
       
       ObjectInputStream inputStream = null;
-      String ab = inputFolder.getAbsolutePath();
       File [] files = inputFolder.listFiles();
       for(int fileIndex = 0; fileIndex < files.length; fileIndex++)
       {

@@ -1,6 +1,9 @@
 package uk.ac.manchester.cs.snee.manager.failednode.alternativerouter;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -8,7 +11,9 @@ import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyUtils;
 
 public class CandiateRouterUtils
 {
@@ -22,7 +27,12 @@ public class CandiateRouterUtils
   }
   
   
-  
+  /**
+   * generates the reduced routes as new list
+   * @param routes
+   * @param outputFolder
+   * @param paf
+   */
   public void exportSavedRoutes(ArrayList<Tree> routes, File outputFolder, PAF paf)
   {
     Iterator<Tree> routeIterator = routes.iterator();
@@ -60,9 +70,14 @@ public class CandiateRouterUtils
     }
     
   }
-
-
-
+  
+  /**
+   * generates the route fragments as dot files
+   * @param desintatedOutputFolder
+   * @param routes
+   * @param paf
+   * @param steinerTree
+   */
   public void exportRouteFragments(File desintatedOutputFolder, ArrayList<Tree> routes, PAF paf, 
                                    Tree steinerTree)
   {
@@ -70,6 +85,40 @@ public class CandiateRouterUtils
     exportAsDotFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1)); 
     new RTUtils(new RT(paf, "", steinerTree, network)).
     exportAsTextFile(desintatedOutputFolder.toString() + sep + "firstroute" + (routes.size() + 1));
+  }
+
+
+  /**
+   * outputs a topology as a dot file (named reduced)
+   * @param chainFolder
+   * @param string
+   * @param b
+   * @param workingTopology 
+   * @throws SchemaMetadataException 
+   */
+  public void exportReducedTopology(File desintatedOutputFolder, String string, boolean boolvalue, 
+                                    Topology workingTopology) 
+  throws SchemaMetadataException
+  {
+    new TopologyUtils(workingTopology).exportAsDOTFile(desintatedOutputFolder.toString() + sep + 
+        "reducedtopology" , boolvalue);
+    
+  }
+
+  /**
+   * outputs file recording which nodes have been depinned
+   * @param depinnedNodes
+   * @param desintatedOutputFolder
+   * @throws IOException 
+   */
+  public void exportDepinnedNodes(ArrayList<String> depinnedNodes, File desintatedOutputFolder) 
+  throws IOException
+  {
+    BufferedWriter writer = new BufferedWriter(new FileWriter(
+        new File(desintatedOutputFolder.toString() + sep + "depinnedNodes")));
+    writer.write(depinnedNodes.toString());
+    writer.flush();
+    writer.close();
   }
   
 }
