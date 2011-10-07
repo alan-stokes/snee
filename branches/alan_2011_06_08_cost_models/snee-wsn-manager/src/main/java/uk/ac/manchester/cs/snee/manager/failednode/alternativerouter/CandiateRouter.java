@@ -657,7 +657,7 @@ public class CandiateRouter extends Router
   private String removeExcessNodesAndEdges(Topology workingTopology, RT oldRoutingTree, 
                                            ArrayList<String> setofLinkedFailedNodes, 
                                            ArrayList<String> savedChildSites,
-                                           ArrayList<String> disconnectedNodes)
+                                           ArrayList<String> depinnedNodes)
   {
     String savedParentSite = "";
     //locate all children of all failed nodes in link which are active, and place them into saved sites
@@ -672,24 +672,37 @@ public class CandiateRouter extends Router
       {
         Node currentChild = inputs.next();
         if((!setofLinkedFailedNodes.contains(currentChild.getID()) && 
-           !disconnectedNodes.contains(currentChild.getID())) ||
+           !depinnedNodes.contains(currentChild.getID())) ||
            oldRoutingTree.getSite(currentChild.getID()).isSource())
           savedChildSites.add(currentChild.getID());
       }
       //go though parent
       Node output = failedSite.getOutput(0);
       if((!setofLinkedFailedNodes.contains(output.getID()) &&
-         !disconnectedNodes.contains(output.getID())) ||
+         !depinnedNodes.contains(output.getID())) ||
         oldRoutingTree.getSite(output.getID()).isSource())
         savedParentSite = output.getID();
     }
+    
+    // locate any source nodes which are in the depinned nodes
+    Iterator<String> depinnedNodesIterator = depinnedNodes.iterator();
+    while(depinnedNodesIterator.hasNext())
+    {
+      String depinnedNode = depinnedNodesIterator.next();
+      if(!savedChildSites.contains(depinnedNode) && !savedParentSite.equals(depinnedNode) &&
+          oldRoutingTree.getSite(depinnedNode).isSource())
+      {
+        savedChildSites.add(depinnedNode);
+      }
+    }
+    
     //go though entire old routing tree, removing nodes which are not in the saved sites array
     Iterator<Site> siteIterator = oldRoutingTree.siteIterator(TraversalOrder.POST_ORDER);
     while(siteIterator.hasNext())
     {
       Site site = siteIterator.next();
       if(!savedChildSites.contains(site.getID()) && !savedParentSite.equals(site.getID()) && 
-         !disconnectedNodes.contains(site.getID()))
+         !depinnedNodes.contains(site.getID()))
       {
         workingTopology.removeNodeAndAssociatedEdges(site.getID());
       }

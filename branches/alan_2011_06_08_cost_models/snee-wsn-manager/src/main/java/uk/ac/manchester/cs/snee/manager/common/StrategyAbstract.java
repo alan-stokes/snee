@@ -249,8 +249,8 @@ public abstract class StrategyAbstract implements Serializable
           TemporalAdjustment otherAdjust = ad.getAdjustmentContainingSite((Site) start);
           if(otherAdjust.getAdjustmentDuration() < adjust.getAdjustmentDuration())
           {
-            affectedSites.add(start.getID());
-            otherAdjust.removeSiteFromAffectedSites(start.getID());
+              affectedSites.add(start.getID());
+              otherAdjust.removeSiteFromAffectedSites(start.getID());
           }
         }
         else

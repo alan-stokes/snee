@@ -47,6 +47,7 @@ public class Adaptation implements Serializable
   /**
    * returns an arraylist of all sites which are affected by the temporal adjustments. 
    * does not reduce duplicates
+   * @param affectedSites2 
    * @return
    */
   public ArrayList<String> getSitesAffectedByAllTemporalChanges()
@@ -71,7 +72,7 @@ public class Adaptation implements Serializable
 	while(adjustmentIterator.hasNext())
 	{
 		TemporalAdjustment adjustment = adjustmentIterator.next();
-	  if(adjustment.getAffectedSites().contains(site))
+	  if(adjustment.getAffectedSites().contains(site.getID()))
         return adjustment; 
 	}
 	return null;

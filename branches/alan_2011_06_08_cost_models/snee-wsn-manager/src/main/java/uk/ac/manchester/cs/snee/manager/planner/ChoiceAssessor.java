@@ -296,7 +296,6 @@ public class ChoiceAssessor implements Serializable
     {
       String siteID = siteIDIterator.next();
       overallCost += runningSites.get(siteID).getCurrentAdaptationEnergyCost();
-      
     }
     return overallCost;
   }

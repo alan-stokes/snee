@@ -114,8 +114,13 @@ public class InstanceWhereSchedular
       for(int index = 0; index < contents.length; index++)
       {
         File delete = contents[index];
-        if(delete != null && delete.listFiles().length > 0)
-          deleteFileContents(delete);
+        if(delete.isDirectory())
+        {
+          if(delete != null && delete.listFiles().length > 0)
+            deleteFileContents(delete);
+          else
+            delete.delete();
+        }
         else
           delete.delete();
       }

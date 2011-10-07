@@ -386,6 +386,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     catch(Exception e)
     {
       System.out.println("Routes generated didnt agree with QoS trying with larger scope");
+      e.printStackTrace();
       return adaptationAttempt(failedNodes, depinnedNodes, paf, oldIOT.getRT(), 
                                          partialFolder, totalAdapatations, true);
     }

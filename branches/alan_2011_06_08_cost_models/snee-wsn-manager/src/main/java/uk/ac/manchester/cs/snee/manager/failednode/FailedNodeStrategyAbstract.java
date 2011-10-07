@@ -64,14 +64,14 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
    * @param agenda2
    * @param iot
    * @param failedNodes
-   * @param disconnectedNodes 
+   * @param depinnedNodes 
    * @throws SNEEException
    * @throws SchemaMetadataException
    * @throws SNEEConfigurationException
    * @throws OptimizationException 
    */
   protected PAF pinPhysicalOperators(IOT iot, ArrayList<String> failedNodes, 
-                                   ArrayList<String> disconnectedNodes) 
+                                   ArrayList<String> depinnedNodes) 
   throws SNEEException, 
          SchemaMetadataException, 
          SNEEConfigurationException, 
@@ -89,8 +89,7 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
       InstanceOperator instanceOperator = iotInstanceOperatorIterator.next();
       SensornetOperator physicalOperator = instanceOperator.getSensornetOperator();
       SensornetOperatorImpl physicalOperatorImpl = (SensornetOperatorImpl) physicalOperator;
-      if(!failedNodes.contains(instanceOperator.getSite().getID()) && 
-         !disconnectedNodes.contains(instanceOperator.getSite().getID()))
+      if(!failedNodes.contains(instanceOperator.getSite().getID()))
       {
         ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).setIsPinned(true);
         ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).addSiteToPinnedList(instanceOperator.getSite().getID());

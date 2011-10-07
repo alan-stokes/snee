@@ -452,7 +452,7 @@ public class Plotter implements Serializable
         commandArg[8] = "partial";
         rt.exec(commandArg);
         //time
-        commandArg[2] = "adaptation_cost_(1000 s)";
+        commandArg[2] = "adaptation_cost_(1000_s)";
         commandArg[4] = new Double(this.timeYMax).toString();
         commandArg[5] = outputFolder.getAbsolutePath() + sep + "time";
         commandArg[6] = timePlotFile.getAbsolutePath();
@@ -464,7 +464,7 @@ public class Plotter implements Serializable
         commandArg[6] = qepCostPlotFile.getAbsolutePath();
         rt.exec(commandArg);
         //lifetime
-        commandArg[2] = "lifetime (1000 s)";
+        commandArg[2] = "lifetime_(1000_s)";
         commandArg[4] = new Double(this.lifetimeYMax).toString();
         commandArg[5] = outputFolder.getAbsolutePath() + sep + "lifetime";
         commandArg[6] = lifetimePlotFile.getAbsolutePath();
@@ -525,7 +525,7 @@ public class Plotter implements Serializable
         commandArg[9] = "local";
         rt.exec(commandArg);
         //time
-        commandArg[2] = "adaptation_cost_(s)";
+        commandArg[2] = "adaptation_cost_(1000 s)";
         commandArg[4] = new Double(this.timeYMax).toString();
         commandArg[5] = outputFolder.getAbsolutePath() + sep + "time";
         commandArg[6] = timePlotFile.getAbsolutePath();
@@ -537,7 +537,7 @@ public class Plotter implements Serializable
         commandArg[6] = qepCostPlotFile.getAbsolutePath();
         rt.exec(commandArg);
         //lifetime
-        commandArg[2] = "lifetime (s)";
+        commandArg[2] = "lifetime (1000 s)";
         commandArg[4] = new Double(this.lifetimeYMax).toString();
         commandArg[5] = outputFolder.getAbsolutePath() + sep + "lifetime";
         commandArg[6] = lifetimePlotFile.getAbsolutePath();

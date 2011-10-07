@@ -1216,16 +1216,30 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     long cpuActiveTimeBms = task.getDuration();
     double RadioEnergy = getRadioEnergy(task, packets);
     sumEnergy += RadioEnergy; 
-    sumEnergy += getCPUEnergy(cpuActiveTimeBms);
+    sumEnergy += getCPUEnergyNoAgenda(cpuActiveTimeBms);
     double taskDuration = bmsToMs(task.getDuration())/1000.0;
     double radioRXAmp = AvroraCostParameters.getRadioReceiveAmpere(); 
     double voltage = AvroraCostParameters.VOLTAGE;
-    double taskEnergy = taskDuration * radioRXAmp * voltage;        
+    double taskEnergy = taskDuration * radioRXAmp * voltage;     
+    taskEnergy = taskEnergy /1000; // mJ -> J
     sumEnergy += taskEnergy;
     return sumEnergy;
   }
   
-  
+  /**
+   * Return the CPU energy cost for an task, in Joules.
+   * @param cpuActiveTimeBms
+   * @return
+   */
+  private double getCPUEnergyNoAgenda(long cpuActiveTimeBms)
+  {
+    double cpuActiveTime = bmsToMs(cpuActiveTimeBms)/1000.0; //bms to ms to s
+    double voltage = AvroraCostParameters.VOLTAGE;
+    double activeCurrent = AvroraCostParameters.CPUACTIVEAMPERE;
+    double cpuActiveEnergy = cpuActiveTime * activeCurrent * voltage; //J
+    return cpuActiveEnergy;
+  }
+
   /**
    * Returns radio energy for communication tasks (J) for agenda according to model.
    * Excludes radio switch on.
@@ -1254,9 +1268,9 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     double radioTXAmp = AvroraCostParameters.getTXAmpere(txPower);
     
     AvroraCostExpressions  costExpressions = new AvroraCostExpressions(daf, costParams, this);
-    AlphaBetaExpression txTimeExpr = AlphaBetaExpression.multiplyBy(
-        costExpressions.getPacketsSent(packets, true),
-        AvroraCostParameters.PACKETTRANSMIT);
+    AlphaBetaExpression txTimeExpr = 
+        AlphaBetaExpression.multiplyBy( costExpressions.getPacketsSent(packets, true),
+                                        AvroraCostParameters.PACKETTRANSMIT);
     double txTime = (txTimeExpr.evaluate())/1000.0;
     double rxTime = taskDuration-txTime;
     assert(rxTime>=0);

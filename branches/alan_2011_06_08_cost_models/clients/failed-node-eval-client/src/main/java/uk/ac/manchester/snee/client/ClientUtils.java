@@ -194,11 +194,6 @@ public class ClientUtils
       out.flush();
     }
     
-    new RTUtils(adapt.getOldQep().getRT()).exportAsDotFile(outputImageFolder.toString() + sep + 
-        "orginalRT", false);
-    out.write("\\subfloat[] [OrginalRT"  + 
-        "]{\\includegraphics[scale=0.25]{" + "." + sep + id + sep + "orginalRT"+ "}} \\hspace{20pt} \n");
-    
     new TopologyUtils(adapt.getNewQep().getRT().getNetwork()).exportAsDOTFile(outputImageFolder.toString() + sep + "topology", "topology", true);
     out.write("\\subfloat[] [Topology"  + 
         "]{\\includegraphics[scale=0.25]{" + "." + sep + id + sep + "topology"+ "}} \n");
