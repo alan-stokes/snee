@@ -214,7 +214,7 @@ public class Fragment implements Serializable{
     	return this.operators;
     }
 
-    public final int[] getSourceNodes() {
+    public final ArrayList<Integer> getSourceNodes() {
     	return this.getRootOperator().getSourceSites();
     }
 
@@ -443,7 +443,7 @@ public class Fragment implements Serializable{
     	this.desiredSites.add(n.getID());
     }
 
-    public final void addDesiredSites(final int[] nindices, final RT routingTree) {
+    public final void addDesiredSites(final ArrayList<Integer> nindices, final RT routingTree) {
     	for (int element : nindices) {
     		this.addDesiredSite((Site) routingTree.getSite(element));
     	}

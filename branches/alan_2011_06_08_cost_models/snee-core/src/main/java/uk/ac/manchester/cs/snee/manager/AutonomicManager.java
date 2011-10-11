@@ -83,4 +83,10 @@ public interface AutonomicManager
 
   public abstract void setQueryParams(QoSExpectations qoS);
 
+  public abstract QueryExecutionPlan getCurrentQEP();
+  
+  public abstract void runSimulatedNumberOfAgendaExecutionCycles(int numberofAgendaExecutionCycles);
+
+  public abstract void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles);
+
 }

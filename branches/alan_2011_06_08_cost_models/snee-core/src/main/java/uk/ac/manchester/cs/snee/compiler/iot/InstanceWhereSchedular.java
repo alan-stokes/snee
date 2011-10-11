@@ -535,7 +535,7 @@ public class InstanceWhereSchedular
       if(wasTotallyPinned)
       {}
       else if (   op instanceof SensornetAcquireOperator 
-          || op instanceof SensornetDeliverOperator) 
+               || op instanceof SensornetDeliverOperator) 
       {
         //Location-sensitive operator
         addLocationSensitiveOpInstances(op, disconnectedOpInstMapping);
@@ -768,16 +768,21 @@ private void addOtherOpTypeInstances(SensornetOperator op,
   private void addLocationSensitiveOpInstances(SensornetOperator op, 
                HashMapList<String, InstanceOperator> disconnectedOpInstMapping)
   {
-    int [] sourceSitesIDs;
+    ArrayList<Integer> sourceSitesIDs;
     if(op instanceof SensornetAcquireOperator)//get source sites, as fixed locations
       sourceSitesIDs = op.getSourceSites();
     else
-      sourceSitesIDs = new int [] {Integer.parseInt(routingTree.getRoot().getID())};
+    {
+      Site s = routingTree.getRoot();
+      String st = s.getID();
+      Integer i = Integer.parseInt(st);
+      sourceSitesIDs = new ArrayList<Integer> (Integer.parseInt(routingTree.getRoot().getID()));
+    }
 
     //For each site, spawn an operator instance
-    for (int sourceSiteIterator=0; sourceSiteIterator<sourceSitesIDs.length; sourceSiteIterator++) 
+    for (int sourceSiteIterator=0; sourceSiteIterator < sourceSitesIDs.size(); sourceSiteIterator++) 
     {//get site object
-      Site site = routingTree.getSite(sourceSitesIDs[sourceSiteIterator]);
+      Site site = routingTree.getSite(sourceSitesIDs.get(sourceSiteIterator));
       InstanceOperator opInst = new InstanceOperator(op, site);//make new instance of the operator
       iot.addOpInst(op, opInst);//add to instance dafs hashmap
       iot.assign(opInst, site);//put this operator on this site (placed)

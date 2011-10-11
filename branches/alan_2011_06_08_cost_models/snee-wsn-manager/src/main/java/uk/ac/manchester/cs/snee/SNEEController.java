@@ -747,7 +747,7 @@ public class SNEEController implements SNEE {
 	
 	public QueryExecutionPlan getQEP()
 	{
-		return _compiler.getQEP();
+		return _dispatcher.getQEP();
 	}
 	
 	public void waitForQueryEnd() throws InterruptedException
@@ -763,5 +763,11 @@ public class SNEEController implements SNEE {
   public void setQueryID(int newqueryID)
   {
     _nextQueryID = newqueryID;
+  }
+
+  @Override
+  public void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles)
+  {
+    _dispatcher.simulateEnergyDrainofAganedaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
   }
 }

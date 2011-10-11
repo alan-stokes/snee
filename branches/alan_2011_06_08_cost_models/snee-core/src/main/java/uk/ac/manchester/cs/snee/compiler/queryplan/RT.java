@@ -130,7 +130,8 @@ public class RT extends SNEEAlgebraicForm {
 			logger.debug("ENTER getRoot()");
     	if (logger.isDebugEnabled())
 			logger.debug("RETURN getRoot()");
-    	return (Site) this.siteTree.getRoot();
+    	Site s = (Site) this.siteTree.getRoot();
+    	return s;
     }
     
     /**

@@ -219,7 +219,7 @@ public class SensornetExchangeOperator extends SensornetOperatorImpl {
 
 	@Override
     /** {@inheritDoc} */
-    public final int[] getSourceSites() {
+    public final ArrayList<Integer> getSourceSites() {
     	return super.defaultGetSourceSites();
     }
 

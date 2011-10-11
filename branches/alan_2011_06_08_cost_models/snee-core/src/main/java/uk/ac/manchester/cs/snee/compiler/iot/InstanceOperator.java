@@ -30,26 +30,6 @@ public class InstanceOperator extends NodeImplementation implements Node
   
   private ArrayList<InstanceOperator> childOps = new ArrayList<InstanceOperator>();
 
-  public Iterator<InstanceOperator> childIterator()
-  {
-    return childOps.iterator();
-  }
-  
-  public InstanceOperator[] getChildren()
-  {
-    InstanceOperator[] children = new InstanceOperator[childOps.size()];
-    for(int childIndex = 0; childIndex < childOps.size(); childIndex++)
-    {
-      children[childIndex] = childOps.get(childIndex);
-    }
-    return children;
-  }
-
-  public boolean add(InstanceOperator e)
-  {
-    return childOps.add(e);
-  }
-
   public InstanceOperator()
   {
 	  super();
@@ -115,7 +95,7 @@ public class InstanceOperator extends NodeImplementation implements Node
   }
 
   //@Override
-  public int[] getSourceSites()
+  public ArrayList<Integer> getSourceSites()
   {
     return sensornetOperator.getSourceSites();
   }
@@ -217,5 +197,25 @@ public class InstanceOperator extends NodeImplementation implements Node
   public InstanceFragment getCorraspondingFragment()
   {
     return corraspondingFragment;
+  }
+  
+  public Iterator<InstanceOperator> childIterator()
+  {
+    return childOps.iterator();
+  }
+  
+  public InstanceOperator[] getChildren()
+  {
+    InstanceOperator[] children = new InstanceOperator[childOps.size()];
+    for(int childIndex = 0; childIndex < childOps.size(); childIndex++)
+    {
+      children[childIndex] = childOps.get(childIndex);
+    }
+    return children;
+  }
+
+  public boolean add(InstanceOperator e)
+  {
+    return childOps.add(e);
   }
 }

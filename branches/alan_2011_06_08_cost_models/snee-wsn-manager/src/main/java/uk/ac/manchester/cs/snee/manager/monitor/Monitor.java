@@ -70,16 +70,33 @@ public class Monitor  extends AutonomicManagerComponent implements Observer
         _results.addAll((Collection<Output>) observed);
       }
       CECMCollection();
-      updateEnergyMeasures();
+      ArrayList<RunTimeSite> energyDrainedNodes = updateEnergyMeasures();
+      if(energyDrainedNodes.size() != 0)
+      {
+        //TODO ADD PROACTIVE FRAMEWORK
+      }
     } 
     catch (Exception e)
     {
       e.printStackTrace();
     } 
   }
-
-  private void updateEnergyMeasures()
+  
+  public void simulateNumeriousAgendaExecutionCycles(int numberOfAgendaExecutionCycles)
   {
+    for(int cycle = 0; cycle < numberOfAgendaExecutionCycles; cycle++)
+    {
+      ArrayList<RunTimeSite> energyDrainedNodes = updateEnergyMeasures();
+      if(energyDrainedNodes.size() != 0)
+      {
+        //TODO ADD PROACTIVE FRAMEWORK
+      }
+    }
+  }
+
+  private ArrayList<RunTimeSite> updateEnergyMeasures()
+  {
+    ArrayList<RunTimeSite> proactiveFailures = new ArrayList<RunTimeSite>();
     HashMap<String, RunTimeSite> runningSites = manager.getRunningSites();
     Iterator<String> keyIterator =  runningSites.keySet().iterator();
     while(keyIterator.hasNext())
@@ -87,7 +104,10 @@ public class Monitor  extends AutonomicManagerComponent implements Observer
       String key = keyIterator.next();
       RunTimeSite site = runningSites.get(key);
       site.removeQEPExecutionCost();
+      if(site.getCurrentEnergy() < site.getThresholdEnergy())
+        proactiveFailures.add(site);
     }
+    return proactiveFailures;
   }
 
   private void CECMCollection() throws SNEEException, SQLException
@@ -140,7 +160,7 @@ public class Monitor  extends AutonomicManagerComponent implements Observer
   public void addPacketReciever(SNCBSerialPortReceiver mr)
   {
     listener = (SerialPortMessageReceiver) mr;
-    listener.addObserver(this);// TODO Auto-generated method stub
+    listener.addObserver(this);
   }
 
   public void setResultSet(ResultStore resultSet) 

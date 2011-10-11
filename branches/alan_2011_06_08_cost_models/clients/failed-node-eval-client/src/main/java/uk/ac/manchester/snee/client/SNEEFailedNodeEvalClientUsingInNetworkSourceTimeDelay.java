@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Logger;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -45,23 +46,21 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderExceptio
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
-public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient 
+public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEClient 
 {
-	private static ArrayList<String> siteIDs = new ArrayList<String>();
-	private static RT routingTree;
+	private static ArrayList<String> applicableConfulenceSites = new ArrayList<String>();
   private static String sep = System.getProperty("file.separator");
 	@SuppressWarnings("unused")
   private static final Logger resultsLogger = 
-	  Logger.getLogger(SNEEFailedNodeEvalClientUsingInNetworkSource.class.getName());
+	  Logger.getLogger(SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay.class.getName());
 	@SuppressWarnings("unused")
   private String sneeProperties;
-	private static boolean inRecoveryMode = false;
 	private static int queryid = 1;
 	protected static int testNo = 1;
-	private static SensorNetworkQueryPlan qep;
+	private int fixedNumberOfAgendaExecutionCycles = 10;
 	private static ClientUtils utils = new ClientUtils();
 	
-	public SNEEFailedNodeEvalClientUsingInNetworkSource(String query, 
+	public SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay(String query, 
 			double duration, String queryParams, String csvFile, String sneeProperties) 
 	throws SNEEException, IOException, SNEEConfigurationException {
 		super(query, duration, queryParams, csvFile, sneeProperties);
@@ -82,7 +81,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	public static void main(String[] args) 
 	{    
 	  PropertyConfigurator.configure(
-        SNEEFailedNodeEvalClientUsingInNetworkSource.class.
+        SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay.class.
         getClassLoader().getResource("etc/common/log4j.properties"));   
 	  
 		Long duration = Long.valueOf("120");
@@ -156,8 +155,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
     System.out.println("Running Tests on query " + (queryid));
     try
     {
-      SNEEFailedNodeEvalClientUsingInNetworkSource client = 
-        new  SNEEFailedNodeEvalClientUsingInNetworkSource(currentQuery, 
+      SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay client = 
+        new  SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay(currentQuery, 
                            duration, queryParams, null, propertiesPath);
       //set queryid to correct id
       SNEEController contol = (SNEEController) client.controller;
@@ -166,9 +165,6 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
       updateRecoveryFile();
       client.runCompilelation();
       System.out.println("compiled control");
-      SensorNetworkQueryPlan currentQEP = client.getQEP();
-      qep = currentQEP;
-      routingTree = currentQEP.getRT();
       System.out.println("running tests");
       allowDeathOfAcquires = true;
       client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
@@ -272,35 +268,42 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
      }
   }
 
-  private void runTests(SNEEFailedNodeEvalClientUsingInNetworkSource client, String currentQuery, 
+  private void runTests(SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay client, String currentQuery, 
                         int queryid, boolean allowDeathOfAcquires) 
-  throws 
-  Exception
+  throws Exception
   {
-    
-    updateSites(routingTree, allowDeathOfAcquires); 	 
-    int noSites = siteIDs.size();
-    //no failed nodes, dont bother running tests
-    if(noSites == 0)
-      throw new Exception("no avilable nodes to fail");
-    int position = 0;
-    ArrayList<String> deadNodes = new ArrayList<String>(); 
-    chooseNodes(deadNodes, noSites, position, client, currentQuery, queryid, true);
+  	updateSites(allowDeathOfAcquires);
+  	testNo = 1;
+  	while(applicableConfulenceSites.size() != 0)
+  	{
+  		String deadNode = chooseNodes();
+  		client.runForTests(deadNode, queryid); 
+  		updateRecoveryFile();
+      utils.updateLatexCore(queryid, testNo );
+      testNo++;
+      System.gc();
+      controller.simulateEnergyDrainofAganedaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
+      updateSites(allowDeathOfAcquires);   
+  	}
+  	System.out.println("Stopping query " + queryid + ".");
+  	controller.close();
   }
 
   /**
-   * goes thoun routing tree, looknig for nodes which are not source nodes and are 
-   * confluence sites which are sites which will cause likely changes to results when lost
+   * goes though routing tree, looking for nodes which are confluence sites which are sites
+   *  which will cause likely changes to results when lost counting them if they have acquire operators
+   *  if the allowDeathOfAcquires is set
    * @param allowDeathOfAcquires 
    * @param routingTree2
    * @throws SourceDoesNotExistException 
    */
-  private void updateSites(RT routingTree, boolean allowDeathOfAcquires) 
+  private void updateSites(boolean allowDeathOfAcquires) 
   throws SourceDoesNotExistException
   {
-    testNo = 1;
+    SensorNetworkQueryPlan qep = this.getQEP();
+    RT routingTree = qep.getRT();
     Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
-    siteIDs.clear();
+    applicableConfulenceSites.clear();
     SNEEController snee = (SNEEController) controller;
     SourceMetadataAbstract metadata = snee.getMetaData().getSource(qep.getMetaData().getOutputAttributes().get(1).getExtentName());
     SensorNetworkSourceMetadata sensornetworkMetadata = (SensorNetworkSourceMetadata) metadata;
@@ -311,13 +314,13 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     {
       Site currentSite = siteIterator.next();
       if(currentSite.getInDegree() > 1 && 
-         !siteIDs.contains(Integer.parseInt(currentSite.getID())) &&
+         !applicableConfulenceSites.contains(Integer.parseInt(currentSite.getID())) &&
          (
              (allowDeathOfAcquires && isSource(currentSite, sources)) ||  
              (!allowDeathOfAcquires && !isSource(currentSite, sources))
          ) && 
          !currentSite.getID().equals(sinkID))
-          siteIDs.add(currentSite.getID());
+          applicableConfulenceSites.add(currentSite.getID());
     }// TODO Auto-generated method stub
   }
 
@@ -336,55 +339,46 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
   }
 
   /**
-   * recursive method call, which iterates though the selected nodes to fail, 
-   * using only nodes given in the updatesites method.
-   * @param deadNodes
-   * @param noSites
-   * @param position
-   * @param client
-   * @param currentQuery
-   * @param queryid2 
-   * @throws Exception 
+   * selects a node from an array of options
    */
-  private static void chooseNodes(ArrayList<String> deadNodes, int noSites,
-      int position, SNEEFailedNodeEvalClientUsingInNetworkSource client, String currentQuery, 
-      int queryid, boolean first) 
-  throws 
-  Exception
+  private static String chooseNodes() 
   {
-    if(position < noSites)
-    {
-        chooseNodes(deadNodes, noSites, position + 1, client, currentQuery, queryid, first);
-        deadNodes.add(siteIDs.get(position));
-        chooseNodes(deadNodes, noSites, position + 1, client, currentQuery, queryid, first);
-        deadNodes.remove(deadNodes.size() -1);
-    }
-    else
-    {   
-      if(deadNodes.size()  != 0)
-      {
-        updateRecoveryFile();
-          
-        if(inRecoveryMode)
-        {
-          inRecoveryMode = false;
-          client.runForTests(deadNodes, queryid ); 
-          utils.updateLatexCore(queryid, testNo );
-          System.gc();
-          testNo++;
-        }
-        else
-        {
-          client.runForTests(deadNodes, queryid); 
-          utils.updateLatexCore(queryid, testNo );
-          System.gc();
-          testNo++;
-        }  
-      }
-    }
+	  int size = applicableConfulenceSites.size();
+	  if(size == 1)
+	    return applicableConfulenceSites.get(0);
+	  else
+	  {
+  	  Random random = new Random();
+  	  return applicableConfulenceSites.get(random.nextInt(size));
+	  }
   }
 
-  public void runForTests(ArrayList<String> failedNodes, int queryid)
+  /**
+   * runs the test
+   * @param failedNodes
+   * @param queryid
+   * @throws SNEECompilerException
+   * @throws MetadataException
+   * @throws EvaluatorException
+   * @throws SNEEException
+   * @throws SQLException
+   * @throws SNEEConfigurationException
+   * @throws MalformedURLException
+   * @throws OptimizationException
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   * @throws AgendaException
+   * @throws UnsupportedAttributeTypeException
+   * @throws SourceMetadataException
+   * @throws TopologyReaderException
+   * @throws SNEEDataSourceException
+   * @throws CostParametersException
+   * @throws SNCBException
+   * @throws IOException
+   * @throws CodeGenerationException
+   * @throws AutonomicManagerException
+   */
+  public void runForTests(String failedNode, int queryid)
   throws SNEECompilerException, MetadataException, EvaluatorException,
   SNEEException, SQLException, SNEEConfigurationException, 
   MalformedURLException, OptimizationException, SchemaMetadataException, 
@@ -396,13 +390,13 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
-    System.out.println("Failed nodes" + failedNodes.toString() );
+    System.out.println("Failed node" + failedNode);
     SNEEController control = (SNEEController) controller;
     control.giveAutonomicManagerQuery(_query);
-    control.runSimulatedNodeFailure(failedNodes);
+    ArrayList<String> nodeFailures = new ArrayList<String>();
+    nodeFailures.add(failedNode);
+    control.runSimulatedNodeFailure(nodeFailures);
     //  List<ResultSet> results1 = resultStore.getResults();
-    System.out.println("Stopping query " + queryid + ".");
-    controller.close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
   }
@@ -433,12 +427,10 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
       String recoverQueryTestLine = recoveryTest.readLine();
       System.out.println("recovery text located with query test value = " +  recoveryQueryIdLine + " and has test no = " + recoverQueryTestLine);
       queryid = Integer.parseInt(recoveryQueryIdLine);
-      inRecoveryMode = true;
       if(queryid == 0)
       {
         deleteAllFilesInResultsFolder(folder);
         recoveryFile.createNewFile();
-        inRecoveryMode = false;
       }
     }
     else

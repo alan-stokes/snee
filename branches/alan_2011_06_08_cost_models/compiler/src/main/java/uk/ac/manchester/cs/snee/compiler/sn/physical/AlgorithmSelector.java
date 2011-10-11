@@ -111,7 +111,7 @@ public class AlgorithmSelector {
 				//Split into three
 		    	SensornetSingleStepAggregationOperator agg = 
 		    		(SensornetSingleStepAggregationOperator) op;
-		    	if (agg.isSplittable() && agg.getSourceSites().length>1) {
+		    	if (agg.isSplittable() && agg.getSourceSites().size()>1) {
 			    	AggregationOperator logAggr = 
 			    		(AggregationOperator) agg.getLogicalOperator();
 					SensornetAggrInitOperator aggrInit = 

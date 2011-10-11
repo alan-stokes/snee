@@ -251,7 +251,7 @@ public class InstanceFragment implements Serializable
     return this.operators;
   }
 
-  public final int[] getSourceNodes() {
+  public final ArrayList<Integer> getSourceNodes() {
     return this.getRootOperator().getSourceSites();
   }
 

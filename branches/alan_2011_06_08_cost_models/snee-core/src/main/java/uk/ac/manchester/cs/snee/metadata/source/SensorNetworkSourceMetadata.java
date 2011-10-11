@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.metadata.source;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -75,7 +76,8 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 	/**
 	 * Source sites in the sensor network.
 	 */
-	private int[] _sourceNodes;
+	//private int[] _sourceNodes;
+  private ArrayList<Integer> _sourceNodes;
 
 	/**
 	 * Sink node id of the sensor network
@@ -90,13 +92,19 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 	/**
 	 * Maps extent names to source nodes
 	 */
-	private TreeMap<String,int[]> _extentToSitesMapping = 
-		new TreeMap<String,int[]>(); 
+	private TreeMap<String, ArrayList<Integer>> _extentToSitesMapping = 
+		new TreeMap<String,ArrayList<Integer>>(); 
 	
 	/**
 	 * The Sensor Network Connectivity bridge to interface with this sensor network.
 	 */
  	private SNCB sncb;	
+ 	
+ 	/**
+ 	 * the xml document i think
+ 	 */
+ 	private Element xml;
+ 	
 		
 	/**
 	 * Constructor for Sensor Network Metadata.
@@ -117,6 +125,7 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 	throws SourceMetadataException, TopologyReaderException, SNCBException, 
 	SNEEConfigurationException {
 		super(sourceName, extentNames, SourceType.SENSOR_NETWORK);
+		this.xml = xml;
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SensorNetworkSourceMetadata()");
 		}
@@ -180,6 +189,7 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 			logger.trace("ENTER setSourceSites() for " +
 					"number of extents " + nodesxml.getLength());
 		StringBuffer sourceSitesText = new StringBuffer();
+		_extentToSitesMapping.clear();
 		for (int i = 0; i < nodesxml.getLength(); i++) {
 			Node extentElem = nodesxml.item(i);
 			NamedNodeMap attrs = extentElem.getAttributes();
@@ -193,8 +203,11 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 			} else {
 				sourceSitesText.append("," + sitesText);				
 			}
-			int[] sites = SourceMetadataUtils.convertNodes(sitesText);
-			if (sites.length == 0) {
+			int[] tempArray = SourceMetadataUtils.convertNodes(sitesText);
+			//convert between int [] and arraylist
+			ArrayList<Integer> sites = new ArrayList<Integer>();
+			for (int j : tempArray) sites.add(j);
+			if (sites.size() == 0) {
 				String message = "No sites information found for "+extentName;
 				logger.warn(message);
 				throw new SourceMetadataException(message);
@@ -205,12 +218,40 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 		}
 		if (logger.isTraceEnabled())
 			logger.trace("sites text " + sourceSitesText);
-		_sourceNodes = SourceMetadataUtils.convertNodes(
-				sourceSitesText.toString());
+		int [] tempArray = SourceMetadataUtils.convertNodes(sourceSitesText.toString());
+	  //convert between int [] and arraylist
+		_sourceNodes = new ArrayList<Integer>();
+		for (int i : tempArray) _sourceNodes.add(i);
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN setSourceSites()");
 	}
 
+	/**
+	 * removes the node from all extents to which it is associated
+	 * @param nodeid
+	 */
+	public void removeSourceSite(int nodeid)
+	{
+	  Iterator<String> keyIterator = _extentToSitesMapping.keySet().iterator();
+	  while(keyIterator.hasNext())
+	  {
+	    String key = keyIterator.next();
+	    ArrayList<Integer> nodesToWhichThisExtentExists = _extentToSitesMapping.get(key);
+	    if(nodesToWhichThisExtentExists.contains(nodeid))
+	    {
+	      _extentToSitesMapping.remove(key);
+	      nodesToWhichThisExtentExists.remove(nodeid);
+	      _extentToSitesMapping.put(key, nodesToWhichThisExtentExists);
+	    }
+	    
+	  }
+	}
+	
+	public void resetSources() throws SourceMetadataException
+	{
+	  setSourceSites(xml.getElementsByTagName("extent"));
+	}
+	
 	@Override
 	public String toString() {
 		StringBuffer s = new StringBuffer(super.toString());
@@ -222,8 +263,11 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 	 * sensing data.
 	 * @return an array of node identifiers
 	 */
-	public int[] getSourceSites() {
-		return _sourceNodes;
+	public Integer[] getSourceSites()
+	{
+	  Integer [] returnvalue = new Integer[_sourceNodes.size()];
+	  _sourceNodes.toArray(returnvalue);
+		return returnvalue;
 	}
 
 	/**
@@ -231,9 +275,12 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 	 * sensing data for a given extent.
 	 * @return an array of node identifiers
 	 */
-	public int[] getSourceSites(String extentName) {
-		int sites[] = this._extentToSitesMapping.get(extentName.toLowerCase());
-		return sites;
+	public ArrayList<Integer> getSourceSites(String extentName) 
+	{
+	  ArrayList<Integer> sites = this._extentToSitesMapping.get(extentName.toLowerCase());
+	  return sites;
+		//int sites[] = this._extentToSitesMapping.get(extentName.toLowerCase());
+		//return sites;
 	}
 
 	/**
@@ -262,10 +309,10 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 			if (op instanceof SensornetAcquireOperator) {
 				SensornetAcquireOperator acqOp = (SensornetAcquireOperator)op;
 				String extentName = acqOp.getExtentName();
-				int[] extentSites = this._extentToSitesMapping.get(extentName);
-				for (int i = 0; i < extentSites.length; i++) {
-					siteSet.add(extentSites[i]);	
-				}
+				ArrayList<Integer> extentSites = this._extentToSitesMapping.get(extentName);
+				for (int i = 0; i < extentSites.size(); i++) {
+					siteSet.add(extentSites.get(i));	
+				}                                                                                                                                                                                                                                                                                                                                                                                                                                                       
 			}
 		}
 		return Utils.hashset_to_int_array(siteSet);

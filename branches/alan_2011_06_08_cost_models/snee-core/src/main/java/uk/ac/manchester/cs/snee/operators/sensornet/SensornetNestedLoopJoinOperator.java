@@ -1,6 +1,8 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
 
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
@@ -84,7 +86,7 @@ public class SensornetNestedLoopJoinOperator extends SensornetOperatorImpl {
 	}
 
     /** {@inheritDoc} */
-    public final int[] getSourceSites() {
+    public final ArrayList<Integer> getSourceSites() {
     	return super.defaultGetSourceSites();
     }
     

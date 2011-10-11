@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -70,7 +71,7 @@ public interface SensornetOperator extends Node {
 	 * 
 	 * @return Sorted list of nodes that provide data for this operator.
 	 */
-	int[] getSourceSites();
+	ArrayList<Integer> getSourceSites();
 
     /**
      * The size of the output.

@@ -128,13 +128,13 @@ public class WhereScheduler {
  	 	
 		    final Fragment frag = fragIter.next();
 		    if (frag.isLocationSensitive()) {
-			int[] sites;
+			ArrayList<Integer> sites;
 //			data source 
 			//Add scanOperator here
 			if (frag.containsOperatorType(SensornetAcquireOperator.class)) {
 			    sites = frag.getSourceNodes(); 		
 			} else { //deliver
-			    sites = new int[] { sink };
+			    sites = new ArrayList<Integer>(sink);
 			}
  		
 			frag.addDesiredSites(sites, rt);

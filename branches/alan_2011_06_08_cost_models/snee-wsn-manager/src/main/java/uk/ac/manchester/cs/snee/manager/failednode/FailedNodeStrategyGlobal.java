@@ -39,6 +39,7 @@ import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
@@ -117,12 +118,16 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
 	  //remove nodes from topology
 		network = this.getWsnTopology();
 		network = cloner.deepClone(network);
+		//remove node from topology and source metadata
 		Iterator<String> failedNodeIterator = failedNodes.iterator();
+		SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) _metadata;
 		while(failedNodeIterator.hasNext())
 		{
 		  String nodeID = failedNodeIterator.next();
+		  sm.removeSourceSite(new Integer(nodeID));
 		  network.removeNode(nodeID);
 		}
+		
 	  makeNetworkFile();
 		//remove exchanges from PAF
 		PAF paf = cloner.deepClone(qep.getIOT().getPAF());

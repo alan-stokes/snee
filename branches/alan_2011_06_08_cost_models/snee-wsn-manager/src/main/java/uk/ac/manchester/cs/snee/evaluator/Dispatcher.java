@@ -314,4 +314,14 @@ public class Dispatcher {
     
   }
 
+  public QueryExecutionPlan getQEP() 
+  {
+    return _autonomicManager.getCurrentQEP();
+  }
+
+  public void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles)
+  {
+    _autonomicManager.simulateEnergyDrainofAganedaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
+  }
+
 }

@@ -89,11 +89,6 @@ public class QueryCompiler {
 	private MetadataManager metadata;
 	private QueryExecutionPlanAbstract qep;
 	private static boolean deletedFolderContents = false;
-	
-	public QueryExecutionPlan getQEP()
-	{
-		return qep;
-	}
 
 	public QueryCompiler(MetadataManager schema) 
 	throws TypeMappingException {

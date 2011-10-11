@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.operators.sensornet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -652,11 +653,17 @@ public CostParameters getCostParams()
      * 
      * @return Sorted list of nodes that provide data for this operator.
      */
-    public final int[] defaultGetSourceSites() {
+    public final ArrayList<Integer> defaultGetSourceSites() {
         final Iterator<SensornetOperator> ops = this.childOperatorIterator();
-        int[] result = ops.next().getSourceSites();
-        while (ops.hasNext()) {
-            result =  this.mergeIntArrays(result, ops.next().getSourceSites());
+        ArrayList<Integer> result = ops.next().getSourceSites();
+        while (ops.hasNext()) 
+        {
+            result.addAll(ops.next().getSourceSites());
+            HashSet<Integer> hs = new HashSet<Integer>();
+            hs.addAll(result);
+            result.clear();
+            result.addAll(hs);
+            //result = this.mergeIntArrays(result, ops.next().getSourceSites());
         }
         return result;
     }

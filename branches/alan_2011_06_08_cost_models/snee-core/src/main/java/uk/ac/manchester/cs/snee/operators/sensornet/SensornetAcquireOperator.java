@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -51,7 +52,7 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 	}
 
   @Override
-	public int[] getSourceSites() {
+	public ArrayList<Integer> getSourceSites() {
 		return this.sourceMetadata.getSourceSites(acqOp.getExtentName());
 	}
 

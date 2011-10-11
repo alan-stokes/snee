@@ -74,10 +74,12 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   private int noDeadNodes = 0;
   private int adaptionCount = 1;
   private String queryName = "";
+  
   // folder for autonomic data
   private File outputFolder = new File("AutonomicManagerData");
   private HashMap<String, RunTimeSite> runningSites;
-  //private static Logger resultsLogger = Logger.getLogger("results.autonomicManager");
+  
+  //private final static Logger resultsLogger = Logger.getLogger(AutonomicManagerImpl.class.getName());
 
   //fixed parameters of autonomic calculations
   private final int numberOfTreesToUse = 48;
@@ -244,8 +246,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
       throw new AutonomicManagerException("strategies can not produce any adaptations");
     }
     adaptionCount++;
-    //newQEP.getIOT().exportAsDotFileWithFrags(fname, label, exchangesOnSites)
-    //new AgendaIOTUtils( newQEP.getAgendaIOT(), newQEP.getIOT(), true).generateImage();
+
   }
   
   /**
@@ -282,21 +283,10 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
    * @param failedNodes
    */
   private void removeFailedNodesFromRunningNodes(ArrayList<String> failedNodes)
-  {/*
-    if(runningSites != null)
-    {
-      Iterator<String> failedNodeIterator = failedNodes.iterator();
-      while(failedNodeIterator.hasNext())
-      {
-        String failedNodeID = failedNodeIterator.next();
-        runningSites.remove(failedNodeID);
-      }
-    }*/
+  {
   }
 
-  /* (non-Javadoc)
-   * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#runCostModels()
-   */
+
   @Override
   public void runCostModels() throws OptimizationException 
 
@@ -305,9 +295,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     anyliser.runECMs();
   }
   
-  /* (non-Javadoc)
-   * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#runAnyliserWithDeadNodes()
-   */
+
   @Override
   public void runAnyliserWithDeadNodes() 
   throws OptimizationException
@@ -320,27 +308,18 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
 	  anyliser.queryStarted();
   }
   
-  /* (non-Javadoc)
-   * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#setDeadNodes(java.util.ArrayList)
-   */
   @Override
   public void setDeadNodes(ArrayList<String> deadNodes)
   {
 	  this.deadNodes = deadNodes;
   }
   
-  /* (non-Javadoc)
-   * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#setNoDeadNodes(int)
-   */
   @Override
   public void setNoDeadNodes(int noDeadNodes)
   {
 	  this.noDeadNodes = noDeadNodes;
   }
   
-  /* (non-Javadoc)
-   * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#getCECMEpochResult()
-   */
   @Override
   public float getCECMEpochResult() 
   throws OptimizationException
@@ -348,9 +327,6 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     return anyliser.getCECMEpochResult();
   }
 
-  /* (non-Javadoc)
-   * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#getCECMAgendaResult()
-   */
   @Override
   public float getCECMAgendaResult() 
   throws OptimizationException
@@ -358,28 +334,20 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     return anyliser.getCECMAgendaResult();
   }
 
-  /* (non-Javadoc)
-   * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#queryEnded()
-   */
   @Override
   public void queryEnded()
   {
     monitor.queryEnded();  
   }
 
-  /* (non-Javadoc)
-   * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#callAnaysliserAnaylsisSNEECard(java.util.Map)
-   */
+
   @Override
   public void callAnaysliserAnaylsisSNEECard(Map <Integer, Integer> sneeTuplesPerEpoch)
   {
     anyliser.anaylsisSNEECard(sneeTuplesPerEpoch);
   }
   
-  //no tuples received this query
-  /* (non-Javadoc)
-   * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#callAnaysliserAnaylsisSNEECard()
-   */
+
   @Override
   public void callAnaysliserAnaylsisSNEECard()
   {
@@ -387,18 +355,12 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     
   }
 
-  /* (non-Javadoc)
-   * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#setQuery(java.lang.String)
-   */
   @Override
   public void setQuery(String query)
   {
     monitor.setQuery(query);
   }
   
-  /* (non-Javadoc)
-   * @see uk.ac.manchester.cs.snee.manager.AutonomicManager#getOutputFolder()
-   */
   @Override
   public File getOutputFolder()
   {
@@ -457,7 +419,6 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   public void setQueryParams(QoSExpectations qoS)
   {
     this.setQueryQoS(qoS);
-    
   }
 
   public void setQueryQoS(QoSExpectations queryQoS)
@@ -473,6 +434,30 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   public int getActiveStrategies()
   {
     return anyliser.getOperatingStrategies();
+  }
+
+  @Override
+  public QueryExecutionPlan getCurrentQEP() 
+  {
+    return qep;
+  }
+
+  public void setCurrentQEP(SensorNetworkQueryPlan newQEP)
+  {
+    qep = newQEP;
+  }
+
+  @Override
+  public void runSimulatedNumberOfAgendaExecutionCycles(int numberofAgendaExecutionCycles)
+  {
+    monitor.simulateNumeriousAgendaExecutionCycles(numberofAgendaExecutionCycles);  
+  }
+
+  @Override
+  public void simulateEnergyDrainofAganedaExecutionCycles(
+      int fixedNumberOfAgendaExecutionCycles)
+  {
+    monitor.simulateNumeriousAgendaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
   }
 
 }

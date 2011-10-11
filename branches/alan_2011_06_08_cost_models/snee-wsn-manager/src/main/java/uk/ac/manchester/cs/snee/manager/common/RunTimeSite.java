@@ -15,12 +15,14 @@ public class RunTimeSite implements Serializable
   private Double currentAdaptationEnergyCost = new Double (0); //J
   private Double qepExecutionCost = new Double(0);;  //J
   private Site representativeSite; 
+  private Double thresholdEnergy = new Double(0);
   
   public RunTimeSite(Double currentEnergy, Site representativeSite, Double qepExecutionCost)
   {
     this.currentEnergy = currentEnergy;
     this.representativeSite = representativeSite;
     this.qepExecutionCost = qepExecutionCost;
+    setThresholdEnergy(Math.max(currentEnergy / 100, qepExecutionCost));
   }
   
   public Double getQepExecutionCost()
@@ -92,6 +94,16 @@ public class RunTimeSite implements Serializable
   public String toString()
   {
     return this.representativeSite.toString();
+  }
+
+  public void setThresholdEnergy(Double thresholdEnergy)
+  {
+    this.thresholdEnergy = thresholdEnergy;
+  }
+
+  public Double getThresholdEnergy()
+  {
+    return thresholdEnergy;
   }
   
 }

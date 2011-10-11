@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -64,7 +65,7 @@ public class SensornetProjectOperator extends SensornetOperatorImpl {
     }
 	
 	/** {@inheritDoc} */
-    public final int[] getSourceSites() {
+    public final ArrayList<Integer> getSourceSites() {
     	return super.defaultGetSourceSites();
     }
 	

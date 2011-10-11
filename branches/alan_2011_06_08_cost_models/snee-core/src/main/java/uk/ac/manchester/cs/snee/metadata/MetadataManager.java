@@ -441,12 +441,12 @@ public class MetadataManager {
 				if (sm.getSourceType()==SourceType.SENSOR_NETWORK) {
 					SensorNetworkSourceMetadata snsm = 
 						(SensorNetworkSourceMetadata)sm;
-					int[] sites = snsm.getSourceSites(extentName);
+					ArrayList<Integer> sites = snsm.getSourceSites(extentName);
 					if (sites==null)
 						continue; 
 					//i.e., extent metadata does not specify any sites
 					//this code will need to be reviewed if we support more than one WSN per extent
-					cardinality = sites.length;
+					cardinality = sites.size();
 					em.setCardinality(cardinality);
 				} else {
 					//TODO: Cardinality estimates for non-sensor network sources
