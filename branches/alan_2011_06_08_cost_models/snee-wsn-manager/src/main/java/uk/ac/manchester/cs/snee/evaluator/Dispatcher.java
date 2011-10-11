@@ -197,7 +197,7 @@ public class Dispatcher {
 	  SensorNetworkQueryPlan snQueryPlan = (SensorNetworkQueryPlan)queryPlan;
     sncb = snQueryPlan.getSNCB();
     SourceMetadataAbstract metadata = _metadata.getSource(snQueryPlan.getMetaData().getOutputAttributes().get(1).getExtentName());
-    _autonomicManager.initilise(metadata, queryPlan, resultSet);
+    _autonomicManager.initilise(metadata, queryPlan, resultSet, queryID);
   }
 	
 	

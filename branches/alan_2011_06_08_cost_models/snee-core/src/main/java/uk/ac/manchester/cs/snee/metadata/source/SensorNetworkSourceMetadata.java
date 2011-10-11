@@ -240,7 +240,8 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 	    if(nodesToWhichThisExtentExists.contains(nodeid))
 	    {
 	      _extentToSitesMapping.remove(key);
-	      nodesToWhichThisExtentExists.remove(nodeid);
+	      int index = nodesToWhichThisExtentExists.indexOf(nodeid);
+	      nodesToWhichThisExtentExists.remove(index);
 	      _extentToSitesMapping.put(key, nodesToWhichThisExtentExists);
 	    }
 	    

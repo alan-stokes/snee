@@ -773,10 +773,8 @@ private void addOtherOpTypeInstances(SensornetOperator op,
       sourceSitesIDs = op.getSourceSites();
     else
     {
-      Site s = routingTree.getRoot();
-      String st = s.getID();
-      Integer i = Integer.parseInt(st);
-      sourceSitesIDs = new ArrayList<Integer> (Integer.parseInt(routingTree.getRoot().getID()));
+      sourceSitesIDs = new ArrayList<Integer> ();
+      sourceSitesIDs.add(Integer.parseInt(routingTree.getRoot().getID()));
     }
 
     //For each site, spawn an operator instance

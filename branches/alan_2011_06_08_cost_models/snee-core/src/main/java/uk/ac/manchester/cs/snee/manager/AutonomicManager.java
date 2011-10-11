@@ -58,7 +58,7 @@ public interface AutonomicManager
   public abstract void queryEnded();
   
   public abstract void initilise(SourceMetadataAbstract _metadata, QueryExecutionPlan queryPlan, 
-                                 ResultStore resultSet) 
+                                 ResultStore resultSet, int queryID) 
   throws SNEEException, SNEEConfigurationException, 
   SchemaMetadataException, TypeMappingException, 
   OptimizationException, IOException, CodeGenerationException;

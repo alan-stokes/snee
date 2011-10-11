@@ -92,12 +92,13 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   }
   
   public void initilise(SourceMetadataAbstract _metadata, QueryExecutionPlan qep, 
-                        ResultStore resultSet) 
+                        ResultStore resultSet, int queryid) 
   throws SNEEException, SNEEConfigurationException, 
   SchemaMetadataException, TypeMappingException, 
   OptimizationException, IOException, CodeGenerationException
   {
     this.qep = qep;
+    queryName = "query" + queryid;
     setupOutputFolder();
     this._metadata = _metadata;
     runningSites = new HashMap<String, RunTimeSite>();
@@ -150,23 +151,19 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
 
   private void setupOutputFolder() throws SNEEConfigurationException
   {
-    // TODO Auto-generated method stub
-    SensorNetworkQueryPlan sQep = (SensorNetworkQueryPlan) this.qep;
     //sort out output folder
     String outputDir = SNEEProperties.getSetting(
         SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
-        sep + sQep.getAgendaIOT().getQueryName();
-    setQueryName(sQep.getAgendaIOT().getQueryName());
+        sep + queryName;
+    setQueryName(queryName);
     outputFolder = new File(outputDir + sep + "AutonomicManData");
     deleteFileContents(outputFolder);
   }
 
   private void setupAdapatationFolder() throws SNEEConfigurationException
   {
-    SensorNetworkQueryPlan sQep = (SensorNetworkQueryPlan) this.qep;
     String outputDir = SNEEProperties.getSetting(
-        SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) +
-        sep + sQep.getAgendaIOT().getQueryName();
+        SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + sep + queryName;
     File firstOutputFolder = new File(outputDir + sep + "AutonomicManData");
     outputFolder = new File(firstOutputFolder.toString() + sep + "Adaption" + adaptionCount);
     outputFolder.mkdir();
