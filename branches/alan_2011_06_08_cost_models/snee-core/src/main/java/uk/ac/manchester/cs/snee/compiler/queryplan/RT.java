@@ -38,6 +38,8 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import com.rits.cloning.Cloner;
+
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
@@ -92,7 +94,9 @@ public class RT extends SNEEAlgebraicForm {
 			logger.debug("ENTER RT()"); 
 		this.paf = paf;
 		this.siteTree = rt;
-		this.network = network;
+		Cloner cloner = new Cloner();
+		cloner.dontClone(Logger.class);
+		this.network = cloner.deepClone(network);
 		Site root = (Site) this.siteTree.getRoot();
 		root.updateNumSources();
 		if (logger.isDebugEnabled())

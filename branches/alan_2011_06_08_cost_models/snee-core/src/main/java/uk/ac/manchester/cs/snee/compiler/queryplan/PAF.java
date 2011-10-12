@@ -9,6 +9,10 @@ import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
+import uk.ac.manchester.cs.snee.operators.logical.InputOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
 /**
@@ -164,4 +168,21 @@ public class PAF extends SNEEAlgebraicForm {
 			logger.debug("RETURN getOperatorTree()"); 
 		return this.physicalOperatorTree;
 	}
+
+  public void updateMetadataConnection(SensorNetworkSourceMetadata sm)
+  {
+    Iterator<Node> nodeIterator = instanceOperatorIterator(TraversalOrder.POST_ORDER);
+    while(nodeIterator.hasNext())
+    {
+      Node op = nodeIterator.next();
+      if(op instanceof SensornetAcquireOperator)
+      {
+        SensornetAcquireOperator sacop = (SensornetAcquireOperator) op;
+        sacop.setMetaData(sm);
+        InputOperator acop = (InputOperator) sacop.getLogicalOperator();
+        acop.setMetaData(sm);
+      }
+    }
+    
+  }
 }

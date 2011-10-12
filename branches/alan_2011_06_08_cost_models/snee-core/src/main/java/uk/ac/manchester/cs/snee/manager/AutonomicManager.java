@@ -89,4 +89,11 @@ public interface AutonomicManager
 
   public abstract void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles);
 
+  public abstract void forceFailedNodes(ArrayList<String> failedNodesID) 
+  throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, 
+  TypeMappingException, AgendaException, SNEEException, MetadataException, 
+  CodeGenerationException, UnsupportedAttributeTypeException, SourceMetadataException, 
+  TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException, 
+  SNEECompilerException, IOException, AutonomicManagerException;
+
 }

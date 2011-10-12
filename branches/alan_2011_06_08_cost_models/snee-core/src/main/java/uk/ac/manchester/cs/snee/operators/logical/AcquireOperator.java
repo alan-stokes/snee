@@ -47,6 +47,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 
 public class AcquireOperator extends InputOperator {

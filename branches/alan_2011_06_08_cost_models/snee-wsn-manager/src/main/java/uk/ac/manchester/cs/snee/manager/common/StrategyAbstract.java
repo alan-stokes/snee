@@ -139,6 +139,7 @@ public abstract class StrategyAbstract implements Serializable
       DAF daf = new IOTUtils(newIOT, qep.getCostParameters()).getDAF();
       SensorNetworkQueryPlan newQep 
       = new SensorNetworkQueryPlan(qep.getDLAF(), routingTree, daf, newIOT, newAgenda, qep.getID());
+      newQep.setQos(adaptation.getOldQep().getQos());
       adaptation.setNewQep(newQep);
     }
     return success;

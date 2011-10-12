@@ -289,7 +289,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
   }
 
   /**
-   * goes thoun routing tree, looknig for nodes which are not source nodes and are 
+   * goes though routing tree, looking for nodes which are not source nodes and are 
    * confluence sites which are sites which will cause likely changes to results when lost
    * @param allowDeathOfAcquires 
    * @param routingTree2
@@ -370,6 +370,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
           inRecoveryMode = false;
           client.runForTests(deadNodes, queryid ); 
           utils.updateLatexCore(queryid, testNo );
+          client.resetMetaData();
           System.gc();
           testNo++;
         }
@@ -377,11 +378,20 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
         {
           client.runForTests(deadNodes, queryid); 
           utils.updateLatexCore(queryid, testNo );
+          client.resetMetaData();
           System.gc();
           testNo++;
         }  
       }
     }
+  }
+
+  private void resetMetaData() 
+  throws SourceDoesNotExistException, SourceMetadataException,
+  SNEEConfigurationException, SNCBException, TopologyReaderException
+  {
+    SNEEController control = (SNEEController) controller;
+    control.resetMetaData(qep);
   }
 
   public void runForTests(ArrayList<String> failedNodes, int queryid)

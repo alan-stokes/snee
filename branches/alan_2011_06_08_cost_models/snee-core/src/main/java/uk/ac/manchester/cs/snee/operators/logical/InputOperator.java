@@ -13,6 +13,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 
 public abstract class InputOperator extends LogicalOperatorImpl
@@ -229,6 +230,11 @@ implements LogicalOperator {
 	public boolean isRemoveable() {
 		return false;
 	}
+
+  public void setMetaData(SensorNetworkSourceMetadata sm)
+  {
+    this.source = sm;
+  }
 
 	//XXX: Removed by AG as metadata now handled in metadata object
 //	/** 

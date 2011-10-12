@@ -47,6 +47,7 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
    * serialVersionUID
    */
   private static final long serialVersionUID = -1326297492822951325L;
+  protected Cloner cloner;
 
   /**
    * bog standard constructor
@@ -57,6 +58,8 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
     this.manager = manager;
     this._metadata = _metadata;
     this.outputFolder = manager.getOutputFolder();
+    cloner  = new Cloner();
+    cloner.dontClone(Logger.class);
   }
   
   /**
@@ -174,8 +177,7 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
           SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
       boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
           SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
-      MetadataManager metadata = new MetadataManager(qep.getSNCB());
-      WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing, metadata, useNetworkController);
+      WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing, costParameters, useNetworkController);
       AgendaIOT agenda;
       try
       {

@@ -39,13 +39,13 @@ public class WhenScheduler {
 	 * Constructor for Sensor Network When-Scheduling Decision Maker.
 	 */
 	public WhenScheduler(boolean allowDiscontinuousSensing,
-			MetadataManager m,
+			CostParameters costParameters,
 			boolean useNetworkController) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER WhenScheduler()");
 
 		this.allowDiscontinuousSensing=allowDiscontinuousSensing;
-		this.costParams = m.getCostParameters();
+		this.costParams = costParameters;
 		if (logger.isDebugEnabled());
 			logger.debug("RETURN WhenScheduler()");
 	}

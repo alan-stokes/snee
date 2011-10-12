@@ -53,7 +53,8 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 
   @Override
 	public ArrayList<Integer> getSourceSites() {
-		return this.sourceMetadata.getSourceSites(acqOp.getExtentName());
+		ArrayList<Integer> sites = this.sourceMetadata.getSourceSites(acqOp.getExtentName());
+		return sites;
 	}
 
 	/** {@inheritDoc} */
@@ -110,5 +111,10 @@ public class SensornetAcquireOperator extends SensornetOperatorImpl {
 	public String getExtentName() {
 		return acqOp.getExtentName();
 	}
+
+  public void setMetaData(SensorNetworkSourceMetadata sm)
+  {
+    this.sourceMetadata = sm; 
+  }
 
 }

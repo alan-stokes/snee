@@ -56,7 +56,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DLAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAFUtils;
-import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.rewriter.LogicalRewriter;

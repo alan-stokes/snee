@@ -57,6 +57,7 @@ import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
@@ -66,6 +67,9 @@ import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceType;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
@@ -280,7 +284,8 @@ public class SNEEController implements SNEE {
 			logger.debug("RETURN initialise()");
 	}
 
-  protected SNCB initialiseSNCB(double duration) throws SNEEConfigurationException, SNCBException {
+  protected SNCB initialiseSNCB(double duration) throws SNEEConfigurationException, SNCBException 
+  {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER initialiseSNCB()");
 		
@@ -301,18 +306,21 @@ public class SNEEController implements SNEE {
 	}
 
 	protected QueryCompiler initialiseQueryCompiler() 
-	throws TypeMappingException {
+	throws TypeMappingException 
+	{
 		return new QueryCompiler(_metadata);
 	}
 
-	protected Dispatcher initialiseDispatcher() {
+	protected Dispatcher initialiseDispatcher() 
+	{
 		return new Dispatcher(_metadata);
 	}
 	
 	/* (non-Javadoc)
 	 * @see uk.ac.manchester.cs.snee.SNEE#getExtents()
 	 */
-	public Collection<String> getExtentNames() {
+	public Collection<String> getExtentNames() 
+	{
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getExtents()");
 		Collection<String> extentNames = _metadata.getExtentNames();
@@ -326,7 +334,8 @@ public class SNEEController implements SNEE {
 	 * @see uk.ac.manchester.cs.snee.SNEE#getExtentDetails(java.lang.String)
 	 */
 	public ExtentMetadata getExtentDetails(String extentName) 
-	throws ExtentDoesNotExistException {
+	throws ExtentDoesNotExistException 
+	{
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER getExtentDetails() with " + extentName);
 		ExtentMetadata extent = _metadata.getExtentMetadata(extentName);
@@ -769,5 +778,16 @@ public class SNEEController implements SNEE {
   public void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles)
   {
     _dispatcher.simulateEnergyDrainofAganedaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
+  }
+
+  public void resetMetaData(SensorNetworkQueryPlan qep) 
+  throws SourceDoesNotExistException, SourceMetadataException, 
+  SNEEConfigurationException, SNCBException, TopologyReaderException
+  {
+    SourceMetadataAbstract metadata = 
+      _metadata.getSource(qep.getMetaData().getOutputAttributes().get(1).getExtentName());
+    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) metadata;
+    sm.resetSources();
+    sm.resetTopology();
   }
 }

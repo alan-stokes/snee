@@ -1,8 +1,6 @@
 package uk.ac.manchester.cs.snee.manager;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
@@ -104,8 +102,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     runningSites = new HashMap<String, RunTimeSite>();
     anyliser = new Anaylsiser(this, _metadata, _metadataManager);
     planner = new Planner(this, _metadata, _metadataManager);
-    monitor.setQueryPlan(qep);
-    monitor.setResultSet(resultSet);
+    monitor.initilise(_metadata, qep, resultSet);
     anyliser.initilise(qep, numberOfTreesToUse);
     setupRunningSites();
   }
@@ -226,9 +223,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     setupAdapatationFolder();
     anyliser.updateFrameWorkStorageLocation(outputFolder);
     planner.updateStorageLocation(outputFolder);
-    removeFailedNodesFromRunningNodes(failedNodes);
-    recordFailedNodes(failedNodes);
-    setFailedNodesToDeadInQEP(failedNodes);
+    monitor.recordFailedNodes(failedNodes, outputFolder);
     AdaptationCollection choices = anyliser.runFailedNodeStragities(failedNodes);
     if(choices.getSize() !=0)
     {
@@ -246,44 +241,6 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
 
   }
   
-  /**
-   * method used to define dead olds in qep. (used in cardianlity cost models
-   * @param failedNodes
-   */
-  private void setFailedNodesToDeadInQEP(ArrayList<String> failedNodes)
-  {
-    Iterator<String> failedNodesIterator = failedNodes.iterator();
-    SensorNetworkQueryPlan sqep = (SensorNetworkQueryPlan) qep;
-    while(failedNodesIterator.hasNext())
-    {
-      String failedNode = failedNodesIterator.next();
-      sqep.getRT().getSite(failedNode).setisDead(true);
-    }
-  }
-
-  /**
-   * outputs failed nodes in a text file for easy tracking after execution
-   * @param failedNodes
-   * @throws IOException 
-   */
-  private void recordFailedNodes(ArrayList<String> failedNodes) throws IOException
-  {
-    File failedNodeTextFile = new File(outputFolder + sep + "failedNodesRecord");
-    BufferedWriter writer = new BufferedWriter(new FileWriter(failedNodeTextFile));
-    writer.write(failedNodes.toString());
-    writer.flush();
-    writer.close();
-  }
-
-  /**
-   * removes failed nodes from the running energy measurements.
-   * @param failedNodes
-   */
-  private void removeFailedNodesFromRunningNodes(ArrayList<String> failedNodes)
-  {
-  }
-
-
   @Override
   public void runCostModels() throws OptimizationException 
 
@@ -291,7 +248,6 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     System.out.println("running cost model estimates");
     anyliser.runECMs();
   }
-  
 
   @Override
   public void runAnyliserWithDeadNodes() 
@@ -442,6 +398,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   public void setCurrentQEP(SensorNetworkQueryPlan newQEP)
   {
     qep = newQEP;
+    
   }
 
   @Override
@@ -455,6 +412,17 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
       int fixedNumberOfAgendaExecutionCycles)
   {
     monitor.simulateNumeriousAgendaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
+  }
+
+  @Override
+  public void forceFailedNodes(ArrayList<String> failedNodesID) 
+  throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, 
+  TypeMappingException, AgendaException, SNEEException, MetadataException, 
+  CodeGenerationException, UnsupportedAttributeTypeException, SourceMetadataException,
+  TopologyReaderException, SNEEDataSourceException, CostParametersException, 
+  SNCBException, SNEECompilerException, IOException, AutonomicManagerException
+  {
+    monitor.forceFailedNodes(failedNodesID);
   }
 
 }

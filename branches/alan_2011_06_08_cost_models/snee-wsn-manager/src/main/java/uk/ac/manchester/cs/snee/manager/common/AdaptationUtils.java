@@ -10,6 +10,7 @@ import java.util.List;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 
 public class AdaptationUtils
@@ -94,6 +95,8 @@ public class AdaptationUtils
     .exportAsLatex(adaptFolder.toString() + sep, "final choice Agenda Latex");
     new AgendaIOTUtils(adapt.getOldQep().getAgendaIOT(), adapt.getOldQep().getIOT(), false)
     .exportAsLatex(adaptFolder.toString() + sep, "Old Agenda Latex");
+    new RTUtils(adapt.getNewQep().getRT()).exportAsDotFile(adaptFolder.toString() + sep + "newRT");
+    new RTUtils(adapt.getOldQep().getRT()).exportAsDotFile(adaptFolder.toString() + sep + "oldRT");
     
   }
   

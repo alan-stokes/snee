@@ -84,8 +84,8 @@ public class Anaylsiser extends AutonomicManagerComponent
         new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
       FailedNodeStrategyPartial failedNodeFrameworkSpaceAndTimePinned = 
         new FailedNodeStrategyPartial(manager, _metadata, true, true);
-      FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
-        new FailedNodeStrategyPartial(manager, _metadata, true, false);
+      //FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
+       // new FailedNodeStrategyPartial(manager, _metadata, true, false);
       frameworks.add(failedNodeFrameworkGlobal);
       frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
     }
@@ -99,8 +99,8 @@ public class Anaylsiser extends AutonomicManagerComponent
     { 
       FailedNodeStrategyPartial failedNodeFrameworkSpaceAndTimePinned = 
         new FailedNodeStrategyPartial(manager, _metadata, true, true);
-      FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
-        new FailedNodeStrategyPartial(manager, _metadata, true, false);
+      //FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
+      //  new FailedNodeStrategyPartial(manager, _metadata, true, false);
       FailedNodeStrategyLocal failedNodeFrameworkLocal = 
         new FailedNodeStrategyLocal(manager, _metadata);
       FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 

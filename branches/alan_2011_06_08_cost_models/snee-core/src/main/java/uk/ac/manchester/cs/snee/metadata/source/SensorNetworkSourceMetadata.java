@@ -105,7 +105,17 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
  	 */
  	private Element xml;
  	
-		
+ 	/**
+ 	 * String representing the topology file 
+ 	 */
+ 	private String defaultTopFile;
+ 	
+ 	/**
+ 	 * String representing the res file 
+ 	 */
+ 	private String defaultResFile;
+ 	
+ 	
 	/**
 	 * Constructor for Sensor Network Metadata.
 	 * @param sourceName
@@ -126,6 +136,8 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 	SNEEConfigurationException {
 		super(sourceName, extentNames, SourceType.SENSOR_NETWORK);
 		this.xml = xml;
+		this.defaultResFile = defaultResFile;
+		this.defaultTopFile = defaultTopFile;
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER SensorNetworkSourceMetadata()");
 		}
@@ -243,6 +255,7 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 	      int index = nodesToWhichThisExtentExists.indexOf(nodeid);
 	      nodesToWhichThisExtentExists.remove(index);
 	      _extentToSitesMapping.put(key, nodesToWhichThisExtentExists);
+	      System.out.println(_extentToSitesMapping.toString());
 	    }
 	    
 	  }
@@ -318,4 +331,40 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 		}
 		return Utils.hashset_to_int_array(siteSet);
 	}
+	
+	/**
+	 * removes node from the metadata topology
+	 */
+	public void removeNodeFromTopology(String nodeID)
+	{
+	  _topology.removeNode(nodeID);
+	}
+	
+	/**
+	 * resets the topology to the original topology
+	 */
+	public void resetTopology() 
+	throws SNEEConfigurationException, SNCBException, TopologyReaderException
+	{
+	  if (SNEEProperties.getBoolSetting(
+	      SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION)) 
+	  {
+	    Date now = new Date();
+	    String root = System.getProperty("user.dir")+"/output/metadata/";
+	    String timeStampStr = now.toString().replaceAll(" ", "_").replaceAll(":", "_");
+	    String topFile = root + "topology-"+this.getSourceName()+"-"+timeStampStr+".xml";
+      String resFile = root + "resources-"+this.getSourceName()+"-"+timeStampStr+".xml";
+      this.sncb.init(topFile, resFile);
+      this._topology = TopologyReader.readNetworkTopology(topFile, resFile);
+	  }
+	  else
+	  {
+	    logger.info("Using default topology file: "+defaultTopFile);
+      this._topology = TopologyReader.readNetworkTopology(defaultTopFile, defaultResFile);      
+	  }
+	}
+	
+	
+	
+	
 }

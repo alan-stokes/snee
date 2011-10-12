@@ -1,7 +1,6 @@
 package uk.ac.manchester.cs.snee.operators.sensornet;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -616,7 +615,7 @@ public CostParameters getCostParams()
      * @param smaller The smaller of the two arrays.
      * @return A single array with all values of both 
      * sorted and without duplicates.
-     */
+     *//*
     private int[] mergeIntArrays(final int[] bigger, final int[]smaller) {
         if (smaller.length > bigger.length) {
             return this.mergeIntArrays(smaller, bigger);
@@ -645,7 +644,7 @@ public CostParameters getCostParams()
         } else {
             return bigger;
         }
-    }    
+    }   */ 
 	
     /**
      * Get the source node for the operator by getting the source nodes of

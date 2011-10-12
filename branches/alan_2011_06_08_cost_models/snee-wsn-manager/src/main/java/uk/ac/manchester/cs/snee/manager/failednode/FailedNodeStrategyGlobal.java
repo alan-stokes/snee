@@ -3,12 +3,7 @@ package uk.ac.manchester.cs.snee.manager.failednode;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-
-import org.apache.log4j.Logger;
-
-import com.rits.cloning.Cloner;
 
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEECompilerException;
@@ -52,11 +47,9 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
    * serialVersionUID
    */
   private static final long serialVersionUID = -4443257551168408228L;
-  private IOT oldIOT;
   private AgendaIOT oldAgenda;
   private MetadataManager _metadataManager;
   private Topology network;
-  private Cloner cloner;
   private File globalFile;
   
   
@@ -66,8 +59,6 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
   {
     super(manager, _metadata);
     this._metadataManager = _metadataManager;
-    cloner = new Cloner();
-    cloner.dontClone(Logger.class);
   }
 
   @Override
@@ -88,8 +79,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
 	{
 	  this.qep = (SensorNetworkQueryPlan) oldQep;
 	  outputFolder = manager.getOutputFolder();
-	  this.oldIOT = qep.getIOT();
-    oldIOT.setID("OldIOT");
+    this.qep.getIOT().setID("OldIOT");
     this.oldAgenda = this.qep.getAgendaIOT();
 	}
 
@@ -110,27 +100,19 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
 	CostParametersException, SNCBException, NumberFormatException, SNEECompilerException 
 	
 	{
+	  this.qep = (SensorNetworkQueryPlan) manager.getCurrentQEP();
 	  System.out.println("Running Failed Node FrameWork Global");
     globalFile = new File(outputFolder.toString() + sep + "global Stragety");
     globalFile.mkdir();
 	  List<Adaptation> adaptation = new ArrayList<Adaptation>();
 	  Adaptation adapt = new Adaptation(qep, StrategyID.FailedNodeGlobal, 1);
-	  //remove nodes from topology
-		network = this.getWsnTopology();
-		network = cloner.deepClone(network);
-		//remove node from topology and source metadata
-		Iterator<String> failedNodeIterator = failedNodes.iterator();
 		SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) _metadata;
-		while(failedNodeIterator.hasNext())
-		{
-		  String nodeID = failedNodeIterator.next();
-		  sm.removeSourceSite(new Integer(nodeID));
-		  network.removeNode(nodeID);
-		}
+		network = sm.getTopology();
 		
 	  makeNetworkFile();
 		//remove exchanges from PAF
 		PAF paf = cloner.deepClone(qep.getIOT().getPAF());
+		paf.updateMetadataConnection(sm);
 		paf = this.removeExchangesFromPAF(paf);
 		//shove though distributed section of compiler
 		//routing
@@ -156,7 +138,9 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
     boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
         SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
     AgendaIOT newAgenda;
-    WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing, _metadataManager, useNetworkController);
+    WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing, 
+                                                _metadataManager.getCostParameters(), 
+                                                useNetworkController);
     try
     {
       newAgenda = whenSched.doWhenScheduling(newIOT, qep.getQos(), qep.getQueryName(), qep.getCostParameters());
@@ -169,7 +153,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
       throw new SNEECompilerException(e);
     }
     
-    boolean success = assessQEPsAgendas(oldIOT, newIOT, oldAgenda, newAgenda, false, adapt, failedNodes, routingTree);
+    boolean success = assessQEPsAgendas(this.qep.getIOT(), newIOT, oldAgenda, newAgenda, false, adapt, failedNodes, routingTree);
     adapt.setFailedNodes(failedNodes);
     
     if(success)
@@ -182,9 +166,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
   {
     File top = new File(globalFile.toString() + sep + "topology");
     top.mkdir();
-    network.exportAsDOTFile(top.toString() + sep + "topology");
-    // TODO Auto-generated method stub
-    
+    network.exportAsDOTFile(top.toString() + sep + "topology");  
   }
 
 }

@@ -159,7 +159,7 @@ public class SourcePlanner {
 	        SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
 	    boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
 	        SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
-	    WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing, metadata, useNetworkController);
+	    WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing, costParams, useNetworkController);
 	    AgendaIOT agenda = whenSched.doWhenScheduling(iot, qos, queryName, costParams);
 	    if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {
 	     // new AgendaIOTUtils(agenda, iot, true).generateImage();
@@ -243,7 +243,7 @@ public class SourcePlanner {
 				SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
 		boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
 				SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
-		WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing,
+		WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensincostParamsg,
 				metadata, useNetworkController);
 		Agenda agenda = whenSched.doWhenScheduling(daf, qos, queryName);
 		if (SNEEProperties.getBoolSetting(SNEEPropertyNames.GENERATE_QEP_IMAGES)) {

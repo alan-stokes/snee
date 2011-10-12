@@ -124,8 +124,7 @@ public class RTUtils extends PAFUtils {
 	  Iterator<String> siteIter = this.rt.siteTree.getAllNodes().keySet().iterator();
 	  try
     {
-      final PrintWriter out = new PrintWriter(new BufferedWriter(
-          new FileWriter(fname)));
+      final PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fname)));
 	    while(siteIter.hasNext())
 	    {
 	      String key = siteIter.next();

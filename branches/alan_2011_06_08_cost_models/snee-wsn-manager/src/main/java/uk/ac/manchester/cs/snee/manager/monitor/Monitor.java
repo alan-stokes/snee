@@ -1,5 +1,8 @@
 package uk.ac.manchester.cs.snee.manager.monitor;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -33,6 +36,8 @@ import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
@@ -40,7 +45,7 @@ import uk.ac.manchester.cs.snee.sncb.SNCBException;
 import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
 import uk.ac.manchester.cs.snee.sncb.SerialPortMessageReceiver;
 
-public class Monitor  extends AutonomicManagerComponent implements Observer 
+public class Monitor extends AutonomicManagerComponent implements Observer 
 {
   /**
    * serialVersionUID
@@ -56,6 +61,21 @@ public class Monitor  extends AutonomicManagerComponent implements Observer
   public Monitor(AutonomicManagerImpl autonomicManager)
   {
     manager = autonomicManager;
+  }
+  
+  public void initilise(SourceMetadataAbstract _metadata, QueryExecutionPlan qep, 
+                        ResultStore resultSet)
+  {
+    this._metadata = _metadata;
+    this.qep = (SensorNetworkQueryPlan) qep;
+    try
+    {
+      _results = new ResultStoreImpl(query, qep);
+    } catch (Exception e)
+    {
+      _results = resultSet;
+      e.printStackTrace();
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -163,18 +183,6 @@ public class Monitor  extends AutonomicManagerComponent implements Observer
     listener.addObserver(this);
   }
 
-  public void setResultSet(ResultStore resultSet) 
-  {
-    try
-    {
-      _results = new ResultStoreImpl(query, qep);
-    } catch (Exception e)
-    {
-      _results = resultSet;
-      e.printStackTrace();
-    }
-  }
-
   public void queryEnded()
   {
     if(!recievedPacketsThisQuery) 
@@ -186,11 +194,6 @@ public class Monitor  extends AutonomicManagerComponent implements Observer
   public void queryStarting()
   {
     recievedPacketsThisQuery = false;
-  }
-
-  public void setQueryPlan(QueryExecutionPlan qep)
-  {
-    this.qep = (SensorNetworkQueryPlan) qep; 
   }
 
   public void setQuery(String query)
@@ -214,8 +217,81 @@ public class Monitor  extends AutonomicManagerComponent implements Observer
     failedNodes.add(failedNode.getID());
     System.out.println("running fake node failure simulation");
     System.out.println("simulated failure of node 3");
+    removeFailedNodesFromRunningNodes(failedNodes);
+    setFailedNodesToDeadInQEP(failedNodes);
+    removeNodesFromMetaData(failedNodes);
     manager.runFailedNodeFramework(failedNodes);
     
+  }
+
+  /**
+   * simulates a set of failed nodes (forced from the client)
+   */
+  public void forceFailedNodes(ArrayList<String> failedNodes)
+  throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, 
+  TypeMappingException, AgendaException, SNEEException, MetadataException, 
+  CodeGenerationException, UnsupportedAttributeTypeException, SourceMetadataException, 
+  TopologyReaderException, SNEEDataSourceException, CostParametersException,
+  SNCBException, SNEECompilerException, IOException, AutonomicManagerException
+  {
+    removeFailedNodesFromRunningNodes(failedNodes);
+    setFailedNodesToDeadInQEP(failedNodes);
+    removeNodesFromMetaData(failedNodes);
+    manager.runFailedNodeFramework(failedNodes);
+  }
+  
+  /**
+   * removes failed nodes from the running energy measurements.
+   * @param failedNodes
+   */
+  private void removeFailedNodesFromRunningNodes(ArrayList<String> failedNodes)
+  {
+  }
+  
+  /**
+   * outputs failed nodes in a text file for easy tracking after execution
+   * @param failedNodes
+   * @throws IOException 
+   */
+  public void recordFailedNodes(ArrayList<String> failedNodes, File outputFolder) throws IOException
+  {
+    File failedNodeTextFile = new File(outputFolder + sep + "failedNodesRecord");
+    BufferedWriter writer = new BufferedWriter(new FileWriter(failedNodeTextFile));
+    writer.write(failedNodes.toString());
+    writer.flush();
+    writer.close();
+  }
+  
+  /**
+   * method used to define dead nodes in qep. (used in cardinality cost models
+   * @param failedNodes
+   */
+  private void setFailedNodesToDeadInQEP(ArrayList<String> failedNodes)
+  {
+    Iterator<String> failedNodesIterator = failedNodes.iterator();
+    SensorNetworkQueryPlan sqep = (SensorNetworkQueryPlan) qep;
+    while(failedNodesIterator.hasNext())
+    {
+      String failedNode = failedNodesIterator.next();
+      sqep.getRT().getSite(failedNode).setisDead(true);
+    }
+  }
+  
+  /**
+   * removes nodes from metadata topology and sources
+   * @param failedNodes
+   */
+  private void removeNodesFromMetaData(ArrayList<String> failedNodes) 
+  {
+    //remove node from topology and source metadata
+    Iterator<String> failedNodeIterator = failedNodes.iterator();
+    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) _metadata;
+    while(failedNodeIterator.hasNext())
+    {
+      String nodeID = failedNodeIterator.next();
+      sm.removeSourceSite(new Integer(nodeID));
+      sm.removeNodeFromTopology(nodeID);
+    }
   }
 
 }

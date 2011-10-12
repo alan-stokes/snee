@@ -286,8 +286,6 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
     Adaptation adapt = new Adaptation(qep, StrategyID.FailedNodeLocal, 1);
     
-    Cloner cloner = new Cloner();
-    cloner.dontClone(Logger.class);
     IOT clonedIOT = cloner.deepClone(qep.getIOT());
     RT currentRoutingTree = cloner.deepClone(qep.getRT());
     while(failedNodeIDsIterator.hasNext())

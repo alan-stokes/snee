@@ -151,7 +151,7 @@ public class CandiateRouter extends Router
       ArrayList<String> sources = new ArrayList<String>();
       String sink = removeExcessNodesAndEdges(workingTopology, oldRoutingTree, setofLinkedFailedNodes, 
                                               sources, depinnedNodes);
-      
+      System.out.println("sources are : " + sources.toString() + " and sink is: " + sink);
       //output reduced topology for help in keeping track of progress  
       new CandiateRouterUtils(this.network).exportReducedTopology(chainFolder, "reducedtopology", 
                                                                   true, workingTopology);
@@ -672,15 +672,20 @@ public class CandiateRouter extends Router
       {
         Node currentChild = inputs.next();
         if((!setofLinkedFailedNodes.contains(currentChild.getID()) && 
-           !depinnedNodes.contains(currentChild.getID())) ||
-           oldRoutingTree.getSite(currentChild.getID()).isSource())
+           !depinnedNodes.contains(currentChild.getID())) 
+        ||
+           (oldRoutingTree.getSite(currentChild.getID()).isSource()) &&
+           !setofLinkedFailedNodes.contains(currentChild.getID()))
           savedChildSites.add(currentChild.getID());
       }
       //go though parent
       Node output = failedSite.getOutput(0);
       if((!setofLinkedFailedNodes.contains(output.getID()) &&
-         !depinnedNodes.contains(output.getID())) ||
-        oldRoutingTree.getSite(output.getID()).isSource())
+         !depinnedNodes.contains(output.getID())) 
+      ||
+        (oldRoutingTree.getSite(output.getID()).isSource() &&
+        !setofLinkedFailedNodes.contains(output.getID())))
+        
         savedParentSite = output.getID();
     }
     

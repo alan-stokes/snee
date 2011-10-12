@@ -38,9 +38,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Logger;
-
-import com.rits.cloning.Cloner;
 
 /**
  * @author stokesa6
@@ -56,13 +53,11 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
   @SuppressWarnings("unused")
   private boolean spacePinned;
   private boolean timePinned;
-  private IOT oldIOT;
   private AgendaIOT oldAgenda;
   private Integer numberOfRoutingTreesToWorkOn = 0;
   private static int choice;
   private String sep = System.getProperty("file.separator");
   private File partialFolder; 
-  private Cloner cloner;
   /**
    * @param autonomicManager
    * the parent of this class.
@@ -75,8 +70,6 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     this.spacePinned = spacePinned;
     this.timePinned = timePinned;
     this.timePinned = false; 
-    cloner = new Cloner();
-    cloner.dontClone(Logger.class);
   }
   
   @Override
@@ -84,8 +77,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
   throws SchemaMetadataException 
   {
     this.qep = (SensorNetworkQueryPlan) oldQep;
-    this.oldIOT = qep.getIOT();
-    oldIOT.setID("OldIOT");
+    this.qep.getIOT().setID("OldIOT");
     this.oldAgenda = this.qep.getAgendaIOT();
     this.numberOfRoutingTreesToWorkOn = numberOfTrees;
   }
@@ -115,13 +107,6 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     Router router = new Router();
     //remove failed nodes out of new topology.
     Topology network = this.getWsnTopology();
-    network = cloner.deepClone(network);
-    Iterator<String> failedNodeIterator = failedNodes.iterator();
-    while(failedNodeIterator.hasNext())
-    {
-      String nodeID = failedNodeIterator.next();
-      network.removeNode(nodeID);
-    }
     
     RT globalRT = router.doRouting(qep.getDAF().getPAF(), qep.getQueryName(), network, _metadata);
     ArrayList<Integer> globalSiteIDs = globalRT.getSiteIDs();
@@ -236,7 +221,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
       File choiceFolder = new File(choiceFolderMain.toString() + sep + "choice" + choice);
       choiceFolder.mkdir();
       //create pinned paf
-      PAF paf = pinPhysicalOperators(oldIOT, failedNodes, depinnedNodes);
+      PAF paf = pinPhysicalOperators(this.qep.getIOT(), failedNodes, depinnedNodes);
       //run fragment paf though where scheduler.
       InstanceWhereSchedular instanceWhere = 
         new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), choiceFolder.toString());
@@ -245,15 +230,14 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
       this.oldAgenda.setID("old Agenda");
       AgendaIOT newAgenda = doSNWhenScheduling(newIOT, qep.getQos(), qep.getID(), qep.getCostParameters());
       //output new and old agendas
-      new FailedNodeStrategyPartialUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), oldIOT, newIOT, choiceFolder);
-      boolean success = assessQEPsAgendas(oldIOT, newIOT, oldAgenda, newAgenda, 
+      new FailedNodeStrategyPartialUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), this.qep.getIOT(), newIOT, choiceFolder);
+      boolean success = assessQEPsAgendas(this.qep.getIOT(), newIOT, oldAgenda, newAgenda, 
                                           timePinned, currentAdapatation, failedNodes, routingTree);
       currentAdapatation.setFailedNodes(failedNodes);
       if(success)
         totalAdapatations.add(currentAdapatation);
       choice++;
-    }
-    
+    } 
   }
 
   /**
@@ -314,7 +298,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
                                        queryName, numberOfRoutingTreesToWorkOn);
       if(routes.size() == 0)
       {
-        chooseNodeToDepin(oldIOT, failedNodes, depinnedNodes);
+        chooseNodeToDepin(this.qep.getIOT(), failedNodes, depinnedNodes);
         System.out.println("No routes avilable, so disconnecting nodes" + depinnedNodes.toString());
         return genereateRouteingTrees(oldRoutingTree, failedNodes, depinnedNodes, queryName, 
                                numberOfRoutingTreesToWorkOn, router, false);
@@ -324,7 +308,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     catch(Exception e)
     {
      // e.printStackTrace();
-      chooseNodeToDepin(oldIOT, failedNodes, depinnedNodes);
+      chooseNodeToDepin(this.qep.getIOT(), failedNodes, depinnedNodes);
       System.out.println("No routes avilable, so disconnecting nodes" + depinnedNodes.toString());
       return genereateRouteingTrees(oldRoutingTree, failedNodes, depinnedNodes, queryName, 
                              numberOfRoutingTreesToWorkOn, router, false);
@@ -338,7 +322,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
   
   public IOT getOldIOT()
   {
-    return oldIOT;
+    return this.qep.getIOT();
   }
 
   @Override
@@ -358,10 +342,10 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
    * expectations etc
    */
   private  List<Adaptation> adaptationAttempt(ArrayList<String> failedNodes,
-                                                        ArrayList<String> depinnedNodes, 
-                                                        PAF paf, RT rt, File partialFolder2, 
-                                                        List<Adaptation> totalAdapatations,
-                                                        boolean previouslyFailedToMeetQoSExpectations) 
+                                              ArrayList<String> depinnedNodes, 
+                                              PAF paf, RT rt, File partialFolder2, 
+                                              List<Adaptation> totalAdapatations,
+                                              boolean previouslyFailedToMeetQoSExpectations) 
   throws 
   NumberFormatException, SNEEConfigurationException, 
   SchemaMetadataException
@@ -369,7 +353,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     ArrayList<RT> routingTrees;
     try
     {
-      routingTrees = createNewRoutingTrees(failedNodes, depinnedNodes, paf, oldIOT.getRT(), 
+      routingTrees = createNewRoutingTrees(failedNodes, depinnedNodes, paf, this.qep.getIOT().getRT(), 
                                            partialFolder, previouslyFailedToMeetQoSExpectations);
     }
     catch (RouterException e)
@@ -387,7 +371,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     {
       System.out.println("Routes generated didnt agree with QoS trying with larger scope");
       e.printStackTrace();
-      return adaptationAttempt(failedNodes, depinnedNodes, paf, oldIOT.getRT(), 
+      return adaptationAttempt(failedNodes, depinnedNodes, paf, this.qep.getIOT().getRT(), 
                                          partialFolder, totalAdapatations, true);
     }
   }  
@@ -406,14 +390,15 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
   CostParametersException, SNCBException 
   { 
     System.out.println("Running Failed Node FrameWork Partial"); 
+    qep = (SensorNetworkQueryPlan) manager.getCurrentQEP();
     setUpFolders(manager);
     new FailedNodeStrategyPartialUtils(this).outputTopologyAsDotFile(partialFolder, 
                                                                      sep + "topology.dot");
     //setup collectors
-    PAF paf = oldIOT.getPAF(); 
+    PAF paf = this.qep.getIOT().getPAF(); 
     ArrayList<String> disconnectedNodes = new ArrayList<String>();
     List<Adaptation> totalAdapatations = new ArrayList<Adaptation>();
-    return adaptationAttempt(failedNodes, disconnectedNodes, paf, oldIOT.getRT(), partialFolder, 
+    return adaptationAttempt(failedNodes, disconnectedNodes, paf, this.qep.getIOT().getRT(), partialFolder, 
                              totalAdapatations, false);
   }
 }
