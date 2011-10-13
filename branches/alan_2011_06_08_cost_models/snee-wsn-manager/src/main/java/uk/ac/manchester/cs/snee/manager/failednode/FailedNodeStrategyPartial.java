@@ -18,7 +18,7 @@ import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
-import uk.ac.manchester.cs.snee.manager.common.StrategyID;
+import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.CandiateRouter;
 import uk.ac.manchester.cs.snee.manager.failednode.metasteiner.MetaSteinerTreeException;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
@@ -53,7 +53,6 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
   @SuppressWarnings("unused")
   private boolean spacePinned;
   private boolean timePinned;
-  private AgendaIOT oldAgenda;
   private Integer numberOfRoutingTreesToWorkOn = 0;
   private static int choice;
   private String sep = System.getProperty("file.separator");
@@ -76,9 +75,8 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
   public void initilise(QueryExecutionPlan oldQep, Integer numberOfTrees) 
   throws SchemaMetadataException 
   {
-    this.qep = (SensorNetworkQueryPlan) oldQep;
-    this.qep.getIOT().setID("OldIOT");
-    this.oldAgenda = this.qep.getAgendaIOT();
+    this.currentQEP = (SensorNetworkQueryPlan) oldQep;
+    this.currentQEP.getIOT().setID("OldIOT");
     this.numberOfRoutingTreesToWorkOn = numberOfTrees;
   }
   
@@ -108,9 +106,9 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     //remove failed nodes out of new topology.
     Topology network = this.getWsnTopology();
     
-    RT globalRT = router.doRouting(qep.getDAF().getPAF(), qep.getQueryName(), network, _metadata);
+    RT globalRT = router.doRouting(currentQEP.getDAF().getPAF(), currentQEP.getQueryName(), network, _metadata);
     ArrayList<Integer> globalSiteIDs = globalRT.getSiteIDs();
-    ArrayList<Integer> qepSiteIDs = qep.getRT().getSiteIDs();
+    ArrayList<Integer> qepSiteIDs = currentQEP.getRT().getSiteIDs();
     
     Iterator<Integer> qepSiteIterator = qepSiteIDs.iterator();
     boolean found = false;
@@ -155,7 +153,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
         }
         if(!found) //if still not located a disconnected node
         {
-          globalSiteIDs = qep.getIOT().getRT().getSiteIDs();
+          globalSiteIDs = currentQEP.getIOT().getRT().getSiteIDs();
           failedNodeIDIterator = failedNodes.iterator();
           while(failedNodeIDIterator.hasNext())
           {
@@ -216,22 +214,22 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     {
       //set up current objects
       RT routingTree =  routeIterator.next();
-      Adaptation currentAdapatation = new Adaptation(qep, StrategyID.FailedNodePartial, choice);
+      Adaptation currentAdapatation = new Adaptation(currentQEP, StrategyIDEnum.FailedNodePartial, choice);
       
       File choiceFolder = new File(choiceFolderMain.toString() + sep + "choice" + choice);
       choiceFolder.mkdir();
       //create pinned paf
-      PAF paf = pinPhysicalOperators(this.qep.getIOT(), failedNodes, depinnedNodes);
+      PAF paf = pinPhysicalOperators(this.currentQEP.getIOT(), failedNodes, depinnedNodes);
       //run fragment paf though where scheduler.
       InstanceWhereSchedular instanceWhere = 
-        new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), choiceFolder.toString());
+        new InstanceWhereSchedular(paf, routingTree, currentQEP.getCostParameters(), choiceFolder.toString());
       IOT newIOT = instanceWhere.getIOT();
       //run new iot though when scheduler and locate changes
-      this.oldAgenda.setID("old Agenda");
-      AgendaIOT newAgenda = doSNWhenScheduling(newIOT, qep.getQos(), qep.getID(), qep.getCostParameters());
+     this.currentQEP.getAgendaIOT().setID("old Agenda");
+      AgendaIOT newAgenda = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
       //output new and old agendas
-      new FailedNodeStrategyPartialUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), this.qep.getIOT(), newIOT, choiceFolder);
-      boolean success = assessQEPsAgendas(this.qep.getIOT(), newIOT, oldAgenda, newAgenda, 
+      new FailedNodeStrategyPartialUtils(this).outputAgendas(newAgenda, currentQEP.getAgendaIOT(), this.currentQEP.getIOT(), newIOT, choiceFolder);
+      boolean success = assessQEPsAgendas(this.currentQEP.getIOT(), newIOT, this.currentQEP.getAgendaIOT(), newAgenda, 
                                           timePinned, currentAdapatation, failedNodes, routingTree);
       currentAdapatation.setFailedNodes(failedNodes);
       if(success)
@@ -298,7 +296,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
                                        queryName, numberOfRoutingTreesToWorkOn);
       if(routes.size() == 0)
       {
-        chooseNodeToDepin(this.qep.getIOT(), failedNodes, depinnedNodes);
+        chooseNodeToDepin(this.currentQEP.getIOT(), failedNodes, depinnedNodes);
         System.out.println("No routes avilable, so disconnecting nodes" + depinnedNodes.toString());
         return genereateRouteingTrees(oldRoutingTree, failedNodes, depinnedNodes, queryName, 
                                numberOfRoutingTreesToWorkOn, router, false);
@@ -308,21 +306,16 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     catch(Exception e)
     {
      // e.printStackTrace();
-      chooseNodeToDepin(this.qep.getIOT(), failedNodes, depinnedNodes);
+      chooseNodeToDepin(this.currentQEP.getIOT(), failedNodes, depinnedNodes);
       System.out.println("No routes avilable, so disconnecting nodes" + depinnedNodes.toString());
       return genereateRouteingTrees(oldRoutingTree, failedNodes, depinnedNodes, queryName, 
                              numberOfRoutingTreesToWorkOn, router, false);
     }
   }
-
-  public AgendaIOT getOldAgenda()
-  {
-    return oldAgenda;
-  }
   
   public IOT getOldIOT()
   {
-    return this.qep.getIOT();
+    return this.currentQEP.getIOT();
   }
 
   @Override
@@ -353,7 +346,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     ArrayList<RT> routingTrees;
     try
     {
-      routingTrees = createNewRoutingTrees(failedNodes, depinnedNodes, paf, this.qep.getIOT().getRT(), 
+      routingTrees = createNewRoutingTrees(failedNodes, depinnedNodes, paf, this.currentQEP.getIOT().getRT(), 
                                            partialFolder, previouslyFailedToMeetQoSExpectations);
     }
     catch (RouterException e)
@@ -371,7 +364,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     {
       System.out.println("Routes generated didnt agree with QoS trying with larger scope");
       e.printStackTrace();
-      return adaptationAttempt(failedNodes, depinnedNodes, paf, this.qep.getIOT().getRT(), 
+      return adaptationAttempt(failedNodes, depinnedNodes, paf, this.currentQEP.getIOT().getRT(), 
                                          partialFolder, totalAdapatations, true);
     }
   }  
@@ -390,15 +383,15 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
   CostParametersException, SNCBException 
   { 
     System.out.println("Running Failed Node FrameWork Partial"); 
-    qep = (SensorNetworkQueryPlan) manager.getCurrentQEP();
+    currentQEP = (SensorNetworkQueryPlan) manager.getCurrentQEP();
     setUpFolders(manager);
     new FailedNodeStrategyPartialUtils(this).outputTopologyAsDotFile(partialFolder, 
                                                                      sep + "topology.dot");
     //setup collectors
-    PAF paf = this.qep.getIOT().getPAF(); 
+    PAF paf = this.currentQEP.getIOT().getPAF(); 
     ArrayList<String> disconnectedNodes = new ArrayList<String>();
     List<Adaptation> totalAdapatations = new ArrayList<Adaptation>();
-    return adaptationAttempt(failedNodes, disconnectedNodes, paf, this.qep.getIOT().getRT(), partialFolder, 
+    return adaptationAttempt(failedNodes, disconnectedNodes, paf, this.currentQEP.getIOT().getRT(), partialFolder, 
                              totalAdapatations, false);
   }
 }

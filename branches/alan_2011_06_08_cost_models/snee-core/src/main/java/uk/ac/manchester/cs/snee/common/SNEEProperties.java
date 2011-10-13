@@ -240,10 +240,24 @@ public class SNEEProperties {
 		return property;
 	}
 	
-	private static String getDefaultProperty(String propName)
+	public static void setSetting(String propName, String setting)
+	{
+	  _props.setProperty(propName, setting);
+	}
+	
+	private static String getDefaultProperty(String propName) 
+	throws SNEEConfigurationException
   {
     if(propName.equals("wsn_manager.strategies"))
-      return "FailedNodePartial";
+    {
+      setSetting(propName,"FailedNodePartial");
+      return getSetting(propName);
+    }
+    else if(propName.equals("choiceAssessorPreference"))
+    {
+      setSetting(propName, "best");
+      return getSetting(propName);
+    }
     else
       return null;
   }

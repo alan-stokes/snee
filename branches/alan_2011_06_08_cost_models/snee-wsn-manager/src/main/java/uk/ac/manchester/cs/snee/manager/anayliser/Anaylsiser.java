@@ -49,7 +49,6 @@ public class Anaylsiser extends AutonomicManagerComponent
    */
   private static final long serialVersionUID = 3921928737218887964L;
   private AnayliserCostModelAssessor CMA;
-  private SensorNetworkQueryPlan qep;
   private boolean anaylisieCECM = true;
   private String deadSitesList = "";  
   ArrayList<StrategyAbstract> frameworks;
@@ -232,6 +231,18 @@ public class Anaylsiser extends AutonomicManagerComponent
     anaylisieCECM = true;   
   }
   
+  /**
+   * over rides manager component so that frameworks can be updated
+   */
+  public void setQEP(SensorNetworkQueryPlan qep)
+  {
+    Iterator<StrategyAbstract> frameworkIterator = frameworks.iterator();
+    while(frameworkIterator.hasNext())
+    {
+      StrategyAbstract currentFrameWork = frameworkIterator.next();
+      currentFrameWork.setQEP(qep);
+    } 
+  }
   /**
    * method to run failed node strageties
    * @param failedNodes

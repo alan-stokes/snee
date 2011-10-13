@@ -277,6 +277,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
   	while(applicableConfulenceSites.size() != 0)
   	{
   		String deadNode = chooseNodes();
+  		
   		client.runForTests(deadNode, queryid); 
   		updateRecoveryFile();
       utils.updateLatexCore(queryid, testNo );
@@ -316,7 +317,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
       if(currentSite.getInDegree() > 1 && 
          !applicableConfulenceSites.contains(Integer.parseInt(currentSite.getID())) &&
          (
-             (allowDeathOfAcquires && isSource(currentSite, sources)) ||  
+             (allowDeathOfAcquires) ||  
              (!allowDeathOfAcquires && !isSource(currentSite, sources))
          ) && 
          !currentSite.getID().equals(sinkID))

@@ -27,30 +27,6 @@ public class FailedNodeStrategyPartialUtils
   }
   
   /**
-   * outputs a agenda in latex form into the autonomic manager.
-   * @param agendaIOT
-   * @param newIOT
-   */
-  public void outputNewAgendaImage(File outputFolder, IOT iot, String fileName)
-  {
-    try
-    {
-      frameworkPartial.getOldAgenda().setID("newAgenda");
-      AgendaIOTUtils output = new AgendaIOTUtils(frameworkPartial.getOldAgenda(), iot, true);
-      File agendaFolder = new File(outputFolder.toString() + sep + "Agendas");
-      agendaFolder.mkdir();
-      output.generateImage(agendaFolder.toString());
-      output.exportAsLatex(agendaFolder.toString() + sep, fileName);
-    }
-    catch (SNEEConfigurationException e)
-    {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } 
-    
-  }
-  
-  /**
    * method used to output topology as a dot file.
    * @param string location and name of topology file.
    */

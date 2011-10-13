@@ -25,9 +25,9 @@ public class AdaptationCollection implements Serializable
   public void add(Adaptation ad)
   {
     String id = ad.getOverallID();
-    String [] splitGlobal = id.split(StrategyID.FailedNodeGlobal.toString());
-    String [] splitPartial = id.split(StrategyID.FailedNodePartial.toString());
-    String [] splitLocal = id.split(StrategyID.FailedNodeLocal.toString());
+    String [] splitGlobal = id.split(StrategyIDEnum.FailedNodeGlobal.toString());
+    String [] splitPartial = id.split(StrategyIDEnum.FailedNodePartial.toString());
+    String [] splitLocal = id.split(StrategyIDEnum.FailedNodeLocal.toString());
     
     if(splitGlobal.length > 1)
       setGlobalAdaptation(ad);

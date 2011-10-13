@@ -30,7 +30,7 @@ import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationUtils;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
-import uk.ac.manchester.cs.snee.manager.common.StrategyID;
+import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.executer.Executer;
 import uk.ac.manchester.cs.snee.manager.monitor.Monitor;
 import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessor;
@@ -62,7 +62,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   private Planner planner;
   private Executer executer;
   //data structures needed for manager
-  private QueryExecutionPlan qep;
+  private QueryExecutionPlan currentQEP;
   private MetadataManager _metadataManager;
   private SourceMetadataAbstract _metadata;
   private QoSExpectations queryQoS;
@@ -95,7 +95,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   SchemaMetadataException, TypeMappingException, 
   OptimizationException, IOException, CodeGenerationException
   {
-    this.qep = qep;
+    this.currentQEP = qep;
     queryName = "query" + queryid;
     setupOutputFolder();
     this._metadata = _metadata;
@@ -107,6 +107,14 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     setupRunningSites();
   }
 
+  /**
+   * sets up base energy measurements and takes off original programming costs
+   * @throws OptimizationException
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   * @throws IOException
+   * @throws CodeGenerationException
+   */
   private void setupRunningSites() 
   throws 
   OptimizationException, SchemaMetadataException, 
@@ -123,8 +131,8 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     }
     
     //remove OTA effects from running sites
-    SensorNetworkQueryPlan sqep = (SensorNetworkQueryPlan)qep;
-    Adaptation orgianlOTAProgramCost = new Adaptation(sqep, StrategyID.Orginal, 0);
+    SensorNetworkQueryPlan sqep = (SensorNetworkQueryPlan)currentQEP;
+    Adaptation orgianlOTAProgramCost = new Adaptation(sqep, StrategyIDEnum.Orginal, 0);
     Iterator<Integer> siteIdIterator = sqep.getRT().getSiteIDs().iterator();
     while(siteIdIterator.hasNext())
     {
@@ -146,6 +154,10 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     }  
   }
 
+  /**
+   * sets the folder for data files to be stored
+   * @throws SNEEConfigurationException
+   */
   private void setupOutputFolder() throws SNEEConfigurationException
   {
     //sort out output folder
@@ -157,6 +169,10 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     deleteFileContents(outputFolder);
   }
 
+  /**
+   * sets up the folder which adapations files are to be stored
+   * @throws SNEEConfigurationException
+   */
   private void setupAdapatationFolder() throws SNEEConfigurationException
   {
     String outputDir = SNEEProperties.getSetting(
@@ -241,6 +257,48 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
 
   }
   
+  /**
+   * method used to simulate test data
+   * @throws CodeGenerationException 
+   * @throws AutonomicManagerException 
+   */
+  @Override
+  public void runSimulatedNodeFailure() throws OptimizationException,
+      SNEEConfigurationException, SchemaMetadataException,
+      TypeMappingException, AgendaException, SNEEException,
+      MalformedURLException, MetadataException,
+      UnsupportedAttributeTypeException, SourceMetadataException,
+      TopologyReaderException, SNEEDataSourceException,
+      CostParametersException, SNCBException, SNEECompilerException,
+      IOException, CodeGenerationException, AutonomicManagerException
+  {
+    monitor.chooseFakeNodeFailure();
+  }
+  
+  @Override
+  public void runSimulatedNumberOfAgendaExecutionCycles(int numberofAgendaExecutionCycles)
+  {
+    monitor.simulateNumeriousAgendaExecutionCycles(numberofAgendaExecutionCycles);  
+  }
+
+  @Override
+  public void simulateEnergyDrainofAganedaExecutionCycles(
+      int fixedNumberOfAgendaExecutionCycles)
+  {
+    monitor.simulateNumeriousAgendaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
+  }
+
+  @Override
+  public void forceFailedNodes(ArrayList<String> failedNodesID) 
+  throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, 
+  TypeMappingException, AgendaException, SNEEException, MetadataException, 
+  CodeGenerationException, UnsupportedAttributeTypeException, SourceMetadataException,
+  TopologyReaderException, SNEEDataSourceException, CostParametersException, 
+  SNCBException, SNEECompilerException, IOException, AutonomicManagerException
+  {
+    monitor.forceFailedNodes(failedNodesID);
+  }
+  
   @Override
   public void runCostModels() throws OptimizationException 
 
@@ -320,34 +378,17 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     return outputFolder;
   }  
   
+  @Override
   public void setListener(SNCBSerialPortReceiver mr)
   {
     monitor.addPacketReciever(mr);
   }
-  
+
   public HashMap<String, RunTimeSite> getRunningSites()
   {
     return runningSites;
   }
   
-  /**
-   * method used to simulate test data
-   * @throws CodeGenerationException 
-   * @throws AutonomicManagerException 
-   */
-  @Override
-  public void runSimulatedNodeFailure() throws OptimizationException,
-      SNEEConfigurationException, SchemaMetadataException,
-      TypeMappingException, AgendaException, SNEEException,
-      MalformedURLException, MetadataException,
-      UnsupportedAttributeTypeException, SourceMetadataException,
-      TopologyReaderException, SNEEDataSourceException,
-      CostParametersException, SNCBException, SNEECompilerException,
-      IOException, CodeGenerationException, AutonomicManagerException
-  {
-    monitor.chooseFakeNodeFailure();
-  }
-
   public void setQueryName(String queryName)
   {
     this.queryName = queryName;
@@ -360,7 +401,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   
   public String getQueryID()
   {
-    return qep.getID().substring(0, 6);
+    return currentQEP.getID().substring(0, 6);
   }
   
   public int getAdaptionCount()
@@ -392,37 +433,14 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   @Override
   public QueryExecutionPlan getCurrentQEP() 
   {
-    return qep;
+    return currentQEP;
   }
 
   public void setCurrentQEP(SensorNetworkQueryPlan newQEP)
   {
-    qep = newQEP;
-    
-  }
-
-  @Override
-  public void runSimulatedNumberOfAgendaExecutionCycles(int numberofAgendaExecutionCycles)
-  {
-    monitor.simulateNumeriousAgendaExecutionCycles(numberofAgendaExecutionCycles);  
-  }
-
-  @Override
-  public void simulateEnergyDrainofAganedaExecutionCycles(
-      int fixedNumberOfAgendaExecutionCycles)
-  {
-    monitor.simulateNumeriousAgendaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
-  }
-
-  @Override
-  public void forceFailedNodes(ArrayList<String> failedNodesID) 
-  throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, 
-  TypeMappingException, AgendaException, SNEEException, MetadataException, 
-  CodeGenerationException, UnsupportedAttributeTypeException, SourceMetadataException,
-  TopologyReaderException, SNEEDataSourceException, CostParametersException, 
-  SNCBException, SNEECompilerException, IOException, AutonomicManagerException
-  {
-    monitor.forceFailedNodes(failedNodesID);
+    currentQEP = newQEP;
+    anyliser.setQEP(newQEP);
+    monitor.setQEP(newQEP);
   }
 
 }

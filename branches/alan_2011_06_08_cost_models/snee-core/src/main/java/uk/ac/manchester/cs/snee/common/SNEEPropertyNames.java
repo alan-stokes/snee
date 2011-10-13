@@ -198,14 +198,18 @@ public final class SNEEPropertyNames {
 	 * to enable power management to kick in.
 	 * Ignored for tossim and telosb targets.
 	 */
-	public static final String SNCB_CONTROL_RADIO = 
-		"sncb.control_radio";
+	public static final String SNCB_CONTROL_RADIO = "sncb.control_radio";
 	
 	/**
-	 * strategies for wsn manager (FL,FP, FG, ALL)
+	 * strategies to be used within the wsn manager for node failure(FL,FP, FG, ALL)
 	 */
-	public static final String WSN_MANAGER_STRATEGIES = 
-	  "wsn_manager.strategies";
+	public static final String WSN_MANAGER_STRATEGIES = "wsn_manager.strategies";
+	
+	/**
+	 * choice preference for the assessor for which type of adaptation to choose 
+	 * (global, partial, local and best)
+	 */
+	public static final String CHOICE_ASSESSOR_PREFERENCE = "choiceAssessorPreference";
 	
 }
 

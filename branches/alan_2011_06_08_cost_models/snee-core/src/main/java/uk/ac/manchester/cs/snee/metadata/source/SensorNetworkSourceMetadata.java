@@ -255,9 +255,7 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 	      int index = nodesToWhichThisExtentExists.indexOf(nodeid);
 	      nodesToWhichThisExtentExists.remove(index);
 	      _extentToSitesMapping.put(key, nodesToWhichThisExtentExists);
-	      System.out.println(_extentToSitesMapping.toString());
 	    }
-	    
 	  }
 	}
 	

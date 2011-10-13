@@ -28,11 +28,11 @@ public class Adaptation implements Serializable
   private Double overallEnergyCost = null;
   private Double runtimeCost = null;
   private Double lifetimeEstimate = null; //done in agenda cycles
-  private StrategyID id;
+  private StrategyIDEnum id;
   private int numberID;
   private String nodeIdWhichEndsQuery = null;
   
-  public Adaptation(SensorNetworkQueryPlan oldQep, StrategyID id, int numberID)
+  public Adaptation(SensorNetworkQueryPlan oldQep, StrategyIDEnum id, int numberID)
   {
     reprogrammingSites = new ArrayList<String>();
     redirectedionSites = new ArrayList<String>();
@@ -203,12 +203,12 @@ public class Adaptation implements Serializable
     return overallEnergyCost;
   }
   
-  public void setId(StrategyID id)
+  public void setId(StrategyIDEnum id)
   {
     this.id = id;
   }
 
-  public StrategyID getStrategyId()
+  public StrategyIDEnum getStrategyId()
   {
     return id;
   }

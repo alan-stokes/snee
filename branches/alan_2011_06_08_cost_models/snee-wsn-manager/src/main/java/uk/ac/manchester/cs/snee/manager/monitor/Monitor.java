@@ -55,7 +55,6 @@ public class Monitor extends AutonomicManagerComponent implements Observer
   private SerialPortMessageReceiver listener;
   private ResultStore _results;
   private boolean recievedPacketsThisQuery = false;
-  private SensorNetworkQueryPlan qep;
   private String query;
   
   public Monitor(AutonomicManagerImpl autonomicManager)

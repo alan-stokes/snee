@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
@@ -14,7 +17,7 @@ import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
-import uk.ac.manchester.cs.snee.manager.common.StrategyID;
+import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -80,7 +83,7 @@ public class Planner extends AutonomicManagerComponent
       Adaptation bestLocal = null;
       List<Adaptation> partialAds = choices.getPartialAdaptations();
       List<Adaptation> localAds = choices.getLocalAdaptations();
-      orginal = new Adaptation(choices.getGlobalAdaptation().getOldQep(), StrategyID.Orginal, 1);
+      orginal = new Adaptation(choices.getGlobalAdaptation().getOldQep(), StrategyIDEnum.Orginal, 1);
       doOrginalAssessment(orginal, choices.getGlobalAdaptation().getOldQep());
       
       //find the best of each framework
@@ -131,23 +134,67 @@ public class Planner extends AutonomicManagerComponent
     assessor.assessChoice(orginal, runningSites, true);
   }
 
-  private Adaptation chooseBestAdaptation(List<Adaptation> choices)
+  private Adaptation chooseBestAdaptation(List<Adaptation> choices) throws SNEEConfigurationException
   {
     Adaptation finalChoice = null;
     Double cost = Double.MIN_VALUE;
     Iterator<Adaptation> choiceIterator = choices.iterator();
     //calculate each cost, and compares it with the best so far, if the same, store it 
-    while(choiceIterator.hasNext())
+    String choicePreference = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);       
+    if(choicePreference.equals(ChoiceAssessorPreferenceEnum.Best.toString()))
     {
-      Adaptation choice = choiceIterator.next();
-      Double choiceCost = choice.getLifetimeEstimate();
-      if(choiceCost > cost)
+      while(choiceIterator.hasNext())
       {
-        finalChoice = choice;
-        cost = choiceCost;
+        Adaptation choice = choiceIterator.next();
+        Double choiceCost = choice.getLifetimeEstimate();
+        if(choiceCost > cost)
+        {
+          finalChoice = choice;
+          cost = choiceCost;
+        }
+      }
+      return finalChoice;
+    }
+    else if(choicePreference.equals(ChoiceAssessorPreferenceEnum.Local.toString()))
+    {
+      while(choiceIterator.hasNext())
+      {
+        Adaptation choice = choiceIterator.next();
+        if(choice.getStrategyId().toString().contains("Local"))
+          return choice;
       }
     }
-    return finalChoice;
+    else if(choicePreference.equals(ChoiceAssessorPreferenceEnum.Partial.toString()))
+    {
+      while(choiceIterator.hasNext())
+      {
+        Adaptation choice = choiceIterator.next();
+        if(choice.getStrategyId().toString().contains("Partial"))
+        {
+          Double choiceCost = choice.getLifetimeEstimate();
+          if(choiceCost > cost)
+          {
+            finalChoice = choice;
+            cost = choiceCost;
+          }
+        }
+      }
+      return finalChoice;
+    }
+    else if(choicePreference.equals(ChoiceAssessorPreferenceEnum.Global.toString()))
+    {
+      while(choiceIterator.hasNext())
+      {
+        Adaptation choice = choiceIterator.next();
+        if(choice.getStrategyId().toString().contains("Global"))
+          return choice;
+      }
+    }
+    else
+    {
+      return null;
+    }
+    return null;
   }
 
   public void updateStorageLocation(File outputFolder) throws IOException

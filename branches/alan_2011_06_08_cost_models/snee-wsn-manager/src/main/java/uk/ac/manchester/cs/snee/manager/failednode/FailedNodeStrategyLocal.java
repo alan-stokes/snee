@@ -23,7 +23,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
-import uk.ac.manchester.cs.snee.manager.common.StrategyID;
+import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalCluster;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalClusterUtils;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LocalClusterEquivalenceRelation;
@@ -71,7 +71,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   SchemaMetadataException, TypeMappingException, 
   OptimizationException, IOException
   {  
-    this.qep = (SensorNetworkQueryPlan) oldQep;
+    this.currentQEP = (SensorNetworkQueryPlan) oldQep;
     clusters = new FailedNodeLocalCluster();
     network = getWsnTopology();
     locateEquivalentNodes();
@@ -98,7 +98,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   OptimizationException
   {
     ArrayList<Node> secondNetworkNodes = new ArrayList<Node>(network.getNodes());
-    Iterator<Node> firstNodeIterator = qep.getRT().getSiteTree().nodeIterator(TraversalOrder.POST_ORDER);
+    Iterator<Node> firstNodeIterator = currentQEP.getRT().getSiteTree().nodeIterator(TraversalOrder.POST_ORDER);
     while(firstNodeIterator.hasNext())
     {
       Iterator<Node> secondNodeIterator = secondNetworkNodes.iterator();
@@ -106,11 +106,11 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
       while(secondNodeIterator.hasNext())
       {
         Node equilvientNode = secondNodeIterator.next();
-        if(LocalClusterEquivalenceRelation.isEquivalent(clusterHead, equilvientNode, qep, network))
+        if(LocalClusterEquivalenceRelation.isEquivalent(clusterHead, equilvientNode, currentQEP, network))
         {
           clusters.addClusterNode(clusterHead.getID(), equilvientNode.getID());
           //add sites fragments and operaotrs onto equivlent node
-          transferSiteQEP(qep, clusterHead, equilvientNode);
+          transferSiteQEP(currentQEP, clusterHead, equilvientNode);
         }
       }
     }
@@ -170,7 +170,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   TypeMappingException, 
   OptimizationException
   {
-    this.qep = (SensorNetworkQueryPlan) newQEP;
+    this.currentQEP = (SensorNetworkQueryPlan) newQEP;
     clusters = new FailedNodeLocalCluster();
     locateEquivalentNodes();
   }
@@ -238,7 +238,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
 
   private void rewireNodes(IOT clonedIOT, String failedNodeID, String equivilentNodeID)
   {
-    ArrayList<Node> children = clonedIOT.getInputSites(qep.getRT().getSite(failedNodeID));
+    ArrayList<Node> children = clonedIOT.getInputSites(currentQEP.getRT().getSite(failedNodeID));
     Iterator<Node> chidlrenIterator = children.iterator();
     while(chidlrenIterator.hasNext())
     {
@@ -262,7 +262,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
       }
       InstanceExchangePart equivilentNodesRootExchange = 
         (InstanceExchangePart) clonedIOT.getRootOperatorOfSite(network.getSite(equivilentNodeID));
-      Node parent = clonedIOT.getNode(qep.getRT().getSite(failedNodeID).getID()).getOutput(0);
+      Node parent = clonedIOT.getNode(currentQEP.getRT().getSite(failedNodeID).getID()).getOutput(0);
       exchanges = clonedIOT.getExchangeOperators((Site) parent);
       exchangeIterator = exchanges.iterator();
       while(exchangeIterator.hasNext())
@@ -284,10 +284,10 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     System.out.println("Running Failed Node FrameWork Local");
     List<Adaptation> adapatation = new ArrayList<Adaptation>();
     Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
-    Adaptation adapt = new Adaptation(qep, StrategyID.FailedNodeLocal, 1);
+    Adaptation adapt = new Adaptation(currentQEP, StrategyIDEnum.FailedNodeLocal, 1);
     
-    IOT clonedIOT = cloner.deepClone(qep.getIOT());
-    RT currentRoutingTree = cloner.deepClone(qep.getRT());
+    IOT clonedIOT = cloner.deepClone(currentQEP.getIOT());
+    RT currentRoutingTree = cloner.deepClone(currentQEP.getRT());
     while(failedNodeIDsIterator.hasNext())
     {
       String failedNodeID = failedNodeIDsIterator.next();
@@ -302,15 +302,15 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
       
       PAF pinnedPaf = this.pinPhysicalOperators(clonedIOT, failedNodeIDs, new ArrayList<String>());
       InstanceWhereSchedular instanceWhere = 
-        new InstanceWhereSchedular(pinnedPaf, currentRoutingTree, qep.getCostParameters(), localFolder.toString());
+        new InstanceWhereSchedular(pinnedPaf, currentRoutingTree, currentQEP.getCostParameters(), localFolder.toString());
       IOT newIOT = instanceWhere.getIOT();
       //run new iot though when scheduler and locate changes
-      AgendaIOT newAgenda = doSNWhenScheduling(newIOT, qep.getQos(), qep.getID(), qep.getCostParameters());
+      AgendaIOT newAgenda = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
       //output new and old agendas
-      new FailedNodeStrategyLocalUtils(this).outputAgendas(newAgenda, qep.getAgendaIOT(), 
-                                                           qep.getIOT(), newIOT, localFolder);
+      new FailedNodeStrategyLocalUtils(this).outputAgendas(newAgenda, currentQEP.getAgendaIOT(), 
+                                                           currentQEP.getIOT(), newIOT, localFolder);
       
-      boolean success = assessQEPsAgendas(qep.getIOT(), newIOT, qep.getAgendaIOT(), newAgenda, 
+      boolean success = assessQEPsAgendas(currentQEP.getIOT(), newIOT, currentQEP.getAgendaIOT(), newAgenda, 
                                           false, adapt, failedNodeIDs, currentRoutingTree);
       
       adapt.setFailedNodes(failedNodeIDs);

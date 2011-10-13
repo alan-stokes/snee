@@ -181,7 +181,7 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
       AgendaIOT agenda;
       try
       {
-        agenda = whenSched.doWhenScheduling(newIOT, qos, qep.getID(), qep.getCostParameters());
+        agenda = whenSched.doWhenScheduling(newIOT, qos, currentQEP.getID(), currentQEP.getCostParameters());
       }
       catch (WhenSchedulerException e)
       {

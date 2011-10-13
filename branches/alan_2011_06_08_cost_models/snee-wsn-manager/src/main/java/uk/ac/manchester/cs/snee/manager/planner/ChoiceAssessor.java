@@ -144,15 +144,14 @@ public class ChoiceAssessor implements Serializable
     while (siteIter.hasNext()) 
     {
       Site site = siteIter.next();
+      /* uncomment out sections to not take the root site into account
       if (site!=adapt.getNewQep().getIOT().getRT().getRoot()) 
-      {
+      { */
         RunTimeSite rSite = runningSites.get(site.getID());
         double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
         double siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site); // J
         runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
         double agendaLength = Agenda.bmsToMs(adapt.getNewQep().getAgendaIOT().getLength_bms(false))/1000.0; // ms to s
-        //double energyConsumptionRate = siteEnergyCons/agendaLength; // J/s
-        //double siteLifetime = siteEnergySupply / energyConsumptionRate; //s
         double siteLifetime = (currentEnergySupply / siteEnergyCons) * agendaLength;
         if(shortestLifetime > siteLifetime)
         {
@@ -162,7 +161,7 @@ public class ChoiceAssessor implements Serializable
             adapt.setNodeIdWhichEndsQuery(site.getID());
           }
         }
-      }
+      //}
     }
     return shortestLifetime;
   }

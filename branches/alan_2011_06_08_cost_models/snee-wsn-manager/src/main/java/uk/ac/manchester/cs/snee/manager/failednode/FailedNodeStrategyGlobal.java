@@ -28,7 +28,7 @@ import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
-import uk.ac.manchester.cs.snee.manager.common.StrategyID;
+import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -47,7 +47,6 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
    * serialVersionUID
    */
   private static final long serialVersionUID = -4443257551168408228L;
-  private AgendaIOT oldAgenda;
   private MetadataManager _metadataManager;
   private Topology network;
   private File globalFile;
@@ -77,10 +76,9 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
 	public void initilise(QueryExecutionPlan oldQep, Integer noTrees)
 	throws SchemaMetadataException 
 	{
-	  this.qep = (SensorNetworkQueryPlan) oldQep;
+	  this.currentQEP = (SensorNetworkQueryPlan) oldQep;
 	  outputFolder = manager.getOutputFolder();
-    this.qep.getIOT().setID("OldIOT");
-    this.oldAgenda = this.qep.getAgendaIOT();
+    this.currentQEP.getIOT().setID("OldIOT");
 	}
 
 	/**
@@ -100,18 +98,18 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
 	CostParametersException, SNCBException, NumberFormatException, SNEECompilerException 
 	
 	{
-	  this.qep = (SensorNetworkQueryPlan) manager.getCurrentQEP();
+	  this.currentQEP = (SensorNetworkQueryPlan) manager.getCurrentQEP();
 	  System.out.println("Running Failed Node FrameWork Global");
     globalFile = new File(outputFolder.toString() + sep + "global Stragety");
     globalFile.mkdir();
 	  List<Adaptation> adaptation = new ArrayList<Adaptation>();
-	  Adaptation adapt = new Adaptation(qep, StrategyID.FailedNodeGlobal, 1);
+	  Adaptation adapt = new Adaptation(currentQEP, StrategyIDEnum.FailedNodeGlobal, 1);
 		SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) _metadata;
 		network = sm.getTopology();
 		
 	  makeNetworkFile();
 		//remove exchanges from PAF
-		PAF paf = cloner.deepClone(qep.getIOT().getPAF());
+		PAF paf = cloner.deepClone(currentQEP.getIOT().getPAF());
 		paf.updateMetadataConnection(sm);
 		paf = this.removeExchangesFromPAF(paf);
 		//shove though distributed section of compiler
@@ -121,7 +119,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
 		//if no route generated, then return empty adapatation.
     try
     {
-      routingTree = router.doRouting(paf, qep.getQueryName(), network, _metadata);
+      routingTree = router.doRouting(paf, currentQEP.getQueryName(), network, _metadata);
     }
     catch (RouterException e1)
     {
@@ -129,7 +127,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
     }
 		//where
 		InstanceWhereSchedular instanceWhere = 
-		  new InstanceWhereSchedular(paf, routingTree, qep.getCostParameters(), 
+		  new InstanceWhereSchedular(paf, routingTree, currentQEP.getCostParameters(), 
 		                             globalFile.toString());
     IOT newIOT = instanceWhere.getIOT();
     //when
@@ -143,7 +141,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
                                                 useNetworkController);
     try
     {
-      newAgenda = whenSched.doWhenScheduling(newIOT, qep.getQos(), qep.getQueryName(), qep.getCostParameters());
+      newAgenda = whenSched.doWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getQueryName(), currentQEP.getCostParameters());
       new AgendaIOTUtils(newAgenda, newIOT, false).exportAsLatex(globalFile.toString() + sep + "newAgenda");
       new AgendaIOTUtils(newAgenda, newIOT, false).generateImage(globalFile.toString());
       //new AgendaIOTUtils(newAgenda, newIOT, false).generateImage(globalFile.toString() + sep + "newAgenda");
@@ -153,7 +151,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
       throw new SNEECompilerException(e);
     }
     
-    boolean success = assessQEPsAgendas(this.qep.getIOT(), newIOT, oldAgenda, newAgenda, false, adapt, failedNodes, routingTree);
+    boolean success = assessQEPsAgendas(this.currentQEP.getIOT(), newIOT, this.currentQEP.getAgendaIOT(), newAgenda, false, adapt, failedNodes, routingTree);
     adapt.setFailedNodes(failedNodes);
     
     if(success)

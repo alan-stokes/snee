@@ -50,7 +50,7 @@ public abstract class StrategyAbstract implements Serializable
    */
   private static final long serialVersionUID = -2749736705430307089L;
   
-  protected SensorNetworkQueryPlan qep;
+  protected SensorNetworkQueryPlan currentQEP;
   protected AutonomicManager manager;
   protected SourceMetadataAbstract _metadata;
   protected File outputFolder;
@@ -136,9 +136,9 @@ public abstract class StrategyAbstract implements Serializable
     //check if new plan agrees with time pinning
     if(success)
     {//create new qep, add qep to list of adapatations.
-      DAF daf = new IOTUtils(newIOT, qep.getCostParameters()).getDAF();
+      DAF daf = new IOTUtils(newIOT, currentQEP.getCostParameters()).getDAF();
       SensorNetworkQueryPlan newQep 
-      = new SensorNetworkQueryPlan(qep.getDLAF(), routingTree, daf, newIOT, newAgenda, qep.getID());
+      = new SensorNetworkQueryPlan(currentQEP.getDLAF(), routingTree, daf, newIOT, newAgenda, currentQEP.getID());
       newQep.setQos(adaptation.getOldQep().getQos());
       adaptation.setNewQep(newQep);
     }
@@ -450,9 +450,22 @@ public abstract class StrategyAbstract implements Serializable
     }
   }
   
+  /**
+   * used to update stragies where to output data files
+   * @param outputFolder
+   */
   public void updateFrameWorkStorage(File outputFolder)
   {
     this.outputFolder = outputFolder;
+  }
+  
+  /**
+   * used to reset the qep when numerious events occur
+   * @param currentQEP
+   */
+  public void setQEP(SensorNetworkQueryPlan  currentQEP)
+  {
+    this.currentQEP = currentQEP;
   }
   
   

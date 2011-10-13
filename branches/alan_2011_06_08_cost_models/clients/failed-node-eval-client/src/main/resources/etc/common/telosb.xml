@@ -20,7 +20,8 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk site-resources.xsd">
 
 
 	<site id="1">
-		<energy-stock>9999</energy-stock>  <!-- assume a tethered gateway node -->
+		<!--  <energy-stock>9999</energy-stock>  --> <!-- assume a tethered gateway node -->
+		<energy-stock>31320</energy-stock> <!-- assume a untethered gateway node -->
 		<ram>10</ram>
 		<flash-memory>48</flash-memory>
 	</site>
