@@ -203,5 +203,16 @@ public class Planner extends AutonomicManagerComponent
     setupFolders();
     this.assessor.updateStorageLocation(plannerFolder);
   }
+
+  public void assessOTACosts(File output, Adaptation orgianlOTAProgramCost,
+      HashMap<String, RunTimeSite> runningSites, boolean reset) 
+  throws IOException, OptimizationException, SchemaMetadataException, 
+  TypeMappingException, CodeGenerationException
+  {
+    this.assessor.updateStorageLocation(output);
+    this.assessor.assessChoice(orgianlOTAProgramCost, runningSites, reset);
+    this.assessor.updateStorageLocation(plannerFolder);
+    new PlannerUtils(orgianlOTAProgramCost, manager, output, orgianlOTAProgramCost).writeObjectsToFile(); 
+  }
   
 }

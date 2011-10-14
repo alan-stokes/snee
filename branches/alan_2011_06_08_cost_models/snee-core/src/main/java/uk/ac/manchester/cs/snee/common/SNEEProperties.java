@@ -255,7 +255,7 @@ public class SNEEProperties {
     }
     else if(propName.equals("choiceAssessorPreference"))
     {
-      setSetting(propName, "best");
+      setSetting(propName, "Best");
       return getSetting(propName);
     }
     else

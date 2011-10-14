@@ -142,8 +142,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     orgianlOTAProgramCost.setNewQep(sqep);
     File output = new File(outputFolder + sep + "OTASection");
     output.mkdir();
-    ChoiceAssessor assessor =  new ChoiceAssessor(_metadata, _metadataManager, output);
-    assessor.assessChoice(orgianlOTAProgramCost, runningSites, false);
+    planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false);
     // update running sites energy stores
     siteIdIterator = sqep.getRT().getSiteIDs().iterator();
     while(siteIdIterator.hasNext())

@@ -33,6 +33,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
+import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -164,6 +165,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       //added to allow recovery from crash
       updateRecoveryFile();
       client.runCompilelation();
+      double lifetimeMeasurement = getOrgianlLifetime();
+      
       System.out.println("compiled control");
       System.out.println("running tests");
       allowDeathOfAcquires = true;
@@ -180,6 +183,15 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
     }
 	}
+
+  private static double getOrgianlLifetime()
+  {
+    File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + 
+        "OTASection" + sep + "storedObjects");
+    ArrayList<Adaptation> orginalList = new ClientUtils().readInObjects(inputFolder);
+    Adaptation orginal = orginalList.get(0);
+    return orginal.getLifetimeEstimate();
+  }
 
   private static void writeErrorToFile(Exception e, BufferedWriter failedOutput) throws IOException
   {

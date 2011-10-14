@@ -3,6 +3,7 @@ package uk.ac.manchester.cs.snee.manager.planner;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -22,6 +23,17 @@ public class PlannerUtils
                        File plannerOutputFolder, Adaptation orginal)
    {
      this.adaptations = adaptations;
+     this.manager = manager;
+     this.plannerOutputFolder = plannerOutputFolder;
+     this.orginal = orginal;
+   }
+   
+   public PlannerUtils(Adaptation adaptation, AutonomicManagerImpl manager, 
+       File plannerOutputFolder, Adaptation orginal)
+   {
+     
+     this.adaptations = new ArrayList<Adaptation>();
+     this.adaptations.add(adaptation);
      this.manager = manager;
      this.plannerOutputFolder = plannerOutputFolder;
      this.orginal = orginal;
