@@ -790,4 +790,10 @@ public class SNEEController implements SNEE {
     sm.resetSources();
     sm.resetTopology();
   }
+
+  public void resetQEP(SensorNetworkQueryPlan qep)
+  {
+    _dispatcher.resetQEP(qep);
+    
+  }
 }

@@ -324,4 +324,9 @@ public class Dispatcher {
     _autonomicManager.simulateEnergyDrainofAganedaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
   }
 
+  public void resetQEP(SensorNetworkQueryPlan qep)
+  {
+    _autonomicManager.setCurrentQEP(qep); 
+  }
+
 }

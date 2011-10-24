@@ -31,5 +31,6 @@
 		<module>ecm-client</module>
 		<module>cco-both</module>
 		<module>failed-node-eval-client</module>
+		<module>failedNodeEvalClientTimeIntergrated</module>
 	</modules>
 </project>

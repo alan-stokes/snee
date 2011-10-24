@@ -217,7 +217,7 @@ public class Plotter implements Serializable
   {
     DecimalFormat df = new DecimalFormat("#.#####");
     
-    energyWriter.write(queryID + " ");
+    energyWriter.write(queryID + "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       energyWriter.write(df.format(global.getEnergyCost()) + " ");
@@ -238,7 +238,7 @@ public class Plotter implements Serializable
     }
     energyWriter.write("\n");
     
-    timeWriter.write(queryID + " ");
+    timeWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       timeWriter.write(df.format(global.getTimeCost() / 1000) + " ");
@@ -256,7 +256,7 @@ public class Plotter implements Serializable
     }
     timeWriter.write("\n");
     
-    qepWriter.write(queryID + " ");
+    qepWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       qepWriter.write(df.format(global.getRuntimeCost()) + " ");
@@ -274,7 +274,7 @@ public class Plotter implements Serializable
     }
     qepWriter.write("\n");
     
-    lifetimeWriter.write(queryID + " ");
+    lifetimeWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       lifetimeWriter.write(df.format(global.getLifetimeEstimate() / 1000) + " ");
@@ -292,7 +292,7 @@ public class Plotter implements Serializable
     }
     lifetimeWriter.write("\n");
     
-    cyclesBurnedWriter.write(queryID + " ");
+    cyclesBurnedWriter.write(queryID +  global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       cyclesBurnedWriter.write(df.format(global.getEnergyCost() / global.getRuntimeCost()) + " ");
@@ -310,7 +310,7 @@ public class Plotter implements Serializable
     }
     cyclesBurnedWriter.write("\n");   
     
-    cyclesMissedWriter.write(queryID + " ");
+    cyclesMissedWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       cyclesMissedWriter.write(df.format(global.getTimeCost() / global.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
@@ -328,7 +328,7 @@ public class Plotter implements Serializable
     }
     cyclesMissedWriter.write("\n");   
 
-    cyclesLeftWriter.write(queryID + " ");
+    cyclesLeftWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       cyclesLeftWriter.write(df.format(global.getLifetimeEstimate() / global.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
@@ -368,7 +368,7 @@ public class Plotter implements Serializable
       localTupleCount = tupleModel.returnAgendaExecutionResult();
     }
     
-    tuplesLeftWriter.write(queryID + " ");
+    tuplesLeftWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       tuplesLeftWriter.write(df.format(globalTupleCount * (global.getLifetimeEstimate() / global.getNewQep().getAgendaIOT().getLength_bms(false))) + " ");
@@ -386,7 +386,7 @@ public class Plotter implements Serializable
     }
     tuplesLeftWriter.write("\n"); 
     
-    tuplesMissedWriter.write(queryID + " ");
+    tuplesMissedWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       tuplesMissedWriter.write(df.format((global.getTimeCost() / global.getNewQep().getAgendaIOT().getLength_bms(false)) * globalTupleCount) + " ");
@@ -404,7 +404,7 @@ public class Plotter implements Serializable
     }
     tuplesMissedWriter.write("\n"); 
     
-    tuplesBurnedWriter.write(queryID + " ");
+    tuplesBurnedWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       tuplesBurnedWriter.write(df.format((global.getEnergyCost() / global.getRuntimeCost()) * globalTupleCount) + " ");

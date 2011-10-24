@@ -140,14 +140,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	                                 Long duration, String queryParams, 
 	                                 boolean allowDeathOfAcquires, 
 	                                 BufferedWriter failedOutput) 
-	throws 
-	SNEEException, IOException, SNEEConfigurationException, 
-	SNEECompilerException, MetadataException, EvaluatorException,
-  OptimizationException, SQLException, UtilsException, 
-  SchemaMetadataException, TypeMappingException, AgendaException, 
-  UnsupportedAttributeTypeException, SourceMetadataException, 
-  TopologyReaderException, SNEEDataSourceException, 
-  CostParametersException, SNCBException, CodeGenerationException
+  throws IOException 
 	{
 	//get query & schemas
     String currentQuery = queryIterator.next();
@@ -313,7 +306,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
       if(currentSite.getInDegree() > 1 && 
          !siteIDs.contains(Integer.parseInt(currentSite.getID())) &&
          (
-             (allowDeathOfAcquires && isSource(currentSite, sources)) ||  
+             (allowDeathOfAcquires) ||  
              (!allowDeathOfAcquires && !isSource(currentSite, sources))
          ) && 
          !currentSite.getID().equals(sinkID))
@@ -371,6 +364,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
           client.runForTests(deadNodes, queryid ); 
           utils.updateLatexCore(queryid, testNo );
           client.resetMetaData();
+          client.resetQEP();
           System.gc();
           testNo++;
         }
@@ -379,6 +373,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
           client.runForTests(deadNodes, queryid); 
           utils.updateLatexCore(queryid, testNo );
           client.resetMetaData();
+          client.resetQEP();
           System.gc();
           testNo++;
         }  
@@ -386,7 +381,13 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     }
   }
 
-  private void resetMetaData() 
+  private void resetQEP() 
+  {
+    SNEEController control = (SNEEController) controller;
+    control.resetQEP(qep);
+  }
+
+private void resetMetaData() 
   throws SourceDoesNotExistException, SourceMetadataException,
   SNEEConfigurationException, SNCBException, TopologyReaderException
   {

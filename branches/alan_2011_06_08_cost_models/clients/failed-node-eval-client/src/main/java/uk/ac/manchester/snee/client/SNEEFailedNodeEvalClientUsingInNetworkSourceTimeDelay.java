@@ -58,7 +58,14 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   private String sneeProperties;
 	private static int queryid = 1;
 	protected static int testNo = 1;
-	private int fixedNumberOfAgendaExecutionCycles = 10;
+	
+	//used to calculate agenda cycles
+	protected static int maxNumberofFailures = 2;
+	protected static double originalLifetime;
+	protected static int numberOfExectutionCycles;
+	protected static boolean calculated = false;
+	protected static SensorNetworkQueryPlan originalQEP;
+	
 	private static ClientUtils utils = new ClientUtils();
 	
 	public SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay(String query, 
@@ -115,6 +122,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	    while(queryIterator.hasNext())
       {
         recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
+        calculated = false;
       }
 	    failedOutput.write("\\end{document}");
 	    failedOutput.flush();
@@ -140,14 +148,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	                                 Long duration, String queryParams, 
 	                                 boolean allowDeathOfAcquires, 
 	                                 BufferedWriter failedOutput) 
-	throws 
-	SNEEException, IOException, SNEEConfigurationException, 
-	SNEECompilerException, MetadataException, EvaluatorException,
-  OptimizationException, SQLException, UtilsException, 
-  SchemaMetadataException, TypeMappingException, AgendaException, 
-  UnsupportedAttributeTypeException, SourceMetadataException, 
-  TopologyReaderException, SNEEDataSourceException, 
-  CostParametersException, SNCBException, CodeGenerationException
+  throws IOException 
 	{
 	//get query & schemas
     String currentQuery = queryIterator.next();
@@ -156,6 +157,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     System.out.println("Running Tests on query " + (queryid));
     try
     {
+      
       SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay client = 
         new  SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay(currentQuery, 
                            duration, queryParams, null, propertiesPath);
@@ -165,13 +167,14 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       //added to allow recovery from crash
       updateRecoveryFile();
       client.runCompilelation();
-      double lifetimeMeasurement = getOrgianlLifetime();
-      
-      System.out.println("compiled control");
-      System.out.println("running tests");
-      allowDeathOfAcquires = true;
-      client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
-      
+      for(int currentNumberOfFailures = 0; currentNumberOfFailures < maxNumberofFailures; currentNumberOfFailures++)
+      {
+        calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
+        System.out.println("compiled control");
+        System.out.println("running tests");
+        allowDeathOfAcquires = true;
+        client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
+      }
       queryid ++;
       System.out.println("Ran all tests on query " + (queryid));
     }
@@ -184,8 +187,23 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     }
 	}
 
-  private static double getOrgianlLifetime()
+  private static void calculateAgendaExecutionsBetweenFailures(int currentNumberOfFailures, SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay client)
   {
+    if(!calculated)
+    {
+      originalLifetime = getOriginalLifetime();
+      originalQEP = client.getQEP();
+      calculated = true;
+    }
+    double timeBetweenFailures =  originalLifetime / (currentNumberOfFailures + 1); //s
+    Long agendaLength = originalQEP.getAgenda().getLength_bms(false); // s
+    numberOfExectutionCycles = (int) (timeBetweenFailures/agendaLength);
+  }
+
+
+  private static double getOriginalLifetime()
+  {
+    
     File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + 
         "OTASection" + sep + "storedObjects");
     ArrayList<Adaptation> orginalList = new ClientUtils().readInObjects(inputFolder);
@@ -286,16 +304,15 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
   {
   	updateSites(allowDeathOfAcquires);
   	testNo = 1;
-  	while(applicableConfulenceSites.size() != 0)
+  	if(applicableConfulenceSites.size() != 0)
   	{
   		String deadNode = chooseNodes();
-  		
   		client.runForTests(deadNode, queryid); 
   		updateRecoveryFile();
       utils.updateLatexCore(queryid, testNo );
       testNo++;
       System.gc();
-      controller.simulateEnergyDrainofAganedaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
+      controller.simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles);
       updateSites(allowDeathOfAcquires);   
   	}
   	System.out.println("Stopping query " + queryid + ".");

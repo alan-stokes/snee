@@ -1,0 +1,30 @@
+#!/bin/bash
+# Proper header for a Bash script.
+
+(echo reset
+echo dx\=5
+echo n\=2
+echo set style fill solid border -1
+echo total_box_width_relative\=0.75
+echo gap_width_relative\=0.3
+echo d_width\= total_box_width_relative\/2.
+echo set boxwidth total_box_width_relative\/n relative
+echo set xlabel \" $1 \"
+echo set ylabel \" $2 \"
+echo set xrange [0\:$3] 
+echo set yrange [0\:$4] 
+
+echo -n set xtic \(
+
+let j=$3-1
+for i in $(seq 1 $j)
+do
+echo -n $i,
+done
+echo -n $3
+echo \)
+
+echo set term png
+echo set output \"$5.png\"
+echo plot \"$6\" u 1\:2 w boxes lc rgb\"blue\" title \"$7\"\, \"$6\" u \(\$1+d_width\)\:3 w boxes lc rgb\"red\" title \"$8\"\,\"$6\" u \(\$1+d_width\)\:4 w boxes lc rgb\"red\" title \"$9\" 
+) | gnuplot -persist 
