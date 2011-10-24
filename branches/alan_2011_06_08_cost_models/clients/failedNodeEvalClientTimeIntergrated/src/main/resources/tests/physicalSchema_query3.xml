@@ -9,7 +9,7 @@
 		<gateways>0</gateways>
 		<extents>
 			<extent name="A">
-				<sites>9,0,13,6,14,1,11,7,2</sites>
+				<sites>9,0,1,7,2</sites>
 			</extent>
 		</extents> 
 	</sensor_network> 
