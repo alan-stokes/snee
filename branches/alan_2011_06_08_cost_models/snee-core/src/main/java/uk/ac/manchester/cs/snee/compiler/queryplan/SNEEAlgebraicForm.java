@@ -75,6 +75,14 @@ public abstract class SNEEAlgebraicForm implements Serializable {
 	}
 	
 	/**
+	 * sets the query name that this *AF is a representation of
+	 */
+	public void setQueryName(String newQueryName)
+	{
+	  this.queryName = newQueryName;
+	}
+	
+	/**
 	 * Returns an identifier for the instance of the *AF.
 	 * @return
 	 */

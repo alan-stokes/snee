@@ -25,7 +25,6 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.client.SNEEClient;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
-import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
@@ -60,6 +59,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	protected static int testNo = 1;
 	private static SensorNetworkQueryPlan qep;
 	private static ClientUtils utils = new ClientUtils();
+	private static int max = 10;
 	
 	public SNEEFailedNodeEvalClientUsingInNetworkSource(String query, 
 			double duration, String queryParams, String csvFile, String sneeProperties) 
@@ -102,17 +102,15 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
       
 	    queryIterator = queries.iterator();
 	    failedOutput = createFailedTestListWriter();
-	  
-	    moveQueryToRecoveryLocation(queries);
 	   
-	    
-	    while(queryIterator.hasNext())
+	    //TODO remove to allow full run
+	    while(queryIterator.hasNext() && queryid <= max)
 	    {
 	      recursiveRun(queryIterator, duration, queryParams, false, failedOutput);
       }
 	    
 	    queryIterator = queries.iterator();
-	    while(queryIterator.hasNext())
+	    while(queryIterator.hasNext() &&  queryid <= max)
       {
         recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
       }
@@ -120,12 +118,12 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	    failedOutput.flush();
 	    failedOutput.close();  
     } 
-		catch (Exception e)
+    catch (Exception e)
     {
-      System.out.println("Execution failed. See logs for detail.");
-      System.out.println("error message was " + e.getMessage());
-      logger.fatal(e);
-      e.printStackTrace();
+	    System.out.println("Execution failed. See logs for detail.");
+	    System.out.println("error message was " + e.getMessage());
+	    logger.fatal(e);
+	    e.printStackTrace();
     }
 	}
 
@@ -165,7 +163,6 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
       System.out.println("running tests");
       allowDeathOfAcquires = true;
       client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
-      
       queryid ++;
       System.out.println("Ran all tests on query " + (queryid));
     }
@@ -174,7 +171,10 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
       e.printStackTrace();
       writeErrorToFile(e, failedOutput );
       queryid ++;
-      recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
+      if(queryid <= max)
+      {
+        recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
+      }
     }
 	}
 
@@ -211,17 +211,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
     control.addQueryWithoutCompilationAndStarting(_query, _queryParams);
     controller.close();
     if (logger.isDebugEnabled())
-      logger.debug("RETURN");// TODO Auto-generated method stub	
-  }
-
-private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
-  {
-    Iterator<String> queryIterator = queries.iterator();
-    //recovery move
-    for(int i = 0; i < queryid - 1; i++)
-    {
-      queryIterator.next();  
-    }
+      logger.debug("RETURN");
   }
 
   private static void collectQueries(ArrayList<String> queries) throws IOException
@@ -278,7 +268,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
       throw new Exception("no avilable nodes to fail");
     int position = 0;
     ArrayList<String> deadNodes = new ArrayList<String>(); 
-    chooseNodes(deadNodes, noSites, position, client, currentQuery, queryid, true);
+    chooseNodes(deadNodes, 1, position, client, currentQuery, queryid, true);
   }
 
   /**
@@ -311,7 +301,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
          ) && 
          !currentSite.getID().equals(sinkID))
           siteIDs.add(currentSite.getID());
-    }// TODO Auto-generated method stub
+    }
   }
 
   private boolean isSource(Site currentSite, int[] sources)
@@ -361,6 +351,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
         if(inRecoveryMode)
         {
           inRecoveryMode = false;
+          client.getQEP().getLAF().setQueryName("query" + queryid + "-" + testNo);
           client.runForTests(deadNodes, queryid ); 
           utils.updateLatexCore(queryid, testNo );
           client.resetMetaData();
@@ -370,6 +361,7 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
         }
         else
         {
+          client.getQEP().getLAF().setQueryName("query" + queryid + "-" + testNo);
           client.runForTests(deadNodes, queryid); 
           utils.updateLatexCore(queryid, testNo );
           client.resetMetaData();

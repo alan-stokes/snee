@@ -4,8 +4,9 @@ import java.util.Random;
 
 public enum LinkMatrexChoiceHeuristic
 {
-  ENERGY, LATENCY, RANDOM, MIXED;
-  
+  //ENERGY, LATENCY, RANDOM, MIXED;
+  ENERGY;
+	
   private static int position = 0;
   
   

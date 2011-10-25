@@ -40,7 +40,7 @@ public class HeuristicSet
           edgeChoices.put(edge.getID(), LinkMatrexChoiceHeuristic.ENERGY);
         }
       break;
-      case LATENCY:
+     /* case LATENCY:
         edges = workingTopology.getEdges();
         keyIterator = edges.keySet().iterator();
         while(keyIterator.hasNext())
@@ -72,6 +72,7 @@ public class HeuristicSet
           edgeChoices.put(edge.getID(), edgeChoice);
         }
       break;
+      */
     }
   }
 
@@ -126,8 +127,8 @@ public class HeuristicSet
     {
       case ENERGY:
         return LinkCostMetric.ENERGY;
-      case LATENCY:
-        return LinkCostMetric.LATENCY;
+     /* case LATENCY:
+        return LinkCostMetric.LATENCY;*/
       default:
         return  LinkCostMetric.RADIO_LOSS;
     }

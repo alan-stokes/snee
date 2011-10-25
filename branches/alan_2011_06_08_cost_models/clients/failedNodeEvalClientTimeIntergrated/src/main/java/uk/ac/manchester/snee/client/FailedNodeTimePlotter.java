@@ -12,7 +12,7 @@ import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.Cardinality
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 
-public class Plotter implements Serializable
+public class FailedNodeTimePlotter implements Serializable
 {
 
   /**
@@ -57,7 +57,7 @@ public class Plotter implements Serializable
   
   
   
-  public Plotter (File outputFolder, AutonomicManagerImpl manager) 
+  public FailedNodeTimePlotter (File outputFolder, AutonomicManagerImpl manager, int queryid) 
   throws IOException
   {
     this.outputFolder = outputFolder;
@@ -70,16 +70,16 @@ public class Plotter implements Serializable
     else
       this.outputFolder.mkdir();
     
-    energyPlotFile = new File(this.outputFolder.toString() + sep + "energyPlot.tex");
-    timePlotFile = new File(this.outputFolder.toString() + sep + "timePlot.tex");
-    qepCostPlotFile = new File(this.outputFolder.toString() + sep + "qepPlot.tex");
-    lifetimePlotFile = new File(this.outputFolder.toString() + sep + "lifetimePlot.tex");
-    cyclesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "cyclesBurnedPlot.tex");
-    cyclesMissedPlotFile = new File(this.outputFolder.toString() + sep + "cyclesMissedPlot.tex");
-    cyclesLeftPlotFile = new File(this.outputFolder.toString() + sep + "cyclesLeftPlot.tex");
-    tuplesLeftPlotFile = new File(this.outputFolder.toString() + sep + "tuplesLeftPlot.tex");
-    tuplesMissedPlotFile = new File(this.outputFolder.toString() + sep + "tuplesMissedPlot.tex");
-    tuplesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "tuplesBurnedPlot.tex");
+    energyPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "energyPlot.tex");
+    timePlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "timePlot.tex");
+    qepCostPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "qepPlot.tex");
+    lifetimePlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "lifetimePlot.tex");
+    cyclesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "cyclesBurnedPlot.tex");
+    cyclesMissedPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "cyclesMissedPlot.tex");
+    cyclesLeftPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "cyclesLeftPlot.tex");
+    tuplesLeftPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "tuplesLeftPlot.tex");
+    tuplesMissedPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "tuplesMissedPlot.tex");
+    tuplesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "tuplesBurnedPlot.tex");
     if(energyPlotFile.exists())
     {
       energyPlotFile.delete();
@@ -133,7 +133,7 @@ public class Plotter implements Serializable
     tuplesBurnedWriter = new BufferedWriter(new FileWriter(tuplesBurnedPlotFile, true));
   }
   
-  public Plotter (File outputFolder) 
+  public FailedNodeTimePlotter (File outputFolder) 
   throws IOException
   {
     this.outputFolder = outputFolder;
@@ -211,7 +211,7 @@ public class Plotter implements Serializable
   
   
   
-  public void plot(Adaptation global, Adaptation partial, Adaptation local) 
+  public void plot(Adaptation global, Adaptation partial, Adaptation local, double currentLifetime) 
   throws 
   IOException, OptimizationException
   {
@@ -236,9 +236,8 @@ public class Plotter implements Serializable
       energyYMax = Math.max(energyYMax, local.getEnergyCost());
       numberOfAdaptations++;
     }
-    energyWriter.write("\n");
     
-    timeWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
+    timeWriter.write(queryID +  "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       timeWriter.write(df.format(global.getTimeCost() / 1000) + " ");
@@ -254,9 +253,8 @@ public class Plotter implements Serializable
       timeWriter.write(df.format(local.getTimeCost() / 1000) + " ");
       timeYMax = Math.max(timeYMax, local.getTimeCost() / 1000);
     }
-    timeWriter.write("\n");
     
-    qepWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
+    qepWriter.write(queryID +  "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       qepWriter.write(df.format(global.getRuntimeCost()) + " ");
@@ -272,9 +270,8 @@ public class Plotter implements Serializable
       qepWriter.write(df.format(local.getRuntimeCost()) + " ");
       qepYMax = Math.max(qepYMax, local.getRuntimeCost());
     }
-    qepWriter.write("\n");
     
-    lifetimeWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
+    lifetimeWriter.write(queryID +  "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       lifetimeWriter.write(df.format(global.getLifetimeEstimate() / 1000) + " ");
@@ -287,12 +284,11 @@ public class Plotter implements Serializable
     }
     if(local != null)
     {
-      lifetimeWriter.write(df.format(local.getLifetimeEstimate() / 1000) + " ");
-      lifetimeYMax = Math.max(lifetimeYMax, local.getLifetimeEstimate() / 1000);
+      lifetimeWriter.write(df.format((local.getLifetimeEstimate() / 1000) + currentLifetime) + " ");
+      lifetimeYMax = Math.max(lifetimeYMax, (local.getLifetimeEstimate() / 1000) + currentLifetime);
     }
-    lifetimeWriter.write("\n");
     
-    cyclesBurnedWriter.write(queryID +  global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
+    cyclesBurnedWriter.write(queryID +  "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       cyclesBurnedWriter.write(df.format(global.getEnergyCost() / global.getRuntimeCost()) + " ");
@@ -307,10 +303,9 @@ public class Plotter implements Serializable
     {
       cyclesBurnedWriter.write(df.format(local.getEnergyCost() / local.getRuntimeCost()) + " ");
       cyclesBurnedYMax = Math.max(cyclesBurnedYMax, local.getEnergyCost() / local.getRuntimeCost());
-    }
-    cyclesBurnedWriter.write("\n");   
+    }  
     
-    cyclesMissedWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
+    cyclesMissedWriter.write(queryID +  "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       cyclesMissedWriter.write(df.format(global.getTimeCost() / global.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
@@ -325,10 +320,9 @@ public class Plotter implements Serializable
     {
       cyclesMissedWriter.write(df.format(local.getTimeCost() / local.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
       cyclesMissedYMax = Math.max(cyclesMissedYMax, local.getTimeCost() / local.getNewQep().getAgendaIOT().getLength_bms(false));
-    }
-    cyclesMissedWriter.write("\n");   
+    }  
 
-    cyclesLeftWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
+    cyclesLeftWriter.write(queryID +  "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       cyclesLeftWriter.write(df.format(global.getLifetimeEstimate() / global.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
@@ -344,7 +338,6 @@ public class Plotter implements Serializable
       cyclesLeftWriter.write(df.format(local.getLifetimeEstimate() / local.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
       cyclesLeftYMax = Math.max(cyclesLeftYMax, local.getLifetimeEstimate() / local.getNewQep().getAgendaIOT().getLength_bms(false));
     }
-    cyclesLeftWriter.write("\n"); 
 
     float globalTupleCount = 0;
     float partialTupleCount = 0;
@@ -368,7 +361,7 @@ public class Plotter implements Serializable
       localTupleCount = tupleModel.returnAgendaExecutionResult();
     }
     
-    tuplesLeftWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
+    tuplesLeftWriter.write(queryID +  "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       tuplesLeftWriter.write(df.format(globalTupleCount * (global.getLifetimeEstimate() / global.getNewQep().getAgendaIOT().getLength_bms(false))) + " ");
@@ -384,9 +377,8 @@ public class Plotter implements Serializable
       tuplesLeftWriter.write(df.format(localTupleCount * (local.getLifetimeEstimate() / local.getNewQep().getAgendaIOT().getLength_bms(false))) + " ");
       tuplesLeftYMax = Math.max(tuplesLeftYMax, localTupleCount * (local.getLifetimeEstimate() / local.getNewQep().getAgendaIOT().getLength_bms(false)));
     }
-    tuplesLeftWriter.write("\n"); 
     
-    tuplesMissedWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
+    tuplesMissedWriter.write(queryID +  "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       tuplesMissedWriter.write(df.format((global.getTimeCost() / global.getNewQep().getAgendaIOT().getLength_bms(false)) * globalTupleCount) + " ");
@@ -402,9 +394,8 @@ public class Plotter implements Serializable
       tuplesMissedWriter.write(df.format((local.getTimeCost() / local.getNewQep().getAgendaIOT().getLength_bms(false)) * localTupleCount) + " ");
       tuplesMissedYMax = Math.max(tuplesMissedYMax, (local.getTimeCost() / local.getNewQep().getAgendaIOT().getLength_bms(false)) * localTupleCount);
     }
-    tuplesMissedWriter.write("\n"); 
     
-    tuplesBurnedWriter.write(queryID + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
+    tuplesBurnedWriter.write(queryID + "_(" +  global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
       tuplesBurnedWriter.write(df.format((global.getEnergyCost() / global.getRuntimeCost()) * globalTupleCount) + " ");
@@ -420,7 +411,6 @@ public class Plotter implements Serializable
       tuplesBurnedWriter.write(df.format((local.getEnergyCost() / local.getRuntimeCost()) * localTupleCount) + " ");
       tuplesBurnedYMax =  Math.max(tuplesBurnedYMax, (local.getEnergyCost() / local.getRuntimeCost()) * localTupleCount);
     }
-    tuplesBurnedWriter.write("\n"); 
     
     energyWriter.flush();
     timeWriter.flush(); 
@@ -610,6 +600,37 @@ public class Plotter implements Serializable
     {
       firstOutputFolder.mkdir();
     }  
+  }
+
+  public void plot(Adaptation global, Adaptation partial, Adaptation local) 
+  throws IOException, OptimizationException
+  {
+    this.plot(global, partial, local, 0);
+  }
+
+  public void endPlotLine() 
+  throws IOException
+  {
+    energyWriter.write("\n"); 
+    timeWriter.write("\n"); 
+    qepWriter.write("\n"); 
+    lifetimeWriter.write("\n"); 
+    cyclesBurnedWriter.write("\n");
+    cyclesMissedWriter.write("\n"); 
+    cyclesLeftWriter.write("\n"); 
+    tuplesLeftWriter.write("\n"); 
+    tuplesMissedWriter.write("\n");
+    tuplesBurnedWriter.write("\n"); 
+    energyWriter.flush();
+    timeWriter.flush(); 
+    qepWriter.flush(); 
+    lifetimeWriter.flush();
+    cyclesBurnedWriter.flush();
+    cyclesMissedWriter.flush(); 
+    cyclesLeftWriter.flush();
+    tuplesLeftWriter.flush(); 
+    tuplesMissedWriter.flush();
+    tuplesBurnedWriter.flush();
   }
   
 }

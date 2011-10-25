@@ -1,8 +1,10 @@
 package uk.ac.manchester.snee.client;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -18,7 +20,7 @@ import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyUtils;
 
-public class ClientUtils
+public class FailedNodeTimeClientUtils
 {
   private static String sep = System.getProperty("file.separator");
   private BufferedWriter latexCore = null;
@@ -26,13 +28,13 @@ public class ClientUtils
   private Adaptation partial = null;
   private Adaptation local = null;
   //private Adaptation original = null;
-  private Plotter plot = null;
+  private FailedNodeTimePlotter plot = null;
   
-  public ClientUtils()
+  public FailedNodeTimeClientUtils()
   {
     try
     {
-      plot = new Plotter(new File("plots"));
+      plot = new FailedNodeTimePlotter(new File("plots"));
     }
     catch (IOException e)
     {
@@ -115,8 +117,32 @@ public class ClientUtils
     
     out.flush();
     moveImagesToLatexFolder(out, adaptations, testID, queryid);
+  }
+  
+  public void plotAdaptations(int queryid, int testID, double currentLifetime, PlotterEnum whichToPlot) 
+  throws IOException, OptimizationException
+  {
+    File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
+        testID + sep + "Planner" + sep + "storedObjects");
+    ArrayList<Adaptation> adaptations = readInObjects(inputFolder);
     sortout(adaptations);
-    plot.plot(global, partial, local);
+    if(whichToPlot.toString().equals(PlotterEnum.ALL.toString()))
+    {
+      plot.plot(global, partial, local, currentLifetime);
+      plot.endPlotLine();
+    }
+    else if(whichToPlot.toString().equals(PlotterEnum.GLOBAL.toString()))
+    {
+      plot.plot(global, null, null, currentLifetime);
+    }
+    else if(whichToPlot.toString().equals(PlotterEnum.PARTIAL.toString()))
+    {
+      plot.plot(null, partial, null, currentLifetime);
+    }
+    else if(whichToPlot.toString().equals(PlotterEnum.LOCAL.toString()))
+    {
+      plot.plot(null, null, local, currentLifetime);
+    }
   }
   
   private void sortout(ArrayList<Adaptation> adaptations)
@@ -225,4 +251,102 @@ public class ClientUtils
       firstOutputFolder.mkdir();
     }  
   }
+  
+  public void updateRecoveryFile(int queryid) throws IOException
+  {
+    File folder = new File("recovery"); 
+    String path = folder.getAbsolutePath();
+    //added to allow recovery from crash
+    BufferedWriter recoverWriter = new BufferedWriter(new FileWriter(new File(path + "/recovery.tex")));
+    
+    recoverWriter.write(queryid + "\n");
+    recoverWriter.flush();
+    recoverWriter.close();
+  }
+  
+  public void checkRecoveryFile(int queryid) throws IOException
+  {
+    //added to allow recovery from crash
+    File folder = new File("recovery"); 
+    String path = folder.getAbsolutePath();
+    File recoveryFile = new File(path + "/recovery.tex");
+    if(recoveryFile.exists())
+    {
+      BufferedReader recoveryTest = new BufferedReader(new FileReader(recoveryFile));
+      String recoveryQueryIdLine = recoveryTest.readLine();
+      String recoverQueryTestLine = recoveryTest.readLine();
+      System.out.println("recovery text located with query test value = " +  recoveryQueryIdLine + " and has test no = " + recoverQueryTestLine);
+      queryid = Integer.parseInt(recoveryQueryIdLine);
+      if(queryid == 0)
+      {
+        deleteAllFilesInResultsFolder(folder);
+        recoveryFile.createNewFile();
+      }
+    }
+    else
+    {
+      System.out.println("create file recovery.tex with 2 lines each containing the number 0");
+      folder.mkdir();    
+    }
+  }
+
+  private void deleteAllFilesInResultsFolder(File folder)
+  {
+    File [] filesInFolder = folder.listFiles();
+    for(int fileIndex = 0; fileIndex < filesInFolder.length; fileIndex++)
+    {
+      filesInFolder[fileIndex].delete();
+    }
+  }
+  
+  public void writeErrorToFile(Exception e, BufferedWriter failedOutput, int queryid,
+                                      int testNo) throws IOException
+  {
+    System.out.println("tests failed for query " + queryid + "  going onto query " + (queryid + 1));
+    failedOutput.write(queryid + " | " + testNo + "          |         " + e.getMessage() + "\n\n" );
+    StackTraceElement[] trace = e.getStackTrace();
+    for(int index = 0; index < trace.length; index++)
+    {
+      failedOutput.write(trace[index].toString() + "\n");
+    }
+    failedOutput.write("\n\n");
+    failedOutput.flush();
+  }
+  
+  public BufferedWriter createFailedTestListWriter() throws IOException
+  {
+    File folder = new File("recovery"); 
+    File file = new File(folder + sep + "failedTests");
+    return new BufferedWriter(new FileWriter(file));
+  }
+
+  public void plotOrginial(int queryid, int testNo) throws IOException, OptimizationException
+  {
+    File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "OTASection" +  sep + "storedObjects");
+    ArrayList<Adaptation> orginal = this.readInObjects(inputFolder);
+    plot.plot(orginal.get(0), orginal.get(0), null);
+  }
+
+  public Adaptation getGlobal()
+  {
+    return global;
+  }
+  
+  public Adaptation getPartial()
+  {
+    return partial;
+  }
+  
+  public Adaptation getLocal()
+  {
+    return local;
+  }
+
+  public void endPlotLine() 
+  throws IOException
+  {
+    plot.endPlotLine();
+  }
+  
+  
 }

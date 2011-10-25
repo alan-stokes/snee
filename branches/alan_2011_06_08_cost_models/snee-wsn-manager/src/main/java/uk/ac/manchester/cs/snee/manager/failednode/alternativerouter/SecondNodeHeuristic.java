@@ -2,7 +2,8 @@ package uk.ac.manchester.cs.snee.manager.failednode.alternativerouter;
 
 public enum SecondNodeHeuristic
 {
-  CLOSEST_SINK, CLOSEST_ANY, RANDOM;
+  //CLOSEST_SINK, CLOSEST_ANY, RANDOM;
+  CLOSEST_SINK;
   private static int position = 0;
   
   

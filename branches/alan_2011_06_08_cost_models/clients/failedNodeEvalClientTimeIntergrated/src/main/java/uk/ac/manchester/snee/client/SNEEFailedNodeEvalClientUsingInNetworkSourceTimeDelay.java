@@ -26,7 +26,6 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.client.SNEEClient;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
-import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
@@ -60,13 +59,13 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	protected static int testNo = 1;
 	
 	//used to calculate agenda cycles
-	protected static int maxNumberofFailures = 2;
+	protected static int maxNumberofFailures = 3;
 	protected static double originalLifetime;
 	protected static int numberOfExectutionCycles;
 	protected static boolean calculated = false;
 	protected static SensorNetworkQueryPlan originalQEP;
 	
-	private static ClientUtils utils = new ClientUtils();
+	private static FailedNodeTimeClientUtils utils = new FailedNodeTimeClientUtils();
 	
 	public SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay(String query, 
 			double duration, String queryParams, String csvFile, String sneeProperties) 
@@ -99,7 +98,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 		
 		try
     {
-      checkRecoveryFile();
+      utils.checkRecoveryFile(queryid);
 
       runIxentsScripts();
       utils.writeLatexCore();
@@ -108,10 +107,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       collectQueries(queries);
       
 	    queryIterator = queries.iterator();
-	    failedOutput = createFailedTestListWriter();
-	  
-	    moveQueryToRecoveryLocation(queries);
-	   
+	    failedOutput = utils.createFailedTestListWriter();
 	    
 	    while(queryIterator.hasNext())
 	    {
@@ -137,13 +133,6 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     }
 	}
 
-  private static BufferedWriter createFailedTestListWriter() throws IOException
-  {
-	  File folder = new File("recovery"); 
-	  File file = new File(folder + sep + "failedTests");
-    return new BufferedWriter(new FileWriter(file));
-  }
-
   private static void recursiveRun(Iterator<String> queryIterator, 
 	                                 Long duration, String queryParams, 
 	                                 boolean allowDeathOfAcquires, 
@@ -165,27 +154,86 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       SNEEController contol = (SNEEController) client.controller;
       contol.setQueryID(queryid);
       //added to allow recovery from crash
-      updateRecoveryFile();
+      utils.updateRecoveryFile(queryid);
+      System.out.println("compiled control");
       client.runCompilelation();
-      for(int currentNumberOfFailures = 0; currentNumberOfFailures < maxNumberofFailures; currentNumberOfFailures++)
+      utils.plotOrginial(queryid, testNo);
+      Adaptation global = null;
+      Adaptation partial = null;
+      Adaptation local = null;
+      
+      // run first adaptation
+      for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
       {
-        calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
-        System.out.println("compiled control");
-        System.out.println("running tests");
-        allowDeathOfAcquires = true;
-        client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
+        if(currentNumberOfFailures == 1)
+        {
+          calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
+          System.out.println("running tests with " + currentNumberOfFailures + "nd failure");
+          client.getQEP().getLAF().setQueryName("query" + queryid + "-" + maxNumberofFailures);
+          client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
+          double currentLifetime = numberOfExectutionCycles * originalQEP.getAgendaIOT().getLength_bms(false) * currentNumberOfFailures;
+          utils.plotAdaptations(queryid, testNo, currentLifetime, PlotterEnum.ALL);
+          global = utils.getGlobal();
+          partial = utils.getPartial();
+          local = utils.getLocal();
+          testNo++;
+        }
+        else
+        {
+          if(global != null)
+          {
+            calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
+            System.out.println("running tests with " + currentNumberOfFailures + "nd failure on global");
+            client.resetQEP(global.getNewQep());
+            client.getQEP().getLAF().setQueryName("query" + queryid + "-" + maxNumberofFailures);
+            client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
+            double currentLifetime = numberOfExectutionCycles * originalQEP.getAgendaIOT().getLength_bms(false) * currentNumberOfFailures;
+            utils.plotAdaptations(queryid, testNo, currentLifetime, PlotterEnum.GLOBAL);
+            global = utils.getGlobal();
+          }
+          if(partial != null)
+          {
+            calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
+            System.out.println("running tests with " + currentNumberOfFailures + "nd failure on partial");
+            client.resetQEP(partial.getNewQep());
+            client.getQEP().getLAF().setQueryName("query" + queryid + "-" + maxNumberofFailures);
+            client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
+            double currentLifetime = numberOfExectutionCycles * originalQEP.getAgendaIOT().getLength_bms(false) * currentNumberOfFailures;
+            utils.plotAdaptations(queryid, testNo, currentLifetime, PlotterEnum.PARTIAL);
+            partial = utils.getPartial();
+          }
+          if(local != null)
+          {
+            calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
+            System.out.println("running tests with " + currentNumberOfFailures + "nd failure on local");
+            client.resetQEP(local.getNewQep());
+            client.getQEP().getLAF().setQueryName("query" + queryid + "-" + maxNumberofFailures);
+            client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
+            double currentLifetime = numberOfExectutionCycles * originalQEP.getAgendaIOT().getLength_bms(false) * currentNumberOfFailures;
+            utils.plotAdaptations(queryid, testNo, currentLifetime, PlotterEnum.LOCAL);
+            local = utils.getLocal();
+          }
+        }
+        testNo++;
+        utils.endPlotLine();
       }
       queryid ++;
-      System.out.println("Ran all tests on query " + (queryid));
+      System.out.println("Ran all tests on query " + (queryid) + " going onto next topology");
     }
     catch(Exception e)
     {
       e.printStackTrace();
-      writeErrorToFile(e, failedOutput );
+      utils.writeErrorToFile(e, failedOutput, queryid, testNo);
       queryid ++;
       recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
     }
 	}
+  
+  private void resetQEP(SensorNetworkQueryPlan qep) 
+  {
+    SNEEController control = (SNEEController) controller;
+    control.resetQEP(qep);
+  }
 
   private static void calculateAgendaExecutionsBetweenFailures(int currentNumberOfFailures, SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay client)
   {
@@ -196,7 +244,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       calculated = true;
     }
     double timeBetweenFailures =  originalLifetime / (currentNumberOfFailures + 1); //s
-    Long agendaLength = originalQEP.getAgenda().getLength_bms(false); // s
+    Long agendaLength = originalQEP.getAgendaIOT().getLength_bms(false); // s
     numberOfExectutionCycles = (int) (timeBetweenFailures/agendaLength);
   }
 
@@ -205,24 +253,10 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   {
     
     File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + 
-        "OTASection" + sep + "storedObjects");
-    ArrayList<Adaptation> orginalList = new ClientUtils().readInObjects(inputFolder);
+                                "OTASection" + sep + "storedObjects");
+    ArrayList<Adaptation> orginalList = new FailedNodeTimeClientUtils().readInObjects(inputFolder);
     Adaptation orginal = orginalList.get(0);
     return orginal.getLifetimeEstimate();
-  }
-
-  private static void writeErrorToFile(Exception e, BufferedWriter failedOutput) throws IOException
-  {
-    System.out.println("tests failed for query " + queryid + "  going onto query " + (queryid + 1));
-    failedOutput.write(queryid + " | " + testNo + "          |         " + e.getMessage() + "\n\n" );
-    StackTraceElement[] trace = e.getStackTrace();
-    for(int index = 0; index < trace.length; index++)
-    {
-      failedOutput.write(trace[index].toString() + "\n");
-    }
-    failedOutput.write("\n\n");
-    failedOutput.flush();
-    
   }
 
   private void runCompilelation() 
@@ -244,17 +278,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     control.addQueryWithoutCompilationAndStarting(_query, _queryParams);
     controller.close();
     if (logger.isDebugEnabled())
-      logger.debug("RETURN");// TODO Auto-generated method stub	
-  }
-
-private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
-  {
-    Iterator<String> queryIterator = queries.iterator();
-    //recovery move
-    for(int i = 0; i < queryid - 1; i++)
-    {
-      queryIterator.next();  
-    }
+      logger.debug("RETURN");
   }
 
   private static void collectQueries(ArrayList<String> queries) throws IOException
@@ -307,15 +331,17 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
   	if(applicableConfulenceSites.size() != 0)
   	{
   		String deadNode = chooseNodes();
+  		controller.simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles);
   		client.runForTests(deadNode, queryid); 
-  		updateRecoveryFile();
-      utils.updateLatexCore(queryid, testNo );
-      testNo++;
+  		utils.updateRecoveryFile(queryid);
       System.gc();
-      controller.simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles);
       updateSites(allowDeathOfAcquires);   
   	}
-  	System.out.println("Stopping query " + queryid + ".");
+  	else
+  	{
+  	  System.out.println("were no avilable nodes to fail, will not run test");
+  	}
+  	System.out.println("Stopping current query");
   	controller.close();
   }
 
@@ -343,15 +369,13 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     while(siteIterator.hasNext())
     {
       Site currentSite = siteIterator.next();
-      if(currentSite.getInDegree() > 1 && 
+      if((allowDeathOfAcquires ||  (!allowDeathOfAcquires && !isSource(currentSite, sources))) &&
+          currentSite.getInDegree() > 1 && 
          !applicableConfulenceSites.contains(Integer.parseInt(currentSite.getID())) &&
-         (
-             (allowDeathOfAcquires) ||  
-             (!allowDeathOfAcquires && !isSource(currentSite, sources))
-         ) && 
-         !currentSite.getID().equals(sinkID))
+         !currentSite.getID().equals(sinkID)
+        )
           applicableConfulenceSites.add(currentSite.getID());
-    }// TODO Auto-generated method stub
+    }
   }
 
   private boolean isSource(Site currentSite, int[] sources)
@@ -420,62 +444,13 @@ private static void moveQueryToRecoveryLocation(ArrayList<String> queries)
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
-    System.out.println("Failed node" + failedNode);
+    System.out.println("Failed node [" + failedNode + "] ");
     SNEEController control = (SNEEController) controller;
     control.giveAutonomicManagerQuery(_query);
     ArrayList<String> nodeFailures = new ArrayList<String>();
     nodeFailures.add(failedNode);
     control.runSimulatedNodeFailure(nodeFailures);
-    //  List<ResultSet> results1 = resultStore.getResults();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
-  }
-  
-  private static void updateRecoveryFile() throws IOException
-  {
-    File folder = new File("recovery"); 
-    String path = folder.getAbsolutePath();
-    //added to allow recovery from crash
-    BufferedWriter recoverWriter = new BufferedWriter(new FileWriter(new File(path + "/recovery.tex")));
-    
-    recoverWriter.write(queryid + "\n");
-    recoverWriter.flush();
-    recoverWriter.close();
-    
-  }
-  
-  private static void checkRecoveryFile() throws IOException
-  {
-    //added to allow recovery from crash
-    File folder = new File("recovery"); 
-    String path = folder.getAbsolutePath();
-    File recoveryFile = new File(path + "/recovery.tex");
-    if(recoveryFile.exists())
-    {
-      BufferedReader recoveryTest = new BufferedReader(new FileReader(recoveryFile));
-      String recoveryQueryIdLine = recoveryTest.readLine();
-      String recoverQueryTestLine = recoveryTest.readLine();
-      System.out.println("recovery text located with query test value = " +  recoveryQueryIdLine + " and has test no = " + recoverQueryTestLine);
-      queryid = Integer.parseInt(recoveryQueryIdLine);
-      if(queryid == 0)
-      {
-        deleteAllFilesInResultsFolder(folder);
-        recoveryFile.createNewFile();
-      }
-    }
-    else
-    {
-      System.out.println("create file recovery.tex with 2 lines each containing the number 0");
-      folder.mkdir();    
-    }
-  }
-
-  private static void deleteAllFilesInResultsFolder(File folder)
-  {
-    File [] filesInFolder = folder.listFiles();
-    for(int fileIndex = 0; fileIndex < filesInFolder.length; fileIndex++)
-    {
-      filesInFolder[fileIndex].delete();
-    }
   }
 }

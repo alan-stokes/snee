@@ -2,7 +2,8 @@ package uk.ac.manchester.cs.snee.manager.failednode.alternativerouter;
 
 public enum PenaliseNodeHeuristic
 {
-  TRUE, FALSE;
+  //TRUE, FALSE;
+  TRUE;
   
   private static int position = 0;
   

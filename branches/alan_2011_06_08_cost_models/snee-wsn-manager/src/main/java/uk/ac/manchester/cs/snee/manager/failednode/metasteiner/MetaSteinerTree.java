@@ -290,7 +290,7 @@ public class MetaSteinerTree implements Serializable
           }
         }
       break;
-      case CLOSEST_ANY:
+      /*case CLOSEST_ANY:
         bucketIterator = bucket.iterator();
         currentChildCost = 0;
         first = true;
@@ -327,7 +327,7 @@ public class MetaSteinerTree implements Serializable
         bucket.remove(container.getChildID());
         ArrayList<Node> nodesInTree =  new ArrayList<Node>(container.getSteinerTree().getNodes());
         container.setParentID(nodesInTree.get(randomiser.nextInt(nodesInTree.size())).getID());
-      break;
+      break;*/
     }
     
   }
@@ -353,13 +353,13 @@ public class MetaSteinerTree implements Serializable
         steinerTree = new Tree(new Site((Site)workingTopology.getNode(sinkID)), true);
         bucket.remove(sink);
       break;
-      case RANDOM:
+     /* case RANDOM:
         
         int  randomIndex = randomiser.nextInt(bucket.size());
         sinkID = bucket.get(randomIndex);
         steinerTree = new Tree(new Site((Site)workingTopology.getNode(sinkID)), true);
         bucket.remove(randomIndex);
-      break;
+      break;*/
     }
     MetaSteinerTreeObjectContainer container = new MetaSteinerTreeObjectContainer(steinerTree);
     return container;
@@ -432,8 +432,8 @@ public class MetaSteinerTree implements Serializable
       }
       return weightedTopology;
 
-    case FALSE:
-      return workingTopology;
+    /*case FALSE:
+      return workingTopology;*/
     }
     return null;
   }

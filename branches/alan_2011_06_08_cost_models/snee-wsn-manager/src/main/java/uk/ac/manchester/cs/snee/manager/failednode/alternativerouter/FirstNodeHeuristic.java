@@ -2,8 +2,9 @@ package uk.ac.manchester.cs.snee.manager.failednode.alternativerouter;
 
 public enum FirstNodeHeuristic
 {
-  SINK,RANDOM;
-  
+  //SINK,RANDOM;
+  SINK;
+	
   private static int position = 0;
   
   public static FirstNodeHeuristic next()
