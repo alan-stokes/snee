@@ -12,16 +12,15 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 public class TinyOS_SNCB_Utils {
 
 	protected static void printTelosBCommands(String queryOutputDir, 
-			SensorNetworkQueryPlan qep,	String targetDirName, String serialPort)
-	{
+			SensorNetworkQueryPlan qep,
+			String targetDirName, String serialPort) {
 		String nescOutputDir = System.getProperty("user.dir") + "/"
 		+ queryOutputDir + targetDirName;
 		System.out.println("(1) Upload executables to each mote via the USB " +
 			"cable. For example, for mote one this is done as follows:");
 		
 		Iterator<Site> siteIter = qep.getRT().siteIterator(TraversalOrder.POST_ORDER);
-		while (siteIter.hasNext()) 
-		{
+		while (siteIter.hasNext()) {
 			Site s = siteIter.next();
 			String id = s.getID();
 			System.out.println("*** PLUG IN MOTE "+id+" ***");
@@ -42,10 +41,11 @@ public class TinyOS_SNCB_Utils {
 		
 		System.out.println("(3) Start the query plan by pressing reset button "+
 				"on all motes simultaneously.");
+		
+
 	}
 
-	protected static void printTossimCommands(String queryOutputDir, String targetDirName) 
-	{
+	protected static void printTossimCommands(String queryOutputDir, String targetDirName) {
 		String nescOutputDir = System.getProperty("user.dir") + "/"
 		+ queryOutputDir + targetDirName;
 		System.out.println("cd "+nescOutputDir);
@@ -55,8 +55,7 @@ public class TinyOS_SNCB_Utils {
 	
 	protected static String printAvroraCommands(String queryOutputDir, 
 			SensorNetworkQueryPlan qep, String targetDirName,
-			CodeGenTarget target) throws UtilsException 
-	{
+			CodeGenTarget target) {
 		String nescOutputDir = System.getProperty("user.dir") + "/"
 		+ queryOutputDir + targetDirName;
 		
@@ -90,12 +89,22 @@ public class TinyOS_SNCB_Utils {
 						sensorData.append(",light:"+siteID+":.");
 					}
 				}
-        path = Utils.validateFileLocation(nescOutputDir + "/mote"+siteID+".od");
+				try {
+					path = Utils.validateFileLocation(nescOutputDir + "/mote"+siteID+".od");
+				} catch (UtilsException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				elfString.append(path + " ");
 			} 
 			else 
 			{
-        path = Utils.validateFileLocation(nescOutputDir + "/Blink.od");
+				try {
+					path = Utils.validateFileLocation(nescOutputDir + "/Blink.od");
+				} catch (UtilsException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				elfString.append(path + " ");
 			}
 			
@@ -111,14 +120,14 @@ public class TinyOS_SNCB_Utils {
 		String avroraCommand = "";
 		avroraCommand = "-mcu=mts300 -platform="+platform+" " +
         "-simulation=sensor-network -colors=false -seconds=100 " +
-        "-monitors=packet,serial -ports="+gatewayID+":0:2390 -random-seed=1 " +
+        "-monitors=packet,serial,real-time -ports="+gatewayID+":0:2390 -random-seed=1 " +
         sensorData + " " + "-report-seconds "+nodeCount+" "+elfString;
 		System.out.println(avroraCommand);
 		
 		System.out.println("*** To start Avrora ***");
 		System.out.println("java avrora.Main -mcu=mts300 -platform="+platform+" " +
 				"-simulation=sensor-network -colors=false -seconds=100" +
-				" -monitors=packet,serial -ports="+gatewayID+":0:2390 -random-seed=1 " +
+				" -monitors=packet,serial,real-time -ports="+gatewayID+":0:2390 -random-seed=1 " +
 				sensorData + " " + "-report-seconds "+nodeCount+" "+elfString+" \n");
 		
 		System.out.println("*** In a separate terminal window ***");

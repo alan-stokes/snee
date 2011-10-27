@@ -38,11 +38,11 @@ import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 public class RadioComponent extends NesCComponent {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = 8447008429983752385L;
+	 * 
+	 */
+	private static final long serialVersionUID = 8447008429983752385L;
 
-    public RadioComponent(final String name, final NesCConfiguration config,
+	public RadioComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {
 	super(config, tossimFlag);
 	this.instanceOfGeneric = false;

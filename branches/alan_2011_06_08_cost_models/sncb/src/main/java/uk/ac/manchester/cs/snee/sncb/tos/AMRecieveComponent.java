@@ -40,11 +40,11 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 public class AMRecieveComponent extends GenericNesCComponent {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = 6805603899570705171L;
+	 * 
+	 */
+	private static final long serialVersionUID = 6805603899570705171L;
 
-    public static String TYPE_NAME = "AMReceiverC";
+	public static String TYPE_NAME = "AMReceiverC";
 
     Site txSite;
 

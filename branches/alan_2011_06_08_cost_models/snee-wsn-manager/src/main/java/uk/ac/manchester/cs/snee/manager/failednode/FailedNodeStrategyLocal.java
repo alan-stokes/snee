@@ -16,6 +16,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragment;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceWhereSchedular;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
@@ -305,12 +306,13 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
         new InstanceWhereSchedular(pinnedPaf, currentRoutingTree, currentQEP.getCostParameters(), localFolder.toString());
       IOT newIOT = instanceWhere.getIOT();
       //run new iot though when scheduler and locate changes
-      AgendaIOT newAgenda = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
+      AgendaIOT newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
+      Agenda newAgenda = doOldSNWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
       //output new and old agendas
-      new FailedNodeStrategyLocalUtils(this).outputAgendas(newAgenda, currentQEP.getAgendaIOT(), 
+      new FailedNodeStrategyLocalUtils(this).outputAgendas(newAgendaIOT, currentQEP.getAgendaIOT(), 
                                                            currentQEP.getIOT(), newIOT, localFolder);
       
-      boolean success = assessQEPsAgendas(currentQEP.getIOT(), newIOT, currentQEP.getAgendaIOT(), newAgenda, 
+      boolean success = assessQEPsAgendas(currentQEP.getIOT(), newIOT, currentQEP.getAgendaIOT(), newAgendaIOT, newAgenda, 
                                           false, adapt, failedNodeIDs, currentRoutingTree);
       
       adapt.setFailedNodes(failedNodeIDs);

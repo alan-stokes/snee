@@ -39,11 +39,11 @@ import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 public class SensorComponent extends GenericNesCComponent {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = 3376024523160828465L;
+	 * 
+	 */
+	private static final long serialVersionUID = 3376024523160828465L;
 
-    Site sourceSite;
+	Site sourceSite;
 
     String sensorId;
 

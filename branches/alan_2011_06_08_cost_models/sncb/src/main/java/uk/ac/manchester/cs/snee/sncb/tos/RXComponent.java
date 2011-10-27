@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
+
 import java.util.HashMap;
 
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -45,11 +46,11 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 public class RXComponent extends NesCComponent {
 
 	/**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = 8662014392732592907L;
+	 * 
+	 */
+	private static final long serialVersionUID = 8662014392732592907L;
 
-  /**
+	/**
 	 * The fragment that tuples originate from (i.e., the tuple type)
 	 */
     Fragment sourceFrag;

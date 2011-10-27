@@ -45,11 +45,11 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 public class ExchangeProducerComponent extends NesCComponent {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = -9124378034104478224L;
+	 * 
+	 */
+	private static final long serialVersionUID = -9124378034104478224L;
 
-    SensornetExchangeOperator op;
+	SensornetExchangeOperator op;
 
     SensorNetworkQueryPlan plan;
 

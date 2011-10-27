@@ -39,14 +39,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragmentTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EndManagementTask;
@@ -65,13 +59,13 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 public class QueryPlanModuleComponent extends NesCComponent {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = 7910522500225164680L;
+	 * 
+	 */
+	private static final long serialVersionUID = 5296824082396798726L;
 
-    SensorNetworkQueryPlan plan;
+	SensorNetworkQueryPlan plan;
 
-    AgendaIOT agenda;
+    Agenda agenda;
     
     Integer sink;
 
@@ -87,7 +81,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 
 	private boolean enablePrintf;
 
-//	private boolean enableLeds;
+	//private boolean enableLeds;
 
 	private boolean useControllerComponent;
     
@@ -104,11 +98,15 @@ public class QueryPlanModuleComponent extends NesCComponent {
 		super(config, tossimFlag, debugLeds, target);
 		this.id = name;
 		this.plan = plan;
-		this.agenda = plan.getAgendaIOT();
+		this.agenda = plan.getAgenda();
 		this.sink = sink;
 		this.costParams = costParams;
 
 		this.controlRadio =controlRadio;
+		if (this.sink.toString().equals(config.getSiteID())) {
+			this.controlRadio =false;
+		}
+		
 		this.enablePrintf = enablePrintf;
 		//this.enableLeds = enableLeds;
 		this.useControllerComponent = useControllerComponent;
@@ -151,14 +149,9 @@ public class QueryPlanModuleComponent extends NesCComponent {
 			}
 			
 			radioOn = false;
-			
-			agendaCheckingBuff.append("\t\t\tif (deadBySimulation) \n");
-			agendaCheckingBuff.append("\t\t\t{ \n");
-			agendaCheckingBuff.append("\t\t\t\t return; \n");
-			agendaCheckingBuff.append("\t\t\t} \n\n");
-			
 			//for each task start time in the agenda
-			for (int i = 0; i < startTimeList.size(); i++) {		
+			for (int i = 0; i < startTimeList.size(); i++) {
+		
 			    //Get values for lastTime, startTime  and nextDelta
 			    boolean lastTask = false;
 			    if (i == startTimeList.size() - 1) {
@@ -201,13 +194,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 					doInvokeFragmentTask(firedTimerTaskBuff,
 						agendaCheckingBuff, lastTask, first, task,
 						indentation, i);
-					first = false;	
-					
-				    }else if(task instanceof InstanceFragmentTask) {
-						doInvokeInstanceFragmentTask(firedTimerTaskBuff,
-								agendaCheckingBuff, lastTask, first, task,
-								indentation, i);
-							first = false;	
+					first = false;		
 				    } else if (task instanceof RadioOnTask) {
 				    	invokeRadioOnTask(agendaCheckingBuff, indentation);		    	
 				    	first = false;
@@ -396,7 +383,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	out.close();
     }
 
-    
     /**
      * Performs Tossim synchronization by incrementing a global variable.  Note that
      * this doesn't need to be done for TinyOS2 because we can control the time
@@ -447,48 +433,19 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    final StringBuffer agendaCheckingBuff) {
 	out.println("\ttask void processAgendaItemsTask()");
 	out.println("\t{");
+
 	out.println(agendaCheckingBuff);
 	out.println("\t}\n\n");
     }
 
-    private CodeGenTarget getTarget()
-    {
-    	if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET)) 
-    	{
-    	  try 
-    	  {
-    		return CodeGenTarget.parseCodeTarget(SNEEProperties
-    				.getSetting(SNEEPropertyNames.SNCB_CODE_GENERATION_TARGET));
-    	  } 
-    	  catch (SNEEConfigurationException e) 
-    	  {
-    		// TODO Auto-generated catch block
-    		e.printStackTrace();
-    		return CodeGenTarget.TELOSB_T2; //default
-    	  }
-    	}
-    	else
-    	{
-    		return CodeGenTarget.TELOSB_T2; //default
-    	}
-    }
     
-    
-	private void doInitialize(final PrintWriter out, final int firstDelta) {
+	private static void doInitialize(final PrintWriter out, final int firstDelta) {
 		
 		out.println("\ttask void initialize()");
 		out.println("\t{");
 		out.println("\t\tinitialized = TRUE;");
 		out.println("\t\tnextDelta = " + (firstDelta - 1) + ";");
 		out.println("\t\tagendaRow = 0;");
-		Site thisSite = tossimConfig.getSite();
-		CodeGenTarget target = getTarget();
-		
-		if(thisSite.isDeadInSimulation() && 
-		(target == CodeGenTarget.AVRORA_MICA2_T2 || target == CodeGenTarget.AVRORA_MICAZ_T2))	
-		  out.println("\t\tdeadBySimulation = TRUE;");
-		else
-		  out.println("\t\tdeadBySimulation = FALSE;");
 		out.println("\t\tpost processAgendaItemsTask();");
 		out.println("\t}\n");
 	}
@@ -772,54 +729,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	}	
     }
 
-    private void doInvokeInstanceFragmentTask(
-    	    final StringBuffer firedTimerTaskBuff,
-    	    final StringBuffer agendaCheckingBuff, final boolean lastTime,
-    	    final boolean first, final Task task, final int ind,
-    	    int agendaRow) {
-    	final InstanceFragmentTask fragTask = (InstanceFragmentTask) task;
-    	final String fragID = fragTask.getFragment().getID();
-    	final String nodeID = fragTask.getSiteID();
-
-    	    agendaCheckingBuff.append(Utils.indent(ind)
-    		    + "\t\t\t\tcall AgendaTimer.startOneShot(nextDelta);\n");
-
-    	if (lastTime) {
-    	    agendaCheckingBuff.append(Utils.indent(ind)
-    		    + "\t\t\t\tbusyUntil = 0;\n");
-    	} else {
-    //TODO: fix
-//    	    agendaCheckingBuff.append(Utils.indent(ind)
-//    		    + "\t\t\t\tbusyUntil = " + task.getEndTime() + ";\n");
-    	}
-
-    	agendaCheckingBuff.append(Utils.indent(ind) + "\t\t\t\tdbg(\"DBG_USR2\""
-    				+ ",\" F" + fragID + "n" + nodeID
-    				+ " timer fired at row %d\\n\",agendaRow);\n");		
-    	
-    	String taskName = "F" + fragID + "n" + nodeID + "C";
-    	agendaCheckingBuff.append(Utils.indent(ind+4) + "post " + taskName + "Task();\n"); 
-    	
-    	if (fragTask.getOccurrence() == 1) {
-    	    firedTimerTaskBuff.append("\ttask void " + taskName + "Task()\n");
-    	    firedTimerTaskBuff.append("\t{\n");
-    	  //  InstanceFragment frag = fragTask.getFragment();
-    	    firedTimerTaskBuff.append("\t\t\tcall "
-    	    		+ CodeGenUtils.generateUserAsDoTaskName(fragTask
-    			    .getFragment(), fragTask.getSite())
-    		     + ".doTask();\n");
-
-    	    firedTimerTaskBuff.append("\t}\n\n");
-        
-        	firedTimerTaskBuff.append("\tevent void "
-    	    		+ CodeGenUtils.generateUserAsDoTaskName(fragTask
-    			    .getFragment(), fragTask.getSite())
-    		        + ".doTaskDone(error_t err)\n");
-        	firedTimerTaskBuff.append("\t{\n");
-        	firedTimerTaskBuff.append("\t}\n\n");
-    	}	
-        }
-    
     private long getNextDelta(final ArrayList<Long> startTimeList, final int i) {
 	long nextDelta;
 	if (i + 2 < startTimeList.size()) {
@@ -859,7 +768,6 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	out.println("\tbool initialized = FALSE;\n");
 	out.println("\tuint32_t nextDelta;\n");
 	out.println("\tuint32_t agendaRow;\n");
-	out.println("\tbool deadBySimulation;\n");
 	out.println("\tint busyUntil;\n");
     }
 }

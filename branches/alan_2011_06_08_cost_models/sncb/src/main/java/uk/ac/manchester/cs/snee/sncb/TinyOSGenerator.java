@@ -183,7 +183,7 @@ public class TinyOSGenerator {
     // TinyOS2 Only
     private static String COMPONENT_AGENDA_TIMER;
 
-    //private static String COMPONENT_LOCAL_TIME;
+   // private static String COMPONENT_LOCAL_TIME;
     
     private static String COMPONENT_RADIOTX;
 
@@ -301,7 +301,7 @@ public class TinyOSGenerator {
      */
     private void initConstants() {
 	    COMPONENT_AGENDA_TIMER = "AgendaTimer";
-	    //COMPONENT_LOCAL_TIME = "LocalTimeMilliC";
+	 //   COMPONENT_LOCAL_TIME = "LocalTimeMilliC";
 	    COMPONENT_MAIN = "MainC";
 	    COMPONENT_NODE_CONTROLLER = "CommandServerAppC";
 	    COMPONENT_QUERY_PLAN = "QueryPlanC";
@@ -357,7 +357,7 @@ public class TinyOSGenerator {
 
 		    if (tupleSize != op.getPhysicalTupleSize()) {
 				//final OptimizationException e = new OptimizationException(
-				//	"Tuple size calculated by NesCGeneration != tuple size reported by operator");
+					//"Tuple size calculated by NesCGeneration != tuple size reported by operator");
 		    }
 		    CodeGenUtils.outputTypeSize.put(CodeGenUtils
 			    .generateOutputTupleType(op), new Integer(tupleSize));
@@ -860,8 +860,7 @@ public class TinyOSGenerator {
 		}
 	}
 
-	/*
-	private void wireFragToLocalTime(final Site currentSite, 
+	/*private void wireFragToLocalTime(final Site currentSite, 
 	final NesCConfiguration config, final FragmentComponent fragComp, final SensornetOperator op)
 	throws CodeGenerationException {
 
@@ -1086,7 +1085,6 @@ public class TinyOSGenerator {
 		    final Site site = siteIter.next();
 
 		    // for each fragment on the node
-		    
 		    final Iterator<Fragment> fragIter = site.getFragments().iterator();
 		    while (fragIter.hasNext()) {
 				final Fragment frag = fragIter.next();
@@ -1375,8 +1373,7 @@ public class TinyOSGenerator {
 		}
 	}
 
-	/*
-	private void addExternalLocalTimeWiring(final Site site, final Fragment frag,
+	/*private void addExternalLocalTimeWiring(final Site site, final Fragment frag,
 			final NesCConfiguration fragConfig) throws CodeGenerationException {
 		Iterator<SensornetOperator> opIter;
 		// link any acquisition or scan operators to the outside world
@@ -2193,8 +2190,6 @@ public class TinyOSGenerator {
 		    copyMiscFiles();
 
 		} catch (Exception e) {
-		  e.printStackTrace();
-		  System.exit(0);
 			logger.warn(e.getLocalizedMessage(), e);
 		    throw new CodeGenerationException(e);
 		} 

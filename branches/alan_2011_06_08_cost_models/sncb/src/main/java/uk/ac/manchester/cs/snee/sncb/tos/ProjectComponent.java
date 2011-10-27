@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
+
 import java.util.HashMap;
 
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -45,11 +46,11 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 public class ProjectComponent extends NesCComponent {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = 5678981692591247700L;
+	 * 
+	 */
+	private static final long serialVersionUID = 5678981692591247700L;
 
-    SensornetProjectOperator op;
+	SensornetProjectOperator op;
 
     SensorNetworkQueryPlan plan;
 

@@ -33,16 +33,17 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
+
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public class NodeControllerComponent extends NesCComponent {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = 6758674278969487700L;
+	 * 
+	 */
+	private static final long serialVersionUID = 6758674278969487700L;
 
-    public NodeControllerComponent(final String name, final NesCConfiguration config,
+	public NodeControllerComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {
 	    
     	super(config, tossimFlag);

@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -47,11 +48,11 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 public class AggrMergeComponent extends NesCComponent {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = 5256782638738532907L;
+	 * 
+	 */
+	private static final long serialVersionUID = 5256782638738532907L;
 
-    SensornetAggrMergeOperator op;
+	SensornetAggrMergeOperator op;
 
     SensorNetworkQueryPlan plan;
 

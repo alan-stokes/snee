@@ -33,17 +33,16 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
-
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public class MainComponent extends NesCComponent {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = 5553968263033428417L;
+	 * 
+	 */
+	private static final long serialVersionUID = 5553968263033428417L;
 
-    public MainComponent(final String name, final NesCConfiguration config,
+	public MainComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {
 	super(config, tossimFlag);
 	this.id = name;

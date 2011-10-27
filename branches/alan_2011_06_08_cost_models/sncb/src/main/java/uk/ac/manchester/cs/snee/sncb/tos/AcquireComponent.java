@@ -63,11 +63,11 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 public class AcquireComponent extends NesCComponent {
 
 	/**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = -8953020798887544163L;
+	 * 
+	 */
+	private static final long serialVersionUID = -8953020798887544163L;
 
-  /** Operator class code is being build for. */
+	/** Operator class code is being build for. */
     private SensornetAcquireOperator op;
 
     /** Plan this Operator is in. */

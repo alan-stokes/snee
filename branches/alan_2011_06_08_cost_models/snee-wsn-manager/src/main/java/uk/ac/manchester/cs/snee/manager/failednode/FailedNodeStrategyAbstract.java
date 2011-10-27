@@ -20,6 +20,8 @@ import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
+import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
@@ -28,7 +30,6 @@ import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.common.StrategyAbstract;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
-import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
@@ -190,4 +191,56 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
       agenda.setID("new Agenda");
       return agenda;
   }
+
+
+	/**
+	 * run when scheduling
+	 * @param newIOT
+	 * @param qos
+	 * @param id
+	 * @param costParameters
+	 * @return
+	 * @throws SNEEConfigurationException
+	 * @throws SNEEException
+	 * @throws SchemaMetadataException
+	 * @throws OptimizationException
+	 * @throws WhenSchedulerException
+	 * @throws MalformedURLException
+	 * @throws TypeMappingException
+	 * @throws MetadataException
+	 * @throws UnsupportedAttributeTypeException
+	 * @throws SourceMetadataException
+	 * @throws TopologyReaderException
+	 * @throws SNEEDataSourceException
+	 * @throws CostParametersException
+	 * @throws SNCBException
+	 * @throws SNEECompilerException 
+	 */
+	protected Agenda doOldSNWhenScheduling(DAF daf, QoSExpectations qos,
+	                                     String id, CostParameters costParameters)
+	throws SNEEConfigurationException, SNEEException, 
+	SchemaMetadataException, OptimizationException, 
+	MalformedURLException, TypeMappingException, 
+	MetadataException, UnsupportedAttributeTypeException, 
+	SourceMetadataException, TopologyReaderException, 
+	SNEEDataSourceException, CostParametersException, 
+	SNCBException, SNEECompilerException 
+	{
+	  boolean useNetworkController = SNEEProperties.getBoolSetting(
+	      SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
+	  boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
+	      SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
+	  WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing, costParameters, useNetworkController);
+	  Agenda agenda;
+	  try
+	  {
+	    agenda = whenSched.doWhenScheduling(daf, qos, currentQEP.getID());
+	  }
+	  catch (WhenSchedulerException e)
+	  {
+	    throw new SNEECompilerException(e);
+	  }  
+	  agenda.setID("new Agenda");
+	  return agenda;
+	}
 }

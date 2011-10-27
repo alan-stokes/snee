@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
+
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 /**
@@ -44,10 +45,10 @@ import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 public class OutsideWorldComponent extends NesCComponent {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = -505849304209503758L;
-    public static String OUTSIDE_WORLD = "OutsideWorld";
+	 * 
+	 */
+	private static final long serialVersionUID = -505849304209503758L;
+	public static String OUTSIDE_WORLD = "OutsideWorld";
 
     public OutsideWorldComponent(final NesCConfiguration config, boolean tossimFlag) {
 	super(config, tossimFlag);

@@ -41,6 +41,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationOperator;
+
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSingleStepAggregationOperator;
 import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
@@ -50,11 +51,11 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 public class AggrSingleStepComponent extends NesCComponent {
 
 	/**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = -6724058245177179201L;
+	 * 
+	 */
+	private static final long serialVersionUID = -6724058245177179201L;
 
-  SensornetSingleStepAggregationOperator op;
+	SensornetSingleStepAggregationOperator op;
 
     SensorNetworkQueryPlan plan;
 
@@ -107,7 +108,7 @@ public class AggrSingleStepComponent extends NesCComponent {
 			replacements.put("__DERIVED_INCREMENTAL_AGGREGATES_DECLS__", 
 					AggrUtils.generateDerivedIncrAggregatesDecls(aggregates).toString());
 			replacements.put("__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__", 
-					AggrUtils.computeDerivedIncrAggregates(aggregates).toString());
+					AggrUtils.computeDerivedIncrAggregates(aggregates, target).toString());
 			replacements.put("__CONSTRUCT_TUPLE__", 
 					AggrUtils.generateTuple(outputAttributes, aggregates).toString());			
 			

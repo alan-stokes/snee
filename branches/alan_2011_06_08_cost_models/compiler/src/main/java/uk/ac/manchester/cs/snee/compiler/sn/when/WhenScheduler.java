@@ -19,7 +19,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
-import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;

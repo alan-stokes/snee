@@ -33,16 +33,17 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
+
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public class LocalTimeComponent extends NesCComponent {
 
    /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = 6681528823978815985L;
+	 * 
+	 */
+	private static final long serialVersionUID = 6681528823978815985L;
 
-  public LocalTimeComponent(final String name, final NesCConfiguration config,
+public LocalTimeComponent(final String name, final NesCConfiguration config,
     		boolean tossimFlag) {
 	super(config, tossimFlag);
 	this.id = name;

@@ -51,11 +51,11 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 public class AggrInitComponent extends NesCComponent {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = 418317265223369952L;
+	 * 
+	 */
+	private static final long serialVersionUID = 418317265223369952L;
 
-    /**
+	/**
      * The aggr_init operator in the DAF.
      */
     private SensornetAggrInitOperator op;

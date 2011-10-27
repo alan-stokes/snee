@@ -29,7 +29,7 @@ import uk.ac.manchester.cs.snee.sncb.tos.CodeGenUtils;
 public class SerialPortMessageReceiver extends Observable 
 implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
 
-	private static final Logger logger = Logger.getLogger(TinyOS_SNCB_TelosB.class.getName());
+	private static final Logger logger = Logger.getLogger(TinyOS_SNCB.class.getName());
 	
 	private MoteIF moteIF;
 	  

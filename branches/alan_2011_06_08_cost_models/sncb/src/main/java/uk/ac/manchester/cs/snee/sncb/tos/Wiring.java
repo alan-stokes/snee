@@ -39,11 +39,11 @@ import uk.ac.manchester.cs.snee.common.graph.EdgeImplementation;
 public class Wiring extends EdgeImplementation implements Edge {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = -7811456280464820555L;
+	 * 
+	 */
+	private static final long serialVersionUID = -7811456280464820555L;
 
-    //user = source
+	//user = source
     //provider = dest
     String interfaceType;
 

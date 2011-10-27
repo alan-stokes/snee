@@ -44,7 +44,7 @@ import javax.tools.ToolProvider;
 /**
  * @author Sergey A. Malenkov
  */
-public final class MemoryClassLoader extends ClassLoader {
+public final class MemoryClassLoader extends ClassLoader{
 
     private static final String CLASS = "Test";
     private static final String METHOD = "execute";

@@ -48,12 +48,12 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 
 public class JoinComponent extends NesCComponent {
 
-    /**serialVersionUID
-   * 
-   */
-  private static final long serialVersionUID = -4291321427846704916L;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -4291321427846704916L;
 
-    SensornetNestedLoopJoinOperator op;
+	SensornetNestedLoopJoinOperator op;
 
     SensorNetworkQueryPlan plan;
 

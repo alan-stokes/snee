@@ -33,6 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.sncb.tos;
 
+
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
@@ -40,11 +41,11 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 public class FragmentComponent extends NesCComponent {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = 3485592895186290089L;
+	 * 
+	 */
+	private static final long serialVersionUID = 3485592895186290089L;
 
-    Fragment frag;
+	Fragment frag;
 
     NesCConfiguration innerConfig;
 

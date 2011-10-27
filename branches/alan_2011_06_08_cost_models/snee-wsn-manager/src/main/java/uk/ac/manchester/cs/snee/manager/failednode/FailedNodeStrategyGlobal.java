@@ -17,6 +17,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceWhereSchedular;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -135,15 +136,17 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
         SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
     boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
         SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
-    AgendaIOT newAgenda;
+    AgendaIOT newAgendaIOT;
+    Agenda newAgenda;
     WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing, 
                                                 _metadataManager.getCostParameters(), 
                                                 useNetworkController);
     try
     {
-      newAgenda = whenSched.doWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getQueryName(), currentQEP.getCostParameters());
-      new AgendaIOTUtils(newAgenda, newIOT, false).exportAsLatex(globalFile.toString() + sep + "newAgenda");
-      new AgendaIOTUtils(newAgenda, newIOT, false).generateImage(globalFile.toString());
+      newAgendaIOT = whenSched.doWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getQueryName(), currentQEP.getCostParameters());
+      newAgenda = whenSched.doWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getQueryName());
+      new AgendaIOTUtils(newAgendaIOT, newIOT, false).exportAsLatex(globalFile.toString() + sep + "newAgenda");
+      new AgendaIOTUtils(newAgendaIOT, newIOT, false).generateImage(globalFile.toString());
       //new AgendaIOTUtils(newAgenda, newIOT, false).generateImage(globalFile.toString() + sep + "newAgenda");
     }
     catch (WhenSchedulerException e)
@@ -151,7 +154,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
       throw new SNEECompilerException(e);
     }
     
-    boolean success = assessQEPsAgendas(this.currentQEP.getIOT(), newIOT, this.currentQEP.getAgendaIOT(), newAgenda, false, adapt, failedNodes, routingTree);
+    boolean success = assessQEPsAgendas(this.currentQEP.getIOT(), newIOT, this.currentQEP.getAgendaIOT(), newAgendaIOT, newAgenda, false, adapt, failedNodes, routingTree);
     adapt.setFailedNodes(failedNodes);
     
     if(success)

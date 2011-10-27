@@ -47,11 +47,11 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 public class TXComponent extends NesCComponent {
 
 	/**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = -6460937695122275476L;
+	 * 
+	 */
+	private static final long serialVersionUID = 1250643464074558997L;
 
-  /**
+	/**
 	 * The fragment that tuples originate from (i.e., the tuple type)
 	 */
     Fragment sourceFrag;

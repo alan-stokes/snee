@@ -6,20 +6,20 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
-import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 
 public class TinyOS_SNCB_Controller implements SNCB 
 {
   /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = 6574875474656042325L;
-  private static final Logger logger = Logger.getLogger(TinyOS_SNCB_Controller.class.getName());
-  private SNCB sncb;
+	 * 
+	 */
+	private static final long serialVersionUID = -522939219511935259L;
+    private static final Logger logger = Logger.getLogger(TinyOS_SNCB_Controller.class.getName());
+    private SNCB sncb;
   
   
   public TinyOS_SNCB_Controller(double duration) throws SNCBException
@@ -41,7 +41,7 @@ public class TinyOS_SNCB_Controller implements SNCB
       }
       else if(target == CodeGenTarget.AVRORA_MICA2_T2 || target == CodeGenTarget.AVRORA_MICAZ_T2)
       {
-        sncb = new TinyOS_SNCB_Avrora(duration);
+        sncb = new TinyOS_SNCB_Avrora_Micaz(duration);
       }
       else if(target == CodeGenTarget.TOSSIM_T2)
       {
@@ -73,7 +73,7 @@ public class TinyOS_SNCB_Controller implements SNCB
       }
       else if(target == CodeGenTarget.AVRORA_MICA2_T2 || target == CodeGenTarget.AVRORA_MICAZ_T2)
       {
-        sncb = new TinyOS_SNCB_Avrora();
+        sncb = new TinyOS_SNCB_Avrora_Micaz();
       }
       else if(target == CodeGenTarget.TOSSIM_T2)
       {
@@ -111,19 +111,19 @@ public class TinyOS_SNCB_Controller implements SNCB
   }
 
   @Override
-  public void waitForQueryEnd() throws InterruptedException
-  {
-    sncb.waitForQueryEnd();  
-  }
-
-  @Override
   public SNCBSerialPortReceiver register(SensorNetworkQueryPlan qep,
       String queryOutputDir, MetadataManager metadata) throws SNCBException
   {
     return sncb.register(qep, queryOutputDir, metadata);
   }
 
-  
+
+    @Override
+  public void waitForQueryEnd() throws InterruptedException
+  {
+    sncb.waitForQueryEnd();  
+  }
+
   @Override
   public void setOutputFolder(String newTargetDir)
   {

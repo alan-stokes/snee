@@ -54,11 +54,11 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 public class TrayComponent extends NesCComponent {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = -2492874263299928844L;
+	 * 
+	 */
+	private static final long serialVersionUID = -2492874263299928844L;
 
-    Fragment sourceFrag;
+	Fragment sourceFrag;
 
     Fragment destFrag;
 

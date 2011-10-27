@@ -10,6 +10,7 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceWhereSchedular;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
@@ -226,10 +227,11 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
       IOT newIOT = instanceWhere.getIOT();
       //run new iot though when scheduler and locate changes
      this.currentQEP.getAgendaIOT().setID("old Agenda");
-      AgendaIOT newAgenda = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
+      AgendaIOT newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
+      Agenda newAgenda = doOldSNWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
       //output new and old agendas
-      new FailedNodeStrategyPartialUtils(this).outputAgendas(newAgenda, currentQEP.getAgendaIOT(), this.currentQEP.getIOT(), newIOT, choiceFolder);
-      boolean success = assessQEPsAgendas(this.currentQEP.getIOT(), newIOT, this.currentQEP.getAgendaIOT(), newAgenda, 
+      new FailedNodeStrategyPartialUtils(this).outputAgendas(newAgendaIOT, currentQEP.getAgendaIOT(), this.currentQEP.getIOT(), newIOT, choiceFolder);
+      boolean success = assessQEPsAgendas(this.currentQEP.getIOT(), newIOT, this.currentQEP.getAgendaIOT(), newAgendaIOT, newAgenda,
                                           timePinned, currentAdapatation, failedNodes, routingTree);
       currentAdapatation.setFailedNodes(failedNodes);
       if(success)

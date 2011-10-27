@@ -829,7 +829,7 @@ private void addOtherOpTypeInstances(SensornetOperator op,
   throws OptimizationException, SchemaMetadataException
   {
     //move duplicate aggerates upwards
-    moveAggeratesInitsUpwards();
+    //moveAggeratesInitsUpwards();
     new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "movedInitsUpwards.dot", "", true);
     removeRedundantAggrIterOpInstances();
     removeRedundantSiblingOpInstances();  

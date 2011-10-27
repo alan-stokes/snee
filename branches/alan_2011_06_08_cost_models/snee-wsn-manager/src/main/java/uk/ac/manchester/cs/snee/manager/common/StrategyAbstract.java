@@ -20,6 +20,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
@@ -114,6 +115,7 @@ public abstract class StrategyAbstract implements Serializable
    * @param newIOT
    * @param oldAgenda
    * @param newAgenda
+ * @param newAgenda 
    * @param timePinned
    * @param adaptation
    * @param failedNodes
@@ -123,7 +125,7 @@ public abstract class StrategyAbstract implements Serializable
    * @throws TypeMappingException
    */
   protected boolean assessQEPsAgendas(IOT oldIOT, IOT newIOT, AgendaIOT oldAgenda, 
-                                   AgendaIOT newAgenda, boolean timePinned,
+                                   AgendaIOT newAgendaIOT, Agenda newAgenda, boolean timePinned,
                                    Adaptation adaptation, ArrayList<String> failedNodes,
                                    RT routingTree) 
   throws SchemaMetadataException, TypeMappingException
@@ -132,13 +134,13 @@ public abstract class StrategyAbstract implements Serializable
     checkIOT(newIOT, oldIOT, failedNodes, adaptation);
     //check if agenda agrees to constraints.
     boolean success = 
-      checkAgendas(oldAgenda, newAgenda, newIOT, oldIOT, failedNodes, adaptation, timePinned);
+      checkAgendas(oldAgenda, newAgendaIOT, newIOT, oldIOT, failedNodes, adaptation, timePinned);
     //check if new plan agrees with time pinning
     if(success)
     {//create new qep, add qep to list of adapatations.
       DAF daf = new IOTUtils(newIOT, currentQEP.getCostParameters()).getDAF();
       SensorNetworkQueryPlan newQep 
-      = new SensorNetworkQueryPlan(currentQEP.getDLAF(), routingTree, daf, newIOT, newAgenda, currentQEP.getID());
+      = new SensorNetworkQueryPlan(currentQEP.getDLAF(), routingTree, daf, newIOT, newAgendaIOT, newAgenda, currentQEP.getID());
       newQep.setQos(adaptation.getOldQep().getQos());
       adaptation.setNewQep(newQep);
     }

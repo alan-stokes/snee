@@ -34,14 +34,10 @@
 package uk.ac.manchester.cs.snee.sncb.tos;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.common.Constants;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragment;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.AggregationExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -53,18 +49,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiExpression;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.MultiType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.NoPredicate;
 import uk.ac.manchester.cs.snee.operators.logical.AggregationFunction;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSelectOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSingleStepAggregationOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
 import uk.ac.manchester.cs.snee.sncb.CodeGenTarget;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
@@ -236,103 +222,8 @@ public final class CodeGenUtils {
 	return TinyOSGenerator.INTERFACE_DO_TASK + "Frag" + frag.getID() + "n"
 		+ currentSite;
     }
-    
-	public static String generateUserAsDoTaskName(InstanceFragment fragment,
-			Site currentSite) {
-		
-		Fragment representiveFrag = findFrag(fragment, currentSite);
-		
-		return TinyOSGenerator.INTERFACE_DO_TASK + "Frag" + representiveFrag.getID() + "n"
-		+ currentSite.getID();// TODO Auto-generated method stub
-	}
 
-  private static Fragment findFrag(InstanceFragment fragment, Site currentSite) 
-  {
-    HashSet<Fragment> fragments = currentSite.getFragments();
-    Iterator<Fragment> fragIterator = fragments.iterator();
-    while(fragIterator.hasNext())
-    {
-    	Fragment frag = fragIterator.next();
-    	boolean notSame = false;
-    	Iterator<SensornetOperator> dafFragsOperators = frag.getOperators().iterator();
-    	Iterator<InstanceOperator> IOTFragsOperators = fragment.getOperators().iterator();
-    	while(dafFragsOperators.hasNext() && IOTFragsOperators.hasNext() && !notSame)
-    	{
-    	  SensornetOperator dafOperator = dafFragsOperators.next();
-    	  InstanceOperator iotOperator = IOTFragsOperators.next();
-    	  SensornetOperator iotSensornetOperator = iotOperator.getSensornetOperator();
-    	  notSame = !compareOperators(dafOperator, iotSensornetOperator);
-    	}
-    	if(dafFragsOperators.hasNext() == false && IOTFragsOperators.hasNext() == false && !notSame)
-    	{
-    	  return frag;
-    	}
-    }
-	  return null;
-	}
-
-	private static boolean compareOperators(SensornetOperator dafOperator,
-                                          SensornetOperator iotSensornetOperator)
-  {
-	  if (dafOperator instanceof SensornetAcquireOperator && 
-	      iotSensornetOperator instanceof SensornetAcquireOperator) 
-	  {
-	    return true;
-    } 
-	  else if (dafOperator instanceof SensornetSingleStepAggregationOperator &&
-	           iotSensornetOperator instanceof SensornetSingleStepAggregationOperator) 
-    {    
-      return true;
-    } 
-	  else if (dafOperator instanceof SensornetAggrEvalOperator &&
-	           iotSensornetOperator instanceof SensornetAggrEvalOperator) 
-    {
-      return true;
-    } 
-	  else if (dafOperator instanceof SensornetAggrInitOperator &&
-             iotSensornetOperator instanceof SensornetAggrInitOperator) 
-	  {
-     return true;
-    } 
-	  else if (dafOperator instanceof SensornetAggrMergeOperator &&
-	           iotSensornetOperator instanceof SensornetAggrMergeOperator) 
-	  {
-	    return true;
-    } 
-	  else if (dafOperator instanceof SensornetDeliverOperator &&
-	           iotSensornetOperator instanceof SensornetDeliverOperator)
-	  {
-	    return true;
-    } 
-	  else if (dafOperator instanceof SensornetExchangeOperator &&
-	           iotSensornetOperator instanceof SensornetExchangeOperator) 
-	  {
-      return true;
-    } 
-	  else if (dafOperator instanceof SensornetNestedLoopJoinOperator &&
-             iotSensornetOperator instanceof SensornetNestedLoopJoinOperator) 
-	  {
-      return true;
-    } 
-	  else if (dafOperator instanceof SensornetProjectOperator &&
-	           iotSensornetOperator instanceof SensornetProjectOperator) 
-	  {
-      return true;
-    } 
-	  else if (dafOperator instanceof SensornetSelectOperator &&
-	           iotSensornetOperator instanceof SensornetSelectOperator) 
-	  {
-      return true;
-    } 
-	  else if (dafOperator instanceof SensornetWindowOperator &&
-	           iotSensornetOperator instanceof SensornetWindowOperator) 
-	  {
-      return true;
-	  }
-    return false;
-  }
-
-  public static String generateProviderSendInterfaceName(String key) {
+    public static String generateProviderSendInterfaceName(String key) {
     	final String activeMessageID = ActiveMessageIDGenerator
 		.getActiveMessageID(key);
     	return "SendMsg[" + activeMessageID + "]";

@@ -52,11 +52,11 @@ import uk.ac.manchester.cs.snee.sncb.TinyOSGenerator;
 public class AggrEvalComponent extends NesCComponent {
 
     /**
-   * serialVersionUID
-   */
-  private static final long serialVersionUID = 6243537855941379439L;
+	 * 
+	 */
+	private static final long serialVersionUID = 6243537855941379439L;
 
-    SensornetAggrEvalOperator op;
+	SensornetAggrEvalOperator op;
 
     SensorNetworkQueryPlan plan;
 
@@ -105,7 +105,7 @@ public class AggrEvalComponent extends NesCComponent {
 			replacements.put("__DERIVED_INCREMENTAL_AGGREGATES_DECLS__", 
 					AggrUtils.generateDerivedIncrAggregatesDecls(op.getAggregates()).toString());
 			replacements.put("__COMPUTE_DERIVED_INCREMENTAL_AGGREGATES__", 
-					AggrUtils.computeDerivedIncrAggregates(op.getAggregates()).toString());
+					AggrUtils.computeDerivedIncrAggregates(op.getAggregates(), target).toString());
 			replacements.put("__CONSTRUCT_TUPLE__", 
 					AggrUtils.generateTuple(op.getAttributes(), op.getAggregates()).toString());
 		
