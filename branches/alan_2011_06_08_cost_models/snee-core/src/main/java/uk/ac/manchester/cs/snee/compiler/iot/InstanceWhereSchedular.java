@@ -11,6 +11,7 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
@@ -26,7 +27,6 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
@@ -163,6 +163,7 @@ public class InstanceWhereSchedular
   }
 
   //tested and works 
+  /*
   private boolean moveAggeratesInitsUpwards()//aggerate inits
   {
     //go though routing tree from top to bottom
@@ -206,7 +207,7 @@ public class InstanceWhereSchedular
       }
     }
     return changed;
-  }
+  }*/
 
   private void startFragmentation()
   {
@@ -517,8 +518,7 @@ public class InstanceWhereSchedular
   {
     //make new instance daf
     iot = new IOT(paf, routingTree, paf.getQueryName());
-    HashMapList<String,InstanceOperator> disconnectedOpInstMapping =
-      new HashMapList<String,InstanceOperator>();
+    HashMapList<String,InstanceOperator> disconnectedOpInstMapping = new HashMapList<String,InstanceOperator>();
     //collect a iterator for physical operators 
     Iterator<SensornetOperator> opIter = paf.operatorIterator(TraversalOrder.POST_ORDER);
     /*iterate though physical operators looking at each and determining 
@@ -534,6 +534,11 @@ public class InstanceWhereSchedular
       } 
       if(wasTotallyPinned)
       {}
+      else if(opImpl.isPinned() && opImpl.isRecursive())
+      {
+        //recursive operator whilst pinned
+        addIterativeOpInstancesPinned(op, disconnectedOpInstMapping);
+      }
       else if (   op instanceof SensornetAcquireOperator 
                || op instanceof SensornetDeliverOperator) 
       {
@@ -565,23 +570,196 @@ public class InstanceWhereSchedular
     } 
   }
 
+  private void addIterativeOpInstancesPinned(SensornetOperator op,
+      HashMapList<String, InstanceOperator> disconnectedOpInstMapping)
+  {
+    SensornetOperator childOp = (SensornetOperator) op.getInput(0);
+    //convert to set so that we can do set equality operation later
+    //holds all instances of the operators input
+    HashSet<InstanceOperator> disconnectedChildOpInstSet = 
+      new HashSet<InstanceOperator>(disconnectedOpInstMapping.get(childOp.getID()));
+    //iterate over routing tree from bottom up
+    Iterator<Site> siteIter = routingTree.siteIterator(TraversalOrder.POST_ORDER);
+    while (siteIter.hasNext()) 
+    {
+      Site site = siteIter.next();
+      //gets instance operators which have a deepest confluence of the current site.
+      HashSet<InstanceOperator> confluenceOpInstSet = 
+        getConfluenceOpInstances(site, disconnectedChildOpInstSet, false);
+      //if sets coincide (meaning all instances of input are located on site) break
+      if (confluenceOpInstSet.equals(disconnectedChildOpInstSet)) 
+      { 
+        HashSet<String> opSites = iot.getSites(op);
+        InstanceOperator opInst = null;
+        if(opSites.contains(site.getID()))
+        {
+          opInst = iot.getOperatorInstance(op, site);
+        }
+        else
+        {
+          opInst = new InstanceOperator(op, site);
+          iot.addOpInst(op, opInst); 
+        }
+        //update children to new parent
+        convergeSubstreams(confluenceOpInstSet, opInst, iot, disconnectedOpInstMapping);
+        //add new disconnected instance
+        disconnectedChildOpInstSet.add(opInst);
+        //remove what are now connected instances from the disconnected Operator hash
+        disconnectedChildOpInstSet.removeAll(confluenceOpInstSet);
+        try
+        {
+          new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
+          System.out.println();
+        }
+        catch (SchemaMetadataException e)
+        {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+        break;
+      }
+      //if more than one instance on current site but not all
+      if (confluenceOpInstSet.size()>1) 
+      { 
+        HashSet<String> opSites = iot.getSites(op);
+        InstanceOperator opInst = null;
+        if(opSites.contains(site.getID()))
+        {
+          opInst = iot.getOperatorInstance(op, site);
+        }
+        else
+        {
+          opInst = new InstanceOperator(op, site);
+          iot.addOpInst(op, opInst);
+        }
+        //update children to new parent
+        convergeSubstreams(confluenceOpInstSet, opInst, iot, disconnectedOpInstMapping);
+        //add new disconnected instance
+        disconnectedChildOpInstSet.add(opInst);
+        //remove what are now connected instances from the disconnected Operator hash
+        disconnectedChildOpInstSet.removeAll(confluenceOpInstSet); 
+        try
+        {
+          new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
+          System.out.println();
+        }
+        catch (SchemaMetadataException e)
+        {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+    }
+    }
+    //set all operators with this id to be the of input instances operators.
+    disconnectedOpInstMapping.set(op.getID(), disconnectedChildOpInstSet);
+  }
+
   private void addPinnedOpInstances(SensornetOperator op,	SensornetOperatorImpl opImpl,
 		HashMapList<String, InstanceOperator> disconnectedOpInstMapping) 
   {
-    Iterator<String> siteIterator = opImpl.getPinnedIterator();
+    ArrayList<String> pinnedSites = opImpl.getPinnedSites();
+    Iterator<Node> treeIterator = iot.getRT().getSiteTree().nodeIterator(TraversalOrder.POST_ORDER);
+    int counter = 1;
     //For each site, spawn an operator instance
-    while(siteIterator.hasNext())
+    while(treeIterator.hasNext())
     {
-      String siteID = siteIterator.next();
-      Site site = routingTree.getSite(siteID);
-      InstanceOperator opInst = new InstanceOperator(op, site);//make new instance of the operator
-      iot.addOpInst(op, opInst);//add to instance dafs hashmap
-      iot.assign(opInst, site);//put this operator on this site (placed)
-      disconnectedOpInstMapping.add(op.getID(), opInst);//add to temp hash map which holds operators which dont have a connection upwards
-      convergeAllChildOpSubstreams(op, opInst, iot, disconnectedOpInstMapping);
+      Site site = (Site) treeIterator.next();
+      if(pinnedSites.contains(site.getID()))
+      {
+        InstanceOperator opInst = new InstanceOperator(op, site);//make new instance of the operator
+        iot.addOpInst(op, opInst);//add to instance dafs hashmap
+        iot.assign(opInst, site);//put this operator on this site (placed)
+        disconnectedOpInstMapping.add(op.getID(), opInst);//add to temp hash map which holds operators which dont have a connection upwards
+        connectChildOperators(op, opInst, iot, disconnectedOpInstMapping);
+        //convergeAllChildOpSubstreams(op, opInst, iot, disconnectedOpInstMapping); 
+      }
+      try
+      {
+        new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + counter + ".dot", "", true);
+      }
+      catch (SchemaMetadataException e)
+      {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+      counter ++;
     }
     opImpl.setIsPinned(false);
 	}
+
+  /**
+   * locates the children to which this instance connects
+   * @param op
+   * @param opInst
+   * @param iot
+   * @param disconnectedOpInstMapping
+   */
+  private void connectChildOperators(SensornetOperator op, InstanceOperator opInst, IOT iot,
+		                             HashMapList<String, InstanceOperator> disconnectedOpInstMapping) 
+  {
+    SensornetOperatorImpl phyiscalOp = (SensornetOperatorImpl) op;
+    Iterator<Site> siteIterator;
+    if(phyiscalOp.isTotallyPinned())
+    {
+      siteIterator = iot.getRT().getSiteTree().nodeIterator(opInst.getSite(), TraversalOrder.POST_ORDER);
+    }
+    else
+    {
+      ArrayList<Site> sites = new ArrayList<Site>();
+      sites.add(iot.getRT().getSite(opInst.getSite().getID()));
+      for(int inputIndex = 0; inputIndex < opInst.getInDegree(); inputIndex++)
+      {
+        sites.add((Site) opInst.getInput(inputIndex));
+      }
+      siteIterator = sites.iterator();
+    }
+  	
+  	HashMapList<String, InstanceOperator> connected = new HashMapList<String, InstanceOperator>();
+  	for(int inputIndex = 0; inputIndex < op.getInDegree(); inputIndex++)
+  	{
+  	  SensornetOperator childOp = (SensornetOperator) op.getInput(inputIndex);
+  	  ArrayList<InstanceOperator> childOps = disconnectedOpInstMapping.get(childOp.getID());
+  	  if(op.isRecursive())
+  	  {
+  	    ArrayList<InstanceOperator> opOps = disconnectedOpInstMapping.get(op.getID());
+  	    opOps.remove(opInst);
+  	    childOps.addAll(opOps);
+  	  }
+  	  
+  	  while(siteIterator.hasNext())
+  	  {
+  		  Site site = siteIterator.next();
+  		  Iterator<InstanceOperator> childrenIterator = childOps.iterator();
+    		while(childrenIterator.hasNext())
+    		{
+    		  InstanceOperator child = childrenIterator.next();
+    		  if(child.getSite() == null  || child.getSite().getID().equals(site.getID()))
+    		  {
+    		    Edge transmissionEdge = iot.getTransmissionEdge(child);
+    	      if(transmissionEdge != null)
+    	      {
+    	        InstanceOperator dest = iot.getOperatorInstance(transmissionEdge.getDestID());
+    	        iot.removeEdge(child, dest);
+    	      }
+    	      iot.addEdge(child, opInst);
+    	      connected.add(child.getSensornetOperator().getID(), child);
+    		  }
+    		}
+  	  }
+  	}
+  	Iterator<String> keyIterator = connected.keySet().iterator();
+  	while(keyIterator.hasNext())
+  	{
+  	  String key = keyIterator.next();
+  	  ArrayList<InstanceOperator> ops = connected.get(key);
+  	  Iterator<InstanceOperator> opsIterator = ops.iterator();
+  	  while(opsIterator.hasNext())
+  	  {
+  	    InstanceOperator operator = opsIterator.next();
+  	    disconnectedOpInstMapping.remove(key, operator);
+  	  }
+  	}
+  }
 
 private void addOtherOpTypeInstances(SensornetOperator op, 
       HashMapList<String, InstanceOperator> disconnectedOpInstMapping)
@@ -599,8 +777,8 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         InstanceOperator childOpInst = childOpInstIter.next();
         //get deepest site for this operator
         Site site = childOpInst.getDeepestConfluenceSite();
-        HashSet<Site> opSites = iot.getSites(op);
-        if(!opSites.contains(site))
+        HashSet<String> opSites = iot.getSites(op);
+        if(!opSites.contains(site.getID()))
         {
           //add operator to this site also.
           InstanceOperator opInst = new InstanceOperator(op,site);
@@ -719,9 +897,9 @@ private void addOtherOpTypeInstances(SensornetOperator op,
       //if sets coincide (meaning all instances of input are located on site) break
       if (confluenceOpInstSet.equals(disconnectedChildOpInstSet)) 
       { 
-        HashSet<Site> opSites = iot.getSites(op);
+        HashSet<String> opSites = iot.getSites(op);
         InstanceOperator opInst = null;
-        if(opSites.contains(site))
+        if(opSites.contains(site.getID()))
         {
           opInst = iot.getOperatorInstance(op, site);
         }
@@ -736,14 +914,24 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         disconnectedChildOpInstSet.add(opInst);
         //remove what are now connected instances from the disconnected Operator hash
         disconnectedChildOpInstSet.removeAll(confluenceOpInstSet);
+        try
+        {
+          new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
+          System.out.println();
+        }
+        catch (SchemaMetadataException e)
+        {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
         break;
       }
       //if more than one instance on current site but not all
       if (confluenceOpInstSet.size()>1) 
       { 
-        HashSet<Site> opSites = iot.getSites(op);
+        HashSet<String> opSites = iot.getSites(op);
         InstanceOperator opInst = null;
-        if(opSites.contains(site))
+        if(opSites.contains(site.getID()))
         {
           opInst = iot.getOperatorInstance(op, site);
         }
@@ -757,7 +945,17 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         //add new disconnected instance
         disconnectedChildOpInstSet.add(opInst);
         //remove what are now connected instances from the disconnected Operator hash
-        disconnectedChildOpInstSet.removeAll(confluenceOpInstSet);
+        disconnectedChildOpInstSet.removeAll(confluenceOpInstSet); 
+        try
+        {
+          new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
+          System.out.println();
+        }
+        catch (SchemaMetadataException e)
+        {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
     }
     }
     //set all operators with this id to be the of input instances operators.
@@ -800,13 +998,12 @@ private void addOtherOpTypeInstances(SensornetOperator op,
     for (int k=0; k<op.getInDegree(); k++) 
     {
       SensornetOperator childOp = (SensornetOperator) op.getInput(k);
-      ArrayList<InstanceOperator> childOpInstColl 
-        = disconnectedOpInstMapping.get(childOp.getID());
+      ArrayList<InstanceOperator> childOpInstColl = disconnectedOpInstMapping.get(childOp.getID());
       convergeSubstreams(childOpInstColl, opInst, iot, disconnectedOpInstMapping);
     }
   }
 
-  //add an edge in the instance daf for each child operator
+  //add an edge in the iot for each child operator
   private void convergeSubstreams(Collection<InstanceOperator> childOpInstColl,
                                   InstanceOperator opInst, IOT instanceDAF2,
                                   HashMapList<String, InstanceOperator> disconnectedOpInstMapping)

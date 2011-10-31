@@ -366,6 +366,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     {
       System.out.println("Routes generated didnt agree with QoS trying with larger scope");
       e.printStackTrace();
+      System.exit(0);
       return adaptationAttempt(failedNodes, depinnedNodes, paf, this.currentQEP.getIOT().getRT(), 
                                          partialFolder, totalAdapatations, true);
     }

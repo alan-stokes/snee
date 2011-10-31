@@ -98,7 +98,7 @@ public class IOTUtils
     .operatorIterator(TraversalOrder.POST_ORDER);
     while (opIter.hasNext()) {
       final SensornetOperator op = (SensornetOperator) opIter.next();
-      HashSet<Site> opSites = iot.getSites(op);
+      HashSet<String> opSites = iot.getSites(op);
       if (opSites.size()==0) {
         try {
           faf.getOperatorTree().removeNode(op);
@@ -112,7 +112,7 @@ public class IOTUtils
     while (opIter.hasNext()) 
     {
       final SensornetOperator op = (SensornetOperator) opIter.next();
-      HashSet<Site> opSites = iot.getSites(op);    
+      HashSet<String> opSites = iot.getSites(op);    
       
       if(op instanceof SensornetAggrEvalOperator)
       {
@@ -130,7 +130,7 @@ public class IOTUtils
         {
           final SensornetOperator childOp = (SensornetOperator) op.getInput(i);
           
-          HashSet<Site> childSites = iot.getSites(childOp);
+          HashSet<String> childSites = iot.getSites(childOp);
           if (!opSites.equals(childSites)) 
           {
             final SensornetExchangeOperator exchOp = new SensornetExchangeOperator(costs);   

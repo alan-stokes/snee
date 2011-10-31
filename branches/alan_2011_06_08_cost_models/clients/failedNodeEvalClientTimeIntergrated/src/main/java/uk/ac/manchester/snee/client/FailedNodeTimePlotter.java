@@ -6,6 +6,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
@@ -54,7 +56,45 @@ public class FailedNodeTimePlotter implements Serializable
   private BufferedWriter tuplesLeftWriter;
   private BufferedWriter tuplesMissedWriter;
   private BufferedWriter tuplesBurnedWriter;
+  private ArrayList<Double> globalLifetimes = new ArrayList<Double>();
+  private ArrayList<Double> partialLifetimes = new ArrayList<Double>();
   
+  
+  public boolean addGlobalLifetime(Double e)
+  {
+    return globalLifetimes.add(e);
+  }
+  
+  public boolean addPartialLifetime(Double e)
+  {
+    return partialLifetimes.add(e);
+  }
+  
+  public void writeLifetimes() throws IOException
+  {
+    Iterator<Double> globalLifetimeIterator = globalLifetimes.iterator();
+    Iterator<Double> partialLifetimeIterator = partialLifetimes.iterator();
+    int counter = 0;
+    while(globalLifetimeIterator.hasNext() || partialLifetimeIterator.hasNext())
+    {
+      Double globalLife;
+      Double partialLife;
+      if(globalLifetimeIterator.hasNext())
+        globalLife = globalLifetimeIterator.next();
+      else
+        globalLife = 0.0;
+      if(partialLifetimeIterator.hasNext())
+        partialLife = partialLifetimeIterator.next();
+      else
+        partialLife = 0.0;
+      
+      System.out.println(counter + " " + globalLife + " " + partialLife);
+      lifetimeWriter.write(counter + " " + globalLife + " " + partialLife + "\n");
+      counter++;
+    }
+    lifetimeWriter.flush();
+    lifetimeWriter.close();
+  }
   
   
   public FailedNodeTimePlotter (File outputFolder, AutonomicManagerImpl manager, int queryid) 
@@ -146,16 +186,16 @@ public class FailedNodeTimePlotter implements Serializable
     else
       this.outputFolder.mkdir();
     
-    energyPlotFile = new File(this.outputFolder.toString() + sep + "energyPlot.tex");
-    timePlotFile = new File(this.outputFolder.toString() + sep + "timePlot.tex");
-    qepCostPlotFile = new File(this.outputFolder.toString() + sep + "qepPlot.tex");
-    lifetimePlotFile = new File(this.outputFolder.toString() + sep + "lifetimePlot.tex");
-    cyclesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "cyclesBurnedPlot.tex");
-    cyclesMissedPlotFile = new File(this.outputFolder.toString() + sep + "cyclesMissedPlot.tex");
-    cyclesLeftPlotFile = new File(this.outputFolder.toString() + sep + "cyclesLeftPlot.tex");
-    tuplesLeftPlotFile = new File(this.outputFolder.toString() + sep + "tuplesLeftPlot.tex");
-    tuplesMissedPlotFile = new File(this.outputFolder.toString() + sep + "tuplesMissedPlot.tex");
-    tuplesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "tuplesBurnedPlot.tex");
+    energyPlotFile = new File(this.outputFolder.toString() + sep + "query1" + "energyPlot.tex");
+    timePlotFile = new File(this.outputFolder.toString() + sep + "query1" + "timePlot.tex");
+    qepCostPlotFile = new File(this.outputFolder.toString() + sep + "query1" + "qepPlot.tex");
+    lifetimePlotFile = new File(this.outputFolder.toString() + sep + "query1" + "lifetimePlot.tex");
+    cyclesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "query1" + "cyclesBurnedPlot.tex");
+    cyclesMissedPlotFile = new File(this.outputFolder.toString() + sep + "query1" + "cyclesMissedPlot.tex");
+    cyclesLeftPlotFile = new File(this.outputFolder.toString() + sep + "query1" + "cyclesLeftPlot.tex");
+    tuplesLeftPlotFile = new File(this.outputFolder.toString() + sep + "query1" + "tuplesLeftPlot.tex");
+    tuplesMissedPlotFile = new File(this.outputFolder.toString() + sep + "query1" + "tuplesMissedPlot.tex");
+    tuplesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "query1" + "tuplesBurnedPlot.tex");
     if(energyPlotFile.exists())
     {
       energyPlotFile.delete();
@@ -631,6 +671,73 @@ public class FailedNodeTimePlotter implements Serializable
     tuplesLeftWriter.flush(); 
     tuplesMissedWriter.flush();
     tuplesBurnedWriter.flush();
+  }
+
+  public void newWriters(int queryid) throws IOException
+  {
+    energyPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "energyPlot.tex");
+    timePlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "timePlot.tex");
+    qepCostPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "qepPlot.tex");
+    lifetimePlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "lifetimePlot.tex");
+    cyclesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "cyclesBurnedPlot.tex");
+    cyclesMissedPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "cyclesMissedPlot.tex");
+    cyclesLeftPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "cyclesLeftPlot.tex");
+    tuplesLeftPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "tuplesLeftPlot.tex");
+    tuplesMissedPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "tuplesMissedPlot.tex");
+    tuplesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "tuplesBurnedPlot.tex");
+    if(energyPlotFile.exists())
+    {
+      energyPlotFile.delete();
+    }
+    if(timePlotFile.exists())
+    {
+      timePlotFile.delete();
+    }
+    if(qepCostPlotFile.exists())
+    {
+      qepCostPlotFile.delete();
+    }
+    if(lifetimePlotFile.exists())
+    {
+      lifetimePlotFile.delete();
+    }
+    if(cyclesBurnedPlotFile.exists())
+    {
+      cyclesBurnedPlotFile.delete();
+    }
+    if(cyclesMissedPlotFile.exists())
+    {
+      cyclesMissedPlotFile.delete();
+    }
+    if(cyclesLeftPlotFile.exists())
+    {
+      cyclesLeftPlotFile.delete();
+    }
+    if(tuplesLeftPlotFile.exists())
+    {
+      tuplesLeftPlotFile.delete();
+    }
+    if(tuplesMissedPlotFile.exists())
+    {
+      tuplesMissedPlotFile.delete();
+    }
+    if(tuplesBurnedPlotFile.exists())
+    {
+      tuplesBurnedPlotFile.delete();
+    }
+    
+    energyWriter = new BufferedWriter(new FileWriter(energyPlotFile, true));
+    timeWriter = new BufferedWriter(new FileWriter(timePlotFile, true));
+    qepWriter = new BufferedWriter(new FileWriter(qepCostPlotFile, true));
+    lifetimeWriter = new BufferedWriter(new FileWriter(lifetimePlotFile));
+    cyclesBurnedWriter =  new BufferedWriter(new FileWriter(cyclesBurnedPlotFile, true));
+    cyclesMissedWriter = new BufferedWriter(new FileWriter(cyclesMissedPlotFile, true));
+    cyclesLeftWriter = new BufferedWriter(new FileWriter(cyclesLeftPlotFile, true));
+    tuplesLeftWriter = new BufferedWriter(new FileWriter(tuplesLeftPlotFile, true));
+    tuplesMissedWriter = new BufferedWriter(new FileWriter(tuplesMissedPlotFile, true));
+    tuplesBurnedWriter = new BufferedWriter(new FileWriter(tuplesBurnedPlotFile, true));
+    globalLifetimes.clear();
+    partialLifetimes.clear();
   }
   
 }

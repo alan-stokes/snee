@@ -229,6 +229,7 @@ public class CandiateRouter extends Router
         RT clonedFragmentedTree = cloner.deepClone(fragmentedTree);
         Tree treeFragment = treeFragmentIterator.next();
         connectsRoutingFragmentToTree(clonedFragmentedTree, treeFragment);
+        verifyConnections(treeFragment);
         updateNodesEdgeArray(treeFragment, clonedFragmentedTree);
         mergeRoutingTreeFragmentsRecursively(keys, failedNodeToRoutingTreeMapping, clonedFragmentedTree,
                                              newRoutingTrees, position+1);
@@ -243,10 +244,49 @@ public class CandiateRouter extends Router
         RT clonedFragmentedTree = cloner.deepClone(fragmentedTree);
         Tree treeFragment = treeFragmentIterator.next();
         connectsRoutingFragmentToTree(clonedFragmentedTree, treeFragment);
+        verifyConnections(treeFragment);
         updateNodesEdgeArray(treeFragment, clonedFragmentedTree);
         newRoutingTrees.add(clonedFragmentedTree);
       }
     }   
+  }
+
+  /**
+   * fixer method as merging sometimes produces routing trees to which there's 
+   * either numerous outputs or a output which does'nt have its corrasponding input.
+   * @param treeFragment
+   */
+  private void verifyConnections(Tree treeFragment)
+  {
+    Iterator<Node> treeFragmentNodeIterator = treeFragment.getNodes().iterator();
+    while(treeFragmentNodeIterator.hasNext())
+    {
+      Node choiceNode = treeFragmentNodeIterator.next();
+      if(choiceNode.getOutDegree() != 0)
+      {
+        if(choiceNode.getOutDegree() > 1)
+        {
+          Node parent = choiceNode.getOutput(0);
+          choiceNode.removeOutput(parent);
+          for(int inputIndex = 0; inputIndex < parent.getInDegree(); inputIndex++)
+          {
+            Node input = parent.getInput(inputIndex);
+            if(input.getOutput(0).getID().equals(parent.getID()))
+              parent.removeInput(input);
+          }
+        }
+        Node parent = choiceNode.getOutput(0);
+        boolean found = false;
+        for(int inputIndex = 0; inputIndex < parent.getInDegree(); inputIndex++)
+        {
+          Node input = parent.getInput(inputIndex);
+          if(!found && input.getOutput(0).getID().equals(parent.getID()))
+            found = true;
+        }
+        if(!found)
+          parent.addInput(choiceNode);
+      }
+    }
   }
 
   /**

@@ -35,6 +35,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
@@ -86,14 +87,14 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
     cloner.dontClone(Logger.class);
     PAF paf = cloner.deepClone(iot.getPAF());
     //get iterator for IOT without exchanges
-    Iterator<InstanceOperator> iotInstanceOperatorIterator = iot.treeIterator(TraversalOrder.POST_ORDER, false);
+    Iterator<InstanceOperator> iotInstanceOperatorIterator = iot.treeIterator(TraversalOrder.PRE_ORDER, false);
     ArrayList<SensornetOperatorImpl> opsOnFailedNode = new ArrayList<SensornetOperatorImpl>();
     while(iotInstanceOperatorIterator.hasNext())
     {
       InstanceOperator instanceOperator = iotInstanceOperatorIterator.next();
       SensornetOperator physicalOperator = instanceOperator.getSensornetOperator();
       SensornetOperatorImpl physicalOperatorImpl = (SensornetOperatorImpl) physicalOperator;
-      if(!failedNodes.contains(instanceOperator.getSite().getID()))
+      if(!failedNodes.contains(instanceOperator.getSite().getID()) || !depinnedNodes.contains(instanceOperator.getSite().getID()))
       {
         ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).setIsPinned(true);
         ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).addSiteToPinnedList(instanceOperator.getSite().getID());

@@ -326,14 +326,14 @@ public class IOT extends SNEEAlgebraicForm
    * @param op the physical operator.
    * @return
    */
-  public HashSet<Site> getSites(SensornetOperator op) 
+  public HashSet<String> getSites(SensornetOperator op) 
   {
     ArrayList<InstanceOperator> opInstances = this.getOpInstances(op); 
-    HashSet<Site> sites = new HashSet<Site>();
+    HashSet<String> sites = new HashSet<String>();
     for (int i=0; i<opInstances.size(); i++) 
     {
       InstanceOperator opInst = opInstances.get(i);
-      sites.add(opInst.getSite());
+      sites.add(opInst.getSite().getID());
     }
     return sites;
   }
@@ -422,6 +422,22 @@ public class IOT extends SNEEAlgebraicForm
 
     return nodeList.iterator();
   }
+  
+  /**
+   * produces a iterator for sites as a sub tree from root
+   * @param Order order the iterator goes in
+   * @param root the root site
+   * @return a iterator
+   */
+  public Iterator<Site> subTreeSiteIterator(TraversalOrder Order, Site root)
+  {
+    final ArrayList<Site> nodeList = 
+      new ArrayList<Site>();
+    this.doSiteIterator(root, nodeList, Order);
+
+    return nodeList.iterator();
+  }
+  
   
   /**
    * helper method for site iterator

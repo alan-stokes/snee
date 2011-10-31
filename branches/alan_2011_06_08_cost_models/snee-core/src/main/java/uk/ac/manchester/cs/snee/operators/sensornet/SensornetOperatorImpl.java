@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.NodeImplementation;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
@@ -87,6 +88,11 @@ public abstract class SensornetOperatorImpl extends NodeImplementation implement
 	 * list containing all site ids of which this operator is pinned on
 	 */
 	protected ArrayList<String> pinnedSites = new ArrayList<String>();
+
+	/**
+	 * checker value for iot generation on recursive operators.
+	 */
+  protected HashMapList<Boolean, String> positionWithFailedNodes; 
 
 public CostParameters getCostParams()
   {
@@ -744,6 +750,11 @@ public CostParameters getCostParams()
 	{
 	  return pinnedSites.iterator();
 	}
+	
+	public ArrayList<String> getPinnedSites()
+	{
+	  return pinnedSites;
+	}
   
   public int getPinnedQuantity()
   {
@@ -759,6 +770,15 @@ public CostParameters getCostParams()
   {
     this.isTotallyPinned = isTotallyPinned;
   }
-
+  
+  public void addToPosition(Boolean position, String siteID)
+  {
+    positionWithFailedNodes.add(position, siteID);
+  }
+  
+  public ArrayList<String> gatherSitesIdsFromPositioning(boolean key)
+  {
+    return positionWithFailedNodes.get(key);
+  }
 }
 
