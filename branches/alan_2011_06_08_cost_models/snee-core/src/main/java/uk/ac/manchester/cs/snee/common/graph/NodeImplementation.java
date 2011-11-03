@@ -258,5 +258,27 @@ public class NodeImplementation implements Node, Serializable {
   {
     outputs.clear();  
   }
+  
+  @Override
+  public void removeInput(String nodeid)
+  {
+    for(int index = 0; index< this.getInDegree(); index ++)
+    {
+      Node input = this.getInput(index);
+      if(input.getID().equals(nodeid))
+        this.removeInput(input);
+    }
+  }
+  
+  @Override
+  public void removeOutput(String nodeid)
+  {
+    for(int index = 0; index< this.getOutDegree(); index ++)
+    {
+      Node output = this.getOutput(index);
+      if(output.getID().equals(nodeid))
+        this.removeOutput(output);
+    }
+  }
 
 }

@@ -436,11 +436,14 @@ public class Graph implements Cloneable, Serializable{
 		}
 	}
 	
-	
+	/**
+	 * removes a node from the graph, takes out all links to the node as well.
+	 * @param remove
+	 */
 	public void removeNodeWithoutLinkage(Node remove) 
 	{
     //remove the node from the nodes collection
-    nodes.remove(remove);
+    nodes.remove(remove.getID());
     logger.trace("removing node:" + remove.getID());
     //remove any edges which reference the node
     //Iterator<String> edgeIter = edges.keySet().iterator();

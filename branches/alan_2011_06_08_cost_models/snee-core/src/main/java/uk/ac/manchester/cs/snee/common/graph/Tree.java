@@ -59,6 +59,7 @@ public class Tree extends Graph {
 	public void updateNodesAndEdgesColls(Node node) {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER updateNodesAndEdgesColls()");
+		
 		this.nodes.put(node.getID(), node);
 
 		/* Post-order traversal of operator tree */

@@ -120,7 +120,7 @@ public class ChoiceAssessor implements Serializable
     while(siteIDIterator.hasNext())
     {
       String siteID = siteIDIterator.next();
-      runningSites.get(siteID).resetEnergyCosts();
+      runningSites.get(siteID).resetAdaptEnergyCosts();
     }
     compiledAlready = false;
   }

@@ -707,9 +707,9 @@ public class InstanceWhereSchedular
     {
       ArrayList<Site> sites = new ArrayList<Site>();
       sites.add(iot.getRT().getSite(opInst.getSite().getID()));
-      for(int inputIndex = 0; inputIndex < opInst.getInDegree(); inputIndex++)
+      for(int inputIndex = 0; inputIndex < opInst.getSite().getInDegree(); inputIndex++)
       {
-        sites.add((Site) opInst.getInput(inputIndex));
+        sites.add((Site) opInst.getSite().getInput(inputIndex));
       }
       siteIterator = sites.iterator();
     }

@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -189,6 +190,8 @@ public class FailedNodeTimeClientUtils
   {
     File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "OTASection" +  sep + "storedObjects");
     ArrayList<Adaptation> orginal = this.readInObjects(inputFolder);
+    DecimalFormat df = new DecimalFormat("#.#####");
+    System.out.println(df.format(orginal.get(0).getLifetimeEstimate() / 1000));
     plot.addGlobalLifetime(orginal.get(0).getLifetimeEstimate());
     plot.addPartialLifetime(orginal.get(0).getLifetimeEstimate());
   }
@@ -213,17 +216,21 @@ public class FailedNodeTimeClientUtils
     File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + testid + sep + "Planner" +  sep + "storedObjects");
     ArrayList<Adaptation> adaptations = this.readInObjects(inputFolder);
     this.sortout(adaptations);
+    DecimalFormat df = new DecimalFormat("#.#####");
     if(which == PlotterEnum.GLOBAL)
     {
+      System.out.println(df.format((global.getLifetimeEstimate() + currentLifetime) / 1000));
       plot.addGlobalLifetime(global.getLifetimeEstimate() + currentLifetime);
     }
     else if(which == PlotterEnum.PARTIAL)
     {
+      System.out.println(df.format((partial.getLifetimeEstimate() + currentLifetime) / 1000));
       plot.addPartialLifetime(partial.getLifetimeEstimate() + currentLifetime);
     }
     else if(which == PlotterEnum.LOCAL)
     {
-      
+      System.out.println(df.format((local.getLifetimeEstimate() + currentLifetime) / 1000));
+      plot.addPartialLifetime(local.getLifetimeEstimate() + currentLifetime);
     }
   }
 

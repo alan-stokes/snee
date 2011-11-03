@@ -248,4 +248,18 @@ public class MockOperator implements LogicalOperator {
       // TODO Auto-generated method stub
       
     }
+
+    @Override
+    public void removeOutput(String id)
+    {
+      // TODO Auto-generated method stub
+      
+    }
+
+    @Override
+    public void removeInput(String id)
+    {
+      // TODO Auto-generated method stub
+      
+    }
 }

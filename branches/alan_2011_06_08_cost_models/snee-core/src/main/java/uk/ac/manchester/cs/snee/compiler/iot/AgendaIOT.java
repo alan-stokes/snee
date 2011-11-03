@@ -868,16 +868,19 @@ public class AgendaIOT extends SNEEAlgebraicForm{
   public CommunicationTask getTransmissionTask(Node child)
   {
     final Iterator<Task> taskIter = this.taskIterator((Site) child);
-    while (taskIter.hasNext()) 
+    if(taskIter != null)
     {
-      final Task t = taskIter.next();
-      if (t instanceof CommunicationTask) 
+      while (taskIter.hasNext()) 
       {
-        final CommunicationTask commTask = (CommunicationTask) t;
-        if ((commTask.getSourceNode() == child)
-           && (commTask.getMode() == CommunicationTask.TRANSMIT)) 
+        final Task t = taskIter.next();
+        if (t instanceof CommunicationTask) 
         {
-           return commTask;
+          final CommunicationTask commTask = (CommunicationTask) t;
+          if ((commTask.getSourceNode() == child)
+             && (commTask.getMode() == CommunicationTask.TRANSMIT)) 
+          {
+             return commTask;
+          }
         }
       }
     }

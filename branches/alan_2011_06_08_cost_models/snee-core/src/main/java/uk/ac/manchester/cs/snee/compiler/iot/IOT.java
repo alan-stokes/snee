@@ -333,7 +333,8 @@ public class IOT extends SNEEAlgebraicForm
     for (int i=0; i<opInstances.size(); i++) 
     {
       InstanceOperator opInst = opInstances.get(i);
-      sites.add(opInst.getSite().getID());
+      if(opInst.getSite() != null)
+        sites.add(opInst.getSite().getID());
     }
     return sites;
   }

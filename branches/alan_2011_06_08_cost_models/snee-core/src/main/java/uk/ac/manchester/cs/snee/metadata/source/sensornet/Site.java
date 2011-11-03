@@ -333,7 +333,8 @@ public class Site extends NodeImplementation implements Comparable<Site> {
 
     public String toString()
     {
-      return this.id;
+      //return this.id;
+      return super.toString();
     }
     
     

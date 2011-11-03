@@ -105,5 +105,10 @@ public class RunTimeSite implements Serializable
   {
     return thresholdEnergy;
   }
+
+  public void resetAdaptEnergyCosts()
+  {
+    resetCurrentAdaptationEnergyCost();
+  }
   
 }

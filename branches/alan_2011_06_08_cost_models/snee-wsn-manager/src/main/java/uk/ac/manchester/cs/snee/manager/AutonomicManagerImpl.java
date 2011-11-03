@@ -149,7 +149,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     {
       Integer siteIDInt = siteIdIterator.next();
       runningSites.get(siteIDInt.toString()).removeReprogrammingCostCost();
-      runningSites.get(siteIDInt.toString()).resetEnergyCosts();
+      runningSites.get(siteIDInt.toString()).resetAdaptEnergyCosts();
     }  
   }
 
@@ -348,8 +348,15 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   public void queryEnded()
   {
     monitor.queryEnded();  
+    storeRunTimeSiteEnergy();
   }
 
+
+  private void storeRunTimeSiteEnergy()
+  {
+    
+    
+  }
 
   @Override
   public void callAnaysliserAnaylsisSNEECard(Map <Integer, Integer> sneeTuplesPerEpoch)

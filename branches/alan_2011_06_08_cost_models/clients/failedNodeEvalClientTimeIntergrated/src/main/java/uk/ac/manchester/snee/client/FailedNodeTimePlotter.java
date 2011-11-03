@@ -74,7 +74,9 @@ public class FailedNodeTimePlotter implements Serializable
   {
     Iterator<Double> globalLifetimeIterator = globalLifetimes.iterator();
     Iterator<Double> partialLifetimeIterator = partialLifetimes.iterator();
+    DecimalFormat df = new DecimalFormat("#.#####");
     int counter = 0;
+    try{
     while(globalLifetimeIterator.hasNext() || partialLifetimeIterator.hasNext())
     {
       Double globalLife;
@@ -88,12 +90,20 @@ public class FailedNodeTimePlotter implements Serializable
       else
         partialLife = 0.0;
       
-      System.out.println(counter + " " + globalLife + " " + partialLife);
-      lifetimeWriter.write(counter + " " + globalLife + " " + partialLife + "\n");
+      System.out.println(counter + " " + df.format(globalLife / 1000) + " " + df.format(partialLife/ 1000));
+      lifetimeWriter.write(counter + " " + df.format(globalLife / 1000) + " " + df.format(partialLife / 1000) + "\n");
+      lifetimeWriter.flush();
+      lifetimeYMax = Math.max(lifetimeYMax, globalLife / 1000);
+      lifetimeYMax = Math.max(lifetimeYMax, partialLife / 1000);
       counter++;
     }
     lifetimeWriter.flush();
     lifetimeWriter.close();
+    }catch(Exception e)
+    {
+      System.out.println(e.getMessage());
+    }
+    generatePlots();
   }
   
   
@@ -463,6 +473,11 @@ public class FailedNodeTimePlotter implements Serializable
     tuplesMissedWriter.flush();
     tuplesBurnedWriter.flush();
     
+    generatePlots();
+  }
+  
+  private void generatePlots()
+  {
     try
     {
       if(numberOfAdaptations == 3)
@@ -616,9 +631,10 @@ public class FailedNodeTimePlotter implements Serializable
       System.out.println(e.getMessage());
       e.printStackTrace();
       System.exit(0);
-    }
+    }// TODO Auto-generated method stub
+    
   }
-  
+
   private static void deleteFileContents(File firstOutputFolder)
   {
     if(firstOutputFolder.exists())

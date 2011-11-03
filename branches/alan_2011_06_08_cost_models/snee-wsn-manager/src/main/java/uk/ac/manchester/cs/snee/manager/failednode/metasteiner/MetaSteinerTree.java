@@ -146,7 +146,7 @@ public class MetaSteinerTree implements Serializable
    * @param steinerTree
    * @param sink
    */
-  private void rotateTree(Node current, Node prevNode, Tree tree)
+  public void rotateTree(Node current, Node prevNode, Tree tree)
   {
     for (int n=0; n<current.getInDegree(); n++) 
     {

@@ -34,6 +34,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -172,10 +173,10 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       // run for global
       originalQEP = client.getQEP();
       System.out.println("running tests for global ");
+      SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, ChoiceAssessorPreferenceEnum.Global.toString());
       testNo = 1;
       for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
       {
-        SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, "Global");
         calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
         System.out.println("running tests with " + currentNumberOfFailures + " failures");
         double currentLifetime = 0;
@@ -193,11 +194,11 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       
       resetQEP(originalQEP);
       System.out.println("running tests for partial ");
+      SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, ChoiceAssessorPreferenceEnum.Partial.toString());
       
       //run for partial 
       for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
       {
-        SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, "Partial");
         calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
         System.out.println("running tests with " + currentNumberOfFailures + " failures");
         double currentLifetime = 0;
@@ -245,7 +246,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       calculated = true;
     }
     double timeBetweenFailures =  originalLifetime / (currentNumberOfFailures + 1); //s
-    Long agendaLength = originalQEP.getAgendaIOT().getLength_bms(false); // s
+    Long agendaLength = originalQEP.getAgendaIOT().getLength_bms(false) / 1024; // s
     numberOfExectutionCycles = (int) (timeBetweenFailures/agendaLength);
   }
 

@@ -66,6 +66,10 @@ public interface Node extends Equivalence<Node> {
 	public String getID();
 
 	public void removeInput(Node source);
+	
+	public void removeOutput(String id);
+	
+	public void removeInput(String id);
 
 	public void removeOutput(Node target);
 

@@ -90,15 +90,15 @@ public class Planner extends AutonomicManagerComponent
       if(!partialAds.isEmpty())
       {
         assessor.assessChoices(partialAds, runningSites);
-        bestPartial = chooseBestAdaptation(partialAds);
+        bestPartial = chooseBestAdaptation(partialAds, false);
       }
       
       if(!localAds.isEmpty())
       {
         assessor.assessChoices(localAds, runningSites);
-        bestLocal = chooseBestAdaptation(localAds);
+        bestLocal = chooseBestAdaptation(localAds, false);
       }
-      //set up new colelction for the assessor
+      //set up new collection for the assessor
       List<Adaptation> bestChoices = new ArrayList<Adaptation>();
       if(bestLocal != null)
         bestChoices.add(bestLocal);
@@ -107,7 +107,7 @@ public class Planner extends AutonomicManagerComponent
       bestChoices.add(choices.getGlobalAdaptation());
       //assess to find best overall adaptation
       assessor.assessChoices(bestChoices, runningSites);
-      bestOverall = chooseBestAdaptation(bestChoices);
+      bestOverall = chooseBestAdaptation(bestChoices, true);
       //output bests, then all.
       new PlannerUtils(bestChoices, manager, plannerFolder, orginal).writeObjectsToFile();
      /* if(!partialAds.isEmpty())
@@ -134,14 +134,15 @@ public class Planner extends AutonomicManagerComponent
     assessor.assessChoice(orginal, runningSites, true);
   }
 
-  private Adaptation chooseBestAdaptation(List<Adaptation> choices) throws SNEEConfigurationException
+  private Adaptation chooseBestAdaptation(List<Adaptation> choices, boolean bestOverall) throws SNEEConfigurationException
   {
     Adaptation finalChoice = null;
     Double cost = Double.MIN_VALUE;
     Iterator<Adaptation> choiceIterator = choices.iterator();
     //calculate each cost, and compares it with the best so far, if the same, store it 
     String choicePreference = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);       
-    if(choicePreference.equals(ChoiceAssessorPreferenceEnum.Best.toString()))
+    
+    if(!bestOverall || choicePreference.equals(ChoiceAssessorPreferenceEnum.Best.toString()))
     {
       while(choiceIterator.hasNext())
       {
@@ -155,7 +156,7 @@ public class Planner extends AutonomicManagerComponent
       }
       return finalChoice;
     }
-    else if(choicePreference.equals(ChoiceAssessorPreferenceEnum.Local.toString()))
+    else if(!bestOverall || choicePreference.equals(ChoiceAssessorPreferenceEnum.Local.toString()))
     {
       while(choiceIterator.hasNext())
       {
@@ -164,7 +165,7 @@ public class Planner extends AutonomicManagerComponent
           return choice;
       }
     }
-    else if(choicePreference.equals(ChoiceAssessorPreferenceEnum.Partial.toString()))
+    else if(!bestOverall || choicePreference.equals(ChoiceAssessorPreferenceEnum.Partial.toString()))
     {
       while(choiceIterator.hasNext())
       {
@@ -181,7 +182,7 @@ public class Planner extends AutonomicManagerComponent
       }
       return finalChoice;
     }
-    else if(choicePreference.equals(ChoiceAssessorPreferenceEnum.Global.toString()))
+    else if(!bestOverall || choicePreference.equals(ChoiceAssessorPreferenceEnum.Global.toString()))
     {
       while(choiceIterator.hasNext())
       {
@@ -192,7 +193,7 @@ public class Planner extends AutonomicManagerComponent
     }
     else
     {
-      return null;
+      throw new SNEEConfigurationException("no recgonised chioce was given. will return null");
     }
     return null;
   }
