@@ -33,7 +33,6 @@ import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.executer.Executer;
 import uk.ac.manchester.cs.snee.manager.monitor.Monitor;
-import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessor;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;

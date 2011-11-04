@@ -35,7 +35,6 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;

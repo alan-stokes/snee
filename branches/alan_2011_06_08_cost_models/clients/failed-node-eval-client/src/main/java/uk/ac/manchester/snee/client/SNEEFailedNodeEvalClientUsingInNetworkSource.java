@@ -93,7 +93,6 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 		try
     {
       checkRecoveryFile();
-
       runIxentsScripts();
       utils.writeLatexCore();
       //holds all 30 queries produced by python script.

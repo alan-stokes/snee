@@ -137,29 +137,29 @@ public class InstanceWhereSchedular
     //go though fragments
     while(fragmentIterator.hasNext())
     {
-  	  InstanceFragment currentFrag = fragmentIterator.next();//if frag on site
-  	  //get root operator
-  	  InstanceOperator rootOp = currentFrag.getRootOperator();
-  	  if(!(rootOp.getSensornetOperator() instanceof SensornetDeliverOperator))
-  	  {
-  	    InstanceExchangePart exchange = currentFrag.getParentExchangeOperator();
-  	    exchange.addInput(rootOp);
-  	    //always have 1 output
-  	    rootOp.replaceOutput(rootOp.getOutput(0), exchange);
-  	    iot.addEdge(rootOp, exchange);
-  	    while(exchange.getNext() != null)
-	      {
+      InstanceFragment currentFrag = fragmentIterator.next();//if frag on site
+      //get root operator
+      InstanceOperator rootOp = currentFrag.getRootOperator();
+      if(!(rootOp.getSensornetOperator() instanceof SensornetDeliverOperator))
+      {
+        InstanceExchangePart exchange = currentFrag.getParentExchangeOperator();
+        exchange.addInput(rootOp);
+        //always have 1 output
+        rootOp.replaceOutput(rootOp.getOutput(0), exchange);
+        iot.addEdge(rootOp, exchange);
+        while(exchange.getNext() != null)
+        {
           InstanceExchangePart nextExchange = exchange.getNext(); 
           iot.addEdge(exchange, nextExchange);
-	        exchange = nextExchange;  
+          exchange = nextExchange;  
         }
         //get root operator of higher frag frag
         InstanceOperator lowestOperator = exchange.getDestFrag().getLowestOperator();
         lowestOperator.replaceInput(rootOp, exchange);   
         iot.addEdge(exchange, lowestOperator);
         iot.removeEdge(rootOp, lowestOperator);
-	    }
-	  }
+      }
+    }
   }
 
   //tested and works 
@@ -530,15 +530,13 @@ public class InstanceWhereSchedular
       boolean wasTotallyPinned = opImpl.isTotallyPinned();
       if(opImpl.isPinned())
       {
-    	  addPinnedOpInstances(op, opImpl, disconnectedOpInstMapping);
+        if(!opImpl.isRecursive())
+          addPinnedOpInstances(op, opImpl, disconnectedOpInstMapping);
+        else
+          addIterativeOpInstancesPinned(op, disconnectedOpInstMapping);
       } 
       if(wasTotallyPinned)
       {}
-      else if(opImpl.isPinned() && opImpl.isRecursive())
-      {
-        //recursive operator whilst pinned
-        addIterativeOpInstancesPinned(op, disconnectedOpInstMapping);
-      }
       else if (   op instanceof SensornetAcquireOperator 
                || op instanceof SensornetDeliverOperator) 
       {
@@ -573,6 +571,17 @@ public class InstanceWhereSchedular
   private void addIterativeOpInstancesPinned(SensornetOperator op,
       HashMapList<String, InstanceOperator> disconnectedOpInstMapping)
   {
+    SensornetOperatorImpl opImpl = (SensornetOperatorImpl) op;
+    ArrayList<String> pinnedSiteIDs = opImpl.getPinnedSites();
+    Iterator<String> pinnedSitesIterator = pinnedSiteIDs.iterator();
+    while(pinnedSitesIterator.hasNext())
+    {
+      String pinnedSiteID = pinnedSitesIterator.next();
+      InstanceOperator opInst = new InstanceOperator(op, iot.getRT().getSite(pinnedSiteID));
+      iot.addOpInst(op, opInst);
+    }
+    
+    
     SensornetOperator childOp = (SensornetOperator) op.getInput(0);
     //convert to set so that we can do set equality operation later
     //holds all instances of the operators input
@@ -654,8 +663,8 @@ public class InstanceWhereSchedular
     disconnectedOpInstMapping.set(op.getID(), disconnectedChildOpInstSet);
   }
 
-  private void addPinnedOpInstances(SensornetOperator op,	SensornetOperatorImpl opImpl,
-		HashMapList<String, InstanceOperator> disconnectedOpInstMapping) 
+  private void addPinnedOpInstances(SensornetOperator op, SensornetOperatorImpl opImpl,
+    HashMapList<String, InstanceOperator> disconnectedOpInstMapping) 
   {
     ArrayList<String> pinnedSites = opImpl.getPinnedSites();
     Iterator<Node> treeIterator = iot.getRT().getSiteTree().nodeIterator(TraversalOrder.POST_ORDER);
@@ -671,7 +680,6 @@ public class InstanceWhereSchedular
         iot.assign(opInst, site);//put this operator on this site (placed)
         disconnectedOpInstMapping.add(op.getID(), opInst);//add to temp hash map which holds operators which dont have a connection upwards
         connectChildOperators(op, opInst, iot, disconnectedOpInstMapping);
-        //convergeAllChildOpSubstreams(op, opInst, iot, disconnectedOpInstMapping); 
       }
       try
       {
@@ -679,13 +687,12 @@ public class InstanceWhereSchedular
       }
       catch (SchemaMetadataException e)
       {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
       counter ++;
     }
     opImpl.setIsPinned(false);
-	}
+  }
 
   /**
    * locates the children to which this instance connects
@@ -695,7 +702,7 @@ public class InstanceWhereSchedular
    * @param disconnectedOpInstMapping
    */
   private void connectChildOperators(SensornetOperator op, InstanceOperator opInst, IOT iot,
-		                             HashMapList<String, InstanceOperator> disconnectedOpInstMapping) 
+                                 HashMapList<String, InstanceOperator> disconnectedOpInstMapping) 
   {
     SensornetOperatorImpl phyiscalOp = (SensornetOperatorImpl) op;
     Iterator<Site> siteIterator;
@@ -713,52 +720,52 @@ public class InstanceWhereSchedular
       }
       siteIterator = sites.iterator();
     }
-  	
-  	HashMapList<String, InstanceOperator> connected = new HashMapList<String, InstanceOperator>();
-  	for(int inputIndex = 0; inputIndex < op.getInDegree(); inputIndex++)
-  	{
-  	  SensornetOperator childOp = (SensornetOperator) op.getInput(inputIndex);
-  	  ArrayList<InstanceOperator> childOps = disconnectedOpInstMapping.get(childOp.getID());
-  	  if(op.isRecursive())
-  	  {
-  	    ArrayList<InstanceOperator> opOps = disconnectedOpInstMapping.get(op.getID());
-  	    opOps.remove(opInst);
-  	    childOps.addAll(opOps);
-  	  }
-  	  
-  	  while(siteIterator.hasNext())
-  	  {
-  		  Site site = siteIterator.next();
-  		  Iterator<InstanceOperator> childrenIterator = childOps.iterator();
-    		while(childrenIterator.hasNext())
-    		{
-    		  InstanceOperator child = childrenIterator.next();
-    		  if(child.getSite() == null  || child.getSite().getID().equals(site.getID()))
-    		  {
-    		    Edge transmissionEdge = iot.getTransmissionEdge(child);
-    	      if(transmissionEdge != null)
-    	      {
-    	        InstanceOperator dest = iot.getOperatorInstance(transmissionEdge.getDestID());
-    	        iot.removeEdge(child, dest);
-    	      }
-    	      iot.addEdge(child, opInst);
-    	      connected.add(child.getSensornetOperator().getID(), child);
-    		  }
-    		}
-  	  }
-  	}
-  	Iterator<String> keyIterator = connected.keySet().iterator();
-  	while(keyIterator.hasNext())
-  	{
-  	  String key = keyIterator.next();
-  	  ArrayList<InstanceOperator> ops = connected.get(key);
-  	  Iterator<InstanceOperator> opsIterator = ops.iterator();
-  	  while(opsIterator.hasNext())
-  	  {
-  	    InstanceOperator operator = opsIterator.next();
-  	    disconnectedOpInstMapping.remove(key, operator);
-  	  }
-  	}
+    
+    HashMapList<String, InstanceOperator> connected = new HashMapList<String, InstanceOperator>();
+    for(int inputIndex = 0; inputIndex < op.getInDegree(); inputIndex++)
+    {
+      SensornetOperator childOp = (SensornetOperator) op.getInput(inputIndex);
+      ArrayList<InstanceOperator> childOps = disconnectedOpInstMapping.get(childOp.getID());
+      if(op.isRecursive())
+      {
+        ArrayList<InstanceOperator> opOps = disconnectedOpInstMapping.get(op.getID());
+        opOps.remove(opInst);
+        childOps.addAll(opOps);
+      }
+      
+      while(siteIterator.hasNext())
+      {
+        Site site = siteIterator.next();
+        Iterator<InstanceOperator> childrenIterator = childOps.iterator();
+        while(childrenIterator.hasNext())
+        {
+          InstanceOperator child = childrenIterator.next();
+          if(child.getSite() == null  || child.getSite().getID().equals(site.getID()))
+          {
+            Edge transmissionEdge = iot.getTransmissionEdge(child);
+            if(transmissionEdge != null)
+            {
+              InstanceOperator dest = iot.getOperatorInstance(transmissionEdge.getDestID());
+              iot.removeEdge(child, dest);
+            }
+            iot.addEdge(child, opInst);
+            connected.add(child.getSensornetOperator().getID(), child);
+          }
+        }
+      }
+    }
+    Iterator<String> keyIterator = connected.keySet().iterator();
+    while(keyIterator.hasNext())
+    {
+      String key = keyIterator.next();
+      ArrayList<InstanceOperator> ops = connected.get(key);
+      Iterator<InstanceOperator> opsIterator = ops.iterator();
+      while(opsIterator.hasNext())
+      {
+        InstanceOperator operator = opsIterator.next();
+        disconnectedOpInstMapping.remove(key, operator);
+      }
+    }
   }
 
 private void addOtherOpTypeInstances(SensornetOperator op, 
@@ -1097,12 +1104,12 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         /*check all children operators  for a agg merge which is on the same site as the op.
          * if so then remove child operator
          */
-      	if(opInst.getInDegree() == 1 && iot.getNumOpInstances(opInst.getSensornetOperator()) > 1)
+        if(opInst.getInDegree() == 1 && iot.getNumOpInstances(opInst.getSensornetOperator()) > 1)
         {
           iot.removeOpInst(opInst);
           changed = true;
         }  
-    	
+      
         for (int i=0; i<opInst.getInDegree(); i++) 
         {
           InstanceOperator childOpInst = (InstanceOperator)opInst.getInput(i);

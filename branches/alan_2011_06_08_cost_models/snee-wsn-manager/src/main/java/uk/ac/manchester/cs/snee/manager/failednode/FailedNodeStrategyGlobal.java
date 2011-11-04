@@ -136,6 +136,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
         SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
     boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
         SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
+    
     AgendaIOT newAgendaIOT;
     Agenda newAgenda;
     WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing, 
@@ -147,7 +148,6 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
       newAgenda = whenSched.doWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getQueryName());
       new AgendaIOTUtils(newAgendaIOT, newIOT, false).exportAsLatex(globalFile.toString() + sep + "newAgenda");
       new AgendaIOTUtils(newAgendaIOT, newIOT, false).generateImage(globalFile.toString());
-      //new AgendaIOTUtils(newAgenda, newIOT, false).generateImage(globalFile.toString() + sep + "newAgenda");
     }
     catch (WhenSchedulerException e)
     {

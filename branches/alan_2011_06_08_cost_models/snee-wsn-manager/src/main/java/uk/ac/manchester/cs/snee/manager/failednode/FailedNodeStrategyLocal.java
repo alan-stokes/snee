@@ -12,12 +12,11 @@ import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
+import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragment;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceWhereSchedular;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
-import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -84,6 +83,16 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     localFolder = new File(outputFolder.toString() + sep + "localStrategy");
     localFolder.mkdir();
   }
+  
+  /**
+   * used to update stragies where to output data files
+   * @param outputFolder
+   */
+  public void updateFrameWorkStorage(File outputFolder)
+  {
+    this.outputFolder = outputFolder;
+    setupFolders(outputFolder);
+  }
 
   /**
    * goes though all nodes in topology and compares them to see if they are equivalent 
@@ -126,6 +135,8 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   private void transferSiteQEP(SensorNetworkQueryPlan qep, Node clusterHead,
                            Node equilvientNode)
   {
+    new IOTUtils(qep.getIOT(), this.currentQEP.getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotBefore", "iot with eqiv nodes", true);
+
     Site equilvientSite = (Site) equilvientNode;
     Site clusterHeadSite = (Site) clusterHead;
     Cloner cloner = new Cloner();
@@ -133,29 +144,196 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     //set up iot with new operators 
     ArrayList<InstanceOperator> ClusterHeadsiteInstanceOperators = 
                 qep.getIOT().getOpInstances(clusterHeadSite, TraversalOrder.PRE_ORDER, true);
-    Iterator<InstanceOperator> siteInstanceOperatorsIterator = 
-                ClusterHeadsiteInstanceOperators.iterator();
+
+    //removes all nodes but the root operators from the collection 
+    ArrayList<InstanceOperator> rootOperators = 
+      operatorReduction(ClusterHeadsiteInstanceOperators, clusterHeadSite);
+    ArrayList<InstanceOperator> clonedRootOperators = new ArrayList<InstanceOperator>();
     
-    InstanceFragment firstFrag = new InstanceFragment();
-    while(siteInstanceOperatorsIterator.hasNext())
+    //clones the root operators (this means all inputs and outputs within the site are now correct
+    Iterator<InstanceOperator> clonedRootOperatorIterator = rootOperators.iterator();
+    while(clonedRootOperatorIterator.hasNext())
     {
-      InstanceOperator operator = siteInstanceOperatorsIterator.next();
-      InstanceOperator clonedOperator = cloner.deepClone(operator);
-      clonedOperator.setSite(equilvientSite);
-      if(!clonedOperator.getCorraspondingFragment().getID().equals(firstFrag.getID()))
+      InstanceOperator rootOp = clonedRootOperatorIterator.next();
+      clonedRootOperators.add(cloner.deepClone(rootOp));
+    }
+    //go though each root operator, correcting site info and 
+    //checking if it has a fragment, if so make new fragment and add them to it.
+    //then go though each input
+    clonedRootOperatorIterator = clonedRootOperators.iterator();
+    Iterator<InstanceOperator> rootOperatorIterator = rootOperators.iterator();
+    
+    while(clonedRootOperatorIterator.hasNext())
+    {
+      InstanceOperator clonedRootOp = clonedRootOperatorIterator.next();
+      InstanceOperator rootOp = rootOperatorIterator.next();
+      
+      qep.getIOT().assign(clonedRootOp, equilvientSite);
+      InstanceExchangePart clonedPart = (InstanceExchangePart) clonedRootOp; 
+      equilvientSite.addInstanceExchangePart(clonedPart);
+      InstanceExchangePart part = (InstanceExchangePart) rootOp;
+      
+      InstanceExchangePart outPart = part.getNext();
+      clonedPart.setNextExchange(outPart);
+      clonedPart.clearOutputs();
+      clonedPart.addOutput(outPart);
+
+      clonedPart.setDestFrag(part.getDestFrag());
+      clonedPart.getSourceFrag().setSite(equilvientSite); 
+
+      sortOutChildren(clonedPart.getSourceFrag().getRootOperator(), equilvientSite, clusterHeadSite, qep);
+      sortOutFragments(clonedRootOp, equilvientSite, qep, clonedRootOp.getCorraspondingFragment());
+    }  
+    
+  }
+  
+  /**
+   * goes though all operators looking for new fragments, they are then installed into the iot
+   * @param rootOp
+   * @param equilvientSite
+   * @param qep
+   */
+  private void sortOutFragments(InstanceOperator inOp, Site equilvientSite,
+      SensorNetworkQueryPlan qep, InstanceFragment frag)
+  {
+     ArrayList<Node> inputs = new ArrayList<Node>();
+     inputs.addAll(inOp.getInputsList());
+     Iterator<Node> nodeIterator = inputs.iterator();
+     while(nodeIterator.hasNext())
+     {
+       InstanceOperator input = (InstanceOperator) nodeIterator.next();
+       if(input.getSite().getID().equals(equilvientSite.getID()))
+       {
+         if(input.getCorraspondingFragment() != null)
+         {
+           if(frag != null)
+           {
+             if(!frag.getFragID().equals(input.getCorraspondingFragment().getFragID()))
+             {
+               qep.getIOT().addInstanceFragment(input.getCorraspondingFragment());
+             }
+             sortOutFragments(input, equilvientSite, qep, input.getCorraspondingFragment());
+           }
+           else
+           {
+             qep.getIOT().addInstanceFragment(input.getCorraspondingFragment());
+             sortOutFragments(input, equilvientSite, qep, input.getCorraspondingFragment());
+           }
+         }
+         else
+         {
+           sortOutFragments(input, equilvientSite, qep, input.getCorraspondingFragment());
+         }
+       }
+       
+     }
+     
+    
+  }
+
+  /**
+   * takes a root child of a fragment and change its site
+   * @param operator
+   * @param qep 
+   */
+  private void sortOutChildren(InstanceOperator operator, Site equilvientSite, Site clusterHeadSite, 
+                               SensorNetworkQueryPlan qep)
+  { 
+    
+    qep.getIOT().assign(operator, equilvientSite);
+    if(!(operator instanceof InstanceExchangePart))
+    {
+      operator.getCorraspondingFragment().setSite(equilvientSite);
+    }
+    
+    Iterator<Node> inputIterator = operator.getInputsList().iterator();
+    while(inputIterator.hasNext())
+    {
+      InstanceOperator op = (InstanceOperator) inputIterator.next();
+      if(op.getSite().getID().equals(clusterHeadSite.getID()))
       {
-        firstFrag = new InstanceFragment(clonedOperator.getCorraspondingFragment().getID());
-        firstFrag.setSite(equilvientSite);
-        firstFrag.addOperator(clonedOperator);
-        firstFrag.setRootOperator(clonedOperator);
-        qep.getIOT().addInstanceFragment(firstFrag);
+        sortOutChildren(op, equilvientSite, clusterHeadSite, qep);
       }
       else
       {
-        firstFrag.addOperator(clonedOperator);
+        operator.replaceInput(op, qep.getIOT().getOperatorInstance(op.getID()));
+        InstanceExchangePart part = (InstanceExchangePart) operator;
+        equilvientSite.addInstanceExchangePart(part);
+        Site previousSite = qep.getIOT().getRT().getSite(part.getPrevious().getSite().getID());
+        Iterator<InstanceExchangePart> previousSitesExchanges = previousSite.getInstanceExchangeComponents().iterator();
+        while(previousSitesExchanges.hasNext())
+        {
+          InstanceExchangePart previousSitePart = previousSitesExchanges.next();
+          if(previousSitePart.getID().equals(part.getPrevious().getID()))
+          {
+            part.setPreviousExchange(previousSitePart);
+            part.clearInputs();
+            part.addInput(previousSitePart);
+          }
+        }
       }
-      qep.getIOT().addOpInstToSite(clonedOperator, equilvientSite);
-    }   
+    }
+  }
+
+  /**
+   * goes though a list of operators and traverses their inputs removing them from the list
+   * this is to ensure what is left in the list is the individual root instances for the site
+   */
+  private ArrayList<InstanceOperator> operatorReduction(
+      ArrayList<InstanceOperator> clusterHeadsiteInstanceOperators,
+      Site clusterHeadSite)
+  {
+    ArrayList<InstanceOperator> reducedOperators = new ArrayList<InstanceOperator>();
+    reducedOperators.addAll(clusterHeadsiteInstanceOperators);
+    
+    Iterator<InstanceOperator> clusterOperatorIterator = clusterHeadsiteInstanceOperators.iterator();
+    while(clusterOperatorIterator.hasNext())
+    {
+      InstanceOperator op = clusterOperatorIterator.next();
+      InstanceOperator opOutput = null;
+      if(op instanceof InstanceExchangePart)
+      {
+        InstanceExchangePart inop = (InstanceExchangePart) op;
+        if(inop.getNext() == null)
+          reducedOperators = removeFromCollection(op, reducedOperators);
+        else
+        {
+          opOutput = (InstanceOperator) inop.getNext();
+          if(opOutput.getSite().getID().equals(clusterHeadSite.getID()))
+            reducedOperators = removeFromCollection(op, reducedOperators);
+        } 
+      }
+      else
+      {
+        opOutput = (InstanceOperator) op.getOutput(0);
+        if(opOutput.getSite().getID().equals(clusterHeadSite.getID()))
+          reducedOperators = removeFromCollection(op, reducedOperators);
+      }
+    }
+    return reducedOperators;
+  }
+  
+  /**
+   * located a node and removes it from a given collection
+   * @param op
+   * @param collection
+   */
+  private ArrayList<InstanceOperator> removeFromCollection(InstanceOperator op,
+      ArrayList<InstanceOperator> collection)
+  {
+    ArrayList<InstanceOperator> returned = new ArrayList<InstanceOperator>();
+    returned.addAll(collection);
+    int index = 0;
+    
+    Iterator<InstanceOperator> collectionIterator = collection.iterator();
+    while(collectionIterator.hasNext())
+    {
+      InstanceOperator collectionOp = collectionIterator.next();
+      if(collectionOp.getID().equals(op.getID()))
+        returned.remove(index);
+      index++;
+    }
+    return returned;
   }
 
   /**
@@ -230,48 +408,85 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   throws 
   OptimizationException
   {
-    Topology network = this.getWsnTopology();
-    network.removeNodeAndAssociatedEdges(failedNodeID);
     Node equivilentNode = network.getNode(equivilentNodeID);
+    equivilentNode.clearInputs();
+    equivilentNode.clearOutputs();
     Node failedNode = currentRoutingTree.getSiteTree().getNode(failedNodeID);
-    currentRoutingTree.getSiteTree().replaceNode(failedNode, equivilentNode);
+    currentRoutingTree.getSiteTree().removeNodeWithoutLinkage(failedNode);
+    //sort out outputs
+    Node output = failedNode.getOutput(0);
+    output.removeInput(failedNodeID);
+    output.addInput(equivilentNode);
+    equivilentNode.addOutput(output);
+    
+    //sort out inputs
+    Iterator<Node> inputIterator = failedNode.getInputsList().iterator();
+    while(inputIterator.hasNext())
+    {
+      Node input = inputIterator.next();
+      input.clearOutputs();
+      input.addOutput(equivilentNode);
+      equivilentNode.addInput(input);
+    }
+    currentRoutingTree.getSiteTree().updateNodesAndEdgesColls(currentRoutingTree.getSiteTree().getRoot());
   }
 
   private void rewireNodes(IOT clonedIOT, String failedNodeID, String equivilentNodeID)
   {
-    ArrayList<Node> children = clonedIOT.getInputSites(currentQEP.getRT().getSite(failedNodeID));
-    Iterator<Node> chidlrenIterator = children.iterator();
+    ///children first
+    Site failedSite = currentQEP.getRT().getSite(failedNodeID);
+    Site equivilentSite = clonedIOT.getRT().getSite(equivilentNodeID);
+    Iterator<Node> chidlrenIterator = failedSite.getInputsList().iterator();
     while(chidlrenIterator.hasNext())
     {
-      Node child = chidlrenIterator.next();
-      InstanceOperator rootOp = clonedIOT.getRootOperatorOfSite((Site) child);
-      InstanceExchangePart childExchange = (InstanceExchangePart) rootOp;
-      //if exchanges end at the ffailed node, realter all exhcanges in path to follow to new site
-      if(childExchange.getDestSite().getID().equals(failedNodeID))
-        childExchange.setDestinitionSite(network.getSite(equivilentNodeID));
-     
-      ArrayList<InstanceExchangePart> exchanges = 
-        clonedIOT.getExchangeOperators(network.getSite(equivilentNodeID));
-      Iterator<InstanceExchangePart> exchangeIterator = exchanges.iterator();
+      Site child = clonedIOT.getRT().getSite(chidlrenIterator.next().getID());
+      Iterator<InstanceExchangePart> exchangeIterator = child.getInstanceExchangeComponents().iterator();
       while(exchangeIterator.hasNext())
       {
-        InstanceExchangePart exchange = exchangeIterator.next();
-        if(exchange.getPrevious().equals(exchange))
+        InstanceExchangePart part = exchangeIterator.next();
+        if(part.getNext() != null && part.getNext().getSite().getID().equals(failedNodeID))
         {
-          childExchange.setNextExchange(exchange);
+          InstanceExchangePart nextPart = part.getNext();
+          Iterator<InstanceExchangePart> eqivExchangeIterator = 
+             equivilentSite.getInstanceExchangeComponents().iterator();
+          while(eqivExchangeIterator.hasNext())
+          {
+            InstanceExchangePart eqPart = eqivExchangeIterator.next();
+            if(nextPart.getID().equals(eqPart.getID()))
+            {
+              part.replaceOutput(nextPart, eqPart);
+              part.setNextExchange(eqPart);
+              nextPart.clearInputs();
+              nextPart.addInput(eqPart);
+              part.setDestinitionSite(equivilentSite);
+            }
+          }
         }
       }
-      InstanceExchangePart equivilentNodesRootExchange = 
-        (InstanceExchangePart) clonedIOT.getRootOperatorOfSite(network.getSite(equivilentNodeID));
-      Node parent = clonedIOT.getNode(currentQEP.getRT().getSite(failedNodeID).getID()).getOutput(0);
-      exchanges = clonedIOT.getExchangeOperators((Site) parent);
-      exchangeIterator = exchanges.iterator();
-      while(exchangeIterator.hasNext())
+    }
+      
+    //parent 
+    Site outputSite = clonedIOT.getRT().getSite(failedSite.getOutput(0).getID());
+    Iterator<InstanceExchangePart> exchangeIterator = outputSite.getInstanceExchangeComponents().iterator();
+    while(exchangeIterator.hasNext())
+    {
+      InstanceExchangePart part = exchangeIterator.next();
+      if(part.getPrevious() != null && part.getPrevious().getSite().getID().equals(failedNodeID))
       {
-        InstanceExchangePart exchange = exchangeIterator.next();
-        if(exchange.getPrevious().getCurrentSite().getID().equals(failedNodeID))
+        InstanceExchangePart previousPart = part.getPrevious();
+        Iterator<InstanceExchangePart> eqivExchangeIterator = 
+           equivilentSite.getInstanceExchangeComponents().iterator();
+        while(eqivExchangeIterator.hasNext())
         {
-          exchange.setPrev(equivilentNodesRootExchange);
+          InstanceExchangePart eqPart = eqivExchangeIterator.next();
+          if(previousPart.getID().equals(eqPart.getID()))
+          {
+            part.replaceInput(previousPart, eqPart);
+            part.setPreviousExchange(eqPart);
+            eqPart.clearOutputs();
+            eqPart.addOutput(part);
+            part.setSourceSite(equivilentSite);
+          }
         }
       }
     }
@@ -282,29 +497,38 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   public List<Adaptation> adapt(ArrayList<String> failedNodeIDs) 
   throws OptimizationException
   {
+    try
+    {
     System.out.println("Running Failed Node FrameWork Local");
     List<Adaptation> adapatation = new ArrayList<Adaptation>();
     Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
     Adaptation adapt = new Adaptation(currentQEP, StrategyIDEnum.FailedNodeLocal, 1);
     
     IOT clonedIOT = cloner.deepClone(currentQEP.getIOT());
-    RT currentRoutingTree = cloner.deepClone(currentQEP.getRT());
+    RT currentRoutingTree = clonedIOT.getRT();
     while(failedNodeIDsIterator.hasNext())
     {
       String failedNodeID = failedNodeIDsIterator.next();
       String equivilentNodeID = retrieveNewClusterHead(failedNodeID);
+      //sort out adaptation data structs.
       adapt.addActivatedSite(equivilentNodeID);
+      Iterator<Node> redirectedNodesIterator = this.currentQEP.getRT().getSite(failedNodeID).getInputsList().iterator();
+      while(redirectedNodesIterator.hasNext())
+      {
+        adapt.addRedirectedSite(redirectedNodesIterator.next().getID());
+      }
+      //rewire routing tree
       rewireRoutingTree(failedNodeID, equivilentNodeID, currentRoutingTree);
       //rewire children
       rewireNodes(clonedIOT, failedNodeID, equivilentNodeID);
     }
+    new IOTUtils(clonedIOT, this.currentQEP.getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iot", "iot with eqiv nodes", true);
+    
     try
     {
+      IOT newIOT = clonedIOT;
+      newIOT.setID("new iot");
       
-      PAF pinnedPaf = this.pinPhysicalOperators(clonedIOT, failedNodeIDs, new ArrayList<String>());
-      InstanceWhereSchedular instanceWhere = 
-        new InstanceWhereSchedular(pinnedPaf, currentRoutingTree, currentQEP.getCostParameters(), localFolder.toString());
-      IOT newIOT = instanceWhere.getIOT();
       //run new iot though when scheduler and locate changes
       AgendaIOT newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
       Agenda newAgenda = doOldSNWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
@@ -325,5 +549,14 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
       e.printStackTrace();
     }
     return adapatation;
+    }
+    catch(Exception e)
+    {
+      System.out.println("local failed");
+      System.out.println(e.getMessage());
+      e.printStackTrace();
+      System.exit(0);
+      return null;
+    }
   }
 }

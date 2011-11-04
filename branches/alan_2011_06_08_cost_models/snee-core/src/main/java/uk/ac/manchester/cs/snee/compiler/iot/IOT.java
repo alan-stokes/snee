@@ -119,6 +119,17 @@ public class IOT extends SNEEAlgebraicForm
     instanceOperatorTree.setRoot(rootOp);
   }
   
+  
+  /**
+   * returns all sites within the iot. (not just participating sites in rt.)
+   * @return
+   */
+  public Iterator<Site> siteIterator()
+  {
+    return this.siteToOpInstMap.keySet().iterator();
+  }
+  
+  
   /**
    * return the root operator for the IOT
    * @return

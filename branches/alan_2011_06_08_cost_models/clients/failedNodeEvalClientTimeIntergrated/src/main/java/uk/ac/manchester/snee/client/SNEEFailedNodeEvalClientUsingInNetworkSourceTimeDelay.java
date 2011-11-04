@@ -61,7 +61,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	protected static int testNo = 1;
 	
 	//used to calculate agenda cycles
-	protected static int maxNumberofFailures = 2;
+	protected static int maxNumberofFailures = 5;
 	protected static double originalLifetime;
 	protected static int numberOfExectutionCycles;
 	protected static boolean calculated = false;
@@ -149,88 +149,127 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	                                 Long duration, String queryParams, 
 	                                 boolean allowDeathOfAcquires, 
 	                                 BufferedWriter failedOutput) 
-  throws IOException 
+  throws IOException, SNEEException, SNEEConfigurationException, 
+  SNEECompilerException, EvaluatorException, MetadataException, 
+  OptimizationException, SchemaMetadataException, TypeMappingException, 
+  AgendaException, UnsupportedAttributeTypeException, SourceMetadataException, 
+  TopologyReaderException, SNEEDataSourceException, CostParametersException,
+  SNCBException, CodeGenerationException 
 	{
 	//get query & schemas
     String currentQuery = queryIterator.next();
     String propertiesPath = "tests/snee" + queryid + ".properties";
     
     System.out.println("Running Tests on query " + (queryid));
+    client = new  SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay(currentQuery, 
+                           duration, queryParams, null, propertiesPath);
+    //set queryid to correct id
+    SNEEController contol = (SNEEController) client.controller;
+    contol.setQueryID(queryid);
+    //added to allow recovery from crash
+    utils.updateRecoveryFile(queryid);
+    System.out.println("compiled control");
+    client.runCompilelation();
+    utils.plotOrginial(queryid, testNo);
+
     try
     {
-      
-      client = new  SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay(currentQuery, 
-                           duration, queryParams, null, propertiesPath);
-      //set queryid to correct id
-      SNEEController contol = (SNEEController) client.controller;
-      contol.setQueryID(queryid);
-      //added to allow recovery from crash
-      utils.updateRecoveryFile(queryid);
-      System.out.println("compiled control");
-      client.runCompilelation();
-      utils.plotOrginial(queryid, testNo);
-
       // run for global
-      originalQEP = client.getQEP();
-      System.out.println("running tests for global ");
-      SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, ChoiceAssessorPreferenceEnum.Global.toString());
-      testNo = 1;
-      for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
-      {
-        calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
-        System.out.println("running tests with " + currentNumberOfFailures + " failures");
-        double currentLifetime = 0;
-        for(int currentFailure = 1; currentFailure <= currentNumberOfFailures; currentFailure++)
-        {
-          System.out.println("running with test no" + testNo);
-          client.getQEP().getLAF().setQueryName("query" + queryid + "-"+ currentFailure + "-" + maxNumberofFailures);
-          client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
-          currentLifetime = numberOfExectutionCycles * originalQEP.getAgendaIOT().getLength_bms(false) * currentNumberOfFailures;
-          testNo++;
-        }
-        utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.GLOBAL);
-        resetQEP(originalQEP);
-      }
-      
-      resetQEP(originalQEP);
-      System.out.println("running tests for partial ");
-      SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, ChoiceAssessorPreferenceEnum.Partial.toString());
-      
-      //run for partial 
-      for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
-      {
-        calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
-        System.out.println("running tests with " + currentNumberOfFailures + " failures");
-        double currentLifetime = 0;
-        for(int currentFailure = 1; currentFailure <= currentNumberOfFailures; currentFailure++)
-        {
-          System.out.println("running with test no" + testNo);
-          client.getQEP().getLAF().setQueryName("query" + queryid + "-" + maxNumberofFailures);
-          client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
-          currentLifetime = numberOfExectutionCycles * originalQEP.getAgendaIOT().getLength_bms(false) * currentNumberOfFailures;
-          testNo++;
-        }
-        utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.PARTIAL);
-        resetQEP(originalQEP);
-      }
-      
-      utils.plotTopology();
-      
-      queryid ++;
-      utils.newPlotters(queryid);
-      System.out.println("Ran all tests on query " + (queryid) + " going onto next topology");
+      runGlobalTests(currentQuery, allowDeathOfAcquires);
     }
     catch(Exception e)
     {
-      e.printStackTrace();
-      utils.writeErrorToFile(e, failedOutput, queryid, testNo);    
+      try
+      {
+        //run for partial
+        runPartialTests(currentQuery, allowDeathOfAcquires);
+      }
+      catch (Exception e1)
+      {
+        utils.plotTopology();
+        queryid ++;
+        utils.newPlotters(queryid);
+        System.out.println("Ran all tests on query " + (queryid) + " going onto next topology");
+        recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
+      }
+      utils.plotTopology();
+      queryid ++;
+      utils.newPlotters(queryid); 
+      recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
+    }
+    try
+    {
+      // run partial
+      runPartialTests(currentQuery, allowDeathOfAcquires);
+    }
+    catch(Exception e)
+    {
       utils.plotTopology();
       queryid ++;
       utils.newPlotters(queryid);
+      System.out.println("Ran all tests on query " + (queryid) + " going onto next topology");
       recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
     }
-	}
+    utils.plotTopology();
+    queryid ++;
+    utils.newPlotters(queryid);
+    System.out.println("Ran all tests on query " + (queryid) + " going onto next topology");
+  }
   
+  private static void runPartialTests(String currentQuery,
+      boolean allowDeathOfAcquires)
+  throws Exception
+  {
+    resetQEP(originalQEP);
+    System.out.println("running tests for partial ");
+    SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, ChoiceAssessorPreferenceEnum.Partial.toString());
+    
+    //run for partial 
+    for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
+    {
+      calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
+      System.out.println("running tests with " + currentNumberOfFailures + " failures");
+      double currentLifetime = 0;
+      for(int currentFailure = 1; currentFailure <= currentNumberOfFailures; currentFailure++)
+      {
+        System.out.println("running with test no" + testNo);
+        client.getQEP().getLAF().setQueryName("query" + queryid + "-" + maxNumberofFailures);
+        client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
+        currentLifetime = numberOfExectutionCycles * originalQEP.getAgendaIOT().getLength_bms(false) * currentNumberOfFailures;
+        testNo++;
+      }
+      utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.PARTIAL);
+      resetQEP(originalQEP);
+    }
+    
+  }
+
+  private static void runGlobalTests(String currentQuery, boolean allowDeathOfAcquires) 
+  throws Exception
+  {
+    originalQEP = client.getQEP();
+    System.out.println("running tests for global ");
+    SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, ChoiceAssessorPreferenceEnum.Global.toString());
+    testNo = 1;
+    for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
+    {
+      calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
+      System.out.println("running tests with " + currentNumberOfFailures + " failures");
+      double currentLifetime = 0;
+      for(int currentFailure = 1; currentFailure <= currentNumberOfFailures; currentFailure++)
+      {
+        System.out.println("running with test no" + testNo);
+        client.getQEP().getLAF().setQueryName("query" + queryid + "-"+ currentFailure + "-" + maxNumberofFailures);
+        client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
+        currentLifetime = numberOfExectutionCycles * originalQEP.getAgendaIOT().getLength_bms(false) * currentNumberOfFailures;
+        testNo++;
+      }
+      utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.GLOBAL);
+      resetQEP(originalQEP);
+    }
+    
+  }
+
   private static void resetQEP(SensorNetworkQueryPlan qep) 
   {
     SNEEController control = (SNEEController) client.controller;

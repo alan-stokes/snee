@@ -80,7 +80,8 @@ public class Adaptation implements Serializable
   
   public void addReprogrammedSite(String site)
   {
-    reprogrammingSites.add(site);
+    if(!this.deactivationSites.contains(site) && !this.activateSites.contains(site))
+      reprogrammingSites.add(site);
   }
   
   public void addRedirectedSite(String site)

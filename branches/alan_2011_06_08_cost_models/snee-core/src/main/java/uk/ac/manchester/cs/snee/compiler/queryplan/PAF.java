@@ -10,7 +10,6 @@ import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
-import uk.ac.manchester.cs.snee.operators.logical.AcquireOperator;
 import uk.ac.manchester.cs.snee.operators.logical.InputOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;

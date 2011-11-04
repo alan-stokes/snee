@@ -95,29 +95,6 @@ public class FailedNodeTimeClientUtils
     }
   }
   
-  private static void deleteFileContents(File firstOutputFolder)
-  {
-    if(firstOutputFolder.exists())
-    {
-      File[] contents = firstOutputFolder.listFiles();
-      for(int index = 0; index < contents.length; index++)
-      {
-        File delete = contents[index];
-        if(delete.isDirectory())
-          if(delete != null && delete.listFiles().length > 0)
-            deleteFileContents(delete);
-          else
-            delete.delete();
-        else
-          delete.delete();
-      }
-    }
-    else
-    {
-      firstOutputFolder.mkdir();
-    }  
-  }
-  
   public void updateRecoveryFile(int queryid) throws IOException
   {
     File folder = new File("recovery"); 

@@ -14,7 +14,7 @@ public class HeuristicSet
   private FirstNodeHeuristic phi;
   private LinkMatrexChoiceHeuristic psi;
   private PenaliseNodeHeuristic omega;
-  private LinkMatrexChoiceHeuristic choice;
+ // private LinkMatrexChoiceHeuristic choice;
   private HashMap<String, LinkMatrexChoiceHeuristic> edgeChoices = new HashMap<String, LinkMatrexChoiceHeuristic>();
 
   public HeuristicSet(SecondNodeHeuristic chi, FirstNodeHeuristic phi, LinkMatrexChoiceHeuristic psi, PenaliseNodeHeuristic omega)

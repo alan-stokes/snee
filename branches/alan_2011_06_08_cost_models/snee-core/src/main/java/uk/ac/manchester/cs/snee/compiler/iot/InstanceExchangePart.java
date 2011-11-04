@@ -507,20 +507,40 @@ public class InstanceExchangePart extends InstanceOperator{
 	  this.next = next;
 	}
 	
+	public void setPreviousExchange(InstanceExchangePart pre)
+	{
+	  this.prev = pre;
+	}
+	
 	public void setDestinitionSite(Site newDestinationSite)
 	{
 	  this.destSite = newDestinationSite;
 	  InstanceExchangePart nextPart = this.next;
-	  while(nextPart != null)
+	  while(nextPart != null && !nextPart.getDestSiteID().equals(newDestinationSite.getID()))
 	  {
 	    nextPart.setDestinitionSite(newDestinationSite);
 	  }
 	  InstanceExchangePart prePart = this.prev;
-	  while(prePart != null)
+	  while(prePart != null && !prePart.getDestSiteID().equals(newDestinationSite.getID()))
     {
 	    prePart.setDestinitionSite(newDestinationSite);
     }
 	}
 	
+	
+	public void setSourceSite(Site newSourceSite)
+  {
+    this.sourceSite = newSourceSite;
+    InstanceExchangePart nextPart = this.next;
+    while(nextPart != null && !nextPart.getSourceSiteID().equals(newSourceSite.getID()))
+    {
+      nextPart.setSourceSite(newSourceSite);
+    }
+    InstanceExchangePart prePart = this.prev;
+    while(prePart != null && !prePart.getSourceSiteID().equals(newSourceSite.getID()))
+    {
+      prePart.setSourceSite(newSourceSite);
+    }
+  }
 
 }

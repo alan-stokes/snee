@@ -284,15 +284,10 @@ public class Anaylsiser extends AutonomicManagerComponent
   	while(frameworkIterator.hasNext() && feasiable)
   	{
   	  StrategyAbstract framework = frameworkIterator.next();
-  	  if(framework.canAdaptToAll(failedNodes))
-  	  {
-  	    List<Adaptation> frameworkOutput = framework.adapt(failedNodes);
-  	    if(frameworkOutput.size() == 0)
-  	      throw new AutonomicManagerException("framework produced no adaptations");
-  	    if(frameworkOutput.size() == 0 && framework instanceof FailedNodeStrategyGlobal)
-  	      feasiable = false;
-  	    adapatations.addAll(frameworkOutput);
-  	  }
+  	  List<Adaptation> frameworkOutput = framework.adapt(failedNodes);
+  	  if(frameworkOutput.size() == 0 && framework instanceof FailedNodeStrategyGlobal)
+  	    feasiable = false;
+  	  adapatations.addAll(frameworkOutput);
   	}
     return adapatations;
   }

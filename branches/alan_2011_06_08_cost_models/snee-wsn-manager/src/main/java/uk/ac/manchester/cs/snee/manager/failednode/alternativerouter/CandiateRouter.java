@@ -17,7 +17,6 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
-import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
@@ -293,9 +292,9 @@ public class CandiateRouter extends Router
         newRoutingTree.getSiteTree().addNode(fragmentSite);
         treeSite = fragmentSite;
       }
-      
+      //connect inputs together
       connectInputs(fragmentSite, newRoutingTree, treeSite);
-      
+      //connect outputs together
       connectOutputs(fragmentSite, newRoutingTree, treeSite);
     }
   }
@@ -319,6 +318,7 @@ public class CandiateRouter extends Router
         //already in the tree. if is link to tree node
         Site fragmentOutputSite = (Site) fragmentSite.getOutput(0);
         Site treeOutputSite = newRoutingTree.getSite(fragmentOutputSite.getID());
+        treeSite.clearOutputs();
         if(treeOutputSite == null)
         {
           treeSite.addOutput(fragmentOutputSite);
@@ -338,20 +338,20 @@ public class CandiateRouter extends Router
       {
         // if the same node, nothing to worry about, if different. connect fragments output as a 
         // input (assuming not already within the tree and has a output).
-        if(!treeSite.getOutput(0).getID().equals(fragmentSite.getOutput(0).getID()))
+        Site fragmentOutputSite = (Site) fragmentSite.getOutput(0);
+        if(!treeSite.getOutput(0).getID().equals(fragmentOutputSite.getID()))
         {
-          Site fragmentOutputSite = (Site) fragmentSite.getOutput(0);
           Site treeOutputSite = newRoutingTree.getSite(fragmentOutputSite.getID());
           if(treeOutputSite != null && treeOutputSite.getOutDegree() == 0 && 
              !newRoutingTree.getRoot().getID().equals(treeOutputSite.getID()))
           {
             treeSite.addInput(treeOutputSite);
+            treeOutputSite.clearOutputs();
             treeOutputSite.addOutput(treeSite);
           }
         }
         else
         {
-          Site fragmentOutputSite = (Site) fragmentSite.getOutput(0);
           Site treeOutputSite = newRoutingTree.getSite(fragmentOutputSite.getID());
           treeSite.clearOutputs();
           treeSite.addOutput(treeOutputSite);
@@ -385,6 +385,7 @@ public class CandiateRouter extends Router
           treeSite.removeInput(fragmentInputSite.getID());
           treeSite.addInput(fragmentInputSite);
         }
+        fragmentInputSite.clearOutputs();
         fragmentInputSite.addOutput(treeSite);
       }
       else
@@ -399,6 +400,7 @@ public class CandiateRouter extends Router
             treeSite.removeInput(treeInputSite.getID());
             treeSite.addInput(treeInputSite);
           }
+          treeInputSite.clearOutputs();
           treeInputSite.addOutput(treeSite);
         }
       }
@@ -723,7 +725,6 @@ public class CandiateRouter extends Router
         if(failedNodes.contains(child.getID()) && !alreadyInLink.contains(child.getID()))
         {
           alreadyInLink.add(child.getID());
-          failedNodeLinkedList.add(currentLink, child.getID());
           checkNodesChildrenAndParent(failedNodeLinkedList, alreadyInLink, child, failedNodes, currentLink);
         }
       }

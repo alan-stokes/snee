@@ -161,6 +161,7 @@ public class InstanceFragment implements Serializable
   public final void addOperator(final InstanceOperator op) 
   {
     this.operators.add(op);
+    op.setCorraspondingFragment(this);
   }
 
   /**

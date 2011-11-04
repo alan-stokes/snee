@@ -353,6 +353,7 @@ public class IOTUtils
       out.println("rankdir=\"BT\";");
       out.println("compound=\"true\";");
       //itterate though sites in routing tree (depth to shallow)
+      //Iterator<Site> siteIterator = iot.siteIterator();
       Iterator<Site> siteIterator = iot.getRT().siteIterator(TraversalOrder.POST_ORDER);
       while(siteIterator.hasNext())
       {//for each site do blurb and then go though fragments
