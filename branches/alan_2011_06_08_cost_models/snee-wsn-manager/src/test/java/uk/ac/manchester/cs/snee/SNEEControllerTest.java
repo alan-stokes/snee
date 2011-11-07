@@ -165,6 +165,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	ExpressionException, OptimizationException, ParserException,
 	SNEEConfigurationException, IOException, CodeGenerationException 
 	{
+		_snee.resetQueryId();
 		assertEquals(1, _snee.addQuery(mQuery, 
 			"src/test/resources/etc/query-parameters.xml"));
 	}

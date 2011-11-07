@@ -105,7 +105,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	    //TODO remove to allow full run
 	    while(queryIterator.hasNext() && queryid <= max)
 	    {
-	      recursiveRun(queryIterator, duration, queryParams, false, failedOutput);
+	      recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
       }
 	    
 	    queryIterator = queries.iterator();

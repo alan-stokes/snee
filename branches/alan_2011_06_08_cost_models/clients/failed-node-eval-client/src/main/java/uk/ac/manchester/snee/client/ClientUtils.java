@@ -25,7 +25,7 @@ public class ClientUtils
   private Adaptation global = null;
   private Adaptation partial = null;
   private Adaptation local = null;
-  //private Adaptation original = null;
+  private Adaptation original = null;
   private Plotter plot = null;
   
   public ClientUtils()
@@ -132,7 +132,7 @@ public class ClientUtils
       else if(ad.getOverallID().contains("Local"))
         local = ad;
       else if(ad.getOverallID().contains("Orginal"))
-      {/*original = ad;*/}
+      {original = ad;}
       else
         throw new NoSuchElementException("there is no overall id");
     } 
@@ -160,6 +160,15 @@ public class ClientUtils
           adapts.add(ad);
         }     
       }
+      this.sortout(adapts);
+      adapts.clear();
+      adapts.add(this.original);
+      if(local != null)
+        adapts.add(local);
+      if(partial != null)
+        adapts.add(partial);
+      if(global != null)
+        adapts.add(global);
       return adapts;
     }
     catch(Exception e)
