@@ -326,9 +326,12 @@ public class CandiateRouter extends Router
         }
         else
         {
-          treeSite.addOutput(treeOutputSite);
-          if(!contains(treeSite, treeOutputSite.getInputsList()))
-          treeOutputSite.addInput(treeSite);
+          if(treeOutputSite.getOutDegree() == 0)
+          {
+            treeSite.addOutput(treeOutputSite);
+            if(!contains(treeSite, treeOutputSite.getInputsList()))
+            treeOutputSite.addInput(treeSite);
+          }
         }   
       }
     }

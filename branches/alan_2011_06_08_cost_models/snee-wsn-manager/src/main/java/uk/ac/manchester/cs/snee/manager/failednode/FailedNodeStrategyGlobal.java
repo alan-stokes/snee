@@ -154,7 +154,8 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
       throw new SNEECompilerException(e);
     }
     
-    boolean success = assessQEPsAgendas(this.currentQEP.getIOT(), newIOT, this.currentQEP.getAgendaIOT(), newAgendaIOT, newAgenda, false, adapt, failedNodes, routingTree);
+    boolean success = assessQEPsAgendas(this.currentQEP.getIOT(), newIOT, this.currentQEP.getAgendaIOT(),
+                                        newAgendaIOT, newAgenda, false, adapt, failedNodes, routingTree, true);
     adapt.setFailedNodes(failedNodes);
     
     if(success)

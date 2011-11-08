@@ -149,29 +149,43 @@ public class IOTUtils
     DAF cDAF = faf;
     
     Iterator<InstanceOperator> opInstIter = iot.treeIterator(TraversalOrder.POST_ORDER);
-    while (opInstIter.hasNext()) {
+    while (opInstIter.hasNext()) 
+    {
       InstanceOperator opInst = opInstIter.next();
-      //have to get the cloned copy in compactDaf...
-      SensornetOperator op = (SensornetOperator)cDAF.getOperatorTree().getNode(opInst.getSensornetOperator().getID());
-
-      Site sourceSite = (Site)cDAF.getRT().getSite(opInst.getSite().getID());
-      Fragment sourceFrag = op.getContainingFragment();
-      
-      if (op.getOutDegree() > 0) {
-        SensornetOperator parentOp = op.getParent();
-
-        if (parentOp instanceof SensornetExchangeOperator) {
-
-          InstanceOperator paOpInst = (InstanceOperator)opInst.getOutput(0);
-          Site destSite = (Site)cDAF.getRT().getSite(paOpInst.getSite().getID());
-          Fragment destFrag = ((SensornetOperator)cDAF.getOperatorTree().getNode(((InstanceOperator)opInst.getOutput(0)).getSensornetOperator().getID())).getContainingFragment();
-          final Path path = cDAF.getRT().getPath(sourceSite.getID(), destSite.getID());
-          
+      if(!(opInst instanceof InstanceExchangePart))
+      {
+        //have to get the cloned copy in compactDaf...
+        SensornetOperator op = (SensornetOperator)cDAF.getOperatorTree().getNode(opInst.getSensornetOperator().getID());
+  
+        Site sourceSite = (Site)cDAF.getRT().getSite(opInst.getSite().getID());
+        Fragment sourceFrag = op.getContainingFragment();
+        
+        if (op.getOutDegree() > 0) 
+        {
+          SensornetOperator parentOp = op.getParent();
+  
+          if (parentOp instanceof SensornetExchangeOperator) 
+          {
+  
+            SensornetExchangeOperator exop = (SensornetExchangeOperator) parentOp;
+            Fragment destFrag = exop.getDestFragment();
+            InstanceOperator parent = (InstanceOperator)opInst.getOutput(0);
+            while(parent.getSensornetOperator() instanceof SensornetExchangeOperator)
+            {
+              parent = (InstanceOperator)parent.getOutput(0);
+            }
+            Site destSite = parent.getSite();
+            
+            final Path path = cDAF.getRT().getPath(sourceSite.getID(), destSite.getID());
+            
+            cDAF.placeFragment(sourceFrag, sourceSite);
+            cDAF.linkFragments(sourceFrag, sourceSite, destFrag, destSite, path);
+          }       
+        } 
+        else 
+        {  
           cDAF.placeFragment(sourceFrag, sourceSite);
-          cDAF.linkFragments(sourceFrag, sourceSite, destFrag, destSite, path);
-        }       
-      } else {  
-        cDAF.placeFragment(sourceFrag, sourceSite);
+        }
       }
     }
     return cDAF;

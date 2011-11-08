@@ -67,7 +67,7 @@ public class Tree extends Graph {
 			for (int childIndex = 0; childIndex < node.getInDegree(); 
 			childIndex++) {
 				Node c = (Node) node.getInput(childIndex);
-				logger.fatal(c.getID());
+			//	logger.fatal(c.getID());
 				this.updateNodesAndEdgesColls(c);
 				EdgeImplementation e = new EdgeImplementation(this
 						.generateEdgeID(c.getID(), node.getID()), c.getID(), node

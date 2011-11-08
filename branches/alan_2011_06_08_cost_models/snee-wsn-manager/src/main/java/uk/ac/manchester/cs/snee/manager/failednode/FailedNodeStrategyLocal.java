@@ -32,6 +32,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 
 /**
  * 
@@ -113,14 +114,17 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     {
       Iterator<Node> secondNodeIterator = secondNetworkNodes.iterator();
       Node clusterHead = firstNodeIterator.next();
-      while(secondNodeIterator.hasNext())
+      if(clusterHead.getOutDegree() != 0)
       {
-        Node equilvientNode = secondNodeIterator.next();
-        if(LocalClusterEquivalenceRelation.isEquivalent(clusterHead, equilvientNode, currentQEP, network))
+        while(secondNodeIterator.hasNext())
         {
-          clusters.addClusterNode(clusterHead.getID(), equilvientNode.getID());
-          //add sites fragments and operaotrs onto equivlent node
-          transferSiteQEP(currentQEP, clusterHead, equilvientNode);
+          Node equilvientNode = secondNodeIterator.next();
+          if(LocalClusterEquivalenceRelation.isEquivalent(clusterHead, equilvientNode, currentQEP, network))
+          {
+            clusters.addClusterNode(clusterHead.getID(), equilvientNode.getID());
+            //add sites fragments and operaotrs onto equivlent node
+            transferSiteQEP(currentQEP, clusterHead, equilvientNode);
+          }
         }
       }
     }
@@ -167,21 +171,24 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     {
       InstanceOperator clonedRootOp = clonedRootOperatorIterator.next();
       InstanceOperator rootOp = rootOperatorIterator.next();
+      if(!(rootOp.getSensornetOperator() instanceof SensornetDeliverOperator))
+      {
+        qep.getIOT().assign(clonedRootOp, equilvientSite);
+        InstanceExchangePart clonedPart = (InstanceExchangePart) clonedRootOp; 
+        equilvientSite.addInstanceExchangePart(clonedPart);
+        InstanceExchangePart part = (InstanceExchangePart) rootOp;
+        
+        InstanceExchangePart outPart = part.getNext();
+        clonedPart.setNextExchange(outPart);
+        clonedPart.clearOutputs();
+        clonedPart.addOutput(outPart);
+  
+        clonedPart.setDestFrag(part.getDestFrag());
+        clonedPart.getSourceFrag().setSite(equilvientSite); 
+        rootOp = clonedPart.getSourceFrag().getRootOperator();
+      }
       
-      qep.getIOT().assign(clonedRootOp, equilvientSite);
-      InstanceExchangePart clonedPart = (InstanceExchangePart) clonedRootOp; 
-      equilvientSite.addInstanceExchangePart(clonedPart);
-      InstanceExchangePart part = (InstanceExchangePart) rootOp;
-      
-      InstanceExchangePart outPart = part.getNext();
-      clonedPart.setNextExchange(outPart);
-      clonedPart.clearOutputs();
-      clonedPart.addOutput(outPart);
-
-      clonedPart.setDestFrag(part.getDestFrag());
-      clonedPart.getSourceFrag().setSite(equilvientSite); 
-
-      sortOutChildren(clonedPart.getSourceFrag().getRootOperator(), equilvientSite, clusterHeadSite, qep);
+      sortOutChildren(rootOp, equilvientSite, clusterHeadSite, qep);
       sortOutFragments(clonedRootOp, equilvientSite, qep, clonedRootOp.getCorraspondingFragment());
     }  
     
@@ -305,9 +312,12 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
       }
       else
       {
-        opOutput = (InstanceOperator) op.getOutput(0);
-        if(opOutput.getSite().getID().equals(clusterHeadSite.getID()))
-          reducedOperators = removeFromCollection(op, reducedOperators);
+        if(op.getOutDegree() != 0)
+        {
+          opOutput = (InstanceOperator) op.getOutput(0);
+          if(opOutput.getSite().getID().equals(clusterHeadSite.getID()))
+            reducedOperators = removeFromCollection(op, reducedOperators);
+        }
       }
     }
     return reducedOperators;
@@ -499,56 +509,62 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   {
     try
     {
-    System.out.println("Running Failed Node FrameWork Local");
-    List<Adaptation> adapatation = new ArrayList<Adaptation>();
-    Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
-    Adaptation adapt = new Adaptation(currentQEP, StrategyIDEnum.FailedNodeLocal, 1);
-    
-    IOT clonedIOT = cloner.deepClone(currentQEP.getIOT());
-    RT currentRoutingTree = clonedIOT.getRT();
-    while(failedNodeIDsIterator.hasNext())
-    {
-      String failedNodeID = failedNodeIDsIterator.next();
-      String equivilentNodeID = retrieveNewClusterHead(failedNodeID);
-      //sort out adaptation data structs.
-      adapt.addActivatedSite(equivilentNodeID);
-      Iterator<Node> redirectedNodesIterator = this.currentQEP.getRT().getSite(failedNodeID).getInputsList().iterator();
-      while(redirectedNodesIterator.hasNext())
+      System.out.println("Running Failed Node FrameWork Local");
+      List<Adaptation> adapatation = new ArrayList<Adaptation>();
+      if(this.canAdaptToAll(failedNodeIDs))
       {
-        adapt.addRedirectedSite(redirectedNodesIterator.next().getID());
+        Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
+        Adaptation adapt = new Adaptation(currentQEP, StrategyIDEnum.FailedNodeLocal, 1);
+      
+        IOT clonedIOT = cloner.deepClone(currentQEP.getIOT());
+        RT currentRoutingTree = clonedIOT.getRT();
+        while(failedNodeIDsIterator.hasNext())
+        {
+          String failedNodeID = failedNodeIDsIterator.next();
+          String equivilentNodeID = retrieveNewClusterHead(failedNodeID);
+          //sort out adaptation data structs.
+          adapt.addActivatedSite(equivilentNodeID);
+          Iterator<Node> redirectedNodesIterator = this.currentQEP.getRT().getSite(failedNodeID).getInputsList().iterator();
+          while(redirectedNodesIterator.hasNext())
+          {
+            adapt.addRedirectedSite(redirectedNodesIterator.next().getID());
+          }
+          //rewire routing tree
+          rewireRoutingTree(failedNodeID, equivilentNodeID, currentRoutingTree);
+          //rewire children
+          rewireNodes(clonedIOT, failedNodeID, equivilentNodeID);
+        }
+        new IOTUtils(clonedIOT, this.currentQEP.getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iot", "iot with eqiv nodes", true);
+      
+        try
+        {
+          IOT newIOT = clonedIOT;
+          newIOT.setID("new iot");
+          newIOT.setDAF(new IOTUtils(newIOT, currentQEP.getCostParameters()).convertToDAF());
+        
+          //run new iot though when scheduler and locate changes
+          AgendaIOT newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
+          Agenda newAgenda = doOldSNWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
+          //output new and old agendas
+          new FailedNodeStrategyLocalUtils(this).outputAgendas(newAgendaIOT, currentQEP.getAgendaIOT(), 
+                                                               currentQEP.getIOT(), newIOT, localFolder);
+        
+          boolean success = assessQEPsAgendas(currentQEP.getIOT(), newIOT, currentQEP.getAgendaIOT(), newAgendaIOT, newAgenda, 
+                                            false, adapt, failedNodeIDs, currentRoutingTree, false);
+        
+          adapt.setFailedNodes(failedNodeIDs);
+          if(success)
+            adapatation.add(adapt);
+          return adapatation;
+        }
+        catch (Exception e)
+        {
+          e.printStackTrace();
+        }
+        return adapatation;
       }
-      //rewire routing tree
-      rewireRoutingTree(failedNodeID, equivilentNodeID, currentRoutingTree);
-      //rewire children
-      rewireNodes(clonedIOT, failedNodeID, equivilentNodeID);
-    }
-    new IOTUtils(clonedIOT, this.currentQEP.getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iot", "iot with eqiv nodes", true);
-    
-    try
-    {
-      IOT newIOT = clonedIOT;
-      newIOT.setID("new iot");
-      
-      //run new iot though when scheduler and locate changes
-      AgendaIOT newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
-      Agenda newAgenda = doOldSNWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
-      //output new and old agendas
-      new FailedNodeStrategyLocalUtils(this).outputAgendas(newAgendaIOT, currentQEP.getAgendaIOT(), 
-                                                           currentQEP.getIOT(), newIOT, localFolder);
-      
-      boolean success = assessQEPsAgendas(currentQEP.getIOT(), newIOT, currentQEP.getAgendaIOT(), newAgendaIOT, newAgenda, 
-                                          false, adapt, failedNodeIDs, currentRoutingTree);
-      
-      adapt.setFailedNodes(failedNodeIDs);
-      if(success)
-        adapatation.add(adapt);
-      return adapatation;
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
-    }
-    return adapatation;
+      else
+        return adapatation;
     }
     catch(Exception e)
     {
@@ -556,7 +572,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
       System.out.println(e.getMessage());
       e.printStackTrace();
       System.exit(0);
-      return null;
+      return null; 
     }
   }
 }

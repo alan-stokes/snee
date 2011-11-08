@@ -85,8 +85,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
         SNEEFailedNodeEvalClientUsingInNetworkSource.class.
         getClassLoader().getResource("etc/common/log4j.properties"));   
 	  
-		Long duration = Long.valueOf("120");
-		String queryParams = "etc/query-parameters.xml";
+    Long duration = Long.valueOf("120");
+	  String queryParams = "etc/query-parameters.xml";
 		BufferedWriter failedOutput; 
 		Iterator<String> queryIterator;
 		
@@ -108,11 +108,11 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	      recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
       }
 	    
-	    queryIterator = queries.iterator();
+	    /*queryIterator = queries.iterator();
 	    while(queryIterator.hasNext() &&  queryid <= max)
       {
         recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
-      }
+      }*/
 	    failedOutput.write("\\end{document}");
 	    failedOutput.flush();
 	    failedOutput.close();  

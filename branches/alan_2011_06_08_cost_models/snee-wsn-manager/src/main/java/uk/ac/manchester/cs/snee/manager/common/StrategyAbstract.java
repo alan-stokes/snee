@@ -127,11 +127,12 @@ public abstract class StrategyAbstract implements Serializable
   protected boolean assessQEPsAgendas(IOT oldIOT, IOT newIOT, AgendaIOT oldAgenda, 
                                    AgendaIOT newAgendaIOT, Agenda newAgenda, boolean timePinned,
                                    Adaptation adaptation, ArrayList<String> failedNodes,
-                                   RT routingTree) 
+                                   RT routingTree, boolean checkIOT) 
   throws SchemaMetadataException, TypeMappingException
   {
   //analysis newIOT for interesting nodes
-    checkIOT(newIOT, oldIOT, failedNodes, adaptation);
+    if(checkIOT)
+      checkIOT(newIOT, oldIOT, failedNodes, adaptation);
     //check if agenda agrees to constraints.
     boolean success = 
       checkAgendas(oldAgenda, newAgendaIOT, newIOT, oldIOT, failedNodes, adaptation, timePinned);

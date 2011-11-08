@@ -232,7 +232,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
       //output new and old agendas
       new FailedNodeStrategyPartialUtils(this).outputAgendas(newAgendaIOT, currentQEP.getAgendaIOT(), this.currentQEP.getIOT(), newIOT, choiceFolder);
       boolean success = assessQEPsAgendas(this.currentQEP.getIOT(), newIOT, this.currentQEP.getAgendaIOT(), newAgendaIOT, newAgenda,
-                                          timePinned, currentAdapatation, failedNodes, routingTree);
+                                          timePinned, currentAdapatation, failedNodes, routingTree, true);
       currentAdapatation.setFailedNodes(failedNodes);
       if(success)
         totalAdapatations.add(currentAdapatation);

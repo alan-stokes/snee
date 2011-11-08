@@ -217,8 +217,12 @@ public class ChoiceAssessor implements Serializable
       imageGenerator.compileNesCCode(adaptFolder.toString()+ sep);
       compiledAlready = true;
     }
-    File moteQEP = new File(adaptFolder.toString() + sep + "avrora_mica2_t2" + sep + "mote" + reprogrammedSite + ".elf");
-    Long fileSize = moteQEP.length();
+    File moteQEP = new File(adaptFolder.toString() + sep + "avrora_micaz_t2" + sep + "mote" + reprogrammedSite + ".elf");
+    Long fileSize = new Long(0);
+    if(moteQEP.exists())
+      fileSize = moteQEP.length();
+    else
+      throw new IOException("cant find image");
     CostParameters parameters = _metadataManager.getCostParameters();
     int packetSize = parameters.getDeliverPayloadSize();
     Long packets = fileSize / packetSize;

@@ -468,6 +468,7 @@ public class IOT extends SNEEAlgebraicForm
     for (int n = 0; n < root.getInDegree(); n++) 
     {
         Node input = root.getInput(n);
+        logger.fatal(input.getID());
         this.doSiteIterator((Site)input, nodeList, order);
     }
   

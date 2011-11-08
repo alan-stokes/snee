@@ -444,7 +444,7 @@ public class Plotter implements Serializable
         commandArg[0] = location;
         commandArg[1] = "topologies";
         commandArg[2] = "adaptation_cost_(J)";
-        commandArg[3] = new Integer(queryID+1).toString();
+        commandArg[3] = new Integer(queryID+3).toString();
         commandArg[4] = new Double(this.energyYMax).toString();
         commandArg[5] = outputFolder.getAbsolutePath() + sep + "energy";
         commandArg[6] = energyPlotFile.getAbsolutePath();
@@ -516,7 +516,7 @@ public class Plotter implements Serializable
         commandArg[0] = location;
         commandArg[1] = "topologies";
         commandArg[2] = "adaptation_cost_(J)";
-        commandArg[3] = new Integer(queryID+1).toString();
+        commandArg[3] = new Integer(queryID+3).toString();
         commandArg[4] = new Double(this.energyYMax).toString();
         commandArg[5] = outputFolder.getAbsolutePath() + sep + "energy";
         commandArg[6] = energyPlotFile.getAbsolutePath();
