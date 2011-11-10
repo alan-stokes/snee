@@ -72,6 +72,13 @@ public class RadioLink extends EdgeImplementation implements Edge {
     public RadioLink(final String id, final String sourceID, final String targetID) {
     	super(id, sourceID, targetID);
     }
+    
+    public RadioLink(RadioLink clone) {
+      super(clone.getID(), clone.getSourceID(), clone.getDestID());
+      this.setEnergyCost(clone.getEnergyCost());
+      this.setLatencyCost(clone.getLatencyCost());
+      this.setRadioLossCost(clone.getRadioLossCost());
+    }
 
     /**
      * Setter method for the radioLossCost.

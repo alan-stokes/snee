@@ -246,13 +246,15 @@ public class ChoiceAssessor implements Serializable
     {
       String reprogrammedSite = reporgrammedSitesIterator.next();
       Long packets = calculateNumberOfPacketsForSiteQEP(adapt, reprogrammedSite);
-      calculateEnergyCostForDataHops(adapt, reprogrammedSite, packets);
+      double overallCost = calculateEnergyCostForDataHops(adapt, reprogrammedSite, packets);
       
       //energy usage of the reprogrammed site by flash writing
       //voltage * getCycles(mode) * ampere[mode] * cycleTime;
       double costPerByteWritten = AvroraCostParameters.VOLTAGE * AvroraCostParameters.FlashWRITECYCLES * 
               AvroraCostParameters.CYCLETIME * AvroraCostParameters.FlashWRITEAMPERE;
       runningSites.get(reprogrammedSite).addToCurrentAdaptationEnergyCost((packets * parameters.getDeliverPayloadSize() * costPerByteWritten));
+      overallCost += (packets * parameters.getDeliverPayloadSize() * costPerByteWritten);
+      System.out.println("the overall cost for reprogrmaming node " + reprogrammedSite + " is " + overallCost);
     }
     
     //do for each of redirect, deact, act site
@@ -312,11 +314,12 @@ public class ChoiceAssessor implements Serializable
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    */
-  private void calculateEnergyCostForDataHops(Adaptation adapt, String reprogrammedSite, Long packets) 
+  private double calculateEnergyCostForDataHops(Adaptation adapt, String reprogrammedSite, Long packets) 
   throws 
   OptimizationException, SchemaMetadataException, 
   TypeMappingException 
   {
+    double overallCost = 0.0;
     RT routingTree = adapt.getNewQep().getRT();
     CostParameters parameters = _metadataManager.getCostParameters();
     Site sink = routingTree.getRoot();
@@ -332,11 +335,13 @@ public class ChoiceAssessor implements Serializable
         CommunicationTask destTask = new CommunicationTask(new Long(0), dest, source, CommunicationTask.RECEIVE, packets, parameters);
         double sourceCost = adapt.getNewQep().getAgendaIOT().evaluateCommunicationTask(sourceTask, packets);
         double destCost = adapt.getNewQep().getAgendaIOT().evaluateCommunicationTask(destTask, packets);
+        overallCost += sourceCost + destCost;
         runningSites.get(source.getID()).addToCurrentAdaptationEnergyCost(sourceCost);
         runningSites.get(dest.getID()).addToCurrentAdaptationEnergyCost(destCost);
         dest = source;
       }
     }
+     return overallCost;
   }
 
 /**

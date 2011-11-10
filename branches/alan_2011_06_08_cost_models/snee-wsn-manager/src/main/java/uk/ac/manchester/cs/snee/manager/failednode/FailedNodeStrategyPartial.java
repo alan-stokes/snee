@@ -262,7 +262,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
   SchemaMetadataException, RouterException
   {
     Topology network = this.getWsnTopology();
-    CandiateRouter router = new CandiateRouter(network, outputFolder);
+    CandiateRouter router = new CandiateRouter(network, outputFolder, paf, _metadata);
     return genereateRouteingTrees(oldRoutingTree, failedNodes, depinnedNodes, "", 
                             numberOfRoutingTreesToWorkOn, router, previousDidntMeetQoSExpectations);
   }

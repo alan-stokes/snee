@@ -23,13 +23,17 @@ import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.manager.failednode.metasteiner.MetaSteinerTree;
 import uk.ac.manchester.cs.snee.manager.failednode.metasteiner.MetaSteinerTreeException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyUtils;
 
 public class CandiateRouter extends Router
 {
   private String sep = System.getProperty("file.separator");
   private Topology network;
+  private PAF paf;
+  private SourceMetadataAbstract _metadataManager;
   private Cloner cloner;
   private File failedChainMain;
   private File outputFolder;
@@ -44,11 +48,14 @@ public class CandiateRouter extends Router
    * @throws NumberFormatException
    * @throws SNEEConfigurationException
    */
-  public CandiateRouter(Topology network, File outputFolder) throws NumberFormatException,
-      SNEEConfigurationException
+  public CandiateRouter(Topology network, File outputFolder, PAF paf, 
+                        SourceMetadataAbstract _metadataManager) 
+  throws NumberFormatException, SNEEConfigurationException
   {
     super();
-    this.network = network;   
+    this.network = network;  
+    this.paf = paf;
+    this._metadataManager = _metadataManager;
     //Copy connectivity graph so that original never touched.
     cloner = new Cloner();
     cloner.dontClone(Logger.class);
@@ -192,8 +199,12 @@ public class CandiateRouter extends Router
     {
     RT clonedOldRoutingTree = cloner.deepClone(oldRoutingTree);
     removeFailedNodesFromOldRT(clonedOldRoutingTree, failedNodes, disconnectedNodes);
+    //setup patched rotuing tree as a topology, so that routing can be operated over it to generate true tree
+    Topology oldRoutingTreeAsToplogy = new Topology("tempRoutingTopology", true);
+    oldRoutingTreeAsToplogy.mergeGraphsUsingSites(clonedOldRoutingTree.getSiteTree(), network);
+    //merge patch trees together to topolgoy tree.
     ArrayList<Integer> keys = new ArrayList<Integer>(failedNodeToRoutingTreeMapping.keySet());
-    mergeRoutingTreeFragmentsRecursively(keys, failedNodeToRoutingTreeMapping, clonedOldRoutingTree,
+    mergeRoutingTreeFragmentsRecursively(keys, failedNodeToRoutingTreeMapping, oldRoutingTreeAsToplogy,
                                          newRoutingTrees, 0);
     return newRoutingTrees;
     }
@@ -214,10 +225,15 @@ public class CandiateRouter extends Router
    * @param newRoutingTrees
    * @param i 
    * @throws OptimizationException 
+   * @throws SNEEConfigurationException 
+   * @throws RouterException 
+   * @throws NumberFormatException 
    */
   private void mergeRoutingTreeFragmentsRecursively(
       ArrayList<Integer> keys, HashMapList<Integer, Tree> failedNodeToRoutingTreeMapping, 
-      RT fragmentedTree, ArrayList<RT> newRoutingTrees, int position) throws OptimizationException
+      Topology oldRoutingTreeAsToplogy, ArrayList<RT> newRoutingTrees, int position) 
+  throws OptimizationException, NumberFormatException, 
+  RouterException, SNEEConfigurationException
   {
     
     if(position < keys.size() -1)
@@ -226,10 +242,9 @@ public class CandiateRouter extends Router
       Iterator<Tree> treeFragmentIterator = routingTreeFragments.iterator();
       while(treeFragmentIterator.hasNext())
       {
-        RT clonedFragmentedTree = cloner.deepClone(fragmentedTree);
         Tree treeFragment = treeFragmentIterator.next();
-        connectsRoutingFragmentToTree(clonedFragmentedTree, treeFragment);
-        mergeRoutingTreeFragmentsRecursively(keys, failedNodeToRoutingTreeMapping, clonedFragmentedTree,
+        oldRoutingTreeAsToplogy.mergeGraphsUsingSites(treeFragment, network);
+        mergeRoutingTreeFragmentsRecursively(keys, failedNodeToRoutingTreeMapping, oldRoutingTreeAsToplogy,
                                              newRoutingTrees, position+1);
       }
     }
@@ -239,188 +254,21 @@ public class CandiateRouter extends Router
       Iterator<Tree> treeFragmentIterator = routingTreeFragments.iterator();
       while(treeFragmentIterator.hasNext())
       {
-        RT clonedFragmentedTree = cloner.deepClone(fragmentedTree);
         Tree treeFragment = treeFragmentIterator.next();
-        connectsRoutingFragmentToTree(clonedFragmentedTree, treeFragment);
-        clonedFragmentedTree.getSiteTree().updateNodesAndEdgesColls(clonedFragmentedTree.getRoot());
-        removeRedundantNodes(clonedFragmentedTree);
-        clonedFragmentedTree.getSiteTree().updateNodesAndEdgesColls(clonedFragmentedTree.getRoot());
-        newRoutingTrees.add(clonedFragmentedTree);
+        oldRoutingTreeAsToplogy.mergeGraphsUsingSites(treeFragment, network);
+        try
+        {
+          new TopologyUtils(oldRoutingTreeAsToplogy).exportAsDOTFile("routeTop", true);
+        }
+        catch (SchemaMetadataException e)
+        {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+        RT newTree = new Router().doRouting(paf, "newTree", oldRoutingTreeAsToplogy, _metadataManager);
+        newRoutingTrees.add(newTree);
       }
     }   
-  }
-
-  /**
-   * goes though the tree looking for nodes that are tree nodes but not a source node. 
-   * If any are located, they are removed.
-   * @param clonedFragmentedTree
-   * @throws OptimizationException 
-   */
-  private void removeRedundantNodes(RT newTree) throws OptimizationException
-  {
-    Iterator<Site> siteIterator = newTree.siteIterator(TraversalOrder.POST_ORDER);
-    while(siteIterator.hasNext())
-    {
-      Site site = siteIterator.next();
-      if(site.isLeaf() && !site.isSource())
-      {
-        Site outputSite = (Site) site.getOutput(0);
-        outputSite.removeInput(site);
-        newTree.getSiteTree().removeNodeWithoutLinkage(site);
-      }
-    }
-  }
-
-  /**
-   * connects the nodes within the fragment to the routing tree keeping inputs and outputs 
-   * in a valid tree structure
-   * @param newRoutingTree
-   * @param choice
-   */
-  private void connectsRoutingFragmentToTree(RT newRoutingTree, Tree choice)
-  {
-   
-    Iterator<Node> fragmentIterator = choice.nodeIterator(TraversalOrder.PRE_ORDER);
-    //go though each node from the fragment linking it to the tree if needed
-    while(fragmentIterator.hasNext())
-    {
-      Site fragmentSite = (Site) fragmentIterator.next();
-      Site treeSite = newRoutingTree.getSite(fragmentSite.getID());
-      //if no node in tree, add to tree and set up node for connections
-      if(treeSite == null)
-      {
-        newRoutingTree.getSiteTree().addNode(fragmentSite);
-        treeSite = fragmentSite;
-      }
-      //connect inputs together
-      connectInputs(fragmentSite, newRoutingTree, treeSite);
-      //connect outputs together
-      connectOutputs(fragmentSite, newRoutingTree, treeSite);
-    }
-  }
-
-  /**
-   * connetcs the outputsw of a fragment node to a tree node
-   * @param fragmentSite
-   * @param newRoutingTree
-   * @param treeSite
-   */
-  private void connectOutputs(Site fragmentSite, RT newRoutingTree,
-      Site treeSite)
-  {
-  //go though output, if node has a output, and its a different output, connect the output as a input.
-    if(treeSite.getOutDegree() == 0)
-    {
-      //check that the fragment site has an output either
-      if(fragmentSite.getOutDegree() != 0)
-      {
-        //if no output node, check that the fragment output node is not 
-        //already in the tree. if is link to tree node
-        Site fragmentOutputSite = (Site) fragmentSite.getOutput(0);
-        Site treeOutputSite = newRoutingTree.getSite(fragmentOutputSite.getID());
-        treeSite.clearOutputs();
-        if(treeOutputSite == null)
-        {
-          treeSite.addOutput(fragmentOutputSite);
-          fragmentOutputSite.addInput(treeSite);
-        }
-        else
-        {
-          if(treeOutputSite.getOutDegree() == 0)
-          {
-            treeSite.addOutput(treeOutputSite);
-            if(!contains(treeSite, treeOutputSite.getInputsList()))
-            treeOutputSite.addInput(treeSite);
-          }
-        }   
-      }
-    }
-    else
-    {
-      if(fragmentSite.getOutDegree() != 0)
-      {
-        // if the same node, nothing to worry about, if different. connect fragments output as a 
-        // input (assuming not already within the tree and has a output).
-        Site fragmentOutputSite = (Site) fragmentSite.getOutput(0);
-        if(!treeSite.getOutput(0).getID().equals(fragmentOutputSite.getID()))
-        {
-          Site treeOutputSite = newRoutingTree.getSite(fragmentOutputSite.getID());
-          if(treeOutputSite != null && treeOutputSite.getOutDegree() == 0 && 
-             !newRoutingTree.getRoot().getID().equals(treeOutputSite.getID()))
-          {
-            treeSite.addInput(treeOutputSite);
-            treeOutputSite.clearOutputs();
-            treeOutputSite.addOutput(treeSite);
-          }
-        }
-        else
-        {
-          Site treeOutputSite = newRoutingTree.getSite(fragmentOutputSite.getID());
-          treeSite.clearOutputs();
-          treeSite.addOutput(treeOutputSite);
-        }
-      }
-    }
-  }
-
-  /**
-   * connects the inputs of a fragment node to a tree node
-   * @param fragmentSite
-   * @param newRoutingTree
-   * @param treeSite
-   */
-  private void connectInputs(Site fragmentSite, RT newRoutingTree, Site treeSite)
-  {
-    //go though all inputs, if the input node already exists in the tree and has an output, do not link to it.
-    ArrayList<Node> inputList = new ArrayList<Node>(fragmentSite.getInputsList());
-    for(int inputIndex = 0; inputIndex < inputList.size(); inputIndex++)
-    {
-      Site fragmentInputSite = (Site) inputList.get(inputIndex);
-      Site treeInputSite = newRoutingTree.getSite(fragmentInputSite.getID());
-      //if no node exists in tree, add node and connect inputs.
-      if(treeInputSite == null)
-      {
-        newRoutingTree.getSiteTree().addNode(fragmentInputSite);
-        if(!contains(fragmentInputSite, treeSite.getInputsList()))
-          treeSite.addInput(fragmentInputSite);
-        else
-        {
-          treeSite.removeInput(fragmentInputSite.getID());
-          treeSite.addInput(fragmentInputSite);
-        }
-        fragmentInputSite.clearOutputs();
-        fragmentInputSite.addOutput(treeSite);
-      }
-      else
-      {//node already exists within the tree, but has no output, connect nodes.
-        //if already has an output, do nothing as tree output already defined to sink
-        if(treeInputSite.getOutDegree() == 0)
-        {
-          if(!contains(fragmentInputSite, treeSite.getInputsList()))
-            treeSite.addInput(treeInputSite);
-          else
-          {
-            treeSite.removeInput(treeInputSite.getID());
-            treeSite.addInput(treeInputSite);
-          }
-          treeInputSite.clearOutputs();
-          treeInputSite.addOutput(treeSite);
-        }
-      }
-    }
-  }
-
-  private boolean contains(Site toFind, List<Node> inputsList)
-  {
-    boolean found = false;
-    Iterator<Node> inputListIterator = inputsList.iterator();
-    while(!found && inputListIterator.hasNext())
-    {
-      Node input = inputListIterator.next();
-      if(input.getID().equals(toFind.getID()))
-        found = true;
-    }
-    return found;
   }
 
   /**
@@ -452,7 +300,7 @@ public class CandiateRouter extends Router
       }
       oldRoutingTree.getSiteTree().removeNode(toRemove.getID());
     }
-    
+    /*
     Iterator<String> disconnectedNodesIterator = disconnectedNodes.iterator();
     while(disconnectedNodesIterator.hasNext())
     {
@@ -468,7 +316,7 @@ public class CandiateRouter extends Router
       }
       toClean.clearInputs();
       toClean.clearOutputs();
-    }
+    }*/
     
     //clear all operators off sites
     Iterator<Node> nodeIterator = oldRoutingTree.getSiteTree().getNodes().iterator();

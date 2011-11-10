@@ -9,6 +9,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
@@ -21,7 +23,7 @@ public class FailedNodeTimePlotter implements Serializable
    * serialVersionUID
    */
   private static final long serialVersionUID = -2846057863098603796L;
-  
+  private static final Logger log = Logger.getLogger(FailedNodeTimePlotter.class.getName());
   private File outputFolder = null;
   private int queryID = 1;
   private String sep = System.getProperty("file.separator");
@@ -90,7 +92,7 @@ public class FailedNodeTimePlotter implements Serializable
       else
         partialLife = 0.0;
       
-      System.out.println(counter + " " + df.format(globalLife / 1000) + " " + df.format(partialLife/ 1000));
+      log.fatal(counter + " " + df.format(globalLife / 1000) + " " + df.format(partialLife/ 1000));
       lifetimeWriter.write(counter + " " + df.format(globalLife / 1000) + " " + df.format(partialLife / 1000) + "\n");
       lifetimeWriter.flush();
       lifetimeYMax = Math.max(lifetimeYMax, globalLife / 1000);

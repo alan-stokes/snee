@@ -53,6 +53,9 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
 
 /**
@@ -681,6 +684,55 @@ public class Graph implements Cloneable, Serializable{
 		}
 
 	}
+	
+	/**
+   * Merges another graph with the current one.
+   * @param otherGraph the graph to be incorporated with this one.
+	 * @param network 
+   */
+  public void mergeGraphsUsingSites(Graph otherGraph, Topology network) {
+
+    Iterator<String> i = otherGraph.edges.keySet().iterator();
+    while (i.hasNext()) {
+      Edge otherEdge = (Edge) otherGraph.edges.get(i.next());
+      if (!this.edges.containsKey(otherEdge.getID())) {
+        Site sourceSite, destSite; 
+
+        if (!this.nodes.containsKey(otherEdge.getSourceID())) 
+        {
+          sourceSite = new Site((Site)otherGraph.nodes.get(otherEdge.getSourceID()));
+          sourceSite = (Site) this.addNode(sourceSite);
+        } 
+        else 
+        {
+          sourceSite = (Site) this.nodes.get(otherEdge.getSourceID());
+        }
+
+        if (!this.nodes.containsKey(otherEdge.getDestID())) 
+        {
+          destSite = new Site((Site)otherGraph.nodes.get(otherEdge.getDestID()));
+          destSite = (Site) this.addNode(destSite);
+        } 
+        else 
+        {
+          destSite = (Site) this.nodes.get(otherEdge.getDestID());
+        }
+        RadioLink otherRadioLinkForwards = network.getRadioLink(sourceSite, destSite);
+        RadioLink otherRadioLinkBackwards = network.getRadioLink(destSite, sourceSite);
+        
+        otherRadioLinkForwards = new RadioLink(otherRadioLinkForwards);
+        otherRadioLinkBackwards = new RadioLink(otherRadioLinkBackwards);
+        edges.put(otherRadioLinkForwards.getID(), otherRadioLinkForwards);
+        edges.put(otherRadioLinkBackwards.getID(), otherRadioLinkBackwards);
+        sourceSite.addOutput(destSite);
+        sourceSite.addInput(destSite);
+        destSite.addInput(sourceSite);
+        destSite.addOutput(sourceSite);
+      }
+    }
+
+  }
+	
 
 	/**
 	 * Exports the graph as a file in the DOT language used by GraphViz.

@@ -40,6 +40,7 @@ import org.apache.log4j.Logger;
 
 import com.rits.cloning.Cloner;
 
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
@@ -294,5 +295,16 @@ public class RT extends SNEEAlgebraicForm {
   public RadioLink getRadioLink(Site sender, Site receiver)
   {
     return network.getRadioLink(sender, receiver);
+  }
+
+  public void clearOutputs(Site site)
+  {
+    Iterator<Node> outputs = site.getOutputsList().iterator();
+    while(outputs.hasNext())
+    {
+      Node output = outputs.next();
+      output.removeInput(site);
+    }
+    site.clearOutputs();
   }
 }

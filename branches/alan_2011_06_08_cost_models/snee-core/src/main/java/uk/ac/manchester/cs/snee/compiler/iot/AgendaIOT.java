@@ -1199,6 +1199,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     
     double cpuActiveEnergy = cpuActiveTime * activeCurrent * voltage; //J
     double cpuSleepEnergy = cpuSleepTime * sleepCurrent * voltage; //J
+    //return cpuActiveEnergy;
     return cpuActiveEnergy + cpuSleepEnergy;
   }
 
