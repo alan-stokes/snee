@@ -9,12 +9,10 @@ import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 
 public class FailedNodeStrategyLocalUtils
 {
-  private FailedNodeStrategyLocal ad;
   private String sep = System.getProperty("file.separator");
   
-  public FailedNodeStrategyLocalUtils(FailedNodeStrategyLocal ad)
+  public FailedNodeStrategyLocalUtils()
   {
-    this.ad = ad;
   }
   
   public void outputAgendas(AgendaIOT newAgenda, AgendaIOT agenda, 

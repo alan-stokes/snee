@@ -76,32 +76,36 @@ public class FailedNodeTimePlotter implements Serializable
   {
     Iterator<Double> globalLifetimeIterator = globalLifetimes.iterator();
     Iterator<Double> partialLifetimeIterator = partialLifetimes.iterator();
+    
     DecimalFormat df = new DecimalFormat("#.#####");
     int counter = 0;
-    try{
-    while(globalLifetimeIterator.hasNext() || partialLifetimeIterator.hasNext())
+    try
     {
-      Double globalLife;
-      Double partialLife;
-      if(globalLifetimeIterator.hasNext())
-        globalLife = globalLifetimeIterator.next();
-      else
-        globalLife = 0.0;
-      if(partialLifetimeIterator.hasNext())
-        partialLife = partialLifetimeIterator.next();
-      else
-        partialLife = 0.0;
-      
-      log.fatal(counter + " " + df.format(globalLife / 1000) + " " + df.format(partialLife/ 1000));
-      lifetimeWriter.write(counter + " " + df.format(globalLife / 1000) + " " + df.format(partialLife / 1000) + "\n");
+      while(globalLifetimeIterator.hasNext() || partialLifetimeIterator.hasNext())
+      {
+        Double globalLife;
+        Double partialLife;
+        if(globalLifetimeIterator.hasNext())
+          globalLife = globalLifetimeIterator.next();
+        else
+          globalLife = 0.0;
+        if(partialLifetimeIterator.hasNext())
+          partialLife = partialLifetimeIterator.next();
+        else
+          partialLife = 0.0;
+        
+        log.fatal(counter + " " + df.format(globalLife / 1000) + " " + df.format(partialLife/ 1000));
+        lifetimeWriter.write(counter + " " + df.format(globalLife / 1000) + " " + df.format(partialLife / 1000));
+        lifetimeWriter.newLine();
+        lifetimeWriter.flush();
+        lifetimeYMax = Math.max(lifetimeYMax, globalLife / 1000);
+        lifetimeYMax = Math.max(lifetimeYMax, partialLife / 1000);
+        counter++;
+      }
       lifetimeWriter.flush();
-      lifetimeYMax = Math.max(lifetimeYMax, globalLife / 1000);
-      lifetimeYMax = Math.max(lifetimeYMax, partialLife / 1000);
-      counter++;
+      lifetimeWriter.close();
     }
-    lifetimeWriter.flush();
-    lifetimeWriter.close();
-    }catch(Exception e)
+    catch(Exception e)
     {
       System.out.println(e.getMessage());
     }
@@ -135,54 +139,67 @@ public class FailedNodeTimePlotter implements Serializable
     if(energyPlotFile.exists())
     {
       energyPlotFile.delete();
+      energyPlotFile.createNewFile();
     }
     if(timePlotFile.exists())
     {
       timePlotFile.delete();
+      timePlotFile.createNewFile();
     }
     if(qepCostPlotFile.exists())
     {
       qepCostPlotFile.delete();
+      qepCostPlotFile.createNewFile();
     }
     if(lifetimePlotFile.exists())
     {
       lifetimePlotFile.delete();
+      lifetimePlotFile.createNewFile();
     }
     if(cyclesBurnedPlotFile.exists())
     {
       cyclesBurnedPlotFile.delete();
+      cyclesBurnedPlotFile.createNewFile();
     }
     if(cyclesMissedPlotFile.exists())
     {
       cyclesMissedPlotFile.delete();
+      cyclesMissedPlotFile.createNewFile();
     }
     if(cyclesLeftPlotFile.exists())
     {
       cyclesLeftPlotFile.delete();
+      cyclesLeftPlotFile.createNewFile();
     }
     if(tuplesLeftPlotFile.exists())
     {
       tuplesLeftPlotFile.delete();
+      tuplesLeftPlotFile.createNewFile();
     }
     if(tuplesMissedPlotFile.exists())
     {
       tuplesMissedPlotFile.delete();
+      tuplesMissedPlotFile.createNewFile();
     }
     if(tuplesBurnedPlotFile.exists())
     {
       tuplesBurnedPlotFile.delete();
+      tuplesBurnedPlotFile.createNewFile();
     }
     
-    energyWriter = new BufferedWriter(new FileWriter(energyPlotFile, true));
-    timeWriter = new BufferedWriter(new FileWriter(timePlotFile, true));
-    qepWriter = new BufferedWriter(new FileWriter(qepCostPlotFile, true));
+    energyWriter = new BufferedWriter(new FileWriter(energyPlotFile));
+    timeWriter = new BufferedWriter(new FileWriter(timePlotFile));
+    qepWriter = new BufferedWriter(new FileWriter(qepCostPlotFile));
     lifetimeWriter = new BufferedWriter(new FileWriter(lifetimePlotFile));
-    cyclesBurnedWriter =  new BufferedWriter(new FileWriter(cyclesBurnedPlotFile, true));
-    cyclesMissedWriter = new BufferedWriter(new FileWriter(cyclesMissedPlotFile, true));
-    cyclesLeftWriter = new BufferedWriter(new FileWriter(cyclesLeftPlotFile, true));
-    tuplesLeftWriter = new BufferedWriter(new FileWriter(tuplesLeftPlotFile, true));
-    tuplesMissedWriter = new BufferedWriter(new FileWriter(tuplesMissedPlotFile, true));
-    tuplesBurnedWriter = new BufferedWriter(new FileWriter(tuplesBurnedPlotFile, true));
+    lifetimeWriter.write("testing");
+    lifetimeWriter.flush();
+    lifetimeWriter.close();
+    cyclesBurnedWriter =  new BufferedWriter(new FileWriter(cyclesBurnedPlotFile));
+    cyclesMissedWriter = new BufferedWriter(new FileWriter(cyclesMissedPlotFile));
+    cyclesLeftWriter = new BufferedWriter(new FileWriter(cyclesLeftPlotFile));
+    tuplesLeftWriter = new BufferedWriter(new FileWriter(tuplesLeftPlotFile));
+    tuplesMissedWriter = new BufferedWriter(new FileWriter(tuplesMissedPlotFile));
+    tuplesBurnedWriter = new BufferedWriter(new FileWriter(tuplesBurnedPlotFile));
   }
   
   public FailedNodeTimePlotter (File outputFolder) 
@@ -211,42 +228,52 @@ public class FailedNodeTimePlotter implements Serializable
     if(energyPlotFile.exists())
     {
       energyPlotFile.delete();
+      energyPlotFile.createNewFile();
     }
     if(timePlotFile.exists())
     {
       timePlotFile.delete();
+      timePlotFile.createNewFile();
     }
     if(qepCostPlotFile.exists())
     {
       qepCostPlotFile.delete();
+      qepCostPlotFile.createNewFile();
     }
     if(lifetimePlotFile.exists())
     {
       lifetimePlotFile.delete();
+      lifetimePlotFile.createNewFile();
     }
     if(cyclesBurnedPlotFile.exists())
     {
       cyclesBurnedPlotFile.delete();
+      cyclesBurnedPlotFile.createNewFile();
     }
     if(cyclesMissedPlotFile.exists())
     {
       cyclesMissedPlotFile.delete();
+      cyclesMissedPlotFile.createNewFile();
     }
     if(cyclesLeftPlotFile.exists())
     {
       cyclesLeftPlotFile.delete();
+      cyclesLeftPlotFile.createNewFile();
     }
     if(tuplesLeftPlotFile.exists())
     {
       tuplesLeftPlotFile.delete();
+      tuplesLeftPlotFile.createNewFile();
     }
     if(tuplesMissedPlotFile.exists())
     {
       tuplesMissedPlotFile.delete();
+      tuplesMissedPlotFile.createNewFile();
     }
     if(tuplesBurnedPlotFile.exists())
     {
       tuplesBurnedPlotFile.delete();
+      tuplesBurnedPlotFile.createNewFile();
     }
     
     energyWriter = new BufferedWriter(new FileWriter(energyPlotFile, true));
@@ -493,7 +520,7 @@ public class FailedNodeTimePlotter implements Serializable
         commandArg[2] = "adaptation_cost_(J)";
         commandArg[3] = new Integer(queryID+1).toString();
         commandArg[4] = new Double(this.energyYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "energy";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "query" + queryID + "energy";
         commandArg[6] = energyPlotFile.getAbsolutePath();
         commandArg[7] = "global";
         commandArg[8] = "partial";
@@ -501,55 +528,55 @@ public class FailedNodeTimePlotter implements Serializable
         //time
         commandArg[2] = "adaptation_cost_(1000_s)";
         commandArg[4] = new Double(this.timeYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "time";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "query" + queryID+ "time";
         commandArg[6] = timePlotFile.getAbsolutePath();
         rt.exec(commandArg);
         //qep
         commandArg[2] = "qep_cost_(J)";
         commandArg[4] = new Double(this.qepYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "qep";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "query" + queryID+ "qep";
         commandArg[6] = qepCostPlotFile.getAbsolutePath();
         rt.exec(commandArg);
         //lifetime
         commandArg[2] = "lifetime_(1000_s)";
         commandArg[4] = new Double(this.lifetimeYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "lifetime";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "query" + queryID+ "lifetime";
         commandArg[6] = lifetimePlotFile.getAbsolutePath();
         rt.exec(commandArg);
         //cycles burned
         commandArg[2] = "cycles_burned";
         commandArg[4] = new Double(this.cyclesBurnedYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "cyclesburned";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "query" + queryID+ "cyclesburned";
         commandArg[6] = cyclesBurnedPlotFile.getAbsolutePath();
         rt.exec(commandArg);
         //cycles missed
         commandArg[2] = "cycles_missed";
         commandArg[4] = new Double(this.cyclesMissedYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "cyclesMissed";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep+ "query" + queryID + "cyclesMissed";
         commandArg[6] = cyclesMissedPlotFile.getAbsolutePath();
         rt.exec(commandArg);
         // cycles left
         commandArg[2] = "cycles_left";
         commandArg[4] = new Double(this.cyclesLeftYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "cyclesleft";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep+ "query" + queryID + "cyclesleft";
         commandArg[6] = cyclesLeftPlotFile.getAbsolutePath();
         rt.exec(commandArg);
         // tuples left        
         commandArg[2] = "tuples_left";
         commandArg[4] = new Double(this.tuplesLeftYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "tuplesleft";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep+ "query" + queryID + "tuplesleft";
         commandArg[6] = tuplesLeftPlotFile.getAbsolutePath();
         rt.exec(commandArg);
         // tuples missed
         commandArg[2] = "tuples_missed";
         commandArg[4] = new Double(this.tuplesMissedYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "tuplesMissed";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep+ "query" + queryID + "tuplesMissed";
         commandArg[6] = tuplesMissedPlotFile.getAbsolutePath();
         rt.exec(commandArg);
         // tuples burned
         commandArg[2] = "tuples_burned";
         commandArg[4] = new Double(this.tuplesBurnedYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "tuplesBurned";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep+ "query" + queryID + "tuplesBurned";
         commandArg[6] = tuplesBurnedPlotFile.getAbsolutePath();
         rt.exec(commandArg);
       }
@@ -565,7 +592,7 @@ public class FailedNodeTimePlotter implements Serializable
         commandArg[2] = "adaptation_cost_(J)";
         commandArg[3] = new Integer(queryID+1).toString();
         commandArg[4] = new Double(this.energyYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "energy";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep+ "query" + queryID + "energy";
         commandArg[6] = energyPlotFile.getAbsolutePath();
         commandArg[7] = "global";
         commandArg[8] = "partial";
@@ -574,55 +601,55 @@ public class FailedNodeTimePlotter implements Serializable
         //time
         commandArg[2] = "adaptation_cost_(1000 s)";
         commandArg[4] = new Double(this.timeYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "time";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep+ "query" + queryID + "time";
         commandArg[6] = timePlotFile.getAbsolutePath();
         rt.exec(commandArg);
         //qep
         commandArg[2] = "qep_cost_(J)";
         commandArg[4] = new Double(this.qepYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "qep";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep+ "query" + queryID + "qep";
         commandArg[6] = qepCostPlotFile.getAbsolutePath();
         rt.exec(commandArg);
         //lifetime
         commandArg[2] = "lifetime (1000 s)";
         commandArg[4] = new Double(this.lifetimeYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "lifetime";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "query" + queryID+ "lifetime";
         commandArg[6] = lifetimePlotFile.getAbsolutePath();
         rt.exec(commandArg);
         //cycles burned
         commandArg[2] = "cycles_burned";
         commandArg[4] = new Double(this.cyclesBurnedYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "cyclesburned";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep+ "query" + queryID + "cyclesburned";
         commandArg[6] = cyclesBurnedPlotFile.getAbsolutePath();
         rt.exec(commandArg);
         //cycles missed
         commandArg[2] = "cycles_missed";
         commandArg[4] = new Double(this.cyclesMissedYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "cyclesMissed";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "query" + queryID+ "cyclesMissed";
         commandArg[6] = cyclesMissedPlotFile.getAbsolutePath();
         rt.exec(commandArg);
         // cycles left
         commandArg[2] = "cycles_left";
         commandArg[4] = new Double(this.cyclesLeftYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "cyclesleft";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep + "query" + queryID+ "cyclesleft";
         commandArg[6] = cyclesLeftPlotFile.getAbsolutePath();
         rt.exec(commandArg);
         // tuples left        
         commandArg[2] = "tuples_left";
         commandArg[4] = new Double(this.tuplesLeftYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "tuplesleft";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep+ "query" + queryID + "tuplesleft";
         commandArg[6] = tuplesLeftPlotFile.getAbsolutePath();
         rt.exec(commandArg);
         // tuples missed
         commandArg[2] = "tuples_missed";
         commandArg[4] = new Double(this.tuplesMissedYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "tuplesMissed";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep+ "query" + queryID + "tuplesMissed";
         commandArg[6] = tuplesMissedPlotFile.getAbsolutePath();
         rt.exec(commandArg);
         // tuples burned
         commandArg[2] = "tuples_burned";
         commandArg[4] = new Double(this.tuplesBurnedYMax).toString();
-        commandArg[5] = outputFolder.getAbsolutePath() + sep + "tuplesBurned";
+        commandArg[5] = outputFolder.getAbsolutePath() + sep+ "query" + queryID + "tuplesBurned";
         commandArg[6] = tuplesBurnedPlotFile.getAbsolutePath();
         rt.exec(commandArg);
       }
@@ -703,57 +730,71 @@ public class FailedNodeTimePlotter implements Serializable
     tuplesLeftPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "tuplesLeftPlot.tex");
     tuplesMissedPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "tuplesMissedPlot.tex");
     tuplesBurnedPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "tuplesBurnedPlot.tex");
+    
     if(energyPlotFile.exists())
     {
       energyPlotFile.delete();
+      energyPlotFile.createNewFile();
     }
     if(timePlotFile.exists())
     {
       timePlotFile.delete();
+      timePlotFile.createNewFile();
     }
     if(qepCostPlotFile.exists())
     {
       qepCostPlotFile.delete();
+      qepCostPlotFile.createNewFile();
     }
     if(lifetimePlotFile.exists())
     {
       lifetimePlotFile.delete();
+      lifetimePlotFile.createNewFile();
     }
     if(cyclesBurnedPlotFile.exists())
     {
       cyclesBurnedPlotFile.delete();
+      cyclesBurnedPlotFile.createNewFile();
     }
     if(cyclesMissedPlotFile.exists())
     {
       cyclesMissedPlotFile.delete();
+      cyclesMissedPlotFile.createNewFile();
     }
     if(cyclesLeftPlotFile.exists())
     {
       cyclesLeftPlotFile.delete();
+      cyclesLeftPlotFile.createNewFile();
     }
     if(tuplesLeftPlotFile.exists())
     {
       tuplesLeftPlotFile.delete();
+      tuplesLeftPlotFile.createNewFile();
     }
     if(tuplesMissedPlotFile.exists())
     {
       tuplesMissedPlotFile.delete();
+      tuplesMissedPlotFile.createNewFile();
     }
     if(tuplesBurnedPlotFile.exists())
     {
       tuplesBurnedPlotFile.delete();
+      tuplesBurnedPlotFile.createNewFile();
     }
     
-    energyWriter = new BufferedWriter(new FileWriter(energyPlotFile, true));
-    timeWriter = new BufferedWriter(new FileWriter(timePlotFile, true));
-    qepWriter = new BufferedWriter(new FileWriter(qepCostPlotFile, true));
+    energyWriter = new BufferedWriter(new FileWriter(energyPlotFile));
+    timeWriter = new BufferedWriter(new FileWriter(timePlotFile));
+    qepWriter = new BufferedWriter(new FileWriter(qepCostPlotFile));
     lifetimeWriter = new BufferedWriter(new FileWriter(lifetimePlotFile));
-    cyclesBurnedWriter =  new BufferedWriter(new FileWriter(cyclesBurnedPlotFile, true));
-    cyclesMissedWriter = new BufferedWriter(new FileWriter(cyclesMissedPlotFile, true));
-    cyclesLeftWriter = new BufferedWriter(new FileWriter(cyclesLeftPlotFile, true));
-    tuplesLeftWriter = new BufferedWriter(new FileWriter(tuplesLeftPlotFile, true));
-    tuplesMissedWriter = new BufferedWriter(new FileWriter(tuplesMissedPlotFile, true));
-    tuplesBurnedWriter = new BufferedWriter(new FileWriter(tuplesBurnedPlotFile, true));
+    lifetimeWriter.write("testing");
+    lifetimeWriter.flush();
+    lifetimeWriter.close();
+    cyclesBurnedWriter =  new BufferedWriter(new FileWriter(cyclesBurnedPlotFile));
+    cyclesMissedWriter = new BufferedWriter(new FileWriter(cyclesMissedPlotFile));
+    cyclesLeftWriter = new BufferedWriter(new FileWriter(cyclesLeftPlotFile));
+    tuplesLeftWriter = new BufferedWriter(new FileWriter(tuplesLeftPlotFile));
+    tuplesMissedWriter = new BufferedWriter(new FileWriter(tuplesMissedPlotFile));
+    tuplesBurnedWriter = new BufferedWriter(new FileWriter(tuplesBurnedPlotFile));
     globalLifetimes.clear();
     partialLifetimes.clear();
   }

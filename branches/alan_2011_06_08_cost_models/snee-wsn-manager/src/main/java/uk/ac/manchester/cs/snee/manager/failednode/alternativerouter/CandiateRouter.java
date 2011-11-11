@@ -26,7 +26,6 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyUtils;
 
 public class CandiateRouter extends Router
 {
@@ -160,8 +159,7 @@ public class CandiateRouter extends Router
                                               sources, depinnedNodes);
       System.out.println("sources are : " + sources.toString() + " and sink is: " + sink);
       //output reduced topology for help in keeping track of progress  
-      new CandiateRouterUtils(this.network).exportReducedTopology(chainFolder, "reducedtopology", 
-                                                                  true, workingTopology);
+      new CandiateRouterUtils(this.network).exportReducedTopology(chainFolder, true, workingTopology);
       new CandiateRouterUtils(this.network).exportDepinnedNodes(depinnedNodes, chainFolder);
       //calculate different routes around linked failed site.
       ArrayList<Tree> routesForFailedNode = 
@@ -228,12 +226,13 @@ public class CandiateRouter extends Router
    * @throws SNEEConfigurationException 
    * @throws RouterException 
    * @throws NumberFormatException 
+   * @throws SchemaMetadataException 
    */
   private void mergeRoutingTreeFragmentsRecursively(
       ArrayList<Integer> keys, HashMapList<Integer, Tree> failedNodeToRoutingTreeMapping, 
       Topology oldRoutingTreeAsToplogy, ArrayList<RT> newRoutingTrees, int position) 
   throws OptimizationException, NumberFormatException, 
-  RouterException, SNEEConfigurationException
+  RouterException, SNEEConfigurationException, SchemaMetadataException
   {
     
     if(position < keys.size() -1)
@@ -256,15 +255,7 @@ public class CandiateRouter extends Router
       {
         Tree treeFragment = treeFragmentIterator.next();
         oldRoutingTreeAsToplogy.mergeGraphsUsingSites(treeFragment, network);
-        try
-        {
-          new TopologyUtils(oldRoutingTreeAsToplogy).exportAsDOTFile("routeTop", true);
-        }
-        catch (SchemaMetadataException e)
-        {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
+        new CandiateRouterUtils(oldRoutingTreeAsToplogy).exportTempRoutingTopology(outputFolder, "tempTopology" + newRoutingTrees.size() + 1, true, oldRoutingTreeAsToplogy);
         RT newTree = new Router().doRouting(paf, "newTree", oldRoutingTreeAsToplogy, _metadataManager);
         newRoutingTrees.add(newTree);
       }

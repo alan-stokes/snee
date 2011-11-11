@@ -70,19 +70,22 @@ public class FailedNodeTimeClientUtils
       
       ObjectInputStream inputStream = null;
       File [] files = inputFolder.listFiles();
-      for(int fileIndex = 0; fileIndex < files.length; fileIndex++)
+      if(files != null)
       {
-        //Construct the ObjectInputStream object
-        inputStream = new ObjectInputStream(new FileInputStream(files[fileIndex]));
-          
-        Object obj = null;
-          
-        obj = inputStream.readObject();
-        if (obj instanceof Adaptation) 
+        for(int fileIndex = 0; fileIndex < files.length; fileIndex++)
         {
-          Adaptation ad = (Adaptation) obj;
-          adapts.add(ad);
-        }     
+          //Construct the ObjectInputStream object
+          inputStream = new ObjectInputStream(new FileInputStream(files[fileIndex]));
+            
+          Object obj = null;
+            
+          obj = inputStream.readObject();
+          if (obj instanceof Adaptation) 
+          {
+            Adaptation ad = (Adaptation) obj;
+            adapts.add(ad);
+          }     
+        }
       }
       return adapts;
     }
@@ -194,17 +197,17 @@ public class FailedNodeTimeClientUtils
     ArrayList<Adaptation> adaptations = this.readInObjects(inputFolder);
     this.sortout(adaptations);
     DecimalFormat df = new DecimalFormat("#.#####");
-    if(which == PlotterEnum.GLOBAL)
+    if(which == PlotterEnum.GLOBAL && global != null)
     {
       System.out.println(df.format((global.getLifetimeEstimate() + currentLifetime) / 1000));
       plot.addGlobalLifetime(global.getLifetimeEstimate() + currentLifetime);
     }
-    else if(which == PlotterEnum.PARTIAL)
+    else if(which == PlotterEnum.PARTIAL && partial != null)
     {
       System.out.println(df.format((partial.getLifetimeEstimate() + currentLifetime) / 1000));
       plot.addPartialLifetime(partial.getLifetimeEstimate() + currentLifetime);
     }
-    else if(which == PlotterEnum.LOCAL)
+    else if(which == PlotterEnum.LOCAL & local != null)
     {
       System.out.println(df.format((local.getLifetimeEstimate() + currentLifetime) / 1000));
       plot.addPartialLifetime(local.getLifetimeEstimate() + currentLifetime);
@@ -214,8 +217,5 @@ public class FailedNodeTimeClientUtils
   public void plotTopology() throws IOException
   {
     plot.writeLifetimes();
-    
   }
-  
-  
 }

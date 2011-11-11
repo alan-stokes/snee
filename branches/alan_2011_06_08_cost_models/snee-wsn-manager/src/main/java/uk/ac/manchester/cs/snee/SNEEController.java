@@ -796,4 +796,14 @@ public class SNEEController implements SNEE {
     _dispatcher.resetQEP(qep);
     
   }
+
+  public void removeNodeFromTheMetaData(String failedID, SensorNetworkQueryPlan qep) 
+  throws SourceDoesNotExistException
+  {
+    SourceMetadataAbstract metadata = 
+      _metadata.getSource(qep.getMetaData().getOutputAttributes().get(1).getExtentName());
+    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) metadata;
+    sm.removeSourceSite(new Integer(failedID));
+    sm.removeNodeFromTopology(failedID);  
+  }
 }

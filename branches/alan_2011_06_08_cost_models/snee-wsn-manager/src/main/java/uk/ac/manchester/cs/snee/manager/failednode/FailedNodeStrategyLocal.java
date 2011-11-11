@@ -546,7 +546,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           AgendaIOT newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
           Agenda newAgenda = doOldSNWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
           //output new and old agendas
-          new FailedNodeStrategyLocalUtils(this).outputAgendas(newAgendaIOT, currentQEP.getAgendaIOT(), 
+          new FailedNodeStrategyLocalUtils().outputAgendas(newAgendaIOT, currentQEP.getAgendaIOT(), 
                                                                currentQEP.getIOT(), newIOT, localFolder);
         
           boolean success = assessQEPsAgendas(currentQEP.getIOT(), newIOT, currentQEP.getAgendaIOT(), newAgendaIOT, newAgenda, 

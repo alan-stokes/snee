@@ -91,17 +91,16 @@ public class CandiateRouterUtils
   /**
    * outputs a topology as a dot file (named reduced)
    * @param chainFolder
-   * @param string
-   * @param b
+   * @param labels
    * @param workingTopology 
    * @throws SchemaMetadataException 
    */
-  public void exportReducedTopology(File desintatedOutputFolder, String string, boolean boolvalue, 
+  public void exportReducedTopology(File desintatedOutputFolder, boolean labels, 
                                     Topology workingTopology) 
   throws SchemaMetadataException
   {
     new TopologyUtils(workingTopology).exportAsDOTFile(desintatedOutputFolder.toString() + sep + 
-        "reducedtopology" , boolvalue);
+        "reducedtopology" , labels);
     
   }
 
@@ -119,6 +118,15 @@ public class CandiateRouterUtils
     writer.write(depinnedNodes.toString());
     writer.flush();
     writer.close();
+  }
+  
+  public void exportTempRoutingTopology(File desintatedOutputFolder, String fileName, 
+                                        boolean labels, Topology tempTop) 
+  throws SchemaMetadataException
+  {
+    if(!desintatedOutputFolder.exists())
+      desintatedOutputFolder.mkdir();
+    new TopologyUtils(tempTop).exportAsDOTFile(desintatedOutputFolder.toString() + sep + fileName, labels);
   }
   
 }

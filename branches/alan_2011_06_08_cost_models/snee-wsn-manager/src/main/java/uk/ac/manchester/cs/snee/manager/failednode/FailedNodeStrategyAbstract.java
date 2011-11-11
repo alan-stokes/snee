@@ -92,17 +92,20 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
     {
       InstanceOperator instanceOperator = iotInstanceOperatorIterator.next();
       SensornetOperator physicalOperator = instanceOperator.getSensornetOperator();
-      SensornetOperatorImpl physicalOperatorImpl = (SensornetOperatorImpl) physicalOperator;
-      if(!failedNodes.contains(instanceOperator.getSite().getID()) || !depinnedNodes.contains(instanceOperator.getSite().getID()))
+      if(!physicalOperator.isAttributeSensitive())
       {
-        ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).setIsPinned(true);
-        ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).addSiteToPinnedList(instanceOperator.getSite().getID());
-      }
-      else
-      {
-        if(!(physicalOperator instanceof SensornetAcquireOperator) && 
-           failedNodes.contains(instanceOperator.getSite().getID()))
-          opsOnFailedNode.add(((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())));
+        SensornetOperatorImpl physicalOperatorImpl = (SensornetOperatorImpl) physicalOperator;
+        if(!failedNodes.contains(instanceOperator.getSite().getID()) || !depinnedNodes.contains(instanceOperator.getSite().getID()))
+        {
+          ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).setIsPinned(true);
+          ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).addSiteToPinnedList(instanceOperator.getSite().getID());
+        }
+        else
+        {
+          if(!(physicalOperator instanceof SensornetAcquireOperator) && 
+             failedNodes.contains(instanceOperator.getSite().getID()))
+            opsOnFailedNode.add(((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())));
+        }
       }
     }
     //remove total pinning on operators located on failed node

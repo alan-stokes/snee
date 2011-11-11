@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,6 +28,7 @@ import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
@@ -62,13 +62,14 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	
 	//used to calculate agenda cycles
 	protected static int maxNumberofFailures = 5;
+	protected static ArrayList<String> currentlyFailedNodes = new ArrayList<String>(maxNumberofFailures);
 	protected static double originalLifetime;
 	protected static int numberOfExectutionCycles;
 	protected static boolean calculated = false;
 	protected static SensorNetworkQueryPlan originalQEP;
 	protected static SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay client;
 	
-	private static FailedNodeTimeClientUtils utils = new FailedNodeTimeClientUtils();
+	private static final FailedNodeTimeClientUtils utils = new FailedNodeTimeClientUtils();
 	
 	public SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay(String query, 
 			double duration, String queryParams, String csvFile, String sneeProperties) 
@@ -238,8 +239,10 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         currentLifetime = numberOfExectutionCycles * originalQEP.getAgendaIOT().getLength_bms(false) * currentNumberOfFailures;
         testNo++;
       }
+      currentlyFailedNodes.clear();
       utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.PARTIAL);
       resetQEP(originalQEP);
+      client.resetMetaData(originalQEP);
     }
     
   }
@@ -264,8 +267,10 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         currentLifetime = numberOfExectutionCycles * originalQEP.getAgendaIOT().getLength_bms(false) * currentNumberOfFailures;
         testNo++;
       }
+      currentlyFailedNodes.clear();
       utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.GLOBAL);
       resetQEP(originalQEP);
+      client.resetMetaData(originalQEP);
     }
     
   }
@@ -274,6 +279,15 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   {
     SNEEController control = (SNEEController) client.controller;
     control.resetQEP(qep);
+  }
+  
+
+  private void resetMetaData(SensorNetworkQueryPlan qep) 
+  throws SourceDoesNotExistException, SourceMetadataException,
+  SNEEConfigurationException, SNCBException, TopologyReaderException
+  {
+    SNEEController control = (SNEEController) controller;
+    control.resetMetaData(qep);
   }
 
   private static void calculateAgendaExecutionsBetweenFailures(int currentNumberOfFailures, SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay client)
@@ -295,7 +309,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     
     File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + 
                                 "OTASection" + sep + "storedObjects");
-    ArrayList<Adaptation> orginalList = new FailedNodeTimeClientUtils().readInObjects(inputFolder);
+    ArrayList<Adaptation> orginalList = utils.readInObjects(inputFolder);
     Adaptation orginal = orginalList.get(0);
     return orginal.getLifetimeEstimate();
   }
@@ -426,6 +440,18 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
           applicableConfulenceSites.add(site.getID());
       }
     }
+    if(applicableConfulenceSites.size() == 0)
+    {
+      siteIterator = qep.getRT().siteIterator(TraversalOrder.POST_ORDER);
+      while(siteIterator.hasNext())
+      {
+        Site site = siteIterator.next();
+        if(!qep.getRT().getRoot().getID().equals(site.getID()))
+        {
+          applicableConfulenceSites.add(site.getID());
+        }
+      }
+    } 
   }
 
   private boolean isSource(Site currentSite, int[] sources)
@@ -444,10 +470,13 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 
   /**
    * selects a node from an array of options
+   * @throws Exception 
    */
-  private static String chooseNodes() 
+  private static String chooseNodes() throws Exception 
   {
 	  int size = applicableConfulenceSites.size();
+	  if(size == 0)
+	    throw new Exception("no more avilable nodes to fail");
 	  if(size == 1)
 	    return applicableConfulenceSites.get(0);
 	  else
@@ -461,35 +490,10 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
    * runs the test
    * @param failedNodes
    * @param queryid
-   * @throws SNEECompilerException
-   * @throws MetadataException
-   * @throws EvaluatorException
-   * @throws SNEEException
-   * @throws SQLException
-   * @throws SNEEConfigurationException
-   * @throws MalformedURLException
-   * @throws OptimizationException
-   * @throws SchemaMetadataException
-   * @throws TypeMappingException
-   * @throws AgendaException
-   * @throws UnsupportedAttributeTypeException
-   * @throws SourceMetadataException
-   * @throws TopologyReaderException
-   * @throws SNEEDataSourceException
-   * @throws CostParametersException
-   * @throws SNCBException
-   * @throws IOException
-   * @throws CodeGenerationException
-   * @throws AutonomicManagerException
+   * @throws Exception 
    */
   public void runForTests(String failedNode, int queryid)
-  throws SNEECompilerException, MetadataException, EvaluatorException,
-  SNEEException, SQLException, SNEEConfigurationException, 
-  MalformedURLException, OptimizationException, SchemaMetadataException, 
-  TypeMappingException, AgendaException, UnsupportedAttributeTypeException, 
-  SourceMetadataException, TopologyReaderException, SNEEDataSourceException, 
-  CostParametersException, SNCBException, IOException, CodeGenerationException,
-  AutonomicManagerException
+  throws Exception
   {
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");
@@ -497,10 +501,50 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     System.out.println("Failed node [" + failedNode + "] ");
     SNEEController control = (SNEEController) controller;
     control.giveAutonomicManagerQuery(_query);
-    ArrayList<String> nodeFailures = new ArrayList<String>();
-    nodeFailures.add(failedNode);
-    control.runSimulatedNodeFailure(nodeFailures);
+    boolean sucessful = runSimulatedNodeFailure(failedNode, control);
+    if(!sucessful)
+      throw new AutonomicManagerException("couldnt adapt with any node failure");
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
+  }
+
+  private boolean runSimulatedNodeFailure(String failedNode,
+      SNEEController control) 
+  throws Exception
+  {
+    ArrayList<String> currentNodeFailures = new ArrayList<String>();
+    currentlyFailedNodes.add(failedNode);
+    currentNodeFailures.add(failedNode);
+    try
+    {
+      control.runSimulatedNodeFailure(currentNodeFailures);
+      return true;
+    }
+    catch(Exception e)
+    {
+      currentNodeFailures.clear();
+      currentlyFailedNodes.remove(failedNode);
+      applicableConfulenceSites.remove(failedNode);
+      String deadNode = chooseNodes();
+      QueryExecutionPlan lastPlan = control.getQEP();
+      resetMetaData(originalQEP);
+      updateMetaDataBackToCurrentState(control);
+      resetQEP((SensorNetworkQueryPlan) lastPlan);
+      System.out.println("system failed to adapt with node " + failedNode + " so will try node " + deadNode);
+      runSimulatedNodeFailure(deadNode, control);
+      return true;
+    }
+  }
+
+  private void updateMetaDataBackToCurrentState(SNEEController control) 
+  throws SourceDoesNotExistException
+  {
+    Iterator<String> failedNodesIDsIterator =  currentlyFailedNodes.iterator();
+    while(failedNodesIDsIterator.hasNext())
+    {
+      String failedID = failedNodesIDsIterator.next();
+      control.removeNodeFromTheMetaData(failedID, originalQEP);
+    }
+    
   }
 }
