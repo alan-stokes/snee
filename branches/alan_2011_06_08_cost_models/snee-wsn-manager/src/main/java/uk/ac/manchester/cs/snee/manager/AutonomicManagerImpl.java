@@ -448,4 +448,12 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     monitor.setQEP(newQEP);
   }
 
+  @Override
+  public void resetRunningSites(SensorNetworkQueryPlan qep) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, 
+  IOException, CodeGenerationException
+  {
+    setupRunningSites();
+  }
+
 }

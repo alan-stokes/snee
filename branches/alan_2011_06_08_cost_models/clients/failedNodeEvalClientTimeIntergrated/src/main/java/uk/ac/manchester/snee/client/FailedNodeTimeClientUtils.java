@@ -214,8 +214,8 @@ public class FailedNodeTimeClientUtils
     }
   }
 
-  public void plotTopology() throws IOException
+  public void plotTopology(int testID) throws IOException
   {
-    plot.writeLifetimes();
+    plot.writeLifetimes(testID);
   }
 }

@@ -61,7 +61,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	protected static int testNo = 1;
 	
 	//used to calculate agenda cycles
-	protected static int maxNumberofFailures = 5;
+	protected static int maxNumberofFailures = 8;
 	protected static ArrayList<String> currentlyFailedNodes = new ArrayList<String>(maxNumberofFailures);
 	protected static double originalLifetime;
 	protected static int numberOfExectutionCycles;
@@ -134,7 +134,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       System.out.println("error message was " + e.getMessage());
       try
       {
-        utils.plotTopology();
+        utils.plotTopology(maxNumberofFailures);
       }
       catch (IOException e1)
       {
@@ -187,13 +187,15 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       }
       catch (Exception e1)
       {
-        utils.plotTopology();
+        System.out.println("system failed as: " + e1.getMessage());
+        e1.printStackTrace();
+        utils.plotTopology(maxNumberofFailures);
         queryid ++;
         utils.newPlotters(queryid);
         System.out.println("Ran all tests on query " + (queryid) + " going onto next topology");
         recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
       }
-      utils.plotTopology();
+      utils.plotTopology(maxNumberofFailures);
       queryid ++;
       utils.newPlotters(queryid); 
       recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
@@ -205,13 +207,15 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     }
     catch(Exception e)
     {
-      utils.plotTopology();
+      System.out.println("system failed as: " + e.getMessage());
+      e.printStackTrace();
+      utils.plotTopology(maxNumberofFailures);
       queryid ++;
       utils.newPlotters(queryid);
       System.out.println("Ran all tests on query " + (queryid) + " going onto next topology");
       recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
     }
-    utils.plotTopology();
+    utils.plotTopology(maxNumberofFailures);
     queryid ++;
     utils.newPlotters(queryid);
     System.out.println("Ran all tests on query " + (queryid) + " going onto next topology");
@@ -276,6 +280,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   }
 
   private static void resetQEP(SensorNetworkQueryPlan qep) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, 
+  IOException, CodeGenerationException 
   {
     SNEEController control = (SNEEController) client.controller;
     control.resetQEP(qep);
@@ -329,8 +335,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
     SNEEController control = (SNEEController) controller;
-    control.queryCompilationOnly(_query, _queryParams);
-    control.addQueryWithoutCompilationAndStarting(_query, _queryParams);
+    control.addQuery(_query, _queryParams, null, true, false, true);
     controller.close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
@@ -521,7 +526,9 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       return true;
     }
     catch(Exception e)
-    {
+    { 
+      System.out.println("system failed as " + e.getMessage());
+      e.printStackTrace();
       currentNodeFailures.clear();
       currentlyFailedNodes.remove(failedNode);
       applicableConfulenceSites.remove(failedNode);

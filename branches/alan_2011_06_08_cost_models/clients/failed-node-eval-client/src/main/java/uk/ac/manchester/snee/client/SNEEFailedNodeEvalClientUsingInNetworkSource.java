@@ -206,8 +206,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
     SNEEController control = (SNEEController) controller;
-    control.queryCompilationOnly(_query, _queryParams);
-    control.addQueryWithoutCompilationAndStarting(_query, _queryParams);
+    control.addQuery(_query, _queryParams, null, false, true, false);
     controller.close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
@@ -372,7 +371,9 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
     }
   }
 
-  private void resetQEP() 
+  private void resetQEP()
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException, IOException, CodeGenerationException 
   {
     SNEEController control = (SNEEController) controller;
     control.resetQEP(qep);

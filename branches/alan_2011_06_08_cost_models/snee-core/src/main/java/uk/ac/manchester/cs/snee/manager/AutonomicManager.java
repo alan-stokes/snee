@@ -99,4 +99,8 @@ public interface AutonomicManager
 
   public abstract void setCurrentQEP(SensorNetworkQueryPlan newQEP);
 
+  public abstract void resetRunningSites(SensorNetworkQueryPlan qep)
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, 
+  IOException, CodeGenerationException;
+
 }

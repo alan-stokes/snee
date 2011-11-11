@@ -72,7 +72,7 @@ public class FailedNodeTimePlotter implements Serializable
     return partialLifetimes.add(e);
   }
   
-  public void writeLifetimes() throws IOException
+  public void writeLifetimes(int testID) throws IOException
   {
     Iterator<Double> globalLifetimeIterator = globalLifetimes.iterator();
     Iterator<Double> partialLifetimeIterator = partialLifetimes.iterator();
@@ -109,7 +109,7 @@ public class FailedNodeTimePlotter implements Serializable
     {
       System.out.println(e.getMessage());
     }
-    generatePlots();
+    generatePlots(testID);
   }
   
   
@@ -290,7 +290,7 @@ public class FailedNodeTimePlotter implements Serializable
   
   
   
-  public void plot(Adaptation global, Adaptation partial, Adaptation local, double currentLifetime) 
+  public void plot(Adaptation global, Adaptation partial, Adaptation local, double currentLifetime, int testID) 
   throws 
   IOException, OptimizationException
   {
@@ -502,10 +502,10 @@ public class FailedNodeTimePlotter implements Serializable
     tuplesMissedWriter.flush();
     tuplesBurnedWriter.flush();
     
-    generatePlots();
+    generatePlots(testID);
   }
   
-  private void generatePlots()
+  private void generatePlots(int testID)
   {
     try
     {
@@ -516,9 +516,9 @@ public class FailedNodeTimePlotter implements Serializable
         String location = bash.getAbsolutePath();
         String [] commandArg = new String[9];
         commandArg[0] = location;
-        commandArg[1] = "topologies";
-        commandArg[2] = "adaptation_cost_(J)";
-        commandArg[3] = new Integer(queryID+1).toString();
+        commandArg[1] = "node failures";
+        commandArg[2] = "aditional lifetime";
+        commandArg[3] = new Integer(testID+1).toString();
         commandArg[4] = new Double(this.energyYMax).toString();
         commandArg[5] = outputFolder.getAbsolutePath() + sep + "query" + queryID + "energy";
         commandArg[6] = energyPlotFile.getAbsolutePath();
@@ -588,9 +588,9 @@ public class FailedNodeTimePlotter implements Serializable
         String location = bash.getAbsolutePath();
         String [] commandArg = new String[10];
         commandArg[0] = location;
-        commandArg[1] = "topologies";
-        commandArg[2] = "adaptation_cost_(J)";
-        commandArg[3] = new Integer(queryID+1).toString();
+        commandArg[1] = "node failures";
+        commandArg[2] = "lifetime (100s)";
+        commandArg[3] = new Integer(testID+1).toString();
         commandArg[4] = new Double(this.energyYMax).toString();
         commandArg[5] = outputFolder.getAbsolutePath() + sep+ "query" + queryID + "energy";
         commandArg[6] = energyPlotFile.getAbsolutePath();
@@ -690,7 +690,7 @@ public class FailedNodeTimePlotter implements Serializable
   public void plot(Adaptation global, Adaptation partial, Adaptation local) 
   throws IOException, OptimizationException
   {
-    this.plot(global, partial, local, 0);
+    this.plot(global, partial, local, 0, 1);
   }
 
   public void endPlotLine() 

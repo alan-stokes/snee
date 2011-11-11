@@ -324,9 +324,12 @@ public class Dispatcher {
     _autonomicManager.simulateEnergyDrainofAganedaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
   }
 
-  public void resetQEP(SensorNetworkQueryPlan qep)
+  public void resetQEP(SensorNetworkQueryPlan qep) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, 
+  IOException, CodeGenerationException
   {
     _autonomicManager.setCurrentQEP(qep); 
+    _autonomicManager.resetRunningSites(qep);
   }
 
 }

@@ -96,7 +96,8 @@ public interface SNEE {
 	 * @throws CodeGenerationException 
    */
 	
-	public int addQuery(String query, String parametersFile, int queryID)
+	public int addQuery(String query, String parametersFile, Integer queryID, 
+	                    boolean compilation, boolean starting, boolean dispatching)
 	throws SNEECompilerException, MetadataException, 
   EvaluatorException, SNEEException, SNEEConfigurationException, 
   SchemaMetadataException, TypeMappingException, OptimizationException, 
@@ -126,18 +127,6 @@ public interface SNEE {
    * @throws CodeGenerationException 
    */	
 	
-	public int addQueryWithoutCompilation(String query, String queryParamsFile)
-	throws SNEECompilerException, MetadataException, 
-  EvaluatorException, SNEEException, SNEEConfigurationException, SchemaMetadataException, 
-  TypeMappingException, OptimizationException, IOException, CodeGenerationException;
-	
-	/**
-	 * Retrieve the ResultStore for a specified query if it exists.
-	 * 
-	 * @param queryId Identifier of the query for which the result store should be returned
-	 * @return ResultStore for the query
-	 * @throws SNEEException Specified queryId does not exist
-	 */
 	public ResultStore getResultStore(int queryId) 
 	throws SNEEException;
 	

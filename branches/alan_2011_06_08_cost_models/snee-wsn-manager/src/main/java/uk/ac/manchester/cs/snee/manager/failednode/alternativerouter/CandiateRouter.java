@@ -138,7 +138,7 @@ public class CandiateRouter extends Router
     /*remove failed nodes from the failed node list, which are parents of a failed node already.
     * this allows routes calculated to be completely independent of other routes */
     HashMapList<Integer ,String> failedNodeLinks =
-                          createSetsOfLinkedFailedNodes(failedNodes, oldRoutingTree, depinnedNodes);
+                          generateSetsOfLinkedFailedNodes(failedNodes, oldRoutingTree, depinnedNodes);
     
     Iterator<Integer> failedLinkIterator = failedNodeLinks.keySet().iterator();
     int chainCounter = 1;
@@ -210,7 +210,6 @@ public class CandiateRouter extends Router
     {
       System.out.println("something died in the recursive mergement of routing tree fragments: " + e.getMessage());
       e.printStackTrace();
-      System.exit(0);
       return newRoutingTrees; 
     }
   }
@@ -517,7 +516,7 @@ public class CandiateRouter extends Router
    * @param oldRoutingTree 
    * @return
    */
-  private HashMapList<Integer, String> createSetsOfLinkedFailedNodes(
+  private HashMapList<Integer, String> generateSetsOfLinkedFailedNodes(
       ArrayList<String> failedNodes, RT RT, ArrayList<String> disconnectedNodes)
   {
     ArrayList<String> combinedNodes = new ArrayList<String>();

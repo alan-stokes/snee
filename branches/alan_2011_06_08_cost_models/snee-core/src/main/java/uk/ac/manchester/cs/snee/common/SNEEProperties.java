@@ -242,6 +242,7 @@ public class SNEEProperties {
 	
 	public static void setSetting(String propName, String setting)
 	{
+	  _props.remove(propName);
 	  _props.setProperty(propName, setting);
 	}
 	
