@@ -358,7 +358,12 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 	  else
 	  {
 	    logger.info("Using default topology file: "+defaultTopFile);
-      this._topology = TopologyReader.readNetworkTopology(defaultTopFile, defaultResFile);      
+	    try{
+      this._topology = TopologyReader.readNetworkTopology(defaultTopFile, defaultResFile);      }
+	    catch(Exception e)
+	    {
+	      System.out.println(e.getMessage());
+	    }
 	  }
 	}
 	

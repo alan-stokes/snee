@@ -148,7 +148,7 @@ public class ChoiceAssessor implements Serializable
       double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
       double siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site); // J
       runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
-      double agendaLength = Agenda.bmsToMs(adapt.getNewQep().getAgendaIOT().getLength_bms(false))/1000.0; // ms to s
+      double agendaLength = Agenda.bmsToMs(adapt.getNewQep().getAgendaIOT().getLength_bms(false))/1024.0; // ms to s
       double siteLifetime = (currentEnergySupply / siteEnergyCons) * agendaLength;
       //uncomment out sections to not take the root site into account
       if (site!=adapt.getNewQep().getIOT().getRT().getRoot()) 
@@ -336,8 +336,10 @@ public class ChoiceAssessor implements Serializable
         double sourceCost = adapt.getNewQep().getAgendaIOT().evaluateCommunicationTask(sourceTask, packets);
         double destCost = adapt.getNewQep().getAgendaIOT().evaluateCommunicationTask(destTask, packets);
         overallCost += sourceCost + destCost;
-        runningSites.get(source.getID()).addToCurrentAdaptationEnergyCost(sourceCost);
-        runningSites.get(dest.getID()).addToCurrentAdaptationEnergyCost(destCost);
+        RunTimeSite sourceSite = runningSites.get(source.getID());
+        RunTimeSite destSite = runningSites.get(dest.getID());
+        sourceSite.addToCurrentAdaptationEnergyCost(sourceCost);
+        destSite.addToCurrentAdaptationEnergyCost(destCost);
         dest = source;
       }
     }

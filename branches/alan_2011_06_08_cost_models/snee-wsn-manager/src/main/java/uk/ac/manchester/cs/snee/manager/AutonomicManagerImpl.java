@@ -453,6 +453,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   throws OptimizationException, SchemaMetadataException, TypeMappingException, 
   IOException, CodeGenerationException
   {
+    runningSites.clear();
     setupRunningSites();
   }
 

@@ -3,6 +3,7 @@ package uk.ac.manchester.cs.snee.manager.planner;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -24,6 +25,7 @@ public class ChoiceAssessorUtils extends RTUtils
    
    public void exportRTWithEnergies(String fname, String label)
    { 
+     DecimalFormat df = new DecimalFormat("#.#####");
    try {
        final PrintWriter out = new PrintWriter(new BufferedWriter(
          new FileWriter(fname)));
@@ -42,9 +44,9 @@ public class ChoiceAssessorUtils extends RTUtils
          out.print("shape = doublecircle ");
        }
        out.print("label = \"" + currentSite.getID());
-       out.print("\\n energy stock: " + runningSites.get(currentSite.getID()).getCurrentEnergy() + "\\n ");
-       out.print("QEP Cost: " + runningSites.get(currentSite.getID()).getQepExecutionCost() + "\\n ");
-       out.print("Adapt Cost: " + runningSites.get(currentSite.getID()).getCurrentAdaptationEnergyCost() + "\\n ");
+       out.print("\\n energy stock: " + df.format(runningSites.get(currentSite.getID()).getCurrentEnergy()) + "\\n ");
+       out.print("QEP Cost: " + df.format(runningSites.get(currentSite.getID()).getQepExecutionCost()) + "\\n ");
+       out.print("Adapt Cost: " + df.format(runningSites.get(currentSite.getID()).getCurrentAdaptationEnergyCost()) + "\\n ");
 //         out.print(currentSite.getFragmentsString() + "\\n");
 //         out.print(currentSite.getExchangeComponentsString());
        out.println("\"];");
