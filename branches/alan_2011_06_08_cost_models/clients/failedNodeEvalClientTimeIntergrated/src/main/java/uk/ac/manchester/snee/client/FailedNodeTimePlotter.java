@@ -32,6 +32,12 @@ public class FailedNodeTimePlotter implements Serializable
   private BufferedWriter lifetimeWriter;
   private ArrayList<Double> globalLifetimes = new ArrayList<Double>();
   private ArrayList<Double> partialLifetimes = new ArrayList<Double>();
+  private ArrayList<Double> mixedLifetimes = new ArrayList<Double>();
+  private ArrayList<Double> globalTupleProduction = new ArrayList<Double>();
+  private ArrayList<Double> partialTupleProduction = new ArrayList<Double>();
+  private ArrayList<Double> mixedTupleProduction = new ArrayList<Double>();
+  
+  
   
   
   public boolean addGlobalLifetime(Double e)

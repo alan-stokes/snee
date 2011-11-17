@@ -206,7 +206,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
     SNEEController control = (SNEEController) controller;
-    control.addQuery(_query, _queryParams, null, false, true, false);
+    control.addQuery(_query, _queryParams, null, true, false, true);
     controller.close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");

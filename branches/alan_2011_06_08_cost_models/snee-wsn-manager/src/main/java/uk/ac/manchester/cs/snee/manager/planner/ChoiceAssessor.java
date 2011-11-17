@@ -151,8 +151,8 @@ public class ChoiceAssessor implements Serializable
       double agendaLength = Agenda.bmsToMs(adapt.getNewQep().getAgendaIOT().getLength_bms(false))/1024.0; // ms to s
       double siteLifetime = (currentEnergySupply / siteEnergyCons) * agendaLength;
       //uncomment out sections to not take the root site into account
-      if (site!=adapt.getNewQep().getIOT().getRT().getRoot()) 
-      { 
+      //if (site!=adapt.getNewQep().getIOT().getRT().getRoot()) 
+      //{ 
         if(shortestLifetime > siteLifetime)
         {
           if(!site.isDeadInSimulation())
@@ -161,7 +161,7 @@ public class ChoiceAssessor implements Serializable
             adapt.setNodeIdWhichEndsQuery(site.getID());
           }
         }
-      }
+      //}
     }
     return shortestLifetime;
   }

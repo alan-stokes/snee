@@ -11,6 +11,7 @@ import java.util.Iterator;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Edge;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
@@ -33,12 +34,12 @@ public class IOTUtils
   private final IOT iot;
   private Tree instanceOperatorTree = null;
   private DAF daf;
-  private CostParameters costs;
+  private static CostParameters costs;
   
   public IOTUtils(final IOT newIOT, CostParameters costParams) 
   {
     this.iot = newIOT;
-    this.costs = costParams;
+    IOTUtils.costs = costParams;
     this.instanceOperatorTree = this.iot.getOperatorTree();
   }
   
@@ -64,7 +65,7 @@ public class IOTUtils
   }
   
   /**
-   * this method instills the fragemtns onto the sites, this is to allow the iot to be compatiable with the code generator.
+   * this method instills the fragments onto the sites, this is to allow the iot to be compatible with the code generator.
    * @param daf
    */
   private void updateSites(DAF daf)
@@ -144,10 +145,10 @@ public class IOTUtils
     return faf;
   }
   
-  private static DAF linkFragments(DAF faf, RT rt, IOT iot,
-      String queryName) throws SNEEException, SchemaMetadataException {
+  private static DAF linkFragments(DAF faf, RT rt, IOT iot, String queryName) 
+  throws SNEEException, SchemaMetadataException 
+  {
     DAF cDAF = faf;
-    
     Iterator<InstanceOperator> opInstIter = iot.treeIterator(TraversalOrder.POST_ORDER);
     while (opInstIter.hasNext()) 
     {
@@ -156,38 +157,37 @@ public class IOTUtils
       {
         //have to get the cloned copy in compactDaf...
         SensornetOperator op = (SensornetOperator)cDAF.getOperatorTree().getNode(opInst.getSensornetOperator().getID());
-  
+
         Site sourceSite = (Site)cDAF.getRT().getSite(opInst.getSite().getID());
         Fragment sourceFrag = op.getContainingFragment();
-        
-        if (op.getOutDegree() > 0) 
-        {
+      
+        if (op.getOutDegree() > 0) {
           SensornetOperator parentOp = op.getParent();
-  
+
           if (parentOp instanceof SensornetExchangeOperator) 
           {
-  
-            SensornetExchangeOperator exop = (SensornetExchangeOperator) parentOp;
-            Fragment destFrag = exop.getDestFragment();
-            InstanceOperator parent = (InstanceOperator)opInst.getOutput(0);
-            while(parent.getSensornetOperator() instanceof SensornetExchangeOperator)
+            InstanceOperator paOpInst = (InstanceOperator)opInst.getOutput(0);
+            while(paOpInst instanceof InstanceExchangePart)
             {
-              parent = (InstanceOperator)parent.getOutput(0);
+              paOpInst = (InstanceOperator)paOpInst.getOutput(0);
             }
-            Site destSite = parent.getSite();
-            
+          
+            Site destSite = (Site)cDAF.getRT().getSite(paOpInst.getSite().getID());
+            String OpInstOutputPhysicalID = paOpInst.getSensornetOperator().getID();
+            SensornetOperator dafSensorNetOperator = (SensornetOperator)cDAF.getOperatorTree().getNode(OpInstOutputPhysicalID);
+            Fragment destFrag = dafSensorNetOperator.getContainingFragment();
             final Path path = cDAF.getRT().getPath(sourceSite.getID(), destSite.getID());
-            
+          
             cDAF.placeFragment(sourceFrag, sourceSite);
             cDAF.linkFragments(sourceFrag, sourceSite, destFrag, destSite, path);
           }       
         } 
         else 
         {  
-          cDAF.placeFragment(sourceFrag, sourceSite);
+        cDAF.placeFragment(sourceFrag, sourceSite);
         }
       }
-    }
+     }
     return cDAF;
   }
 
@@ -357,6 +357,12 @@ public class IOTUtils
    */
   public void exportAsDotFileWithFrags(final String outputFolderString, final String label, boolean exchangesOnSites)
   {
+    exportAsDotFileWithFrags(outputFolderString, label, exchangesOnSites, false);
+  }
+
+  public void exportAsDotFileWithFrags(final String outputFolderString, final String label,
+                                       boolean exchangesOnSites, boolean inputsOutputsSites)
+  {
     try
     {
       //create writer
@@ -390,7 +396,28 @@ public class IOTUtils
             while(operatorIterator.hasNext())
             {
               InstanceOperator currentOperator = operatorIterator.next();
-              out.println("\"" + currentOperator.getID() + "\" ;");
+              if(!inputsOutputsSites)
+                out.println("\"" + currentOperator.getID() + "\" ;");
+              else
+              {
+                String output = "\"" + currentOperator.getID() + "\" [label = \"" + 
+                " (" + currentOperator.getSite().getID() + ")(";
+                String inputs = "";
+                Iterator<Node> inputIterator = currentOperator.getInputsList().iterator();
+                while(inputIterator.hasNext())
+                {
+                  InstanceOperator input = (InstanceOperator) inputIterator.next();
+                  inputs = inputs.concat(input.getSite().getID() + ",");
+                }
+                output = output.concat(inputs + ")(");
+                if(currentOperator.getOutDegree() != 0)
+                {
+                  InstanceOperator outputop = (InstanceOperator) currentOperator.getOutput(0);
+                  output = output.concat(outputop.getSite().getID());
+                }
+                output = output.concat(")\"] ;");
+                out.println(output);
+              }
             }
             //output bottom blurb of a cluster
             out.println("fontsize=9;");
@@ -409,7 +436,25 @@ public class IOTUtils
           while(exchangePartsIterator.hasNext())
           {
             InstanceExchangePart exchangePart = exchangePartsIterator.next();
-            out.println("\"" + exchangePart.getID() + "\" ;");
+            if(!inputsOutputsSites)
+              out.println("\"" + exchangePart.getID() + "\" ;");
+            else
+            {
+              String output = "\"" + exchangePart.getID() + "\" [label = \"" +
+              " (" + exchangePart.getSite().getID() + ")(";
+              String inputs = "";
+              Iterator<Node> inputIterator = exchangePart.getInputsList().iterator();
+              while(inputIterator.hasNext())
+              {
+                InstanceOperator input = (InstanceOperator) inputIterator.next();
+                inputs = inputs.concat(input.getSite().getID() + ",");
+              }
+              output = output.concat(inputs + ")(");
+              InstanceOperator outputop = (InstanceOperator) exchangePart.getOutput(0);
+              output = output.concat(outputop.getSite().getID());
+              output = output.concat(") \" ] ;");
+              out.println(output);
+            }
           }
         }
       
@@ -439,5 +484,6 @@ public class IOTUtils
       System.out.println("Export failed: " + e.toString());
       System.err.println("Export failed: " + e.toString());
     }
+    
   }
 }

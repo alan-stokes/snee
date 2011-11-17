@@ -117,14 +117,6 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	      recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
 	      calculated = false;
       }
-	    /*
-	    queryIterator = queries.iterator();
-	    while(queryIterator.hasNext())
-      {
-        recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
-        calculated = false;
-      }
-      */
 	    failedOutput.write("\\end{document}");
 	    failedOutput.flush();
 	    failedOutput.close();  
@@ -281,7 +273,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         testNo++;
       }
       currentlyFailedNodes.clear();
-      double currentLifetime = numberOfExectutionCycles * originalQEP.getAgendaIOT().getLength_bms(false) * currentNumberOfFailures;
+      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures;
       utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.GLOBAL);
       client.resetDataSources(originalQEP);
       

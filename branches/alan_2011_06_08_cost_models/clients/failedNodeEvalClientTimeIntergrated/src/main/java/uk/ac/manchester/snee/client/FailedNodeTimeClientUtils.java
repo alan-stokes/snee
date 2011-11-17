@@ -171,9 +171,9 @@ public class FailedNodeTimeClientUtils
     File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "OTASection" +  sep + "storedObjects");
     ArrayList<Adaptation> orginal = this.readInObjects(inputFolder);
     DecimalFormat df = new DecimalFormat("#.#####");
-    System.out.println(df.format(orginal.get(0).getLifetimeEstimate() / 1000));
-    plot.addGlobalLifetime(orginal.get(0).getLifetimeEstimate());
-    plot.addPartialLifetime(orginal.get(0).getLifetimeEstimate());
+    System.out.println(df.format(orginal.get(0).getLifetimeEstimate()));
+    plot.addGlobalLifetime(orginal.get(0).getLifetimeEstimate() * 1000);
+    plot.addPartialLifetime(orginal.get(0).getLifetimeEstimate() * 1000);
   }
 
   public Adaptation getGlobal()
@@ -199,17 +199,20 @@ public class FailedNodeTimeClientUtils
     DecimalFormat df = new DecimalFormat("#.#####");
     if(which == PlotterEnum.GLOBAL && global != null)
     {
-      System.out.println(df.format((global.getLifetimeEstimate() + currentLifetime) / 1000));
+      Double overallLifetime = new Double(global.getLifetimeEstimate().doubleValue() + currentLifetime);
+      System.out.println(df.format( overallLifetime / 1000));
       plot.addGlobalLifetime(global.getLifetimeEstimate() + currentLifetime);
     }
     else if(which == PlotterEnum.PARTIAL && partial != null)
     {
-      System.out.println(df.format((partial.getLifetimeEstimate() + currentLifetime) / 1000));
+      Double overallLifetime = new Double(partial.getLifetimeEstimate().doubleValue() + currentLifetime);
+      System.out.println(df.format(overallLifetime / 1000));
       plot.addPartialLifetime(partial.getLifetimeEstimate() + currentLifetime);
     }
     else if(which == PlotterEnum.LOCAL & local != null)
     {
-      System.out.println(df.format((local.getLifetimeEstimate() + currentLifetime) / 1000));
+      Double overallLifetime = new Double(local.getLifetimeEstimate().doubleValue() + currentLifetime);
+      System.out.println(df.format(overallLifetime / 1000));
       plot.addPartialLifetime(local.getLifetimeEstimate() + currentLifetime);
     }
   }

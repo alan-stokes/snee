@@ -511,8 +511,7 @@ return this.getChildFragments().size();
 
   public String getFragID()
   {
-    // TODO Auto-generated method stub
-    return null;
+    return new Integer(fragID).toString();
   }
  
  

@@ -464,7 +464,8 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
             InstanceExchangePart eqPart = eqivExchangeIterator.next();
             if(nextPart.getID().equals(eqPart.getID()))
             {
-              part.replaceOutput(nextPart, eqPart);
+              part.clearOutputs();
+              part.addOutput(eqPart);
               part.setNextExchange(eqPart);
               nextPart.clearInputs();
               nextPart.addInput(eqPart);
@@ -535,7 +536,8 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           rewireNodes(clonedIOT, failedNodeID, equivilentNodeID);
         }
         new IOTUtils(clonedIOT, this.currentQEP.getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iot", "iot with eqiv nodes", true);
-      
+        
+        new IOTUtils(clonedIOT, this.currentQEP.getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotInputs", "iot with eqiv nodes", true, true);
         try
         {
           IOT newIOT = clonedIOT;
