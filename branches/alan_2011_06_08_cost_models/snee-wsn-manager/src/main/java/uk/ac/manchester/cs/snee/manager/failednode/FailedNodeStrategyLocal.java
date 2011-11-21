@@ -185,7 +185,13 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   
         clonedPart.setDestFrag(part.getDestFrag());
         clonedPart.getSourceFrag().setSite(equilvientSite); 
-        rootOp = clonedPart.getSourceFrag().getRootOperator();
+        if(clonedPart.getPrevious() == null)
+          rootOp = clonedPart.getSourceFrag().getRootOperator();
+        else
+          rootOp = clonedPart.getPrevious();
+        
+        if(!rootOp.getSite().getID().equals(clonedPart.getSite().getID()))
+            rootOp = clonedPart;
       }
       
       sortOutChildren(rootOp, equilvientSite, clusterHeadSite, qep);
@@ -266,7 +272,11 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
         operator.replaceInput(op, qep.getIOT().getOperatorInstance(op.getID()));
         InstanceExchangePart part = (InstanceExchangePart) operator;
         equilvientSite.addInstanceExchangePart(part);
-        Site previousSite = qep.getIOT().getRT().getSite(part.getPrevious().getSite().getID());
+        Site previousSite = null;
+        if(part.getPrevious() == null)
+          previousSite = qep.getIOT().getRT().getSite(part.getPrevious().getSite().getID());
+        else
+          previousSite = qep.getIOT().getRT().getSite(part.getPrevious().getSite().getID());
         Iterator<InstanceExchangePart> previousSitesExchanges = previousSite.getInstanceExchangeComponents().iterator();
         while(previousSitesExchanges.hasNext())
         {
@@ -467,8 +477,8 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
               part.clearOutputs();
               part.addOutput(eqPart);
               part.setNextExchange(eqPart);
-              nextPart.clearInputs();
-              nextPart.addInput(eqPart);
+              eqPart.clearInputs();
+              eqPart.addInput(part);
               part.setDestinitionSite(equivilentSite);
             }
           }

@@ -27,7 +27,7 @@ public class Adaptation implements Serializable
   private HashMap<String, Long> siteEnergyCosts = new HashMap<String, Long>();
   private Double overallEnergyCost = null;
   private Double runtimeCost = null;
-  private Double lifetimeEstimate = null; //done in agenda cycles
+  private Double lifetimeEstimate = null; 
   private StrategyIDEnum id;
   private int numberID;
   private String nodeIdWhichEndsQuery = null;

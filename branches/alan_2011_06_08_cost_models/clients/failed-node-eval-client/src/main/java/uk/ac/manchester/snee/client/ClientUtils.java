@@ -117,6 +117,9 @@ public class ClientUtils
     moveImagesToLatexFolder(out, adaptations, testID, queryid);
     sortout(adaptations);
     plot.plot(global, partial, local);
+    global = null;
+    partial = null;
+    local = null;
   }
   
   private void sortout(ArrayList<Adaptation> adaptations)

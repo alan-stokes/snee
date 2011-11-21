@@ -7,10 +7,13 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyEnum;
 
 public class Plotter implements Serializable
 {
@@ -230,29 +233,46 @@ public class Plotter implements Serializable
       energyYMax = Math.max(energyYMax, partial.getEnergyCost());
       numberOfAdaptations++;
     }
+    else
+    {
+      energyWriter.write(df.format(0.0) + " ");
+    }
     if(local != null)
     {
       energyWriter.write(df.format(local.getEnergyCost()) + " ");
       energyYMax = Math.max(energyYMax, local.getEnergyCost());
       numberOfAdaptations++;
     }
+    else
+    {
+      energyWriter.write(df.format(0.0) + " ");
+    }
+    
     energyWriter.write("\n");
     
     timeWriter.write(queryID +  "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
-      timeWriter.write(df.format(global.getTimeCost() / 1000) + " ");
-      timeYMax = Math.max(timeYMax, global.getTimeCost() / 1000);
+      timeWriter.write(df.format(global.getTimeCost() / new Double(1000) / new Double(1024)) + " ");
+      timeYMax = Math.max(timeYMax, global.getTimeCost() / new Double(1000) / new Double(1024));
     }
     if(partial != null)
     {
-      timeWriter.write(df.format(partial.getTimeCost() / 1000) + " ");
-      timeYMax = Math.max(timeYMax, partial.getTimeCost() / 1000);
+      timeWriter.write(df.format(partial.getTimeCost() / new Double(1000) / new Double(1024)) + " ");
+      timeYMax = Math.max(timeYMax, partial.getTimeCost()/  new Double(1000) / new Double(1024));
+    }
+    else
+    {
+      timeWriter.write(df.format(0.0) + " ");
     }
     if(local != null)
     {
-      timeWriter.write(df.format(local.getTimeCost() / 1000) + " ");
-      timeYMax = Math.max(timeYMax, local.getTimeCost() / 1000);
+      timeWriter.write(df.format(local.getTimeCost() / new Double(1000) / new Double(1024)) + " ");
+      timeYMax = Math.max(timeYMax, local.getTimeCost() / new Double(1000) / new Double(1024));
+    }
+    else
+    {
+      timeWriter.write(df.format(0.0) + " ");
     }
     timeWriter.write("\n");
     
@@ -267,28 +287,44 @@ public class Plotter implements Serializable
       qepWriter.write(df.format(partial.getRuntimeCost()) + " ");
       qepYMax = Math.max(qepYMax, partial.getRuntimeCost());
     }
+    else
+    {
+      qepWriter.write(df.format(0.0) + " ");
+    }
     if(local != null)
     {
       qepWriter.write(df.format(local.getRuntimeCost()) + " ");
       qepYMax = Math.max(qepYMax, local.getRuntimeCost());
+    }
+    else
+    {
+      qepWriter.write(df.format(0.0) + " ");
     }
     qepWriter.write("\n");
     
     lifetimeWriter.write(queryID +  "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
-      lifetimeWriter.write(df.format(global.getLifetimeEstimate() / 1000) + " ");
-      lifetimeYMax = Math.max(lifetimeYMax, global.getLifetimeEstimate() / 1000);
+      lifetimeWriter.write(df.format(global.getLifetimeEstimate() / new Double(1000) / new Double(1024)) + " ");
+      lifetimeYMax = Math.max(lifetimeYMax, global.getLifetimeEstimate() /new Double(1000) / new Double(1024));
     }
     if(partial != null)
     {
-      lifetimeWriter.write(df.format(partial.getLifetimeEstimate() / 1000) + " ");
-      lifetimeYMax = Math.max(lifetimeYMax, partial.getLifetimeEstimate() / 1000);
+      lifetimeWriter.write(df.format(partial.getLifetimeEstimate() / new Double(1000) / new Double(1024)) + " ");
+      lifetimeYMax = Math.max(lifetimeYMax, partial.getLifetimeEstimate() / new Double(1000) / new Double(1024));
+    }
+    else
+    {
+      lifetimeWriter.write(df.format(0.0) + " ");
     }
     if(local != null)
     {
-      lifetimeWriter.write(df.format(local.getLifetimeEstimate() / 1000) + " ");
-      lifetimeYMax = Math.max(lifetimeYMax, local.getLifetimeEstimate() / 1000);
+      lifetimeWriter.write(df.format(local.getLifetimeEstimate() / new Double(1000) / new Double(1024)) + " ");
+      lifetimeYMax = Math.max(lifetimeYMax, local.getLifetimeEstimate() /new Double(1000) / new Double(1024));
+    }
+    else
+    {
+      lifetimeWriter.write(df.format(0.0) + " ");
     }
     lifetimeWriter.write("\n");
     
@@ -303,10 +339,18 @@ public class Plotter implements Serializable
       cyclesBurnedWriter.write(df.format(partial.getEnergyCost() / partial.getRuntimeCost()) + " ");
       cyclesBurnedYMax = Math.max(cyclesBurnedYMax, partial.getEnergyCost() / partial.getRuntimeCost());
     }
+    else
+    {
+      cyclesBurnedWriter.write(df.format(0.0) + " ");
+    }
     if(local != null)
     {
       cyclesBurnedWriter.write(df.format(local.getEnergyCost() / local.getRuntimeCost()) + " ");
       cyclesBurnedYMax = Math.max(cyclesBurnedYMax, local.getEnergyCost() / local.getRuntimeCost());
+    }
+    else
+    {
+      cyclesBurnedWriter.write(df.format(0.0) + " ");
     }
     cyclesBurnedWriter.write("\n");   
     
@@ -321,10 +365,18 @@ public class Plotter implements Serializable
       cyclesMissedWriter.write(df.format(partial.getTimeCost() / partial.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
       cyclesMissedYMax = Math.max(cyclesMissedYMax, partial.getTimeCost() / partial.getNewQep().getAgendaIOT().getLength_bms(false));
     }
+    else
+    {
+      cyclesMissedWriter.write(df.format(0.0) + " ");
+    }
     if(local != null)
     {
       cyclesMissedWriter.write(df.format(local.getTimeCost() / local.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
       cyclesMissedYMax = Math.max(cyclesMissedYMax, local.getTimeCost() / local.getNewQep().getAgendaIOT().getLength_bms(false));
+    }
+    else
+    {
+      cyclesMissedWriter.write(df.format(0.0) + " ");
     }
     cyclesMissedWriter.write("\n");   
 
@@ -339,10 +391,18 @@ public class Plotter implements Serializable
       cyclesLeftWriter.write(df.format(partial.getLifetimeEstimate() / partial.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
       cyclesLeftYMax = Math.max(cyclesLeftYMax, partial.getLifetimeEstimate() / partial.getNewQep().getAgendaIOT().getLength_bms(false));
     }
+    else
+    {
+      cyclesLeftWriter.write(df.format(0.0) + " ");
+    }
     if(local != null)
     {
       cyclesLeftWriter.write(df.format(local.getLifetimeEstimate() / local.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
       cyclesLeftYMax = Math.max(cyclesLeftYMax, local.getLifetimeEstimate() / local.getNewQep().getAgendaIOT().getLength_bms(false));
+    }
+    else
+    {
+      cyclesLeftWriter.write(df.format(0.0) + " ");
     }
     cyclesLeftWriter.write("\n"); 
 
@@ -379,10 +439,18 @@ public class Plotter implements Serializable
       tuplesLeftWriter.write(df.format(partialTupleCount * (partial.getLifetimeEstimate() / partial.getNewQep().getAgendaIOT().getLength_bms(false))) + " ");
       tuplesLeftYMax = Math.max(tuplesLeftYMax, partialTupleCount * (partial.getLifetimeEstimate() / partial.getNewQep().getAgendaIOT().getLength_bms(false)));
     }
+    else
+    {
+      tuplesLeftWriter.write(df.format(0.0) + " ");
+    }
     if(local != null)
     {
       tuplesLeftWriter.write(df.format(localTupleCount * (local.getLifetimeEstimate() / local.getNewQep().getAgendaIOT().getLength_bms(false))) + " ");
       tuplesLeftYMax = Math.max(tuplesLeftYMax, localTupleCount * (local.getLifetimeEstimate() / local.getNewQep().getAgendaIOT().getLength_bms(false)));
+    }
+    else
+    {
+      tuplesLeftWriter.write(df.format(0.0) + " ");
     }
     tuplesLeftWriter.write("\n"); 
     
@@ -397,10 +465,18 @@ public class Plotter implements Serializable
       tuplesMissedWriter.write(df.format((partial.getTimeCost() / partial.getNewQep().getAgendaIOT().getLength_bms(false)) * partialTupleCount) + " ");
       tuplesMissedYMax = Math.max(tuplesMissedYMax, (partial.getTimeCost() / partial.getNewQep().getAgendaIOT().getLength_bms(false)) * partialTupleCount);
     }
+    else
+    {
+      tuplesMissedWriter.write(df.format(0.0) + " ");
+    }
     if(local != null)
     {
       tuplesMissedWriter.write(df.format((local.getTimeCost() / local.getNewQep().getAgendaIOT().getLength_bms(false)) * localTupleCount) + " ");
       tuplesMissedYMax = Math.max(tuplesMissedYMax, (local.getTimeCost() / local.getNewQep().getAgendaIOT().getLength_bms(false)) * localTupleCount);
+    }
+    else
+    {
+      tuplesMissedWriter.write(df.format(0.0) + " ");
     }
     tuplesMissedWriter.write("\n"); 
     
@@ -415,10 +491,18 @@ public class Plotter implements Serializable
       tuplesBurnedWriter.write(df.format((partial.getEnergyCost() / partial.getRuntimeCost()) * partialTupleCount) + " ");
       tuplesBurnedYMax =  Math.max(tuplesBurnedYMax, (partial.getEnergyCost() / partial.getRuntimeCost()) * partialTupleCount);
     }
+    else
+    {
+      tuplesBurnedWriter.write(df.format(0.0) + " ");
+    }
     if(local != null)
     {
       tuplesBurnedWriter.write(df.format((local.getEnergyCost() / local.getRuntimeCost()) * localTupleCount) + " ");
       tuplesBurnedYMax =  Math.max(tuplesBurnedYMax, (local.getEnergyCost() / local.getRuntimeCost()) * localTupleCount);
+    }
+    else
+    {
+      tuplesBurnedWriter.write(df.format(0.0) + " ");
     }
     tuplesBurnedWriter.write("\n"); 
     
@@ -432,13 +516,14 @@ public class Plotter implements Serializable
     tuplesLeftWriter.flush(); 
     tuplesMissedWriter.flush();
     tuplesBurnedWriter.flush();
-    
+
     try
     {
-      if(numberOfAdaptations == 3)
+      String WSN_MANAGER_STRATEGIES =  SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_STRATEGIES);
+      if(!WSN_MANAGER_STRATEGIES.equals(FailedNodeStrategyEnum.All.toString()))
       {
         Runtime rt = Runtime.getRuntime();
-        File bash = new File("src/main/resources/bashScript/plotGnuplot3");
+        File bash = new File("src/main/resources/bashScript/plotGnuplot2");
         String location = bash.getAbsolutePath();
         String [] commandArg = new String[9];
         commandArg[0] = location;
@@ -510,7 +595,7 @@ public class Plotter implements Serializable
       {
         //energy
         Runtime rt = Runtime.getRuntime();
-        File bash = new File("src/main/resources/bashScript/plotGnuplot2");
+        File bash = new File("src/main/resources/bashScript/plotGnuplot3");
         String location = bash.getAbsolutePath();
         String [] commandArg = new String[10];
         commandArg[0] = location;

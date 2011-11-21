@@ -123,7 +123,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     while(siteIterator.hasNext())
     {
       Site currentSite = (Site) siteIterator.next();
-      Double energyStock = new Double(currentSite.getEnergyStock() / 1000);// (mj -> J)
+      Double energyStock = new Double(currentSite.getEnergyStock());
       Double qepExecutionCost = anyliser.calculateQepRunningCostForSite(currentSite);
       runningSites.put(currentSite.getID(), 
                        new RunTimeSite(energyStock,currentSite,qepExecutionCost));
