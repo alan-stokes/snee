@@ -148,7 +148,7 @@ public class ChoiceAssessor implements Serializable
       double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
       double siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site); // J
       runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
-      double agendaLength = Agenda.bmsToMs(adapt.getNewQep().getAgendaIOT().getLength_bms(false))/1024.0; // ms to s
+      double agendaLength = Agenda.bmsToMs(adapt.getNewQep().getAgendaIOT().getLength_bms(false))/new Double(1024); // ms to s
       double siteLifetime = (currentEnergySupply / siteEnergyCons) * agendaLength;
       //uncomment out sections to not take the root site into account
       //if (site!=adapt.getNewQep().getIOT().getRT().getRoot()) 
