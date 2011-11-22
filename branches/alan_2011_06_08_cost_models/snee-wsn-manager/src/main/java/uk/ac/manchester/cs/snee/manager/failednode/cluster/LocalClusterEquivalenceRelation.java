@@ -56,18 +56,35 @@ public class LocalClusterEquivalenceRelation implements Serializable
     Long secondarySiteMemoryAvilible = secondarySite.getRAM();
     
     //set to true, but then if any test passes, set to false
+    String output = "PrimarySite = " + first.getID() + " second site = " + second.getID(); 
     boolean success = true;
     //check memory test
     if(secondarySiteMemoryAvilible < primarySiteMemoryUsage)
+    {
       success = false;
+      output = output.concat(" memory"); 
+    }
     if(siteIdsInQEP.contains(Integer.parseInt(secondarySite.getID())))
+    {
       success = false;
+      output = output.concat(" secondary in rt"); 
+    }
     if(!siteIdsInQEP.contains(Integer.parseInt(primarySite.getID())))
+    {
       success = false;
-    if(primarySite.isLeaf())
+      output = output.concat(" primary not in rt"); 
+    }
+    if(primarySite.isSource())
+    {
+      output = output.concat(" primary is source"); 
       success = false;
+    }
     if(!sameConnections(primarySite, secondarySite, network))
-      success = false;  
+    {
+      success = false; 
+      output = output.concat(" incorrect connections"); 
+    }
+    System.out.println(output);
     return success;
   }
   
@@ -90,28 +107,29 @@ public class LocalClusterEquivalenceRelation implements Serializable
     while(primaryEdgesIterator.hasNext() && overallFound)
     {
       EdgeImplementation primaryEdge = primaryEdgesIterator.next();
-      Iterator<EdgeImplementation> secondaryEdgeIterator = secondaryEdges.iterator();
-      boolean found = false;
-      while(secondaryEdgeIterator.hasNext() && !found)
+      if(primaryEdge.getDestID().equals(primarySite.getID()))
       {
-        EdgeImplementation secondaryEdge = secondaryEdgeIterator.next();
-        //checks other set looking for same source id
-        if(primaryEdge.getDestID().equals(primarySite.getID()))
+        Iterator<EdgeImplementation> secondaryEdgeIterator = secondaryEdges.iterator();
+        if(primarySite.getID().equals("5") && secondarySite.getID().equals("19"))
         {
+        	System.out.println();
+        }
+        boolean found = false;
+        while(secondaryEdgeIterator.hasNext() && !found)
+        {
+          EdgeImplementation secondaryEdge = secondaryEdgeIterator.next();
+          //checks other set looking for same source id
           if(secondaryEdge.getSourceID().equals(primaryEdge.getSourceID()))
             found = true;
         }
-        //checks other set for same destination id
-        else 
+        if(found)
+          overallFound = true;
+        else
         {
-          if(secondaryEdge.getDestID().equals(primaryEdge.getDestID()))
-            found = true;
+    	  System.out.println(primaryEdge.getDestID() + "  " + primaryEdge.getSourceID());
+          overallFound = false;
         }
       }
-      if(found)
-        overallFound = true;
-      else
-        overallFound = false;
     }
     return overallFound;
   }

@@ -76,10 +76,29 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     clusters = new FailedNodeLocalCluster();
     network = getWsnTopology();
     locateEquivalentNodes();
+    transferQEP();
     new FailedNodeLocalClusterUtils(clusters, localFolder).outputAsTextFile();
   }
 
-  private void setupFolders(File outputFolder)
+  private void transferQEP() 
+  {
+    Iterator<String> keys = clusters.getKeySet().iterator();
+    while(keys.hasNext())
+    {
+      String key = keys.next();
+      Iterator<String> eqNodeIterator = clusters.getEquivilentNodes(key).iterator();
+      Node clusterHead = network.getNode(key);
+      while(eqNodeIterator.hasNext())
+      {
+        String eqNode = eqNodeIterator.next();
+        Node equilvientNode = network.getNode(eqNode);
+        //add sites fragments and operaotrs onto equivlent node
+        transferSiteQEP(currentQEP, clusterHead, equilvientNode);
+      }
+    }
+  }
+
+private void setupFolders(File outputFolder)
   {
     localFolder = new File(outputFolder.toString() + sep + "localStrategy");
     localFolder.mkdir();
@@ -122,8 +141,6 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           if(LocalClusterEquivalenceRelation.isEquivalent(clusterHead, equilvientNode, currentQEP, network))
           {
             clusters.addClusterNode(clusterHead.getID(), equilvientNode.getID());
-            //add sites fragments and operaotrs onto equivlent node
-            transferSiteQEP(currentQEP, clusterHead, equilvientNode);
           }
         }
       }

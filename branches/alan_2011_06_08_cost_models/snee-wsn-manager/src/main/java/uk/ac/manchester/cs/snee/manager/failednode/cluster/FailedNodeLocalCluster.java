@@ -36,11 +36,61 @@ public class FailedNodeLocalCluster implements Serializable
     this.equivilentNodes.addAll(primary, equivilentNodes);
   }
   
-  public void addClusterNode(String primary, String equivilentNodes)
+  /**
+   * searches though the rest of the clusters, looking for the equivilentNode.
+   * If none exist, tyhen add, else choose which cluster owns the node
+   * @param primary
+   * @param equivilentNode
+   */
+  public void addClusterNode(String primary, String equivilentNode)
   {
-    this.equivilentNodes.add(primary, equivilentNodes);
+    String key = locateOtherClusters(equivilentNode);
+    if(key == null)
+      this.equivilentNodes.add(primary, equivilentNode);
+    else
+    {
+      chooseNodeLocation(primary, key, equivilentNode);
+    }
   }
   
+  /**
+   * uses the huristic of putting the node in the smaller of the 2 relations
+   * @param primary
+   * @param key
+   * @param equivilentNode
+   */
+  private void chooseNodeLocation(String primary, String key, String equivilentNode)
+  {
+    int oldSize = equivilentNodes.get(key).size();
+    if(equivilentNodes.get(primary) == null)
+    {
+      this.removeNode(equivilentNode);
+      equivilentNodes.add(primary, equivilentNode);
+    }
+    else
+    {
+      int newSize = equivilentNodes.get(primary).size();
+      if(newSize < oldSize)
+      {
+        this.removeNode(equivilentNode);
+        equivilentNodes.add(primary, equivilentNode);
+      }
+    }
+  }
+
+  private String locateOtherClusters(String equivilentNode)
+  {
+    Iterator<String> keyIterator = this.equivilentNodes.keySet().iterator();
+    while(keyIterator.hasNext())
+    {
+      String key = keyIterator.next();
+      ArrayList<String> nodes = equivilentNodes.get(key);
+      if(nodes.contains(equivilentNode))
+        return key;
+    }
+    return null;
+  }
+
   public Set<String> getKeySet()
   {
     return this.equivilentNodes.keySet();
