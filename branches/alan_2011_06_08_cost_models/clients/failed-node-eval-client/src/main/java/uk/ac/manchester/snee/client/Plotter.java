@@ -11,6 +11,8 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityEstimatedCostModel;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyEnum;
@@ -357,12 +359,12 @@ public class Plotter implements Serializable
     cyclesMissedWriter.write(queryID +  "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
-      cyclesMissedWriter.write(df.format(global.getTimeCost() / global.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
+      cyclesMissedWriter.write(df.format(global.getTimeCost() / (Agenda.bmsToMs(global.getNewQep().getAgendaIOT().getLength_bms(false)) / new Double(1000))) + " ");
       cyclesMissedYMax = Math.max(cyclesMissedYMax, global.getTimeCost() / global.getNewQep().getAgendaIOT().getLength_bms(false));
     }
     if(partial != null)
     {
-      cyclesMissedWriter.write(df.format(partial.getTimeCost() / partial.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
+      cyclesMissedWriter.write(df.format(partial.getTimeCost() / (Agenda.bmsToMs(partial.getNewQep().getAgendaIOT().getLength_bms(false)) / new Double(1000))) + " ");
       cyclesMissedYMax = Math.max(cyclesMissedYMax, partial.getTimeCost() / partial.getNewQep().getAgendaIOT().getLength_bms(false));
     }
     else
@@ -371,7 +373,7 @@ public class Plotter implements Serializable
     }
     if(local != null)
     {
-      cyclesMissedWriter.write(df.format(local.getTimeCost() / local.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
+      cyclesMissedWriter.write(df.format(local.getTimeCost() / (Agenda.bmsToMs(local.getNewQep().getAgendaIOT().getLength_bms(false)) / new Double(1000))) + " ");
       cyclesMissedYMax = Math.max(cyclesMissedYMax, local.getTimeCost() / local.getNewQep().getAgendaIOT().getLength_bms(false));
     }
     else
@@ -383,12 +385,12 @@ public class Plotter implements Serializable
     cyclesLeftWriter.write(queryID +  "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
-      cyclesLeftWriter.write(df.format(global.getLifetimeEstimate() / global.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
+      cyclesLeftWriter.write(df.format(global.getLifetimeEstimate() / (Agenda.bmsToMs(global.getNewQep().getAgendaIOT().getLength_bms(false)) / new Double(1000))) + " ");
       cyclesLeftYMax = Math.max(cyclesLeftYMax, global.getLifetimeEstimate() / global.getNewQep().getAgendaIOT().getLength_bms(false));
     }
     if(partial != null)
     {
-      cyclesLeftWriter.write(df.format(partial.getLifetimeEstimate() / partial.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
+      cyclesLeftWriter.write(df.format(partial.getLifetimeEstimate() / (Agenda.bmsToMs(partial.getNewQep().getAgendaIOT().getLength_bms(false)) / new Double(1000))) + " ");
       cyclesLeftYMax = Math.max(cyclesLeftYMax, partial.getLifetimeEstimate() / partial.getNewQep().getAgendaIOT().getLength_bms(false));
     }
     else
@@ -397,7 +399,7 @@ public class Plotter implements Serializable
     }
     if(local != null)
     {
-      cyclesLeftWriter.write(df.format(local.getLifetimeEstimate() / local.getNewQep().getAgendaIOT().getLength_bms(false)) + " ");
+      cyclesLeftWriter.write(df.format(local.getLifetimeEstimate() / (Agenda.bmsToMs(local.getNewQep().getAgendaIOT().getLength_bms(false)) / new Double(1000))) + " ");
       cyclesLeftYMax = Math.max(cyclesLeftYMax, local.getLifetimeEstimate() / local.getNewQep().getAgendaIOT().getLength_bms(false));
     }
     else
@@ -431,7 +433,7 @@ public class Plotter implements Serializable
     tuplesLeftWriter.write(queryID +  "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
-      tuplesLeftWriter.write(df.format(globalTupleCount * (global.getLifetimeEstimate() / global.getNewQep().getAgendaIOT().getLength_bms(false))) + " ");
+      tuplesLeftWriter.write(df.format(globalTupleCount * (global.getLifetimeEstimate() / (AgendaIOT.bmsToMs(global.getNewQep().getAgendaIOT().getLength_bms(false))) / new Double(1000))) + " ");
       tuplesLeftYMax = Math.max(tuplesLeftYMax, globalTupleCount * (global.getLifetimeEstimate() / global.getNewQep().getAgendaIOT().getLength_bms(false)));
     }
     if(partial != null)

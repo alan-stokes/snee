@@ -143,6 +143,7 @@ public class ClientUtils
 
   public ArrayList<Adaptation> readInObjects(File inputFolder)
   {
+    System.out.println("reading in adapation objects");
     try 
     {  
       ArrayList<Adaptation> adapts = new ArrayList<Adaptation>();
@@ -163,6 +164,7 @@ public class ClientUtils
           adapts.add(ad);
         }     
       }
+      System.out.println("finished reading objects");
       this.sortout(adapts);
       adapts.clear();
       adapts.add(this.original);
@@ -176,7 +178,7 @@ public class ClientUtils
     }
     catch(Exception e)
     {
-      System.out.println(e.getMessage());
+      System.out.println("failure in reading in objects. error is " + e.getMessage());
       e.printStackTrace();
       System.exit(0);
       return null;

@@ -24,7 +24,7 @@ public class Adaptation implements Serializable
   private SensorNetworkQueryPlan newQep = null;
   private SensorNetworkQueryPlan oldQep = null;
   private Long timeCost = null;
-  private HashMap<String, Long> siteEnergyCosts = new HashMap<String, Long>();
+  private HashMap<String, Double> siteEnergyCosts = new HashMap<String, Double>();
   private Double overallEnergyCost = null;
   private Double runtimeCost = null;
   private Double lifetimeEstimate = null; 
@@ -239,15 +239,15 @@ public class Adaptation implements Serializable
     return lifetimeEstimate;
   }
   
-  public Long getSiteEnergyCost(Object key)
+  public Double getSiteEnergyCost(Object key)
   {
     if(siteEnergyCosts.get(key) == null)
-      return new Long(0);
+      return new Double(0);
     else
       return siteEnergyCosts.get(key);
   }
 
-  public Long putSiteEnergyCost(String key, Long value)
+  public Double putSiteEnergyCost(String key, Double value)
   {
     return siteEnergyCosts.put(key, value);
   }
