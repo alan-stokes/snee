@@ -21,7 +21,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
  *
  */
 
-public class LocalClusterEquivalenceRelation implements Serializable
+public class LocalClusterSuperEquivalenceRelation implements Serializable
 {
   /**
    * serialVersionUID

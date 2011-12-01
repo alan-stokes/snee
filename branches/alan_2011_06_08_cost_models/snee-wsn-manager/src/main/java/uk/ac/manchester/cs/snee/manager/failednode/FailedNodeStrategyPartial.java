@@ -17,7 +17,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
-import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.CandiateRouter;
@@ -62,7 +62,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
    * @param autonomicManager
    * the parent of this class.
    */
-  public FailedNodeStrategyPartial(AutonomicManager autonomicManager, 
+  public FailedNodeStrategyPartial(AutonomicManagerImpl autonomicManager, 
                                     SourceMetadataAbstract _metadata, boolean spacePinned, 
                                     boolean timePinned)
   {
@@ -81,7 +81,7 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     this.numberOfRoutingTreesToWorkOn = numberOfTrees;
   }
   
-  private void setUpFolders(AutonomicManager manager)
+  private void setUpFolders(AutonomicManagerImpl manager)
   {
     partialFolder = new File(outputFolder.toString() + sep + "partialStrategy");
     partialFolder.mkdir();

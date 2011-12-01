@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 
-public class FailedNodeLocalClusterUtils
+public class FailedNodeLocalLogicalOverlayUtils
 {
-  private FailedNodeLocalCluster cluster;
+  private LogicalOverlayNetwork cluster;
   private File outputFolder;
   private String sep = System.getProperty("file.separator");
   
-  public FailedNodeLocalClusterUtils(FailedNodeLocalCluster cluster, File outputfolder)
+  public FailedNodeLocalLogicalOverlayUtils(LogicalOverlayNetwork cluster, File outputfolder)
   {
     this.cluster = cluster;
     this.outputFolder = outputfolder;

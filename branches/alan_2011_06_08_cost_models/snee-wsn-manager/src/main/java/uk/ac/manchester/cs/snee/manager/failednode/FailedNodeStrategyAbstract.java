@@ -26,7 +26,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
-import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.StrategyAbstract;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
@@ -54,7 +54,7 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
    * bog standard constructor
    * @param manager
    */
-  public FailedNodeStrategyAbstract(AutonomicManager manager, SourceMetadataAbstract _metadata)
+  public FailedNodeStrategyAbstract(AutonomicManagerImpl manager, SourceMetadataAbstract _metadata)
   {
     this.manager = manager;
     this._metadata = _metadata;

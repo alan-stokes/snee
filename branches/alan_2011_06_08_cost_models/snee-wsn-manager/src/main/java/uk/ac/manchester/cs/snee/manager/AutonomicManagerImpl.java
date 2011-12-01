@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Logger;
+
+import com.rits.cloning.Cloner;
 
 //import org.apache.log4j.Logger;
 
@@ -456,5 +459,15 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     runningSites.clear();
     setupRunningSites();
   }
+
+  public HashMap<String, RunTimeSite> getCopyOfRunningSites()
+  {
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    return cloner.deepClone(runningSites);
+    
+  }
+  
+  
 
 }

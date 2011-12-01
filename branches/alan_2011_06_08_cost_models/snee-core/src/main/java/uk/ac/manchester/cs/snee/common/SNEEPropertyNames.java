@@ -206,6 +206,17 @@ public final class SNEEPropertyNames {
 	public static final String WSN_MANAGER_STRATEGIES = "wsn_manager.strategies";
 	
 	/**
+	 * used by the failed node local strategy to enforce a minimum resilience level
+	 */
+	public static final String WSN_MANAGER_K_RESILENCE_LEVEL = "wsn_manager.k_resilence_level";
+	
+	/**
+	 * used by the failed node local strategy to determine if sensing nodes are counted within the k 
+	 * resilience calculation
+	 */
+	 public static final String WSN_MANAGER_K_RESILENCE_SENSE = "wsn_manager.k_resilence_sense";
+	
+	/**
 	 * choice preference for the assessor for which type of adaptation to choose 
 	 * (global, partial, local and best)
 	 */

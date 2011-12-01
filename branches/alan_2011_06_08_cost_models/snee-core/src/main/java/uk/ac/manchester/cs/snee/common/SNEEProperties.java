@@ -259,7 +259,17 @@ public class SNEEProperties {
       setSetting(propName, "Best");
       return getSetting(propName);
     }
-    else
+    else if(propName.equals("wsn_manager.k_resilence_level"))
+    {
+      setSetting(propName, "1");
+      return getSetting(propName);
+    }
+    else if(propName.equals("wsn_manager.k_resilence_sense"))
+    {
+      setSetting(propName, "false");
+      return getSetting(propName);
+    }
+      
       return null;
   }
 

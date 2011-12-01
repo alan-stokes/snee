@@ -423,8 +423,7 @@ public class Topology extends Graph {
 //    }
     
     public RadioLink getRadioLink(final Site source, final Site dest) {
-    	String id = this.generateEdgeID(
-    			source.getID(), dest.getID());
+    	String id = this.generateEdgeID(source.getID(), dest.getID());
     	RadioLink link = (RadioLink) this.getEdge(id);
     	return link;
     }

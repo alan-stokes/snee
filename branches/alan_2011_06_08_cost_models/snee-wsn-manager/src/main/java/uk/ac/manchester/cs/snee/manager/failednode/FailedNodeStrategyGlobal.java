@@ -27,7 +27,7 @@ import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
-import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
@@ -53,7 +53,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
   private File globalFile;
   
   
-	public FailedNodeStrategyGlobal(AutonomicManager manager, 
+	public FailedNodeStrategyGlobal(AutonomicManagerImpl manager, 
 	                                 SourceMetadataAbstract _metadata, 
 	                                 MetadataManager _metadataManager)
   {

@@ -20,7 +20,6 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk network-topology.xsd">
 	<radio-link source="0" dest="12" bidirectional="true" energy="89" time="26" radio-loss="0"/>
 	<radio-link source="0" dest="13" bidirectional="true" energy="11" time="9" radio-loss="0"/>
 	<radio-link source="0" dest="17" bidirectional="true" energy="10" time="8" radio-loss="0"/>
-	<radio-link source="0" dest="" bidirectional="true" energy="14" time="14" radio-loss="0"/>
 	<radio-link source="0" dest="5" bidirectional="true" energy="11" time="9" radio-loss="0"/>
 	<radio-link source="0" dest="8" bidirectional="true" energy="15" time="18" radio-loss="0"/>
 	<radio-link source="0" dest="11" bidirectional="true" energy="14" time="14" radio-loss="0"/>

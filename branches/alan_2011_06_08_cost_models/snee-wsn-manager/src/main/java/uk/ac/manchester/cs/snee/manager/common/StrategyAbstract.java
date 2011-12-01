@@ -30,7 +30,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
-import uk.ac.manchester.cs.snee.manager.AutonomicManager;
+import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -42,6 +42,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public abstract class StrategyAbstract implements Serializable
@@ -52,7 +53,7 @@ public abstract class StrategyAbstract implements Serializable
   private static final long serialVersionUID = -2749736705430307089L;
   
   protected SensorNetworkQueryPlan currentQEP;
-  protected AutonomicManager manager;
+  protected AutonomicManagerImpl manager;
   protected SourceMetadataAbstract _metadata;
   protected File outputFolder;
   protected String sep = System.getProperty("file.separator");
@@ -76,11 +77,14 @@ public abstract class StrategyAbstract implements Serializable
    * @throws OptimizationException 
    * @throws TypeMappingException 
    * @throws IOException 
+   * @throws SNEEConfigurationException 
+   * @throws CodeGenerationException 
    */
   public abstract void initilise(QueryExecutionPlan oldQep, Integer noTrees)
-  throws SchemaMetadataException, TypeMappingException, OptimizationException, IOException ;
+  throws SchemaMetadataException, TypeMappingException, 
+  OptimizationException, IOException, SNEEConfigurationException, CodeGenerationException ;
   /**
-   * calculates a set of adpatations which will produce new QEPs which respond to the 
+   * calculates a set of adaptations which will produce new QEPs which respond to the 
    * failed node. 
    * @param nodeID the id for the failed node of the query plan
    * @return new query plan which has now adjusted for the failed node.

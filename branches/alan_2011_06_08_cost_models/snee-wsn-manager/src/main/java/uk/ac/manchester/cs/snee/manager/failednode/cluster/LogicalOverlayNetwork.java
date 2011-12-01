@@ -12,7 +12,7 @@ import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
  * @author alan
  *
  */
-public class FailedNodeLocalCluster implements Serializable
+public class LogicalOverlayNetwork implements Serializable
 {
   /**
    * serialVersionUID
@@ -21,19 +21,19 @@ public class FailedNodeLocalCluster implements Serializable
   
   
   // cluster rep
-  private HashMapList<String, String> equivilentNodes; 
+  private HashMapList<String, String> clusters; 
   
   /**
    * constructor
    */
-  public FailedNodeLocalCluster()
+  public LogicalOverlayNetwork()
   {
-    equivilentNodes = new HashMapList<String, String>();
+    clusters = new HashMapList<String, String>();
   }
   
   public void addClusterNode(String primary, ArrayList<String> equivilentNodes)
   {
-    this.equivilentNodes.addAll(primary, equivilentNodes);
+    this.clusters.addAll(primary, equivilentNodes);
   }
   
   /**
@@ -46,7 +46,7 @@ public class FailedNodeLocalCluster implements Serializable
   {
     String key = locateOtherClusters(equivilentNode);
     if(key == null)
-      this.equivilentNodes.add(primary, equivilentNode);
+      this.clusters.add(primary, equivilentNode);
     else
     {
       chooseNodeLocation(primary, key, equivilentNode);
@@ -61,30 +61,30 @@ public class FailedNodeLocalCluster implements Serializable
    */
   private void chooseNodeLocation(String primary, String key, String equivilentNode)
   {
-    int oldSize = equivilentNodes.get(key).size();
-    if(equivilentNodes.get(primary) == null)
+    int oldSize = clusters.get(key).size();
+    if(clusters.get(primary) == null)
     {
       this.removeNode(equivilentNode);
-      equivilentNodes.add(primary, equivilentNode);
+      clusters.add(primary, equivilentNode);
     }
     else
     {
-      int newSize = equivilentNodes.get(primary).size();
+      int newSize = clusters.get(primary).size();
       if(newSize < oldSize)
       {
         this.removeNode(equivilentNode);
-        equivilentNodes.add(primary, equivilentNode);
+        clusters.add(primary, equivilentNode);
       }
     }
   }
 
   private String locateOtherClusters(String equivilentNode)
   {
-    Iterator<String> keyIterator = this.equivilentNodes.keySet().iterator();
+    Iterator<String> keyIterator = this.clusters.keySet().iterator();
     while(keyIterator.hasNext())
     {
       String key = keyIterator.next();
-      ArrayList<String> nodes = equivilentNodes.get(key);
+      ArrayList<String> nodes = clusters.get(key);
       if(nodes.contains(equivilentNode))
         return key;
     }
@@ -93,12 +93,12 @@ public class FailedNodeLocalCluster implements Serializable
 
   public Set<String> getKeySet()
   {
-    return this.equivilentNodes.keySet();
+    return this.clusters.keySet();
   }
 
   public ArrayList<String> getEquivilentNodes(String key)
   {
-    return equivilentNodes.get(key);
+    return clusters.get(key);
   }
   
   /**
@@ -108,14 +108,25 @@ public class FailedNodeLocalCluster implements Serializable
    */
   public void removeNode(String removal)
   {
-    Set<String> nodeKeys = equivilentNodes.keySet();
+    Set<String> nodeKeys = clusters.keySet();
     Iterator<String> keyIterator = nodeKeys.iterator();
     while(keyIterator.hasNext())
     {
       String key = keyIterator.next();
-      equivilentNodes.remove(key, removal);
+      clusters.remove(key, removal);
     }
   }
   
+  public String toString()
+  {
+    Iterator<String> keys = this.getKeySet().iterator();
+    String output = "";
+    while(keys.hasNext())
+    {
+      String key = keys.next();
+      output = output.concat(key + " : " + clusters.get(key).toString() + ":" );
+    }
+    return output;
+  }
   
 }

@@ -18,6 +18,7 @@ import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
+import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -41,6 +42,17 @@ public class Planner extends AutonomicManagerComponent
     assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder);
     runningSites = manager.getRunningSites();
   }
+  
+  public Planner(AutonomicManagerImpl autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager,
+                 HashMap<String, RunTimeSite> runningSites, File plannerFolder)   
+  {
+    manager = autonomicManager;
+    this.plannerFolder = plannerFolder;
+    assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder);
+    this.runningSites = runningSites;
+  }
+  
+  
   
 /**
  * sets up folder to store output from the planner and its sub functions
@@ -216,6 +228,13 @@ public class Planner extends AutonomicManagerComponent
     new PlannerUtils(orgianlOTAProgramCost, manager, output, orgianlOTAProgramCost).writeObjectsToFile(); 
     new ChoiceAssessorUtils(runningSites, orgianlOTAProgramCost.getNewQep().getRT())
     .exportRTWithEnergies(output.toString()+ sep + "energies" , "");
+  }
+
+  public void assessOverlayCosts(File output, Adaptation overlayOTAProgramCost, 
+                                 LogicalOverlayNetwork current)
+  {
+    // TODO Auto-generated method stub
+    
   }
   
 }

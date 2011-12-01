@@ -39,6 +39,7 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public class Anaylsiser extends AutonomicManagerComponent
@@ -72,7 +73,7 @@ public class Anaylsiser extends AutonomicManagerComponent
       FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
         new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
       FailedNodeStrategyLocal failedNodeFrameworkLocal = 
-        new FailedNodeStrategyLocal(manager, _metadata);
+        new FailedNodeStrategyLocal(manager, _metadata, _metadataManager);
       frameworks.add(failedNodeFrameworkGlobal);
       frameworks.add(failedNodeFrameworkLocal);
       
@@ -101,7 +102,7 @@ public class Anaylsiser extends AutonomicManagerComponent
       //FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
       //  new FailedNodeStrategyPartial(manager, _metadata, true, false);
       FailedNodeStrategyLocal failedNodeFrameworkLocal = 
-        new FailedNodeStrategyLocal(manager, _metadata);
+        new FailedNodeStrategyLocal(manager, _metadata, _metadataManager);
       FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
         new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
       frameworks.add(failedNodeFrameworkLocal);
@@ -119,11 +120,14 @@ public class Anaylsiser extends AutonomicManagerComponent
    * @throws TypeMappingException
    * @throws OptimizationException
    * @throws IOException
+   * @throws SNEEConfigurationException 
+   * @throws CodeGenerationException 
    */
   public void initilise(QueryExecutionPlan qep, Integer noOfTrees) 
   throws 
   SchemaMetadataException, TypeMappingException, 
-  OptimizationException, IOException 
+  OptimizationException, IOException, 
+  SNEEConfigurationException, CodeGenerationException 
   {//sets ECMs with correct query execution plan
 	  this.qep = (SensorNetworkQueryPlan) qep;
 	  this.CMA = new AnayliserCostModelAssessor(qep);
