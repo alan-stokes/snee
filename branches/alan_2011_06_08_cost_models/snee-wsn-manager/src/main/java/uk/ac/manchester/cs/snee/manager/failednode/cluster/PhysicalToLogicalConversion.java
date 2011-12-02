@@ -22,17 +22,15 @@ public class PhysicalToLogicalConversion
 {
   
   private LogicalOverlayNetwork logicalOverlay = null;
-  private SensorNetworkQueryPlan currentQEP;
   private Topology network = null;
   private File localFolder;
   private String sep = System.getProperty("file.separator");
   
   public PhysicalToLogicalConversion(LogicalOverlayNetwork logicalOverlay, 
-                                     SensorNetworkQueryPlan currentQEP, Topology network,
+                                     Topology network,
                                      File localFolder)
   {
     this.logicalOverlay = logicalOverlay;
-    this.currentQEP = currentQEP;
     this.network = network;
     this.localFolder = localFolder;
   }
@@ -53,7 +51,7 @@ public class PhysicalToLogicalConversion
         String eqNode = eqNodeIterator.next();
         Node equilvientNode = network.getNode(eqNode);
         //add sites fragments and operaotrs onto equivlent node
-        transferSiteQEP(currentQEP, clusterHead, equilvientNode);
+        transferSiteQEP(logicalOverlay.getQep(), clusterHead, equilvientNode);
       }
     }
   }
@@ -67,7 +65,7 @@ public class PhysicalToLogicalConversion
   private void transferSiteQEP(SensorNetworkQueryPlan qep, Node clusterHead,
                            Node equilvientNode)
   {
-    new IOTUtils(qep.getIOT(), this.currentQEP.getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotBefore", "iot with eqiv nodes", true);
+    new IOTUtils(qep.getIOT(), qep.getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotBefore", "iot with eqiv nodes", true);
 
     Site equilvientSite = (Site) equilvientNode;
     Site clusterHeadSite = (Site) clusterHead;

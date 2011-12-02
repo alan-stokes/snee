@@ -313,4 +313,18 @@ public class Anaylsiser extends AutonomicManagerComponent
     }
   }
 
+  /**
+   * updates the local strategy with the final 
+   * @param finalChoice
+   */
+  public void updateFrameworks(Adaptation finalChoice)
+  {
+    Iterator<StrategyAbstract> frameworkIterator = frameworks.iterator();
+    while(frameworkIterator.hasNext())
+    {
+      StrategyAbstract framework = frameworkIterator.next();
+      framework.update(finalChoice);
+    }
+  }
+
 }

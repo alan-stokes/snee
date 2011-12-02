@@ -18,6 +18,7 @@ import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
+import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -231,10 +232,17 @@ public class Planner extends AutonomicManagerComponent
   }
 
   public void assessOverlayCosts(File output, Adaptation overlayOTAProgramCost, 
-                                 LogicalOverlayNetwork current)
+                                 LogicalOverlayNetwork current,
+                                 FailedNodeStrategyLocal failedNodeStrategyLocal) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException,
+  IOException, CodeGenerationException
   {
-    // TODO Auto-generated method stub
-    
+    this.assessor.updateStorageLocation(output);
+    this.assessor.assessOverlayChoice(overlayOTAProgramCost, runningSites, current, failedNodeStrategyLocal);
+    this.assessor.updateStorageLocation(plannerFolder);
+    new PlannerUtils(overlayOTAProgramCost, manager, output, overlayOTAProgramCost).writeObjectsToFile(); 
+    new ChoiceAssessorUtils(runningSites, overlayOTAProgramCost.getNewQep().getRT())
+    .exportRTWithEnergies(output.toString()+ sep + "energies" , "");
   }
   
 }

@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import com.rits.cloning.Cloner;
 
@@ -104,9 +105,9 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     runningSites = new HashMap<String, RunTimeSite>();
     anyliser = new Anaylsiser(this, _metadata, _metadataManager);
     planner = new Planner(this, _metadata, _metadataManager);
+    setupRunningSites((SensorNetworkQueryPlan) qep);
     monitor.initilise(_metadata, qep, resultSet);
     anyliser.initilise(qep, numberOfTreesToUse);
-    setupRunningSites();
   }
 
   /**
@@ -117,7 +118,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
    * @throws IOException
    * @throws CodeGenerationException
    */
-  private void setupRunningSites() 
+  private void setupRunningSites(SensorNetworkQueryPlan qep) 
   throws 
   OptimizationException, SchemaMetadataException, 
   TypeMappingException, IOException, CodeGenerationException
@@ -127,13 +128,13 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     {
       Site currentSite = (Site) siteIterator.next();
       Double energyStock = new Double(currentSite.getEnergyStock() / new Double(1000));
-      Double qepExecutionCost = anyliser.calculateQepRunningCostForSite(currentSite);
+      Double qepExecutionCost = qep.getAgendaIOT().getSiteEnergyConsumption(currentSite); // J
       runningSites.put(currentSite.getID(), 
                        new RunTimeSite(energyStock,currentSite,qepExecutionCost));
     }
     
     //remove OTA effects from running sites
-    SensorNetworkQueryPlan sqep = (SensorNetworkQueryPlan)currentQEP;
+    SensorNetworkQueryPlan sqep = qep;
     Adaptation orgianlOTAProgramCost = new Adaptation(sqep, StrategyIDEnum.Orginal, 0);
     Iterator<Integer> siteIdIterator = sqep.getRT().getSiteIDs().iterator();
     while(siteIdIterator.hasNext())
@@ -248,6 +249,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
       new AdaptationUtils(choices.getAll(), _metadataManager.getCostParameters()).systemOutput();
       Adaptation finalChoice = planner.assessChoices(choices);
       new AdaptationUtils(finalChoice,  _metadataManager.getCostParameters()).FileOutputFinalChoice(outputFolder);
+      anyliser.updateFrameworks(finalChoice);
       executer.adapt(finalChoice);
     }
     else
@@ -457,7 +459,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   IOException, CodeGenerationException
   {
     runningSites.clear();
-    setupRunningSites();
+    setupRunningSites(qep);
   }
 
   public HashMap<String, RunTimeSite> getCopyOfRunningSites()

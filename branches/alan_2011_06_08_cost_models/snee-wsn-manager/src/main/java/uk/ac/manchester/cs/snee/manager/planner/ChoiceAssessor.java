@@ -3,9 +3,14 @@ package uk.ac.manchester.cs.snee.manager.planner;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import com.rits.cloning.Cloner;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
@@ -13,9 +18,13 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationUtils;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
+import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
+import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
 import uk.ac.manchester.cs.snee.manager.planner.model.EnergyModel;
+import uk.ac.manchester.cs.snee.manager.planner.model.EnergyModelOverlay;
 import uk.ac.manchester.cs.snee.manager.planner.model.Model;
 import uk.ac.manchester.cs.snee.manager.planner.model.TimeModel;
+import uk.ac.manchester.cs.snee.manager.planner.model.TimeModelOverlay;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -176,6 +185,17 @@ public class ChoiceAssessor implements Serializable
     
   }
 
+  /**
+   * assesses an adaptation storing all results within the adaptation
+   * @param orginal
+   * @param runningSites
+   * @param reset
+   * @throws IOException
+   * @throws OptimizationException
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   * @throws CodeGenerationException
+   */
   public void assessChoice(Adaptation orginal, HashMap<String, RunTimeSite> runningSites, boolean reset)
   throws 
   IOException, OptimizationException, 
@@ -198,5 +218,108 @@ public class ChoiceAssessor implements Serializable
     adapt.setRuntimeCost(calculateEnergyQEPExecutionCost());
     if(reset)
       resetRunningSitesAdaptCost(); 
+  }
+
+  /**
+   * calculates the costs of setting up this overlay network. All results are stored within the 
+   * associated adaptation object
+   * @param overlayOTAProgramCost
+   * @param runningSites
+   * @param current
+   * @param failedNodeStrategyLocal 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
+   * @throws CodeGenerationException 
+   * @throws IOException 
+   */
+  public void assessOverlayChoice(Adaptation overlayOTAProgramCost,
+                                  HashMap<String, RunTimeSite> runningSites, 
+                                  LogicalOverlayNetwork current,
+                                  FailedNodeStrategyLocal failedNodeStrategyLocal) 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException, IOException, CodeGenerationException
+  {
+    AssessmentFolder = new File(outputFolder.toString() + sep + "assessment");
+    AssessmentFolder.mkdir();
+    imageGenerationFolder = new File(AssessmentFolder.toString() + sep + "Adaptations");
+    imageGenerationFolder.mkdir();
+    
+    this.runningSites = runningSites;
+    resetRunningSitesAdaptCost();
+    Adaptation adapt = overlayOTAProgramCost;
+    TimeModelOverlay  timeModel = new TimeModelOverlay(imageGenerator);
+    EnergyModelOverlay energyModel = new EnergyModelOverlay(imageGenerator);
+    timeModel.initilise(imageGenerationFolder, _metadataManager);
+    energyModel.initilise(imageGenerationFolder, _metadataManager, runningSites);
+    adapt.setTimeCost(timeModel.calculateTimeCost(adapt, current));
+    adapt.setEnergyCost(energyModel.calculateEnergyCost(adapt, current));
+    adapt.setLifetimeEstimate(this.calculateEstimatedLifetimeOverlay(adapt, current, failedNodeStrategyLocal));
+    adapt.setRuntimeCost(calculateEnergyQEPExecutionCost());
+  }
+
+  /**
+   * Calculates the minimal lifetime for the query over the overlay. (first overlay failure)
+   * @param adapt
+   * @param current
+   * @param failedNodeStrategyLocal 
+   * @return
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
+   */
+  private Double calculateEstimatedLifetimeOverlay(Adaptation adapt, LogicalOverlayNetwork current,
+                                                   FailedNodeStrategyLocal failedNodeStrategyLocal) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  {
+    double shortestLifetime = Double.MAX_VALUE; //s
+    double overallShortestLifetime = 0;
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    LogicalOverlayNetwork clonedOverlay = cloner.deepClone(current);
+    boolean adapted = true;
+    while(adapted)
+    {
+      Iterator<Site> siteIter = 
+        clonedOverlay.getQep().getIOT().getRT().siteIterator(TraversalOrder.POST_ORDER);
+      String failedSite = null;
+      while (siteIter.hasNext()) 
+      {
+        Site site = siteIter.next();
+        RunTimeSite rSite = runningSites.get(site.getID());
+        double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
+        double siteEnergyCons =  clonedOverlay.getQep().getAgendaIOT().getSiteEnergyConsumption(site); // J
+        runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
+        adapt.putSiteEnergyCost(site.getID(), siteEnergyCons);
+        double agendaLength = Agenda.bmsToMs(clonedOverlay.getQep().getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
+        double siteLifetime = (currentEnergySupply / siteEnergyCons) * agendaLength;
+        //uncomment out sections to not take the root site into account
+        if (site!= clonedOverlay.getQep().getIOT().getRT().getRoot()) 
+        { 
+          if(shortestLifetime > siteLifetime)
+          {
+            if(!site.isDeadInSimulation())
+            {
+              shortestLifetime = siteLifetime;
+              failedSite = site.getID();
+            }
+          }
+        }
+      }
+      if(failedNodeStrategyLocal.canAdapt(failedSite, clonedOverlay))
+      {
+        ArrayList<String> failedNodeIDs = new ArrayList<String>();
+        failedNodeIDs.add(failedSite);
+        List<Adaptation> result = failedNodeStrategyLocal.adapt(failedNodeIDs, clonedOverlay);
+        failedNodeStrategyLocal.update(result.get(0), clonedOverlay);
+        clonedOverlay.setQep(result.get(0).getNewQep());
+        overallShortestLifetime += shortestLifetime;
+      }
+      else
+      {
+        adapted = false;
+      }
+    }
+    return overallShortestLifetime;
   }
 }

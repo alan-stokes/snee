@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
@@ -347,9 +347,9 @@ return found;
       final TraversalOrder traversalOrder) {
   final ArrayList<InstanceOperator> opList =
       new ArrayList<InstanceOperator>();
-  logger.finest("root =" + this.getRootOperator());
+  logger.fatal("root =" + this.getRootOperator());
   this.doOperatorIterator(this.getRootOperator(), opList, traversalOrder);
-  logger.finest("done");
+  logger.fatal("done");
   return opList.iterator();
   }
 
@@ -378,10 +378,8 @@ final Iterator<InstanceOperator> ops = this
   .operatorIterator(TraversalOrder.PRE_ORDER);
 while (ops.hasNext()) {
     final InstanceOperator op = ops.next();
-    logger.finest("op=" + op);
     total += op.getDataMemoryCost(node, daf);
 }
-logger.finest("done");
 return total;
   }
 
@@ -412,10 +410,8 @@ return total;
     .operatorIterator(TraversalOrder.PRE_ORDER);
   while (ops.hasNext()) {
       final InstanceOperator op = ops.next();
-      logger.finest("op: " + op.toString());
       final double temp = op.getTimeCost(
           CardinalityType.PHYSICAL_MAX, node, daf);
-      logger.finest("ops TimeCost =" + temp);
       total += temp;
   }
   if (!this.isDeliverFragment()) {

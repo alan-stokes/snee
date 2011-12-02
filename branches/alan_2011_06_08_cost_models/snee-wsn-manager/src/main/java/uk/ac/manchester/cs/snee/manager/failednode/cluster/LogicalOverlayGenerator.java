@@ -5,7 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import com.rits.cloning.Cloner;
 
@@ -21,6 +22,7 @@ import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
+import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -62,27 +64,45 @@ public class LogicalOverlayGenerator
     k_resilence_sense = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_SENSE);
   }
   
-  public LogicalOverlayNetwork generateOverlay() 
+  public LogicalOverlayNetwork generateOverlay(SensorNetworkQueryPlan qep, 
+                                               FailedNodeStrategyLocal failedNodeStrategyLocal) 
   throws SchemaMetadataException, TypeMappingException, OptimizationException, 
   IOException, CodeGenerationException
   {
     LogicalOverlayNetwork superLogicalOverlay = setUpPhase();
     ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays = reductionPhase(superLogicalOverlay);
-    LogicalOverlayNetwork logicalOverlay = assessmentPhase(setsOfLogicalOverlays);
+    transferPhase(setsOfLogicalOverlays, qep);
+    LogicalOverlayNetwork logicalOverlay = assessmentPhase(setsOfLogicalOverlays, failedNodeStrategyLocal);
     return logicalOverlay;
   }
   
+  private void transferPhase(ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays,
+                             SensorNetworkQueryPlan qep)
+  {
+    Iterator<LogicalOverlayNetwork> overlayIterator = setsOfLogicalOverlays.iterator();
+    while(overlayIterator.hasNext())
+    {
+      LogicalOverlayNetwork currentOverlay = overlayIterator.next();
+      currentOverlay.setQep(qep);
+      PhysicalToLogicalConversion transfer = 
+        new PhysicalToLogicalConversion(currentOverlay, network, localFolder);
+      transfer.transferQEPs();
+    } 
+  }
+
   /**
    * takes the set of sets of cluster and evaluates them based off energy model to
    *  determine the best suited cluster for extending the query lifetime 
    * @param setsOfLogicalOverlays 
+   * @param failedNodeStrategyLocal 
    * @throws CodeGenerationException 
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    * @throws IOException 
    */
-  private LogicalOverlayNetwork assessmentPhase(ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays) 
+  private LogicalOverlayNetwork assessmentPhase(ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays,
+                                                FailedNodeStrategyLocal failedNodeStrategyLocal) 
   throws IOException, OptimizationException, SchemaMetadataException, 
   TypeMappingException, CodeGenerationException 
   {
@@ -94,7 +114,7 @@ public class LogicalOverlayGenerator
       LogicalOverlayNetwork current = overlayIterator.next();
       if(hasCorrectLevelsOfResileince(current))
       {
-        Double minLifetime = determineMinumalLifetime(current);
+        Double minLifetime = determineMinumalLifetime(current, failedNodeStrategyLocal);
         if(minLifetime >= bestMinLifetime)
         {
           bestOverlayNetwork = current;
@@ -108,6 +128,7 @@ public class LogicalOverlayGenerator
   /**
    * takes an overlay and determines the minimal lifetime from all clusters.
    * @param current
+   * @param failedNodeStrategyLocal 
    * @return
    * @throws CodeGenerationException 
    * @throws TypeMappingException 
@@ -115,7 +136,8 @@ public class LogicalOverlayGenerator
    * @throws OptimizationException 
    * @throws IOException 
    */
-  private Double determineMinumalLifetime(LogicalOverlayNetwork current) 
+  private Double determineMinumalLifetime(LogicalOverlayNetwork current,
+                                          FailedNodeStrategyLocal failedNodeStrategyLocal) 
   throws IOException, OptimizationException, SchemaMetadataException, 
   TypeMappingException, CodeGenerationException
   {
@@ -133,7 +155,7 @@ public class LogicalOverlayGenerator
     File output = new File(localFolder + sep + "OTASection");
     output.mkdir();
     Planner planner = new Planner(manager, _metadata, _metadataManager, runningSites, output);
-    planner.assessOverlayCosts(output, overlayOTAProgramCost, current);
+    planner.assessOverlayCosts(output, overlayOTAProgramCost, current, failedNodeStrategyLocal);
     return overlayOTAProgramCost.getLifetimeEstimate();
   }
 

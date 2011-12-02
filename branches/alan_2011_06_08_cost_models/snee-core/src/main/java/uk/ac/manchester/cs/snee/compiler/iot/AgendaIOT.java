@@ -797,8 +797,10 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     		while (exchCompIter.hasNext()) 
     		{
     		  final InstanceExchangePart exchComp = exchCompIter.next();
-    		  if ((exchComp.getComponentType() == ExchangePartType.PRODUCER)
-              || (exchComp.getComponentType() == ExchangePartType.RELAY))
+    		  if ((exchComp.getComponentType() == ExchangePartType.PRODUCER &&
+    		       !exchComp.getNext().getSite().getID().equals(exchComp.getSite().getID()))
+              || (exchComp.getComponentType() == ExchangePartType.RELAY && 
+                  !exchComp.getNext().getSite().getID().equals(exchComp.getSite().getID())))
     		  {
     		    tuplesToSend.add(exchComp);
     		  }

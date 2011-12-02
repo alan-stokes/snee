@@ -23,7 +23,6 @@ import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayGenerator;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork; 
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalLogicalOverlayUtils;
-import uk.ac.manchester.cs.snee.manager.failednode.cluster.PhysicalToLogicalConversion;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -82,10 +81,12 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     network = getWsnTopology();
     LogicalOverlayGenerator logcalOverlayGenerator = 
       new LogicalOverlayGenerator(network, this.currentQEP, this.manager, localFolder, _metadata, _metadataManager);
-    logicalOverlay =  logcalOverlayGenerator.generateOverlay();
-    PhysicalToLogicalConversion transfer = 
-      new PhysicalToLogicalConversion(logicalOverlay, currentQEP, network, localFolder);
-    transfer.transferQEPs();
+    logicalOverlay =  logcalOverlayGenerator.generateOverlay((SensorNetworkQueryPlan) oldQep, this);
+    if(logicalOverlay == null)
+      throw new SchemaMetadataException("current metatdata does not support a logical overlay structure " +
+          "with the current k resilience value. Possible solutions is to reduce the k resilience level, or " +
+          "add more nodes to compensate");
+    manager.setCurrentQEP(logicalOverlay.getQep());
     new FailedNodeLocalLogicalOverlayUtils(logicalOverlay, localFolder).outputAsTextFile();
   }
 
@@ -103,32 +104,6 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   {
     this.outputFolder = outputFolder;
     setupFolders(outputFolder);
-  }
-  
-  /**
-   * used to recalculate clusters based off other adaptations
-   * @param newQEP
-   * @throws OptimizationException 
-   * @throws TypeMappingException 
-   * @throws SchemaMetadataException 
-   * @throws SNEEConfigurationException 
-   * @throws CodeGenerationException 
-   * @throws IOException 
-   */
-  public void reclaculateClusters(QueryExecutionPlan newQEP) 
-  throws 
-  SchemaMetadataException, TypeMappingException, 
-  OptimizationException, SNEEConfigurationException,
-  IOException, CodeGenerationException
-  {
-    this.currentQEP = (SensorNetworkQueryPlan) newQEP;
-    LogicalOverlayGenerator logcalOverlayGenerator = 
-      new LogicalOverlayGenerator(network, this.currentQEP, this.manager, this.localFolder, _metadata, _metadataManager);
-    logicalOverlay =  logcalOverlayGenerator.generateOverlay();
-    if(logicalOverlay == null)
-      throw new SchemaMetadataException("current metatdata does not support a logical overlay structure " +
-      		"with the current k resilience value. Possible solutions is to reduce the k resilience level, or " +
-      		"add more nodes to compensate");
   }
   
   /**
@@ -150,20 +125,38 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
    * @param primary cluster head
    * @return new cluster head or null 
    */
-  public String retrieveNewClusterHead(String primary)
+  public String retrieveNewClusterHead(String primary, List<Node> list, Node parent)
+  {
+    return retrieveNewClusterHead(primary, list, parent, this.logicalOverlay);
+  }
+  
+  /**
+   * checks if a cluster exists, if so then gives the first node in the cluster, otherwise 
+   * gives null pointer.
+   * @param primary cluster head
+   * @return new cluster head or null 
+   */
+  public String retrieveNewClusterHead(String primary, List<Node> list, Node parent, LogicalOverlayNetwork overlay)
   {
     if(isThereACluster(primary))
     {
-      String newClusterHead =  logicalOverlay.getEquivilentNodes(primary).get(0);
-      logicalOverlay.removeNode(newClusterHead);
-      return newClusterHead;
+      return overlay.getReplacement(primary, list, parent, network);
     }
     else
       return null;
   }
+  
 
   @Override
   public boolean canAdapt(String failedNode)
+  {
+    return canAdapt(failedNode, this.logicalOverlay);
+  }
+  
+  /**
+   * checks if for this overlay, an adaptation can be done
+   */
+  public boolean canAdapt(String failedNode, LogicalOverlayNetwork overlay)
   {
     return isThereACluster(failedNode);
   }
@@ -171,15 +164,28 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   @Override
   public boolean canAdaptToAll(ArrayList<String> failedNodes)
   {
+    return canAdaptToAll(failedNodes, this.logicalOverlay);
+  }
+  
+  /**
+   * checks if for a specific overlay, if it can adapt to all the failed nodes  
+   * @param failedNodeIDs
+   * @param overlay
+   * @return
+   */
+  private boolean canAdaptToAll(ArrayList<String> failedNodes,
+                                LogicalOverlayNetwork overlay)
+  {
     Iterator<String> failedNodeIterator = failedNodes.iterator();
     boolean success = true;
     while(failedNodeIterator.hasNext() && success)
     {
-      if(!canAdapt(failedNodeIterator.next()))
+      if(!canAdapt(failedNodeIterator.next(), overlay))
         success = false;
     }
     return success;
   }
+  
 
   private void rewireRoutingTree(String failedNodeID, String equivilentNodeID, RT currentRoutingTree) 
   throws 
@@ -275,24 +281,36 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   public List<Adaptation> adapt(ArrayList<String> failedNodeIDs) 
   throws OptimizationException
   {
+    return adapt(failedNodeIDs, this.logicalOverlay);
+  }
+  
+  /**
+   * adapts to node failures on a specific overlay (used in calculating the 
+   */
+  public List<Adaptation> adapt(ArrayList<String> failedNodeIDs, LogicalOverlayNetwork overlay) 
+  throws OptimizationException
+  {
     try
     {
       System.out.println("Running Failed Node FrameWork Local");
       List<Adaptation> adapatation = new ArrayList<Adaptation>();
-      if(this.canAdaptToAll(failedNodeIDs))
+      if(this.canAdaptToAll(failedNodeIDs, overlay))
       {
         Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
-        Adaptation adapt = new Adaptation(currentQEP, StrategyIDEnum.FailedNodeLocal, 1);
+        Adaptation adapt = new Adaptation(overlay.getQep(), StrategyIDEnum.FailedNodeLocal, 1);
       
-        IOT clonedIOT = cloner.deepClone(currentQEP.getIOT());
+        IOT clonedIOT = cloner.deepClone(overlay.getQep().getIOT());
         RT currentRoutingTree = clonedIOT.getRT();
         while(failedNodeIDsIterator.hasNext())
         {
           String failedNodeID = failedNodeIDsIterator.next();
-          String equivilentNodeID = retrieveNewClusterHead(failedNodeID);
+          String equivilentNodeID = 
+            retrieveNewClusterHead(failedNodeID,
+                                   currentRoutingTree.getSite(failedNodeID).getInputsList(),
+                                   currentRoutingTree.getSite(failedNodeID).getOutput(0));
           //sort out adaptation data structs.
           adapt.addActivatedSite(equivilentNodeID);
-          Iterator<Node> redirectedNodesIterator = this.currentQEP.getRT().getSite(failedNodeID).getInputsList().iterator();
+          Iterator<Node> redirectedNodesIterator = overlay.getQep().getRT().getSite(failedNodeID).getInputsList().iterator();
           while(redirectedNodesIterator.hasNext())
           {
             adapt.addRedirectedSite(redirectedNodesIterator.next().getID());
@@ -302,9 +320,9 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           //rewire children
           rewireNodes(clonedIOT, failedNodeID, equivilentNodeID);
         }
-        new IOTUtils(clonedIOT, this.currentQEP.getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iot", "iot with eqiv nodes", true);
+        new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iot", "iot with eqiv nodes", true);
         
-        new IOTUtils(clonedIOT, this.currentQEP.getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotInputs", "iot with eqiv nodes", true, true);
+        new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotInputs", "iot with eqiv nodes", true, true);
         try
         {
           IOT newIOT = clonedIOT;
@@ -318,7 +336,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           new FailedNodeStrategyLocalUtils().outputAgendas(newAgendaIOT, currentQEP.getAgendaIOT(), 
                                                                currentQEP.getIOT(), newIOT, localFolder);
         
-          boolean success = assessQEPsAgendas(currentQEP.getIOT(), newIOT, currentQEP.getAgendaIOT(), newAgendaIOT, newAgenda, 
+          boolean success = assessQEPsAgendas(overlay.getQep().getIOT(), newIOT, overlay.getQep().getAgendaIOT(), newAgendaIOT, newAgenda, 
                                             false, adapt, failedNodeIDs, currentRoutingTree, false);
         
           adapt.setFailedNodes(failedNodeIDs);
@@ -344,4 +362,41 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
       return null; 
     }
   }
+  
+  @Override
+  public void update(Adaptation finalChoice)
+  {
+    update(finalChoice, this.logicalOverlay);
+  }
+  
+
+  public void update(Adaptation finalChoice, LogicalOverlayNetwork network)
+  {
+    Iterator<String> failedNodeIterator = finalChoice.getFailedNodes().iterator();
+    while(failedNodeIterator.hasNext())
+    {
+      String failedNode = failedNodeIterator.next();
+      Iterator<String> activatedSitesIterator = finalChoice.getActivateSites().iterator();
+      while(activatedSitesIterator.hasNext())
+      {
+        String activedSite = activatedSitesIterator.next();
+        if(network.getEquivilentNodes(failedNode).contains(activedSite))
+        {
+          network.updateCluster(failedNode, activedSite);
+        }
+      }      
+    }
+    Iterator<String> reproNodeIterator = finalChoice.getReprogrammingSites().iterator();
+    while(reproNodeIterator.hasNext())
+    {
+      String reprogrammedNode = reproNodeIterator.next();
+      network.removeNode(reprogrammedNode);
+    }
+ 
+  }
+  
+  
+  
+  
+  
 }

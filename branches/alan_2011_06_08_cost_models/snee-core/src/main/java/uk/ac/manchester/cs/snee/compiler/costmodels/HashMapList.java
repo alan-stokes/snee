@@ -82,6 +82,11 @@ public class HashMapList<K,V> implements Serializable{
       this.mapping.get(key);
     opInstArray.remove(value);
   }
+  
+  public void remove(K key) 
+  { 
+    this.mapping.remove(key);
+  }
     
   public Set<K> keySet() {
     return this.mapping.keySet();

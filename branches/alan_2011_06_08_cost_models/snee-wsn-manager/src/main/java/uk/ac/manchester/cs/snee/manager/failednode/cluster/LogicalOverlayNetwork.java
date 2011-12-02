@@ -3,9 +3,18 @@ package uk.ac.manchester.cs.snee.manager.failednode.cluster;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
+import com.rits.cloning.Cloner;
+
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
 /**
  * class used to represent a set of nodes used within the local strategy for node failure
@@ -21,7 +30,8 @@ public class LogicalOverlayNetwork implements Serializable
   
   
   // cluster rep
-  private HashMapList<String, String> clusters; 
+  private HashMapList<String, String> clusters = null; 
+  private SensorNetworkQueryPlan qep = null;
   
   /**
    * constructor
@@ -117,6 +127,7 @@ public class LogicalOverlayNetwork implements Serializable
     }
   }
   
+  @Override
   public String toString()
   {
     Iterator<String> keys = this.getKeySet().iterator();
@@ -128,5 +139,101 @@ public class LogicalOverlayNetwork implements Serializable
     }
     return output;
   }
+
+  /**
+   * checks if any cluster contains the candidate
+   * @param candidate
+   * @return
+   */
+  public boolean contains(String candidate)
+  {
+    Iterator<String> keys = this.getKeySet().iterator();
+    boolean found = false;
+    while(keys.hasNext() && !found)
+    {
+      String key = keys.next();
+      ArrayList<String> candiates = this.getEquivilentNodes(key);
+      if(candiates.contains(candidate))
+        found = true;
+    }
+    return found;
+  }
+
+  /**
+   * finds the cluster head to which this candidate is associated with
+   * @param candidate
+   * @return
+   */
+  public String getClusterHeadFor(String candidate)
+  {
+    Iterator<String> keys = this.getKeySet().iterator();
+    while(keys.hasNext())
+    {
+      String key = keys.next();
+      ArrayList<String> candiates = this.getEquivilentNodes(key);
+      if(candiates.contains(candidate))
+        return key;
+    }
+    return null;
+  }
+
+  /**
+   * does a simple check to see which candidate has the least energy cost overall in relation to the 
+   * parent and children cluster heads.
+   * @param key
+   * @param children
+   * @param parent
+   * @param network
+   * @return
+   */
+  public String getReplacement(String key, List<Node> children, Node parent, Topology network)
+  {
+    Iterator<String> candiates = this.getEquivilentNodes(key).iterator();
+    String bestCandiate = null;
+    double bestCost = Double.MAX_VALUE;
+    while(candiates.hasNext())
+    {
+      double cost = 0;
+      String candiate = candiates.next();
+      Site candiateSite = network.getSite(candiate);
+      Iterator<Node> childrenIterator = children.iterator();
+      while(childrenIterator.hasNext())
+      {
+        Site child = (Site) childrenIterator.next();
+        cost += network.getLinkEnergyCost(child, candiateSite);
+      }
+      cost += network.getLinkEnergyCost(candiateSite, (Site) parent);
+      if(cost < bestCost)
+      {
+        bestCandiate = candiate;
+        bestCost = cost;
+      }
+    }
+    return bestCandiate;
+  }
+
+  public void setQep(SensorNetworkQueryPlan qep)
+  {
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    this.qep = cloner.deepClone(qep);
+  }
+
+  public SensorNetworkQueryPlan getQep()
+  {
+    return qep;
+  }
   
+  /**
+   * updates a cluster by removing head and changing the candidate to the head
+   * @param head
+   * @param newHead
+   */
+  public void updateCluster(String head, String newHead)
+  {
+    ArrayList<String> candidates = clusters.get(head);
+    candidates.remove(newHead);
+    clusters.remove(head);
+    clusters.set(newHead, candidates);
+  }
 }

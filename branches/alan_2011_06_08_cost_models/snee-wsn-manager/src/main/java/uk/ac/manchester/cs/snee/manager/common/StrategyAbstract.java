@@ -475,6 +475,16 @@ public abstract class StrategyAbstract implements Serializable
     this.currentQEP = currentQEP;
   }
   
+  /**
+   * used to update any persistant data stores in each strategy
+   * @param finalChoice
+   */
+  public void update(Adaptation finalChoice)
+  {
+    // TODO Auto-generated method stub
+    
+  }
+  
   
   
 }

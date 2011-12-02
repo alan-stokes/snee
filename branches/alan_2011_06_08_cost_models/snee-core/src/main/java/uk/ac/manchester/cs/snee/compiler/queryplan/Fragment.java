@@ -37,7 +37,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.logging.Logger;
+
+//import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
@@ -59,7 +60,7 @@ public class Fragment implements Serializable{
     /**
      * Logger for this class.
      */
-    private static final Logger logger = Logger.getLogger(Fragment.class.getName());
+  //  private static final Logger logger = Logger.getLogger(Fragment.class.getName());
 
     /**
      * Counter to assign unique id to different fragments.
@@ -321,9 +322,7 @@ public class Fragment implements Serializable{
     		final TraversalOrder traversalOrder) {
 		final ArrayList<SensornetOperator> opList =
 				new ArrayList<SensornetOperator>();
-		logger.finest("root =" + this.getRootOperator());
 		this.doOperatorIterator(this.getRootOperator(), opList, traversalOrder);
-		logger.finest("done");
 		return opList.iterator();
     }
 
@@ -345,10 +344,8 @@ public class Fragment implements Serializable{
 		.operatorIterator(TraversalOrder.PRE_ORDER);
 	while (ops.hasNext()) {
 	    final SensornetOperator op = ops.next();
-	    logger.finest("op=" + op);
 	    total += op.getDataMemoryCost(node, daf);
 	}
-	logger.finest("done");
 	return total;
     }
 
@@ -375,10 +372,8 @@ public class Fragment implements Serializable{
 			.operatorIterator(TraversalOrder.PRE_ORDER);
 		while (ops.hasNext()) {
 		    final SensornetOperator op = ops.next();
-		    logger.finest("op: " + op.toString());
 		    final double temp = op.getTimeCost(
 		    		CardinalityType.PHYSICAL_MAX, node, daf);
-		    logger.finest("ops TimeCost =" + temp);
 		    total += temp;
 		}
 		if (!this.isDeliverFragment()) {

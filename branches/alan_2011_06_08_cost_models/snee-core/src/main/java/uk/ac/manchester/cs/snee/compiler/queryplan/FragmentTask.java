@@ -33,7 +33,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.queryplan;
 
-import java.util.logging.Logger;
+//import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
@@ -51,7 +51,7 @@ public class FragmentTask extends Task {
    */
   private static final long serialVersionUID = 6358346108795704605L;
 
-    private static final Logger logger = Logger.getLogger(FragmentTask.class.getName());
+   // private static final Logger logger = Logger.getLogger(FragmentTask.class.getName());
 
     //The query plan fragment
     private Fragment fragment;
@@ -96,10 +96,6 @@ public class FragmentTask extends Task {
     @Override
 	public final long getTimeCost(final DAF daf) throws OptimizationException {
 
-	logger.finest("fragment = " + this.fragment.getID());
-	logger.finest("timeCost = "
-		+ this.fragment.getTimeCost(site, this.daf, costParams));
-	logger.finest("bufferingFactor = " + this.beta);
 	double calcTime;
 	if (this.fragment.isLeaf()) {
 	    calcTime = this.fragment.getTimeCost(site, this.daf, costParams);
@@ -118,7 +114,6 @@ public class FragmentTask extends Task {
 	//System.out.println (this.fragment.getID());
 	//System.out.println ("calcTime:" + calcTime + " Beta = " + this.bufferingFactor);
 	//System.out.println (fragment.getTimeExpression(CardinalityType.PHYSICAL_MAX, site, daf, true));
-	logger.finest("calc Time = " + calcTime);
 
 	if (calcTime > costParams.getMinimumTimerInterval()) {
 	    return (long) Math.ceil(calcTime);
