@@ -27,9 +27,7 @@ import uk.ac.manchester.cs.snee.sncb.SNCB;
 
 public class EnergyModelOverlay extends EnergyModel
 {
-  private HashMap<String, RunTimeSite> runningSites;
-  
-  
+ 
   public EnergyModelOverlay(SNCB imageGenerator)
   {
     super(imageGenerator);

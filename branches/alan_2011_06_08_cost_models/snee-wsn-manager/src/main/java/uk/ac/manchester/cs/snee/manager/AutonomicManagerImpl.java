@@ -132,28 +132,6 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
       runningSites.put(currentSite.getID(), 
                        new RunTimeSite(energyStock,currentSite,qepExecutionCost));
     }
-    
-    //remove OTA effects from running sites
-    SensorNetworkQueryPlan sqep = qep;
-    Adaptation orgianlOTAProgramCost = new Adaptation(sqep, StrategyIDEnum.Orginal, 0);
-    Iterator<Integer> siteIdIterator = sqep.getRT().getSiteIDs().iterator();
-    while(siteIdIterator.hasNext())
-    {
-      Integer siteIDInt = siteIdIterator.next();
-      orgianlOTAProgramCost.addReprogrammedSite(siteIDInt.toString());
-    }
-    orgianlOTAProgramCost.setNewQep(sqep);
-    File output = new File(outputFolder + sep + "OTASection");
-    output.mkdir();
-    planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false);
-    // update running sites energy stores
-    siteIdIterator = sqep.getRT().getSiteIDs().iterator();
-    while(siteIdIterator.hasNext())
-    {
-      Integer siteIDInt = siteIdIterator.next();
-      runningSites.get(siteIDInt.toString()).removeReprogrammingCostCost();
-      runningSites.get(siteIDInt.toString()).resetAdaptEnergyCosts();
-    }  
   }
 
   /**
@@ -467,6 +445,35 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     Cloner cloner = new Cloner();
     cloner.dontClone(Logger.class);
     return cloner.deepClone(runningSites);
+    
+  }
+
+  @Override
+  public void queryStarting()
+  throws IOException, OptimizationException, SchemaMetadataException, 
+  TypeMappingException, CodeGenerationException
+  {
+  //remove OTA effects from running sites
+    SensorNetworkQueryPlan sqep = (SensorNetworkQueryPlan) currentQEP;
+    Adaptation orgianlOTAProgramCost = new Adaptation(sqep, StrategyIDEnum.Orginal, 0);
+    Iterator<Integer> siteIdIterator = sqep.getRT().getSiteIDs().iterator();
+    while(siteIdIterator.hasNext())
+    {
+      Integer siteIDInt = siteIdIterator.next();
+      orgianlOTAProgramCost.addReprogrammedSite(siteIDInt.toString());
+    }
+    orgianlOTAProgramCost.setNewQep(sqep);
+    File output = new File(outputFolder + sep + "OTASection");
+    output.mkdir();
+    planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false);
+    // update running sites energy stores
+    siteIdIterator = sqep.getRT().getSiteIDs().iterator();
+    while(siteIdIterator.hasNext())
+    {
+      Integer siteIDInt = siteIdIterator.next();
+      runningSites.get(siteIDInt.toString()).removeReprogrammingCostCost();
+      runningSites.get(siteIDInt.toString()).resetAdaptEnergyCosts();
+    }  
     
   }
   

@@ -235,7 +235,7 @@ public class Planner extends AutonomicManagerComponent
                                  LogicalOverlayNetwork current,
                                  FailedNodeStrategyLocal failedNodeStrategyLocal) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException,
-  IOException, CodeGenerationException
+  IOException, CodeGenerationException, SNEEConfigurationException
   {
     this.assessor.updateStorageLocation(output);
     this.assessor.assessOverlayChoice(overlayOTAProgramCost, runningSites, current, failedNodeStrategyLocal);

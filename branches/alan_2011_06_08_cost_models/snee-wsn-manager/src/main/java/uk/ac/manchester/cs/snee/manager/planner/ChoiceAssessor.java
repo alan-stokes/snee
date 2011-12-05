@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.manager.planner;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -8,10 +9,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
-import com.rits.cloning.Cloner;
-
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
@@ -20,6 +20,7 @@ import uk.ac.manchester.cs.snee.manager.common.AdaptationUtils;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetworkUtils;
 import uk.ac.manchester.cs.snee.manager.planner.model.EnergyModel;
 import uk.ac.manchester.cs.snee.manager.planner.model.EnergyModelOverlay;
 import uk.ac.manchester.cs.snee.manager.planner.model.Model;
@@ -50,6 +51,8 @@ public class ChoiceAssessor implements Serializable
   private HashMap<String, RunTimeSite> runningSites;
   private EnergyModel energyModel = null;
   private TimeModel timeModel = null;
+  private TimeModelOverlay timeModelOverlay = null;
+  private EnergyModelOverlay energyModelOverlay = null;
   
   public ChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager,
                         File outputFolder)
@@ -59,6 +62,8 @@ public class ChoiceAssessor implements Serializable
     this.imageGenerator = new TinyOS_SNCB_Controller();
     timeModel = new TimeModel(imageGenerator);
     energyModel = new EnergyModel(imageGenerator);
+    timeModelOverlay = new TimeModelOverlay(imageGenerator);
+    energyModelOverlay = new EnergyModelOverlay(imageGenerator);
   }
 
   /**
@@ -128,13 +133,20 @@ public class ChoiceAssessor implements Serializable
    */
   private void resetRunningSitesAdaptCost()
   {
+    resetRunningSitesAdaptCost(true);
+  }
+  
+
+  private void resetRunningSitesAdaptCost(boolean resetCompiled)
+  {
     Iterator<String> siteIDIterator = runningSites.keySet().iterator();
     while(siteIDIterator.hasNext())
     {
       String siteID = siteIDIterator.next();
       runningSites.get(siteID).resetAdaptEnergyCosts();
     }
-   Model.setCompiledAlready(false);
+    if(resetCompiled)
+      Model.setCompiledAlready(false);
   }
 
   /**
@@ -232,13 +244,14 @@ public class ChoiceAssessor implements Serializable
    * @throws OptimizationException 
    * @throws CodeGenerationException 
    * @throws IOException 
+   * @throws SNEEConfigurationException 
    */
   public void assessOverlayChoice(Adaptation overlayOTAProgramCost,
                                   HashMap<String, RunTimeSite> runningSites, 
                                   LogicalOverlayNetwork current,
                                   FailedNodeStrategyLocal failedNodeStrategyLocal) 
   throws OptimizationException, SchemaMetadataException, 
-  TypeMappingException, IOException, CodeGenerationException
+  TypeMappingException, IOException, CodeGenerationException, SNEEConfigurationException
   {
     AssessmentFolder = new File(outputFolder.toString() + sep + "assessment");
     AssessmentFolder.mkdir();
@@ -246,14 +259,12 @@ public class ChoiceAssessor implements Serializable
     imageGenerationFolder.mkdir();
     
     this.runningSites = runningSites;
-    resetRunningSitesAdaptCost();
-    Adaptation adapt = overlayOTAProgramCost;
-    TimeModelOverlay  timeModel = new TimeModelOverlay(imageGenerator);
-    EnergyModelOverlay energyModel = new EnergyModelOverlay(imageGenerator);
-    timeModel.initilise(imageGenerationFolder, _metadataManager);
-    energyModel.initilise(imageGenerationFolder, _metadataManager, runningSites);
-    adapt.setTimeCost(timeModel.calculateTimeCost(adapt, current));
-    adapt.setEnergyCost(energyModel.calculateEnergyCost(adapt, current));
+    resetRunningSitesAdaptCost(false);
+    Adaptation adapt = overlayOTAProgramCost;    
+    timeModelOverlay.initilise(imageGenerationFolder, _metadataManager);
+    energyModelOverlay.initilise(imageGenerationFolder, _metadataManager, runningSites);
+    adapt.setTimeCost(timeModelOverlay.calculateTimeCost(adapt, current));
+    adapt.setEnergyCost(energyModelOverlay.calculateEnergyCost(adapt, current));
     adapt.setLifetimeEstimate(this.calculateEstimatedLifetimeOverlay(adapt, current, failedNodeStrategyLocal));
     adapt.setRuntimeCost(calculateEnergyQEPExecutionCost());
   }
@@ -267,34 +278,40 @@ public class ChoiceAssessor implements Serializable
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
+   * @throws SNEEConfigurationException 
+   * @throws IOException 
+   * @throws FileNotFoundException 
    */
   private Double calculateEstimatedLifetimeOverlay(Adaptation adapt, LogicalOverlayNetwork current,
                                                    FailedNodeStrategyLocal failedNodeStrategyLocal) 
-  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException, SNEEConfigurationException, FileNotFoundException, IOException
   {
     double shortestLifetime = Double.MAX_VALUE; //s
     double overallShortestLifetime = 0;
-    Cloner cloner = new Cloner();
-    cloner.dontClone(Logger.class);
-    LogicalOverlayNetwork clonedOverlay = cloner.deepClone(current);
+    new LogicalOverlayNetworkUtils().storeOverlayAsFile(current, outputFolder);
     boolean adapted = true;
     while(adapted)
     {
       Iterator<Site> siteIter = 
-        clonedOverlay.getQep().getIOT().getRT().siteIterator(TraversalOrder.POST_ORDER);
+        current.getQep().getIOT().getRT().siteIterator(TraversalOrder.POST_ORDER);
       String failedSite = null;
       while (siteIter.hasNext()) 
       {
         Site site = siteIter.next();
+        System.out.println("testing for site " + site.getID());
         RunTimeSite rSite = runningSites.get(site.getID());
         double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
-        double siteEnergyCons =  clonedOverlay.getQep().getAgendaIOT().getSiteEnergyConsumption(site); // J
+        double siteEnergyCons =  current.getQep().getAgendaIOT().getSiteEnergyConsumption(site); // J
         runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
         adapt.putSiteEnergyCost(site.getID(), siteEnergyCons);
-        double agendaLength = Agenda.bmsToMs(clonedOverlay.getQep().getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
+        double agendaLength = Agenda.bmsToMs(current.getQep().getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
         double siteLifetime = (currentEnergySupply / siteEnergyCons) * agendaLength;
+        
+        boolean useAcquires = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_SENSE);
         //uncomment out sections to not take the root site into account
-        if (site!= clonedOverlay.getQep().getIOT().getRT().getRoot()) 
+        if (site!= current.getQep().getIOT().getRT().getRoot() &&
+            ((useAcquires) ||  (!useAcquires && !site.isSource()))) 
         { 
           if(shortestLifetime > siteLifetime)
           {
@@ -306,18 +323,19 @@ public class ChoiceAssessor implements Serializable
           }
         }
       }
-      if(failedNodeStrategyLocal.canAdapt(failedSite, clonedOverlay))
+      if(failedNodeStrategyLocal.canAdapt(failedSite, current))
       {
         ArrayList<String> failedNodeIDs = new ArrayList<String>();
         failedNodeIDs.add(failedSite);
-        List<Adaptation> result = failedNodeStrategyLocal.adapt(failedNodeIDs, clonedOverlay);
-        failedNodeStrategyLocal.update(result.get(0), clonedOverlay);
-        clonedOverlay.setQep(result.get(0).getNewQep());
+        List<Adaptation> result = failedNodeStrategyLocal.adapt(failedNodeIDs, current);
+        failedNodeStrategyLocal.update(result.get(0), current);
+        current.setQep(result.get(0).getNewQep());
         overallShortestLifetime += shortestLifetime;
       }
       else
       {
         adapted = false;
+        overallShortestLifetime += shortestLifetime;
       }
     }
     return overallShortestLifetime;

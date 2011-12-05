@@ -103,4 +103,8 @@ public interface AutonomicManager
   throws OptimizationException, SchemaMetadataException, TypeMappingException, 
   IOException, CodeGenerationException;
 
+  public abstract void queryStarting()
+  throws IOException, OptimizationException, SchemaMetadataException,
+  TypeMappingException, CodeGenerationException;
+
 }

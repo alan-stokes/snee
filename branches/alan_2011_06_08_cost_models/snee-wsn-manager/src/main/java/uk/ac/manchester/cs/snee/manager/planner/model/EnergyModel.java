@@ -26,7 +26,7 @@ import uk.ac.manchester.cs.snee.sncb.SNCB;
 
 public class EnergyModel extends Model
 {
-  private HashMap<String, RunTimeSite> runningSites;
+  protected HashMap<String, RunTimeSite> runningSites;
   
   
   public EnergyModel(SNCB imageGenerator)

@@ -165,6 +165,7 @@ public class Dispatcher {
 			  String sep = System.getProperty("file.separator");
 				String outputDir = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + sep + queryPlan.getQueryName() + sep;
 				sncb = snQueryPlan.getSNCB();
+				_autonomicManager.queryStarting();
         //_autonomicManager.runCostModels();
         _autonomicManager.runSimulatedNodeFailure();
        // _autonomicManager.runAnyliserWithDeadNodes();

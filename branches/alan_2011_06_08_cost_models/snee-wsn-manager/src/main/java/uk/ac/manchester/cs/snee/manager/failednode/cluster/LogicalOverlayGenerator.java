@@ -67,27 +67,23 @@ public class LogicalOverlayGenerator
   public LogicalOverlayNetwork generateOverlay(SensorNetworkQueryPlan qep, 
                                                FailedNodeStrategyLocal failedNodeStrategyLocal) 
   throws SchemaMetadataException, TypeMappingException, OptimizationException, 
-  IOException, CodeGenerationException
+  IOException, CodeGenerationException, SNEEConfigurationException
   {
     LogicalOverlayNetwork superLogicalOverlay = setUpPhase();
     ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays = reductionPhase(superLogicalOverlay);
-    transferPhase(setsOfLogicalOverlays, qep);
-    LogicalOverlayNetwork logicalOverlay = assessmentPhase(setsOfLogicalOverlays, failedNodeStrategyLocal);
+    LogicalOverlayNetwork logicalOverlay = assessmentPhase(setsOfLogicalOverlays, failedNodeStrategyLocal, qep);
     return logicalOverlay;
   }
   
-  private void transferPhase(ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays,
+  private void transferPhase(LogicalOverlayNetwork currentOverlay,
                              SensorNetworkQueryPlan qep)
   {
-    Iterator<LogicalOverlayNetwork> overlayIterator = setsOfLogicalOverlays.iterator();
-    while(overlayIterator.hasNext())
-    {
-      LogicalOverlayNetwork currentOverlay = overlayIterator.next();
-      currentOverlay.setQep(qep);
-      PhysicalToLogicalConversion transfer = 
-        new PhysicalToLogicalConversion(currentOverlay, network, localFolder);
-      transfer.transferQEPs();
-    } 
+    System.out.println("cloning qep for overlay" + currentOverlay.toString());
+    currentOverlay.setQep(qep);
+    PhysicalToLogicalConversion transfer = 
+      new PhysicalToLogicalConversion(currentOverlay, network, localFolder);
+    System.out.println("transfering qeps onto candiates of overlay" + currentOverlay.toString());
+    transfer.transferQEPs();
   }
 
   /**
@@ -95,16 +91,21 @@ public class LogicalOverlayGenerator
    *  determine the best suited cluster for extending the query lifetime 
    * @param setsOfLogicalOverlays 
    * @param failedNodeStrategyLocal 
+   * @param qep 
    * @throws CodeGenerationException 
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    * @throws IOException 
+   * @throws SNEEConfigurationException 
+   * @throws ClassNotFoundException 
    */
   private LogicalOverlayNetwork assessmentPhase(ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays,
-                                                FailedNodeStrategyLocal failedNodeStrategyLocal) 
+                                                FailedNodeStrategyLocal failedNodeStrategyLocal,
+                                                SensorNetworkQueryPlan qep) 
   throws IOException, OptimizationException, SchemaMetadataException, 
-  TypeMappingException, CodeGenerationException 
+  TypeMappingException, CodeGenerationException, 
+  SNEEConfigurationException 
   {
     Iterator<LogicalOverlayNetwork> overlayIterator = setsOfLogicalOverlays.iterator();
     LogicalOverlayNetwork bestOverlayNetwork = null;
@@ -112,13 +113,26 @@ public class LogicalOverlayGenerator
     while(overlayIterator.hasNext())
     {
       LogicalOverlayNetwork current = overlayIterator.next();
+      System.out.println("comparing overlay with min level of resilience" + current.toString());
       if(hasCorrectLevelsOfResileince(current))
       {
+        System.out.println("starting trasnfer phase for overlay" + current.toString());
+        transferPhase(current, qep);
+        System.out.println("deetiminging minlifetime for overlay" + current.toString());
         Double minLifetime = determineMinumalLifetime(current, failedNodeStrategyLocal);
         if(minLifetime >= bestMinLifetime)
         {
+          bestOverlayNetwork = 
+            new LogicalOverlayNetworkUtils()
+               .retrieveOverlayFromFile(new File(localFolder + sep + "OTASection"), current.getId());
           bestOverlayNetwork = current;
           bestMinLifetime = minLifetime;
+          System.gc();
+        }
+        else
+        {
+          current.removeQEP();
+          System.gc();
         }
       }
     }
@@ -135,11 +149,12 @@ public class LogicalOverlayGenerator
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    * @throws IOException 
+   * @throws SNEEConfigurationException 
    */
   private Double determineMinumalLifetime(LogicalOverlayNetwork current,
                                           FailedNodeStrategyLocal failedNodeStrategyLocal) 
   throws IOException, OptimizationException, SchemaMetadataException, 
-  TypeMappingException, CodeGenerationException
+  TypeMappingException, CodeGenerationException, SNEEConfigurationException
   {
     HashMap<String, RunTimeSite> runningSites = manager.getCopyOfRunningSites();
     //remove OTA effects from running sites

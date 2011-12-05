@@ -32,6 +32,8 @@ public class LogicalOverlayNetwork implements Serializable
   // cluster rep
   private HashMapList<String, String> clusters = null; 
   private SensorNetworkQueryPlan qep = null;
+  private String id = "";
+  private static Integer idCounter = 1;
   
   /**
    * constructor
@@ -39,6 +41,8 @@ public class LogicalOverlayNetwork implements Serializable
   public LogicalOverlayNetwork()
   {
     clusters = new HashMapList<String, String>();
+    id = "Overlay" + idCounter.toString();
+    idCounter++;
   }
   
   public void addClusterNode(String primary, ArrayList<String> equivilentNodes)
@@ -216,6 +220,7 @@ public class LogicalOverlayNetwork implements Serializable
   {
     Cloner cloner = new Cloner();
     cloner.dontClone(Logger.class);
+    this.qep = null;
     this.qep = cloner.deepClone(qep);
   }
 
@@ -235,5 +240,15 @@ public class LogicalOverlayNetwork implements Serializable
     candidates.remove(newHead);
     clusters.remove(head);
     clusters.set(newHead, candidates);
+  }
+
+  public void removeQEP()
+  {
+    this.qep = null;
+  }
+
+  public String getId()
+  {
+    return id;
   }
 }

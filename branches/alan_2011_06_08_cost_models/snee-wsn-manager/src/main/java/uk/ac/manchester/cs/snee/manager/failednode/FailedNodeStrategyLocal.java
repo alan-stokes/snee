@@ -68,6 +68,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
    * @throws IOException 
    * @throws SNEEConfigurationException 
    * @throws CodeGenerationException 
+   * @throws ClassNotFoundException 
    */
   public void initilise(QueryExecutionPlan oldQep, Integer noTrees) 
   throws 

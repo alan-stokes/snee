@@ -123,7 +123,7 @@ public class PhysicalToLogicalConversion
       sortOutChildren(rootOp, equilvientSite, clusterHeadSite, qep);
       sortOutFragments(clonedRootOp, equilvientSite, qep, clonedRootOp.getCorraspondingFragment());
     }  
-    
+    System.gc();
   }
   
   /**

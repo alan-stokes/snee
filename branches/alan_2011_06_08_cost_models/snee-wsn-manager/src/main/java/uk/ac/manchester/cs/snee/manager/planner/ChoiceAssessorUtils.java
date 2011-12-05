@@ -84,5 +84,4 @@ public class ChoiceAssessorUtils extends RTUtils
    }
    }
   
-  
 }

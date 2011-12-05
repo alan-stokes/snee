@@ -122,6 +122,7 @@ public class Anaylsiser extends AutonomicManagerComponent
    * @throws IOException
    * @throws SNEEConfigurationException 
    * @throws CodeGenerationException 
+   * @throws ClassNotFoundException 
    */
   public void initilise(QueryExecutionPlan qep, Integer noOfTrees) 
   throws 
