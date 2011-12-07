@@ -1,7 +1,6 @@
 package uk.ac.manchester.cs.snee.compiler.iot;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
@@ -27,8 +26,6 @@ public class InstanceOperator extends NodeImplementation implements Node
   private static int counter = 0;
   private float selectivity = 1;
   private InstanceFragment corraspondingFragment = null;
-  
-  private ArrayList<InstanceOperator> childOps = new ArrayList<InstanceOperator>();
 
   public InstanceOperator()
   {
@@ -67,6 +64,11 @@ public class InstanceOperator extends NodeImplementation implements Node
   public SensornetOperator getSensornetOperator()
   {
     return sensornetOperator;
+  }
+  
+  public void setSensornetOperator(SensornetOperator op)
+  {
+    this.sensornetOperator = op;
   }
 
   public void setInstanceOperator(SensornetOperator instanceOperator)
@@ -171,7 +173,6 @@ public class InstanceOperator extends NodeImplementation implements Node
   public void addInput(Node n)
   {
     super.addInput(n);
-    childOps.add((InstanceOperator) n);
   }
   
   /**
@@ -180,12 +181,10 @@ public class InstanceOperator extends NodeImplementation implements Node
   public void removeInput(Node n)
   {
     super.removeInput(n);
-    childOps.remove((InstanceOperator) n);
   }
   
   public void removeAllInputs()
   {
-    childOps.clear();
     super.clearInputs();
   }
 
@@ -198,24 +197,5 @@ public class InstanceOperator extends NodeImplementation implements Node
   {
     return corraspondingFragment;
   }
-  
-  public Iterator<InstanceOperator> childIterator()
-  {
-    return childOps.iterator();
-  }
-  
-  public InstanceOperator[] getChildren()
-  {
-    InstanceOperator[] children = new InstanceOperator[childOps.size()];
-    for(int childIndex = 0; childIndex < childOps.size(); childIndex++)
-    {
-      children[childIndex] = childOps.get(childIndex);
-    }
-    return children;
-  }
-
-  public boolean add(InstanceOperator e)
-  {
-    return childOps.add(e);
-  }
+ 
 }

@@ -130,7 +130,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
       Double energyStock = new Double(currentSite.getEnergyStock() / new Double(1000));
       Double qepExecutionCost = qep.getAgendaIOT().getSiteEnergyConsumption(currentSite); // J
       runningSites.put(currentSite.getID(), 
-                       new RunTimeSite(energyStock,currentSite,qepExecutionCost));
+                       new RunTimeSite(energyStock,currentSite.getID(),qepExecutionCost));
     }
   }
 

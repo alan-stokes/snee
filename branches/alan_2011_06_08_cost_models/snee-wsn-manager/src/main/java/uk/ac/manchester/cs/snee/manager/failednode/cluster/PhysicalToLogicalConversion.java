@@ -17,6 +17,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
 public class PhysicalToLogicalConversion
 {
@@ -71,6 +72,9 @@ public class PhysicalToLogicalConversion
     Site clusterHeadSite = (Site) clusterHead;
     Cloner cloner = new Cloner();
     cloner.dontClone(Logger.class);
+    cloner.dontClone(SensornetOperator.class);
+    cloner.dontClone(Site.class);
+    
     //set up iot with new operators 
     ArrayList<InstanceOperator> ClusterHeadsiteInstanceOperators = 
                 qep.getIOT().getOpInstances(clusterHeadSite, TraversalOrder.PRE_ORDER, true);
@@ -97,6 +101,10 @@ public class PhysicalToLogicalConversion
     {
       InstanceOperator clonedRootOp = clonedRootOperatorIterator.next();
       InstanceOperator rootOp = rootOperatorIterator.next();
+      //set correct operators to try to reduce overheads
+      clonedRootOp.setSensornetOperator(rootOp.getSensornetOperator());
+      clonedRootOp.setDeepestConfluenceSite(null);
+      
       if(!(rootOp.getSensornetOperator() instanceof SensornetDeliverOperator))
       {
         qep.getIOT().assign(clonedRootOp, equilvientSite);
@@ -180,6 +188,7 @@ public class PhysicalToLogicalConversion
   { 
     
     qep.getIOT().assign(operator, equilvientSite);
+    operator.setDeepestConfluenceSite(null);
     if(!(operator instanceof InstanceExchangePart))
     {
       operator.getCorraspondingFragment().setSite(equilvientSite);

@@ -6,10 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
-import com.rits.cloning.Cloner;
-
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -218,10 +214,7 @@ public class LogicalOverlayNetwork implements Serializable
 
   public void setQep(SensorNetworkQueryPlan qep)
   {
-    Cloner cloner = new Cloner();
-    cloner.dontClone(Logger.class);
-    this.qep = null;
-    this.qep = cloner.deepClone(qep);
+    this.qep = qep;
   }
 
   public SensorNetworkQueryPlan getQep()

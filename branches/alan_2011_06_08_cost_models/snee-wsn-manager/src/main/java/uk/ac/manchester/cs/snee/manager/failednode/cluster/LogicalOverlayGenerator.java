@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.manager.failednode.cluster;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -69,20 +70,39 @@ public class LogicalOverlayGenerator
   throws SchemaMetadataException, TypeMappingException, OptimizationException, 
   IOException, CodeGenerationException, SNEEConfigurationException
   {
+    new LogicalOverlayGeneratorUtils().storeQEP(qep, localFolder);
     LogicalOverlayNetwork superLogicalOverlay = setUpPhase();
+    new LogicalOverlayNetworkUtils().storeOverlayAsFile(superLogicalOverlay, new File(localFolder.toString() + sep + "superOverlay"));
+    new LogicalOverlayNetworkUtils().storeOverlayAsTextFile(superLogicalOverlay, new File(localFolder.toString() + sep + "superOverlay.txt"));
     ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays = reductionPhase(superLogicalOverlay);
-    LogicalOverlayNetwork logicalOverlay = assessmentPhase(setsOfLogicalOverlays, failedNodeStrategyLocal, qep);
+    setsOfLogicalOverlays = cleanUpPhase(setsOfLogicalOverlays);
+    LogicalOverlayNetwork logicalOverlay = 
+      assessmentPhase(setsOfLogicalOverlays, failedNodeStrategyLocal, qep.getID(), qep.getRT());
     return logicalOverlay;
   }
-  
-  private void transferPhase(LogicalOverlayNetwork currentOverlay,
-                             SensorNetworkQueryPlan qep)
+
+  private ArrayList<LogicalOverlayNetwork> cleanUpPhase(
+      ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays)
   {
-    System.out.println("cloning qep for overlay" + currentOverlay.toString());
+    ArrayList<LogicalOverlayNetwork> clean = new  ArrayList<LogicalOverlayNetwork>();
+    Iterator<LogicalOverlayNetwork> iterator = setsOfLogicalOverlays.iterator();
+    while(iterator.hasNext())
+    {
+      LogicalOverlayNetwork overlay = iterator.next();
+      if(overlay.getKeySet().size() != 0)
+        clean.add(overlay);
+    }
+    return clean;
+  }
+
+  private void transferQEPsToCandiates(LogicalOverlayNetwork currentOverlay,
+                                       String qepID) 
+  throws IOException
+  {
+    SensorNetworkQueryPlan qep = new  LogicalOverlayGeneratorUtils().retrieveQEP(localFolder, qepID);
     currentOverlay.setQep(qep);
     PhysicalToLogicalConversion transfer = 
       new PhysicalToLogicalConversion(currentOverlay, network, localFolder);
-    System.out.println("transfering qeps onto candiates of overlay" + currentOverlay.toString());
     transfer.transferQEPs();
   }
 
@@ -102,46 +122,46 @@ public class LogicalOverlayGenerator
    */
   private LogicalOverlayNetwork assessmentPhase(ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays,
                                                 FailedNodeStrategyLocal failedNodeStrategyLocal,
-                                                SensorNetworkQueryPlan qep) 
+                                                final String qepID, RT qepRT) 
   throws IOException, OptimizationException, SchemaMetadataException, 
   TypeMappingException, CodeGenerationException, 
   SNEEConfigurationException 
   {
-    Iterator<LogicalOverlayNetwork> overlayIterator = setsOfLogicalOverlays.iterator();
-    LogicalOverlayNetwork bestOverlayNetwork = null;
+    System.out.println("assessing clusters");
+    int overlayIndex = 0;
+    String bestOverlayNetwork = null;
     Double bestMinLifetime = Double.MIN_VALUE;
-    while(overlayIterator.hasNext())
+    while(overlayIndex < setsOfLogicalOverlays.size())
     {
-      LogicalOverlayNetwork current = overlayIterator.next();
-      System.out.println("comparing overlay with min level of resilience" + current.toString());
-      if(hasCorrectLevelsOfResileince(current))
+      LogicalOverlayNetwork currentOverlay = setsOfLogicalOverlays.get(overlayIndex);
+      if(hasCorrectLevelsOfResileince(currentOverlay, qepRT))
       {
-        System.out.println("starting trasnfer phase for overlay" + current.toString());
-        transferPhase(current, qep);
-        System.out.println("deetiminging minlifetime for overlay" + current.toString());
-        Double minLifetime = determineMinumalLifetime(current, failedNodeStrategyLocal);
-        if(minLifetime >= bestMinLifetime)
+        System.out.println("assessing cluster " + currentOverlay.toString());
+        transferQEPsToCandiates(currentOverlay, qepID);
+        Double minLifetime = determineMinumalLifetime(currentOverlay, failedNodeStrategyLocal);
+        if(minLifetime > bestMinLifetime)
         {
-          bestOverlayNetwork = 
-            new LogicalOverlayNetworkUtils()
-               .retrieveOverlayFromFile(new File(localFolder + sep + "OTASection"), current.getId());
-          bestOverlayNetwork = current;
+          System.out.println("passed");
+          bestOverlayNetwork = currentOverlay.getId();
           bestMinLifetime = minLifetime;
-          System.gc();
         }
-        else
-        {
-          current.removeQEP();
-          System.gc();
-        }
+        //remove copies of the overlays, to free up memory.
+        currentOverlay = null;
+        setsOfLogicalOverlays.set(overlayIndex, null);
+        System.gc();
+        Runtime r =  Runtime.getRuntime();
+        NumberFormat format = NumberFormat.getInstance();
+        System.out.println(format.format(r.totalMemory() / 1024));
       }
+      overlayIndex++;
     }
-    return bestOverlayNetwork;
+    LogicalOverlayNetworkUtils utils = new LogicalOverlayNetworkUtils();
+    return  utils.retrieveOverlayFromFile(new File(localFolder + sep + "OTASection"), bestOverlayNetwork);
   }
 
   /**
    * takes an overlay and determines the minimal lifetime from all clusters.
-   * @param current
+   * @param currentOverlay
    * @param failedNodeStrategyLocal 
    * @return
    * @throws CodeGenerationException 
@@ -151,7 +171,7 @@ public class LogicalOverlayGenerator
    * @throws IOException 
    * @throws SNEEConfigurationException 
    */
-  private Double determineMinumalLifetime(LogicalOverlayNetwork current,
+  private Double determineMinumalLifetime(LogicalOverlayNetwork currentOverlay,
                                           FailedNodeStrategyLocal failedNodeStrategyLocal) 
   throws IOException, OptimizationException, SchemaMetadataException, 
   TypeMappingException, CodeGenerationException, SNEEConfigurationException
@@ -167,10 +187,10 @@ public class LogicalOverlayGenerator
       overlayOTAProgramCost.addReprogrammedSite(siteIDInt.toString());
     }
     overlayOTAProgramCost.setNewQep(sqep);
-    File output = new File(localFolder + sep + "OTASection");
-    output.mkdir();
-    Planner planner = new Planner(manager, _metadata, _metadataManager, runningSites, output);
-    planner.assessOverlayCosts(output, overlayOTAProgramCost, current, failedNodeStrategyLocal);
+    File outputFolder = new File(localFolder + sep + "OTASection");
+    outputFolder.mkdir();
+    Planner planner = new Planner(manager, _metadata, _metadataManager, runningSites, outputFolder);
+    planner.assessOverlayCosts(outputFolder, overlayOTAProgramCost, currentOverlay, failedNodeStrategyLocal);
     return overlayOTAProgramCost.getLifetimeEstimate();
   }
 
@@ -179,16 +199,19 @@ public class LogicalOverlayGenerator
    * @param current
    * @return
    */
-  private boolean hasCorrectLevelsOfResileince(LogicalOverlayNetwork current)
+  private boolean hasCorrectLevelsOfResileince(LogicalOverlayNetwork current, RT rt)
   {
-    Iterator<String> keys = current.getKeySet().iterator();
+    Iterator<Integer> keys = rt.getSiteIDs().iterator();
     while(keys.hasNext())
     {
-      String key = keys.next();
-      ArrayList<String> cluster = current.getEquivilentNodes(key);
+      Integer key = keys.next();
+      ArrayList<String> cluster = current.getEquivilentNodes(key.toString());
       if((routingTree.getSite(key).isSource() && k_resilence_sense && cluster.size() < k_resilence_level) 
          || (!routingTree.getSite(key).isSource() && cluster.size() < k_resilence_level))
-        return false;  
+      {
+        System.out.println("failed on node " + key);
+        return false; 
+      }
     }
     return true;
   }
@@ -197,8 +220,11 @@ public class LogicalOverlayGenerator
    * takes the setup cluster (not correct cluster as candidates may not be able to talk to 
    * each other. generates sets of clusters which are all valid cluster formats
    * @param superLogicalOverlay 
+   * @throws IOException 
    */
-  private ArrayList<LogicalOverlayNetwork> reductionPhase(LogicalOverlayNetwork superLogicalOverlay) 
+  private ArrayList<LogicalOverlayNetwork> reductionPhase(LogicalOverlayNetwork superLogicalOverlay)
+  
+  throws IOException 
   {
     ArrayList<LogicalOverlayNetwork> setsOfClusters = new ArrayList<LogicalOverlayNetwork>();
     if(superLogicalOverlay.getEquivilentNodes(currentQEP.getRT().getRoot().getID()).size() != 0)
@@ -216,8 +242,15 @@ public class LogicalOverlayGenerator
         Iterator<Node> inputIterator = currentQEP.getRT().getRoot().getInputsList().iterator();
         while(inputIterator.hasNext())
         {
-          Node input = inputIterator.next();
-          alternative(combination, input.getID(), setsOfClusters, curerntOverlay, superLogicalOverlay);
+          int setIndex = 0;
+          int clusterSize = setsOfClusters.size();
+          while(setIndex < clusterSize)
+          {
+            curerntOverlay = setsOfClusters.get(setIndex);
+            Node input = inputIterator.next();
+            alternative(combination, input.getID(), setsOfClusters, curerntOverlay, superLogicalOverlay);
+            setIndex++;
+          }
         }
       }
     }
@@ -226,14 +259,22 @@ public class LogicalOverlayGenerator
       Iterator<Node> inputIterator = currentQEP.getRT().getRoot().getInputsList().iterator();
       while(inputIterator.hasNext())
       {
-        Node input = inputIterator.next();
+        int setIndex = 0;
         ArrayList<String> trueCluster = new ArrayList<String>();
         LogicalOverlayNetwork curerntOverlay = new LogicalOverlayNetwork();
         curerntOverlay.addClusterNode(currentQEP.getRT().getRoot().getID(), trueCluster);
         setsOfClusters.add(curerntOverlay);
-        alternative(trueCluster, input.getID(), setsOfClusters, curerntOverlay, superLogicalOverlay);
+        int clusterSize = setsOfClusters.size();
+        Node input = inputIterator.next();
+        while(setIndex < clusterSize)
+        {
+          curerntOverlay = setsOfClusters.get(setIndex);
+          alternative(trueCluster, input.getID(), setsOfClusters, curerntOverlay, superLogicalOverlay);
+          setIndex++;
+        }
       }
     }  
+    new LogicalOverlayNetworkUtils().storeSetAsTextFile(setsOfClusters, new File(localFolder.toString() + sep + "overLaySets"));
     return setsOfClusters;
   }
 
@@ -326,18 +367,17 @@ public class LogicalOverlayGenerator
         {
           ArrayList<String> combination = combinationIterator.next();
           LogicalOverlayNetwork nextOverlay = this.cloneOverlay(curerntOverlay);
-          curerntOverlay.addClusterNode(childID, combination);
+          nextOverlay.addClusterNode(childID, combination);
           Iterator<Node> childInputs = routingTree.getSiteTree().getNode(childID).getInputsList().iterator();
+          //if going upon another iteration, then add new combination to the set
+          if(combinationIterator.hasNext())
+          {
+            setsOfClusters.add(nextOverlay);
+          }
           while(childInputs.hasNext())
           {
             Node childInput = childInputs.next();
-            alternative(combination, childInput.getID(),setsOfClusters,curerntOverlay, superLogicalOverlay);
-          }
-          //if going upon another iteration, then add new combination to the set
-          curerntOverlay = nextOverlay;
-          if(combinationIterator.hasNext())
-          {
-            setsOfClusters.add(curerntOverlay);
+            alternative(combination, childInput.getID(),setsOfClusters,nextOverlay, superLogicalOverlay);
           }
         }
       }

@@ -294,23 +294,22 @@ public class ChoiceAssessor implements Serializable
     while(adapted)
     {
       Iterator<Site> siteIter = 
-        current.getQep().getIOT().getRT().siteIterator(TraversalOrder.POST_ORDER);
+        adapt.getNewQep().getRT().siteIterator(TraversalOrder.POST_ORDER);
       String failedSite = null;
       while (siteIter.hasNext()) 
       {
         Site site = siteIter.next();
-        System.out.println("testing for site " + site.getID());
         RunTimeSite rSite = runningSites.get(site.getID());
         double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
-        double siteEnergyCons =  current.getQep().getAgendaIOT().getSiteEnergyConsumption(site); // J
+        double siteEnergyCons =   adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site); // J
         runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
         adapt.putSiteEnergyCost(site.getID(), siteEnergyCons);
-        double agendaLength = Agenda.bmsToMs(current.getQep().getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
+        double agendaLength = Agenda.bmsToMs( adapt.getNewQep().getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
         double siteLifetime = (currentEnergySupply / siteEnergyCons) * agendaLength;
         
         boolean useAcquires = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_SENSE);
         //uncomment out sections to not take the root site into account
-        if (site!= current.getQep().getIOT().getRT().getRoot() &&
+        if (site!=  adapt.getNewQep().getIOT().getRT().getRoot() &&
             ((useAcquires) ||  (!useAcquires && !site.isSource()))) 
         { 
           if(shortestLifetime > siteLifetime)
@@ -325,15 +324,17 @@ public class ChoiceAssessor implements Serializable
       }
       if(failedNodeStrategyLocal.canAdapt(failedSite, current))
       {
+        System.out.println("adapts");
         ArrayList<String> failedNodeIDs = new ArrayList<String>();
         failedNodeIDs.add(failedSite);
         List<Adaptation> result = failedNodeStrategyLocal.adapt(failedNodeIDs, current);
         failedNodeStrategyLocal.update(result.get(0), current);
-        current.setQep(result.get(0).getNewQep());
+        adapt.setNewQep(result.get(0).getNewQep());
         overallShortestLifetime += shortestLifetime;
       }
       else
       {
+        System.out.println("cant adapt");
         adapted = false;
         overallShortestLifetime += shortestLifetime;
       }

@@ -23,6 +23,7 @@ import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayGenerator;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork; 
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalLogicalOverlayUtils;
+import uk.ac.manchester.cs.snee.manager.failednode.cluster.PhysicalToLogicalConversion;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -266,7 +267,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           InstanceExchangePart eqPart = eqivExchangeIterator.next();
           if(previousPart.getID().equals(eqPart.getID()))
           {
-            part.replaceInput(previousPart, eqPart);
+            part.replaceInputByID(previousPart, eqPart);
             part.setPreviousExchange(eqPart);
             eqPart.clearOutputs();
             eqPart.addOutput(part);
@@ -308,7 +309,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           String equivilentNodeID = 
             retrieveNewClusterHead(failedNodeID,
                                    currentRoutingTree.getSite(failedNodeID).getInputsList(),
-                                   currentRoutingTree.getSite(failedNodeID).getOutput(0));
+                                   currentRoutingTree.getSite(failedNodeID).getOutput(0), overlay);
           //sort out adaptation data structs.
           adapt.addActivatedSite(equivilentNodeID);
           Iterator<Node> redirectedNodesIterator = overlay.getQep().getRT().getSite(failedNodeID).getInputsList().iterator();

@@ -231,18 +231,15 @@ public class Planner extends AutonomicManagerComponent
     .exportRTWithEnergies(output.toString()+ sep + "energies" , "");
   }
 
-  public void assessOverlayCosts(File output, Adaptation overlayOTAProgramCost, 
+  public void assessOverlayCosts(File outputFolder, Adaptation overlayOTAProgramCost, 
                                  LogicalOverlayNetwork current,
                                  FailedNodeStrategyLocal failedNodeStrategyLocal) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException,
   IOException, CodeGenerationException, SNEEConfigurationException
   {
-    this.assessor.updateStorageLocation(output);
+    this.assessor.updateStorageLocation(outputFolder);
     this.assessor.assessOverlayChoice(overlayOTAProgramCost, runningSites, current, failedNodeStrategyLocal);
     this.assessor.updateStorageLocation(plannerFolder);
-    new PlannerUtils(overlayOTAProgramCost, manager, output, overlayOTAProgramCost).writeObjectsToFile(); 
-    new ChoiceAssessorUtils(runningSites, overlayOTAProgramCost.getNewQep().getRT())
-    .exportRTWithEnergies(output.toString()+ sep + "energies" , "");
   }
   
 }

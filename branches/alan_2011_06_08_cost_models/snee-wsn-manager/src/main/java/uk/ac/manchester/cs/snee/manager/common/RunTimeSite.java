@@ -2,8 +2,6 @@ package uk.ac.manchester.cs.snee.manager.common;
 
 import java.io.Serializable;
 
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-
 public class RunTimeSite implements Serializable
 {
   /**
@@ -14,13 +12,15 @@ public class RunTimeSite implements Serializable
   private Double currentEnergy = new Double(0); //J
   private Double currentAdaptationEnergyCost = new Double (0); //J
   private Double qepExecutionCost = new Double(0);;  //J
-  private Site representativeSite; 
+  //private Site representativeSite; 
+  private String siteid = "";
   private Double thresholdEnergy = new Double(0);
   
-  public RunTimeSite(Double currentEnergy, Site representativeSite, Double qepExecutionCost)
+  public RunTimeSite(Double currentEnergy, String siteID, Double qepExecutionCost)
   {
     this.currentEnergy = currentEnergy;
-    this.representativeSite = representativeSite;
+    this.siteid = siteID;
+   // this.representativeSite = representativeSite;
     this.qepExecutionCost = qepExecutionCost;
     setThresholdEnergy(Math.max(currentEnergy / 100, qepExecutionCost));
   }
@@ -71,7 +71,7 @@ public class RunTimeSite implements Serializable
     resetCurrentAdaptationEnergyCost();
   }
   
-  public Site getRepresentativeSite()
+/*  public Site getRepresentativeSite()
   {
     return representativeSite;
   }
@@ -79,7 +79,7 @@ public class RunTimeSite implements Serializable
   public void setRepresentativeSite(Site representativeSite)
   {
     this.representativeSite = representativeSite;
-  }
+  }*/
 
   public void removeQEPExecutionCost()
   {
@@ -93,7 +93,7 @@ public class RunTimeSite implements Serializable
   
   public String toString()
   {
-    return this.representativeSite.toString();
+    return this.siteid;
   }
 
   public void setThresholdEnergy(Double thresholdEnergy)

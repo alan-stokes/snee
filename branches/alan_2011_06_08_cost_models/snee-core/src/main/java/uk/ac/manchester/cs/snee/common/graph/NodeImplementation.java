@@ -36,6 +36,7 @@ package uk.ac.manchester.cs.snee.common.graph;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -222,6 +223,19 @@ public class NodeImplementation implements Node, Serializable {
 	public void replaceInput(Node replace, Node newInput) {
 		int i = inputs.indexOf(replace);
 		inputs.set(i, newInput);
+	}
+	
+	public void replaceInputByID(Node replace, Node newInput){
+	  Iterator<Node> nodeIt = inputs.iterator();
+	  while(nodeIt.hasNext())
+	  {
+	    Node node = nodeIt.next();
+	    if(node.getID().equals(replace.getID()))
+	    {
+	      int i = inputs.indexOf(node);
+	      inputs.set(i,newInput);
+	    }
+	  }
 	}
 
 	public void replaceOutput(Node replace, Node newOutput) {
