@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.manager.failednode.cluster;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -16,6 +17,14 @@ public class LogicalOverlayGeneratorUtils
   public LogicalOverlayGeneratorUtils()
   {}
   
+  /**
+   * extracts a SensorNetworkQueryPlan with a specific id from a file into a 
+   * SensorNetworkQueryPlan object
+   * @param localFolder
+   * @param qepID
+   * @return
+   * @throws IOException
+   */
   public SensorNetworkQueryPlan retrieveQEP(File localFolder, String qepID) 
   throws IOException
   {
@@ -43,6 +52,13 @@ public class LogicalOverlayGeneratorUtils
     return null;
   }
   
+  
+  /**
+   * stores a SensorNetworkQueryPlan in a file with its specfic id.
+   * @param qep
+   * @param localFolder
+   * @throws IOException
+   */
   public void storeQEP(SensorNetworkQueryPlan qep, File localFolder) 
   throws IOException
   {
@@ -51,6 +67,20 @@ public class LogicalOverlayGeneratorUtils
     outputStream.writeObject(qep);
     outputStream.flush();
     outputStream.close();
+  }
+
+  /**
+   * stores a overlay into a text file (easily readable)
+   * @param logicalOverlay
+   * @param localFolder
+   * @throws FileNotFoundException
+   * @throws IOException
+   */
+  public void storeOverlayAsText(LogicalOverlayNetwork logicalOverlay, File localFolder) 
+  throws FileNotFoundException, IOException
+  {
+    new LogicalOverlayNetworkUtils().storeOverlayAsTextFile(logicalOverlay, 
+                                   new File(localFolder.toString() + sep + logicalOverlay.getId()));
   }
   
 }

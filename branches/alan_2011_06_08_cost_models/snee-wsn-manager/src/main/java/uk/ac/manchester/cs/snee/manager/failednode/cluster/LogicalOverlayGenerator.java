@@ -2,7 +2,6 @@ package uk.ac.manchester.cs.snee.manager.failednode.cluster;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -78,6 +77,8 @@ public class LogicalOverlayGenerator
     setsOfLogicalOverlays = cleanUpPhase(setsOfLogicalOverlays);
     LogicalOverlayNetwork logicalOverlay = 
       assessmentPhase(setsOfLogicalOverlays, failedNodeStrategyLocal, qep.getID(), qep.getRT());
+    if(logicalOverlay != null)
+      new LogicalOverlayGeneratorUtils().storeOverlayAsText(logicalOverlay, localFolder);
     return logicalOverlay;
   }
 
@@ -127,7 +128,6 @@ public class LogicalOverlayGenerator
   TypeMappingException, CodeGenerationException, 
   SNEEConfigurationException 
   {
-    System.out.println("assessing clusters");
     int overlayIndex = 0;
     String bestOverlayNetwork = null;
     Double bestMinLifetime = Double.MIN_VALUE;
@@ -136,12 +136,10 @@ public class LogicalOverlayGenerator
       LogicalOverlayNetwork currentOverlay = setsOfLogicalOverlays.get(overlayIndex);
       if(hasCorrectLevelsOfResileince(currentOverlay, qepRT))
       {
-        System.out.println("assessing cluster " + currentOverlay.toString());
         transferQEPsToCandiates(currentOverlay, qepID);
         Double minLifetime = determineMinumalLifetime(currentOverlay, failedNodeStrategyLocal);
-        if(minLifetime > bestMinLifetime)
+        if(minLifetime >= bestMinLifetime)
         {
-          System.out.println("passed");
           bestOverlayNetwork = currentOverlay.getId();
           bestMinLifetime = minLifetime;
         }
@@ -149,12 +147,10 @@ public class LogicalOverlayGenerator
         currentOverlay = null;
         setsOfLogicalOverlays.set(overlayIndex, null);
         System.gc();
-        Runtime r =  Runtime.getRuntime();
-        NumberFormat format = NumberFormat.getInstance();
-        System.out.println(format.format(r.totalMemory() / 1024));
       }
       overlayIndex++;
     }
+    //reads in the best overlay from file (stored in a file for memory reasons
     LogicalOverlayNetworkUtils utils = new LogicalOverlayNetworkUtils();
     return  utils.retrieveOverlayFromFile(new File(localFolder + sep + "OTASection"), bestOverlayNetwork);
   }
@@ -367,6 +363,7 @@ public class LogicalOverlayGenerator
         {
           ArrayList<String> combination = combinationIterator.next();
           LogicalOverlayNetwork nextOverlay = this.cloneOverlay(curerntOverlay);
+          
           nextOverlay.addClusterNode(childID, combination);
           Iterator<Node> childInputs = routingTree.getSiteTree().getNode(childID).getInputsList().iterator();
           //if going upon another iteration, then add new combination to the set
@@ -448,7 +445,7 @@ public class LogicalOverlayGenerator
    */
   private LogicalOverlayNetwork cloneOverlay(LogicalOverlayNetwork logicalOverlay)
   {
-    return cloner.deepClone(logicalOverlay);
+    return logicalOverlay.generateClone();
   }
   
 }

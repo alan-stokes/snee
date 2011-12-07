@@ -324,7 +324,6 @@ public class ChoiceAssessor implements Serializable
       }
       if(failedNodeStrategyLocal.canAdapt(failedSite, current))
       {
-        System.out.println("adapts");
         ArrayList<String> failedNodeIDs = new ArrayList<String>();
         failedNodeIDs.add(failedSite);
         List<Adaptation> result = failedNodeStrategyLocal.adapt(failedNodeIDs, current);
@@ -334,7 +333,6 @@ public class ChoiceAssessor implements Serializable
       }
       else
       {
-        System.out.println("cant adapt");
         adapted = false;
         overallShortestLifetime += shortestLifetime;
       }

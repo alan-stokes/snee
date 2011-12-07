@@ -41,6 +41,24 @@ public class LogicalOverlayNetwork implements Serializable
     idCounter++;
   }
   
+  public LogicalOverlayNetwork(HashMapList<String, String> newHashMapList)
+  {
+    clusters = new HashMapList<String, String>();
+    Iterator<String> keys = newHashMapList.keySet().iterator();
+    while(keys.hasNext())
+    {
+      String key = keys.next();
+      Iterator<String> eqNodes = newHashMapList.get(key).iterator();
+      while(eqNodes.hasNext())
+      {
+        String eqNode = eqNodes.next();
+        this.addClusterNode(key, eqNode);
+      }
+    }
+    id = "Overlay" + idCounter.toString();
+    idCounter++;
+  }
+  
   public void addClusterNode(String primary, ArrayList<String> equivilentNodes)
   {
     this.clusters.addAll(primary, equivilentNodes);
@@ -243,5 +261,10 @@ public class LogicalOverlayNetwork implements Serializable
   public String getId()
   {
     return id;
+  }
+
+  public LogicalOverlayNetwork generateClone()
+  {
+    return new LogicalOverlayNetwork(this.clusters);
   }
 }
