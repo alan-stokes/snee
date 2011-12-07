@@ -151,8 +151,13 @@ public class LogicalOverlayGenerator
       overlayIndex++;
     }
     //reads in the best overlay from file (stored in a file for memory reasons
-    LogicalOverlayNetworkUtils utils = new LogicalOverlayNetworkUtils();
-    return  utils.retrieveOverlayFromFile(new File(localFolder + sep + "OTASection"), bestOverlayNetwork);
+    if(bestOverlayNetwork != null)
+    {
+      LogicalOverlayNetworkUtils utils = new LogicalOverlayNetworkUtils();
+      return  utils.retrieveOverlayFromFile(new File(localFolder + sep + "OTASection"), bestOverlayNetwork);
+    }
+    else
+      return null;
   }
 
   /**

@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
@@ -84,6 +86,11 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     LogicalOverlayGenerator logcalOverlayGenerator = 
       new LogicalOverlayGenerator(network, this.currentQEP, this.manager, localFolder, _metadata, _metadataManager);
     logicalOverlay =  logcalOverlayGenerator.generateOverlay((SensorNetworkQueryPlan) oldQep, this);
+    int k_resilence_level = SNEEProperties.getIntSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_LEVEL);
+    //if k_resilence level is zero, and no clusters are found, then a empty overlay is satifisable.
+    if(logicalOverlay == null && k_resilence_level == 0)
+      logicalOverlay = new LogicalOverlayNetwork();
+    //if no overlay is generated, then throw error
     if(logicalOverlay == null)
       throw new SchemaMetadataException("current metatdata does not support a logical overlay structure " +
           "with the current k resilience value. Possible solutions is to reduce the k resilience level, or " +
@@ -140,7 +147,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
    */
   public String retrieveNewClusterHead(String primary, List<Node> list, Node parent, LogicalOverlayNetwork overlay)
   {
-    if(isThereACluster(primary))
+    if(isThereACluster(primary, overlay))
     {
       return overlay.getReplacement(primary, list, parent, network);
     }
@@ -160,9 +167,18 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
    */
   public boolean canAdapt(String failedNode, LogicalOverlayNetwork overlay)
   {
-    return isThereACluster(failedNode);
+    return isThereACluster(failedNode, overlay);
   }
   
+  private boolean isThereACluster(String primary,
+      LogicalOverlayNetwork overlay)
+  {
+    if(overlay.getEquivilentNodes(primary).size() != 0)
+      return true;
+    else
+      return false;
+  }
+
   @Override
   public boolean canAdaptToAll(ArrayList<String> failedNodes)
   {
