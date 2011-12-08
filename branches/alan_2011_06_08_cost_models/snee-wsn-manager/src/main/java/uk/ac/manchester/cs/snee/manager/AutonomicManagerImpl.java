@@ -38,6 +38,7 @@ import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.executer.Executer;
 import uk.ac.manchester.cs.snee.manager.monitor.Monitor;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
+import uk.ac.manchester.cs.snee.manager.planner.model.Model;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -451,9 +452,9 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   @Override
   public void queryStarting()
   throws IOException, OptimizationException, SchemaMetadataException, 
-  TypeMappingException, CodeGenerationException
+  TypeMappingException, CodeGenerationException, SNEEConfigurationException
   {
-  //remove OTA effects from running sites
+    //remove OTA effects from running sites
     SensorNetworkQueryPlan sqep = (SensorNetworkQueryPlan) currentQEP;
     Adaptation orgianlOTAProgramCost = new Adaptation(sqep, StrategyIDEnum.Orginal, 0);
     Iterator<Integer> siteIdIterator = sqep.getRT().getSiteIDs().iterator();
@@ -465,7 +466,8 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     orgianlOTAProgramCost.setNewQep(sqep);
     File output = new File(outputFolder + sep + "OTASection");
     output.mkdir();
-    planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false);
+    Model.setCompiledAlready(false);
+    planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false, anyliser.getOverlay());
     // update running sites energy stores
     siteIdIterator = sqep.getRT().getSiteIDs().iterator();
     while(siteIdIterator.hasNext())

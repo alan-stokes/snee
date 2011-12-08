@@ -306,6 +306,7 @@ public class Dispatcher {
   SNCBException, SNEECompilerException, IOException, 
   CodeGenerationException, AutonomicManagerException
   {
+    _autonomicManager.queryStarting();
     _autonomicManager.forceFailedNodes(failedNodesID);
   }
 

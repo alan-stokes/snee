@@ -1,4 +1,4 @@
-SELECT RSTREAM AVG(anow.x) as qx FROM A[from NOW - 10 seconds to now slide 10 seconds] anow ;
+SELECT RSTREAM AVG(anow.x) as qx FROM A[NOW] anow ;
 SELECT RSTREAM AVG(anow.x) as qx FROM A[NOW] anow ;
 SELECT RSTREAM AVG(anow.x) as qx FROM A[NOW] anow ;
 SELECT RSTREAM AVG(anow.x) as qx FROM A[NOW] anow ;

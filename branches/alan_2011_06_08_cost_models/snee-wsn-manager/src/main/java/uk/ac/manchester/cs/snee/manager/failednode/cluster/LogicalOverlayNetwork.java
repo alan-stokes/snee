@@ -267,4 +267,34 @@ public class LogicalOverlayNetwork implements Serializable
   {
     return new LogicalOverlayNetwork(this.clusters);
   }
+  
+  @Override
+  public boolean equals(Object other)
+  {
+    LogicalOverlayNetwork otherNetwork = (LogicalOverlayNetwork) other;
+    if(otherNetwork.getKeySet().size() == this.getKeySet().size())
+    {
+      Iterator<String> keyIterator = otherNetwork.getKeySet().iterator();
+      while(keyIterator.hasNext())
+      {
+        String key = keyIterator.next();
+        ArrayList<String> otherCandidates = otherNetwork.getEquivilentNodes(key);
+        ArrayList<String> candidates = this.getEquivilentNodes(key);
+        if(otherCandidates.size() == candidates.size())
+        {
+          Iterator<String> candidateIterator = otherCandidates.iterator();
+          while(candidateIterator.hasNext())
+          {
+            if(!candidates.contains(candidateIterator.next()))
+              return false;
+          }
+        }
+        else
+          return false;
+      }
+    }
+    else
+      return false;
+    return true;
+  }
 }

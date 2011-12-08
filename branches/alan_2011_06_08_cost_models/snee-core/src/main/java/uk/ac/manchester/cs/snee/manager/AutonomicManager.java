@@ -105,6 +105,6 @@ public interface AutonomicManager
 
   public abstract void queryStarting()
   throws IOException, OptimizationException, SchemaMetadataException,
-  TypeMappingException, CodeGenerationException;
+  TypeMappingException, CodeGenerationException, SNEEConfigurationException;
 
 }

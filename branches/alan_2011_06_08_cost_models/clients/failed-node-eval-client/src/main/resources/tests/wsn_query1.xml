@@ -107,8 +107,14 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk network-topology.xsd">
 	<radio-link source="22" dest="10" bidirectional="true" energy="11" time="9" radio-loss="0"/>
 	<radio-link source="23" dest="13" bidirectional="true" energy="83" time="25" radio-loss="0"/>
 	<radio-link source="24" dest="11" bidirectional="true" energy="144" time="34" radio-loss="0"/>
-	<radio-link source="25" dest="13" bidirectional="true" energy="106" time="28" radio-loss="0"/>
-	<radio-link source="26" dest="14" bidirectional="true" energy="182" time="12" radio-loss="0"/>	
+	<radio-link source="25" dest="6" bidirectional="true" energy="106" time="28" radio-loss="0"/>
+	<radio-link source="25" dest="7" bidirectional="true" energy="106" time="28" radio-loss="0"/>
+	<radio-link source="25" dest="9" bidirectional="true" energy="106" time="28" radio-loss="0"/>
+	<radio-link source="25" dest="14" bidirectional="true" energy="106" time="28" radio-loss="0"/>
+	<radio-link source="25" dest="20" bidirectional="true" energy="106" time="28" radio-loss="0"/>
+	<radio-link source="25" dest="21" bidirectional="true" energy="106" time="28" radio-loss="0"/>
+	<radio-link source="25" dest="24" bidirectional="true" energy="106" time="28" radio-loss="0"/>
+	<radio-link source="26" dest="14" bidirectional="true" energy="182" time="12" radio-loss="0"/>
 </radio-links>
 		
 </network-topology>			

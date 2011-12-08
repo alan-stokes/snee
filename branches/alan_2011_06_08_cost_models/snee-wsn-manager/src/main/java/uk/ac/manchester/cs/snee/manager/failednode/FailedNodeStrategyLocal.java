@@ -25,7 +25,6 @@ import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayGenerator;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork; 
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalLogicalOverlayUtils;
-import uk.ac.manchester.cs.snee.manager.failednode.cluster.PhysicalToLogicalConversion;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -89,12 +88,19 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     int k_resilence_level = SNEEProperties.getIntSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_LEVEL);
     //if k_resilence level is zero, and no clusters are found, then a empty overlay is satifisable.
     if(logicalOverlay == null && k_resilence_level == 0)
+    {
       logicalOverlay = new LogicalOverlayNetwork();
+      logicalOverlay.setQep(currentQEP);
+    }
     //if no overlay is generated, then throw error
     if(logicalOverlay == null)
+    {
+      System.exit(0);
       throw new SchemaMetadataException("current metatdata does not support a logical overlay structure " +
           "with the current k resilience value. Possible solutions is to reduce the k resilience level, or " +
           "add more nodes to compensate");
+    }
+    
     manager.setCurrentQEP(logicalOverlay.getQep());
     new FailedNodeLocalLogicalOverlayUtils(logicalOverlay, localFolder).outputAsTextFile();
   }
@@ -232,10 +238,10 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     currentRoutingTree.getSiteTree().updateNodesAndEdgesColls(currentRoutingTree.getSiteTree().getRoot());
   }
 
-  private void rewireNodes(IOT clonedIOT, String failedNodeID, String equivilentNodeID)
+  private void rewireNodes(IOT clonedIOT, String failedNodeID, String equivilentNodeID, IOT iot)
   {
     ///children first
-    Site failedSite = currentQEP.getRT().getSite(failedNodeID);
+    Site failedSite = iot.getRT().getSite(failedNodeID);
     Site equivilentSite = clonedIOT.getRT().getSite(equivilentNodeID);
     Iterator<Node> chidlrenIterator = failedSite.getInputsList().iterator();
     while(chidlrenIterator.hasNext())
@@ -336,7 +342,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           //rewire routing tree
           rewireRoutingTree(failedNodeID, equivilentNodeID, currentRoutingTree);
           //rewire children
-          rewireNodes(clonedIOT, failedNodeID, equivilentNodeID);
+          rewireNodes(clonedIOT, failedNodeID, equivilentNodeID, overlay.getQep().getIOT());
         }
         new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iot", "iot with eqiv nodes", true);
         
@@ -412,9 +418,10 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     }
  
   }
-  
-  
-  
-  
-  
+
+  public LogicalOverlayNetwork getLogicalOverlay()
+  {
+    return this.logicalOverlay;
+  }
+
 }

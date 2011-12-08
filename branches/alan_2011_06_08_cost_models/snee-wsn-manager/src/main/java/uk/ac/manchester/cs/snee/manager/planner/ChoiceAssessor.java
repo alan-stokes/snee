@@ -329,6 +329,7 @@ public class ChoiceAssessor implements Serializable
         List<Adaptation> result = failedNodeStrategyLocal.adapt(failedNodeIDs, current);
         failedNodeStrategyLocal.update(result.get(0), current);
         adapt.setNewQep(result.get(0).getNewQep());
+        current.setQep(result.get(0).getNewQep());
         overallShortestLifetime += shortestLifetime;
       }
       else
@@ -338,5 +339,66 @@ public class ChoiceAssessor implements Serializable
       }
     }
     return overallShortestLifetime;
+  }
+
+  public void assessChoice(Adaptation orgianlOTAProgramCost,
+      HashMap<String, RunTimeSite> runningSites, boolean reset,
+      LogicalOverlayNetwork logicalOverlayNetwork)
+  throws IOException, SchemaMetadataException, TypeMappingException, 
+  OptimizationException, CodeGenerationException, SNEEConfigurationException
+  {
+    AssessmentFolder = new File(outputFolder.toString() + sep + "assessment");
+    AssessmentFolder.mkdir();
+    imageGenerationFolder = new File(AssessmentFolder.toString() + sep + "Adaptations");
+    imageGenerationFolder.mkdir();
+    
+    this.runningSites = runningSites;
+    resetRunningSitesAdaptCost(false);
+    Adaptation adapt = orgianlOTAProgramCost;    
+    timeModelOverlay.initilise(imageGenerationFolder, _metadataManager);
+    energyModelOverlay.initilise(imageGenerationFolder, _metadataManager, runningSites);
+    adapt.setTimeCost(timeModelOverlay.calculateTimeCost(adapt,logicalOverlayNetwork ));
+    adapt.setEnergyCost(energyModelOverlay.calculateEnergyCost(adapt, logicalOverlayNetwork));
+    adapt.setLifetimeEstimate(this.calculateEstimatedLifetimeOverlay(adapt, logicalOverlayNetwork));
+    adapt.setRuntimeCost(calculateEnergyQEPExecutionCost());
+    
+  }
+
+  private Double calculateEstimatedLifetimeOverlay(Adaptation adapt,
+      LogicalOverlayNetwork logicalOverlayNetwork) 
+  throws FileNotFoundException, IOException, 
+  OptimizationException, SchemaMetadataException, 
+  TypeMappingException, SNEEConfigurationException
+  {
+    double shortestLifetime = Double.MAX_VALUE; //s
+    new LogicalOverlayNetworkUtils().storeOverlayAsFile(logicalOverlayNetwork, outputFolder);
+    Iterator<Site> siteIter = 
+      adapt.getNewQep().getRT().siteIterator(TraversalOrder.POST_ORDER);
+    while (siteIter.hasNext()) 
+    {
+      Site site = siteIter.next();
+      RunTimeSite rSite = runningSites.get(site.getID());
+      double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
+      double siteEnergyCons =   adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site); // J
+      runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
+      adapt.putSiteEnergyCost(site.getID(), siteEnergyCons);
+      double agendaLength = Agenda.bmsToMs( adapt.getNewQep().getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
+      double siteLifetime = (currentEnergySupply / siteEnergyCons) * agendaLength;
+      
+      boolean useAcquires = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_SENSE);
+      //uncomment out sections to not take the root site into account
+      if (site!=  adapt.getNewQep().getIOT().getRT().getRoot() &&
+          ((useAcquires) ||  (!useAcquires && !site.isSource()))) 
+      { 
+        if(shortestLifetime > siteLifetime)
+        {
+          if(!site.isDeadInSimulation())
+          {
+            shortestLifetime = siteLifetime;
+          }
+        }
+      }
+    }
+    return shortestLifetime;
   }
 }

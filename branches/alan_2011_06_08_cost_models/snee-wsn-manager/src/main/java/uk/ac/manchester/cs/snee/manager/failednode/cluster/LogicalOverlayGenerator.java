@@ -24,6 +24,7 @@ import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
+import uk.ac.manchester.cs.snee.manager.planner.model.Model;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -71,29 +72,19 @@ public class LogicalOverlayGenerator
   {
     new LogicalOverlayGeneratorUtils().storeQEP(qep, localFolder);
     LogicalOverlayNetwork superLogicalOverlay = setUpPhase();
+    
+    //outputs
     new LogicalOverlayNetworkUtils().storeOverlayAsFile(superLogicalOverlay, new File(localFolder.toString() + sep + "superOverlay"));
     new LogicalOverlayNetworkUtils().storeOverlayAsTextFile(superLogicalOverlay, new File(localFolder.toString() + sep + "superOverlay.txt"));
+   
+    
     ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays = reductionPhase(superLogicalOverlay);
-    setsOfLogicalOverlays = cleanUpPhase(setsOfLogicalOverlays);
+  //  setsOfLogicalOverlays = KResilenceCheck(setsOfLogicalOverlays);
     LogicalOverlayNetwork logicalOverlay = 
       assessmentPhase(setsOfLogicalOverlays, failedNodeStrategyLocal, qep.getID(), qep.getRT());
     if(logicalOverlay != null)
       new LogicalOverlayGeneratorUtils().storeOverlayAsText(logicalOverlay, localFolder);
     return logicalOverlay;
-  }
-
-  private ArrayList<LogicalOverlayNetwork> cleanUpPhase(
-      ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays)
-  {
-    ArrayList<LogicalOverlayNetwork> clean = new  ArrayList<LogicalOverlayNetwork>();
-    Iterator<LogicalOverlayNetwork> iterator = setsOfLogicalOverlays.iterator();
-    while(iterator.hasNext())
-    {
-      LogicalOverlayNetwork overlay = iterator.next();
-      if(overlay.getKeySet().size() != 0)
-        clean.add(overlay);
-    }
-    return clean;
   }
 
   private void transferQEPsToCandiates(LogicalOverlayNetwork currentOverlay,
@@ -150,6 +141,8 @@ public class LogicalOverlayGenerator
       }
       overlayIndex++;
     }
+    //allow the model to compile the next thing.
+    Model.setCompiledAlready(false);
     //reads in the best overlay from file (stored in a file for memory reasons
     if(bestOverlayNetwork != null)
     {
@@ -210,7 +203,6 @@ public class LogicalOverlayGenerator
       if((routingTree.getSite(key).isSource() && k_resilence_sense && cluster.size() < k_resilence_level) 
          || (!routingTree.getSite(key).isSource() && cluster.size() < k_resilence_level))
       {
-        System.out.println("failed on node " + key);
         return false; 
       }
     }
@@ -228,55 +220,63 @@ public class LogicalOverlayGenerator
   throws IOException 
   {
     ArrayList<LogicalOverlayNetwork> setsOfClusters = new ArrayList<LogicalOverlayNetwork>();
-    if(superLogicalOverlay.getEquivilentNodes(currentQEP.getRT().getRoot().getID()).size() != 0)
+    Iterator<Node> inputIterator = currentQEP.getRT().getRoot().getInputsList().iterator();
+    while(inputIterator.hasNext())
     {
-      ArrayList<String> canditateNodes = 
-        superLogicalOverlay.getEquivilentNodes(currentQEP.getRT().getRoot().getID());
-      ArrayList<ArrayList<String>> combinations = createCombinations(canditateNodes);
-      Iterator<ArrayList<String>> combinationIterator = combinations.iterator();
-      while(combinationIterator.hasNext())
+      ArrayList<String> trueCluster = new ArrayList<String>();
+      LogicalOverlayNetwork curerntOverlay = new LogicalOverlayNetwork();
+      curerntOverlay.addClusterNode(currentQEP.getRT().getRoot().getID(), trueCluster);
+      setsOfClusters.add(curerntOverlay);
+      Node input = inputIterator.next();
+      int setIndex = setsOfClusters.size();
+      while(setIndex > 0)
       {
-        ArrayList<String> combination = combinationIterator.next();
-        LogicalOverlayNetwork curerntOverlay = new LogicalOverlayNetwork();
-        curerntOverlay.addClusterNode(currentQEP.getRT().getRoot().getID(), combination);
-        setsOfClusters.add(curerntOverlay);
-        Iterator<Node> inputIterator = currentQEP.getRT().getRoot().getInputsList().iterator();
-        while(inputIterator.hasNext())
+        curerntOverlay = setsOfClusters.get(setIndex -1);
+        setsOfClusters.remove(curerntOverlay);
+        
+        alternative(trueCluster, input.getID(), setsOfClusters, curerntOverlay, superLogicalOverlay);
+        setIndex--;
+      }
+    } 
+    setsOfClusters = removeDuplicates(setsOfClusters);
+    setsOfClusters = clean(setsOfClusters);
+    new LogicalOverlayNetworkUtils().storeSetAsTextFile(setsOfClusters, new File(localFolder.toString() + sep + "overLaySets"));
+    return setsOfClusters;
+  }
+
+  private ArrayList<LogicalOverlayNetwork> clean(ArrayList<LogicalOverlayNetwork> setsOfClusters)
+  {
+    ArrayList<LogicalOverlayNetwork> cleaned = new ArrayList<LogicalOverlayNetwork>();
+    Iterator<LogicalOverlayNetwork> iterator = setsOfClusters.iterator();
+    while(iterator.hasNext())
+    {
+      LogicalOverlayNetwork next = iterator.next();
+      if(this.hasCorrectLevelsOfResileince(next,currentQEP.getRT()))
+          cleaned.add(next);
+    }
+    return cleaned;
+  }
+
+  /**
+   * goes though the set of clusters and looks for duplicates
+   * @param setsOfClusters
+   */
+  private  ArrayList<LogicalOverlayNetwork> removeDuplicates(ArrayList<LogicalOverlayNetwork> setsOfClusters)
+  {
+    ArrayList<LogicalOverlayNetwork> cleaned = new  ArrayList<LogicalOverlayNetwork>();
+    while(setsOfClusters.size() != 0)
+    {
+      LogicalOverlayNetwork current = setsOfClusters.get(0);
+      cleaned.add(current);
+      for(int index = setsOfClusters.size() -1; index >= 0; index--)
+      {
+        if(current.equals(setsOfClusters.get(index)))
         {
-          int setIndex = 0;
-          int clusterSize = setsOfClusters.size();
-          while(setIndex < clusterSize)
-          {
-            curerntOverlay = setsOfClusters.get(setIndex);
-            Node input = inputIterator.next();
-            alternative(combination, input.getID(), setsOfClusters, curerntOverlay, superLogicalOverlay);
-            setIndex++;
-          }
+          setsOfClusters.remove(index);
         }
       }
     }
-    else
-    {
-      Iterator<Node> inputIterator = currentQEP.getRT().getRoot().getInputsList().iterator();
-      while(inputIterator.hasNext())
-      {
-        int setIndex = 0;
-        ArrayList<String> trueCluster = new ArrayList<String>();
-        LogicalOverlayNetwork curerntOverlay = new LogicalOverlayNetwork();
-        curerntOverlay.addClusterNode(currentQEP.getRT().getRoot().getID(), trueCluster);
-        setsOfClusters.add(curerntOverlay);
-        int clusterSize = setsOfClusters.size();
-        Node input = inputIterator.next();
-        while(setIndex < clusterSize)
-        {
-          curerntOverlay = setsOfClusters.get(setIndex);
-          alternative(trueCluster, input.getID(), setsOfClusters, curerntOverlay, superLogicalOverlay);
-          setIndex++;
-        }
-      }
-    }  
-    new LogicalOverlayNetworkUtils().storeSetAsTextFile(setsOfClusters, new File(localFolder.toString() + sep + "overLaySets"));
-    return setsOfClusters;
+    return cleaned;
   }
 
   /**
@@ -284,14 +284,14 @@ public class LogicalOverlayGenerator
    * @param canditateNodes
    * @return
    */
-  private ArrayList<ArrayList<String>> createCombinations(ArrayList<String> canditateNodes)
+  private ArrayList<ArrayList<String>> createPermutations(ArrayList<String> canditateNodes)
   {
     ArrayList<ArrayList<String>> combinations = new ArrayList<ArrayList<String>>();
     if(canditateNodes.size() != 0)
     {
       int position = 0;
       ArrayList<String> combination = new ArrayList<String>();  
-      createCombination(combinations, combination, position, canditateNodes);
+      createPermutation(combinations, combination, position, canditateNodes);
     }
     return combinations;
   }
@@ -303,20 +303,21 @@ public class LogicalOverlayGenerator
    * @param position
    * @param canditateNodes 
    */
-  private void createCombination(ArrayList<ArrayList<String>> combinations,
+  private void createPermutation(ArrayList<ArrayList<String>> combinations,
       ArrayList<String> combination, int position, ArrayList<String> canditateNodes)
   {
     if(position == canditateNodes.size())
     {
       ArrayList<String> clonedCombination = cloner.deepClone(combination);
-      combinations.add(clonedCombination);
+      if(clonedCombination.size() >= k_resilence_level)
+        combinations.add(clonedCombination);
     }
     else
     {
       combination.add(canditateNodes.get(position));
-      createCombination(combinations, combination, position+ 1, canditateNodes);
+      createPermutation(combinations, combination, position+ 1, canditateNodes);
       combination.remove(combination.size()-1);
-      createCombination(combinations, combination, position+ 1, canditateNodes);
+      createPermutation(combinations, combination, position+ 1, canditateNodes);
     }
   }
 
@@ -347,10 +348,12 @@ public class LogicalOverlayGenerator
     if(routingTree.getSiteTree().getNode(childID).isLeaf())
     {
       curerntOverlay.addClusterNode(childID, trueChildCluster);
+      setsOfClusters.remove(curerntOverlay);
+      setsOfClusters.add(curerntOverlay);
     }
     else
     {
-      ArrayList<ArrayList<String>> combinations = this.createCombinations(trueChildCluster);
+      ArrayList<ArrayList<String>> combinations = this.createPermutations(trueChildCluster);
       Iterator<ArrayList<String>> combinationIterator = combinations.iterator();
       if(combinations.size() == 0)
       {
@@ -368,14 +371,9 @@ public class LogicalOverlayGenerator
         {
           ArrayList<String> combination = combinationIterator.next();
           LogicalOverlayNetwork nextOverlay = this.cloneOverlay(curerntOverlay);
-          
           nextOverlay.addClusterNode(childID, combination);
           Iterator<Node> childInputs = routingTree.getSiteTree().getNode(childID).getInputsList().iterator();
           //if going upon another iteration, then add new combination to the set
-          if(combinationIterator.hasNext())
-          {
-            setsOfClusters.add(nextOverlay);
-          }
           while(childInputs.hasNext())
           {
             Node childInput = childInputs.next();

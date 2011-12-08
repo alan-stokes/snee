@@ -84,18 +84,21 @@ public class LogicalOverlayNetworkUtils
   {
     BufferedWriter out = new BufferedWriter(new FileWriter(outputFile));
     Iterator<LogicalOverlayNetwork> iterator = setsOfClusters.iterator();
+    int id = 1;
     while(iterator.hasNext())
     {
       LogicalOverlayNetwork overlay = iterator.next();
       Iterator<String> keys = overlay.getKeySet().iterator();
+      out.write(new Integer(id).toString());
       while(keys.hasNext())
       {
         String key = keys.next();
         ArrayList<String> eqNodes = overlay.getEquivilentNodes(key);
-        out.write("[" + key + "] : [ " + eqNodes.toString() + " ] ");
+        out.write(" [" + key + "] : [ " + eqNodes.toString() + " ] ");
         out.newLine();
       }
       out.newLine();
+      id++;
     }
     out.flush();
     out.close();

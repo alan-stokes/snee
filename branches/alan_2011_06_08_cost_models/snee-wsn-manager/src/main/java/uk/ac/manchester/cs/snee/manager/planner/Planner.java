@@ -219,12 +219,12 @@ public class Planner extends AutonomicManagerComponent
   }
 
   public void assessOTACosts(File output, Adaptation orgianlOTAProgramCost,
-      HashMap<String, RunTimeSite> runningSites, boolean reset) 
+      HashMap<String, RunTimeSite> runningSites, boolean reset, LogicalOverlayNetwork logicalOverlayNetwork) 
   throws IOException, OptimizationException, SchemaMetadataException, 
-  TypeMappingException, CodeGenerationException
+  TypeMappingException, CodeGenerationException, SNEEConfigurationException
   {
     this.assessor.updateStorageLocation(output);
-    this.assessor.assessChoice(orgianlOTAProgramCost, runningSites, reset);
+    this.assessor.assessChoice(orgianlOTAProgramCost, runningSites, reset, logicalOverlayNetwork);
     this.assessor.updateStorageLocation(plannerFolder);
     new PlannerUtils(orgianlOTAProgramCost, manager, output, orgianlOTAProgramCost).writeObjectsToFile(); 
     new ChoiceAssessorUtils(runningSites, orgianlOTAProgramCost.getNewQep().getRT())
