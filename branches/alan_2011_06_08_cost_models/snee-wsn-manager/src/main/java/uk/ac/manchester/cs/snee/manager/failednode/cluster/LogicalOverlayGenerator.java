@@ -398,6 +398,9 @@ public class LogicalOverlayGenerator
     while(setIterator.hasNext() && same)
     {
       String setId = setIterator.next();
+      //if the same node is being compared, then remove it from the child
+      if(nodeId.equals(setId))
+        return false;
       Site setSite = network.getSite(setId);
       if(network.getRadioLink(compareSite, setSite) == null)
         same = false;

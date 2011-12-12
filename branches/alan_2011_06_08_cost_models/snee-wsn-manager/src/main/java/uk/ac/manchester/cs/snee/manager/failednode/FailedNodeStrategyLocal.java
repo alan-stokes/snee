@@ -95,7 +95,6 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     //if no overlay is generated, then throw error
     if(logicalOverlay == null)
     {
-      System.exit(0);
       throw new SchemaMetadataException("current metatdata does not support a logical overlay structure " +
           "with the current k resilience value. Possible solutions is to reduce the k resilience level, or " +
           "add more nodes to compensate");

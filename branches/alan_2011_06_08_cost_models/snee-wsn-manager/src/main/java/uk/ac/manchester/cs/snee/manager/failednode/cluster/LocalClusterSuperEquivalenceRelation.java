@@ -15,6 +15,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
+import uk.ac.manchester.cs.snee.sncb.SensorType;
 /**
  * class used to compare 2 nodes to test if they are equivalent
  * @author alan
@@ -72,7 +73,15 @@ public class LocalClusterSuperEquivalenceRelation implements Serializable
     }
     if(primarySite.isSource())
     {
-      success = false;
+      HashSet<SensorType> primarySensorTypes = primarySite.getSensingCapabilities();
+      Iterator<SensorType> secondarySiteSensorTypesIterator = secondarySite.getSensingCapabilities().iterator();
+      while(secondarySiteSensorTypesIterator.hasNext())
+      {
+        if(!primarySensorTypes.contains(secondarySiteSensorTypesIterator.next()))
+          return false;
+      }
+      if(!primarySite.getAlterativeSites().contains(secondarySite.getID()))
+        return false;
     }
     if(!sameConnections(primarySite, secondarySite, network))
     {

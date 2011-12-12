@@ -42,6 +42,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
+import uk.ac.manchester.cs.snee.sncb.SensorType;
 
 public class Site extends NodeImplementation implements Comparable<Site> {
 
@@ -65,6 +66,16 @@ public class Site extends NodeImplementation implements Comparable<Site> {
      * The energy stock available for the site, in milliJoules 
      */
     long energyStock;
+    
+    /**
+     * The sensing capabilities on this site 
+     */
+    HashSet<SensorType> sensingCapabilities = new HashSet<SensorType>();
+    
+    /**
+     * the sites which the user has decided are alternatives to this site.
+     */
+    HashSet<String> alternativeSitesIDs = new HashSet<String>();
 
     /**
      * The fragments which have been placed on a node
@@ -346,6 +357,44 @@ public class Site extends NodeImplementation implements Comparable<Site> {
     public void clearExchangeComponents()
     {
       this.exchangeComponents.clear();      
+    }
+    
+    /**
+     * returns an iterator for the sites sensing capabilities.
+     * @return
+     */
+    public HashSet<SensorType> getSensingCapabilities()
+    {
+      return sensingCapabilities;
+    }
+    
+    /**
+     * adds a sense capability to the capabilities of this site
+     * @param e
+     * @return
+     */
+    public boolean addSenseCapability(SensorType e)
+    {
+      return sensingCapabilities.add(e);
+    }
+    
+    /**
+     * adds a alternative site to the set
+     * @param id
+     * @return
+     */
+    public boolean addAlternativeSite(String id)
+    {
+      return this.alternativeSitesIDs.add(id);
+    }
+    
+    /**
+     * returns the sites which are considered alternatives to this one.
+     * @return
+     */
+    public HashSet<String> getAlterativeSites()
+    {
+      return this.alternativeSitesIDs;
     }
 
 //    /**

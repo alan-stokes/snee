@@ -24,6 +24,20 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk site-resources.xsd">
 		<energy-stock>31320</energy-stock> <!-- assume a untethered gateway node -->
 		<ram>10</ram>
 		<flash-memory>48</flash-memory>
+		<sensorTypes>
+					<sensorType sensor="default"/>				
+		</sensorTypes>	
+	</site>
+	
+	<site id="2">
+		<!--  <energy-stock>9999</energy-stock>  --> <!-- assume a tethered gateway node -->
+		<energy-stock>31320</energy-stock> <!-- assume a untethered gateway node -->
+		<ram>10</ram>
+		<flash-memory>48</flash-memory>
+		<sensorTypes>
+					<sensorType sensor="default"/>	
+					<sensorType sensor="light"/>				
+		</sensorTypes>	
 	</site>
 
 </sites>	

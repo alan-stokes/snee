@@ -72,51 +72,7 @@ public class LogicalOverlayNetwork implements Serializable
    */
   public void addClusterNode(String primary, String equivilentNode)
   {
-    String key = locateOtherClusters(equivilentNode);
-    if(key == null)
-      this.clusters.add(primary, equivilentNode);
-    else
-    {
-      chooseNodeLocation(primary, key, equivilentNode);
-    }
-  }
-  
-  /**
-   * uses the huristic of putting the node in the smaller of the 2 relations
-   * @param primary
-   * @param key
-   * @param equivilentNode
-   */
-  private void chooseNodeLocation(String primary, String key, String equivilentNode)
-  {
-    int oldSize = clusters.get(key).size();
-    if(clusters.get(primary) == null)
-    {
-      this.removeNode(equivilentNode);
-      clusters.add(primary, equivilentNode);
-    }
-    else
-    {
-      int newSize = clusters.get(primary).size();
-      if(newSize < oldSize)
-      {
-        this.removeNode(equivilentNode);
-        clusters.add(primary, equivilentNode);
-      }
-    }
-  }
-
-  private String locateOtherClusters(String equivilentNode)
-  {
-    Iterator<String> keyIterator = this.clusters.keySet().iterator();
-    while(keyIterator.hasNext())
-    {
-      String key = keyIterator.next();
-      ArrayList<String> nodes = clusters.get(key);
-      if(nodes.contains(equivilentNode))
-        return key;
-    }
-    return null;
+    this.clusters.add(primary, equivilentNode);
   }
 
   public Set<String> getKeySet()

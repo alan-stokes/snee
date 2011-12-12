@@ -261,7 +261,7 @@ public class SNEEProperties {
     }
     else if(propName.equals("wsn_manager.k_resilence_level"))
     {
-      setSetting(propName, "1");
+      setSetting(propName, "0");
       return getSetting(propName);
     }
     else if(propName.equals("wsn_manager.k_resilence_sense"))

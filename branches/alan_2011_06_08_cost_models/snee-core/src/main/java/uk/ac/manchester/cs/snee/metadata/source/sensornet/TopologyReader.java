@@ -45,7 +45,9 @@ import org.w3c.dom.NodeList;
 
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataUtils;
 import uk.ac.manchester.cs.snee.metadata.units.Units;
+import uk.ac.manchester.cs.snee.sncb.SensorType;
 
 public class TopologyReader {
 
@@ -229,7 +231,27 @@ public class TopologyReader {
 				ram = Long.parseLong(ramStr) * memoryScalingFactor;
 			    }
 			    site.setRAM(ram);
-		
+			    //take sensing capabilities
+			    final NodeList nodeList =  Utils.doXPathQuery(siteResourceFile,
+            "/snee:site-resources/snee:sites/snee:site[@id="
+              + site.getID() + "]/snee:sensorTypes/snee:sensorType");
+			    for (int i = 0; i < nodeList.getLength(); i++) 
+			    {
+	          final org.w3c.dom.Node node = nodeList.item(i);
+	          final String sensorType = Utils.doXPathStrQuery(node, "@sensor");
+	          site.addSenseCapability(SensorType.parseSensorType(sensorType)); 
+			    }
+			    //takes alternative sites and places them within the site for use by local 
+			    //failed node strategy
+			    final String altSites = Utils.doXPathStrQuery(siteResourceFile,
+	            "/snee:site-resources/snee:sites/snee:site[@id="
+	              + site.getID() + "]/snee:alternativeSites");
+			    int [] altSitesIds = SourceMetadataUtils.convertNodes(altSites);
+			    for(int index = 0; index < altSitesIds.length; index ++)
+			    {
+			      site.addAlternativeSite(new Integer(altSitesIds[index]).toString());
+			    }
+			    
 			    //TODO: in future, flash memory as well...
 			}
     	} catch (Exception e) {

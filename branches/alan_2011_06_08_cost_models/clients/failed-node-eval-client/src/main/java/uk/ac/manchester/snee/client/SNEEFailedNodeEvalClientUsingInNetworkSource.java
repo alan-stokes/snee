@@ -59,7 +59,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	protected static int testNo = 1;
 	private static SensorNetworkQueryPlan qep;
 	private static ClientUtils utils = new ClientUtils();
-	private static int max = 10;
+	private static int max = 120;
 	
 	public SNEEFailedNodeEvalClientUsingInNetworkSource(String query, 
 			double duration, String queryParams, String csvFile, String sneeProperties) 
@@ -108,11 +108,11 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	      recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
       }
 	    
-	    /*queryIterator = queries.iterator();
-	    while(queryIterator.hasNext() &&  queryid <= max)
-      {
-        recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
-      }*/
+	    //queryIterator = queries.iterator();
+	    //while(queryIterator.hasNext() &&  queryid <= max)
+      //{
+        //recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
+      //}
 	    failedOutput.write("\\end{document}");
 	    failedOutput.flush();
 	    failedOutput.close();  
