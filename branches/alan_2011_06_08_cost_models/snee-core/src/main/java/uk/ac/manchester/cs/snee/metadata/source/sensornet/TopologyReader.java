@@ -246,10 +246,13 @@ public class TopologyReader {
 			    final String altSites = Utils.doXPathStrQuery(siteResourceFile,
 	            "/snee:site-resources/snee:sites/snee:site[@id="
 	              + site.getID() + "]/snee:alternativeSites");
-			    int [] altSitesIds = SourceMetadataUtils.convertNodes(altSites);
-			    for(int index = 0; index < altSitesIds.length; index ++)
+			    if(altSites != null)
 			    {
-			      site.addAlternativeSite(new Integer(altSitesIds[index]).toString());
+			      int [] altSitesIds = SourceMetadataUtils.convertNodes(altSites);
+			      for(int index = 0; index < altSitesIds.length; index ++)
+			      {
+			        site.addAlternativeSite(new Integer(altSitesIds[index]).toString());
+			      }
 			    }
 			    
 			    //TODO: in future, flash memory as well...
