@@ -31,6 +31,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
+import uk.ac.manchester.cs.snee.manager.planner.model.Model;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -60,6 +61,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	private static SensorNetworkQueryPlan qep;
 	private static ClientUtils utils = new ClientUtils();
 	private static int max = 120;
+	private static File testFolder =  new File("src/main/resources/testsSize100");
+	private static File sneetestFolder =  new File("testsSize100");
 	
 	public SNEEFailedNodeEvalClientUsingInNetworkSource(String query, 
 			double duration, String queryParams, String csvFile, String sneeProperties) 
@@ -141,7 +144,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	{
 	//get query & schemas
     String currentQuery = queryIterator.next();
-    String propertiesPath = "tests/snee" + queryid + ".properties";
+    String propertiesPath = sneetestFolder.toString() + sep + "snee" + queryid + ".properties";
     
     System.out.println("Running Tests on query " + (queryid));
     try
@@ -215,7 +218,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
   private static void collectQueries(ArrayList<String> queries) throws IOException
   {
     //String filePath = Utils.validateFileLocation("tests/queries.txt");
-    File queriesFile = new File("src/main/resources/tests/queries.txt");
+    File queriesFile = new File(testFolder.toString() + sep + "queries.txt");
     String filePath = queriesFile.getAbsolutePath();
     BufferedReader queryReader = new BufferedReader(new FileReader(filePath));
     String line = "";
@@ -232,7 +235,6 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
      //if tests exist, do not redo
      File pythonFolder = new File("src/main/resources/python/");
      String pythonPath = pythonFolder.getAbsolutePath();
-     File testFolder = new File("src/main/resources/tests");
      if(!testFolder.exists())
        testFolder.mkdir();
      
@@ -402,6 +404,7 @@ private void resetMetaData()
     System.out.println("Failed nodes" + failedNodes.toString() );
     SNEEController control = (SNEEController) controller;
     control.giveAutonomicManagerQuery(_query);
+    Model.setCompiledAlready(false);
     control.runSimulatedNodeFailure(failedNodes);
     //  List<ResultSet> results1 = resultStore.getResults();
     System.out.println("Stopping query " + queryid + ".");

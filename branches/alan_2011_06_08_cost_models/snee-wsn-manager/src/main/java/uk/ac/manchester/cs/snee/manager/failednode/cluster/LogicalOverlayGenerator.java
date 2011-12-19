@@ -434,7 +434,7 @@ public class LogicalOverlayGenerator
         while(secondNodeIterator.hasNext())
         {
           Node equilvientNode = secondNodeIterator.next();
-          if(LocalClusterSuperEquivalenceRelation.isEquivalent(clusterHead, equilvientNode, currentQEP, network))
+          if(LocalClusterSuperEquivalenceRelation.isEquivalent(clusterHead, equilvientNode, currentQEP, network, k_resilence_sense))
           {
             logicalOverlay.addClusterNode(clusterHead.getID(), equilvientNode.getID());
           }

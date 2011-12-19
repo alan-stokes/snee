@@ -9,7 +9,7 @@ import random, sys, array, math, os.path, UtilLib
 optFreq = 432969975					#Default frequency for Avrora Mica2 radio
 optMinRXPower = 0.000009				#This is the minimum receive power at which packets can be received
 lightConst = math.pow(299792458 / (4 * math.pi),2)	#Constant used by freespace model
-topologyDensity = 6
+topologyDensity = 50
 
 logger = None
 			
@@ -127,7 +127,7 @@ class Field(object):
 		tmp2 = math.ceil((math.log(minTxPower, 10) + 0.06459) / 0.00431)
 		txPowerSetting = max(1, tmp1, tmp2)
 			
-		if (txPowerSetting>255): #TODO: unhardcode this
+		if (txPowerSetting>=255): #TODO: unhardcode this
 			return -1;
 		else:
 			return txPowerSetting
@@ -298,6 +298,58 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk network-topology.xsd">
 """)
 	 	outFile.close()
 
+#creates the site res file for use in local tests
+	def generateSiteResFile(self, fname):
+		self.updateEdges()
+		outFile = open(fname, 'w')
+		outFile.writelines("""<?xml version="1.0"?>
+
+<site-resources
+xmlns="http://snee.cs.manchester.ac.uk"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://snee.cs.manchester.ac.uk site-resources.xsd">
+
+
+<units>
+	<energy>JOULES</energy>
+	<memory>KILOBYTES</memory>
+</units>
+
+<sites>
+	<default>
+		<energy-stock>31320</energy-stock>
+		<ram>10</ram>
+		<flash-memory>48</flash-memory>
+	</default>
+	""")
+		numNodes = len(self.nodes.keys())
+		for i in range(0,numNodes):
+			line = "<site id=\"%d\">" %(i)
+			outFile.writelines(line);
+			outFile.writelines("""<sensorTypes>
+					<sensorType sensor="default"/>				
+		</sensorTypes>
+		<alternativeSites>""")
+			first = True
+			for j in range(i,numNodes):
+				if(i != j):
+					if(first):
+						line = "%d" %(j)
+						outFile.write(line);
+						first = False
+					else:
+						line = ",%d" %(j);
+						outFile.write(line);
+		
+			outFile.writelines("""</alternativeSites>
+		
+	</site>
+	""");
+	
+		outFile.writelines("""</sites>	
+	
+</site-resources>""");
+		outFile.close()
 
 	#Creates file with network in Tossim format (showing connectivity between nodes only)
 	def generateTossimNetFile(self, fname):

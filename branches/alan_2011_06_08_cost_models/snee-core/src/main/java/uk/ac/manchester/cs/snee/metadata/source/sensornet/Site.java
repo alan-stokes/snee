@@ -117,6 +117,8 @@ public class Site extends NodeImplementation implements Comparable<Site> {
 		this.energyStock = model.energyStock;
 		this.source = model.source;
 		this.numSources = model.numSources;
+		this.alternativeSitesIDs = model.getAlterativeSites();
+		this.sensingCapabilities = model.getSensingCapabilities();
 		//this method does not link fragments or exchange components,
 		//needs to be done later
 	}

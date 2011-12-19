@@ -41,7 +41,7 @@ public class LocalClusterSuperEquivalenceRelation implements Serializable
    * @throws SchemaMetadataException 
    */
   public static boolean isEquivalent(Node first, Node second, SensorNetworkQueryPlan qep, 
-                                     Topology network) 
+                                     Topology network, boolean k_resilence_sense) 
   throws 
   SchemaMetadataException, 
   TypeMappingException, 
@@ -56,22 +56,24 @@ public class LocalClusterSuperEquivalenceRelation implements Serializable
     Long primarySiteMemoryUsage = memoryRequiredForQEP(primarySite, qep);
     Long secondarySiteMemoryAvilible = secondarySite.getRAM();
     
-    //set to true, but then if any test passes, set to false
-    boolean success = true;
+    
+    
+    if(first.getID().equals(qep.getRT().getRoot().getID()))
+    	return false;
     //check memory test
     if(secondarySiteMemoryAvilible < primarySiteMemoryUsage)
     {
-      success = false;
+      return false;
     }
     if(siteIdsInQEP.contains(Integer.parseInt(secondarySite.getID())))
     {
-      success = false;
+      return false;
     }
     if(!siteIdsInQEP.contains(Integer.parseInt(primarySite.getID())))
     {
-      success = false;
+     return false;
     }
-    if(primarySite.isSource())
+    if(primarySite.isSource() && k_resilence_sense)
     {
       HashSet<SensorType> primarySensorTypes = primarySite.getSensingCapabilities();
       Iterator<SensorType> secondarySiteSensorTypesIterator = secondarySite.getSensingCapabilities().iterator();
@@ -83,11 +85,15 @@ public class LocalClusterSuperEquivalenceRelation implements Serializable
       if(!primarySite.getAlterativeSites().contains(secondarySite.getID()))
         return false;
     }
+    if(primarySite.isSource() && !k_resilence_sense)
+    {
+      return false;
+    }
     if(!sameConnections(primarySite, secondarySite, network))
     {
-      success = false; 
+      return false;
     }
-    return success;
+    return true;
   }
   
   /**
@@ -165,5 +171,4 @@ public class LocalClusterSuperEquivalenceRelation implements Serializable
     
     return totalFragmentDataMemoryCost + (totalExchangeComponentsDataMemoryCost * qep.getBufferingFactor());
   }
-  
 }

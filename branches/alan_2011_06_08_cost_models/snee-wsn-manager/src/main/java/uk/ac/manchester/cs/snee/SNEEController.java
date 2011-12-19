@@ -60,6 +60,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
+import uk.ac.manchester.cs.snee.manager.planner.model.Model;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
@@ -488,6 +489,7 @@ public class SNEEController implements SNEE {
 		}
 		QueryExecutionPlan queryPlan = _queryPlans.get(queryId);
 		ResultStore resultSet = createStreamResultSet(query, queryPlan);
+		Model.setCompiledAlready(false);
 		_dispatcher.initiliseAutonomicManager(queryId, resultSet, queryPlan);
 		_dispatcher.giveAutonomicManagerQuery(query);
 		_dispatcher.giveAutonomicManagerQueryParams(queryParams);

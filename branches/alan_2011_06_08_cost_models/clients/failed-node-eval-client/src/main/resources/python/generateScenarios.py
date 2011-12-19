@@ -6,7 +6,7 @@
 #TODO: Move query generator out to a separate library
 import os, random, RandomSeeder, math, networkLib, SneeqlLib, sys, getopt, UtilLib
 
-optNumNodes = 15
+optNumNodes = 100
 optScenariosFile = 'scenarios.csv'
 
 #Scenarios 1
@@ -24,7 +24,7 @@ optMaxQueryNesting = 1
 optMaxSourcesPerQueryLevel = 1
 optProbabilitySubquery = 1 #prob that each source in a query level is a sub-query
 optProbabilityAggregate = 1 #prob that aggregate is projected in query level
-topologyDensity = 6
+topologyDensity = 50
 
 #network generation
 optRadioRange = 60
@@ -120,13 +120,15 @@ def generateRandomQuery(queryId = 'q1', outputDir = '.'):
     outFile.writelines(query + "\n")
     return extentsUsed
 
-def generatePhysicalSchema(numNodes, percentSources, extentList, schemaId, outputDir, networkId):
+def generatePhysicalSchema(numNodes, percentSources, extentList, schemaId, outputDir, networkId, siteRes):
     numSources = int(math.ceil(float(numNodes)*(percentSources/100.0)))
     if numSources > 7:
         numSources = 9
     nodes = range(0,numNodes)
     sourceNodes = random.sample(nodes, numSources)
     numExtents = len(extentList)
+    bits = outputDir.split("src/main/resources/");
+    outputDir2 = bits[1];
 
     schemaStr = """<?xml version="1.0" encoding="UTF-8"?>
 <source xmlns="http://snee.cs.man.ac.uk/namespace/physical-schema"
@@ -134,11 +136,11 @@ def generatePhysicalSchema(numNodes, percentSources, extentList, schemaId, outpu
 	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../schema/physical-schema.xsd ">
 
 	<sensor_network name="wsn1">
-		<topology>tests/%s.xml</topology>
-		<site-resources>etc/common/tmotesky-site-resources.xml</site-resources>
+		<topology>%s/%s.xml</topology>
+		<site-resources>%s/%s.xml</site-resources>
 		<gateways>0</gateways>
 		<extents>
-""" % (networkId)
+""" % (outputDir2, networkId, outputDir2, siteRes)
 
 #    print "numSources="+str(numSources)
 #    print "numExtents="+str(numExtents)
@@ -176,7 +178,7 @@ def getCandidateNode(nodes, rValue, id):
         n = networkLib.Node(id, int(randomNode.xPos + dx), int(randomNode.yPos + dy))
         return n
 
-def generateSpiderNetwork(numNodes, rValue, networkId, outputDir):
+def generateSpiderNetwork(numNodes, rValue, networkId, outputDir, siteResID):
 
     minx = 0
     miny = 0
@@ -215,6 +217,7 @@ def generateSpiderNetwork(numNodes, rValue, networkId, outputDir):
     f.generateSneeqlNetFile(outputDir+os.sep+networkId+".xml")
     f.generateTopFile(outputDir+os.sep+networkId+".top")
     f.generateTopDotFile(outputDir+os.sep+networkId+".dot")
+    f.generateSiteResFile(outputDir+os.sep+siteResID+".xml")
 
 def generateLogicalSchema(extentList, logicalSchemaId, outputDir):
     numExtents = len(extentList)
@@ -244,6 +247,8 @@ def generateLogicalSchema(extentList, logicalSchemaId, outputDir):
 def generateSneeProperties(logicalSchemaId, physicalSchemaId, i, outputDir):
     filepath = outputDir+os.sep+"snee%d.properties" % (i)
     outFile = open(filepath, 'w')
+    bits = outputDir.split("src/main/resources/");
+    outputDir2 = bits[1];
     schemaStr= """
 # Determines whether graphs are to be generated.
 compiler.generate_graphs = true
@@ -300,10 +305,10 @@ compiler.when_sched.decrease_beta_for_valid_alpha = true
 compiler.allow_discontinuous_sensing = true
 
 # Location of the logical schema
-logical_schema = tests/%s.xml
+logical_schema = %s/%s.xml
 
 # Location of the physical schema
-physical_schema = tests/%s.xml
+physical_schema = %s/%s.xml
 
 # Location of the cost parameters file
 # TODO: This should be moved to physical schema, as there  is potentially
@@ -330,7 +335,13 @@ sncb.include_command_server = true
 
 #Specifies which stragety levels to run.
 # Currently FL, FP, FG, ALL
-wsn_manager.strategies = FailedNodePartial
+wsn_manager.strategies = All
+
+#specifies how much k resilience to expect local to generate (minumal)
+wsn_manager.k_resilence_level = 1
+
+#specifies if acquire operators are to be taken into account when generating overlays
+wsn_manager.k_resilence_sense = true
 
 # Specifies code generation target
 # telosb_t2 generates TinyOS v2 code for TelosB or TmoteSky hardware
@@ -344,7 +355,7 @@ TIMESTAMP_FORMAT = yyyy-MM-dd HH:mm:ss.SSS Z
 WEBROWSET_FORMAT = http://java.sun.com/xml/ns/jdbc
 
 # Size of history, in tuples, maintained per stream
-results.history_size.tuples = 1000""" %(logicalSchemaId, physicalSchemaId)
+results.history_size.tuples = 1000""" %(outputDir2, logicalSchemaId,outputDir2, physicalSchemaId)
 
     outFile.writelines(schemaStr)
     outFile.close()
@@ -366,17 +377,18 @@ def generateScenarios1(numScenarios, numNodes, outputDir, scenariosFile, counter
 
     i = 0
     for i in range(counter, counterMax):
-        percentSources = random.randrange(30, 100, 1)
+        percentSources = random.randrange(30, 50, 1)
         rValue = random.randrange(1, 5, 1)
 
         queryId = 'q%d' % (i)
 	logicalSchemaId = 'logicalSchema_query%d' % (i)
         physicalSchemaId = 'physicalSchema_query%d' % (i)
         networkId = 'wsn_query%d' % (i)
+        siteResId = 'siteRes%d' % (i)
     
         extentList = generateRandomQuery(queryId, outputDir)
-	generateSpiderNetwork(numNodes, rValue, networkId, outputDir)
-        generatePhysicalSchema(numNodes, percentSources, extentList, physicalSchemaId, outputDir, networkId)
+	generateSpiderNetwork(numNodes, rValue, networkId, outputDir, siteResId)
+        generatePhysicalSchema(numNodes, percentSources, extentList, physicalSchemaId, outputDir, networkId, siteResId)
 	generateLogicalSchema(extentList, logicalSchemaId, outputDir)
 	generateSneeProperties(logicalSchemaId, physicalSchemaId, i, outputDir)
     
@@ -401,10 +413,11 @@ def generateScenarios2(numScenarios, numNodes, outputDir, scenariosFile, counter
 	logicalSchemaId = 'logicalSchema_query%d' % (i)
         physicalSchemaId = 'physicalSchema_query%d' % (i)
         networkId = 'wsn_query%d' % (i)
+        siteResId = 'siteRes%d' % (i)
     
         extentList = generateRandomQuery(queryId, outputDir)
-	generateSpiderNetwork(numNodes, rValue, networkId, outputDir)
-        generatePhysicalSchema(numNodes, percentSources, extentList, physicalSchemaId, outputDir, networkId)
+	generateSpiderNetwork(numNodes, rValue, networkId, outputDir, siteResId)
+        generatePhysicalSchema(numNodes, percentSources, extentList, physicalSchemaId, outputDir, networkId, siteResId)
 	generateLogicalSchema(extentList, logicalSchemaId, outputDir)
 	generateSneeProperties(logicalSchemaId, physicalSchemaId, i, outputDir)
     
@@ -435,10 +448,11 @@ def generateScenarios3(numScenarios, numNodes, outputDir, scenariosFile, counter
 	logicalSchemaId = 'logicalSchema_query%d' % (i)
         physicalSchemaId = 'physicalSchema_query%d' % (i)
         networkId = 'wsn_query%d' % (i)
+        siteResId = 'siteRes%d' % (i)
     
         extentList = generateRandomQuery(queryId, outputDir)
-	generateSpiderNetwork(numNodes, rValue, networkId, outputDir)
-        generatePhysicalSchema(numNodes, percentSources, extentList, physicalSchemaId, outputDir, networkId)
+	generateSpiderNetwork(numNodes, rValue, networkId, outputDir, siteResId)
+        generatePhysicalSchema(numNodes, percentSources, extentList, physicalSchemaId, outputDir, networkId, siteResId)
 	generateLogicalSchema(extentList, logicalSchemaId, outputDir)
 	generateSneeProperties(logicalSchemaId, physicalSchemaId, i, outputDir)
     
@@ -469,10 +483,11 @@ def generateScenarios4(numScenarios, numNodes, outputDir, scenariosFile, counter
 	logicalSchemaId = 'logicalSchema_query%d' % (i)
         physicalSchemaId = 'physicalSchema_query%d' % (i)
         networkId = 'wsn_query%d' % (i)
+        siteResId = 'siteRes%d' % (i)
     
         extentList = generateRandomQuery(queryId, outputDir)
-	generateSpiderNetwork(numNodes, rValue, networkId, outputDir)
-        generatePhysicalSchema(numNodes, percentSources, extentList, physicalSchemaId, outputDir, networkId)
+	generateSpiderNetwork(numNodes, rValue, networkId, outputDir, siteResId)
+        generatePhysicalSchema(numNodes, percentSources, extentList, physicalSchemaId, outputDir, networkId, siteResId)
 	generateLogicalSchema(extentList, logicalSchemaId, outputDir)
 	generateSneeProperties(logicalSchemaId, physicalSchemaId, i, outputDir)
     
@@ -496,12 +511,12 @@ def main():
     generateScenarios3(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 60, 90)
     generateScenarios4(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 90, 120)
     #not so dense network
-    global topologyDensity
-    topologyDensity = 3
-    generateScenarios1(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 120, 150)
-    generateScenarios2(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 150, 180)
-    generateScenarios3(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 180, 210)
-    generateScenarios4(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 210, 240)
+    #global topologyDensity
+    #topologyDensity = 3
+    #generateScenarios1(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 120, 150)
+    #generateScenarios2(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 150, 180)
+    #generateScenarios3(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 180, 210)
+    #generateScenarios4(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 210, 240)
     
     print("finished script \n")
 
