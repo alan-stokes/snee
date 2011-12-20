@@ -79,6 +79,12 @@ class Field(object):
 		self.nodes[i] = n
 		self.edges = None
 		
+	def addNodeNoEdge(self, i, x, y):
+		#print "x is %d, y is %d, i is %d" % (x,y,i)
+		self.cells[x][y] = i
+		n = Node(i, x, y)
+		self.nodes[i] = n
+		
 	def generateTopFile(self, fname):
 		outFile = open(fname, 'w')
 		outFile.writelines("""
@@ -183,7 +189,32 @@ class Field(object):
 				if len(self.edges[j].keys()) > 1:
 					self.removeEdge(i, j)
 		
-	
+	#hopefully adds a second node at the same position with different values
+	def createLocalNodes(self, numNodes):
+		for i in range(0, numNodes):
+			n = self.nodes[i]
+			newid = n.id + numNodes
+			self.addNodeNoEdge(newid, n.xPos, n.yPos)
+			self.edges.append({})
+			for j in self.edges[i].keys():
+				e = self.edges[i][j]
+				if(i != 0 & j != 0):
+					i2 = i + numNodes
+					j2 = j + numNodes
+					self.edges[i2][j2] = e
+					self.edges[j2][i2] = e
+				else:
+					if(i != 0 & j == 0):
+						i2 = i + numNodes
+						self.edges[i2][j] = e
+						self.edges[j][i2] = e
+					else:
+						if(i == 0 & j != 0):
+							j2 = j + numNodes
+							self.edges[i][j2] = e
+							self.edges[j2][i] = e
+				
+
 	#Trims random edges in the network graph until the average edge degree is above a certain threshold
 	def trimEdgesRandomlyToMeetAverageDegree(self, targetEdgeDegree):
 		numNodes = len(self.nodes.keys())

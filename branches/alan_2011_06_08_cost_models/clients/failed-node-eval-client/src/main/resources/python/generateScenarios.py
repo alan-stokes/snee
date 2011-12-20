@@ -124,7 +124,7 @@ def generatePhysicalSchema(numNodes, percentSources, extentList, schemaId, outpu
     numSources = int(math.ceil(float(numNodes)*(percentSources/100.0)))
     if numSources > 7:
         numSources = 9
-    nodes = range(0,numNodes)
+    nodes = range(0,numNodes /2 )
     sourceNodes = random.sample(nodes, numSources)
     numExtents = len(extentList)
     bits = outputDir.split("src/main/resources/");
@@ -188,6 +188,7 @@ def generateSpiderNetwork(numNodes, rValue, networkId, outputDir, siteResID):
     sink = networkLib.Node(0, 0, 0)
     nodes = [sink]
     dupsCheckList = ["0_0"]
+    numNodes = numNodes / 2;
 
     for i in range(0, numNodes):
         success = False
@@ -214,6 +215,7 @@ def generateSpiderNetwork(numNodes, rValue, networkId, outputDir, siteResID):
         f.addNode(n.id, n.xPos, n.yPos)
 
     f.trimEdgesRandomlyToMeetAverageDegree(topologyDensity) #TODO: unhardcode this	
+    f.createLocalNodes(numNodes)
     f.generateSneeqlNetFile(outputDir+os.sep+networkId+".xml")
     f.generateTopFile(outputDir+os.sep+networkId+".top")
     f.generateTopDotFile(outputDir+os.sep+networkId+".dot")

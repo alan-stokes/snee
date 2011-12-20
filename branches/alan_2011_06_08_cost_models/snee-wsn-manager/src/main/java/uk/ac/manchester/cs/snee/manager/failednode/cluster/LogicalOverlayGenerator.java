@@ -200,11 +200,12 @@ public class LogicalOverlayGenerator
     {
       Integer key = keys.next();
       ArrayList<String> cluster = current.getEquivilentNodes(key.toString());
-      if((routingTree.getSite(key).isSource() && k_resilence_sense && cluster.size() < k_resilence_level) 
-         || (!routingTree.getSite(key).isSource() && cluster.size() < k_resilence_level))
-      {
-        return false; 
-      }
+      if(!routingTree.getRoot().getID().equals(key.toString()))  
+        if((routingTree.getSite(key).isSource() && k_resilence_sense && cluster.size() < k_resilence_level) 
+           || (!routingTree.getSite(key).isSource() && cluster.size() < k_resilence_level))
+        {
+          return false; 
+        }
     }
     return true;
   }
@@ -374,10 +375,18 @@ public class LogicalOverlayGenerator
           nextOverlay.addClusterNode(childID, combination);
           Iterator<Node> childInputs = routingTree.getSiteTree().getNode(childID).getInputsList().iterator();
           //if going upon another iteration, then add new combination to the set
+          boolean first = true;
           while(childInputs.hasNext())
           {
+        	if(!first)
+        	{
+        	  nextOverlay = setsOfClusters.get(setsOfClusters.size() -1);
+        	  setsOfClusters.remove(setsOfClusters.size() -1);
+        	}
             Node childInput = childInputs.next();
             alternative(combination, childInput.getID(),setsOfClusters,nextOverlay, superLogicalOverlay);
+            if(first)
+            	first = false;
           }
         }
       }
