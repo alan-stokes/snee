@@ -29,6 +29,8 @@ import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
@@ -59,16 +61,18 @@ public class Monitor extends AutonomicManagerComponent implements Observer
   private ResultStore _results;
   private boolean recievedPacketsThisQuery = false;
   private String query;
+  private boolean runCostModels = false;
   
-  public Monitor(AutonomicManagerImpl autonomicManager)
+  public Monitor(AutonomicManagerImpl autonomicManager) 
   {
     manager = autonomicManager;
   }
   
   public void initilise(SourceMetadataAbstract _metadata, QueryExecutionPlan qep, 
-                        ResultStore resultSet)
+                        ResultStore resultSet) throws SNEEConfigurationException
   {
     this._metadata = _metadata;
+    runCostModels = SNEEProperties.getBoolSetting(SNEEPropertyNames.RUN_COST_MODELS);
     this.qep = (SensorNetworkQueryPlan) qep;
     try
     {
@@ -91,7 +95,9 @@ public class Monitor extends AutonomicManagerComponent implements Observer
       } else if (observed instanceof List<?>) {
         _results.addAll((Collection<Output>) observed);
       }
-      CECMCollection();
+      if(this.runCostModels)
+        CECMCollection();
+      
       ArrayList<RunTimeSite> energyDrainedNodes = updateEnergyMeasures();
       if(energyDrainedNodes.size() != 0)
       {
@@ -141,7 +147,7 @@ public class Monitor extends AutonomicManagerComponent implements Observer
     int epochValueIndex = 0;
     ResultStoreImpl  resultStore = (ResultStoreImpl) _results;
     List<ResultSet> results = resultStore.getResults();
-    printResults(results);
+    //printResults(results);
     for (ResultSet rs : results) 
     {
       ResultSetMetaData metaData = rs.getMetaData();
@@ -296,50 +302,5 @@ public class Monitor extends AutonomicManagerComponent implements Observer
       sm.removeNodeFromTopology(nodeID);
     }
   }
-  
-  private void printResults(List<ResultSet> results) 
-	throws SQLException {
-		
-		System.out.println("************ Results for query " + 
-				query + " ************");
-		for (ResultSet rs : results) {
-			ResultSetMetaData metaData = rs.getMetaData();
-			int numCols = metaData.getColumnCount();
-			printColumnHeadings(metaData, numCols, "\t", System.out);
-			while (rs.next()) {
-				printRow(rs, metaData, numCols, "\t", System.out);
-			}
-		}
-		System.out.println("*********************************");
-	}
-	
-	private void printColumnHeadings(ResultSetMetaData metaData,
-			int numCols, String sep, PrintStream out) throws SQLException {
-		StringBuffer buffer = new StringBuffer();
-		for (int i = 1; i <= numCols; i++) {
-			buffer.append(metaData.getColumnLabel(i));
-//			buffer.append(":" + metaData.getColumnTypeName(i));
-			buffer.append(sep);
-		}
-		if(buffer != null)
-		  out.println(buffer.toString());
-	}
-	
-	private void printRow(ResultSet rs, ResultSetMetaData metaData,
-			int numCols, String sep, PrintStream out) throws SQLException {
-		StringBuffer buffer = new StringBuffer();
-		for (int i = 1; i <= numCols; i++) {
-			Object value = rs.getObject(i);
-			if (metaData.getColumnType(i) == 
-				Types.TIMESTAMP && value instanceof Long) {
-				buffer.append(
-						new Date(((Long) value).longValue()));
-			} else {
-				buffer.append(value);
-			}
-			buffer.append(sep);
-		}
-		out.println(buffer.toString());
-	}
 
 }
