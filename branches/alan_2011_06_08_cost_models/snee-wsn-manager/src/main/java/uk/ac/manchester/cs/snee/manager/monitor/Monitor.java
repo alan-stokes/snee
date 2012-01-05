@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -14,6 +15,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
+import java.sql.Types;
+import java.util.Date;
 
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.ResultStore;
@@ -138,6 +141,7 @@ public class Monitor extends AutonomicManagerComponent implements Observer
     int epochValueIndex = 0;
     ResultStoreImpl  resultStore = (ResultStoreImpl) _results;
     List<ResultSet> results = resultStore.getResults();
+    printResults(results);
     for (ResultSet rs : results) 
     {
       ResultSetMetaData metaData = rs.getMetaData();
@@ -292,5 +296,50 @@ public class Monitor extends AutonomicManagerComponent implements Observer
       sm.removeNodeFromTopology(nodeID);
     }
   }
+  
+  private void printResults(List<ResultSet> results) 
+	throws SQLException {
+		
+		System.out.println("************ Results for query " + 
+				query + " ************");
+		for (ResultSet rs : results) {
+			ResultSetMetaData metaData = rs.getMetaData();
+			int numCols = metaData.getColumnCount();
+			printColumnHeadings(metaData, numCols, "\t", System.out);
+			while (rs.next()) {
+				printRow(rs, metaData, numCols, "\t", System.out);
+			}
+		}
+		System.out.println("*********************************");
+	}
+	
+	private void printColumnHeadings(ResultSetMetaData metaData,
+			int numCols, String sep, PrintStream out) throws SQLException {
+		StringBuffer buffer = new StringBuffer();
+		for (int i = 1; i <= numCols; i++) {
+			buffer.append(metaData.getColumnLabel(i));
+//			buffer.append(":" + metaData.getColumnTypeName(i));
+			buffer.append(sep);
+		}
+		if(buffer != null)
+		  out.println(buffer.toString());
+	}
+	
+	private void printRow(ResultSet rs, ResultSetMetaData metaData,
+			int numCols, String sep, PrintStream out) throws SQLException {
+		StringBuffer buffer = new StringBuffer();
+		for (int i = 1; i <= numCols; i++) {
+			Object value = rs.getObject(i);
+			if (metaData.getColumnType(i) == 
+				Types.TIMESTAMP && value instanceof Long) {
+				buffer.append(
+						new Date(((Long) value).longValue()));
+			} else {
+				buffer.append(value);
+			}
+			buffer.append(sep);
+		}
+		out.println(buffer.toString());
+	}
 
 }

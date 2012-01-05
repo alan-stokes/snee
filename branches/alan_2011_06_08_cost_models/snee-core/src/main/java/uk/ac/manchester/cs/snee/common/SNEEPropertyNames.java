@@ -222,6 +222,21 @@ public final class SNEEPropertyNames {
 	 */
 	public static final String CHOICE_ASSESSOR_PREFERENCE = "choiceAssessorPreference";
 	
+	/**
+	 * used to determine if the autonomic manager is to run the cost models before normal execution
+	 */
+	public static final String RUN_COST_MODELS = "runCostModel";
+	
+	/**
+	 * used to determine if the autonomic manager is to run the failed nodes before normal execution
+	 */
+	public static final String RUN_SIM_FAILED_NODES= "runSimFailedNodes";
+	
+	/**
+	 * used to determine if the autonomic manager is to run the cost models before normal execution
+	 */
+	public static final String RUN_NODES_WITH_FAILURES = "runWithFailures";
+	
 }
 
 

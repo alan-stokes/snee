@@ -81,7 +81,7 @@ public class DispatcherTest extends EasyMockSupport {
 
 	@Before
 	public void setUp() throws Exception {
-		_dispatcher = new Dispatcher(mockSchema) {
+		_dispatcher = new Dispatcher(mockSchema, false, false, false) {
 			protected QueryEvaluator createQueryEvaluator(int queryId, 
 					LAF queryPlan, ResultStore resultSet) {
 				System.out.println("Overridden createQueryEvaluator()");

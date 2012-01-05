@@ -269,7 +269,21 @@ public class SNEEProperties {
       setSetting(propName, "false");
       return getSetting(propName);
     }
-      
+    else if(propName.equals("runCostModel"))
+    {
+      setSetting(propName, "false");
+      return getSetting(propName);
+    }
+    else if(propName.equals("runSimFailedNodes"))
+    {
+      setSetting(propName, "true");
+      return getSetting(propName);
+    }
+    else if(propName.equals("runWithFailures"))
+    {
+      setSetting(propName, "false");
+      return getSetting(propName);
+    }
       return null;
   }
 

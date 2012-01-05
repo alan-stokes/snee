@@ -88,12 +88,20 @@ public class Dispatcher {
 	
 	private SNCB sncb;
 	
-	public Dispatcher(MetadataManager metadata) {
+	private boolean runCostModel = false;
+	private boolean runNodeFailure = false;
+	private boolean runWithDeadNodes = false;
+	
+	public Dispatcher(MetadataManager metadata, boolean runCostModel, 
+			          boolean runNodeFailure, boolean runWithDeadNodes) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER Dispatcher()");
 		}
 		_metadata = metadata;
 		_queryEvaluators = new HashMap<Integer, QueryEvaluator>();
+		this.runCostModel = runCostModel;
+		this.runNodeFailure = runNodeFailure;
+		this.runWithDeadNodes = runWithDeadNodes;
 		/*set up autonomic manager */
     _autonomicManager = new AutonomicManagerImpl(_metadata);
 		
@@ -166,9 +174,12 @@ public class Dispatcher {
 				String outputDir = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + sep + queryPlan.getQueryName() + sep;
 				sncb = snQueryPlan.getSNCB();
 				_autonomicManager.queryStarting();
-        //_autonomicManager.runCostModels();
-        _autonomicManager.runSimulatedNodeFailure();
-       // _autonomicManager.runAnyliserWithDeadNodes();
+				if(runCostModel)
+                  _autonomicManager.runCostModels();
+				if(runNodeFailure)
+                  _autonomicManager.runSimulatedNodeFailure();
+				if(runWithDeadNodes)
+                  _autonomicManager.runAnyliserWithDeadNodes();
 				SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, _metadata);
 				_autonomicManager.setListener(mr);
 				InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);

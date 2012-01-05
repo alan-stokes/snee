@@ -109,6 +109,14 @@ public class SNEEController implements SNEE {
 	 * The evaluator object for running queries
 	 */
 	private Dispatcher _dispatcher;
+	
+	/**
+	 * controller booleans for the dispatcher affecting what job to let the 
+	 * autonomic manager to run during tests
+	 */
+	private boolean runCostModel = false;
+	private boolean runNodeFailure = false;
+	private boolean runWithDeadNodes = false;
 
 	/**
 	 * Stores the results for each registered query
@@ -221,7 +229,6 @@ public class SNEEController implements SNEE {
 			logger.debug("ENTER initialise()");
 
 		try {
-			
 			_sncb = initialiseSNCB(duration);
 			
 			/* Process metadata */
@@ -312,9 +319,15 @@ public class SNEEController implements SNEE {
 		return new QueryCompiler(_metadata);
 	}
 
-	protected Dispatcher initialiseDispatcher() 
+	protected Dispatcher initialiseDispatcher() throws SNEEConfigurationException 
 	{
-		return new Dispatcher(_metadata);
+		
+		//TODO sdfd
+		runCostModel = SNEEProperties.getBoolSetting(SNEEPropertyNames.RUN_COST_MODELS);
+		runNodeFailure  = SNEEProperties.getBoolSetting(SNEEPropertyNames.RUN_SIM_FAILED_NODES);
+		runWithDeadNodes = SNEEProperties.getBoolSetting(SNEEPropertyNames.RUN_NODES_WITH_FAILURES);
+		
+		return new Dispatcher(_metadata, runCostModel, runNodeFailure, runWithDeadNodes);
 	}
 	
 	/* (non-Javadoc)

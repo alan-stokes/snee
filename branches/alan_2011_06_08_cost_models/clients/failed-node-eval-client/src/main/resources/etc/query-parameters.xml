@@ -17,7 +17,7 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk query-parameters.xsd">
 			<units>SECONDS</units>
 			<constraint>
 				<range>	
-					<min-val>3600</min-val>
+					<min-val>10</min-val>
 					<max-val>3600</max-val>					
 				</range>	
 			</constraint>
@@ -37,7 +37,7 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk query-parameters.xsd">
 		<delivery-time>
 			<units>SECONDS</units>
 			<constraint>
-				<equals>86400</equals>
+				<equals>600</equals>
 			</constraint>
 			<weighting>2</weighting>
 		</delivery-time>
