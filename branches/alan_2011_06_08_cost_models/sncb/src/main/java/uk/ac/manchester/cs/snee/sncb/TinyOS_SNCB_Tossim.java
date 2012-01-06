@@ -61,14 +61,20 @@ public class TinyOS_SNCB_Tossim extends TinyOS_SNCB implements SNCB
 	}
 
 	@Override
-	public void waitForQueryEnd() throws InterruptedException {
-		// TODO Auto-generated method stub
-		
+	public void waitForQueryEnd() throws InterruptedException 
+	{
+	  if(duration == Double.POSITIVE_INFINITY) {
+	    Thread.currentThread();
+	    Thread.sleep((long)duration);
+	  } else {
+	    Thread.currentThread();
+	    Thread.sleep((long)duration * 1000);
+	  } 
 	}
-
+  /*
 	@Override
 	public void setOutputFolder(String newTargetDir) {
 		// TODO Auto-generated method stub
 		
-	}
+	}*/
 }

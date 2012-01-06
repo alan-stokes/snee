@@ -151,10 +151,10 @@ private Process avrora = null;
     avrora.waitFor();
   }
 
-
+  /*
   @Override
   public void setOutputFolder(String newTargetDir) 
   {
 		
-  }
+  }*/
 }

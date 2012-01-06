@@ -30,7 +30,7 @@ public interface SNCB extends Serializable{
   public void waitForQueryEnd() throws InterruptedException;
   
   
-  public void setOutputFolder(String newTargetDir);
+ // public void setOutputFolder(String newTargetDir);
   
   public void generateNesCCode(SensorNetworkQueryPlan qep,
       String queryOutputDir, MetadataManager metadata)

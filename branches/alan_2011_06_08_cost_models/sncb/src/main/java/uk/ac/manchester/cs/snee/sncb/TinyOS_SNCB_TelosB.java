@@ -312,12 +312,12 @@ public class TinyOS_SNCB_TelosB extends TinyOS_SNCB implements SNCB {
 	}
 */
 
-
+  /*
 	@Override
 	public void setOutputFolder(String newTargetDir) {
 		// TODO Auto-generated method stub
 		
-	}
+	}*/
 
   
   @Override

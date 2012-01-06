@@ -237,6 +237,11 @@ public final class SNEEPropertyNames {
 	 */
 	public static final String RUN_NODES_WITH_FAILURES = "runWithFailures";
 	
+	/**
+	 * used to decide if avrora is ran in real time or super fast
+	 */
+	public static final String AVRORA_REAL_TIME = "avroraRealTime";
+	
 }
 
 

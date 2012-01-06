@@ -2,6 +2,9 @@ package uk.ac.manchester.cs.snee.sncb;
 
 import java.util.Iterator;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
@@ -55,7 +58,7 @@ public class TinyOS_SNCB_Utils {
 	
 	protected static String printAvroraCommands(String queryOutputDir, 
 			SensorNetworkQueryPlan qep, String targetDirName,
-			CodeGenTarget target) {
+			CodeGenTarget target) throws SNEEConfigurationException {
 		String nescOutputDir = System.getProperty("user.dir") + "/"
 		+ queryOutputDir + targetDirName;
 		
@@ -117,18 +120,19 @@ public class TinyOS_SNCB_Utils {
 			}
 			
 		}
+		boolean useRealTimeSetting = SNEEProperties.getBoolSetting(SNEEPropertyNames.AVRORA_REAL_TIME);
+		String realTime = "";
+		if(useRealTimeSetting)
+		  realTime = ",real-time";
+		
 		String avroraCommand = "";
 		avroraCommand = "-mcu=mts300 -platform="+platform+" " +
         "-simulation=sensor-network -colors=false -seconds=100 " +
-        "-monitors=packet,serial,real-time -ports="+gatewayID+":0:2390 -random-seed=1 " +
+        "-monitors=packet,serial" + realTime + " -ports="+gatewayID+":0:2390 -random-seed=1 " +
         sensorData + " " + "-report-seconds "+nodeCount+" "+elfString;
-		System.out.println(avroraCommand);
 		
 		System.out.println("*** To start Avrora ***");
-		System.out.println("java avrora.Main -mcu=mts300 -platform="+platform+" " +
-				"-simulation=sensor-network -colors=false -seconds=100" +
-				" -monitors=packet,serial,real-time -ports="+gatewayID+":0:2390 -random-seed=1 " +
-				sensorData + " " + "-report-seconds "+nodeCount+" "+elfString+" \n");
+		System.out.println("java avrora.Main " + avroraCommand + " \n");
 		
 		System.out.println("*** In a separate terminal window ***");
 		System.out.println("(2a) To view raw packets:");

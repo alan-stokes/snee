@@ -204,7 +204,8 @@ public abstract class SNEEClient implements Observer {
 		if (arg instanceof List<?>) {
 			List<ResultSet> results = (List<ResultSet>) arg; 
 			try {
-				printResults(results, 1, _csvFilename);
+			  if(!displayResultsAtEnd)
+				  printResults(results, 1, _csvFilename);
 			} catch (SQLException e) {
 				logger.error("Problem printing result set. ", e);
 			} catch (FileNotFoundException e) {
@@ -247,14 +248,19 @@ public abstract class SNEEClient implements Observer {
 			logger.debug("RETURN");
 	}
 
-	private void runQueryIndefinitely() throws SNEEException {
+	private void runQueryIndefinitely() throws SNEEException 
+	{
 		System.out.println("Running query indefinitely. Press CTRL+C to exit.");
 
-		while (keepOn) {
-			try {
+		while (keepOn) 
+		{
+			try 
+			{
 				Thread.currentThread();
         Thread.sleep(10000);
-			} catch (InterruptedException e) {
+			} 
+			catch (InterruptedException e) 
+			{
 			}
 			Thread.currentThread();
       Thread.yield();
@@ -265,17 +271,22 @@ public abstract class SNEEClient implements Observer {
 	}
 
 	private void runQueryForFixedPeriod(long startTime) 
-	throws SNEEException {
+	throws SNEEException 
+	{
 		long endTime = (long) (startTime + (_duration * 1000));
 		System.out.println("Running query for " + _duration + " seconds. Scheduled end time " + new Date(endTime));
 		
-		try {			
-			Thread.currentThread();
-      Thread.sleep((long)_duration * 1000);
-		} catch (InterruptedException e) {
+		try 
+		{			
+			SNEEController sneeControl = (SNEEController) controller;
+			sneeControl.waitForQueryEnd();
+		} 
+		catch (InterruptedException e) 
+		{
 		}
 		
-		while (System.currentTimeMillis() < endTime) {
+		while (System.currentTimeMillis() < endTime) 
+		{
 			Thread.currentThread();
       Thread.yield();
 		}

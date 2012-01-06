@@ -284,6 +284,11 @@ public class SNEEProperties {
       setSetting(propName, "false");
       return getSetting(propName);
     }
+    else if(propName.equals("avroraRealTime"))
+    {
+      setSetting(propName, "true");
+      return getSetting(propName);
+    }
       return null;
   }
 

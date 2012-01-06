@@ -124,11 +124,12 @@ public class TinyOS_SNCB_Controller implements SNCB
     sncb.waitForQueryEnd();  
   }
 
+    /*
   @Override
   public void setOutputFolder(String newTargetDir)
   {
     sncb.setOutputFolder(newTargetDir);
-  }
+  }*/
 
   @Override
   public void generateNesCCode(SensorNetworkQueryPlan qep,
