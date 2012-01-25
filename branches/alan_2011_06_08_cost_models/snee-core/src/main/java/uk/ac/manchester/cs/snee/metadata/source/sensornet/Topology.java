@@ -472,6 +472,15 @@ public class Topology extends Graph {
     }
   }
 
+  public boolean hasLink(Site source, Site dest)
+  {
+    RadioLink link = this.getRadioLink(source, dest);
+    if(link == null)
+      return false;
+    else 
+      return true;
+  }
+
 
     
     /**

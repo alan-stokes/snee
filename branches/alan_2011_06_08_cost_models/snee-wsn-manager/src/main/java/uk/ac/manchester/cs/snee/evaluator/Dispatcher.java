@@ -91,9 +91,11 @@ public class Dispatcher {
 	private boolean runCostModel = false;
 	private boolean runNodeFailure = false;
 	private boolean runWithDeadNodes = false;
+	private boolean runAvroraSimulator = false;
 	
 	public Dispatcher(MetadataManager metadata, boolean runCostModel, 
-			          boolean runNodeFailure, boolean runWithDeadNodes) {
+			          boolean runNodeFailure, boolean runWithDeadNodes,
+			          boolean runAvroraSimulator) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER Dispatcher()");
 		}
@@ -102,6 +104,7 @@ public class Dispatcher {
 		this.runCostModel = runCostModel;
 		this.runNodeFailure = runNodeFailure;
 		this.runWithDeadNodes = runWithDeadNodes;
+		this.runAvroraSimulator = runAvroraSimulator;
 		/*set up autonomic manager */
     _autonomicManager = new AutonomicManagerImpl(_metadata);
 		
@@ -180,11 +183,14 @@ public class Dispatcher {
                   _autonomicManager.runSimulatedNodeFailure();
 				if(runWithDeadNodes)
                   _autonomicManager.runAnyliserWithDeadNodes();
-				SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, _metadata);
-				_autonomicManager.setListener(mr);
-				InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
-				_queryEvaluators.put(queryID, queryEvaluator);
-				sncb.start();
+				if(runAvroraSimulator)
+				{
+				  SNCBSerialPortReceiver mr = sncb.register(snQueryPlan, outputDir, _metadata);
+			  	_autonomicManager.setListener(mr);
+			  	InNetworkQueryEvaluator queryEvaluator = new InNetworkQueryEvaluator(queryID, snQueryPlan, mr, resultSet);
+			  	_queryEvaluators.put(queryID, queryEvaluator);
+				  sncb.start();
+				}
 			} 
 			catch (Exception e) 
 			{

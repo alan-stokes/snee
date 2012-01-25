@@ -331,6 +331,8 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
             retrieveNewClusterHead(failedNodeID,
                                    currentRoutingTree.getSite(failedNodeID).getInputsList(),
                                    currentRoutingTree.getSite(failedNodeID).getOutput(0), overlay);
+          if(failedNodeID == null)
+            return null;
           //sort out adaptation data structs.
           adapt.addActivatedSite(equivilentNodeID);
           Iterator<Node> redirectedNodesIterator = overlay.getQep().getRT().getSite(failedNodeID).getInputsList().iterator();

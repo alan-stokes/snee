@@ -117,6 +117,7 @@ public class SNEEController implements SNEE {
 	private boolean runCostModel = false;
 	private boolean runNodeFailure = false;
 	private boolean runWithDeadNodes = false;
+	private boolean runAvroraSimulator = false;
 
 	/**
 	 * Stores the results for each registered query
@@ -326,8 +327,9 @@ public class SNEEController implements SNEE {
 		runCostModel = SNEEProperties.getBoolSetting(SNEEPropertyNames.RUN_COST_MODELS);
 		runNodeFailure  = SNEEProperties.getBoolSetting(SNEEPropertyNames.RUN_SIM_FAILED_NODES);
 		runWithDeadNodes = SNEEProperties.getBoolSetting(SNEEPropertyNames.RUN_NODES_WITH_FAILURES);
+		runAvroraSimulator = SNEEProperties.getBoolSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR);
 		
-		return new Dispatcher(_metadata, runCostModel, runNodeFailure, runWithDeadNodes);
+		return new Dispatcher(_metadata, runCostModel, runNodeFailure, runWithDeadNodes, runAvroraSimulator);
 	}
 	
 	/* (non-Javadoc)

@@ -96,7 +96,7 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
       if(!physicalOperator.isAttributeSensitive())
       {
         SensornetOperatorImpl physicalOperatorImpl = (SensornetOperatorImpl) physicalOperator;
-        if(!failedNodes.contains(instanceOperator.getSite().getID()) || !depinnedNodes.contains(instanceOperator.getSite().getID()))
+        if(!failedNodes.contains(instanceOperator.getSite().getID()) && !depinnedNodes.contains(instanceOperator.getSite().getID()))
         {
           ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).setIsPinned(true);
           ((SensornetOperatorImpl) paf.getOperatorTree().getNode(physicalOperatorImpl.getID())).addSiteToPinnedList(instanceOperator.getSite().getID());

@@ -107,13 +107,13 @@ def doCompileNesCCode(dir, targetParameter = "telosb", sensorBoard = None):
 
 	if (exitVal != 0):
 		reportError("Failed with "+dir+" compilation")
-		sys.exit(exitVal)
+		#sys.exit(exitVal)
 
 	if (targetParameter=="telosb" and dir.startswith("mote")):
 		exitVal = readMakeLog("make.log", None, targetParameter)
 		if (exitVal != 0):
 			reportError("RAM overflow with "+dir+" compilation")
-			sys.exit(exitVal)
+			#sys.exit(exitVal)
 
 	return exitVal	
 

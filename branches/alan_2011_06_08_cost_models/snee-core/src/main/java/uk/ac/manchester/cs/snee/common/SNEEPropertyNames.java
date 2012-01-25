@@ -241,6 +241,11 @@ public final class SNEEPropertyNames {
 	 * used to decide if avrora is ran in real time or super fast
 	 */
 	public static final String AVRORA_REAL_TIME = "avroraRealTime";
+
+	/**
+	 * used by the batch processing to stop avrora running
+	 */
+  public static final String RUN_AVRORA_SIMULATOR = "runAvrora";
 	
 }
 

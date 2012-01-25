@@ -59,16 +59,27 @@ public class Model
       imageGenerator.compileNesCCode(adaptFolder.toString()+ sep);
       compiledAlready = true;
     }
-    File moteQEP = new File(adaptFolder.toString() + sep + "avrora_micaz_t2" + sep + "mote" + reprogrammedSite + ".elf");
-    Long fileSize = new Long(0);
-    if(moteQEP.exists())
-      fileSize = moteQEP.length();
+    Site site = adapt.getNewQep().getRT().getSite(reprogrammedSite);
+    if(site == null)
+    {
+      return (long) 0;
+    }
     else
-      throw new IOException("cant find image");
-    CostParameters parameters = _metadataManager.getCostParameters();
-    int packetSize = parameters.getDeliverPayloadSize();
-    Long packets = fileSize / packetSize;
-    return packets;
+    {
+      File moteQEP = new File(adaptFolder.toString() + sep + "avrora_micaz_t2" + sep + "mote" + reprogrammedSite + ".elf");
+      Long fileSize = new Long(0);
+      if(moteQEP.exists())
+        fileSize = moteQEP.length();
+      else
+      {
+        fileSize = (long) 0; //needs to be changed back to error. results in issue with joins where join is on sink for code generator
+        //throw new IOException("cant find image");
+      }
+      CostParameters parameters = _metadataManager.getCostParameters();
+      int packetSize = parameters.getDeliverPayloadSize();
+      Long packets = fileSize / packetSize;
+      return packets;
+    }
   }
   
   /**

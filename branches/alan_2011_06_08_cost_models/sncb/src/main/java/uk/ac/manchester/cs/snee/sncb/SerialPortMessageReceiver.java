@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.sncb;
 
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -27,9 +28,14 @@ import uk.ac.manchester.cs.snee.sncb.tos.CodeGenUtils;
 
 //Based on TinyOS MsgReader.java class
 public class SerialPortMessageReceiver extends Observable 
-implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver {
+implements net.tinyos.message.MessageListener, SNCBSerialPortReceiver, Serializable {
 
-	private static final Logger logger = Logger.getLogger(TinyOS_SNCB.class.getName());
+	/**
+   * 
+   */
+  private static final long serialVersionUID = 9150948190115460321L;
+
+  private static final Logger logger = Logger.getLogger(TinyOS_SNCB.class.getName());
 	
 	private MoteIF moteIF;
 	  

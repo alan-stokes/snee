@@ -61,8 +61,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	private static SensorNetworkQueryPlan qep;
 	private static ClientUtils utils = new ClientUtils();
 	private static int max = 120;
-	private static File testFolder =  new File("src/main/resources/testsSize100");
-	private static File sneetestFolder =  new File("testsSize100");
+	private static File testFolder =  new File("src/main/resources/testsSize30");
+	private static File sneetestFolder =  new File("testsSize30");
 	
 	public SNEEFailedNodeEvalClientUsingInNetworkSource(String query, 
 			double duration, String queryParams, String csvFile, String sneeProperties) 
@@ -222,9 +222,13 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
     String filePath = queriesFile.getAbsolutePath();
     BufferedReader queryReader = new BufferedReader(new FileReader(filePath));
     String line = "";
+    int counter = 0;
     while((line = queryReader.readLine()) != null)
     {
-      queries.add(line);
+      if(counter >= queryid)
+        queries.add(line);
+      else
+        counter++;
     }  
   }
 
@@ -261,11 +265,18 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
   Exception
   {
     
-    updateSites(routingTree, allowDeathOfAcquires); 	 
+    updateSites(routingTree, allowDeathOfAcquires, false); 	 
     int noSites = siteIDs.size();
     //no failed nodes, dont bother running tests
     if(noSites == 0)
-      throw new Exception("no avilable nodes to fail");
+    {
+      updateSites(routingTree, allowDeathOfAcquires, true);  
+      noSites = siteIDs.size();
+      if(noSites == 0)
+      {
+        throw new Exception("no avilable nodes to fail");
+      }
+    }
     int position = 0;
     ArrayList<String> deadNodes = new ArrayList<String>(); 
     chooseNodes(deadNodes, 1, position, client, currentQuery, queryid, true);
@@ -275,10 +286,11 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
    * goes though routing tree, looking for nodes which are not source nodes and are 
    * confluence sites which are sites which will cause likely changes to results when lost
    * @param allowDeathOfAcquires 
+   * @param b 
    * @param routingTree2
    * @throws SourceDoesNotExistException 
    */
-  private void updateSites(RT routingTree, boolean allowDeathOfAcquires) 
+  private void updateSites(RT routingTree, boolean allowDeathOfAcquires, boolean allow1nodes) 
   throws SourceDoesNotExistException
   {
     testNo = 1;
@@ -293,7 +305,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
     while(siteIterator.hasNext())
     {
       Site currentSite = siteIterator.next();
-      if(currentSite.getInDegree() > 1 && 
+      if(((!allow1nodes && currentSite.getInDegree() > 1) || allow1nodes) && 
          !siteIDs.contains(Integer.parseInt(currentSite.getID())) &&
          (
              (allowDeathOfAcquires) ||  

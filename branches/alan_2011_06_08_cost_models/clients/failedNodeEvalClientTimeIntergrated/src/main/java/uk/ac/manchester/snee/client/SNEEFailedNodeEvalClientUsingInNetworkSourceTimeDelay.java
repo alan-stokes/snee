@@ -59,6 +59,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   private String sneeProperties;
 	private static int queryid = 1;
 	protected static int testNo = 1;
+	private static String dictonary = "testsSize100";
 	
 	//used to calculate agenda cycles
 	protected static int maxNumberofFailures = 8;
@@ -152,7 +153,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	{
 	//get query & schemas
     String currentQuery = queryIterator.next();
-    String propertiesPath = "tests/snee" + queryid + ".properties";
+    String propertiesPath = dictonary + "/snee" + queryid + ".properties";
     
     System.out.println("Running Tests on query " + (queryid));
     client = new  SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay(currentQuery, 
@@ -353,7 +354,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
     SNEEController control = (SNEEController) controller;
-    control.addQuery(_query, _queryParams, null, true, false, true);
+    control.addQuery(_query, _queryParams, null, true, true, true);
     controller.close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
@@ -362,7 +363,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   private static void collectQueries(ArrayList<String> queries) throws IOException
   {
     //String filePath = Utils.validateFileLocation("tests/queries.txt");
-    File queriesFile = new File("src/main/resources/tests/queries.txt");
+    File queriesFile = new File("src/main/resources/" + dictonary + "/queries.txt");
     String filePath = queriesFile.getAbsolutePath();
     BufferedReader queryReader = new BufferedReader(new FileReader(filePath));
     String line = "";
@@ -379,7 +380,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
      //if tests exist, do not redo
      File pythonFolder = new File("src/main/resources/python/");
      String pythonPath = pythonFolder.getAbsolutePath();
-     File testFolder = new File("src/main/resources/tests");
+     File testFolder = new File("src/main/resources/" + dictonary);
      if(!testFolder.exists())
        testFolder.mkdir();
      

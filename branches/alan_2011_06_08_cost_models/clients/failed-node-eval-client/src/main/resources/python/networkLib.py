@@ -198,21 +198,24 @@ class Field(object):
 			self.edges.append({})
 			for j in self.edges[i].keys():
 				e = self.edges[i][j]
+				f = e * 2
+				if(f >= 254):
+					f = 254
 				if(i != 0 & j != 0):
 					i2 = i + numNodes
 					j2 = j + numNodes
-					self.edges[i2][j2] = e
-					self.edges[j2][i2] = e
+					self.edges[i2][j2] = f
+					self.edges[j2][i2] = f
 				else:
 					if(i != 0 & j == 0):
 						i2 = i + numNodes
-						self.edges[i2][j] = e
-						self.edges[j][i2] = e
+						self.edges[i2][j] = f
+						self.edges[j][i2] = f
 					else:
 						if(i == 0 & j != 0):
 							j2 = j + numNodes
-							self.edges[i][j2] = e
-							self.edges[j2][i] = e
+							self.edges[i][j2] = f
+							self.edges[j2][i] = f
 				
 
 	#Trims random edges in the network graph until the average edge degree is above a certain threshold

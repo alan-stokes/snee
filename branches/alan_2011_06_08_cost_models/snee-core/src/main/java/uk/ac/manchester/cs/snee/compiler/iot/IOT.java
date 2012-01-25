@@ -299,6 +299,22 @@ public class IOT extends SNEEAlgebraicForm
   }
   
   /**
+   * iterator over all instance operators within the iot
+   * @return
+   */
+  public Iterator<InstanceOperator> iterateOverInstanceOperators()
+  {
+    Iterator<Node> phOps = paf.getOperatorTree().nodeIterator(TraversalOrder.POST_ORDER);
+    ArrayList<InstanceOperator> ops = new  ArrayList<InstanceOperator>();
+    while(phOps.hasNext())
+    {
+      Node op = phOps.next();
+      ops.addAll(this.opInstMapping.get(op.getID()));
+    }
+    return ops.iterator();
+  }
+  
+  /**
    * get number of instances of a physical operator
    * @param op the physical operator
    * @return the number of instances of the physical operator.

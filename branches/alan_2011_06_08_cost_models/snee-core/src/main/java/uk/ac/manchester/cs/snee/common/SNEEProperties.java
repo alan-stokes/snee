@@ -276,7 +276,7 @@ public class SNEEProperties {
     }
     else if(propName.equals("runSimFailedNodes"))
     {
-      setSetting(propName, "true");
+      setSetting(propName, "false");
       return getSetting(propName);
     }
     else if(propName.equals("runWithFailures"))
@@ -287,6 +287,11 @@ public class SNEEProperties {
     else if(propName.equals("avroraRealTime"))
     {
       setSetting(propName, "true");
+      return getSetting(propName);
+    }
+    else if(propName.equals("runAvrora"))
+    {
+      setSetting(propName, "false");
       return getSetting(propName);
     }
       return null;

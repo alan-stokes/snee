@@ -6,7 +6,7 @@
 #TODO: Move query generator out to a separate library
 import os, random, RandomSeeder, math, networkLib, SneeqlLib, sys, getopt, UtilLib
 
-optNumNodes = 100
+optNumNodes = 30
 optScenariosFile = 'scenarios.csv'
 
 #Scenarios 1

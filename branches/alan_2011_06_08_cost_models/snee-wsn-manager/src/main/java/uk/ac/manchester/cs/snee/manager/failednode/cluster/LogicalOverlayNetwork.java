@@ -176,11 +176,14 @@ public class LogicalOverlayNetwork implements Serializable
         Site child = (Site) childrenIterator.next();
         cost += network.getLinkEnergyCost(child, candiateSite);
       }
-      cost += network.getLinkEnergyCost(candiateSite, (Site) parent);
-      if(cost < bestCost)
+      if(network.hasLink(candiateSite, (Site) parent))
       {
-        bestCandiate = candiate;
-        bestCost = cost;
+        cost += network.getLinkEnergyCost(candiateSite, (Site) parent);
+        if(cost < bestCost)
+        {
+          bestCandiate = candiate;
+          bestCost = cost;
+        }
       }
     }
     return bestCandiate;

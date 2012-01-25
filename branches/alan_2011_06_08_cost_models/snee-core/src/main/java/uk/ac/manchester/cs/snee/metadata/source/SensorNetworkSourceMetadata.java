@@ -245,18 +245,26 @@ public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 	public void removeSourceSite(int nodeid)
 	{
 	  Iterator<String> keyIterator = _extentToSitesMapping.keySet().iterator();
+	  ArrayList<String> keysToRemove = new ArrayList<String>();
 	  while(keyIterator.hasNext())
 	  {
 	    String key = keyIterator.next();
 	    ArrayList<Integer> nodesToWhichThisExtentExists = _extentToSitesMapping.get(key);
 	    if(nodesToWhichThisExtentExists.contains(nodeid))
 	    {
-	      _extentToSitesMapping.remove(key);
-	      int index = nodesToWhichThisExtentExists.indexOf(nodeid);
-	      nodesToWhichThisExtentExists.remove(index);
-	      _extentToSitesMapping.put(key, nodesToWhichThisExtentExists);
+	      keysToRemove.add(key);
 	    }
 	  }
+	  keyIterator = keysToRemove.iterator();
+	  while(keyIterator.hasNext())
+    {
+	    String key = keyIterator.next();
+	    ArrayList<Integer> nodesToWhichThisExtentExists = _extentToSitesMapping.get(key);
+	    _extentToSitesMapping.remove(key);
+      int index = nodesToWhichThisExtentExists.indexOf(nodeid);
+      nodesToWhichThisExtentExists.remove(index);
+      _extentToSitesMapping.put(key, nodesToWhichThisExtentExists);
+    }
 	}
 	
 	public void resetSources() throws SourceMetadataException

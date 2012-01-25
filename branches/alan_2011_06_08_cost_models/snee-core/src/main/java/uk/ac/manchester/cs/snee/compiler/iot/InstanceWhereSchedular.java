@@ -226,7 +226,11 @@ public class InstanceWhereSchedular
       InstanceOperator instance = InstanceOperatorIterator.next();
       InstanceOperator inputOp;
       if(!(instance.getSensornetOperator() instanceof SensornetAcquireOperator))
+      {
+        if(instance.getInDegree() == 0)
+          System.out.println("error, no input for operator " + instance.getSensornetOperator().getOperatorName());
         inputOp = (InstanceOperator) instance.getInput(0);
+      }
       else
         inputOp = instance;
       
@@ -346,7 +350,7 @@ public class InstanceWhereSchedular
   {
     //iterate over operators looking for ones which haven't got a fixed location
     Iterator<InstanceOperator> InstanceOperatorIterator 
-        = iot.treeIterator(TraversalOrder.POST_ORDER);
+    = iot.iterateOverInstanceOperators();
     while(InstanceOperatorIterator.hasNext())
     {
       InstanceOperator instance = InstanceOperatorIterator.next();      
@@ -405,8 +409,9 @@ public class InstanceWhereSchedular
          * 3. count the times it satisfies the search (2 = place instance here)
          */
         int satisifiedSearch = 0;
-        if(checkArray(currentSiteOperatorInstances, childOperatorInstances))
-          satisifiedSearch++;
+        //if(checkArray(currentSiteOperatorInstances, childOperatorInstances))
+        //  satisifiedSearch++;
+        satisifiedSearch +=  checkArray(currentSiteOperatorInstances, childOperatorInstances);
         
         for(int currentInputIndex = 0; currentInputIndex < currentSite.getInDegree();
             currentInputIndex++)
@@ -420,8 +425,9 @@ public class InstanceWhereSchedular
             operatorsOnSite = iot.getOpInstances(inputSite);
           }
           
-          if(checkArray(operatorsOnSite, childOperatorInstances))
-            satisifiedSearch++;
+          //if(checkArray(operatorsOnSite, childOperatorInstances))
+          //  satisifiedSearch++;
+          satisifiedSearch += checkArray(operatorsOnSite, childOperatorInstances);
         }
         if(satisifiedSearch >= 2)//found two instances which fit criteria
         {
@@ -437,13 +443,14 @@ public class InstanceWhereSchedular
     }
   }
   
-  private boolean checkArray(ArrayList<InstanceOperator> operatorInstances,
+  private int checkArray(ArrayList<InstanceOperator> operatorInstances,
       ArrayList<InstanceOperator> childOperatorInstances)
   {
+    int counter = 0;
     for(int childInstanceIndex = 0; childInstanceIndex < childOperatorInstances.size(); childInstanceIndex++)
       if(operatorInstances.contains(childOperatorInstances.get(childInstanceIndex)))
-        return true;
-    return false;
+        counter++;
+    return counter;
   }
 
   //tested and works
@@ -470,8 +477,9 @@ public class InstanceWhereSchedular
          * 2. iterate over inputs, checking if child operator is either an child or current
          * 3. count the times it satisfies the search (2 = place instance here)
          */
-        if(checkArray(currentSiteOperatorInstances, operatorInstances))
-          satisifiedSearch++;
+       // if(checkArray(currentSiteOperatorInstances, operatorInstances))
+       //   satisifiedSearch++;
+        satisifiedSearch += checkArray(currentSiteOperatorInstances, operatorInstances);
         
         for(int currentInputIndex = 0; currentInputIndex < currentSite.getInDegree();
             currentInputIndex++)
@@ -480,8 +488,9 @@ public class InstanceWhereSchedular
           //check if instance of current or child
           ArrayList<InstanceOperator> operatorsOnSite = iot.getOpInstances(inputSite);
           
-          if(checkArray(operatorsOnSite, operatorInstances))
-            satisifiedSearch++;
+         // if(checkArray(operatorsOnSite, operatorInstances))
+         //   satisifiedSearch++;
+          satisifiedSearch += checkArray(operatorsOnSite, operatorInstances);
           
           satisifiedSearch = checkSubTree(inputSite, satisifiedSearch, operatorInstances);
 
@@ -506,8 +515,9 @@ public class InstanceWhereSchedular
     {
        Site newInput = (Site) input.getInput(inputSiteIndex);
        ArrayList<InstanceOperator> operatorsOnSite = iot.getOpInstances(newInput);
-       if(checkArray(operatorsOnSite, operatorInstances))
-           satisifiedSearch++;
+       //if(checkArray(operatorsOnSite, operatorInstances))
+       //    satisifiedSearch++;
+       satisifiedSearch += checkArray(operatorsOnSite, operatorInstances);
        satisifiedSearch = checkSubTree(newInput, satisifiedSearch, operatorInstances);  
     }
     return satisifiedSearch;
@@ -1026,6 +1036,7 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         iot.removeEdge(childOpInst, dest);
       }
       iot.addEdge(childOpInst, opInst);
+      childOpInst.addOutput(opInst);
     }
   }
 
