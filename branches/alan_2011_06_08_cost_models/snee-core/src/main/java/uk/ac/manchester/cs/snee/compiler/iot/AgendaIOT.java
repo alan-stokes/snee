@@ -1198,6 +1198,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     double voltage = AvroraCostParameters.VOLTAGE;
     double activeCurrent = AvroraCostParameters.CPUACTIVEAMPERE;
     double sleepCurrent = AvroraCostParameters.CPUPOWERSAVEAMPERE;
+    //double sleepCurrent =  AvroraCostParameters.CPUIDLEAMPERE;
     
     double cpuActiveEnergy = cpuActiveTime * activeCurrent * voltage; //J
     double cpuSleepEnergy = cpuSleepTime * sleepCurrent * voltage; //J

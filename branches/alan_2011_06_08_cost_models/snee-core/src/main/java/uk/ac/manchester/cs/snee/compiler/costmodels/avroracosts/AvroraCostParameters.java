@@ -76,7 +76,7 @@ public final class AvroraCostParameters {
   
   /** Ampere Level copied from Avrora Source Code.
    * See ATMega128.java*/
-  static final double CPUIDLEAMPERE = 0.0033433;
+  public static final double CPUIDLEAMPERE = 0.0033433;
   
   /** Ampere Level copied from Avrora Source Code.
    * See ATMega128.java*/
@@ -470,6 +470,12 @@ public final class AvroraCostParameters {
      */
     public static long millisToCycles(double ms) {
         return (long)(ms * FREQUENCY / 1000);
+    }
+    
+    public static long secondsToCycles(double seconds)
+    {
+      double ms = seconds * 1000;
+      return (long)(ms * FREQUENCY / 1000);
     }
 
     /**
