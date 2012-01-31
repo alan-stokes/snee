@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+
+<schema xmlns="http://snee.cs.man.ac.uk/namespace/logical-schema" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/logical-schema ../schema/logical-schema.xsd">
+
+	<stream name="A" type="pull">
+		<column name="x">
+			<type class ="integer"/>
+		</column>
+	</stream> 
+	<stream name="B" type="pull">
+		<column name="x">
+			<type class ="integer"/>
+		</column>
+	</stream> 
+	<stream name="C" type="pull">
+		<column name="x">
+			<type class ="integer"/>
+		</column>
+	</stream> 
+	<stream name="D" type="pull">
+		<column name="x">
+			<type class ="integer"/>
+		</column>
+	</stream> 
+	<stream name="E" type="pull">
+		<column name="x">
+			<type class ="integer"/>
+		</column>
+	</stream> 
+	<stream name="F" type="pull">
+		<column name="x">
+			<type class ="integer"/>
+		</column>
+	</stream> 
+	<stream name="G" type="pull">
+		<column name="x">
+			<type class ="integer"/>
+		</column>
+	</stream> 
+
+</schema>
