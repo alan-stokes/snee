@@ -1,0 +1,22 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>data-source</artifactId>
+		<groupId>uk.ac.manchester.cs.snee</groupId>
+		<version>1.6.4-SNAPSHOT</version>
+	</parent>
+	<groupId>uk.ac.manchester.cs.snee</groupId>
+	<artifactId>data-source-core</artifactId>
+	<name>data-source-core</name>
+	<description>Core classes for interacting with data sources</description>
+	<dependencies>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-api</artifactId>
+			<version>${snee.version}</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
+</project>

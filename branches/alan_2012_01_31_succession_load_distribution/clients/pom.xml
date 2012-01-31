@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>SNEE</artifactId>
+		<groupId>uk.ac.manchester.cs.snee</groupId>
+		<version>1.6.4-SNAPSHOT</version>
+	</parent>
+	<groupId>uk.ac.manchester.cs.snee</groupId>
+	<artifactId>clients</artifactId>
+	<packaging>pom</packaging>
+	<name>SNEE Clients</name>
+	<description>Command line single use clients that interact with SNEE through the API</description>
+	<dependencies>
+		<dependency>
+			<groupId>uk.ac.manchester.cs.snee</groupId>
+			<artifactId>snee-api</artifactId>
+			<version>${snee.version}</version>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+	<modules>
+		<module>client</module>
+		<module>cco-client</module>
+		<module>test-client</module>
+		<module>in-network-client</module>		
+		<module>tossim-client</module>		
+		<module>cco-stored-client</module>
+		<module>ecm-client</module>
+		<module>cco-both</module>
+		<module>failed-node-eval-client</module>
+		<module>failedNodeEvalClientTimeIntergrated</module>
+	</modules>
+</project>
