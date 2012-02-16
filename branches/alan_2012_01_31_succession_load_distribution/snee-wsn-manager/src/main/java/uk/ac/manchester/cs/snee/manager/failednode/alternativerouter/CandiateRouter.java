@@ -23,6 +23,7 @@ import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.manager.failednode.metasteiner.MetaSteinerTree;
 import uk.ac.manchester.cs.snee.manager.failednode.metasteiner.MetaSteinerTreeException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
@@ -66,8 +67,10 @@ public class CandiateRouter extends Router
   
   /**
    * recursive method to set up sets
+   * @throws SNEEConfigurationException 
    */
   private void setupHeuristicsets(int position, HeuristicSet set)
+  throws SNEEConfigurationException
   {
     switch(position)
     {
@@ -647,6 +650,54 @@ public class CandiateRouter extends Router
       }
     }
     return savedParentSite;
+  }
+
+  public ArrayList<RT> generateAlternativeRoutingTrees(String queryName)
+  {
+    ArrayList<RT> routes = new ArrayList<RT>();
+    ArrayList<Tree> trees = new ArrayList<Tree>();
+    generateRoutesRecursively(trees);
+    Iterator<Tree> treeIterator = trees.iterator();
+    while(treeIterator.hasNext())
+    {
+      Tree tree = treeIterator.next();
+      routes.add(new RT(paf,queryName, tree, network));
+    }
+    return routes;
+  }
+
+  private ArrayList<Tree> generateRoutesRecursively(ArrayList<Tree> routes)
+  {
+    try
+    {
+      while(heuristicsPosition < heuristics.size() -1)
+      {
+        Topology workingTopology = cloner.deepClone(this.network);
+        HeuristicSet set = collectNextHeuristicSet(workingTopology);
+        //produce tree for set of heuristics
+        MetaSteinerTree treeGenerator = new MetaSteinerTree();
+        SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) 
+        paf.getDLAF().getSources().iterator().next();
+        int sink = sm.getGateway(); 
+        int[] sources = sm.getSourceSites(paf);
+        //convert between int and string
+        ArrayList<String> sourcesString = new ArrayList<String>();
+        for(int intIndex = 0; intIndex < sources.length; intIndex++)
+        {
+          sourcesString.add(new Integer(sources[intIndex]).toString());
+        }
+        String sinkString = new Integer(sink).toString();
+        Tree currentTree = treeGenerator.produceTree(set, sourcesString, sinkString, workingTopology, paf);
+        routes.add(currentTree);
+      }
+      routes = removeDuplicates(routes);
+      return routes;
+    }
+    catch(Exception e)
+    {
+      return generateRoutesRecursively(routes);
+    }
+    
   }
 
 }

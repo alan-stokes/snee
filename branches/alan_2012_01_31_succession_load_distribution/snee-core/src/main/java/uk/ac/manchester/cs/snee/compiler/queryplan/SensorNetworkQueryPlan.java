@@ -73,8 +73,8 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlanAbstract {
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    */
-  public SensorNetworkQueryPlan(DLAF dlaf, RT rt, DAF daf, IOT iot, AgendaIOT agendaIOT, Agenda agenda,
-  String queryName) 
+  public SensorNetworkQueryPlan(DLAF dlaf, RT rt, DAF daf, IOT iot, 
+                                AgendaIOT agendaIOT, Agenda agenda, String queryName) 
   throws  SchemaMetadataException, TypeMappingException {
     super(dlaf, queryName);
     if (logger.isDebugEnabled())

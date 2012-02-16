@@ -7,11 +7,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
@@ -41,6 +43,7 @@ public class Planner extends AutonomicManagerComponent
   {
     manager = autonomicManager;
     assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder);
+    this._metadata = _metadata;
     runningSites = manager.getRunningSites();
   }
   
@@ -139,6 +142,16 @@ public class Planner extends AutonomicManagerComponent
     return bestOverall;
   }
 
+  /**
+   * assesses the old qep.
+   * @param orginal
+   * @param oldQEP
+   * @throws IOException
+   * @throws OptimizationException
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   * @throws CodeGenerationException
+   */
   private void doOrginalAssessment(Adaptation orginal, SensorNetworkQueryPlan oldQEP) 
   throws 
   IOException, OptimizationException, 
@@ -149,6 +162,13 @@ public class Planner extends AutonomicManagerComponent
     assessor.assessChoice(orginal, runningSites, true);
   }
 
+  /**
+   * chooses the best adaptation in accordance with the choice preference
+   * @param choices
+   * @param choicePreference
+   * @return
+   * @throws SNEEConfigurationException
+   */
   private Adaptation chooseBestAdaptation(List<Adaptation> choices, String choicePreference) throws SNEEConfigurationException
   {
     Adaptation finalChoice = null;
@@ -211,6 +231,11 @@ public class Planner extends AutonomicManagerComponent
     return null;
   }
 
+  /**
+   * changes the folder to which outputs are stored
+   * @param outputFolder
+   * @throws IOException
+   */
   public void updateStorageLocation(File outputFolder) throws IOException
   {
     plannerFolder = new File(outputFolder.toString() + sep + "Planner");
@@ -218,6 +243,20 @@ public class Planner extends AutonomicManagerComponent
     this.assessor.updateStorageLocation(plannerFolder);
   }
 
+  /**
+   * assesses the cost gained by the OTA procedure to move the original qep over
+   * @param output
+   * @param orgianlOTAProgramCost
+   * @param runningSites
+   * @param reset
+   * @param logicalOverlayNetwork
+   * @throws IOException
+   * @throws OptimizationException
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   * @throws CodeGenerationException
+   * @throws SNEEConfigurationException
+   */
   public void assessOTACosts(File output, Adaptation orgianlOTAProgramCost,
       HashMap<String, RunTimeSite> runningSites, boolean reset, LogicalOverlayNetwork logicalOverlayNetwork) 
   throws IOException, OptimizationException, SchemaMetadataException, 
@@ -231,6 +270,19 @@ public class Planner extends AutonomicManagerComponent
     .exportRTWithEnergies(output.toString()+ sep + "energies" , "");
   }
 
+  /**
+   * assesses the cost gained by the OTA procedure to move the orginal qep over with a specfic overlay
+   * @param outputFolder
+   * @param overlayOTAProgramCost
+   * @param current
+   * @param failedNodeStrategyLocal
+   * @throws OptimizationException
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   * @throws IOException
+   * @throws CodeGenerationException
+   * @throws SNEEConfigurationException
+   */
   public void assessOverlayCosts(File outputFolder, Adaptation overlayOTAProgramCost, 
                                  LogicalOverlayNetwork current,
                                  FailedNodeStrategyLocal failedNodeStrategyLocal) 
@@ -240,6 +292,45 @@ public class Planner extends AutonomicManagerComponent
     this.assessor.updateStorageLocation(outputFolder);
     this.assessor.assessOverlayChoice(overlayOTAProgramCost, runningSites, current, failedNodeStrategyLocal);
     this.assessor.updateStorageLocation(plannerFolder);
+  }
+  
+  /**
+   * starts the successor relation resulting in a path of successor plans to extend the lifetime
+   * @param qep
+   * @throws SNEEConfigurationException 
+   * @throws NumberFormatException 
+   * @throws TypeMappingException 
+   * @throws WhenSchedulerException 
+   * @throws OptimizationException 
+   * @throws SchemaMetadataException 
+   * @throws SNEEException 
+   */
+  public void startSuccessorRelation(SensorNetworkQueryPlan qep) 
+  throws NumberFormatException, SNEEConfigurationException,
+  SNEEException, SchemaMetadataException, OptimizationException, 
+  WhenSchedulerException, TypeMappingException
+  {
+    File successorFolder = new File(this.plannerFolder.toString() + sep + "successorRelation");
+    if(successorFolder.exists())
+    {
+      manager.deleteFileContents(successorFolder);
+      successorFolder.mkdir();
+    }
+    else
+    {
+      successorFolder.mkdir();
+    }
+    
+    //set up the generator
+	  AlternativeGenerator altGenerator = 
+	    new AlternativeGenerator(qep, this.getWsnTopology(), successorFolder, this._metadata);
+	  TabuSearch search = null;
+	  //collect alternatives
+	  ArrayList<SensorNetworkQueryPlan> alternativePlans = altGenerator.generateAlternatives();
+	  //search though space
+	  search = new TabuSearch(alternativePlans);
+	  ArrayList<Successor> bestSuccessorRelation = search.findSuccessorsPath();
+	  new PlannerUtils(successorFolder).writeSuccessorToFile(bestSuccessorRelation);
   }
   
 }

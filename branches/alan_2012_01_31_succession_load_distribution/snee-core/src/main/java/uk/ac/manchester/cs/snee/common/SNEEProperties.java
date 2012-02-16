@@ -269,6 +269,11 @@ public class SNEEProperties {
       setSetting(propName, "false");
       return getSetting(propName);
     }
+    else if(propName.equals("wsn_manager.successor"))
+    {
+      setSetting(propName, "true");
+      return getSetting(propName);
+    }
     else if(propName.equals("runCostModel"))
     {
       setSetting(propName, "false");

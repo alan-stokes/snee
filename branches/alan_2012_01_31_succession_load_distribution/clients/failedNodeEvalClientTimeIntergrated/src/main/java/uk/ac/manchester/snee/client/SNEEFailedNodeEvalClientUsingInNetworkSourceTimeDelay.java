@@ -32,6 +32,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessorPreferenceEnum;
@@ -149,7 +150,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   OptimizationException, SchemaMetadataException, TypeMappingException, 
   AgendaException, UnsupportedAttributeTypeException, SourceMetadataException, 
   TopologyReaderException, SNEEDataSourceException, CostParametersException,
-  SNCBException, CodeGenerationException 
+  SNCBException, CodeGenerationException, NumberFormatException, WhenSchedulerException 
 	{
 	//get query & schemas
     String currentQuery = queryIterator.next();
@@ -348,7 +349,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   UnsupportedAttributeTypeException, SourceMetadataException, 
   TopologyReaderException, SNEEDataSourceException, 
   CostParametersException, SNCBException, IOException, 
-  CodeGenerationException 
+  CodeGenerationException, NumberFormatException, WhenSchedulerException 
   {
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");

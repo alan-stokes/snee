@@ -35,17 +35,15 @@ import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
-import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
-public abstract class StrategyAbstract implements Serializable
+public abstract class StrategyAbstract extends AutonomicManagerComponent implements Serializable
 {
   /**
    * serialVersionUID
@@ -99,19 +97,6 @@ public abstract class StrategyAbstract implements Serializable
   SourceMetadataException, TopologyReaderException, 
   SNEEDataSourceException, CostParametersException, 
   SNCBException, NumberFormatException, SNEECompilerException;
-  
-  
-  /**
-   * helper method to get topology from the qep
-   * @return topology
-   */
-  public Topology getWsnTopology()
-  {
-    SensorNetworkSourceMetadata metadata = (SensorNetworkSourceMetadata) _metadata;
-    Topology network = metadata.getTopology();
-    return network;
-  }
-  
   
   /**
    * compares between 2 QEPs, looking for differences and so creating adaptations
@@ -464,15 +449,6 @@ public abstract class StrategyAbstract implements Serializable
   public void updateFrameWorkStorage(File outputFolder)
   {
     this.outputFolder = outputFolder;
-  }
-  
-  /**
-   * used to reset the qep when numerious events occur
-   * @param currentQEP
-   */
-  public void setQEP(SensorNetworkQueryPlan  currentQEP)
-  {
-    this.currentQEP = currentQEP;
   }
   
   /**

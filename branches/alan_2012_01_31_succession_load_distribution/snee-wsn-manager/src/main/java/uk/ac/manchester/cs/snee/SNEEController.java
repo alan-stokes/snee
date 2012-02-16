@@ -58,6 +58,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.planner.model.Model;
@@ -367,7 +368,8 @@ public class SNEEController implements SNEE {
 	throws EvaluatorException, SNEECompilerException, SNEEException,
 	MetadataException, SNEEConfigurationException,
 	SchemaMetadataException, TypeMappingException, 
-	OptimizationException, IOException, CodeGenerationException 
+	OptimizationException, IOException, CodeGenerationException,
+	NumberFormatException, WhenSchedulerException 
 	{
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER addQuery() with " + query);
@@ -412,7 +414,7 @@ public class SNEEController implements SNEE {
       MetadataException, EvaluatorException, SNEEException,
       SNEEConfigurationException, SchemaMetadataException,
       TypeMappingException, OptimizationException, IOException,
-      CodeGenerationException
+      CodeGenerationException, NumberFormatException, WhenSchedulerException
   {
 	  if (logger.isDebugEnabled()) {
       logger.debug("ENTER addQuery() with " + query);
@@ -491,12 +493,15 @@ public class SNEEController implements SNEE {
 	 * @throws SchemaMetadataException 
 	 * @throws IOException 
 	 * @throws SNEEConfigurationException 
+	 * @throws WhenSchedulerException 
+	 * @throws NumberFormatException 
 	 */
 	private int dispatchQuery(int queryId, String query, QueryParameters queryParams, 
 	                          boolean starting) 
 	throws SNEEException, MetadataException, EvaluatorException,
 	SNEEConfigurationException, SchemaMetadataException, 
-	TypeMappingException, OptimizationException, IOException, CodeGenerationException
+	TypeMappingException, OptimizationException, IOException, CodeGenerationException,
+	NumberFormatException, WhenSchedulerException
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER dispatchQuery() with " + queryId +

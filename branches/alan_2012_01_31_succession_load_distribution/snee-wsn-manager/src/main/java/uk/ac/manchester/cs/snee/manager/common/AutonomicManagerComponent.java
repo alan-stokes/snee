@@ -5,7 +5,9 @@ import java.io.Serializable;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
 public abstract class AutonomicManagerComponent implements Serializable
 {
@@ -35,5 +37,16 @@ public abstract class AutonomicManagerComponent implements Serializable
   public void setQEP(SensorNetworkQueryPlan qep)
   {
     this.qep = qep;
+  }
+  
+  /**
+   * helper method to get topology from the qep
+   * @return topology
+   */
+  public Topology getWsnTopology()
+  {
+    SensorNetworkSourceMetadata metadata = (SensorNetworkSourceMetadata) _metadata;
+    Topology network = metadata.getTopology();
+    return network;
   }
 }

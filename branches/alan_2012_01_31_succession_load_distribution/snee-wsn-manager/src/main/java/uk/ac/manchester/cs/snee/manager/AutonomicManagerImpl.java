@@ -29,6 +29,7 @@ import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.anayliser.Anaylsiser;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
@@ -93,11 +94,17 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     executer = new Executer(this);
   }
   
+  /**
+   * sets up all dependent objects for the manager
+   * @throws WhenSchedulerException 
+   * @throws NumberFormatException 
+   */
   public void initilise(SourceMetadataAbstract _metadata, QueryExecutionPlan qep, 
                         ResultStore resultSet, int queryid) 
   throws SNEEException, SNEEConfigurationException, 
   SchemaMetadataException, TypeMappingException, 
-  OptimizationException, IOException, CodeGenerationException
+  OptimizationException, IOException, CodeGenerationException,
+  NumberFormatException, WhenSchedulerException
   {
     this.currentQEP = qep;
     queryName = "query" + queryid;
@@ -109,6 +116,14 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     setupRunningSites((SensorNetworkQueryPlan) qep);
     monitor.initilise(_metadata, qep, resultSet);
     anyliser.initilise(qep, numberOfTreesToUse);
+    
+    //if successor relation set to generate
+    boolean successor = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR);
+    if(successor)
+    {
+      planner.updateStorageLocation(outputFolder);
+      planner.startSuccessorRelation((SensorNetworkQueryPlan) qep);
+    }
   }
 
   /**

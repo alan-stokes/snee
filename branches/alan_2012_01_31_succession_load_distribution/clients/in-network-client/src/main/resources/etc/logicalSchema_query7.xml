@@ -9,5 +9,10 @@
 			<type class ="integer"/>
 		</column>
 	</stream> 
+	<stream name="B" type="pull">
+		<column name="x">
+			<type class ="integer"/>
+		</column>
+	</stream> 
 
 </schema>

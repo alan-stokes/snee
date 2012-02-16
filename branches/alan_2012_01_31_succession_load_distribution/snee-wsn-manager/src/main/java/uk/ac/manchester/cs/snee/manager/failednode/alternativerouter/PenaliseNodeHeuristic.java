@@ -1,9 +1,12 @@
 package uk.ac.manchester.cs.snee.manager.failednode.alternativerouter;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+
 public enum PenaliseNodeHeuristic
 {
-  //TRUE, FALSE;
-  TRUE;
+  TRUE, FALSE;
   
   private static int position = 0;
   
@@ -16,12 +19,24 @@ public enum PenaliseNodeHeuristic
     return value;
   }
  
-  public static boolean hasNext()
+  public static boolean hasNext() 
+  throws SNEEConfigurationException
   { 
-    if(position < values().length)
-      return true;
+    boolean sucessor = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR);
+    if(sucessor)
+    {
+      if(position < values().length)
+        return true;
+      else
+        return false;
+    }
     else
-      return false;
+    {
+      if(position < 1)
+        return true;
+      else
+        return false;
+    }
   }
   
   public static void resetCounter()

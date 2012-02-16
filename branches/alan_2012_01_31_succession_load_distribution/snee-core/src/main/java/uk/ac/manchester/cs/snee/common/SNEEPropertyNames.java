@@ -215,6 +215,12 @@ public final class SNEEPropertyNames {
 	 * resilience calculation
 	 */
 	 public static final String WSN_MANAGER_K_RESILENCE_SENSE = "wsn_manager.k_resilence_sense";
+	 
+	 /**
+	  * used by the planning phase of the manager to determine if 
+	  * the successor relation should be generated
+	  */
+	 public static final String WSN_MANAGER_SUCCESSOR = "wsn_manager.successor";
 	
 	/**
 	 * choice preference for the assessor for which type of adaptation to choose 

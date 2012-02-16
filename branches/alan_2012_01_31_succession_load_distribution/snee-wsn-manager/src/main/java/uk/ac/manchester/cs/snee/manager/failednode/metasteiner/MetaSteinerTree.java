@@ -137,7 +137,33 @@ public class MetaSteinerTree implements Serializable
       }
       
     }
+  }
+  
+  /**
+   * update all nodes in tree in post order so that correct values used.
+   * @param steinerTree
+   * @param oldRoutingTree 
+   */
+  private void updateNoSources(Tree steinerTree)
+  {
     
+    Iterator<Site> siteIterator = steinerTree.nodeIterator(TraversalOrder.POST_ORDER);
+    while(siteIterator.hasNext())
+    {
+      Site currentSite = siteIterator.next();
+      if(!(currentSite.getInDegree() == 0))
+      {
+        int runningTotal = 0;
+        Iterator<Node> inputIterator = currentSite.getInputsList().iterator();
+        while(inputIterator.hasNext())
+        {
+          Site input = (Site) inputIterator.next();
+          runningTotal += input.getNumSources();
+        }
+        currentSite.setNoSources(runningTotal);
+      }
+      
+    }
   }
 
   /**
@@ -436,6 +462,47 @@ public class MetaSteinerTree implements Serializable
       return workingTopology;*/
     }
     return null;
+  }
+
+  public Tree produceTree(HeuristicSet set, ArrayList<String> sources, String desiredSinkID,
+                          Topology workingTopology, PAF paf) 
+  throws MetaSteinerTreeException
+  {
+  //create randomiser
+    Random randomiser = new Random();
+    //create a array which holds all steiner nodes.
+    ArrayList<String> bucket = new ArrayList<String>(sources);
+    bucket.add(desiredSinkID);
+    //create pointer for tree
+    MetaSteinerTreeObjectContainer container = null;
+    //create pointers for sink 
+    String sinkID = null;
+    container = chooseFirstNodePlacement(set, sinkID, desiredSinkID, bucket, workingTopology, randomiser);
+    while(bucket.size() != 0)
+    {
+      MetaTopology weightedTopology = new MetaTopology(updateWeighting(workingTopology, container, set));
+      selectNodesToLinkTogether(set, bucket, container, weightedTopology, randomiser);
+      
+      //find route between child and parent.
+      Path finalPath = weightedTopology.getShortestPath(container.getChildID(), container.getParentID(), set);
+      if(finalPath == null)
+        throw new MetaSteinerTreeException("no route between nodes " + container.getChildID() + "and" +
+                                           container.getParentID());
+      
+      //link path into tree
+      mergePathIntoTree(finalPath, bucket, container, sources);
+      //update number of sources in all nodes in steiner tree
+      updateNoSources(container.getSteinerTree());
+    }
+    if(!container.getSteinerTree().getRoot().getID().equals(desiredSinkID))
+    {
+      //rotate tree so that root operator is the sink node
+      rotateTree(container.getSteinerTree().getNode(desiredSinkID), container.getSteinerTree().getNode(desiredSinkID), container.getSteinerTree());
+      container.getSteinerTree().setRoot(container.getSteinerTree().getNode(desiredSinkID));
+    }
+    container.getSteinerTree().updateNodesAndEdgesColls(container.getSteinerTree().getRoot());
+    finalCheckForSourceNodes(container.getSteinerTree(), sources, paf);
+    return container.getSteinerTree();
   }
   
 }

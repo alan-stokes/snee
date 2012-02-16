@@ -26,6 +26,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
@@ -62,8 +63,36 @@ public class IOTUtils
     removeRedundantAggrIterOp(daf, iot);
     removeRedundantExchanges(daf);
     updateSites(daf);
+    removeExchangesFromPAF(iot.getPAF());
   }
   
+  /**
+   * removes the exchanges from the paf added by the DAF generator
+   * @param paf
+   * @throws OptimizationException 
+   */
+  private void removeExchangesFromPAF(PAF paf) throws OptimizationException
+  {
+    Iterator<SensornetOperator> opIter = paf.operatorIterator(TraversalOrder.POST_ORDER);
+    /*iterate though physical operators looking at each and removing the exchanges */
+    while (opIter.hasNext())
+    {
+      SensornetOperator op = opIter.next();
+      if(!(op instanceof SensornetDeliverOperator))
+      {
+        if(op.getOutput(0) instanceof SensornetExchangeOperator)
+        {
+          SensornetOperator nextOp = (SensornetOperator) op.getOutput(0);
+          while(nextOp instanceof SensornetExchangeOperator)
+          {
+            paf.getOperatorTree().removeNode(nextOp);
+            nextOp = (SensornetOperator) nextOp.getOutput(0);
+          }
+        }
+      }
+    }
+  }
+
   /**
    * this method instills the fragments onto the sites, this is to allow the iot to be compatible with the code generator.
    * @param daf
@@ -273,7 +302,6 @@ public class IOTUtils
    * @throws SchemaMetadataException
    */
   public void exportAsDOTFile(final String fname, final String label, boolean exchangesOnSites) 
-  throws SchemaMetadataException
   {
     try
     {   

@@ -17,6 +17,7 @@ import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -62,7 +63,8 @@ public interface AutonomicManager
                                  ResultStore resultSet, int queryID) 
   throws SNEEException, SNEEConfigurationException, 
   SchemaMetadataException, TypeMappingException, 
-  OptimizationException, IOException, CodeGenerationException;
+  OptimizationException, IOException, CodeGenerationException,
+  NumberFormatException, WhenSchedulerException;
 
   //no tuples received this query
   public abstract void callAnaysliserAnaylsisSNEECard();

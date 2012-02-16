@@ -60,6 +60,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
@@ -210,7 +211,8 @@ public class Dispatcher {
   SNEEException, MetadataException, 
   EvaluatorException, SNEEConfigurationException, 
   SchemaMetadataException, TypeMappingException, 
-  OptimizationException, IOException, CodeGenerationException 
+  OptimizationException, IOException, CodeGenerationException,
+  NumberFormatException, WhenSchedulerException 
   {
 	  SensorNetworkQueryPlan snQueryPlan = (SensorNetworkQueryPlan)queryPlan;
     sncb = snQueryPlan.getSNCB();

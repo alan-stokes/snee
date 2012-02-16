@@ -29,6 +29,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperatorImpl;
 
@@ -536,46 +537,49 @@ public class InstanceWhereSchedular
     while (opIter.hasNext())
     {
       SensornetOperator op = opIter.next();
-      SensornetOperatorImpl opImpl = (SensornetOperatorImpl) op;
-      boolean wasTotallyPinned = opImpl.isTotallyPinned();
-      if(opImpl.isPinned())
+      if(!(op instanceof SensornetExchangeOperator))
       {
-        if(!opImpl.isRecursive())
-          addPinnedOpInstances(op, opImpl, disconnectedOpInstMapping);
-        else
-          addIterativeOpInstancesPinned(op, disconnectedOpInstMapping);
+        SensornetOperatorImpl opImpl = (SensornetOperatorImpl) op;
+        boolean wasTotallyPinned = opImpl.isTotallyPinned();
+        if(opImpl.isPinned())
+        {
+          if(!opImpl.isRecursive())
+            addPinnedOpInstances(op, opImpl, disconnectedOpInstMapping);
+          else
+            addIterativeOpInstancesPinned(op, disconnectedOpInstMapping);
+        } 
+        if(wasTotallyPinned)
+        {}
+        else if (   op instanceof SensornetAcquireOperator 
+                 || op instanceof SensornetDeliverOperator) 
+        {
+          //Location-sensitive operator
+          addLocationSensitiveOpInstances(op, disconnectedOpInstMapping);
+        } 
+        else if (op.isAttributeSensitive()) 
+        {
+          //Attribute-sensitive operator
+          addAttributeSensitiveOpInstances(op, disconnectedOpInstMapping);     
+        }
+        else if (op.isRecursive()) 
+        {
+          //Iterative operator
+          addIterativeOpInstances(op, disconnectedOpInstMapping);
+        } 
+        else 
+        {
+          //Other operators
+          addOtherOpTypeInstances(op, disconnectedOpInstMapping);
+        }
+          
+        if (op instanceof SensornetDeliverOperator) 
+        {
+          InstanceOperator opInst = iot.getOpInstances(op).get(0);
+          iot.setRoot(opInst);
+          
+        } 
       } 
-      if(wasTotallyPinned)
-      {}
-      else if (   op instanceof SensornetAcquireOperator 
-               || op instanceof SensornetDeliverOperator) 
-      {
-        //Location-sensitive operator
-        addLocationSensitiveOpInstances(op, disconnectedOpInstMapping);
-      } 
-      else if (op.isAttributeSensitive()) 
-      {
-        //Attribute-sensitive operator
-        addAttributeSensitiveOpInstances(op, disconnectedOpInstMapping);     
-      }
-      else if (op.isRecursive()) 
-      {
-        //Iterative operator
-        addIterativeOpInstances(op, disconnectedOpInstMapping);
-      } 
-      else 
-      {
-        //Other operators
-        addOtherOpTypeInstances(op, disconnectedOpInstMapping);
-      }
-        
-      if (op instanceof SensornetDeliverOperator) 
-      {
-        InstanceOperator opInst = iot.getOpInstances(op).get(0);
-        iot.setRoot(opInst);
-        
-      } 
-    } 
+    }
   }
 
   private void addIterativeOpInstancesPinned(SensornetOperator op,
@@ -625,16 +629,8 @@ public class InstanceWhereSchedular
         disconnectedChildOpInstSet.add(opInst);
         //remove what are now connected instances from the disconnected Operator hash
         disconnectedChildOpInstSet.removeAll(confluenceOpInstSet);
-        try
-        {
-          new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
-          System.out.println();
-        }
-        catch (SchemaMetadataException e)
-        {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
+        new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
+        System.out.println();
         break;
       }
       //if more than one instance on current site but not all
@@ -657,16 +653,8 @@ public class InstanceWhereSchedular
         disconnectedChildOpInstSet.add(opInst);
         //remove what are now connected instances from the disconnected Operator hash
         disconnectedChildOpInstSet.removeAll(confluenceOpInstSet); 
-        try
-        {
-          new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
-          System.out.println();
-        }
-        catch (SchemaMetadataException e)
-        {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
+        new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
+        System.out.println();
     }
     }
     //set all operators with this id to be the of input instances operators.
@@ -691,14 +679,7 @@ public class InstanceWhereSchedular
         disconnectedOpInstMapping.add(op.getID(), opInst);//add to temp hash map which holds operators which dont have a connection upwards
         connectChildOperators(op, opInst, iot, disconnectedOpInstMapping);
       }
-      try
-      {
-        new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + counter + ".dot", "", true);
-      }
-      catch (SchemaMetadataException e)
-      {
-        e.printStackTrace();
-      }
+      new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + counter + ".dot", "", true);
       counter ++;
     }
     opImpl.setIsPinned(false);
@@ -931,16 +912,8 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         disconnectedChildOpInstSet.add(opInst);
         //remove what are now connected instances from the disconnected Operator hash
         disconnectedChildOpInstSet.removeAll(confluenceOpInstSet);
-        try
-        {
-          new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
-          System.out.println();
-        }
-        catch (SchemaMetadataException e)
-        {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
+        new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
+        System.out.println();
         break;
       }
       //if more than one instance on current site but not all
@@ -963,16 +936,8 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         disconnectedChildOpInstSet.add(opInst);
         //remove what are now connected instances from the disconnected Operator hash
         disconnectedChildOpInstSet.removeAll(confluenceOpInstSet); 
-        try
-        {
-          new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
-          System.out.println();
-        }
-        catch (SchemaMetadataException e)
-        {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
+        new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
+        System.out.println();
     }
     }
     //set all operators with this id to be the of input instances operators.
