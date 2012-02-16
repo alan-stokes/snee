@@ -44,6 +44,11 @@ public class IOTUtils
     this.instanceOperatorTree = this.iot.getOperatorTree();
   }
   
+  public IOTUtils()
+  {
+    this.iot = null;
+  }
+  
   public DAF convertToDAF() throws OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException
   {
     createDAF();
@@ -63,7 +68,6 @@ public class IOTUtils
     removeRedundantAggrIterOp(daf, iot);
     removeRedundantExchanges(daf);
     updateSites(daf);
-    removeExchangesFromPAF(iot.getPAF());
   }
   
   /**
@@ -71,7 +75,7 @@ public class IOTUtils
    * @param paf
    * @throws OptimizationException 
    */
-  private void removeExchangesFromPAF(PAF paf) throws OptimizationException
+  public void removeExchangesFromPAF(PAF paf) throws OptimizationException
   {
     Iterator<SensornetOperator> opIter = paf.operatorIterator(TraversalOrder.POST_ORDER);
     /*iterate though physical operators looking at each and removing the exchanges */

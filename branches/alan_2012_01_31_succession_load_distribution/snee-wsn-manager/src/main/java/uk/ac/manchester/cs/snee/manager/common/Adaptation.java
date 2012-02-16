@@ -32,6 +32,12 @@ public class Adaptation implements Serializable
   private int numberID;
   private String nodeIdWhichEndsQuery = null;
   
+  /**
+   * constructor
+   * @param oldQep
+   * @param id
+   * @param numberID
+   */
   public Adaptation(SensorNetworkQueryPlan oldQep, StrategyIDEnum id, int numberID)
   {
     reprogrammingSites = new ArrayList<String>();

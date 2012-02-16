@@ -155,7 +155,8 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
     }
     
     boolean success = assessQEPsAgendas(this.currentQEP.getIOT(), newIOT, this.currentQEP.getAgendaIOT(),
-                                        newAgendaIOT, newAgenda, false, adapt, failedNodes, routingTree, true);
+                                        newAgendaIOT, newAgenda, false, adapt, failedNodes, routingTree, true, 
+                                        this.currentQEP.getDLAF(), this.currentQEP.getID(), this.currentQEP.getCostParameters());
     adapt.setFailedNodes(failedNodes);
     
     if(success)

@@ -22,6 +22,9 @@ import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.AlternativeGenerator;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.Successor;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.TabuSearch;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -328,8 +331,8 @@ public class Planner extends AutonomicManagerComponent
 	  //collect alternatives
 	  ArrayList<SensorNetworkQueryPlan> alternativePlans = altGenerator.generateAlternatives();
 	  //search though space
-	  search = new TabuSearch(alternativePlans);
-	  ArrayList<Successor> bestSuccessorRelation = search.findSuccessorsPath();
+	  search = new TabuSearch(alternativePlans, runningSites);
+	  ArrayList<Successor> bestSuccessorRelation = search.findSuccessorsPath(qep);
 	  new PlannerUtils(successorFolder).writeSuccessorToFile(bestSuccessorRelation);
   }
   

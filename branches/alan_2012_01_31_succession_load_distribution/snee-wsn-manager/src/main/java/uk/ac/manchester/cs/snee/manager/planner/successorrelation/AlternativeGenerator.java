@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner;
+package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
 
 import java.io.File;
 import java.util.ArrayList;

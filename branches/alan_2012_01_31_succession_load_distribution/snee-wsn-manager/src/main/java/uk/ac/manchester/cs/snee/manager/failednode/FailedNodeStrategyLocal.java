@@ -362,7 +362,8 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
                                                                currentQEP.getIOT(), newIOT, localFolder);
         
           boolean success = assessQEPsAgendas(overlay.getQep().getIOT(), newIOT, overlay.getQep().getAgendaIOT(), newAgendaIOT, newAgenda, 
-                                            false, adapt, failedNodeIDs, currentRoutingTree, false);
+                                            false, adapt, failedNodeIDs, currentRoutingTree, false,
+                                            this.currentQEP.getDLAF(), this.currentQEP.getID(), this.currentQEP.getCostParameters());
         
           adapt.setFailedNodes(failedNodeIDs);
           if(success)

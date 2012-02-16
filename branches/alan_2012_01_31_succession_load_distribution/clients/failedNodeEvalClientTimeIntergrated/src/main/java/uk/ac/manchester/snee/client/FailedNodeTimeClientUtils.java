@@ -168,9 +168,9 @@ public class FailedNodeTimeClientUtils
 
   public void plotOrginial(int queryid, int testNo) throws IOException, OptimizationException
   {
-    File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "OTASection" +  sep + "storedObjects");
-    ArrayList<Adaptation> orginal = this.readInObjects(inputFolder);
-    DecimalFormat df = new DecimalFormat("#.#####");
+   // File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "OTASection" +  sep + "storedObjects");
+   // ArrayList<Adaptation> orginal = this.readInObjects(inputFolder);
+    //DecimalFormat df = new DecimalFormat("#.#####");
    // System.out.println(df.format(orginal.get(0).getLifetimeEstimate()));
    // plot.addGlobalLifetime(orginal.get(0).getLifetimeEstimate() * 1000);
    // plot.addPartialLifetime(orginal.get(0).getLifetimeEstimate() * 1000);

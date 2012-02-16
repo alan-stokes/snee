@@ -110,5 +110,11 @@ public class RunTimeSite implements Serializable
   {
     resetCurrentAdaptationEnergyCost();
   }
+
+  public void removeDefinedCost(Double cost)
+  {
+    currentEnergy = currentEnergy - cost;
+    
+  }
   
 }

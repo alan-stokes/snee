@@ -79,6 +79,8 @@ public class InstanceWhereSchedular
     new RTUtils(routingTree).exportAsDotFile(fileDirectory + fileSeparator + "RT.dot");
     //output paf
     new PAFUtils(paf).exportAsDotFile(fileDirectory + fileSeparator + "PAF.dot");
+    //remove the excahnges from the paf
+    new IOTUtils().removeExchangesFromPAF(paf);
     //generate floating operators / fixed locations
     generatePartialDaf();
     //produce image output so that can be validated

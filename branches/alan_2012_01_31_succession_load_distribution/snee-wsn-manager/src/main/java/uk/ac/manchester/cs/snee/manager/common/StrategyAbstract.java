@@ -24,6 +24,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.DLAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -31,6 +32,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
+import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -113,10 +115,11 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
    * @throws SchemaMetadataException
    * @throws TypeMappingException
    */
-  protected boolean assessQEPsAgendas(IOT oldIOT, IOT newIOT, AgendaIOT oldAgenda, 
+  protected static boolean assessQEPsAgendas(IOT oldIOT, IOT newIOT, AgendaIOT oldAgenda, 
                                    AgendaIOT newAgendaIOT, Agenda newAgenda, boolean timePinned,
                                    Adaptation adaptation, ArrayList<String> failedNodes,
-                                   RT routingTree, boolean checkIOT) 
+                                   RT routingTree, boolean checkIOT, DLAF dlaf, String id,
+                                   CostParameters costs) 
   throws SchemaMetadataException, TypeMappingException
   {
   //analysis newIOT for interesting nodes
@@ -128,13 +131,32 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
     //check if new plan agrees with time pinning
     if(success)
     {//create new qep, add qep to list of adapatations.
-      DAF daf = new IOTUtils(newIOT, currentQEP.getCostParameters()).getDAF();
+      DAF daf = new IOTUtils(newIOT, costs).getDAF();
       SensorNetworkQueryPlan newQep 
-      = new SensorNetworkQueryPlan(currentQEP.getDLAF(), routingTree, daf, newIOT, newAgendaIOT, newAgenda, currentQEP.getID());
+      = new SensorNetworkQueryPlan(dlaf, routingTree, daf, newIOT, newAgendaIOT, newAgenda, id);
       newQep.setQos(adaptation.getOldQep().getQos());
       adaptation.setNewQep(newQep);
     }
     return success;
+  }
+  
+  /**
+   * generates an adaptation object relfecting the costs of changeing from the oldplan to the new plan
+   * @param oldPlan
+   * @param newPlan
+   * @return
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   */
+  public static Adaptation generateAdaptationObject(SensorNetworkQueryPlan oldPlan, 
+                                                    SensorNetworkQueryPlan newPlan) 
+  throws SchemaMetadataException, TypeMappingException
+  {
+    Adaptation adapt = new Adaptation(oldPlan, null, 0);
+    assessQEPsAgendas(oldPlan.getIOT(), newPlan.getIOT(), oldPlan.getAgendaIOT(), newPlan.getAgendaIOT(),
+                      newPlan.getAgenda(), false, adapt, new ArrayList<String>(), newPlan.getRT(), true, 
+                      newPlan.getDLAF(), newPlan.getID(), newPlan.getCostParameters());
+    return adapt;
   }
   
   /**
@@ -145,7 +167,7 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
    * @param currentAdapatation
    * @return
    */
-  private boolean checkAgendas(AgendaIOT oldAgenda, AgendaIOT newAgenda, IOT newIOT, IOT oldIOT,
+  private static boolean checkAgendas(AgendaIOT oldAgenda, AgendaIOT newAgenda, IOT newIOT, IOT oldIOT,
       ArrayList<String> failedNodes, Adaptation currentAdapatation, boolean timePinned)
   {
     checkForTemporalChangedNodes(newAgenda, oldAgenda, newIOT, oldIOT, failedNodes, currentAdapatation);
@@ -165,7 +187,7 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
    * @param failedNodes 
    * @param currentAdapatation
    */
-  private void checkForTemporalChangedNodes(AgendaIOT newAgenda,
+  private static void checkForTemporalChangedNodes(AgendaIOT newAgenda,
       AgendaIOT oldAgenda,  IOT newIOT, IOT oldIOT, ArrayList<String> failedNodes, 
       Adaptation ad)
   {
@@ -224,7 +246,7 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
    * @param ad
    * @param adjust
    */
-  private void findAffectedSites(Node start, ArrayList<String> affectedSites, AgendaIOT newAgenda,
+  private static void findAffectedSites(Node start, ArrayList<String> affectedSites, AgendaIOT newAgenda,
                              Adaptation ad, TemporalAdjustment adjust)
   {
     affectedSites.add(start.getID());
@@ -268,13 +290,14 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
    * @param ad
    * @return
    */
-  private boolean sortOutTiming(Node newChild, Node orginal, Node parent, 
+  private static boolean sortOutTiming(Node newChild, Node orginal, Node parent, 
       Node failedSite, Long startTime, Long duration, AgendaIOT newAgenda, 
       AgendaIOT oldAgenda, TemporalAdjustment adjust, Adaptation ad)
   {
     Task commTask = newAgenda.getCommunicationTaskBetween(newChild, parent);
     Task commTimeOld = oldAgenda.getCommunicationTaskBetween(failedSite, parent);
-    //if failed site not got a direct communication between itself and the parent, look for a parent of the failed node which does
+    //if failed site not got a direct communication between itself and the parent, 
+    //look for a parent of the failed node which does
     while(commTimeOld == null)
     {
       //needs to distinguqise between sink and other nodes
@@ -316,7 +339,7 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
    * @param iot2
    * @param currentAdapatation
    */
-  private void checkIOT(IOT newIOT, IOT oldIOT, ArrayList<String> failedNodes, Adaptation currentAdapatation)
+  private static void checkIOT(IOT newIOT, IOT oldIOT, ArrayList<String> failedNodes, Adaptation currentAdapatation)
   {
     //check reprogrammed nodes
     checkForReProgrammedNodes(newIOT, oldIOT, currentAdapatation);
@@ -331,7 +354,7 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
    * @param failedNodes.contains(o) 
    * @param currentAdapatation
    */
-  private void checkForDeactivatedNodes(IOT newIOT, IOT oldIOT,
+  private static void checkForDeactivatedNodes(IOT newIOT, IOT oldIOT,
       ArrayList<String> failedNodes, Adaptation ad)
   {
     RT rt = oldIOT.getRT();
@@ -356,7 +379,7 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
    * @param oldIOT
    * @param ad
    */
-  private void checkForReDirectionNodes(IOT newIOT, IOT oldIOT,
+  private static void checkForReDirectionNodes(IOT newIOT, IOT oldIOT,
       Adaptation ad)
   {
     RT rt = newIOT.getRT();
@@ -391,7 +414,7 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
    * @param oldIOT
    * @param currentAdapatation
    */
-  private void checkForReProgrammedNodes(IOT newIOT, IOT oldIOT,
+  private static void checkForReProgrammedNodes(IOT newIOT, IOT oldIOT,
       Adaptation ad)
   {
     RT newRT = newIOT.getRT();
