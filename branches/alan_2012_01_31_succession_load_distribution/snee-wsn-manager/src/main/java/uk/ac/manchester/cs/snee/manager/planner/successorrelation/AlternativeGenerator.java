@@ -88,7 +88,8 @@ public class AlternativeGenerator
       WhenScheduler whenScheduling = new WhenScheduler(allowDiscontinuousSensing, this.qep.getCostParameters(), useNetworkController);
       Agenda agenda = whenScheduling.doWhenScheduling(daf, this.qep.getQos(), this.qep.getQueryName());
       AgendaIOT agendaIOT = whenScheduling.doWhenScheduling(iot, this.qep.getQos(), this.qep.getQueryName(), this.qep.getCostParameters());
-      qeps.add(new SensorNetworkQueryPlan(this.qep.getDLAF(), routingTree, daf, iot, agendaIOT, agenda, this.qep.getQueryName()));
+      qeps.add(new SensorNetworkQueryPlan(this.qep.getDLAF(), routingTree, daf, iot, agendaIOT, agenda, this.qep.getQueryName() + ":ALT" + routeCounter ));
+      routeCounter++;
     }
     return qeps;
   }

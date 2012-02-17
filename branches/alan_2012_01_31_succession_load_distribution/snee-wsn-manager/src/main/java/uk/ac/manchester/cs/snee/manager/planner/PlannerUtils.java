@@ -82,15 +82,15 @@ public class PlannerUtils
     {
       int maxSize = successorRelation.size();
       BufferedWriter out = new BufferedWriter(new FileWriter(objectFolder.toString() + sep + "path.dot"));
-      out.write("digraph \"successor path\" \n size = \"8.5,11\"; \n rankdir=\"BT\"; \n label=\"successor Path\";");
-      int counter = 1;
+      out.write("digraph \"successor path\" { \n size = \"8.5,11\"; \n rankdir=\"BT\"; \n label=\"successor Path\";");
+      int counter = 0;
       while(counter <= maxSize)
       {
         out.write("\"" + counter + "\"; \n");
         counter++;
       }
       out.write("\n\n");
-      counter = 1;
+      counter = 0;
       int nextCounter = counter +1;
       Iterator<Successor> successorIterator = successorRelation.iterator();
       while(successorIterator.hasNext())

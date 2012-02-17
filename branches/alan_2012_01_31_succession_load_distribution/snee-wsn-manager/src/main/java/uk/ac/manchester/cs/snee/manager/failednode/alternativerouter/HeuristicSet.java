@@ -17,17 +17,23 @@ public class HeuristicSet
   private FirstNodeHeuristic phi;
   private LinkMatrexChoiceHeuristic psi;
   private PenaliseNodeHeuristic omega;
+  private SensibleHeuristic sens;
+  
   private boolean successor = false;
   private LinkMatrexChoiceHeuristic choice;
   private HashMap<String, LinkMatrexChoiceHeuristic> edgeChoices = new HashMap<String, LinkMatrexChoiceHeuristic>();
 
-  public HeuristicSet(SecondNodeHeuristic chi, FirstNodeHeuristic phi, LinkMatrexChoiceHeuristic psi, PenaliseNodeHeuristic omega) 
+  public HeuristicSet(SecondNodeHeuristic chi, FirstNodeHeuristic phi, 
+                      LinkMatrexChoiceHeuristic psi, PenaliseNodeHeuristic omega,
+                      SensibleHeuristic sens
+                      ) 
   throws SNEEConfigurationException
   {
     this.chi = chi;
     this.phi = phi;
     this.psi = psi;
     this.omega = omega;
+    this.sens = sens;
     successor = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR);
   }
   
@@ -142,6 +148,16 @@ public class HeuristicSet
   public void setPenaliseNodeHeuristic(PenaliseNodeHeuristic omega)
   {
     this.omega = omega;
+  }
+    
+  public void setSensibleHeuristic(SensibleHeuristic sens)
+  {
+    this.sens = sens;
+  }
+
+  public SensibleHeuristic getSensibleHeuristic()
+  {
+    return sens;
   }
   
   public LinkCostMetric getEdgeChoice(String edgeID)

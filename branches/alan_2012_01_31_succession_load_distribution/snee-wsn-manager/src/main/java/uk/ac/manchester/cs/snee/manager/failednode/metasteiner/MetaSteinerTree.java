@@ -17,6 +17,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.HeuristicSet;
+import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.SensibleHeuristic;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -484,7 +485,20 @@ public class MetaSteinerTree implements Serializable
       selectNodesToLinkTogether(set, bucket, container, weightedTopology, randomiser);
       
       //find route between child and parent.
-      Path finalPath = weightedTopology.getShortestPath(container.getChildID(), container.getParentID(), set);
+      Path finalPath = null;
+      switch(set.getSensibleHeuristic())
+      {
+        case Shortest:
+          finalPath = weightedTopology.getShortestPath(container.getChildID(), container.getParentID(), set);
+        break;
+        case Longest:
+          finalPath = weightedTopology.getLongPath(container.getChildID(), container.getParentID(), set);
+        break;
+        case Random:
+          finalPath = weightedTopology.getRandomPath(container.getChildID(), container.getParentID(), set);
+        break;
+      }
+      
       if(finalPath == null)
         throw new MetaSteinerTreeException("no route between nodes " + container.getChildID() + "and" +
                                            container.getParentID());

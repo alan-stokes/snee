@@ -1,5 +1,9 @@
 package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,34 +15,57 @@ import com.rits.cloning.Cloner;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyAbstract;
+import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessor;
+import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
-public class TabuSearch 
+public class TabuSearch extends AutonomicManagerComponent
 {
+  private static final long serialVersionUID = -7392168097799519214L;
   private ArrayList<SensorNetworkQueryPlan> alternativePlans;
   private ArrayList<Successor> successorPath = new ArrayList<Successor>();
+  private SuccessorPath bestPath = null;
   private Successor InitialSuccessor= null;
   private ArrayList<Successor> TABUList = new ArrayList<Successor>();
   private HashMap<String, RunTimeSite> initalSitesEnergy;
   private int TABUTenure = 5;
-  private int AspirationPlusBounds = 10;
+  private int AspirationPlusBounds = 30;
 	private int numberOfRandomTimes = 4;
-  
+	private SourceMetadataAbstract _metadata;
+	private MetadataManager _metaManager;
+	private File TABUOutputFolder = null;
+	private String sep = System.getProperty("file.separator");
+	private BufferedWriter out = null;
+	
   /**
    * constructor
    * @param alternativePlans
    * @param runningSites
+   * @throws IOException 
    */
-  public TabuSearch(ArrayList<SensorNetworkQueryPlan> alternativePlans, 
-                              HashMap<String, RunTimeSite> runningSites)
+  public TabuSearch(AutonomicManagerImpl autonomicManager, 
+                    ArrayList<SensorNetworkQueryPlan> alternativePlans, 
+                    HashMap<String, RunTimeSite> runningSites, SourceMetadataAbstract _metadata,
+                    MetadataManager _metaManager, File outputFolder) 
+  throws IOException
   {
+    this.manager = autonomicManager;
 	  this.alternativePlans = alternativePlans;
 	  this.initalSitesEnergy = runningSites;
+	  this._metadata = _metadata;
+	  this._metaManager = _metaManager; 
+	  this.TABUOutputFolder = outputFolder;
+	  this.out = new BufferedWriter(new FileWriter(TABUOutputFolder + sep + "log"));
+	  
   }
   
   /**
@@ -48,31 +75,52 @@ public class TabuSearch
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
+   * @throws CodeGenerationException 
+   * @throws IOException 
    */
-  public ArrayList<Successor> findSuccessorsPath(SensorNetworkQueryPlan initialPoint) 
-  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  public SuccessorPath findSuccessorsPath(SensorNetworkQueryPlan initialPoint) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException,
+  IOException, CodeGenerationException
   {
-    this.updateRunningSites(initalSitesEnergy, initialPoint);
+    SuccessorPath currentPath = null;
+    initalSitesEnergy = this.updateRunningSites(initalSitesEnergy, initialPoint);
     InitialSuccessor = new Successor(initialPoint, 0, this.initalSitesEnergy, this.initalSitesEnergy);
     Successor currentBestSuccessor = InitialSuccessor;
     int iteration = 0;
     while(!StoppingCriteria.satisifiesStoppingCriteria(iteration))
     {
       ArrayList<Successor> neighbourHood = generateNeighbourHood(currentBestSuccessor.getCopyOfRunTimeSites(),
-                                                                 currentBestSuccessor);
-      Successor bestNeighbourHoodSuccessor = locateBestSuccessor(neighbourHood, currentBestSuccessor);
+                                                                 currentBestSuccessor, currentPath);
+      Successor bestNeighbourHoodSuccessor = locateBestSuccessor(neighbourHood, currentBestSuccessor,
+                                                                 iteration);
       if(bestNeighbourHoodSuccessor != null)
       {
-        if(fitness(bestNeighbourHoodSuccessor, currentBestSuccessor) > currentBestSuccessor.getLifetimeInAgendas())
+        if(fitness(bestNeighbourHoodSuccessor, currentBestSuccessor, iteration) > currentBestSuccessor.getLifetimeInAgendas())
         {
           currentBestSuccessor = bestNeighbourHoodSuccessor;
           addToTABUList(bestNeighbourHoodSuccessor);
           successorPath.add(bestNeighbourHoodSuccessor);
+          currentPath = new SuccessorPath(successorPath);
+          if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
+            bestPath = currentPath;
+          out.write(" : PASSED \n");
         }
+        else
+        {
+          out.write(" : FAILED \n");
+        }
+        out.flush();
+      }
+      else
+      {
+        out.flush();
       }
       iteration++;
     }
-    return successorPath;
+    out.close();
+    if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
+      bestPath = currentPath;
+    return bestPath;
   }
 
   /**
@@ -81,12 +129,28 @@ public class TabuSearch
    * @return lifetime of the successor
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
+   * @throws CodeGenerationException 
+   * @throws OptimizationException 
+   * @throws IOException 
    */
-  private int fitness(Successor successor, Successor currentPosition) 
-  throws SchemaMetadataException, TypeMappingException
+  private int fitness(Successor successor, Successor currentPosition, int iteration) 
+  throws SchemaMetadataException, TypeMappingException, IOException,
+  OptimizationException, CodeGenerationException
   {
     Adaptation adapt = StrategyAbstract.generateAdaptationObject(currentPosition.getQep(), successor.getQep());
-    successor.substractAdaptationCostOffRunTImeSites(adapt);
+    File assessorFolder = new File(this.TABUOutputFolder.toString() + sep + iteration + ":Successor");
+    if(assessorFolder.exists())
+    {
+      manager.deleteFileContents(assessorFolder);
+      assessorFolder.mkdir();
+    }
+    else
+    {
+      assessorFolder.mkdir();
+    }
+    ChoiceAssessor assessAdaptation = new ChoiceAssessor(_metadata, _metaManager, assessorFolder);
+    assessAdaptation.assessChoice(adapt, successor.getTheRunTimeSites(), false);
+    successor.substractAdaptationCostOffRunTimeSites(adapt);
     return successor.getLifetimeInAgendas();
   }
 
@@ -112,10 +176,15 @@ public class TabuSearch
    * @return
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
+   * @throws CodeGenerationException 
+   * @throws OptimizationException 
+   * @throws IOException 
    */
   private Successor locateBestSuccessor(ArrayList<Successor> neighbourHood, 
-                                        Successor currentBestSuccessor) 
-  throws SchemaMetadataException, TypeMappingException
+                                        Successor currentBestSuccessor,
+                                        int iteration) 
+  throws SchemaMetadataException, TypeMappingException,
+  IOException, OptimizationException, CodeGenerationException
   {
     Iterator<Successor> neighbourHoodIterator = neighbourHood.iterator();
     int currentBestLifetime = currentBestSuccessor.getLifetimeInAgendas();
@@ -123,13 +192,20 @@ public class TabuSearch
     while(neighbourHoodIterator.hasNext())
     {
       Successor successor = neighbourHoodIterator.next();
-      int successorLifetimeTime = fitness(successor, currentBestSuccessor);
+      //TODO remove if need be (currently used to reduce neighbourhood size.
+      this.addToTABUList(successor);
+      int successorLifetimeTime = fitness(successor, currentBestSuccessor, iteration);
       if(currentBestLifetime < successorLifetimeTime)
       {
         currentBestLifetime = successorLifetimeTime;
         bestSuccessor = successor;
       }
     }
+    if(bestSuccessor != null)
+      out.write(iteration + " : " + bestSuccessor.toString() + " : " + bestSuccessor.getLifetimeInAgendas() + " : " + bestSuccessor.getAgendaCount());
+    else
+      out.write(iteration + " : NO BETTER SUCCESSOR \n");
+    out.flush();
     return bestSuccessor;
   }
 
@@ -152,13 +228,15 @@ public class TabuSearch
    * generates the neighbourhood to be assessed. 
    * Uses aspiration plus to reduce size of candidates in the neighbourhood.
    * @param currentBestSuccessor 
+   * @param currentPath 
    * @return
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    */
   private ArrayList<Successor> generateNeighbourHood(HashMap<String, RunTimeSite> runTimeSites, 
-                                                     Successor currentBestSuccessor) 
+                                                     Successor currentBestSuccessor,
+                                                     SuccessorPath currentPath) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException
   {
     ArrayList<Successor> neighbourHood = new ArrayList<Successor>();
@@ -173,6 +251,7 @@ public class TabuSearch
       
       //determine best point to switch
       Successor maxLifetimeSucessor = new Successor(altPlan, 0, altPlanRunTimeSites, runTimeSites);
+      int previousBestLifetime = currentBestSuccessor.getLifetimeInAgendas();
       int lifetime = maxLifetimeSucessor.getLifetimeInAgendas();
       int agendaCount = determineBestAgendaSwitch(altPlan, currentBestSuccessor, 
                                                   lifetime, altPlanRunTimeSites, runTimeSites);
@@ -183,7 +262,7 @@ public class TabuSearch
       Random waitingAgendasGenerator = new Random();
       for(int option = 0; option < this.numberOfRandomTimes; option++)
       {
-        int nextAgendaCount = waitingAgendasGenerator.nextInt(lifetime);
+        int nextAgendaCount = waitingAgendasGenerator.nextInt(previousBestLifetime);
         Sucessor = new Successor(altPlan, nextAgendaCount, altPlanRunTimeSites, runTimeSites);
         alternativePlansTemp.add(Sucessor);
       }
@@ -197,14 +276,58 @@ public class TabuSearch
       
       Successor successor = alternativePlansTemp.get(overallPosition);
       if(this.meetsTABUCriteria(successor))
+      {
+        if(this.passesAspirationCriteria(successor, currentBestSuccessor))
+          neighbourHood.add(successor);
         alternativePlansTemp.remove(overallPosition);
+      }
       else
       {
         neighbourHood.add(successor);
         alternativePlansTemp.remove(overallPosition);
       }
     }
+    
+    if(neighbourHood.size() == 0)
+    {
+      engageDiversificationTechnique(neighbourHood, currentBestSuccessor, runTimeSites, currentPath);
+      return generateNeighbourHood(runTimeSites, currentBestSuccessor, currentPath);
+    }
     return neighbourHood;
+  }
+
+  
+  /**
+   * used to restart the search 
+   * @param neighbourHood
+   * @param currentBestSuccessor
+   * @param runTimeSites
+   */
+  private void engageDiversificationTechnique(ArrayList<Successor> neighbourHood, 
+                                              Successor currentBestSuccessor,
+                                              HashMap<String, RunTimeSite> runTimeSites,
+                                              SuccessorPath currentPath)
+  {
+    if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
+      bestPath = currentPath;
+    
+    
+  }
+
+  /**
+   * checks the successor to see if it gives a large benefit (at which point will allow out of 
+   * the TABU list
+   * 
+   * @param successor
+   * @return
+   */
+  private boolean passesAspirationCriteria(Successor successor, Successor bestCurrentSuccessor)
+  {
+    if(successor.getLifetimeInAgendas() > bestCurrentSuccessor.getLifetimeInAgendas())
+      return true;
+    else
+      return false;
+    
   }
 
   /**
@@ -221,6 +344,7 @@ public class TabuSearch
                                         HashMap<String, RunTimeSite> altPlanRunTimeSites,
                                         HashMap<String, RunTimeSite> originalRunTimeSites)
   {
+    /*
     int bestAgendaWaitTime = 0;
     int bestAgendasLifetime = Integer.MIN_VALUE;
     
@@ -237,7 +361,8 @@ public class TabuSearch
         bestAgendasLifetime = agendasLifetime;
       }
     }
-    return bestAgendaWaitTime;
+    return bestAgendaWaitTime;*/
+    return 0;
   }
 
   /**

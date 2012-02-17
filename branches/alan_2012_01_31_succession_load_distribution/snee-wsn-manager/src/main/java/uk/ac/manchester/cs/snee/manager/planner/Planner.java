@@ -24,6 +24,7 @@ import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.AlternativeGenerator;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.Successor;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.SuccessorPath;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.TabuSearch;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -41,12 +42,14 @@ public class Planner extends AutonomicManagerComponent
   private ChoiceAssessor assessor;
   private HashMap<String, RunTimeSite> runningSites;
   private File plannerFolder = null;
+  private MetadataManager _metadataManager;
   
   public Planner(AutonomicManagerImpl autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager)   
   {
     manager = autonomicManager;
     assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder);
     this._metadata = _metadata;
+    this._metadataManager = _metadataManager;
     runningSites = manager.getRunningSites();
   }
   
@@ -307,11 +310,13 @@ public class Planner extends AutonomicManagerComponent
    * @throws OptimizationException 
    * @throws SchemaMetadataException 
    * @throws SNEEException 
+   * @throws CodeGenerationException 
+   * @throws IOException 
    */
   public void startSuccessorRelation(SensorNetworkQueryPlan qep) 
   throws NumberFormatException, SNEEConfigurationException,
   SNEEException, SchemaMetadataException, OptimizationException, 
-  WhenSchedulerException, TypeMappingException
+  WhenSchedulerException, TypeMappingException, IOException, CodeGenerationException
   {
     File successorFolder = new File(this.plannerFolder.toString() + sep + "successorRelation");
     if(successorFolder.exists())
@@ -330,10 +335,22 @@ public class Planner extends AutonomicManagerComponent
 	  TabuSearch search = null;
 	  //collect alternatives
 	  ArrayList<SensorNetworkQueryPlan> alternativePlans = altGenerator.generateAlternatives();
-	  //search though space
-	  search = new TabuSearch(alternativePlans, runningSites);
-	  ArrayList<Successor> bestSuccessorRelation = search.findSuccessorsPath(qep);
-	  new PlannerUtils(successorFolder).writeSuccessorToFile(bestSuccessorRelation);
+	
+	  //set up TABU folder
+	  File TABUFolder = new File(successorFolder.toString() + sep + "TABU");
+    if(TABUFolder.exists())
+    {
+      manager.deleteFileContents(TABUFolder);
+      TABUFolder.mkdir();
+    }
+    else
+    {
+      TABUFolder.mkdir();
+    }
+    //search though space
+	  search = new TabuSearch(manager, alternativePlans, runningSites, _metadata, _metadataManager, TABUFolder);
+	  SuccessorPath bestSuccessorRelation = search.findSuccessorsPath(qep);
+	  new PlannerUtils(successorFolder).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList());
   }
   
 }

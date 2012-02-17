@@ -141,7 +141,7 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
   }
   
   /**
-   * generates an adaptation object relfecting the costs of changeing from the oldplan to the new plan
+   * generates an adaptation object reflecting the costs of changing from the old plan to the new plan
    * @param oldPlan
    * @param newPlan
    * @return
@@ -152,7 +152,7 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
                                                     SensorNetworkQueryPlan newPlan) 
   throws SchemaMetadataException, TypeMappingException
   {
-    Adaptation adapt = new Adaptation(oldPlan, null, 0);
+    Adaptation adapt = new Adaptation(oldPlan, StrategyIDEnum.Successor, 0);
     assessQEPsAgendas(oldPlan.getIOT(), newPlan.getIOT(), oldPlan.getAgendaIOT(), newPlan.getAgendaIOT(),
                       newPlan.getAgenda(), false, adapt, new ArrayList<String>(), newPlan.getRT(), true, 
                       newPlan.getDLAF(), newPlan.getID(), newPlan.getCostParameters());

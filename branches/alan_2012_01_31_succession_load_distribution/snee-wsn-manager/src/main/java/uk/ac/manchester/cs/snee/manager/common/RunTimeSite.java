@@ -114,6 +114,8 @@ public class RunTimeSite implements Serializable
   public void removeDefinedCost(Double cost)
   {
     currentEnergy = currentEnergy - cost;
+    if(currentEnergy < 0.0)
+      System.out.println("");
     
   }
   

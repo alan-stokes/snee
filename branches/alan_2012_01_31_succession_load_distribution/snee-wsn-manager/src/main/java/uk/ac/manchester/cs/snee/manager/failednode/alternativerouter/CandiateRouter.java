@@ -99,13 +99,22 @@ public class CandiateRouter extends Router
         PenaliseNodeHeuristic.resetCounter();
       break;
       case 4:
+        while(SensibleHeuristic.hasNext())
+        {
+          set.setSensibleHeuristic(SensibleHeuristic.next());
+          setupHeuristicsets(position+ 1, set);
+        }
+        SensibleHeuristic.resetCounter();
+      break;
+      case 5:
         while(LinkMatrexChoiceHeuristic.hasNext())
         {
           set.setLinkMatrexChoiceHeuristic(LinkMatrexChoiceHeuristic.next());
           heuristics.add(new HeuristicSet(set.getSecondNodeHeuristic(), 
                                           set.getFirstNodeHeuristic(), 
                                           set.getLinkMatrexChoiceHeuristic(),
-                                          set.getPenaliseNodeHeuristic()));
+                                          set.getPenaliseNodeHeuristic(),
+                                          set.getSensibleHeuristic()));
         }
         LinkMatrexChoiceHeuristic.resetCounter();
       break;
