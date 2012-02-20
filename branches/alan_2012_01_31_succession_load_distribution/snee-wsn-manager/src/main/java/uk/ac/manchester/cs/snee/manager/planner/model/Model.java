@@ -56,7 +56,7 @@ public class Model
       //create folder for this adaptation 
       adaptFolder.mkdir();
       imageGenerator.generateNesCCode(adapt.getNewQep(), adaptFolder.toString() + sep, Model._metadataManager);
-      imageGenerator.compileNesCCode(adaptFolder.toString()+ sep);
+      imageGenerator.compileReducedNesCCode(adaptFolder.toString()+ sep, adapt.getReprogrammingSites());
       compiledAlready = true;
     }
     Site site = adapt.getNewQep().getRT().getSite(reprogrammedSite);

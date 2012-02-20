@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
@@ -144,5 +145,12 @@ public class TinyOS_SNCB_Controller implements SNCB
   public void compileNesCCode(String queryOutputDir) throws IOException
   {
     sncb.compileNesCCode(queryOutputDir);
+  }
+
+  @Override
+  public void compileReducedNesCCode(String queryOutputDir,
+      ArrayList<String> NodeIds) throws IOException
+  {
+    sncb.compileReducedNesCCode(queryOutputDir, NodeIds); 
   }
 }

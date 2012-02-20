@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
@@ -37,6 +38,9 @@ public interface SNCB extends Serializable{
   throws IOException, SchemaMetadataException, 
   TypeMappingException, OptimizationException, 
   CodeGenerationException;
-
+  
+  public void compileReducedNesCCode(String queryOutputDir, ArrayList<String> NodeIds) 
+  throws IOException;
+  
   public void compileNesCCode(String queryOutputDir) throws IOException;
 }

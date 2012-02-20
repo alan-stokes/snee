@@ -23,7 +23,6 @@ import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.AlternativeGenerator;
-import uk.ac.manchester.cs.snee.manager.planner.successorrelation.Successor;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.SuccessorPath;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.TabuSearch;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -318,6 +317,8 @@ public class Planner extends AutonomicManagerComponent
   SNEEException, SchemaMetadataException, OptimizationException, 
   WhenSchedulerException, TypeMappingException, IOException, CodeGenerationException
   {
+    try
+    {
     File successorFolder = new File(this.plannerFolder.toString() + sep + "successorRelation");
     if(successorFolder.exists())
     {
@@ -351,6 +352,11 @@ public class Planner extends AutonomicManagerComponent
 	  search = new TabuSearch(manager, alternativePlans, runningSites, _metadata, _metadataManager, TABUFolder);
 	  SuccessorPath bestSuccessorRelation = search.findSuccessorsPath(qep);
 	  new PlannerUtils(successorFolder).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList());
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
   }
   
 }

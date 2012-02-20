@@ -11,6 +11,8 @@ import org.apache.log4j.Logger;
 import com.rits.cloning.Cloner;
 
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
@@ -60,8 +62,12 @@ public class CandiateRouter extends Router
     cloner = new Cloner();
     cloner.dontClone(Logger.class);
     this.outputFolder = outputFolder;
-    failedChainMain = new File(outputFolder.toString() + sep + "chains");
-    failedChainMain.mkdir();
+    boolean successor = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR);
+    if(!successor)
+    {
+      failedChainMain = new File(outputFolder.toString() + sep + "chains");
+      failedChainMain.mkdir();
+    }
     setupHeuristicsets(1, new HeuristicSet());
   }
   

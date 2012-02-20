@@ -24,8 +24,28 @@ public class SuccessorPath
     return agendaCount;
   }
   
+  public void updateList(ArrayList<Successor> listOfSuccessors)
+  {
+    this.listOfSuccessors = listOfSuccessors;
+  }
+  
   public ArrayList<Successor> getSuccessorList()
   {
     return this.listOfSuccessors;
+  }
+  
+  public int successorLength()
+  {
+    return listOfSuccessors.size();
+  }
+  
+  public void removeSuccessor(int position)
+  {
+    this.listOfSuccessors.remove(position);
+  }
+
+  public void add(Successor nextSuccessor)
+  {
+    this.listOfSuccessors.add(nextSuccessor);
   }
 }

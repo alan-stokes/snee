@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.sncb;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -149,6 +150,34 @@ public abstract class TinyOS_SNCB implements SNCB {
 		if (logger.isTraceEnabled())
 			logger.trace("RETURN compileNesCCode()");
 	}
+	
+	public void compileReducedNesCCode(String queryOutputDir, ArrayList<String> NodeIds) throws IOException {
+    if (logger.isTraceEnabled())
+      logger.trace("ENTER compileNesCCode()");
+    String nescOutputDir = System.getProperty("user.dir") + "/"
+        + queryOutputDir + this.getTargetDirName();
+    String pythonScript = Utils
+        .getResourcePath("etc/sncb/tools/python/utils/compileReducedNesCCode.py");
+    String nescDirParam = "--nesc-dir=" + nescOutputDir;
+    String targetDirNameParam = "--compile-target=" + this.getTargetDirName();
+    ArrayList<String> parameters = new ArrayList<String>();
+    parameters.add(pythonScript);
+     parameters.add(nescDirParam);
+    parameters.add(targetDirNameParam);
+    Iterator<String> nodeIdIterator = NodeIds.iterator();
+    while(nodeIdIterator.hasNext())
+    {
+      String nodeID = nodeIdIterator.next();
+      nodeID = "mote" + nodeID;
+      parameters.add(nodeID);
+    }
+    String params[] = new String [NodeIds.size() + 3];
+    parameters.toArray(params);
+    Utils.runExternalProgram("python", params, this.tinyOSEnvVars,
+        workingDir);
+    if (logger.isTraceEnabled())
+      logger.trace("RETURN compileNesCCode()");
+  }
 
 	protected SerialPortMessageReceiver setUpResultCollector(
 			SensorNetworkQueryPlan qep, String queryOutputDir) throws Exception {

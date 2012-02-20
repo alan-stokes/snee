@@ -175,19 +175,15 @@ public class MetaTopology implements Serializable
   private String dijkstra_getNextRandomNodeID(
       HashSet<String> randomDistanceNotFound, HashMap<String, Double> distance)
   {
-    String nextClosestNodeID = null;
-    final Iterator<String> j = randomDistanceNotFound.iterator();
-    while (j.hasNext()) 
+    Random random = new Random();
+    int choice = random.nextInt(randomDistanceNotFound.size());
+    Iterator<String> nodeIDIterator = randomDistanceNotFound.iterator();
+    int counter = 0;
+    while(counter < choice)
     {
-      final String jid = (String) j.next();
-      Random random = new Random();
-      int choice = random.nextInt(100);
-      if(choice <= 50)
-      {
-        nextClosestNodeID = jid;
-      }
+      nodeIDIterator.next();
     }
-    return nextClosestNodeID;
+    return nodeIDIterator.next();
   }
 
   /**
