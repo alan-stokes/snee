@@ -351,7 +351,7 @@ public class Planner extends AutonomicManagerComponent
     //search though space
 	  search = new TabuSearch(manager, alternativePlans, runningSites, _metadata, _metadataManager, TABUFolder);
 	  SuccessorPath bestSuccessorRelation = search.findSuccessorsPath(qep);
-	  new PlannerUtils(successorFolder).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList());
+	  new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList());
     }
     catch(Exception e)
     {

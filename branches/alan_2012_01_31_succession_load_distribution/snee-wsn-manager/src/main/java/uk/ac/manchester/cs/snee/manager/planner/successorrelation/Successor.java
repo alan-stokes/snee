@@ -6,33 +6,48 @@ import java.util.logging.Logger;
 
 import com.rits.cloning.Cloner;
 
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class Successor implements Comparable<Successor>
 {
-  private SensorNetworkQueryPlan qep;
-  private Integer agendaCount;
-  private HashMap<String, RunTimeSite> newRunTimeSites = null;
-  private HashMap<String, RunTimeSite> previousRunTimeSites = null;
+  protected SensorNetworkQueryPlan qep;
+  protected Integer agendaCount;
+  protected Integer previousAgendaCount = 0;
+  protected HashMap<String, RunTimeSite> newRunTimeSites = null;
   
   
   public Successor(SensorNetworkQueryPlan qep, Integer agendaCount, 
-                   HashMap<String, RunTimeSite> newRunTimeSites,
-                   HashMap<String, RunTimeSite> previousRunTimeSites)
+                   HashMap<String, RunTimeSite> RunTimeSites, Integer prevAgendaCount) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException
   {
-    Cloner cloner = new Cloner();
-    cloner.dontClone(Logger.class);
     this.setQep(qep);
     this.setAgendaCount(agendaCount); 
-    this.previousRunTimeSites = cloner.deepClone(previousRunTimeSites);
-    this.newRunTimeSites = cloner.deepClone(newRunTimeSites);
+    this.newRunTimeSites = RunTimeSites;
+    this.previousAgendaCount = prevAgendaCount;
     this.subtractWaitingSiteEnergyCosts();
+    this.updateSitesRunningCosts();
   }
   
+  private void updateSitesRunningCosts() 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  {
+    Iterator<String> siteKeyIterator = this.newRunTimeSites.keySet().iterator();
+    while(siteKeyIterator.hasNext())
+    {
+      String key = siteKeyIterator.next();
+      RunTimeSite site = newRunTimeSites.get(key);
+      Site rtSite = this.qep.getRT().getSite(site.toString());
+      site.setQepExecutionCost(this.qep.getAgendaIOT().getSiteEnergyConsumption(rtSite));
+    }   
+  }
+
   public HashMap<String, RunTimeSite> getCopyOfRunTimeSites()
   {
     Cloner cloner = new Cloner();
@@ -45,7 +60,7 @@ public class Successor implements Comparable<Successor>
     return newRunTimeSites;
   }
 
-  private void setQep(SensorNetworkQueryPlan qep)
+  protected void setQep(SensorNetworkQueryPlan qep)
   {
     this.qep = qep;
   }
@@ -55,7 +70,7 @@ public class Successor implements Comparable<Successor>
     return qep;
   }
 
-  private void setAgendaCount(Integer agendaCount)
+  protected void setAgendaCount(Integer agendaCount)
   {
     this.agendaCount = agendaCount;
   }
@@ -67,21 +82,26 @@ public class Successor implements Comparable<Successor>
 
   public Integer getLifetimeInAgendas()
   {
-    return this.calculateLifetime();
+    return this.calculateLifetime() + agendaCount + this.previousAgendaCount;
   }
   
+  public Integer getPreviousAgendaCount()
+  {
+    return previousAgendaCount;
+  }
+
   /**
    * calculates how much energy will be lost per site whilst waiting for the successor.
    * @param agendaCount2
    * @return
    */
-  private void subtractWaitingSiteEnergyCosts()
+  protected void subtractWaitingSiteEnergyCosts()
   {
     Iterator<Site> siteIterator = this.qep.getRT().siteIterator(TraversalOrder.POST_ORDER);
     while(siteIterator.hasNext())
     {
       Site site = siteIterator.next();
-      Double siteEnergyCost = previousRunTimeSites.get(site.getID()).getQepExecutionCost();
+      Double siteEnergyCost = this.newRunTimeSites.get(site.getID()).getQepExecutionCost();
       siteEnergyCost = siteEnergyCost * this.agendaCount;
       newRunTimeSites.get(site.getID()).removeDefinedCost(siteEnergyCost);
     }
@@ -106,7 +126,7 @@ public class Successor implements Comparable<Successor>
   /**
    * Calculates the lifetime of the plan based off current energy model costs and conditions.
    */
-  private int calculateLifetime()
+  protected int calculateLifetime()
   {
     int shortestLifetime = Integer.MAX_VALUE;
     Iterator<Site> siteIterator = this.qep.getRT().siteIterator(TraversalOrder.POST_ORDER);
@@ -133,28 +153,21 @@ public class Successor implements Comparable<Successor>
   @Override
   public int compareTo(Successor o)
   {
-    // TODO Auto-generated method stub
     return 0;
   }
   
   @Override
   public boolean equals(Object other)
   {
-    if(other.hashCode() == this.hashCode())
+    if(other.toString().equals(this.toString()))
       return true;
     else
       return false;
   }
   
-  @Override 
-  public int hashCode() 
-  {
-    return this.qep.getID().hashCode() + this.getAgendaCount().hashCode();
-  }
-  
   @Override
   public String toString()
   {
-    return this.qep.getID() + this.getAgendaCount();
+    return this.qep.getID() + " AT " + this.getAgendaCount().toString();
   }
 }
