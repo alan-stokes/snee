@@ -96,7 +96,7 @@ public class PlannerUtils
     {
       
       
-      int maxSize = successorRelation.size();
+      int maxSize = successorRelation.size() -1;
       BufferedWriter out = new BufferedWriter(new FileWriter(objectFolder.toString() + sep + "path.dot"));
       out.write("digraph \"successor path\" { \n size = \"8.5,11\"; \n rankdir=\"BT\"; \n label=\"successor Path\";");
       int counter = 0;
@@ -109,14 +109,20 @@ public class PlannerUtils
       counter = 0;
       int nextCounter = counter +1;
       Iterator<Successor> successorIterator = successorRelation.iterator();
+      successorIterator.next(); // get rid of the first successor
+      out.write("\"" + counter + "\" -> \"" + nextCounter + "\" [fontsize=9 label = \"");
       while(successorIterator.hasNext())
       {
         Successor successor = successorIterator.next();
         String file = mkdir(counter, objectFolder);
         new SuccessorUtils(successor).exportSuccessor(file);
-        out.write("\"" + counter + "\" -> \"" + nextCounter + "\" [fontsize=9 label = \"" + successor.getAgendaCount() + "\"]; \n");
+        out.write( successor.getAgendaCount() + "\"]; \n");
         counter++;
         nextCounter = counter +1;
+        if(successorIterator.hasNext())
+        {
+          out.write("\"" + counter + "\" -> \"" + nextCounter + "\" [fontsize=9 label = \"");
+        }
       }
       out.write("\n\n }");
       out.flush();

@@ -19,7 +19,9 @@ public class SuccessorPath
     while(successorIterator.hasNext())
     {
       Successor successor = successorIterator.next();
-      agendaCount = agendaCount + successor.getAgendaCount();
+      agendaCount += successor.getAgendaCount();
+      if(!successorIterator.hasNext())
+        agendaCount += successor.getBasicLifetimeInAgendas();
     }
     return agendaCount;
   }

@@ -331,12 +331,12 @@ public class Planner extends AutonomicManagerComponent
     }
     
     //set up the generator
-	  AlternativeGenerator altGenerator = 
-	    new AlternativeGenerator(qep, this.getWsnTopology(), successorFolder, this._metadata);
+	  AlternativeGenerator altGenerator = new AlternativeGenerator(qep, this.getWsnTopology(), 
+	                                            successorFolder, this._metadata, this.manager);
 	  TabuSearch search = null;
 	  //collect alternatives
 	  ArrayList<SensorNetworkQueryPlan> alternativePlans = altGenerator.generateAlternatives();
-	
+	    
 	  //set up TABU folder
 	  File TABUFolder = new File(successorFolder.toString() + sep + "TABU");
     if(TABUFolder.exists())

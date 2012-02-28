@@ -24,6 +24,7 @@ import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.manager.failednode.metasteiner.MetaSteinerTree;
 import uk.ac.manchester.cs.snee.manager.failednode.metasteiner.MetaSteinerTreeException;
+import uk.ac.manchester.cs.snee.manager.planner.geneticrouter.GeneticRouter;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
@@ -424,7 +425,7 @@ public class CandiateRouter extends Router
    * removes all routes which are duplicates from routes.
    * @param routes
    */
-  private ArrayList<Tree> removeDuplicates(ArrayList<Tree> routes)
+  public ArrayList<Tree> removeDuplicates(ArrayList<Tree> routes)
   {
     Tree [] temporaryArray = new Tree[routes.size()];
     routes.toArray(temporaryArray);
@@ -672,6 +673,12 @@ public class CandiateRouter extends Router
     ArrayList<RT> routes = new ArrayList<RT>();
     ArrayList<Tree> trees = new ArrayList<Tree>();
     generateRoutesRecursively(trees);
+    
+    //TODO adds genetic algorithm to add extra diversity
+    GeneticRouter geneticRouter = new GeneticRouter(_metadataManager, this.paf, outputFolder);
+    trees.addAll(geneticRouter.generateAlternativeRoutes(trees)); 
+    trees = removeDuplicates(trees);
+    
     Iterator<Tree> treeIterator = trees.iterator();
     while(treeIterator.hasNext())
     {

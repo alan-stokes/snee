@@ -18,14 +18,18 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenScheduler;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
+import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
+import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.failednode.alternativerouter.CandiateRouter;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
-public class AlternativeGenerator 
+public class AlternativeGenerator extends AutonomicManagerComponent
 {
+
+  private static final long serialVersionUID = -2274933349883496847L;
   private SensorNetworkQueryPlan qep;
   private Topology network;
   private File outputFolder;
@@ -39,12 +43,15 @@ public class AlternativeGenerator
    * @param _metadata 
    */
   public AlternativeGenerator(SensorNetworkQueryPlan qep, Topology topology, 
-                              File outputFolder, SourceMetadataAbstract _metadata)
+                              File outputFolder, SourceMetadataAbstract _metadata, 
+                              AutonomicManagerImpl manager)
   {
 	  this.qep = qep;
+	  this.manager = manager;
 	  this.network = topology;
 	  this.outputFolder = outputFolder;
 	  this._metadata = _metadata;
+	  
   }
   
   /**
@@ -67,7 +74,9 @@ public class AlternativeGenerator
     CandiateRouter metaRouter = new CandiateRouter(network, outputFolder, this.qep.getDAF().getPAF(), 
                                                    this._metadata);
 	  ArrayList<RT> candidateRoutes = metaRouter.generateAlternativeRoutingTrees(this.qep.getQueryName());
-    Iterator<RT> routeIterator = candidateRoutes.iterator();
+	  
+	  
+	  Iterator<RT> routeIterator = candidateRoutes.iterator();
     int routeCounter = 1;
     while(routeIterator.hasNext())
     {

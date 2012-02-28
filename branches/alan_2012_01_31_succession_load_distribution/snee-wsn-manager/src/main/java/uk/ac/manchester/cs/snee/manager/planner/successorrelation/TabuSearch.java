@@ -34,7 +34,7 @@ public class TabuSearch extends AutonomicManagerComponent
   private NeighbourhoodGenerator generator;
   private TABUSearchUtils Utils;
   private HashMap<String, RunTimeSite> initalSitesEnergy;
-	private int numberOfIterationsWithoutImprovement = 2;
+	private int numberOfIterationsWithoutImprovement = 5;
 	private int currentNumberOfIterationsWithoutImprovement = 0;
 	private SourceMetadataAbstract _metadata;
 	private MetadataManager _metaManager;

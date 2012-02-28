@@ -61,7 +61,8 @@ public class TABUList
     //remove any off TABUTenure
     while(diversificationTABUList.size() > TABUTenure)
     {
-      diversificationTABUList.remove(0);
+      TABUSuccessor successorToRemove = diversificationTABUList.iterator().next();
+      diversificationTABUList.remove(successorToRemove);
     }
     //restore
     TABUList.put(position, diversificationTABUList); 

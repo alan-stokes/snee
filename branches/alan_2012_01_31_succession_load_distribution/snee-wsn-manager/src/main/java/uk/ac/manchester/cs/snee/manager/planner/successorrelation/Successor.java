@@ -85,6 +85,11 @@ public class Successor implements Comparable<Successor>
     return this.calculateLifetime() + agendaCount + this.previousAgendaCount;
   }
   
+  public Integer getBasicLifetimeInAgendas()
+  {
+    return this.calculateLifetime();
+  }
+  
   public Integer getPreviousAgendaCount()
   {
     return previousAgendaCount;
