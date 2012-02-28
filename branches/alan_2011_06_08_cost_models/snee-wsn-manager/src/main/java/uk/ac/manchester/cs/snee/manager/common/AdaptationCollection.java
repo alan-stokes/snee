@@ -100,5 +100,31 @@ public class AdaptationCollection implements Serializable
     return numberOfAdaptations;
       
   }
+
+  public Adaptation getOriginal()
+  {
+    if(this.GlobalAdaptation == null)
+    {
+      if(PartialAdaptations.size() == 0)
+      {
+        if(LocalAdaptations.size() == 0)
+        {
+          return null;
+        }
+        else
+        {
+          return new Adaptation(LocalAdaptations.get(0).getOldQep(), StrategyIDEnum.Orginal, 1);
+        }
+      }
+      else
+      {
+        return new Adaptation(PartialAdaptations.get(0).getOldQep(), StrategyIDEnum.Orginal, 1);
+      }
+    }
+    else
+    {
+      return new Adaptation(this.GlobalAdaptation.getOldQep(), StrategyIDEnum.Orginal, 1);
+    }
+  }
   
 }

@@ -80,8 +80,9 @@ public class EnergyModelOverlay extends EnergyModel
       Site site = (Site) nodeIterator.next();
       Double rcost = reprogrammingCost(site, adapt, parameters, current);
       Double cCost =   communicationCost(site, adapt, parameters, current);
-      runningSites.get(site.getID())
-      .addToCurrentAdaptationEnergyCost((rcost +  cCost)/ new Double(1000));
+      RunTimeSite rSite = runningSites.get(site.getID());
+      if(rSite != null)
+        rSite.addToCurrentAdaptationEnergyCost((rcost +  cCost)/ new Double(1000));
     }
   }
 

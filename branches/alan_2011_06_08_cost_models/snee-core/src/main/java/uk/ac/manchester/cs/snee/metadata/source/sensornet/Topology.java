@@ -440,6 +440,8 @@ public class Topology extends Graph {
     
     public double getLinkEnergyCost(final Site source, final Site dest) {
     	RadioLink link = this.getRadioLink(source, dest);
+    	if(link == null)
+    	  System.out.println("");
     	return link.getEnergyCost();
     }
 

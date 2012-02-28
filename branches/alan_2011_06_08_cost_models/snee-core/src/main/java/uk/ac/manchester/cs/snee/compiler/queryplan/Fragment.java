@@ -386,6 +386,7 @@ public class Fragment implements Serializable{
 
     public final void setParentExchange(final SensornetExchangeOperator p) {
 	this.parentExchange = p;
+//	System.out.println("");
     }
 
     public final void addChildExchange(final SensornetExchangeOperator c) {
@@ -508,10 +509,13 @@ public class Fragment implements Serializable{
 		this.operators.addAll(childFrag.operators);
 
 		//Set all child fragment operators' containing fragment field to this fragment
-		Iterator<SensornetOperator> opIter = childFrag.operatorIterator(TraversalOrder.POST_ORDER);
-		while (opIter.hasNext()) {
-			SensornetOperator op = opIter.next();
-			op.setContainingFragment(this);
+		if(childFrag.rootOperator != null)
+		{
+  		Iterator<SensornetOperator> opIter = childFrag.operatorIterator(TraversalOrder.POST_ORDER);
+  		while (opIter.hasNext()) {
+  			SensornetOperator op = opIter.next();
+  			op.setContainingFragment(this);
+  		}
 		}
 		
 		//Set all destination fragments of the child exchanges to this fragment

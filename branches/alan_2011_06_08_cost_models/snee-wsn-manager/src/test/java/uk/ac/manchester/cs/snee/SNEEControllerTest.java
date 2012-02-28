@@ -55,6 +55,7 @@ import org.junit.Test;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
+import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.allocator.SourceAllocatorException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
@@ -62,7 +63,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
-import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -134,7 +134,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	public void testAddQuery_NullParams()
 	throws SchemaMetadataException, EvaluatorException, 
 	SNEECompilerException, SNEEException, MetadataException,
-	SNEEConfigurationException, TypeMappingException, OptimizationException, IOException, CodeGenerationException 
+	SNEEConfigurationException, TypeMappingException, OptimizationException, IOException, CodeGenerationException, NumberFormatException, WhenSchedulerException 
 	{
 		_snee.addQuery(null, null);	
 	}
@@ -143,7 +143,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	public void testAddQuery_EmptyQuery() 
 	throws SchemaMetadataException, EvaluatorException, 
 	SNEECompilerException, SNEEException, MetadataException,
-	SNEEConfigurationException, TypeMappingException, OptimizationException, IOException, CodeGenerationException 
+	SNEEConfigurationException, TypeMappingException, OptimizationException, IOException, CodeGenerationException, NumberFormatException, WhenSchedulerException 
 	{
 		_snee.addQuery("", null);	
 	}
@@ -152,7 +152,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	public void testAddQuery_WhitespaceQuery() 
 	throws SchemaMetadataException, EvaluatorException, 
 	SNEECompilerException, SNEEException, MetadataException,
-	SNEEConfigurationException, TypeMappingException, OptimizationException, IOException, CodeGenerationException 
+	SNEEConfigurationException, TypeMappingException, OptimizationException, IOException, CodeGenerationException, NumberFormatException, WhenSchedulerException 
 	{
 		_snee.addQuery("   ", null);	
 	}
@@ -163,7 +163,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	SNEECompilerException, SNEEException, MetadataException,
 	RecognitionException, TokenStreamException, TypeMappingException, 
 	ExpressionException, OptimizationException, ParserException,
-	SNEEConfigurationException, IOException, CodeGenerationException 
+	SNEEConfigurationException, IOException, CodeGenerationException, NumberFormatException, WhenSchedulerException 
 	{
 		_snee.resetQueryId();
 		assertEquals(1, _snee.addQuery(mQuery, 
@@ -248,7 +248,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	TypeMappingException, SchemaMetadataException, 
 	ExpressionException, OptimizationException, ParserException,
 	EvaluatorException, QoSException, SNEECompilerException,
-	MetadataException, SNEEConfigurationException, IOException, CodeGenerationException  {
+	MetadataException, SNEEConfigurationException, IOException, CodeGenerationException, NumberFormatException, WhenSchedulerException  {
 		int qID = _snee.addQuery(mQuery, null);
 		_snee.getResultStore(qID*20);
 	}

@@ -96,6 +96,8 @@ public class LogicalOverlayGenerator
     PhysicalToLogicalConversion transfer = 
       new PhysicalToLogicalConversion(currentOverlay, network, localFolder);
     transfer.transferQEPs();
+    new LogicalOverlayNetworkUtils().exportAsADotFile(qep.getIOT(), currentOverlay, localFolder + sep + currentOverlay.getId());
+    
   }
 
   /**

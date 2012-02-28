@@ -74,6 +74,8 @@ public class InstanceFragment implements Serializable
   private InstanceFragment nextHigherFragment;
   private ArrayList<InstanceFragment> nextLowerFragment = new ArrayList<InstanceFragment>();
   
+  private boolean cloned = false;
+  
   /**
    * constructor
    */
@@ -168,7 +170,11 @@ public class InstanceFragment implements Serializable
    * @return the id of the fragment
    */
   public  String getID() {
-    return new Integer(this.fragID).toString();
+    String id = new Integer(this.fragID).toString();
+    if(cloned)
+      return id + "c";
+    else
+      return id;
   }
 
   /**
@@ -508,6 +514,16 @@ return this.getChildFragments().size();
   public String getFragID()
   {
     return new Integer(fragID).toString();
+  }
+
+  public void setCloned(boolean cloned)
+  {
+    this.cloned = cloned;
+  }
+
+  public boolean isCloned()
+  {
+    return cloned;
   }
  
  

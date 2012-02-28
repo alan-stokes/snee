@@ -31,6 +31,7 @@ import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyGlobal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyPartial;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -285,15 +286,25 @@ public class Anaylsiser extends AutonomicManagerComponent
   	//create adaptation collection
     AdaptationCollection adapatations = new AdaptationCollection();
   	Iterator<StrategyAbstract> frameworkIterator = frameworks.iterator();
+  	String choice = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);
   	boolean feasiable = true;
   	//go though methodologyies till located a adapatation.
   	while(frameworkIterator.hasNext() && feasiable)
   	{
   	  StrategyAbstract framework = frameworkIterator.next();
-  	  List<Adaptation> frameworkOutput = framework.adapt(failedNodes);
+  	  if((framework instanceof FailedNodeStrategyGlobal 
+  	      && (choice.equals(ChoiceAssessorPreferenceEnum.Global.toString()) || choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))) 
+  	   || (framework instanceof FailedNodeStrategyPartial 
+          && (choice.equals(ChoiceAssessorPreferenceEnum.Partial.toString()) || choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))) 
+  	   || (framework instanceof FailedNodeStrategyLocal 
+          && (choice.equals(ChoiceAssessorPreferenceEnum.Local.toString()) || choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))) 
+       )
+  	  {
+       List<Adaptation> frameworkOutput = framework.adapt(failedNodes);
   	  if(frameworkOutput.size() == 0 && framework instanceof FailedNodeStrategyGlobal)
   	    feasiable = false;
   	  adapatations.addAll(frameworkOutput);
+  	  }
   	}
     return adapatations;
   }
@@ -346,4 +357,18 @@ public class Anaylsiser extends AutonomicManagerComponent
     return overlay;
   }
 
+  public void setupOverlay() 
+  throws SchemaMetadataException, TypeMappingException, OptimizationException, 
+  IOException, SNEEConfigurationException, CodeGenerationException
+  {
+    Iterator<StrategyAbstract> frameworkIterator = frameworks.iterator();
+    while(frameworkIterator.hasNext())
+    {
+      StrategyAbstract currentFrameWork = frameworkIterator.next();
+      if(currentFrameWork instanceof FailedNodeStrategyLocal)
+      {
+        currentFrameWork.initilise(this.qep, 0);
+      }
+    }
+  }
 }

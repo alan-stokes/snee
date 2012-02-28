@@ -374,7 +374,7 @@ public class Plotter implements Serializable
     if(local != null)
     {
       cyclesMissedWriter.write(df.format(local.getTimeCost() / (Agenda.bmsToMs(local.getNewQep().getAgendaIOT().getLength_bms(false)) / new Double(1000))) + " ");
-      cyclesMissedYMax = Math.max(cyclesMissedYMax, local.getTimeCost() / local.getNewQep().getAgendaIOT().getLength_bms(false));
+      cyclesMissedYMax = Math.max(cyclesMissedYMax, local.getTimeCost() / (local.getNewQep().getAgendaIOT().getLength_bms(false) /new Double(1000)) );
     }
     else
     {
@@ -386,12 +386,12 @@ public class Plotter implements Serializable
     if(global != null)
     {
       cyclesLeftWriter.write(df.format(global.getLifetimeEstimate() / (Agenda.bmsToMs(global.getNewQep().getAgendaIOT().getLength_bms(false)) / new Double(1000))) + " ");
-      cyclesLeftYMax = Math.max(cyclesLeftYMax, global.getLifetimeEstimate() / global.getNewQep().getAgendaIOT().getLength_bms(false));
+      cyclesLeftYMax = Math.max(cyclesLeftYMax, global.getLifetimeEstimate() / (global.getNewQep().getAgendaIOT().getLength_bms(false) / new Double(1000)));
     }
     if(partial != null)
     {
       cyclesLeftWriter.write(df.format(partial.getLifetimeEstimate() / (Agenda.bmsToMs(partial.getNewQep().getAgendaIOT().getLength_bms(false)) / new Double(1000))) + " ");
-      cyclesLeftYMax = Math.max(cyclesLeftYMax, partial.getLifetimeEstimate() / partial.getNewQep().getAgendaIOT().getLength_bms(false));
+      cyclesLeftYMax = Math.max(cyclesLeftYMax, partial.getLifetimeEstimate() / (partial.getNewQep().getAgendaIOT().getLength_bms(false) / new Double(1000)));
     }
     else
     {
@@ -400,7 +400,7 @@ public class Plotter implements Serializable
     if(local != null)
     {
       cyclesLeftWriter.write(df.format(local.getLifetimeEstimate() / (Agenda.bmsToMs(local.getNewQep().getAgendaIOT().getLength_bms(false)) / new Double(1000))) + " ");
-      cyclesLeftYMax = Math.max(cyclesLeftYMax, local.getLifetimeEstimate() / local.getNewQep().getAgendaIOT().getLength_bms(false));
+      cyclesLeftYMax = Math.max(cyclesLeftYMax, local.getLifetimeEstimate() / (local.getNewQep().getAgendaIOT().getLength_bms(false) / new Double(1000)));
     }
     else
     {
@@ -434,12 +434,12 @@ public class Plotter implements Serializable
     if(global != null)
     {
       tuplesLeftWriter.write(df.format(globalTupleCount * (global.getLifetimeEstimate() / (AgendaIOT.bmsToMs(global.getNewQep().getAgendaIOT().getLength_bms(false))) / new Double(1000))) + " ");
-      tuplesLeftYMax = Math.max(tuplesLeftYMax, globalTupleCount * (global.getLifetimeEstimate() / global.getNewQep().getAgendaIOT().getLength_bms(false)));
+      tuplesLeftYMax = Math.max(tuplesLeftYMax, globalTupleCount * (global.getLifetimeEstimate() / (global.getNewQep().getAgendaIOT().getLength_bms(false) / new Double(1000))));
     }
     if(partial != null)
     {
       tuplesLeftWriter.write(df.format(partialTupleCount * (partial.getLifetimeEstimate() / partial.getNewQep().getAgendaIOT().getLength_bms(false))) + " ");
-      tuplesLeftYMax = Math.max(tuplesLeftYMax, partialTupleCount * (partial.getLifetimeEstimate() / partial.getNewQep().getAgendaIOT().getLength_bms(false)));
+      tuplesLeftYMax = Math.max(tuplesLeftYMax, partialTupleCount * (partial.getLifetimeEstimate() / (partial.getNewQep().getAgendaIOT().getLength_bms(false) / new Double(1000))));
     }
     else
     {
@@ -448,7 +448,7 @@ public class Plotter implements Serializable
     if(local != null)
     {
       tuplesLeftWriter.write(df.format(localTupleCount * (local.getLifetimeEstimate() / local.getNewQep().getAgendaIOT().getLength_bms(false))) + " ");
-      tuplesLeftYMax = Math.max(tuplesLeftYMax, localTupleCount * (local.getLifetimeEstimate() / local.getNewQep().getAgendaIOT().getLength_bms(false)));
+      tuplesLeftYMax = Math.max(tuplesLeftYMax, localTupleCount * (local.getLifetimeEstimate() / (local.getNewQep().getAgendaIOT().getLength_bms(false) / new Double(1000))));
     }
     else
     {

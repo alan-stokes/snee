@@ -246,6 +246,8 @@ public abstract class StrategyAbstract implements Serializable
     if(!newAgenda.getIOT().getRT().getRoot().getID().equals(start.getID()))
     {
       Task comm = newAgenda.getTransmissionTask(start); 
+      if(comm == null)
+        System.out.println("");
       ArrayList<Node> sites =  newAgenda.sitesWithTransmissionTasksAfterTime(comm.getStartTime());
       Iterator<Node> siteIterator = sites.iterator();
       while(siteIterator.hasNext())

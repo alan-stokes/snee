@@ -12,6 +12,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragment;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
+import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -103,12 +104,14 @@ public class PhysicalToLogicalConversion
       InstanceOperator rootOp = rootOperatorIterator.next();
       //set correct operators to try to reduce overheads
       clonedRootOp.setSensornetOperator(rootOp.getSensornetOperator());
-      clonedRootOp.setDeepestConfluenceSite(null);
       
       if(!(rootOp.getSensornetOperator() instanceof SensornetDeliverOperator))
       {
         qep.getIOT().assign(clonedRootOp, equilvientSite);
+        clonedRootOp.setDeepestConfluenceSite(equilvientSite);
         InstanceExchangePart clonedPart = (InstanceExchangePart) clonedRootOp; 
+        clonedPart.setSite(equilvientSite);
+        clonedPart.regenerateID();
         equilvientSite.addInstanceExchangePart(clonedPart);
         InstanceExchangePart part = (InstanceExchangePart) rootOp;
         
@@ -128,7 +131,7 @@ public class PhysicalToLogicalConversion
             rootOp = clonedPart;
       }
       
-      sortOutChildren(rootOp, equilvientSite, clusterHeadSite, qep);
+      sortOutChildren(rootOp, equilvientSite, clusterHeadSite, qep, null);
       sortOutFragments(clonedRootOp, equilvientSite, qep, clonedRootOp.getCorraspondingFragment());
     }  
     System.gc();
@@ -157,12 +160,14 @@ public class PhysicalToLogicalConversion
            {
              if(!frag.getFragID().equals(input.getCorraspondingFragment().getFragID()))
              {
+               input.getCorraspondingFragment().setCloned(true);
                qep.getIOT().addInstanceFragment(input.getCorraspondingFragment());
              }
              sortOutFragments(input, equilvientSite, qep, input.getCorraspondingFragment());
            }
            else
            {
+             input.getCorraspondingFragment().setCloned(true);
              qep.getIOT().addInstanceFragment(input.getCorraspondingFragment());
              sortOutFragments(input, equilvientSite, qep, input.getCorraspondingFragment());
            }
@@ -184,11 +189,16 @@ public class PhysicalToLogicalConversion
    * @param qep 
    */
   private void sortOutChildren(InstanceOperator operator, Site equilvientSite, Site clusterHeadSite, 
-                               SensorNetworkQueryPlan qep)
+                               SensorNetworkQueryPlan qep, InstanceOperator pastOp)
   { 
     
     qep.getIOT().assign(operator, equilvientSite);
-    operator.setDeepestConfluenceSite(null);
+    operator.setDeepestConfluenceSite(equilvientSite);
+    
+    if(pastOp != null)
+      qep.getIOT().addEdge(operator, pastOp);
+    
+    
     if(!(operator instanceof InstanceExchangePart))
     {
       operator.getCorraspondingFragment().setSite(equilvientSite);
@@ -200,7 +210,7 @@ public class PhysicalToLogicalConversion
       InstanceOperator op = (InstanceOperator) inputIterator.next();
       if(op.getSite().getID().equals(clusterHeadSite.getID()))
       {
-        sortOutChildren(op, equilvientSite, clusterHeadSite, qep);
+        sortOutChildren(op, equilvientSite, clusterHeadSite, qep, operator);
       }
       else
       {
@@ -209,7 +219,7 @@ public class PhysicalToLogicalConversion
         equilvientSite.addInstanceExchangePart(part);
         Site previousSite = null;
         if(part.getPrevious() == null)
-          previousSite = qep.getIOT().getRT().getSite(part.getPrevious().getSite().getID());
+          previousSite = qep.getIOT().getRT().getSite(part.getSourceSite().getID());
         else
           previousSite = qep.getIOT().getRT().getSite(part.getPrevious().getSite().getID());
         Iterator<InstanceExchangePart> previousSitesExchanges = previousSite.getInstanceExchangeComponents().iterator();
@@ -246,14 +256,17 @@ public class PhysicalToLogicalConversion
       if(op instanceof InstanceExchangePart)
       {
         InstanceExchangePart inop = (InstanceExchangePart) op;
-        if(inop.getNext() == null)
-          reducedOperators = removeFromCollection(op, reducedOperators);
-        else
+        if(!inop.getComponentType().toString().equals(ExchangePartType.RELAY.toString()))
         {
-          opOutput = (InstanceOperator) inop.getNext();
-          if(opOutput.getSite().getID().equals(clusterHeadSite.getID()))
+          if(inop.getNext() == null)
             reducedOperators = removeFromCollection(op, reducedOperators);
-        } 
+          else
+          {
+            opOutput = (InstanceOperator) inop.getNext();
+            if(opOutput.getSite().getID().equals(clusterHeadSite.getID()))
+              reducedOperators = removeFromCollection(op, reducedOperators);
+          } 
+        }
       }
       else
       {

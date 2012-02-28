@@ -94,6 +94,7 @@ public class InstanceOperator extends NodeImplementation implements Node
   public void setDeepestConfluenceSite(Site newSite)
   {
     getDeepestConfluenceSite = newSite;
+    this.id = generateID(sensornetOperator, getDeepestConfluenceSite);
   }
 
   //@Override

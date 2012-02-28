@@ -52,6 +52,7 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
+import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
@@ -367,7 +368,8 @@ public class SNEEController implements SNEE {
 	throws EvaluatorException, SNEECompilerException, SNEEException,
 	MetadataException, SNEEConfigurationException,
 	SchemaMetadataException, TypeMappingException, 
-	OptimizationException, IOException, CodeGenerationException 
+	OptimizationException, IOException, CodeGenerationException,
+	NumberFormatException, WhenSchedulerException 
 	{
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER addQuery() with " + query);
@@ -412,7 +414,7 @@ public class SNEEController implements SNEE {
       MetadataException, EvaluatorException, SNEEException,
       SNEEConfigurationException, SchemaMetadataException,
       TypeMappingException, OptimizationException, IOException,
-      CodeGenerationException
+      CodeGenerationException, NumberFormatException, WhenSchedulerException
   {
 	  if (logger.isDebugEnabled()) {
       logger.debug("ENTER addQuery() with " + query);
@@ -491,12 +493,15 @@ public class SNEEController implements SNEE {
 	 * @throws SchemaMetadataException 
 	 * @throws IOException 
 	 * @throws SNEEConfigurationException 
+	 * @throws WhenSchedulerException 
+	 * @throws NumberFormatException 
 	 */
 	private int dispatchQuery(int queryId, String query, QueryParameters queryParams, 
 	                          boolean starting) 
 	throws SNEEException, MetadataException, EvaluatorException,
 	SNEEConfigurationException, SchemaMetadataException, 
-	TypeMappingException, OptimizationException, IOException, CodeGenerationException
+	TypeMappingException, OptimizationException, IOException, CodeGenerationException,
+	NumberFormatException, WhenSchedulerException
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER dispatchQuery() with " + queryId +
@@ -717,5 +722,13 @@ public class SNEEController implements SNEE {
     SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) metadata;
     sm.removeSourceSite(new Integer(failedID));
     sm.removeNodeFromTopology(failedID);  
+  }
+
+  public void setupOverlay()
+  throws SchemaMetadataException, TypeMappingException, OptimizationException, 
+  IOException, SNEEConfigurationException, CodeGenerationException
+  {
+    _dispatcher.setupOverlay();
+    
   }
 }

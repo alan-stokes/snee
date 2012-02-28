@@ -351,4 +351,12 @@ public class Dispatcher {
     _autonomicManager.resetRunningSites(qep);
   }
 
+  public void setupOverlay() 
+  throws SchemaMetadataException, TypeMappingException, OptimizationException,
+  IOException, SNEEConfigurationException, CodeGenerationException
+  {
+    _autonomicManager.setupOverlay();
+    
+  }
+
 }

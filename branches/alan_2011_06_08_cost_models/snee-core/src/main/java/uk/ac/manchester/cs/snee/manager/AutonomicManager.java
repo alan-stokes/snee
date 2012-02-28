@@ -62,7 +62,8 @@ public interface AutonomicManager
                                  ResultStore resultSet, int queryID) 
   throws SNEEException, SNEEConfigurationException, 
   SchemaMetadataException, TypeMappingException, 
-  OptimizationException, IOException, CodeGenerationException;
+  OptimizationException, IOException, CodeGenerationException,
+  NumberFormatException;
 
   //no tuples received this query
   public abstract void callAnaysliserAnaylsisSNEECard();
@@ -106,5 +107,9 @@ public interface AutonomicManager
   public abstract void queryStarting()
   throws IOException, OptimizationException, SchemaMetadataException,
   TypeMappingException, CodeGenerationException, SNEEConfigurationException;
+
+  public abstract void setupOverlay() 
+  throws SchemaMetadataException, TypeMappingException, OptimizationException, 
+  IOException, SNEEConfigurationException, CodeGenerationException;
 
 }

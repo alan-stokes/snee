@@ -66,316 +66,330 @@ import uk.ac.manchester.cs.snee.sncb.SNCBException;
  */
 public class SensorNetworkSourceMetadata extends SourceMetadataAbstract {
 
-	/**
+  /**
    * serialVersionUID
    */
   private static final long serialVersionUID = 3539742069123463444L;
 
   private static final Logger logger = Logger.getLogger(SensorNetworkSourceMetadata.class.getName());
 
-	/**
-	 * Source sites in the sensor network.
-	 */
-	//private int[] _sourceNodes;
+  /**
+   * Source sites in the sensor network.
+   */
+  //private int[] _sourceNodes;
   private ArrayList<Integer> _sourceNodes;
 
-	/**
-	 * Sink node id of the sensor network
-	 */
-	private int[] _gateways;
+  /**
+   * Sink node id of the sensor network
+   */
+  private int[] _gateways;
 
-	/**
-	 * Sensor Network topology
-	 */
-	private Topology _topology;
-	
-	/**
-	 * Maps extent names to source nodes
-	 */
-	private TreeMap<String, ArrayList<Integer>> _extentToSitesMapping = 
-		new TreeMap<String,ArrayList<Integer>>(); 
-	
-	/**
-	 * The Sensor Network Connectivity bridge to interface with this sensor network.
-	 */
- 	private SNCB sncb;	
- 	
- 	/**
- 	 * the xml document i think
- 	 */
- 	private Element xml;
- 	
- 	/**
- 	 * String representing the topology file 
- 	 */
- 	private String defaultTopFile;
- 	
- 	/**
- 	 * String representing the res file 
- 	 */
- 	private String defaultResFile;
- 	
- 	
-	/**
-	 * Constructor for Sensor Network Metadata.
-	 * @param sourceName
-	 * @param extentNames
-	 * @param xml
-	 * @param defaultTopFile
-	 * @param defaultResFile
-	 * @param gateways
-	 * @throws SourceMetadataException
-	 * @throws TopologyReaderException
-	 * @throws SNCBException 
-	 * @throws SNEEConfigurationException 
-	 */
-	public SensorNetworkSourceMetadata(String sourceName, List<String> 
-	extentNames, Element xml, String defaultTopFile, String defaultResFile, int[] gateways,
-	SNCB sncb) 
-	throws SourceMetadataException, TopologyReaderException, SNCBException, 
-	SNEEConfigurationException {
-		super(sourceName, extentNames, SourceType.SENSOR_NETWORK);
-		this.xml = xml;
-		this.defaultResFile = defaultResFile;
-		this.defaultTopFile = defaultTopFile;
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER SensorNetworkSourceMetadata()");
-		}
-		if (gateways.length==0) {
-			throw new SourceMetadataException("No gateway nodes specified "+
-					"for sensor network "+sourceName);
-		}
-		if (gateways.length>1) {
-			throw new SourceMetadataException("More than one gateway node " +
-					"specified for sensor network "+sourceName + "; this is " +
-					"currently not supported.");
-		}
-		this.sncb = sncb;
-		
-		if (SNEEProperties.getBoolSetting(
-			SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION)) {
-			logger.info("Invoking network formation and metadata collection");
-			Date now = new Date();
-			String timeStampStr = now.toString().replaceAll(" ", "_").replaceAll(":", "_");
-			String root = System.getProperty("user.dir")+"/output/metadata/";
-			String topFile = root + "topology-"+this.getSourceName()+"-"+timeStampStr+".xml";
-			String resFile = root + "resources-"+this.getSourceName()+"-"+timeStampStr+".xml";
-			System.out.println(topFile + "\n" + resFile);
-			this.sncb.init(topFile, resFile);
-			this._topology = TopologyReader.readNetworkTopology(
-					topFile, resFile);
-		} else {
-			logger.info("Using default topology file: "+defaultTopFile);
-			this._topology = TopologyReader.readNetworkTopology(
-					defaultTopFile, defaultResFile);			
-		}
+  /**
+   * Sensor Network topology
+   */
+  private Topology _topology;
+  
+  /**
+   * Maps extent names to source nodes
+   */
+  private TreeMap<String, ArrayList<Integer>> _extentToSitesMapping = 
+    new TreeMap<String,ArrayList<Integer>>(); 
+  
+  /**
+   * The Sensor Network Connectivity bridge to interface with this sensor network.
+   */
+  private SNCB sncb;  
+  
+  /**
+   * the xml document i think
+   */
+  private Element xml;
+  
+  /**
+   * String representing the topology file 
+   */
+  private String defaultTopFile;
+  
+  /**
+   * String representing the res file 
+   */
+  private String defaultResFile;
+  
+  
+  /**
+   * Constructor for Sensor Network Metadata.
+   * @param sourceName
+   * @param extentNames
+   * @param xml
+   * @param defaultTopFile
+   * @param defaultResFile
+   * @param gateways
+   * @throws SourceMetadataException
+   * @throws TopologyReaderException
+   * @throws SNCBException 
+   * @throws SNEEConfigurationException 
+   */
+  public SensorNetworkSourceMetadata(String sourceName, List<String> 
+  extentNames, Element xml, String defaultTopFile, String defaultResFile, int[] gateways,
+  SNCB sncb) 
+  throws SourceMetadataException, TopologyReaderException, SNCBException, 
+  SNEEConfigurationException {
+    super(sourceName, extentNames, SourceType.SENSOR_NETWORK);
+    this.xml = xml;
+    this.defaultResFile = defaultResFile;
+    this.defaultTopFile = defaultTopFile;
+    if (logger.isDebugEnabled()) {
+      logger.debug("ENTER SensorNetworkSourceMetadata()");
+    }
+    if (gateways.length==0) {
+      throw new SourceMetadataException("No gateway nodes specified "+
+          "for sensor network "+sourceName);
+    }
+    if (gateways.length>1) {
+      throw new SourceMetadataException("More than one gateway node " +
+          "specified for sensor network "+sourceName + "; this is " +
+          "currently not supported.");
+    }
+    this.sncb = sncb;
+    
+    if (SNEEProperties.getBoolSetting(
+      SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION)) {
+      logger.info("Invoking network formation and metadata collection");
+      Date now = new Date();
+      String timeStampStr = now.toString().replaceAll(" ", "_").replaceAll(":", "_");
+      String root = System.getProperty("user.dir")+"/output/metadata/";
+      String topFile = root + "topology-"+this.getSourceName()+"-"+timeStampStr+".xml";
+      String resFile = root + "resources-"+this.getSourceName()+"-"+timeStampStr+".xml";
+      System.out.println(topFile + "\n" + resFile);
+      this.sncb.init(topFile, resFile);
+      this._topology = TopologyReader.readNetworkTopology(
+          topFile, resFile);
+    } else {
+      logger.info("Using default topology file: "+defaultTopFile);
+      this._topology = TopologyReader.readNetworkTopology(
+          defaultTopFile, defaultResFile);      
+    }
 
-		this._gateways = gateways;
-		setSourceSites(xml.getElementsByTagName("extent"));
-		validateGateways();	
-			
-		if (logger.isDebugEnabled())
-			logger.debug("RETURN SensorNetworkSourceMetadata()");
-	}
-	
-	private void validateGateways() throws SourceMetadataException {
+    this._gateways = gateways;
+    setSourceSites(xml.getElementsByTagName("extent"));
+    validateGateways(); 
+      
+    if (logger.isDebugEnabled())
+      logger.debug("RETURN SensorNetworkSourceMetadata()");
+  }
+  
+  private void validateGateways() throws SourceMetadataException {
 
-		for (int i=0; i<_gateways.length; i++) {
-			int g = _gateways[i];
-			if (_topology.getNode(g)==null) {
-				throw new SourceMetadataException("Gateway node id "+g+
-						" specified in the physical schema not found in "+
-						"the topology file.");
-			}
-		}
-	}
+    for (int i=0; i<_gateways.length; i++) {
+      int g = _gateways[i];
+      if (_topology.getNode(g)==null) {
+        throw new SourceMetadataException("Gateway node id "+g+
+            " specified in the physical schema not found in "+
+            "the topology file.");
+      }
+    }
+  }
 
-	/**
-	 * Set which sites the sensed extents are available from
-	 * @param nodesxml configuration information
-	 * @throws SourceMetadataException
-	 */
-	private void setSourceSites(NodeList nodesxml) 
-	throws SourceMetadataException {
-		if (logger.isTraceEnabled())
-			logger.trace("ENTER setSourceSites() for " +
-					"number of extents " + nodesxml.getLength());
-		StringBuffer sourceSitesText = new StringBuffer();
-		_extentToSitesMapping.clear();
-		for (int i = 0; i < nodesxml.getLength(); i++) {
-			Node extentElem = nodesxml.item(i);
-			NamedNodeMap attrs = extentElem.getAttributes();
-			String extentName = attrs.getNamedItem("name").getNodeValue();
-			logger.trace("extentName="+extentName);
-			Node sitesElem = extentElem.getChildNodes().item(1);
-			String sitesText = sitesElem.getFirstChild().getNodeValue();
-			logger.trace("sites="+sitesText);
-			if (sourceSitesText.length()==0) {
-				sourceSitesText.append(sitesText);
-			} else {
-				sourceSitesText.append("," + sitesText);				
-			}
-			int[] tempArray = SourceMetadataUtils.convertNodes(sitesText);
-			//convert between int [] and arraylist
-			ArrayList<Integer> sites = new ArrayList<Integer>();
-			for (int j : tempArray) sites.add(j);
-			if (sites.size() == 0) {
-				String message = "No sites information found for "+extentName;
-				logger.warn(message);
-				throw new SourceMetadataException(message);
-			}
-			_extentToSitesMapping.put(extentName.toLowerCase(), sites);
-			logger.trace("Extent "+extentName+": added source sites "+
-					sites.toString());
-		}
-		if (logger.isTraceEnabled())
-			logger.trace("sites text " + sourceSitesText);
-		int [] tempArray = SourceMetadataUtils.convertNodes(sourceSitesText.toString());
-	  //convert between int [] and arraylist
-		_sourceNodes = new ArrayList<Integer>();
-		for (int i : tempArray) _sourceNodes.add(i);
-		if (logger.isTraceEnabled())
-			logger.trace("RETURN setSourceSites()");
-	}
+  /**
+   * Set which sites the sensed extents are available from
+   * @param nodesxml configuration information
+   * @throws SourceMetadataException
+   */
+  private void setSourceSites(NodeList nodesxml) 
+  throws SourceMetadataException {
+    if (logger.isTraceEnabled())
+      logger.trace("ENTER setSourceSites() for " +
+          "number of extents " + nodesxml.getLength());
+    StringBuffer sourceSitesText = new StringBuffer();
+    _extentToSitesMapping.clear();
+    for (int i = 0; i < nodesxml.getLength(); i++) {
+      Node extentElem = nodesxml.item(i);
+      NamedNodeMap attrs = extentElem.getAttributes();
+      String extentName = attrs.getNamedItem("name").getNodeValue();
+      logger.trace("extentName="+extentName);
+      Node sitesElem = extentElem.getChildNodes().item(1);
+      String sitesText = sitesElem.getFirstChild().getNodeValue();
+      logger.trace("sites="+sitesText);
+      if (sourceSitesText.length()==0) {
+        sourceSitesText.append(sitesText);
+      } else {
+        sourceSitesText.append("," + sitesText);        
+      }
+      int[] tempArray = SourceMetadataUtils.convertNodes(sitesText);
+      //convert between int [] and arraylist
+      ArrayList<Integer> sites = new ArrayList<Integer>();
+      for (int j : tempArray) sites.add(j);
+      if (sites.size() == 0) {
+        String message = "No sites information found for "+extentName;
+        logger.warn(message);
+        throw new SourceMetadataException(message);
+      }
+      _extentToSitesMapping.put(extentName.toLowerCase(), sites);
+      logger.trace("Extent "+extentName+": added source sites "+
+          sites.toString());
+    }
+    if (logger.isTraceEnabled())
+      logger.trace("sites text " + sourceSitesText);
+    int [] tempArray = SourceMetadataUtils.convertNodes(sourceSitesText.toString());
+    //convert between int [] and arraylist
+    _sourceNodes = new ArrayList<Integer>();
+    for (int i : tempArray) _sourceNodes.add(i);
+    if (logger.isTraceEnabled())
+      logger.trace("RETURN setSourceSites()");
+  }
 
-	/**
-	 * removes the node from all extents to which it is associated
-	 * @param nodeid
-	 */
-	public void removeSourceSite(int nodeid)
-	{
-	  Iterator<String> keyIterator = _extentToSitesMapping.keySet().iterator();
-	  ArrayList<String> keysToRemove = new ArrayList<String>();
-	  while(keyIterator.hasNext())
-	  {
-	    String key = keyIterator.next();
-	    ArrayList<Integer> nodesToWhichThisExtentExists = _extentToSitesMapping.get(key);
-	    if(nodesToWhichThisExtentExists.contains(nodeid))
-	    {
-	      keysToRemove.add(key);
-	    }
-	  }
-	  keyIterator = keysToRemove.iterator();
-	  while(keyIterator.hasNext())
+  /**
+   * removes the node from all extents to which it is associated
+   * @param nodeid
+   */
+  public void removeSourceSite(int nodeid)
+  {
+    Iterator<String> keyIterator = _extentToSitesMapping.keySet().iterator();
+    ArrayList<String> keysToRemove = new ArrayList<String>();
+    while(keyIterator.hasNext())
     {
-	    String key = keyIterator.next();
-	    ArrayList<Integer> nodesToWhichThisExtentExists = _extentToSitesMapping.get(key);
-	    _extentToSitesMapping.remove(key);
+      String key = keyIterator.next();
+      ArrayList<Integer> nodesToWhichThisExtentExists = _extentToSitesMapping.get(key);
+      if(nodesToWhichThisExtentExists.contains(nodeid))
+      {
+        keysToRemove.add(key);
+      }
+    }
+    keyIterator = keysToRemove.iterator();
+    while(keyIterator.hasNext())
+    {
+      String key = keyIterator.next();
+      ArrayList<Integer> nodesToWhichThisExtentExists = _extentToSitesMapping.get(key);
+      _extentToSitesMapping.remove(key);
       int index = nodesToWhichThisExtentExists.indexOf(nodeid);
       nodesToWhichThisExtentExists.remove(index);
       _extentToSitesMapping.put(key, nodesToWhichThisExtentExists);
     }
-	}
-	
-	public void resetSources() throws SourceMetadataException
-	{
-	  setSourceSites(xml.getElementsByTagName("extent"));
-	}
-	
-	@Override
-	public String toString() {
-		StringBuffer s = new StringBuffer(super.toString());
-		return s.toString();
-	}
+  }
+  
+  /**
+   * adds a site to the extent sources for all extents involved
+   * @param nodeid
+   * @param extentsToAddTo
+   */
+  public void addSourceSite(Integer nodeid, ArrayList<String> extentsToAddTo)
+  {
+    Iterator<String> extentIterator = extentsToAddTo.iterator();
+    while(extentIterator.hasNext())
+    {
+      String extent = extentIterator.next();
+      ArrayList<Integer> sites = _extentToSitesMapping.get(extent);
+      sites.add(nodeid);
+      _extentToSitesMapping.remove(extent);
+      _extentToSitesMapping.put(extent, sites);
+    }
+  }
+  
+  public void resetSources() throws SourceMetadataException
+  {
+    setSourceSites(xml.getElementsByTagName("extent"));
+  }
+  
+  @Override
+  public String toString() {
+    StringBuffer s = new StringBuffer(super.toString());
+    return s.toString();
+  }
 
-	/**
-	 * Returns the nodes in the sensor network which are capable of
-	 * sensing data.
-	 * @return an array of node identifiers
-	 */
-	public Integer[] getSourceSites()
-	{
-	  Integer [] returnvalue = new Integer[_sourceNodes.size()];
-	  _sourceNodes.toArray(returnvalue);
-		return returnvalue;
-	}
+  /**
+   * Returns the nodes in the sensor network which are capable of
+   * sensing data.
+   * @return an array of node identifiers
+   */
+  public Integer[] getSourceSites()
+  {
+    Integer [] returnvalue = new Integer[_sourceNodes.size()];
+    _sourceNodes.toArray(returnvalue);
+    return returnvalue;
+  }
 
-	/**
-	 * Returns the nodes in the sensor network which are capable of
-	 * sensing data for a given extent.
-	 * @return an array of node identifiers
-	 */
-	public ArrayList<Integer> getSourceSites(String extentName) 
-	{
-	  ArrayList<Integer> sites = this._extentToSitesMapping.get(extentName.toLowerCase());
-	  return sites;
-		//int sites[] = this._extentToSitesMapping.get(extentName.toLowerCase());
-		//return sites;
-	}
+  /**
+   * Returns the nodes in the sensor network which are capable of
+   * sensing data for a given extent.
+   * @return an array of node identifiers
+   */
+  public ArrayList<Integer> getSourceSites(String extentName) 
+  {
+    ArrayList<Integer> sites = this._extentToSitesMapping.get(extentName.toLowerCase());
+    return sites;
+    //int sites[] = this._extentToSitesMapping.get(extentName.toLowerCase());
+    //return sites;
+  }
 
-	/**
-	 * Returns the network topology.
-	 * @return
-	 */
-	public Topology getTopology() {
-		return this._topology;
-	}
+  /**
+   * Returns the network topology.
+   * @return
+   */
+  public Topology getTopology() {
+    return this._topology;
+  }
 
-	public int getGateway() {
-		return this._gateways[0];
-	}
-	
-	public SNCB getSNCB() {
-		return this.sncb;
-	}
+  public int getGateway() {
+    return this._gateways[0];
+  }
+  
+  public SNCB getSNCB() {
+    return this.sncb;
+  }
 
-	public int[] getSourceSites(PAF paf) {
-		HashSet<Integer> siteSet = new HashSet<Integer>();
-		
-		Iterator<SensornetOperator> opIter = paf.getOperatorTree().
-			nodeIterator(TraversalOrder.POST_ORDER);
-		while (opIter.hasNext()) {
-			SensornetOperator op = opIter.next();
-			if (op instanceof SensornetAcquireOperator) {
-				SensornetAcquireOperator acqOp = (SensornetAcquireOperator)op;
-				String extentName = acqOp.getExtentName();
-				ArrayList<Integer> extentSites = this._extentToSitesMapping.get(extentName);
-				for (int i = 0; i < extentSites.size(); i++) {
-					siteSet.add(extentSites.get(i));	
-				}                                                                                                                                                                                                                                                                                                                                                                                                                                                       
-			}
-		}
-		return Utils.hashset_to_int_array(siteSet);
-	}
-	
-	/**
-	 * removes node from the metadata topology
-	 */
-	public void removeNodeFromTopology(String nodeID)
-	{
-	  _topology.removeNode(nodeID);
-	}
-	
-	/**
-	 * resets the topology to the original topology
-	 */
-	public void resetTopology() 
-	throws SNEEConfigurationException, SNCBException, TopologyReaderException
-	{
-	  if (SNEEProperties.getBoolSetting(
-	      SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION)) 
-	  {
-	    Date now = new Date();
-	    String root = System.getProperty("user.dir")+"/output/metadata/";
-	    String timeStampStr = now.toString().replaceAll(" ", "_").replaceAll(":", "_");
-	    String topFile = root + "topology-"+this.getSourceName()+"-"+timeStampStr+".xml";
+  public int[] getSourceSites(PAF paf) {
+    HashSet<Integer> siteSet = new HashSet<Integer>();
+    
+    Iterator<SensornetOperator> opIter = paf.getOperatorTree().
+      nodeIterator(TraversalOrder.POST_ORDER);
+    while (opIter.hasNext()) {
+      SensornetOperator op = opIter.next();
+      if (op instanceof SensornetAcquireOperator) {
+        SensornetAcquireOperator acqOp = (SensornetAcquireOperator)op;
+        String extentName = acqOp.getExtentName();
+        ArrayList<Integer> extentSites = this._extentToSitesMapping.get(extentName);
+        for (int i = 0; i < extentSites.size(); i++) {
+          siteSet.add(extentSites.get(i));  
+        }                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+      }
+    }
+    return Utils.hashset_to_int_array(siteSet);
+  }
+  
+  /**
+   * removes node from the metadata topology
+   */
+  public void removeNodeFromTopology(String nodeID)
+  {
+    _topology.removeNode(nodeID);
+  }
+  
+  /**
+   * resets the topology to the original topology
+   */
+  public void resetTopology() 
+  throws SNEEConfigurationException, SNCBException, TopologyReaderException
+  {
+    if (SNEEProperties.getBoolSetting(
+        SNEEPropertyNames.SNCB_PERFORM_METADATA_COLLECTION)) 
+    {
+      Date now = new Date();
+      String root = System.getProperty("user.dir")+"/output/metadata/";
+      String timeStampStr = now.toString().replaceAll(" ", "_").replaceAll(":", "_");
+      String topFile = root + "topology-"+this.getSourceName()+"-"+timeStampStr+".xml";
       String resFile = root + "resources-"+this.getSourceName()+"-"+timeStampStr+".xml";
       this.sncb.init(topFile, resFile);
       this._topology = TopologyReader.readNetworkTopology(topFile, resFile);
-	  }
-	  else
-	  {
-	    logger.info("Using default topology file: "+defaultTopFile);
-	    try{
+    }
+    else
+    {
+      logger.info("Using default topology file: "+defaultTopFile);
+      try{
       this._topology = TopologyReader.readNetworkTopology(defaultTopFile, defaultResFile);      }
-	    catch(Exception e)
-	    {
-	      System.out.println(e.getMessage());
-	    }
-	  }
-	}
-	
-	
-	
-	
+      catch(Exception e)
+      {
+        System.out.println(e.getMessage());
+      }
+    }
+  }
 }

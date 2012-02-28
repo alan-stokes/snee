@@ -202,4 +202,9 @@ public class Tree extends Graph {
     
     
   }
+
+  public void removeEdge(String id)
+  {
+    this.edges.remove(id);
+  }
 }

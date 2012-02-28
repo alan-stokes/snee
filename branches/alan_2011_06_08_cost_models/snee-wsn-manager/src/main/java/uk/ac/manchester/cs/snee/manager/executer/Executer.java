@@ -20,6 +20,7 @@ public class Executer extends AutonomicManagerComponent
   public void adapt(Adaptation finalChoice)
   {
     manager.setCurrentQEP(finalChoice.getNewQep());
+    manager.updateStrategies(finalChoice);
    // System.exit(0);
     // TODO Auto-generated method stub
     

@@ -16,8 +16,10 @@ import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
+import uk.ac.manchester.cs.snee.compiler.queryplan.DAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
@@ -25,9 +27,12 @@ import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayGenerator;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork; 
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalLogicalOverlayUtils;
+import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetworkUtils;
+import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
@@ -82,7 +87,10 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     this.currentQEP = (SensorNetworkQueryPlan) oldQep;
     logicalOverlay = new LogicalOverlayNetwork();
     network = getWsnTopology();
-    LogicalOverlayGenerator logcalOverlayGenerator = 
+    String choice = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);
+    if(choice.equals(ChoiceAssessorPreferenceEnum.Local.toString()) || choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))
+    {
+      LogicalOverlayGenerator logcalOverlayGenerator = 
       new LogicalOverlayGenerator(network, this.currentQEP, this.manager, localFolder, _metadata, _metadataManager);
     logicalOverlay =  logcalOverlayGenerator.generateOverlay((SensorNetworkQueryPlan) oldQep, this);
     int k_resilence_level = SNEEProperties.getIntSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_LEVEL);
@@ -102,6 +110,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     
     manager.setCurrentQEP(logicalOverlay.getQep());
     new FailedNodeLocalLogicalOverlayUtils(logicalOverlay, localFolder).outputAsTextFile();
+    }
   }
 
   private void setupFolders(File outputFolder)
@@ -219,6 +228,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     equivilentNode.clearOutputs();
     Node failedNode = currentRoutingTree.getSiteTree().getNode(failedNodeID);
     currentRoutingTree.getSiteTree().removeNodeWithoutLinkage(failedNode);
+    currentRoutingTree.getSiteTree().addNode(equivilentNode);
     //sort out outputs
     Node output = failedNode.getOutput(0);
     output.removeInput(failedNodeID);
@@ -238,6 +248,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   }
 
   private void rewireNodes(IOT clonedIOT, String failedNodeID, String equivilentNodeID, IOT iot)
+  throws OptimizationException
   {
     ///children first
     Site failedSite = iot.getRT().getSite(failedNodeID);
@@ -258,14 +269,13 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           while(eqivExchangeIterator.hasNext())
           {
             InstanceExchangePart eqPart = eqivExchangeIterator.next();
-            if(nextPart.getID().equals(eqPart.getID()))
+            if(nextPart.getID().equals(eqPart.getPreviousId()))
             {
-              part.clearOutputs();
-              part.addOutput(eqPart);
+              clonedIOT.removeAllEdgesWithSource(part);
+              assert eqPart.getSite().getID().equals(equivilentSite.getID());
+              assert !part.getSite().getID().equals(equivilentSite.getID());
+              clonedIOT.addEdge(part, eqPart);
               part.setNextExchange(eqPart);
-              eqPart.clearInputs();
-              eqPart.addInput(part);
-              part.setDestinitionSite(equivilentSite);
             }
           }
         }
@@ -277,26 +287,29 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     Iterator<InstanceExchangePart> exchangeIterator = outputSite.getInstanceExchangeComponents().iterator();
     while(exchangeIterator.hasNext())
     {
-      InstanceExchangePart part = exchangeIterator.next();
-      if(part.getPrevious() != null && part.getPrevious().getSite().getID().equals(failedNodeID))
+      InstanceExchangePart parentpart = exchangeIterator.next();
+      if(parentpart.getPrevious() != null && parentpart.getPrevious().getSite().getID().equals(failedNodeID))
       {
-        InstanceExchangePart previousPart = part.getPrevious();
+        InstanceExchangePart previousPart = parentpart.getPrevious();
         Iterator<InstanceExchangePart> eqivExchangeIterator = 
            equivilentSite.getInstanceExchangeComponents().iterator();
         while(eqivExchangeIterator.hasNext())
         {
           InstanceExchangePart eqPart = eqivExchangeIterator.next();
-          if(previousPart.getID().equals(eqPart.getID()))
+          if(previousPart.getID().equals(eqPart.getPreviousId()))
           {
-            part.replaceInputByID(previousPart, eqPart);
-            part.setPreviousExchange(eqPart);
-            eqPart.clearOutputs();
-            eqPart.addOutput(part);
-            part.setSourceSite(equivilentSite);
+            clonedIOT.removeAllEdgesWithDest(parentpart);
+            clonedIOT.addEdge(eqPart, parentpart);
+            parentpart.setPreviousExchange(eqPart);
           }
         }
       }
     }
+    //remove dangling pointers to failed node stuff
+    failedSite.clearInstanceExchangeComponents();
+    failedSite.clearExchangeComponents();
+    clonedIOT.removeSiteFromMapping(failedSite);
+    clonedIOT.removeFragment(failedSite);
   }
   
   
@@ -304,6 +317,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   public List<Adaptation> adapt(ArrayList<String> failedNodeIDs) 
   throws OptimizationException
   {
+    network = getWsnTopology();
     return adapt(failedNodeIDs, this.logicalOverlay);
   }
   
@@ -342,17 +356,31 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           }
           //rewire routing tree
           rewireRoutingTree(failedNodeID, equivilentNodeID, currentRoutingTree);
+          new RTUtils(currentRoutingTree).exportAsDOTFile(localFolder.toString() + sep + "new RT");
+          new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay Before nodes ");
           //rewire children
           rewireNodes(clonedIOT, failedNodeID, equivilentNodeID, overlay.getQep().getIOT());
+          new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay after nodes");
+          System.out.println("");
+          System.out.println("");
         }
         new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iot", "iot with eqiv nodes", true);
         
         new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotInputs", "iot with eqiv nodes", true, true);
+        
+        new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay");
         try
         {
           IOT newIOT = clonedIOT;
           newIOT.setID("new iot");
-          newIOT.setDAF(new IOTUtils(newIOT, currentQEP.getCostParameters()).convertToDAF());
+          IOTUtils utils = new IOTUtils(newIOT, currentQEP.getCostParameters());
+          utils.disconnectExchanges();
+          newIOT.setDAF(utils.convertToDAF());
+          utils.reconnectExchanges();
+          new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotAfterReconnect", "iot with eqiv nodes", true);
+          new DAFUtils(newIOT.getDAF()).exportAsDotFile(localFolder.toString() + sep + "daf");
+          new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay after disconnect and reconnect");
+          System.out.println("");
         
           //run new iot though when scheduler and locate changes
           AgendaIOT newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
@@ -408,6 +436,24 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
         if(network.getEquivilentNodes(failedNode).contains(activedSite))
         {
           network.updateCluster(failedNode, activedSite);
+          //look for a extent which had the failed node as its contributer.
+          //if so, remove from the meta-data and replace with the activated node
+          List<String> extentNames = this._metadata.getExtentNames();
+          Iterator<String> extentIterator = extentNames.iterator();
+          ArrayList<String> extentsInvolved = new ArrayList<String>();
+          while(extentIterator.hasNext())
+          {
+            String extent = extentIterator.next();
+            SensorNetworkSourceMetadata source = (SensorNetworkSourceMetadata) _metadata;
+            ArrayList<Integer> sourceSites = source.getSourceSites(extent);
+            if(sourceSites.contains(new Integer(failedNode)))
+            {
+              extentsInvolved.add(extent);
+            }
+          }
+          SensorNetworkSourceMetadata source = (SensorNetworkSourceMetadata) _metadata;
+          source.removeSourceSite(new Integer(failedNode));
+          source.addSourceSite(new Integer(activedSite), extentsInvolved);
         }
       }      
     }
@@ -417,12 +463,18 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
       String reprogrammedNode = reproNodeIterator.next();
       network.removeNode(reprogrammedNode);
     }
- 
+    this.logicalOverlay.setQep(finalChoice.getNewQep());
   }
 
   public LogicalOverlayNetwork getLogicalOverlay()
   {
     return this.logicalOverlay;
+  }
+  
+  
+  public void setQEP(SensorNetworkQueryPlan  currentQEP)
+  {
+    this.logicalOverlay.setQep(currentQEP);
   }
 
 }

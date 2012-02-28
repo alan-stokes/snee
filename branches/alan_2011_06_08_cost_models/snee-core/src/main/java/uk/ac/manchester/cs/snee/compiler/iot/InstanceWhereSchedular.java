@@ -26,6 +26,7 @@ import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyUtils;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
@@ -78,6 +79,8 @@ public class InstanceWhereSchedular
     new RTUtils(routingTree).exportAsDotFile(fileDirectory + fileSeparator + "RT.dot");
     //output paf
     new PAFUtils(paf).exportAsDotFile(fileDirectory + fileSeparator + "PAF.dot");
+    //remove excahgnes from the paf. which coudl mess the partial daf.
+    new IOTUtils().removeExchangesFromPAF(paf);
     //generate floating operators / fixed locations
     generatePartialDaf();
     //produce image output so that can be validated
@@ -104,6 +107,7 @@ public class InstanceWhereSchedular
     new DAFUtils(cDAF).exportAsDotFile(fileDirectory + fileSeparator + "CDAF.dot");
     updateOperatorLinksToIncludeExchangeParts();
     new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "IOT.dot", "", true);
+    new TopologyUtils(this.routingTree.getNetwork()).exportAsDOTFile(fileDirectory + fileSeparator + "Topology.dot", false);
   }
   
   private void deleteFileContents(File firstOutputFolder)
@@ -996,6 +1000,8 @@ private void addOtherOpTypeInstances(SensornetOperator op,
     for (int sourceSiteIterator=0; sourceSiteIterator < sourceSitesIDs.size(); sourceSiteIterator++) 
     {//get site object
       Site site = routingTree.getSite(sourceSitesIDs.get(sourceSiteIterator));
+      if(site == null)
+        System.out.println("");
       InstanceOperator opInst = new InstanceOperator(op, site);//make new instance of the operator
       iot.addOpInst(op, opInst);//add to instance dafs hashmap
       iot.assign(opInst, site);//put this operator on this site (placed)
