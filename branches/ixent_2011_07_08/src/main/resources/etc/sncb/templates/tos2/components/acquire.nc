@@ -11,6 +11,8 @@ __READING_VAR_DECLS__
 	int outTail=0;
 	nx_int32_t currentEvalEpoch;
 
+__AVRORAPRINT_DEBUG1__
+
 	void task constructTupleTask();
 	void task signalDoneTask();
 
@@ -50,6 +52,8 @@ __GET_DATA_METHODS__
 				outTail=0;
 __CONSTRUCT_TUPLE__
 				dbg("DBG_USR1", __CONSTRUCT_TUPLE_STR__);
+__AVRORAPRINT_DEBUG2__
+
 			}
 			else
 			{

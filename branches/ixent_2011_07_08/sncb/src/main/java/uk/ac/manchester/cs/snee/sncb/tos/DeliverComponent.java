@@ -56,15 +56,18 @@ public class DeliverComponent extends NesCComponent {
     
     CostParameters costParams;
 
+    boolean avroraPrintDebug;
+    
     public DeliverComponent(final SensornetDeliverOperator op, final SensorNetworkQueryPlan plan, 
-    final NesCConfiguration fragConfig, boolean tossimFlag, boolean debugLeds, CostParameters costParams,
-    CodeGenTarget target) {
+    final NesCConfiguration fragConfig, boolean tossimFlag, boolean debugLeds, boolean avroraPrintDebug, 
+    CostParameters costParams, CodeGenTarget target) {
 
 		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
 		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
 		this.costParams = costParams;
+		this.avroraPrintDebug = avroraPrintDebug;
     }
 
     @Override
@@ -112,7 +115,10 @@ public class DeliverComponent extends NesCComponent {
 			final StringBuffer displayTupleBuff3 = new StringBuffer();  //serial port
 			final StringBuffer displayTupleBuff4 = new StringBuffer();  //serial port
 			final StringBuffer displayTupleBuff5 = new StringBuffer();  //serial port str - tinyos 1 only
-		
+	    	String IDAttrName = "-1";
+	    	String evalTimeAttrName = "-1";
+			
+			
 			final List<Attribute> attributes = this.op.getAttributes();
 		    String comma = "";
 			for (Attribute attr : attributes) {
@@ -136,12 +142,33 @@ public class DeliverComponent extends NesCComponent {
 			    displayTupleBuff5.append("\t\t\t\tstrcat(deliverStr,tmpStr);\n");
 		
 		    	comma = ",";
+		    	
+		  		if (attr instanceof EvalTimeAttribute) {
+		  			evalTimeAttrName = "inQueue[inHead]."+attrName;
+		  		}
+		  		if (attr instanceof IDAttribute) {
+		  			IDAttrName = "inQueue[inHead]."+attrName;
+		  		}
 			}
 		
 			replacements.put("__CONSTRUCT_DELIVER_TUPLE__",
 					"\"DELIVER: ("+displayTupleBuff3.toString()+")\\n\","+displayTupleBuff4.toString());
 			replacements.put("__CONSTRUCT_DELIVER_TUPLE_STR__",
 				displayTupleBuff5.toString());
+			
+			if (avroraPrintDebug) {
+				replacements.put("__AVRORAPRINT_DEBUG1__",
+				"\tchar dbg_msg[30];\n");
+				replacements.put("__AVRORAPRINT_DEBUG2__",
+						"\t\t\tsprintf(dbg_msg, \"DELIVER(id=%d,ep=%d)\","+IDAttrName+","+evalTimeAttrName+");\n" + 
+						"\t\t\tprintStr(dbg_msg);\n");				
+			}
+			else
+			{
+				replacements.put("__AVRORAPRINT_DEBUG1__", "");
+				replacements.put("__AVRORAPRINT_DEBUG2__", "");				
+			}
+
 		
 			final String outputFileName = generateNesCOutputFileName(outputDir, this.getID());
 			writeNesCFile(TinyOSGenerator.NESC_COMPONENTS_DIR + "/deliver.nc",

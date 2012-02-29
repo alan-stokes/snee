@@ -20,6 +20,8 @@ __HEADER__
 	int tuplePacketPos;
 	uint8_t pending=FALSE;
 
+__AVRORAPRINT_DEBUG1__
+
 	void task sendPacketTask();
 	void task signalTaskDoneTask();
 	void task loopControlTask();
@@ -80,6 +82,7 @@ __HEADER__
 		if (inHead >-1)
 		{
 		    	dbg("DBG_USR1", __CONSTRUCT_DELIVER_TUPLE__);
+__AVRORAPRINT_DEBUG2__
 
 			//generate tuples
 			dbg("__DBG_CHANNEL__", "loopControlTask: Generating tuple at pos %d in inQueue\n",inHead);

@@ -47,6 +47,8 @@ public abstract class TinyOS_SNCB implements SNCB {
 
 	protected boolean controlRadio = false;
 
+	protected boolean avroraPrintDebug = false;
+	
 	// Is the network running?
 	protected static boolean isStarted = false;
 	protected SerialPortMessageReceiver mr;
@@ -73,6 +75,15 @@ public abstract class TinyOS_SNCB implements SNCB {
 			//If an error occurs (e.g., TinyOS is not installed so motelist command fails) serialPort is null.
 			this.serialPort = null;
 		}
+		if (SNEEProperties.isSet(SNEEPropertyNames.SNCB_AVRORA_PRINT_DEBUG)) {
+			try {
+				this.avroraPrintDebug = SNEEProperties
+					.getBoolSetting(SNEEPropertyNames.SNCB_AVRORA_PRINT_DEBUG);
+			} catch (SNEEConfigurationException e) {
+				this.avroraPrintDebug = false;
+			}
+		}
+		
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN TinyOS_SNCB()");
 	}
@@ -130,7 +141,7 @@ public abstract class TinyOS_SNCB implements SNCB {
 
 		TinyOSGenerator codeGenerator = new TinyOSGenerator(target, combinedImage, queryOutputDir,
 				metadata, controlRadio, enablePrintf, enableLeds,
-				debugLeds, useNodeController);
+				debugLeds, avroraPrintDebug, useNodeController);
 		codeGenerator.doNesCGeneration(qep);
 	}
 

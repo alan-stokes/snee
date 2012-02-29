@@ -63,18 +63,21 @@ public class NesCConfiguration extends Graph {
     
     boolean tossimFlag;
     
+    boolean avroraPrintDebug;
+    
     public NesCConfiguration(final String name, final SensorNetworkQueryPlan qp, 
-    		boolean tossimFlag) {
-    	this(name, qp, null, tossimFlag);
+    		boolean tossimFlag, boolean avroraPrintDebug) {
+    	this(name, qp, null, tossimFlag, avroraPrintDebug);
     }
 
     public NesCConfiguration(final String name, final SensorNetworkQueryPlan qp,
-	    final Site site, boolean tossimFlag) {
+	    final Site site, boolean tossimFlag, boolean avroraPrintDebug) {
 
     	super(name, true, true);
 		this.addComponent(new OutsideWorldComponent(this, tossimFlag)); //use for wiring components to the outside world
 		this.site = site;
 		this.tossimFlag = tossimFlag;
+		this.avroraPrintDebug = avroraPrintDebug;
 
     }
 
@@ -425,7 +428,12 @@ public class NesCConfiguration extends Graph {
 
     	out.println("#include \"QueryPlan.h\"");
     	out.println("#include <hardware.h>\n");	    	
-	    
+	    if (this.avroraPrintDebug) {
+	    	out.println("#include \"AvroraPrint.h\"");
+	    	out.println("#include \"stdio.h\"");
+	    }
+    	
+    	
 	    out.println("\n\nconfiguration " + configComponentName + " {");
 
 	    if (externalProvidesBuffer.length() > 0) {

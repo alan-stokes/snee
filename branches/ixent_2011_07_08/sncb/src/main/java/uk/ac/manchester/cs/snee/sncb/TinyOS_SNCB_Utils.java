@@ -55,7 +55,7 @@ public class TinyOS_SNCB_Utils {
 	
 	protected static String printAvroraCommands(String queryOutputDir, 
 			SensorNetworkQueryPlan qep, String targetDirName,
-			CodeGenTarget target) {
+			CodeGenTarget target, boolean avroraPrintDebug) {
 		String nescOutputDir = System.getProperty("user.dir") + "/"
 		+ queryOutputDir + targetDirName;
 		
@@ -90,7 +90,7 @@ public class TinyOS_SNCB_Utils {
 					}
 				}
 				try {
-					path = Utils.validateFileLocation(nescOutputDir + "/mote"+siteID+".od");
+					path = Utils.validateFileLocation(nescOutputDir + "/mote"+siteID+".elf");
 				} catch (UtilsException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -100,7 +100,7 @@ public class TinyOS_SNCB_Utils {
 			else 
 			{
 				try {
-					path = Utils.validateFileLocation(nescOutputDir + "/Blink.od");
+					path = Utils.validateFileLocation(nescOutputDir + "/Blink.elf");
 				} catch (UtilsException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -117,18 +117,19 @@ public class TinyOS_SNCB_Utils {
 			}
 			
 		}
+		String cprint = "";
+		if (avroraPrintDebug) {
+			cprint = ",c-print";
+		}
+		
 		String avroraCommand = "";
 		avroraCommand = "-mcu=mts300 -platform="+platform+" " +
         "-simulation=sensor-network -colors=false -seconds=100 " +
-        "-monitors=packet,serial,real-time -ports="+gatewayID+":0:2390 -random-seed=1 " +
+        "-monitors=packet,serial,real-time"+cprint+" -ports="+gatewayID+":0:2390 -random-seed=1 " +
         sensorData + " " + "-report-seconds "+nodeCount+" "+elfString;
-		System.out.println(avroraCommand);
 		
 		System.out.println("*** To start Avrora ***");
-		System.out.println("java avrora.Main -mcu=mts300 -platform="+platform+" " +
-				"-simulation=sensor-network -colors=false -seconds=100" +
-				" -monitors=packet,serial,real-time -ports="+gatewayID+":0:2390 -random-seed=1 " +
-				sensorData + " " + "-report-seconds "+nodeCount+" "+elfString+" \n");
+		System.out.println("java avrora.Main "+avroraCommand+" \n");
 		
 		System.out.println("*** In a separate terminal window ***");
 		System.out.println("(2a) To view raw packets:");

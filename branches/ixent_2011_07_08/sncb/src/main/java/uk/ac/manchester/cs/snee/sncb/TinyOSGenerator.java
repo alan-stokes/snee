@@ -242,13 +242,15 @@ public class TinyOSGenerator {
 
 	private boolean debugLeds;
 	
+	private boolean avroraPrintDebug = false;
+	
 	private boolean useNodeController;
 	    
 	private boolean usesCustomSeaLevelSensor = false;
 	
     public TinyOSGenerator(CodeGenTarget codeGenTarget,
     boolean combinedImage, String nescOutputDir, MetadataManager metadata, boolean controlRadio,
-    boolean enablePrintf, boolean enableLeds, boolean debugLeds, 
+    boolean enablePrintf, boolean enableLeds, boolean debugLeds, boolean avroraPrintDebug,
     boolean useNodeController)
     throws IOException, SchemaMetadataException, TypeMappingException {
 		this.target = codeGenTarget;
@@ -260,22 +262,26 @@ public class TinyOSGenerator {
     		this.useNodeController = useNodeController;
         	this.combinedImage = combinedImage;
     		this.controlRadio = false; // leads to too much packet loss, currently
+    		this.avroraPrintDebug = false; // incompatible
     	}
     	if (target==CodeGenTarget.AVRORA_MICA2_T2) {
         	this.tossimFlag = false;
     		this.useNodeController = false; // incompatible
         	this.combinedImage = combinedImage;
+        	this.avroraPrintDebug = false; // incompatible ????
     	}
     	if (target==CodeGenTarget.AVRORA_MICAZ_T2) {
         	this.tossimFlag = false;
     		this.useNodeController = false; // incompatible
         	this.combinedImage = combinedImage;
+        	this.avroraPrintDebug = avroraPrintDebug;
     	}    	
     	if (target==CodeGenTarget.TOSSIM_T2) {
         	this.tossimFlag = true;
     		this.useNodeController = false; // incompatible
         	this.combinedImage = true; // doesn't work otherwise
     		this.controlRadio = false; // incompatible
+    		this.avroraPrintDebug = false; // incompatible
     	}
     	
     	this.nescOutputDir = nescOutputDir;
@@ -651,7 +657,7 @@ public class TinyOSGenerator {
 			/* Instantiate the top-level site configuration */
 			final NesCConfiguration config = new NesCConfiguration(
 				COMPONENT_QUERY_PLANC + currentSiteID, //$
-				plan, currentSite, tossimFlag);
+				plan, currentSite, tossimFlag, avroraPrintDebug);
 
 			/* Add the components which are always needed */
 			addMainSiteComponents(config);
@@ -995,7 +1001,7 @@ public class TinyOSGenerator {
     throws IOException {
 
 		final NesCConfiguration tossimConfiguration = new NesCConfiguration(
-			COMPONENT_QUERY_PLANC, plan, tossimFlag);
+			COMPONENT_QUERY_PLANC, plan, tossimFlag, avroraPrintDebug);
 
 		final Iterator<Site> siteIter = siteConfigs.keySet().iterator();
 		while (siteIter.hasNext()) {
@@ -1028,7 +1034,7 @@ public class TinyOSGenerator {
 
 		if (op instanceof SensornetAcquireOperator) {
 		    return new AcquireComponent((SensornetAcquireOperator) op, plan,
-		    		config, tossimFlag, debugLeds, target);
+		    		config, tossimFlag, debugLeds, avroraPrintDebug, target);
 		} else if (op instanceof SensornetSingleStepAggregationOperator) {    
 		    return new AggrSingleStepComponent((SensornetSingleStepAggregationOperator) op, plan,
 		    		config, tossimFlag, debugLeds, target);
@@ -1043,7 +1049,7 @@ public class TinyOSGenerator {
 		    		config, tossimFlag, debugLeds, target);
 		} else if (op instanceof SensornetDeliverOperator) {
 		    return new DeliverComponent((SensornetDeliverOperator) op, plan,
-		    		config, tossimFlag, debugLeds, costParams, target);
+		    		config, tossimFlag, debugLeds, avroraPrintDebug, costParams, target);
 		} else if (op instanceof SensornetExchangeOperator) {
 		    return new ExchangeProducerComponent((SensornetExchangeOperator) op, plan,
 			    config, tossimFlag, debugLeds, target);
@@ -1096,7 +1102,7 @@ public class TinyOSGenerator {
 				final FragmentComponent fragComp = (FragmentComponent)
 					nodeConfigs.get(site).getComponent(fragName);
 				final NesCConfiguration fragConfig = new NesCConfiguration(
-					fragName, plan, site, tossimFlag);
+					fragName, plan, site, tossimFlag, avroraPrintDebug);
 				fragComp.setInnerConfig(fragConfig);
 
 				generateIntraFragmentConfig(site, frag, fragConfig);
@@ -1992,6 +1998,11 @@ public class TinyOSGenerator {
 		    
 		    if (this.usesCustomSeaLevelSensor) {
 		    	copySeaLevelSensorFiles(nescOutputDir + nodeDir);
+		    }
+		    
+		    if (this.avroraPrintDebug) {
+		    	Template.instantiate(NESC_MISC_FILES_DIR + "/AvroraPrint.h",
+					    nescOutputDir + nodeDir +"/AvroraPrint.h");
 		    }
 		}
 	}

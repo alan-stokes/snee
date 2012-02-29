@@ -68,14 +68,18 @@ public class AcquireComponent extends NesCComponent {
     /** Plan this Operator is in. */
     private SensorNetworkQueryPlan plan;
 
+    private boolean avroraPrintDebug = false;
+    
     public AcquireComponent(final SensornetAcquireOperator op, final SensorNetworkQueryPlan plan,
 	    final NesCConfiguration fragConfig,
 	    boolean tossimFlag, boolean debugLeds,
-	    CodeGenTarget target) {
+	    boolean avroraPrintDebug, CodeGenTarget target) {
 		super(fragConfig, tossimFlag, debugLeds, target);
 		this.op = op;
 		this.plan = plan;
 		this.id = CodeGenUtils.generateOperatorInstanceName(op, this.site);
+		this.avroraPrintDebug = avroraPrintDebug;
+		
     }
 
     @Override
@@ -187,6 +191,8 @@ public class AcquireComponent extends NesCComponent {
     	String comma = "";
     	StringBuffer tupleStrBuff1 = new StringBuffer();
     	StringBuffer tupleStrBuff2 = new StringBuffer();
+    	String IDAttrName = "-1";
+    	String evalTimeAttrName = "-1";
     	
     	for (int i = 0; i < expressions.size(); i++) {
     		Expression expression = expressions.get(i);
@@ -207,13 +213,35 @@ public class AcquireComponent extends NesCComponent {
   			} else {
   	  			tupleStrBuff1.append(comma+attrName+"=%g");
   			}
+	  		
   			tupleStrBuff2.append(comma+"outQueue[outTail]."+attrName);
   			comma = ",";
+	  		
+	  		if (attributes.get(i) instanceof EvalTimeAttribute) {
+	  			evalTimeAttrName = "outQueue[outTail]."+attrName;
+	  		}
+	  		if (attributes.get(i) instanceof IDAttribute) {
+	  			IDAttrName = "outQueue[outTail]."+attrName;
+	  		}
+
     	}
     	
     	replacements.put("__CONSTRUCT_TUPLE__", tupleConstructionBuff
     			.toString());
     	replacements.put("__CONSTRUCT_TUPLE_STR__", "\"ACQUIRE: ("+tupleStrBuff1.toString()+")\\n\","+tupleStrBuff2.toString());    	
+    	
+		if (avroraPrintDebug) {
+			replacements.put("__AVRORAPRINT_DEBUG1__",
+					"\tchar dbg_msg[30];\n");
+			replacements.put("__AVRORAPRINT_DEBUG2__",
+					"\t\t\t\tsprintf(dbg_msg, \"ACQUIRE(id=%d,ep=%d)\","+IDAttrName+","+evalTimeAttrName+");\n" + 
+					"\t\t\t\tprintStr(dbg_msg);\n");				
+		}
+		else
+		{
+			replacements.put("__AVRORAPRINT_DEBUG1__", "");
+			replacements.put("__AVRORAPRINT_DEBUG2__", "");
+		}
     }
     
     /**

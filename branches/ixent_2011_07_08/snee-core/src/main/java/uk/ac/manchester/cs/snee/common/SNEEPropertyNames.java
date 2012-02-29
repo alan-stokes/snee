@@ -200,6 +200,13 @@ public final class SNEEPropertyNames {
 	 */
 	public static final String SNCB_CONTROL_RADIO = 
 		"sncb.control_radio";
+
+	/**
+	 * Determines whether Avrora DEBUG code is added,
+	 * for use by c-print monitor
+	 */
+	public static final String SNCB_AVRORA_PRINT_DEBUG = 
+		"sncb.avrora_print_debug";
 }
 
 
