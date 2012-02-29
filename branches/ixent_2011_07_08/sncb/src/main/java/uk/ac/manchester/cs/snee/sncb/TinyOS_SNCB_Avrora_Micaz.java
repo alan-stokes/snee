@@ -48,7 +48,7 @@ public class TinyOS_SNCB_Avrora_Micaz extends TinyOS_SNCB implements SNCB
 		 	String avroraCommand = TinyOS_SNCB_Utils.printAvroraCommands(queryOutputDir, qep, 
 		              this.getTargetDirName(), this.target, this.avroraPrintDebug);
 		 	System.out.println(avroraCommand);
-		 	//System.exit(0);
+		 	System.exit(0);
 		 	
 	        String nescOutputDir = System.getProperty("user.dir") + "/"
 	        + queryOutputDir + getTargetDirName();
