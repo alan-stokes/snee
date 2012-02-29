@@ -118,6 +118,11 @@ public class InstanceExchangePart extends InstanceOperator{
     private String id;
     
     /**
+     * used to represent a cloning from a preivous position(overlay)
+     */
+    private String previousId = null;
+
+    /**
      * Constructor for exchange part.
      * @param sourceFrag
      * @param sourceSite
@@ -161,6 +166,22 @@ public class InstanceExchangePart extends InstanceOperator{
     public String getID() {
 		return id;
 	}
+    
+  public void regenerateID()
+  {
+    if(previousId == null)
+    {
+      previousId = this.id;
+      this.id = "F" + sourceFrag.getID() + "_S" + this.getSite().getID() + "_" + partType.toString().toLowerCase();
+    }
+    else
+    {
+      String tempid = this.id;
+      this.id = "F" + sourceFrag.getID() + "_S" + this.getSite().getID() + "_" + partType.toString().toLowerCase();
+      if(!tempid.equals(this.id))
+        previousId = tempid;
+    }
+  }
 
 	public static int computeTuplesPerMessage(final int tupleSize, 
     CostParameters costParams) throws OptimizationException {
@@ -506,6 +527,15 @@ public class InstanceExchangePart extends InstanceOperator{
 	{
 	  this.next = next;
 	}
+	
+	/**
+	 * used in the overlay reconnection
+	 * @return
+	 */
+  public String getPreviousId()
+  {
+    return previousId;
+  }
 	
 	public void setPreviousExchange(InstanceExchangePart pre)
 	{

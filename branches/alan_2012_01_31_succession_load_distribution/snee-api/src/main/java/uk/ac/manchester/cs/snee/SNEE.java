@@ -6,7 +6,7 @@ import java.util.Collection;
 
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
+import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -65,9 +65,9 @@ public interface SNEE {
 	 * @throws OptimizationException 
 	 * @throws TypeMappingException 
 	 * @throws SchemaMetadataException 
-	 * @throws CodeGenerationException 
-	 * @throws WhenSchedulerException 
+	 * @throws CodeGenerationException  
 	 * @throws NumberFormatException 
+	 * @throws uk.ac.manchester.cs.snee.compiler.WhenSchedulerException 
 	 */
 	public int addQuery(String query, String parametersFile) 
 	throws SNEECompilerException, MetadataException, 

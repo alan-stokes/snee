@@ -46,7 +46,7 @@ public class IOTUtils
   
   public IOTUtils()
   {
-    this.iot = null;
+    iot = null;
   }
   
   public DAF convertToDAF() throws OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException
@@ -60,6 +60,61 @@ public class IOTUtils
     return iot.getDAF();
   }
   
+  public void disconnectExchanges()
+  {
+    Iterator<InstanceFragment> fragIterator = iot.getInstanceFragments().iterator();
+    while(fragIterator.hasNext())
+    {
+      InstanceFragment frag = fragIterator.next();
+      if(iot.getRT().getSite(frag.getSite().getID()) != null)
+      {
+        InstanceOperator rootOp = frag.getRootOperator();
+        assert !(rootOp.getSensornetOperator() instanceof SensornetExchangeOperator);
+        if(!(rootOp.getSensornetOperator() instanceof SensornetDeliverOperator))
+        {
+          if((rootOp.getOutput(0) instanceof InstanceExchangePart))
+          {
+            InstanceExchangePart exchange = (InstanceExchangePart) rootOp.getOutput(0);
+            InstanceExchangePart lastExchange = exchange;
+            while(lastExchange.getNext() != null)
+            {
+              lastExchange = lastExchange.getNext();
+            }
+            InstanceOperator lowestOp = exchange.getDestFrag().getLowestOperator();
+            rootOp.setOutput(lowestOp, 0);
+            lowestOp.replaceInputByID(lastExchange, rootOp);
+          }
+        }
+      }
+    }
+  }
+  
+  public void reconnectExchanges() 
+  {
+    Iterator<InstanceFragment> fragmentIterator = iot.instanceFragmentIterator(TraversalOrder.POST_ORDER);
+    //go though fragments
+    while(fragmentIterator.hasNext())
+    {
+      InstanceFragment currentFrag = fragmentIterator.next();//if frag on site
+      //get root operator
+      InstanceOperator rootOp = currentFrag.getRootOperator();
+      if(!(rootOp.getSensornetOperator() instanceof SensornetDeliverOperator))
+      {
+        InstanceExchangePart exchange = currentFrag.getParentExchangeOperator();
+        //always have 1 output
+        rootOp.replaceOutput(rootOp.getOutput(0), exchange);
+        while(exchange.getNext() != null)
+        {
+          InstanceExchangePart nextExchange = exchange.getNext(); 
+          exchange = nextExchange;  
+        }
+        //get root operator of higher frag frag
+        InstanceOperator lowestOperator = exchange.getDestFrag().getLowestOperator();
+        lowestOperator.replaceInputByID(rootOp, exchange);   
+      }
+    }
+  }
+  
   private void createDAF() 
   throws OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException
   {
@@ -67,6 +122,7 @@ public class IOTUtils
     daf = linkFragments(faf, iot.getRT(), iot, iot.getRT().getQueryName());
     removeRedundantAggrIterOp(daf, iot);
     removeRedundantExchanges(daf);
+    updateFragments(daf);
     updateSites(daf);
   }
   
@@ -96,6 +152,28 @@ public class IOTUtils
       }
     }
   }
+  
+  private void updateFragments(DAF daf2)
+  {
+    Iterator<SensornetOperator> opIter = daf.operatorIterator(TraversalOrder.PRE_ORDER);
+    while (opIter.hasNext()) 
+    {
+      SensornetOperator op = opIter.next();
+      if (op instanceof SensornetExchangeOperator) 
+      {
+        SensornetOperator nextOp = opIter.next();
+        Iterator<Fragment> fragIterator = daf.getFragments().iterator();
+        while(fragIterator.hasNext())
+        {
+          Fragment frag = fragIterator.next();
+          if(frag.getOperators().contains(nextOp))
+          {
+            frag.setParentExchange((SensornetExchangeOperator) op);
+          } 
+        }
+      }
+    }
+  }
 
   /**
    * this method instills the fragments onto the sites, this is to allow the iot to be compatible with the code generator.
@@ -114,7 +192,6 @@ public class IOTUtils
         Site currentSite = fragSiteIterator.next();
         currentSite = daf.getRT().getSite(currentSite.getID());
         currentSite.addFragment(frag);
-        System.out.print("");
       }
     }
     
@@ -238,7 +315,7 @@ public class IOTUtils
         Fragment destFrag = exchOp.getDestFragment();
         ArrayList<Site> destSites = destFrag.getSites();
         
-        if (sourceSites.equals(destSites)) {
+        if (sourceSites.equals(destSites) || sourceSites.size() == 0) {
           exchangesToBeRemoved.add(exchOp);
         }
       }
@@ -255,31 +332,40 @@ public class IOTUtils
     //Merge the source fragment operators into the destination fragment     
     Fragment sourceFrag = exchOp.getSourceFragment();
     Fragment destFrag = exchOp.getDestFragment();
-    destFrag.mergeChildFragment(sourceFrag);
     
-    //Remove the exchange operator and fragment
-    daf.removeNode(exchOp);
-    daf.removeFragment(sourceFrag);
-    
-    Iterator<Site> siteIter = iot.getRT().siteIterator(TraversalOrder.POST_ORDER);
-    while (siteIter.hasNext()) {
-      Site site = siteIter.next();
-    
-      //Remove the exchange components from any routing tree sites
-      site.removeExchangeComponents(exchOp);
+    if(sourceFrag != null)
+    {
+        
+      destFrag.mergeChildFragment(sourceFrag);
       
-      //Remove the source fragment from any routing tree sites
-      site.removeFragment(sourceFrag);
+      //Remove the exchange operator and fragment
+      daf.removeNode(exchOp);
+      daf.removeFragment(sourceFrag);
       
-      //Change the destination fragment on any exchange component which has the 
-      //old destination fragment
-      Iterator<ExchangePart> exchCompIter = site.getExchangeComponents().iterator();
-      while (exchCompIter.hasNext()) {
-        ExchangePart exchComp = exchCompIter.next();
-        if (exchComp.getDestFrag()==sourceFrag) {
-          exchComp.setDestFrag(destFrag);
+      Iterator<Site> siteIter = iot.getRT().siteIterator(TraversalOrder.POST_ORDER);
+      while (siteIter.hasNext()) {
+        Site site = siteIter.next();
+      
+        //Remove the exchange components from any routing tree sites
+        site.removeExchangeComponents(exchOp);
+        
+        //Remove the source fragment from any routing tree sites
+        site.removeFragment(sourceFrag);
+        
+        //Change the destination fragment on any exchange component which has the 
+        //old destination fragment
+        Iterator<ExchangePart> exchCompIter = site.getExchangeComponents().iterator();
+        while (exchCompIter.hasNext()) {
+          ExchangePart exchComp = exchCompIter.next();
+          if (exchComp.getDestFrag()==sourceFrag) {
+            exchComp.setDestFrag(destFrag);
+          }
         }
       }
+    }
+    else
+    {
+      daf.removeNode(exchOp);
     }
   }
   
@@ -306,6 +392,7 @@ public class IOTUtils
    * @throws SchemaMetadataException
    */
   public void exportAsDOTFile(final String fname, final String label, boolean exchangesOnSites) 
+  throws SchemaMetadataException
   {
     try
     {   

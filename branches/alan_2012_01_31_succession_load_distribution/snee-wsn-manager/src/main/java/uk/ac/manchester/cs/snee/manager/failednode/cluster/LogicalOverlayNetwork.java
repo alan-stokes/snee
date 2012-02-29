@@ -256,4 +256,24 @@ public class LogicalOverlayNetwork implements Serializable
       return false;
     return true;
   }
+  
+  public Iterator<String> siteIdIterator()
+  {
+    ArrayList<String> array = new ArrayList<String>();
+    Iterator<String> keyIterator = this.clusters.keySet().iterator();
+    while(keyIterator.hasNext())
+    {
+      String key = keyIterator.next();
+      array.add(key);
+      Iterator<String> candidates = this.clusters.get(key).iterator();
+      while(candidates.hasNext())
+      {
+        String cand = candidates.next();
+        array.add(cand);
+      }
+    }
+    //add root
+    array.add(this.qep.getRT().getRoot().getID());
+    return array.iterator();
+  }
 }

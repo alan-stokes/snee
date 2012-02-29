@@ -54,13 +54,13 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
@@ -351,6 +351,14 @@ public class Dispatcher {
   {
     _autonomicManager.setCurrentQEP(qep); 
     _autonomicManager.resetRunningSites(qep);
+  }
+
+  public void setupOverlay() 
+  throws SchemaMetadataException, TypeMappingException, OptimizationException,
+  IOException, SNEEConfigurationException, CodeGenerationException
+  {
+    _autonomicManager.setupOverlay();
+    
   }
 
 }

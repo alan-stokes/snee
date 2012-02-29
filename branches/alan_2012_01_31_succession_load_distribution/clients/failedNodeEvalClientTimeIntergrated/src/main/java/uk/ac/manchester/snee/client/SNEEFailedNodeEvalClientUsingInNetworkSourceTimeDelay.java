@@ -27,12 +27,12 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
-import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessorPreferenceEnum;
@@ -60,7 +60,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   private String sneeProperties;
 	private static int queryid = 1;
 	protected static int testNo = 1;
-	private static String dictonary = "testsSize100";
+	private static String dictonary = "testsSize30";
 	
 	//used to calculate agenda cycles
 	protected static int maxNumberofFailures = 8;
@@ -114,11 +114,11 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	    queryIterator = queries.iterator();
 	    failedOutput = utils.createFailedTestListWriter();
 	    
-	    while(queryIterator.hasNext())
-	    {
+	  //  while(queryIterator.hasNext())
+	   // {
 	      recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
 	      calculated = false;
-      }
+     // }
 	    failedOutput.write("\\end{document}");
 	    failedOutput.flush();
 	    failedOutput.close();  
@@ -167,55 +167,53 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     System.out.println("compiled control");
     client.runCompilelation();
     utils.plotOrginial(queryid, testNo);
-
+    int position = 0;
+    
+    runSeveralTests(position, currentQuery, allowDeathOfAcquires);
+  }
+  
+  private static void runSeveralTests(int position, String currentQuery,
+                                      boolean allowDeathOfAcquires) throws IOException
+  {
     try
     {
-      // run for global
-      runGlobalTests(currentQuery, allowDeathOfAcquires);
+      if(position == 0)
+      {
+        //runGlobalTests(currentQuery, allowDeathOfAcquires);
+        runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
+      }
+      else if(position == 1)
+      {
+        //runPartialTests(currentQuery, allowDeathOfAcquires);
+        runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
+      }
+      else if(position == 2)
+      {
+        runOverlayTests(currentQuery, allowDeathOfAcquires);
+        runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
+      }
+      else if(position == 3)
+      {
+       // runBestTests(currentQuery, allowDeathOfAcquires);
+        runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
+      }    
     }
     catch(Exception e)
     {
-      try
+      if(position + 1 == 4)
       {
-        //run for partial
-        runPartialTests(currentQuery, allowDeathOfAcquires);
-      }
-      catch (Exception e1)
-      {
-        System.out.println("system failed as: " + e1.getMessage());
-        e1.printStackTrace();
+        System.out.println("system failed as: " + e.getMessage());
+        e.printStackTrace();
         utils.plotTopology(maxNumberofFailures);
         queryid ++;
         utils.newPlotters(queryid);
         System.out.println("Ran all tests on query " + (queryid) + " going onto next topology");
-        recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
       }
-      utils.plotTopology(maxNumberofFailures);
-      queryid ++;
-      utils.newPlotters(queryid); 
-      recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
+      else
+        runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
     }
-    try
-    {
-      // run partial
-      runPartialTests(currentQuery, allowDeathOfAcquires);
-    }
-    catch(Exception e)
-    {
-      System.out.println("system failed as: " + e.getMessage());
-      e.printStackTrace();
-      utils.plotTopology(maxNumberofFailures);
-      queryid ++;
-      utils.newPlotters(queryid);
-      System.out.println("Ran all tests on query " + (queryid) + " going onto next topology");
-      recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires, failedOutput);
-    }
-    utils.plotTopology(maxNumberofFailures);
-    queryid ++;
-    utils.newPlotters(queryid);
-    System.out.println("Ran all tests on query " + (queryid) + " going onto next topology");
   }
-  
+
   /**
    * does the partial tests
    * @param currentQuery
@@ -226,7 +224,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       boolean allowDeathOfAcquires)
   throws Exception
   {
-    client.resetDataSources(originalQEP);
+    //client.resetDataSources(originalQEP);
     System.out.println("running tests for partial ");
     SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, ChoiceAssessorPreferenceEnum.Partial.toString());
     
@@ -235,16 +233,18 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     {
       calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
       System.out.println("running tests with " + currentNumberOfFailures + " failures");
+      ArrayList<String> fails = new ArrayList<String>();
       for(int currentFailure = 1; currentFailure <= currentNumberOfFailures; currentFailure++)
       {
         System.out.println("running with test no" + testNo);
         client.getQEP().getLAF().setQueryName("query" + queryid + "-" + maxNumberofFailures);
-        client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
+        client.runTests(client, currentQuery, queryid, allowDeathOfAcquires, fails);
         testNo++;
       }
       currentlyFailedNodes.clear();
       double currentLifetime = numberOfExectutionCycles * originalQEP.getAgendaIOT().getLength_bms(false) * currentNumberOfFailures ;
-      utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.PARTIAL);
+      utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.PARTIAL, fails);
+      utils.plotTopology(testNo -1);
       client.resetDataSources(originalQEP);
     }
     
@@ -266,17 +266,101 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
     {
       calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
+      ArrayList<String> fails = new ArrayList<String>();
       System.out.println("running tests with " + currentNumberOfFailures + " failures");
       for(int currentFailure = 1; currentFailure <= currentNumberOfFailures; currentFailure++)
       {
         System.out.println("running with test no" + testNo);
         client.getQEP().getLAF().setQueryName("query" + queryid + "-"+ currentFailure + "-" + maxNumberofFailures);
-        client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
+        client.runTests(client, currentQuery, queryid, allowDeathOfAcquires, fails);
         testNo++;
       }
       currentlyFailedNodes.clear();
       double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures;
-      utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.GLOBAL);
+      utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.GLOBAL, fails);
+      utils.plotTopology(testNo -1);
+      client.resetDataSources(originalQEP);
+      
+    }
+    
+  }
+  
+  /**
+   * does the overlay tests
+   * @param currentQuery
+   * @param allowDeathOfAcquires
+   * @throws Exception
+   */
+  private static void runOverlayTests(String currentQuery, boolean allowDeathOfAcquires) 
+  throws Exception
+  {
+    //client.resetDataSources(originalQEP);
+    originalQEP = client.getQEP();
+    System.out.println("running tests for local ");
+    SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, ChoiceAssessorPreferenceEnum.Local.toString());
+    testNo = 1;
+    for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
+    {
+      calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
+      System.out.println("running tests with " + currentNumberOfFailures + " failures");
+      client.setupOverlay();
+      ArrayList<String> fails = new ArrayList<String>();
+      for(int currentFailure = 1; currentFailure <= currentNumberOfFailures; currentFailure++)
+      {
+        System.out.println("running with test no" + testNo);
+        client.getQEP().getLAF().setQueryName("query" + queryid + "-"+ currentFailure + "-" + maxNumberofFailures);
+        client.runTests(client, currentQuery, queryid, allowDeathOfAcquires, fails);
+        testNo++;
+      }
+      currentlyFailedNodes.clear();
+      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures;
+      utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.LOCAL, fails);
+      utils.plotTopology(testNo -1);
+      client.resetDataSources(originalQEP);
+      
+    }
+    
+  }
+  
+  private void setupOverlay() 
+  throws SchemaMetadataException, TypeMappingException, OptimizationException,
+  IOException, SNEEConfigurationException, CodeGenerationException
+  {
+    SNEEController control = (SNEEController) controller;
+    control.setupOverlay();
+    
+  }
+
+  /**
+   * does the best tests
+   * @param currentQuery
+   * @param allowDeathOfAcquires
+   * @throws Exception
+   */
+  private static void runBestTests(String currentQuery, boolean allowDeathOfAcquires) 
+  throws Exception
+  {
+    client.resetDataSources(originalQEP);
+    originalQEP = client.getQEP();
+    System.out.println("running tests for best ");
+    SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, ChoiceAssessorPreferenceEnum.Best.toString());
+    testNo = 1;
+    for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
+    {
+      calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
+      System.out.println("running tests with " + currentNumberOfFailures + " failures");
+      ArrayList<String> fails = new ArrayList<String>();
+      for(int currentFailure = 1; currentFailure <= currentNumberOfFailures; currentFailure++)
+      {
+        System.out.println("running with test no" + testNo);
+        client.getQEP().getLAF().setQueryName("query" + queryid + "-"+ currentFailure + "-" + maxNumberofFailures);
+        client.runTests(client, currentQuery, queryid, allowDeathOfAcquires, fails);
+        testNo++;
+      }
+      currentlyFailedNodes.clear();
+      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures;
+      utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.ALL, fails);
+      utils.plotTopology(testNo -1);
       client.resetDataSources(originalQEP);
       
     }
@@ -403,7 +487,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   }
 
   private void runTests(SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay client, String currentQuery, 
-                        int queryid, boolean allowDeathOfAcquires) 
+                        int queryid, boolean allowDeathOfAcquires, ArrayList<String> fails) 
   throws Exception
   {
   	updateSites(allowDeathOfAcquires);
@@ -411,7 +495,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   	{
   		String deadNode = chooseNodes();
   		controller.simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles);
-  		client.runForTests(deadNode, queryid); 
+  		client.runForTests(deadNode, queryid, fails); 
   		utils.updateRecoveryFile(queryid);
       System.gc();
       updateSites(allowDeathOfAcquires);  
@@ -515,9 +599,10 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
    * runs the test
    * @param failedNodes
    * @param queryid
+   * @param fails 
    * @throws Exception 
    */
-  public void runForTests(String failedNode, int queryid)
+  public void runForTests(String failedNode, int queryid, ArrayList<String> fails)
   throws Exception
   {
     if (logger.isDebugEnabled()) 
@@ -526,7 +611,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     System.out.println("Failed node [" + failedNode + "] ");
     SNEEController control = (SNEEController) controller;
     control.giveAutonomicManagerQuery(_query);
-    boolean sucessful = runSimulatedNodeFailure(failedNode, control);
+    boolean sucessful = runSimulatedNodeFailure(failedNode, control, fails);
     if(!sucessful)
       throw new AutonomicManagerException("couldnt adapt with any node failure");
     if (logger.isDebugEnabled())
@@ -534,7 +619,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   }
 
   private boolean runSimulatedNodeFailure(String failedNode,
-      SNEEController control) 
+      SNEEController control, ArrayList<String> fails) 
   throws Exception
   {
     ArrayList<String> currentNodeFailures = new ArrayList<String>();
@@ -543,6 +628,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     try
     {
       control.runSimulatedNodeFailure(currentNodeFailures);
+      fails.add(failedNode);
       return true;
     }
     catch(Exception e)
@@ -552,15 +638,18 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       currentNodeFailures.clear();
       currentlyFailedNodes.remove(failedNode);
       applicableConfulenceSites.remove(failedNode);
+      System.out.println("choosing new failure with applicable sites [" + applicableConfulenceSites.toString() + "]");
       String deadNode = chooseNodes();
       QueryExecutionPlan lastPlan = control.getQEP();
       
       resetMetaData(originalQEP);
       updateMetaDataBackToCurrentState(control);
       resetQEP((SensorNetworkQueryPlan) lastPlan);
+      
       System.out.println("system failed to adapt with node " + failedNode + " so will try node " + deadNode);
-      runSimulatedNodeFailure(deadNode, control);
-      return true;
+      boolean success = runSimulatedNodeFailure(deadNode, control, fails);
+      fails.add(deadNode);
+      return success;
     }
   }
 

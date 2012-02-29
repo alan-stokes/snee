@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
@@ -119,6 +120,30 @@ public class IOT extends SNEEAlgebraicForm
     instanceOperatorTree.setRoot(rootOp);
   }
   
+  public void removeFragment(Site site)
+  {
+    Iterator<InstanceFragment> infragIterator= this.fragments.iterator();
+    ArrayList<InstanceFragment> removalList = new ArrayList<InstanceFragment>();
+    while(infragIterator.hasNext())
+    {
+      InstanceFragment frag = infragIterator.next();
+      if(frag.getSite().getID().equals(site.getID()))
+        removalList.add(frag);
+    }
+    Iterator<InstanceFragment> removalIterator = removalList.iterator();
+    while(removalIterator.hasNext())
+    {
+      InstanceFragment frag = removalIterator.next();
+      this.fragments.remove(frag);
+      Iterator<InstanceOperator> operatorIterator = frag.getOperators().iterator();
+      while(operatorIterator.hasNext())
+      {
+        InstanceOperator op = operatorIterator.next();
+        this.instanceOperatorTree.removeSiteEdges(op.getID());
+      }
+    }
+  }
+  
   
   /**
    * returns all sites within the iot. (not just participating sites in rt.)
@@ -157,6 +182,7 @@ public class IOT extends SNEEAlgebraicForm
   {
     return this.siteToOpInstMap.get(site);
   }
+  
   
   /**
    * gets the operators which are on a site (in the form of instance operators, and can include exchanges)
@@ -224,23 +250,6 @@ public class IOT extends SNEEAlgebraicForm
       }
       if (logger.isTraceEnabled())
       logger.trace("RETURN doTransversalIterator()"); 
-  }
-
-
-  /**
-   * removes all operators from a site, and removes the site from the IOT
-   * @param site the site to be removed
-   * @throws OptimizationException 
-   */
-  public void removeSite(Site site) throws OptimizationException
-  {
-    ArrayList<InstanceOperator> operatorsOnSite = getOpInstances(site);
-    Iterator<InstanceOperator> operatorIterator = operatorsOnSite.iterator();
-    while(operatorIterator.hasNext())
-    {
-      InstanceOperator operator = operatorIterator.next();
-      this.removeOpInst(operator);
-    }
   }
   
   /**
@@ -336,16 +345,12 @@ public class IOT extends SNEEAlgebraicForm
   }
   
   /**
-   * move a instance operator from a site to a new site.
-   * @param opInst instance operator
-   * @param newSite new loc
-   * @param oldSite old loc
+   * returns all sites located within the IOT (not just rt sites)
+   * @return
    */
-  public void reAssign(InstanceOperator opInst, Site newSite, Site oldSite) 
+  public Set<Site> getAllSites()
   {
-    opInst.setSite(newSite);
-    this.siteToOpInstMap.remove(oldSite, opInst);
-    this.siteToOpInstMap.add(newSite, opInst);
+    return this.siteToOpInstMap.keySet();
   }
 
   /**
@@ -501,6 +506,7 @@ public class IOT extends SNEEAlgebraicForm
  * @param childOpInst
  * @throws OptimizationException
  */
+  
   public void removeOpInst(InstanceOperator childOpInst) 
   throws OptimizationException
   {
@@ -817,5 +823,61 @@ public class IOT extends SNEEAlgebraicForm
     Node failedNode = this.rt.getSite(failedSite.getID());
     ArrayList<Node> inputSites = new ArrayList<Node>(failedNode.getInputsList());
     return inputSites;
+  }
+
+
+  public void removeSiteFromMapping(Site failedSite)
+  {
+    Iterator<Site> keyIterator = this.siteToOpInstMap.keySet().iterator();
+    Site site = null;
+    while(keyIterator.hasNext())
+    {
+      Site key = keyIterator.next();
+      if(key.getID().equals(failedSite.getID()))
+        site = key;
+    }
+    this.siteToOpInstMap.remove(site);
+  }
+
+
+  public void removeAllEdgesWithDest(InstanceExchangePart destNode)
+  {
+    Iterator<String> keyIterator = this.instanceOperatorTree.getEdges().keySet().iterator();
+    ArrayList<Edge> edgesToRemove = new ArrayList<Edge>();
+    while(keyIterator.hasNext())
+    {
+      String key = keyIterator.next();
+      Edge edge = this.instanceOperatorTree.getEdge(key);
+      if(edge.getDestID().equals(destNode.getID()))
+        edgesToRemove.add(edge);
+    }
+    Iterator<Edge> edgeRemovealIterator = edgesToRemove.iterator();
+    while(edgeRemovealIterator.hasNext())
+    {
+      Edge edge = edgeRemovealIterator.next();
+      this.instanceOperatorTree.removeEdge(edge.getID());
+    }
+    
+  }
+
+
+  public void removeAllEdgesWithSource(InstanceExchangePart sourceNode)
+  {
+    Iterator<String> keyIterator = this.instanceOperatorTree.getEdges().keySet().iterator();
+    ArrayList<Edge> edgesToRemove = new ArrayList<Edge>();
+    while(keyIterator.hasNext())
+    {
+      String key = keyIterator.next();
+      Edge edge = this.instanceOperatorTree.getEdge(key);
+      if(edge.getSourceID().equals(sourceNode.getID()))
+        edgesToRemove.add(edge);
+    }
+    Iterator<Edge> edgeRemovealIterator = edgesToRemove.iterator();
+    while(edgeRemovealIterator.hasNext())
+    {
+      Edge edge = edgeRemovealIterator.next();
+      this.instanceOperatorTree.removeEdge(edge.getID());
+    }
+    
   }
 }

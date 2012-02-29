@@ -52,13 +52,13 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
+import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.planner.model.Model;
@@ -722,5 +722,13 @@ public class SNEEController implements SNEE {
     SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) metadata;
     sm.removeSourceSite(new Integer(failedID));
     sm.removeNodeFromTopology(failedID);  
+  }
+
+  public void setupOverlay()
+  throws SchemaMetadataException, TypeMappingException, OptimizationException, 
+  IOException, SNEEConfigurationException, CodeGenerationException
+  {
+    _dispatcher.setupOverlay();
+    
   }
 }

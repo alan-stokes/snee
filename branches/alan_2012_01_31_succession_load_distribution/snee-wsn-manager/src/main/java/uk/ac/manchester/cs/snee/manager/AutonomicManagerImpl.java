@@ -25,11 +25,11 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.anayliser.Anaylsiser;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
@@ -38,6 +38,7 @@ import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.executer.Executer;
 import uk.ac.manchester.cs.snee.manager.monitor.Monitor;
+import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
 import uk.ac.manchester.cs.snee.manager.planner.model.Model;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
@@ -482,7 +483,11 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     File output = new File(outputFolder + sep + "OTASection");
     output.mkdir();
     Model.setCompiledAlready(false);
-    planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false, anyliser.getOverlay());
+    String choice = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);
+    if(choice.equals(ChoiceAssessorPreferenceEnum.Local.toString()) || choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))
+      planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false, anyliser.getOverlay());
+    else
+      planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false, null);
     // update running sites energy stores
     siteIdIterator = sqep.getRT().getSiteIDs().iterator();
     while(siteIdIterator.hasNext())
@@ -493,7 +498,23 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     }  
     
   }
-  
-  
 
+  @Override
+  public void setupOverlay() 
+  throws SchemaMetadataException, TypeMappingException, OptimizationException, 
+  IOException, SNEEConfigurationException, CodeGenerationException
+  {
+    this.anyliser.setupOverlay();
+    
+  }
+
+  /**
+   * used to update all strategies about decision of adaptation.
+   * @param finalChoice
+   */
+  public void updateStrategies(Adaptation finalChoice)
+  {
+    this.anyliser.updateFrameworks(finalChoice);
+    
+  }
 }

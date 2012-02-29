@@ -12,14 +12,13 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
-import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.AlternativeGenerator;
@@ -104,8 +103,8 @@ public class Planner extends AutonomicManagerComponent
       Adaptation bestLocal = null;
       List<Adaptation> partialAds = choices.getPartialAdaptations();
       List<Adaptation> localAds = choices.getLocalAdaptations();
-      orginal = new Adaptation(choices.getGlobalAdaptation().getOldQep(), StrategyIDEnum.Orginal, 1);
-      doOrginalAssessment(orginal, choices.getGlobalAdaptation().getOldQep());
+      orginal = choices.getOriginal(); 
+      doOrginalAssessment(orginal, orginal.getOldQep());
       
       //find the best of each framework
       if(!partialAds.isEmpty())
@@ -126,7 +125,8 @@ public class Planner extends AutonomicManagerComponent
         bestChoices.add(bestLocal);
       if(bestPartial != null)
         bestChoices.add(bestPartial);
-      bestChoices.add(choices.getGlobalAdaptation());
+      if(choices.getGlobalAdaptation() != null)
+        bestChoices.add(choices.getGlobalAdaptation());
       //assess to find best overall adaptation
       assessor.assessChoices(bestChoices, runningSites);
       String choicePreference = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);    
@@ -268,7 +268,11 @@ public class Planner extends AutonomicManagerComponent
   TypeMappingException, CodeGenerationException, SNEEConfigurationException
   {
     this.assessor.updateStorageLocation(output);
-    this.assessor.assessChoice(orgianlOTAProgramCost, runningSites, reset, logicalOverlayNetwork);
+    if(logicalOverlayNetwork == null)
+      this.assessor.assessChoice(orgianlOTAProgramCost, runningSites, reset);
+    else
+      this.assessor.assessChoice(orgianlOTAProgramCost, runningSites, reset, logicalOverlayNetwork);
+     
     this.assessor.updateStorageLocation(plannerFolder);
     new PlannerUtils(orgianlOTAProgramCost, manager, output, orgianlOTAProgramCost).writeObjectsToFile(); 
     new ChoiceAssessorUtils(runningSites, orgianlOTAProgramCost.getNewQep().getRT())

@@ -29,9 +29,20 @@ public class AdaptationUtils
   public AdaptationUtils(List<Adaptation> adapt, CostParameters costs)
   {
     this.adaptList = adapt;
+    checkForNulls();
     this.costs = costs;
   }
   
+  private void checkForNulls()
+  {
+    for(int index = adaptList.size(); index > 0; index--)
+    {
+      if(adaptList.get(index -1) == null)
+        adaptList.remove(index);
+    }
+    
+  }
+
   public void systemOutput()
   {
     if(adapt != null)
@@ -43,8 +54,10 @@ public class AdaptationUtils
       Iterator<Adaptation> adaptIterator = adaptList.iterator();
       while(adaptIterator.hasNext())
       {
+        
         Adaptation cAdapt = adaptIterator.next();
-        System.out.println(cAdapt.toString());
+        if(cAdapt != null)
+          System.out.println(cAdapt.toString());
       }
     }
   }
@@ -66,7 +79,8 @@ public class AdaptationUtils
       while(adaptIterator.hasNext())
       {
         Adaptation cAdapt = adaptIterator.next();
-        writer.write(cAdapt.toString() + "\n");
+        if(cAdapt != null)
+          writer.write(cAdapt.toString() + "\n");
       }
     }
     writer.flush();
@@ -80,24 +94,51 @@ public class AdaptationUtils
     adaptFolder.mkdir();
     File outputFile = new File(adaptFolder.toString() + sep + "adaptList");
     BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
-    writer.write(adapt.toString() + "\n");
-    writer.flush();
-    writer.close();
-    new IOTUtils(adapt.getNewQep().getIOT(), costs).
-                exportAsDotFileWithFrags(adaptFolder.toString() + sep + "NEWIOT", "", true);
-    new IOTUtils(adapt.getOldQep().getIOT(), costs).
-                exportAsDotFileWithFrags(adaptFolder.toString() + sep + "OLDIOT", "", true);
-    new AgendaIOTUtils(adapt.getNewQep().getAgendaIOT(), adapt.getNewQep().getIOT(), false)
-    .generateImage(adaptFolder.toString());
-    new AgendaIOTUtils(adapt.getOldQep().getAgendaIOT(), adapt.getOldQep().getIOT(), false)
-    .generateImage(adaptFolder.toString());
-    new AgendaIOTUtils(adapt.getNewQep().getAgendaIOT(), adapt.getNewQep().getIOT(), false)
-    .exportAsLatex(adaptFolder.toString() + sep, "final choice Agenda Latex");
-    new AgendaIOTUtils(adapt.getOldQep().getAgendaIOT(), adapt.getOldQep().getIOT(), false)
-    .exportAsLatex(adaptFolder.toString() + sep, "Old Agenda Latex");
-    new RTUtils(adapt.getNewQep().getRT()).exportAsDotFile(adaptFolder.toString() + sep + "newRT");
-    new RTUtils(adapt.getOldQep().getRT()).exportAsDotFile(adaptFolder.toString() + sep + "oldRT");
-    
+    if(adapt == null)
+    {
+      Iterator<Adaptation> iterator = adaptList.iterator();
+      while(iterator.hasNext())
+      {
+        Adaptation adapt = iterator.next();
+        writer.write(adapt.toString() + "\n");
+        writer.flush();
+        writer.close();
+        new IOTUtils(adapt.getNewQep().getIOT(), costs).
+                    exportAsDotFileWithFrags(adaptFolder.toString() + sep + "NEWIOT", "", true);
+        new IOTUtils(adapt.getOldQep().getIOT(), costs).
+                    exportAsDotFileWithFrags(adaptFolder.toString() + sep + "OLDIOT", "", true);
+        new AgendaIOTUtils(adapt.getNewQep().getAgendaIOT(), adapt.getNewQep().getIOT(), false)
+        .generateImage(adaptFolder.toString());
+        new AgendaIOTUtils(adapt.getOldQep().getAgendaIOT(), adapt.getOldQep().getIOT(), false)
+        .generateImage(adaptFolder.toString());
+        new AgendaIOTUtils(adapt.getNewQep().getAgendaIOT(), adapt.getNewQep().getIOT(), false)
+        .exportAsLatex(adaptFolder.toString() + sep, "final choice Agenda Latex");
+        new AgendaIOTUtils(adapt.getOldQep().getAgendaIOT(), adapt.getOldQep().getIOT(), false)
+        .exportAsLatex(adaptFolder.toString() + sep, "Old Agenda Latex");
+        new RTUtils(adapt.getNewQep().getRT()).exportAsDotFile(adaptFolder.toString() + sep + "newRT");
+        new RTUtils(adapt.getOldQep().getRT()).exportAsDotFile(adaptFolder.toString() + sep + "oldRT");
+      }
+    }
+    else
+    {
+      writer.write(adapt.toString() + "\n");
+      writer.flush();
+      writer.close();
+      new IOTUtils(adapt.getNewQep().getIOT(), costs).
+                  exportAsDotFileWithFrags(adaptFolder.toString() + sep + "NEWIOT", "", true);
+      new IOTUtils(adapt.getOldQep().getIOT(), costs).
+                  exportAsDotFileWithFrags(adaptFolder.toString() + sep + "OLDIOT", "", true);
+      new AgendaIOTUtils(adapt.getNewQep().getAgendaIOT(), adapt.getNewQep().getIOT(), false)
+      .generateImage(adaptFolder.toString());
+      new AgendaIOTUtils(adapt.getOldQep().getAgendaIOT(), adapt.getOldQep().getIOT(), false)
+      .generateImage(adaptFolder.toString());
+      new AgendaIOTUtils(adapt.getNewQep().getAgendaIOT(), adapt.getNewQep().getIOT(), false)
+      .exportAsLatex(adaptFolder.toString() + sep, "final choice Agenda Latex");
+      new AgendaIOTUtils(adapt.getOldQep().getAgendaIOT(), adapt.getOldQep().getIOT(), false)
+      .exportAsLatex(adaptFolder.toString() + sep, "Old Agenda Latex");
+      new RTUtils(adapt.getNewQep().getRT()).exportAsDotFile(adaptFolder.toString() + sep + "newRT");
+      new RTUtils(adapt.getOldQep().getRT()).exportAsDotFile(adaptFolder.toString() + sep + "oldRT");
+    }
   }
   
   

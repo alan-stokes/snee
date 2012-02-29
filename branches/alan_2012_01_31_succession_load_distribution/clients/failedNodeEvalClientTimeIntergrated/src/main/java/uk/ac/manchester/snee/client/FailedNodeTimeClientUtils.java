@@ -22,6 +22,7 @@ public class FailedNodeTimeClientUtils
   private Adaptation global = null;
   private Adaptation partial = null;
   private Adaptation local = null;
+  private Adaptation best = null;
   
   private FailedNodeTimePlotter plot = null;
   
@@ -43,23 +44,36 @@ public class FailedNodeTimeClientUtils
     plot.newWriters(queryID);
   }
   
-  private void sortout(ArrayList<Adaptation> adaptations)
+  private void sortout(ArrayList<Adaptation> adaptations, boolean bestAd)
   {
-    Iterator<Adaptation> adaptIterator = adaptations.iterator();
-    while(adaptIterator.hasNext())
+    
+    if(bestAd)
     {
-      Adaptation ad = adaptIterator.next();
-      if(ad.getOverallID().contains("Global"))
-        global = ad;
-      else if(ad.getOverallID().contains("Partial"))
-        partial = ad;
-      else if(ad.getOverallID().contains("Local"))
-        local = ad;
-      else if(ad.getOverallID().contains("Orginal"))
-      {/*original = ad;*/}
-      else
-        throw new NoSuchElementException("there is no overall id");
-    } 
+      Iterator<Adaptation> adaptIterator = adaptations.iterator();
+      while(adaptIterator.hasNext())
+      {
+        Adaptation ad = adaptIterator.next();
+        best = ad;
+      }
+    }
+    else
+    {
+      Iterator<Adaptation> adaptIterator = adaptations.iterator();
+      while(adaptIterator.hasNext())
+      {
+        Adaptation ad = adaptIterator.next();
+        if(ad.getOverallID().contains("Global"))
+          global = ad;
+        else if(ad.getOverallID().contains("Partial"))
+          partial = ad;
+        else if(ad.getOverallID().contains("Local"))
+          local = ad;
+        else if(ad.getOverallID().contains("Orginal"))
+        {/*original = ad;*/}
+        else
+          throw new NoSuchElementException("there is no overall id");
+      } 
+    }
   }
 
   public ArrayList<Adaptation> readInObjects(File inputFolder)
@@ -172,8 +186,11 @@ public class FailedNodeTimeClientUtils
    // ArrayList<Adaptation> orginal = this.readInObjects(inputFolder);
     //DecimalFormat df = new DecimalFormat("#.#####");
    // System.out.println(df.format(orginal.get(0).getLifetimeEstimate()));
-   // plot.addGlobalLifetime(orginal.get(0).getLifetimeEstimate() * 1000);
-   // plot.addPartialLifetime(orginal.get(0).getLifetimeEstimate() * 1000);
+   // plot.addGlobalLifetime(orginal.get(0).getLifetimeEstimate(), new ArrayList<String>());
+   // plot.addPartialLifetime(orginal.get(0).getLifetimeEstimate(), new ArrayList<String>());
+   // plot.addLocalLifetime(orginal.get(0).getLifetimeEstimate(), new ArrayList<String>());
+   // plot.addBestLifetime(orginal.get(0).getLifetimeEstimate(), new ArrayList<String>());
+    
   }
 
   public Adaptation getGlobal()
@@ -191,29 +208,39 @@ public class FailedNodeTimeClientUtils
     return local;
   }
 
-  public void storeAdaptation(int queryid, int testid, double currentLifetime, PlotterEnum which)
+  public void storeAdaptation(int queryid, int testid, double currentLifetime, PlotterEnum which, ArrayList<String> fails)
   {
     File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + testid + sep + "Planner" +  sep + "storedObjects");
     ArrayList<Adaptation> adaptations = this.readInObjects(inputFolder);
-    this.sortout(adaptations);
+    if(which == PlotterEnum.ALL)
+      this.sortout(adaptations, true);
+    else
+      this.sortout(adaptations, false);
+    
     DecimalFormat df = new DecimalFormat("#.#####");
     if(which == PlotterEnum.GLOBAL && global != null)
     {
       Double overallLifetime = new Double(global.getLifetimeEstimate().doubleValue() + currentLifetime);
       System.out.println(df.format( overallLifetime / 1000));
-      plot.addGlobalLifetime(global.getLifetimeEstimate() + currentLifetime);
+      plot.addGlobalLifetime(global.getLifetimeEstimate() + currentLifetime, fails);
     }
     else if(which == PlotterEnum.PARTIAL && partial != null)
     {
       Double overallLifetime = new Double(partial.getLifetimeEstimate().doubleValue() + currentLifetime);
       System.out.println(df.format(overallLifetime / 1000));
-      plot.addPartialLifetime(partial.getLifetimeEstimate() + currentLifetime);
+      plot.addPartialLifetime(partial.getLifetimeEstimate() + currentLifetime, fails);
     }
     else if(which == PlotterEnum.LOCAL & local != null)
     {
       Double overallLifetime = new Double(local.getLifetimeEstimate().doubleValue() + currentLifetime);
       System.out.println(df.format(overallLifetime / 1000));
-      plot.addPartialLifetime(local.getLifetimeEstimate() + currentLifetime);
+      plot.addLocalLifetime(local.getLifetimeEstimate() + currentLifetime, fails);
+    }
+    else if(which == PlotterEnum.ALL & best != null)
+    {
+      Double overallLifetime = new Double(best.getLifetimeEstimate().doubleValue() + currentLifetime);
+      System.out.println(df.format(overallLifetime / 1000));
+      plot.addBestLifetime(best.getLifetimeEstimate() + currentLifetime, fails);
     }
   }
 

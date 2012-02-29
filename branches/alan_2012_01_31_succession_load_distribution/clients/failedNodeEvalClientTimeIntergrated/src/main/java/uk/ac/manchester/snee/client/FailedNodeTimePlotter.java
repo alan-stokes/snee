@@ -27,42 +27,90 @@ public class FailedNodeTimePlotter implements Serializable
   private int queryID = 1;
   private String sep = System.getProperty("file.separator");
   private File lifetimePlotFile = null;
+  private File nodeFailures = null;
   private double lifetimeYMax = 0;
   private int numberOfAdaptations = 0;
   private BufferedWriter lifetimeWriter;
+  private BufferedWriter failureWriter;
+  private ArrayList<ArrayList<String>> failedNodesGlobal = new ArrayList<ArrayList<String>>();
+  private ArrayList<ArrayList<String>> failedNodesPartial = new ArrayList<ArrayList<String>>();
+  private ArrayList<ArrayList<String>> failedNodesLocal = new ArrayList<ArrayList<String>>();
+  private ArrayList<ArrayList<String>> failedNodesBest = new ArrayList<ArrayList<String>>();
   private ArrayList<Double> globalLifetimes = new ArrayList<Double>();
   private ArrayList<Double> partialLifetimes = new ArrayList<Double>();
-  //private ArrayList<Double> mixedLifetimes = new ArrayList<Double>();
-  //private ArrayList<Double> globalTupleProduction = new ArrayList<Double>();
-  //private ArrayList<Double> partialTupleProduction = new ArrayList<Double>();
+  private ArrayList<Double> localLifetimes = new ArrayList<Double>();
+  private ArrayList<Double> mixedLifetimes = new ArrayList<Double>();
+//  private ArrayList<Double> globalTupleProduction = new ArrayList<Double>();
+ // private ArrayList<Double> partialTupleProduction = new ArrayList<Double>();
+ // private ArrayList<Double> localTupleProduction = new ArrayList<Double>();
  // private ArrayList<Double> mixedTupleProduction = new ArrayList<Double>();
+
   
   
   
   
-  public boolean addGlobalLifetime(Double e)
+  public boolean addGlobalLifetime(Double e, ArrayList<String> nodesFailed)
   {
+    failedNodesGlobal.add(nodesFailed);
     return globalLifetimes.add(e);
   }
   
-  public boolean addPartialLifetime(Double e)
+  public boolean addPartialLifetime(Double e, ArrayList<String> nodesFailed)
   {
+    failedNodesPartial.add(nodesFailed);    
     return partialLifetimes.add(e);
+  }
+  
+  public boolean addLocalLifetime(Double e, ArrayList<String> nodesFailed)
+  {
+    failedNodesLocal.add(nodesFailed);
+    return localLifetimes.add(e);
+  }
+  
+  public boolean addBestLifetime(Double e, ArrayList<String> nodesFailed)
+  {
+    failedNodesBest.add(nodesFailed);
+    return mixedLifetimes.add(e);
   }
   
   public void writeLifetimes(int testID) throws IOException
   {
     Iterator<Double> globalLifetimeIterator = globalLifetimes.iterator();
     Iterator<Double> partialLifetimeIterator = partialLifetimes.iterator();
+    Iterator<Double> localLifetimeIterator = localLifetimes.iterator();
+    Iterator<Double> mixedLifetimeIterator = mixedLifetimes.iterator();
+    Iterator<ArrayList<String>> globalFailureIterator = failedNodesGlobal.iterator();
+    Iterator<ArrayList<String>> partialFailureIterator = failedNodesPartial.iterator();
+    Iterator<ArrayList<String>> localFailureIterator = failedNodesLocal.iterator();
+    Iterator<ArrayList<String>> mixedFailureIterator = failedNodesBest.iterator();
+    
+    
     
     DecimalFormat df = new DecimalFormat("#.#####");
     int counter = 0;
+    lifetimeWriter.close();
+    lifetimeWriter = new BufferedWriter(new FileWriter(lifetimePlotFile));
+    failureWriter.close();
+    failureWriter = new BufferedWriter(new FileWriter(nodeFailures));
+    
+    
     try
     {
-      while(globalLifetimeIterator.hasNext() || partialLifetimeIterator.hasNext())
+      while(globalLifetimeIterator.hasNext() || partialLifetimeIterator.hasNext() || 
+            localLifetimeIterator.hasNext() || mixedLifetimeIterator.hasNext())
       {
         Double globalLife;
         Double partialLife;
+        Double localLife;
+        Double mixedLife;
+        
+        ArrayList<String> globalFails = null;
+        ArrayList<String> partialFails = null;
+        ArrayList<String> localFails = null;
+        ArrayList<String> bestFails = null;
+        
+        
+        
         if(globalLifetimeIterator.hasNext())
           globalLife = globalLifetimeIterator.next();
         else
@@ -71,17 +119,59 @@ public class FailedNodeTimePlotter implements Serializable
           partialLife = partialLifetimeIterator.next();
         else
           partialLife = 0.0;
+        if(localLifetimeIterator.hasNext())
+          localLife = localLifetimeIterator.next();
+        else
+          localLife = 0.0;
+        if(mixedLifetimeIterator.hasNext())
+          mixedLife = mixedLifetimeIterator.next();
+        else
+          mixedLife = 0.0;
         
-        log.fatal(counter + " " + df.format(globalLife / 1000) + " " + df.format(partialLife/ 1000));
-        lifetimeWriter.write(counter + " " + df.format(globalLife / 1000) + " " + df.format(partialLife / 1000));
+        
+        
+        if(globalFailureIterator.hasNext())
+          globalFails = globalFailureIterator.next();
+        else
+          globalFails = new ArrayList<String>();
+        if(partialFailureIterator.hasNext())
+          partialFails = partialFailureIterator.next();
+        else
+          partialFails = new ArrayList<String>();
+        if(localFailureIterator.hasNext())
+          localFails = localFailureIterator.next();
+        else
+          localFails = new ArrayList<String>();
+        if(mixedLifetimeIterator.hasNext())
+          bestFails = mixedFailureIterator.next();
+        else
+          bestFails = new ArrayList<String>();
+        
+        
+        log.fatal(counter + " " + df.format(globalLife / 1000) + " " + df.format(partialLife/ 1000) + 
+                  " " + df.format(localLife/ 1000) +  " " + df.format(mixedLife/ 1000));
+        lifetimeWriter.write(counter + " " + df.format(globalLife / 1000) + " " + 
+                             df.format(partialLife / 1000) + " " + df.format(localLife / 1000) +
+                             " " + df.format(mixedLife / 1000));
         lifetimeWriter.newLine();
         lifetimeWriter.flush();
         lifetimeYMax = Math.max(lifetimeYMax, globalLife / 1000);
         lifetimeYMax = Math.max(lifetimeYMax, partialLife / 1000);
+        lifetimeYMax = Math.max(lifetimeYMax, localLife / 1000);
+        lifetimeYMax = Math.max(lifetimeYMax, mixedLife / 1000);
+        
+        failureWriter.write(counter + globalFails.toString() + "  " + partialFails.toString() + "  " +
+                            localFails.toString() + "  " + bestFails.toString());
+        failureWriter.newLine();
+        failureWriter.flush();
+        
         counter++;
       }
       lifetimeWriter.flush();
       lifetimeWriter.close();
+      failureWriter.flush();
+      failureWriter.close();
+      
     }
     catch(Exception e)
     {
@@ -105,12 +195,19 @@ public class FailedNodeTimePlotter implements Serializable
       this.outputFolder.mkdir();
     
     lifetimePlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "lifetimePlot.tex");
+    nodeFailures = new File(this.outputFolder.toString() + sep + "query" + queryid + "NodeFailures.tex");
     if(lifetimePlotFile.exists())
     {
       lifetimePlotFile.delete();
       lifetimePlotFile.createNewFile();
     }
+    if(nodeFailures.exists())
+    {
+      nodeFailures.delete();
+      nodeFailures.createNewFile();
+    }
     lifetimeWriter = new BufferedWriter(new FileWriter(lifetimePlotFile));
+    failureWriter = new BufferedWriter(new FileWriter(nodeFailures));
   }
   
   public FailedNodeTimePlotter (File outputFolder) 
@@ -127,12 +224,21 @@ public class FailedNodeTimePlotter implements Serializable
       this.outputFolder.mkdir();
     
     lifetimePlotFile = new File(this.outputFolder.toString() + sep + "query1" + "lifetimePlot.tex");
+    nodeFailures = new File(this.outputFolder.toString() + sep + "query1" + "NodeFailures.tex");
+    
     if(lifetimePlotFile.exists())
     {
       lifetimePlotFile.delete();
       lifetimePlotFile.createNewFile();
     }
+    if(nodeFailures.exists())
+    {
+      nodeFailures.delete();
+      nodeFailures.createNewFile();
+    }
+    
     lifetimeWriter = new BufferedWriter(new FileWriter(lifetimePlotFile));
+    failureWriter = new BufferedWriter(new FileWriter(nodeFailures));
   }
   
   
@@ -254,15 +360,27 @@ public class FailedNodeTimePlotter implements Serializable
   public void newWriters(int queryid) throws IOException
   {
     lifetimePlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "lifetimePlot.tex");
-
+    nodeFailures = new File(this.outputFolder.toString() + sep + "query" + queryid + "NodeFailures.tex");
+    
     if(lifetimePlotFile.exists())
     {
       lifetimePlotFile.delete();
       lifetimePlotFile.createNewFile();
     }
+    
+    if(nodeFailures.exists())
+    {
+      nodeFailures.delete();
+      nodeFailures.createNewFile();
+    }
+    
     lifetimeWriter = new BufferedWriter(new FileWriter(lifetimePlotFile));
+    failureWriter = new BufferedWriter(new FileWriter(nodeFailures));
+   
     globalLifetimes.clear();
     partialLifetimes.clear();
+    localLifetimes.clear();
+    mixedLifetimes.clear();
   }
   
 }
