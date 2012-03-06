@@ -157,4 +157,5 @@ public interface SNEE {
 	 */
   public void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles);
 
+
 }

@@ -429,7 +429,6 @@ public class AgendaIOT extends SNEEAlgebraicForm{
 	final InstanceFragmentTask fragTask = new InstanceFragmentTask(startTime, frag, node,
 		occurrence, this.alpha, this.beta, daf, costParams);
 	this.addTask(fragTask, node);
-
 	logger.trace("Scheduled Fragment " + frag.getID() + " on node "
 		+ node.getID() + " at time " + startTime);
 
@@ -507,7 +506,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
 	final Iterator<Site> siteIter = this.iot.getRT()
 		.siteIterator(TraversalOrder.POST_ORDER);
 	while (siteIter.hasNext()) {
-	    final Site site = siteIter.next();
+	    Site site = siteIter.next();
 	    this.assertConsistentStartTime(sleepStart, site);
 	    final SleepTask t = new SleepTask(sleepStart, sleepEnd, site,
 		    lastInAgenda, costParams);
@@ -709,8 +708,12 @@ public class AgendaIOT extends SNEEAlgebraicForm{
 		final InstanceFragment frag = fragIter.next();
 
 		//For each site the fragment is executing on 
-		  final Site node = frag.getSite();
-
+		  Site node = frag.getSite();
+		  if(this.iot.getRT().getSite(node.getID()) != null)
+		  {
+		    node = iot.getRT().getSite(node.getID());
+		  
+		  
 		    try {
 
 			this.addFragmentTask(startTime, frag, node, (n + 1));
@@ -734,6 +737,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
 					    + node.getID());
 			}
 		    }
+		  }
 	    }
 	    //Go active uses the disactivated sleep to represent all nodes do nothing
 	    //if ((Settings.NESC_DO_SNOOZE) && ((n+1) != bFactor)) {
@@ -744,7 +748,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
 		this.addSleepTask(sleepStart, sleepEnd, false);
 	    }
 	}
-    }
+	    }
 
     /**
      * Schedule the non-leaf fragments.  Then are executed as soon as possible after the leaf fragments
@@ -787,12 +791,12 @@ public class AgendaIOT extends SNEEAlgebraicForm{
   		    this.addFragmentTask(frag, currentNode);
   		  }
   	  }
-  
       //Then Schedule any onward transmissions
       if (currentNode.getOutputs().length > 0) 
       {
     		final HashSet<InstanceExchangePart> tuplesToSend = new HashSet<InstanceExchangePart>();
-    		final Iterator<InstanceExchangePart> exchCompIter = iot.getExchangeOperators(currentNode).iterator();
+    		final Iterator<InstanceExchangePart> exchCompIter = iot.getSite(currentNode.getID()).getInstanceExchangeComponents().iterator();
+    		//.getExchangeOperators(currentNode).iterator();
     		//TODO fix to use instance exchange parts.
     		while (exchCompIter.hasNext()) 
     		{
@@ -812,6 +816,8 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     			    .getOutput(0), tuplesToSend);
     		}
 	    }
+      else
+    	  System.out.println("");
 	  }
   }
 

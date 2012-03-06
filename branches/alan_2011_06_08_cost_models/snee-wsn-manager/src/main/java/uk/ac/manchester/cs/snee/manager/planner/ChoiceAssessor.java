@@ -13,6 +13,8 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
+import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
@@ -389,6 +391,56 @@ public class ChoiceAssessor implements Serializable
       //uncomment out sections to not take the root site into account
       if (site!=  adapt.getNewQep().getIOT().getRT().getRoot() &&
           ((useAcquires) ||  (!useAcquires && !site.isSource()))) 
+      { 
+        if(shortestLifetime > siteLifetime)
+        {
+          if(!site.isDeadInSimulation())
+          {
+            shortestLifetime = siteLifetime;
+          }
+        }
+      }
+    }
+    return shortestLifetime;
+  }
+  
+  /**
+   * calculates the estiamted time left for a IOT whilst not counting failed nodes
+   * @param adapt
+   * @param logicalOverlayNetwork
+   * @return
+   * @throws FileNotFoundException
+   * @throws IOException
+   * @throws OptimizationException
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   * @throws SNEEConfigurationException
+   */
+  public static Double calculateEstimatedLifetimewithFailedNodes(IOT iot, AgendaIOT agenda,
+                                                           ArrayList<String> failedIds,
+                                                           HashMap<String, RunTimeSite> runningSites) 
+  throws FileNotFoundException, IOException, 
+  OptimizationException, SchemaMetadataException, 
+  TypeMappingException, SNEEConfigurationException
+  {
+    double shortestLifetime = Double.MAX_VALUE; //s
+    Iterator<Site> siteIter = 
+      iot.getRT().siteIterator(TraversalOrder.POST_ORDER);
+    while (siteIter.hasNext()) 
+    {
+      Site site = siteIter.next();
+      RunTimeSite rSite = runningSites.get(site.getID());
+      double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
+      double siteEnergyCons =   agenda.getSiteEnergyConsumption(site); // J
+      runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
+      double agendaLength = Agenda.bmsToMs( agenda.getLength_bms(false))/new Double(1000); // ms to s
+      double siteLifetime = (currentEnergySupply / siteEnergyCons) * agendaLength;
+      
+      boolean useAcquires = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_SENSE);
+      //uncomment out sections to not take the root site into account
+      if (site!=  iot.getRT().getRoot() &&
+          ((useAcquires) ||  (!useAcquires && !site.isSource()))
+          && !failedIds.contains(site.getID())) 
       { 
         if(shortestLifetime > siteLifetime)
         {

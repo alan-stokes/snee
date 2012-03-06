@@ -880,4 +880,17 @@ public class IOT extends SNEEAlgebraicForm
     }
     
   }
+
+
+  public Site getSite(String equivilentNodeID) 
+  {
+	Iterator<Site> siteIterator = this.siteToOpInstMap.keySet().iterator();
+	while(siteIterator.hasNext())
+	{
+	  Site site = siteIterator.next();
+	  if(site.getID().equals(equivilentNodeID))
+		  return site;
+	}
+	return null;
+  }
 }

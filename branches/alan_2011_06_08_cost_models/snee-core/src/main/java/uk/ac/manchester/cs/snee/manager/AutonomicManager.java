@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.manager;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -111,5 +112,10 @@ public interface AutonomicManager
   public abstract void setupOverlay() 
   throws SchemaMetadataException, TypeMappingException, OptimizationException, 
   IOException, SNEEConfigurationException, CodeGenerationException;
+
+  public abstract Double getEstimatedLifetime(
+      SensorNetworkQueryPlan originalQEP, ArrayList<String> fails)
+  throws FileNotFoundException, IOException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException, SNEEConfigurationException;
 
 }

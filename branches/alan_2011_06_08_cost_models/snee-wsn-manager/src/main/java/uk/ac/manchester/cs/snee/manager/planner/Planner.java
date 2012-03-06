@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.manager.planner;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -244,6 +245,15 @@ public class Planner extends AutonomicManagerComponent
     this.assessor.updateStorageLocation(outputFolder);
     this.assessor.assessOverlayChoice(overlayOTAProgramCost, runningSites, current, failedNodeStrategyLocal);
     this.assessor.updateStorageLocation(plannerFolder);
+  }
+
+  public Double getEstimatedLifetime(SensorNetworkQueryPlan qep,
+      ArrayList<String> fails, HashMap<String, RunTimeSite> runningSites)
+  throws FileNotFoundException, IOException, OptimizationException, SchemaMetadataException, 
+  TypeMappingException, SNEEConfigurationException
+  {
+    return ChoiceAssessor.calculateEstimatedLifetimewithFailedNodes(qep.getIOT(), 
+        qep.getAgendaIOT(), fails, runningSites);
   }
   
 }

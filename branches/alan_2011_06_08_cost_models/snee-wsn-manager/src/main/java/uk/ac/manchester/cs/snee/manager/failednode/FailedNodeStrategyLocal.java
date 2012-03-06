@@ -252,7 +252,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   {
     ///children first
     Site failedSite = iot.getRT().getSite(failedNodeID);
-    Site equivilentSite = clonedIOT.getRT().getSite(equivilentNodeID);
+    Site equivilentSite = clonedIOT.getSite(equivilentNodeID);
     Iterator<Node> chidlrenIterator = failedSite.getInputsList().iterator();
     while(chidlrenIterator.hasNext())
     {
@@ -310,6 +310,8 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     failedSite.clearExchangeComponents();
     clonedIOT.removeSiteFromMapping(failedSite);
     clonedIOT.removeFragment(failedSite);
+    //add output to the new node for agenda
+    equivilentSite.addOutput(outputSite);
   }
   
   
@@ -361,7 +363,6 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           //rewire children
           rewireNodes(clonedIOT, failedNodeID, equivilentNodeID, overlay.getQep().getIOT());
           new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay after nodes");
-          System.out.println("");
           System.out.println("");
         }
         new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iot", "iot with eqiv nodes", true);

@@ -51,7 +51,6 @@ import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEClient 
 {
-	private static ArrayList<String> applicableConfulenceSites = new ArrayList<String>();
   private static String sep = System.getProperty("file.separator");
 	@SuppressWarnings("unused")
   private static final Logger resultsLogger = 
@@ -64,7 +63,9 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	
 	//used to calculate agenda cycles
 	protected static int maxNumberofFailures = 8;
-	protected static ArrayList<String> currentlyFailedNodes = new ArrayList<String>(maxNumberofFailures);
+	private static ArrayList<String> applicableConfulenceSites = new ArrayList<String>();
+  protected static ArrayList<String> currentlyFailedNodes = new ArrayList<String>(maxNumberofFailures);
+  protected static ArrayList<String> currentlyFailedFailedNodes = new ArrayList<String>();
 	protected static double originalLifetime;
 	protected static int numberOfExectutionCycles;
 	protected static boolean calculated = false;
@@ -177,6 +178,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   {
     try
     {
+      //runOriginalTests(currentQuery, allowDeathOfAcquires);
       if(position == 0)
       {
         //runGlobalTests(currentQuery, allowDeathOfAcquires);
@@ -214,14 +216,79 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     }
   }
 
+  private static void runOriginalTests(String currentQuery, boolean allowDeathOfAcquires)
+  throws Exception
+  {
+    //client.resetDataSources(originalQEP);
+    System.out.println("running tests for orgiinal ");
+    SNEEController control = (SNEEController) client.controller;
+    Double leftOverLifetime = control.getEstimatedLifetime((SensorNetworkQueryPlan) control.getQEP(), new ArrayList<String>());
+    SensorNetworkQueryPlan currentQEP = (SensorNetworkQueryPlan) control.getQEP();
+    Double agendas = leftOverLifetime / (currentQEP.getAgendaIOT().getLength_bms(false)/ 1024);
+    System.out.println("originalQEP : " + agendas);
+    //run for orgiinal 
+    for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
+    {
+      calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
+      System.out.println("running tests with " + currentNumberOfFailures + " failures");
+      ArrayList<String> fails = new ArrayList<String>();
+      Double lifetime = 0.0;
+      for(int currentFailure = 1; currentFailure <= currentNumberOfFailures; currentFailure++)
+      {
+        System.out.println("running with test no" + testNo);
+        client.getQEP().getLAF().setQueryName("query" + queryid + "-" + maxNumberofFailures);
+        lifetime = client.runOrginialTests(currentQuery, allowDeathOfAcquires, fails);
+        testNo++;
+      }
+      currentlyFailedNodes.clear();
+      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures ;
+      lifetime = currentLifetime + lifetime;
+      lifetime = lifetime / 1000;
+      utils.storeoriginal(queryid, currentNumberOfFailures, lifetime, fails);
+      System.out.println("orginal :- " + lifetime);
+      utils.plotTopology(testNo -1);
+      client.resetDataSources(originalQEP);
+    }
+    
+  }
+
+  private double runOrginialTests( String currentQuery, boolean allowDeathOfAcquires,
+                                 ArrayList<String> fails)
+  throws Exception
+  {
+    updateSites(allowDeathOfAcquires);
+    if(applicableConfulenceSites.size() != 0)
+    {
+      String deadNode = chooseNodes();
+      fails.add(deadNode);
+      controller.simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles);
+      SNEEController control = (SNEEController) controller;
+      originalQEP = (SensorNetworkQueryPlan) control.getQEP();
+      Double leftOverLifetime = control.getEstimatedLifetime(originalQEP, fails);
+      Double agendas = leftOverLifetime / (originalQEP.getAgendaIOT().getLength_bms(false)/ 1024);
+      utils.updateRecoveryFile(queryid);
+      System.gc();
+      updateSites(allowDeathOfAcquires);  
+      System.out.println("Stopping current query");
+      controller.close();
+      return leftOverLifetime;
+    }
+    else
+    {
+      System.out.println("were no avilable nodes to fail, will not run test");
+      System.out.println("Stopping current query");
+      controller.close();
+      return 0.0;
+    }
+  }
+
   /**
    * does the partial tests
    * @param currentQuery
    * @param allowDeathOfAcquires
    * @throws Exception
    */
-  private static void runPartialTests(String currentQuery,
-      boolean allowDeathOfAcquires)
+  private static void runPartialTests(String currentQuery, boolean allowDeathOfAcquires)
   throws Exception
   {
     //client.resetDataSources(originalQEP);
@@ -242,7 +309,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         testNo++;
       }
       currentlyFailedNodes.clear();
-      double currentLifetime = numberOfExectutionCycles * originalQEP.getAgendaIOT().getLength_bms(false) * currentNumberOfFailures ;
+      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures ;
       utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.PARTIAL, fails);
       utils.plotTopology(testNo -1);
       client.resetDataSources(originalQEP);
@@ -529,7 +596,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     int[] sources = sensornetworkMetadata.getSourceSites(qep.getDAF().getPAF());
     String sinkID = qep.getRT().getRoot().getID();
     
-    while(siteIterator.hasNext())
+    /*while(siteIterator.hasNext())
     {
       Site currentSite = siteIterator.next();
       if((allowDeathOfAcquires ||  (!allowDeathOfAcquires && !isSource(currentSite, sources))) &&
@@ -539,6 +606,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         )
           applicableConfulenceSites.add(currentSite.getID());
     }
+    
     if(applicableConfulenceSites.size() == 0)
     {
       siteIterator = qep.getRT().siteIterator(TraversalOrder.POST_ORDER);
@@ -548,7 +616,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         if(!site.isSource())
           applicableConfulenceSites.add(site.getID());
       }
-    }
+    }*/
     if(applicableConfulenceSites.size() == 0)
     {
       siteIterator = qep.getRT().siteIterator(TraversalOrder.POST_ORDER);
@@ -560,7 +628,16 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
           applicableConfulenceSites.add(site.getID());
         }
       }
-    } 
+    }
+    ArrayList<String> removedNodes = new ArrayList<String>();
+    removedNodes.addAll(currentlyFailedFailedNodes);
+    removedNodes.addAll(currentlyFailedNodes);
+    Iterator<String> failsIterator = removedNodes.iterator();
+    while(failsIterator.hasNext())
+    {
+      String fail = failsIterator.next();
+      applicableConfulenceSites.remove(fail);
+    }
   }
 
   private boolean isSource(Site currentSite, int[] sources)
@@ -629,6 +706,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     {
       control.runSimulatedNodeFailure(currentNodeFailures);
       fails.add(failedNode);
+      currentlyFailedFailedNodes.clear();
       return true;
     }
     catch(Exception e)
@@ -636,6 +714,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       System.out.println("system failed as " + e.getMessage());
       e.printStackTrace();
       currentNodeFailures.clear();
+      this.updateSites(true);
+      currentlyFailedFailedNodes.add(failedNode);
       currentlyFailedNodes.remove(failedNode);
       applicableConfulenceSites.remove(failedNode);
       System.out.println("choosing new failure with applicable sites [" + applicableConfulenceSites.toString() + "]");

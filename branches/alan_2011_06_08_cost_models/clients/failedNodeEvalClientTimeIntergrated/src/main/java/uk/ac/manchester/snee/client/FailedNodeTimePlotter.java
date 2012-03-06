@@ -36,10 +36,12 @@ public class FailedNodeTimePlotter implements Serializable
   private ArrayList<ArrayList<String>> failedNodesPartial = new ArrayList<ArrayList<String>>();
   private ArrayList<ArrayList<String>> failedNodesLocal = new ArrayList<ArrayList<String>>();
   private ArrayList<ArrayList<String>> failedNodesBest = new ArrayList<ArrayList<String>>();
+  private ArrayList<ArrayList<String>> failedNodesOrginial = new ArrayList<ArrayList<String>>();
   private ArrayList<Double> globalLifetimes = new ArrayList<Double>();
   private ArrayList<Double> partialLifetimes = new ArrayList<Double>();
   private ArrayList<Double> localLifetimes = new ArrayList<Double>();
   private ArrayList<Double> mixedLifetimes = new ArrayList<Double>();
+  private ArrayList<Double> orgininalLifetimes = new ArrayList<Double>();
 //  private ArrayList<Double> globalTupleProduction = new ArrayList<Double>();
  // private ArrayList<Double> partialTupleProduction = new ArrayList<Double>();
  // private ArrayList<Double> localTupleProduction = new ArrayList<Double>();
@@ -47,6 +49,11 @@ public class FailedNodeTimePlotter implements Serializable
 
   
   
+  public boolean addOrginialLifetime(Double e, ArrayList<String> nodesFailed)
+  {
+    failedNodesOrginial.add(nodesFailed);
+    return orgininalLifetimes.add(e);
+  }
   
   
   public boolean addGlobalLifetime(Double e, ArrayList<String> nodesFailed)

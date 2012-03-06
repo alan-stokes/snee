@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.manager;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
@@ -501,5 +502,14 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   {
     this.anyliser.updateFrameworks(finalChoice);
     
+  }
+
+  @Override
+  public Double getEstimatedLifetime(SensorNetworkQueryPlan originalQEP,
+      ArrayList<String> fails)
+  throws FileNotFoundException, IOException, OptimizationException,
+  SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  {
+    return this.planner.getEstimatedLifetime(originalQEP, fails, this.runningSites);
   }
 }

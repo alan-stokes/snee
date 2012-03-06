@@ -35,6 +35,7 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.evaluator;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -357,6 +358,14 @@ public class Dispatcher {
   {
     _autonomicManager.setupOverlay();
     
+  }
+
+  public Double getEstimatedLifetime(SensorNetworkQueryPlan originalQEP,
+      ArrayList<String> fails) 
+  throws FileNotFoundException, IOException, OptimizationException,
+  SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  {
+    return _autonomicManager.getEstimatedLifetime(originalQEP, fails);
   }
 
 }

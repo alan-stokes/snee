@@ -243,6 +243,11 @@ public class FailedNodeTimeClientUtils
       plot.addBestLifetime(best.getLifetimeEstimate() + currentLifetime, fails);
     }
   }
+  
+  public void storeoriginal(int queryid, int testid, double currentLifetime, ArrayList<String> fails)
+  {
+    plot.addOrginialLifetime(currentLifetime, fails);
+  }
 
   public void plotTopology(int testID) throws IOException
   {

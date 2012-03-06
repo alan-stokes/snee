@@ -635,7 +635,7 @@ public class QueryPlanModuleComponent extends NesCComponent {
 	    }
 	    
 	    if ((mode == CommunicationTask.RECEIVE) && (comp instanceof RXComponent)) {
-	    	if (((RXComponent)comp).getTxSite()==((CommunicationTask)task).getSourceNode()) {
+	    	if (((RXComponent)comp).getTxSite().getID().equals(((CommunicationTask)task).getSourceNode().getID())) {
 		    	txrxUserAsNames.add(userAsName);
 		    	continue;	    		
 	    	}

@@ -36,6 +36,7 @@
 
 package uk.ac.manchester.cs.snee;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -730,5 +731,13 @@ public class SNEEController implements SNEE {
   {
     _dispatcher.setupOverlay();
     
+  }
+
+  public Double getEstimatedLifetime(SensorNetworkQueryPlan originalQEP,
+      ArrayList<String> fails) 
+  throws FileNotFoundException, IOException, OptimizationException,
+  SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  {
+    return _dispatcher.getEstimatedLifetime(originalQEP, fails);
   }
 }

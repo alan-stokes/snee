@@ -27,6 +27,7 @@ public class PhysicalToLogicalConversion
   private Topology network = null;
   private File localFolder;
   private String sep = System.getProperty("file.separator");
+  private Cloner cloner = new Cloner();
   
   public PhysicalToLogicalConversion(LogicalOverlayNetwork logicalOverlay, 
                                      Topology network,
@@ -35,6 +36,8 @@ public class PhysicalToLogicalConversion
     this.logicalOverlay = logicalOverlay;
     this.network = network;
     this.localFolder = localFolder;
+    cloner.dontClone(Logger.class);
+    
   }
   
   /**
@@ -42,6 +45,7 @@ public class PhysicalToLogicalConversion
    */
   public void transferQEPs() 
   {
+	
     Iterator<String> keys = logicalOverlay.getKeySet().iterator();
     while(keys.hasNext())
     {
@@ -52,6 +56,9 @@ public class PhysicalToLogicalConversion
       {
         String eqNode = eqNodeIterator.next();
         Node equilvientNode = network.getNode(eqNode);
+        equilvientNode = cloner.deepClone(equilvientNode);
+        equilvientNode.clearInputs();
+        equilvientNode.clearOutputs();
         //add sites fragments and operaotrs onto equivlent node
         transferSiteQEP(logicalOverlay.getQep(), clusterHead, equilvientNode);
       }
@@ -161,6 +168,8 @@ public class PhysicalToLogicalConversion
              if(!frag.getFragID().equals(input.getCorraspondingFragment().getFragID()))
              {
                input.getCorraspondingFragment().setCloned(true);
+               input.getCorraspondingFragment().setSite(equilvientSite);
+               
                qep.getIOT().addInstanceFragment(input.getCorraspondingFragment());
              }
              sortOutFragments(input, equilvientSite, qep, input.getCorraspondingFragment());
@@ -168,6 +177,7 @@ public class PhysicalToLogicalConversion
            else
            {
              input.getCorraspondingFragment().setCloned(true);
+             input.getCorraspondingFragment().setSite(equilvientSite);
              qep.getIOT().addInstanceFragment(input.getCorraspondingFragment());
              sortOutFragments(input, equilvientSite, qep, input.getCorraspondingFragment());
            }
