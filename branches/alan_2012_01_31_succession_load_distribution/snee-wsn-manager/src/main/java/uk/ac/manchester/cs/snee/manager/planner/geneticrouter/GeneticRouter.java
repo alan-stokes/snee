@@ -3,7 +3,6 @@ package uk.ac.manchester.cs.snee.manager.planner.geneticrouter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -14,6 +13,7 @@ import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.sn.router.Router;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
@@ -32,7 +32,7 @@ public class GeneticRouter extends AutonomicManagerComponent
   private Genome requiredSites; 
   private Topology network;
   private static final int maxIterations = 100;
-  private static final int populationSize = 10;
+  private static final int populationSize = 30;
   private PAF paf;
   private File geneicFolder = null;
   
@@ -59,10 +59,13 @@ public class GeneticRouter extends AutonomicManagerComponent
     ArrayList<Genome> initalPopulation = generateInitialPopulation(alternativePlans);
     int currentIteration = 0;
     ArrayList<Genome> currentPopulation = initalPopulation;
+   
     while(currentIteration < maxIterations)
     {
+      File iterationFolder = new File(geneicFolder.toString() + sep + "iteration" + currentIteration);
+      iterationFolder.mkdir();
       currentPopulation = repopulate(currentPopulation);
-      locateBestAlternatives(currentPopulation);
+      locateAlternatives(currentPopulation, iterationFolder);
       currentIteration++;
       System.out.println("Now starting iteration " + currentIteration);
     }
@@ -77,38 +80,11 @@ public class GeneticRouter extends AutonomicManagerComponent
     while(eliteIterator.hasNext())
     {
       Genome elite = eliteIterator.next();
-      Cloner cloner = new Cloner();
-      cloner.dontClone(Logger.class);
-      
-      Topology currentTopology = cloner.deepClone(network);
-      int counter = 0;
-      Iterator<Boolean> geneIterator = elite.geneIterator();
-      while(geneIterator.hasNext())
-      {
-        Boolean geneValue = geneIterator.next();
-        if(geneValue)
-        {
-          if(!geneValue)
-          {
-            currentTopology.removeNode(this.nodeIds.get(counter));
-            currentTopology.removeAssociatedEdges(this.nodeIds.get(counter));
-          }
-        }
-      }
-      try
-      {
-        Router router = new Router();
-        RT route = router.doRouting(this.paf, "", currentTopology, _metadata);
-        this.eliteSolutions.add(route.getSiteTree());
-      }
-      catch(Exception e)
-      {
-        e.printStackTrace();
-      }
+      eliteSolutions.add(elite.getRt().getSiteTree());
     }
   }
 
-  private void locateBestAlternatives(ArrayList<Genome> currentPopulation)
+  private void locateAlternatives(ArrayList<Genome> currentPopulation, File iterationFolder)
   {
     Iterator<Genome> popIterator = currentPopulation.iterator();
     while(popIterator.hasNext())
@@ -136,6 +112,14 @@ public class GeneticRouter extends AutonomicManagerComponent
           }
         }
       }
+    }
+    Iterator<Genome> eliteIterator = eliteGenomes.iterator();
+    int id = 1;
+    while(eliteIterator.hasNext())
+    {
+      Genome eliteGen = eliteIterator.next();
+      new RTUtils(eliteGen.getRt()).exportAsDotFile(iterationFolder + sep + "elite" + id);
+      id ++;
     }
   }
 
@@ -210,11 +194,17 @@ public class GeneticRouter extends AutonomicManagerComponent
     order.addAll(failesToMakeTrees);
     Iterator<Genome> orderedGenomes = order.iterator();
     Random random = new Random();
-    while(orderedGenomes.hasNext() || newPop.size() < populationSize)
+    while(newPop.size() < populationSize)
     {
       Genome first = null;
       Genome second = null;
-      first = orderedGenomes.next();
+      if(orderedGenomes.hasNext())
+        first = orderedGenomes.next();
+      else
+      {
+        int randomIndex = random.nextInt(order.size());
+        first = order.get(randomIndex);
+      }
       if(orderedGenomes.hasNext())
         second = orderedGenomes.next();
       else
@@ -222,7 +212,7 @@ public class GeneticRouter extends AutonomicManagerComponent
         int randomIndex = random.nextInt(order.size());
         second = order.get(randomIndex);
       }
-      ArrayList<Genome> children = Genome.mergeGenomes(first, second);
+      ArrayList<Genome> children = Genome.mergeGenomes(first, second, requiredSites);
       newPop.addAll(children); 
     }
    return newPop;
@@ -258,7 +248,7 @@ public class GeneticRouter extends AutonomicManagerComponent
       for(int index = 0; index < this.nodeIds.size(); index ++)
       {
         int randomNumber = randomNumberGenerator.nextInt(100);
-        if(randomNumber > 50)
+        if(randomNumber > 10)
           currentDNA.add(true);
         else
           currentDNA.add(false);

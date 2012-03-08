@@ -94,7 +94,10 @@ public class TXComponent extends NesCComponent {
 	
     	super(config, tossimFlag, ledsDebug, target);
 		this.instanceOfGeneric = true;
+		assert this.destFrag != null;
 		this.sourceFrag = sourceFrag;
+    if(this.sourceFrag == null)
+      System.out.println("");
 		this.destSite = destSite;
 		this.destFrag = destFrag;
 		this.rxSite = rxSite;
@@ -143,8 +146,23 @@ public class TXComponent extends NesCComponent {
 		}
 		
 		//int tuplesPerPacket= Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE/((new Integer(CodeGenUtils.outputTypeSize.get(CodeGenUtils.generateOutputTupleType(sourceFrag)).toString()))+ Settings.NESC_PAYLOAD_OVERHEAD);
-		final int tupleSize = new Integer(CodeGenUtils.outputTypeSize
-			.get(CodeGenUtils.generateOutputTupleType(this.sourceFrag)));
+		int tupleSize = 0;
+		String temp = CodeGenUtils.generateOutputTupleType(this.sourceFrag);
+		Integer inttemp = CodeGenUtils.outputTypeSize.get(temp);
+		if(inttemp  ==  null)
+		{
+      System.out.println("broken");
+      System.out.println("children size = " + this.sourceFrag.getChildFragments().size());
+      System.out.println("");
+		}
+		tupleSize = inttemp;
+		
+		if(tupleSize == 0)
+		{
+		  System.out.println("broken");
+		  System.out.println("children size = " + this.sourceFrag.getChildFragments().size());
+		  System.out.println("");
+		}
 		//	int tuplesPerPacket =(int)Math.floor((Settings.NESC_MAX_MESSAGE_PAYLOAD_SIZE - (Settings.NESC_PAYLOAD_OVERHEAD+2)) / (tupleSize+2));
 		final int numTuplesPerMessage = ExchangePart
 			.computeTuplesPerMessage(tupleSize, costParams);

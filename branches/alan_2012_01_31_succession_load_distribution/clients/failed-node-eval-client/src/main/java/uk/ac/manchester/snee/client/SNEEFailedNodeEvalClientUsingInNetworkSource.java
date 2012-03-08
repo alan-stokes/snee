@@ -62,8 +62,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	private static SensorNetworkQueryPlan qep;
 	private static ClientUtils utils = new ClientUtils();
 	private static int max = 120;
-	private static File testFolder =  new File("src/main/resources/testsSize30");
-	private static File sneetestFolder =  new File("testsSize30");
+	private static File testFolder =  new File("src/main/resources/testsNatural");
+	private static File sneetestFolder =  new File("testsNatural");
 	
 	public SNEEFailedNodeEvalClientUsingInNetworkSource(String query, 
 			double duration, String queryParams, String csvFile, String sneeProperties) 
@@ -247,7 +247,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
      {
        String testPath = testFolder.getAbsolutePath();
        System.out.println(testPath);
-       String [] params = {"generateScenarios.py", testPath};
+       String [] params = {"generateScenariosNatural.py", testPath};
        Map<String,String> enviro = new HashMap<String, String>();
        System.out.println("running Ixent's scripts for 30 random queries");
        Utils.runExternalProgram("python", params, enviro, pythonPath);

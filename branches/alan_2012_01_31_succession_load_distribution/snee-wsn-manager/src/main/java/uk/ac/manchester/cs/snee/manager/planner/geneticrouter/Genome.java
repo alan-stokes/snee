@@ -53,7 +53,7 @@ public class Genome implements Comparable<Genome>
      }
    }
    
-   public static ArrayList<Genome> mergeGenomes(Genome first, Genome second)
+   public static ArrayList<Genome> mergeGenomes(Genome first, Genome second, Genome master)
    {
      Random randomNumberGenerator = new Random();
      int randomNumber = randomNumberGenerator.nextInt(100);
@@ -84,6 +84,8 @@ public class Genome implements Comparable<Genome>
      Genome secondChildGenome = new Genome(secondChild);
      //add to array, and return
      ArrayList<Genome> children = new ArrayList<Genome>();
+     firstChildGenome = Genome.XorGenome(firstChildGenome, master);
+     secondChildGenome = Genome.XorGenome(secondChildGenome, master);
      children.add(firstChildGenome);
      children.add(secondChildGenome);
      

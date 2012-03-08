@@ -222,8 +222,6 @@ public class NodeImplementation implements Node, Serializable {
 
 	public void replaceInput(Node replace, Node newInput) {
 		int i = inputs.indexOf(replace);
-		if(i == -1)
-		  System.out.println();
 		inputs.set(i, newInput);
 	}
 	

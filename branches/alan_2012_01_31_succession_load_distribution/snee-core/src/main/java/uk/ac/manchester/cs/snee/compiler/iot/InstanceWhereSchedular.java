@@ -632,7 +632,6 @@ public class InstanceWhereSchedular
         try
         {
           new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
-          System.out.println();
         }
         catch (SchemaMetadataException e)
         {
@@ -664,7 +663,6 @@ public class InstanceWhereSchedular
         try
         {
           new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
-          System.out.println();
         }
         catch (SchemaMetadataException e)
         {
@@ -938,7 +936,6 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         try
         {
           new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
-          System.out.println();
         }
         catch (SchemaMetadataException e)
         {
@@ -970,7 +967,6 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         try
         {
           new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
-          System.out.println();
         }
         catch (SchemaMetadataException e)
         {
@@ -1000,8 +996,6 @@ private void addOtherOpTypeInstances(SensornetOperator op,
     for (int sourceSiteIterator=0; sourceSiteIterator < sourceSitesIDs.size(); sourceSiteIterator++) 
     {//get site object
       Site site = routingTree.getSite(sourceSitesIDs.get(sourceSiteIterator));
-      if(site == null)
-        System.out.println("");
       InstanceOperator opInst = new InstanceOperator(op, site);//make new instance of the operator
       iot.addOpInst(op, opInst);//add to instance dafs hashmap
       iot.assign(opInst, site);//put this operator on this site (placed)

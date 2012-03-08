@@ -165,7 +165,16 @@ public class TabuSearch extends AutonomicManagerComponent
       assessorFolder.mkdir();
     }
     ChoiceAssessor assessAdaptation = new ChoiceAssessor(_metadata, _metaManager, assessorFolder);
-    assessAdaptation.assessChoice(adapt, successor.getTheRunTimeSites(), false);
+    System.out.println("assessing successor " + successor.toString());
+    try
+    {
+      assessAdaptation.assessChoice(adapt, successor.getTheRunTimeSites(), false);
+    }
+    catch(Exception e)
+    {
+      generator.removeAAlterative(successor.getQep());
+      return 0;
+    }
     successor.substractAdaptationCostOffRunTimeSites(adapt);
     return successor.getLifetimeInAgendas();
   }

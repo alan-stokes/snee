@@ -166,5 +166,10 @@ public class NeighbourhoodGenerator
     }while (minAgenda + 5 < maxAgenda);
     return minAgenda;
   }
+
+  public void removeAAlterative(SensorNetworkQueryPlan qep)
+  {
+    this.alternativePlans.remove(qep);
+  }
   
 }

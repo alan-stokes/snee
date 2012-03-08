@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<source xmlns="http://snee.cs.man.ac.uk/namespace/physical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../schema/physical-schema.xsd ">
+
+	<sensor_network name="wsn1">
+		<topology>testsNatural/wsn_query110.xml</topology>
+		<site-resources>testsNatural/siteRes110.xml</site-resources>
+		<gateways>0</gateways>
+		<extents>
+			<extent name="A">
+				<sites>42,38</sites>
+			</extent>
+			<extent name="B">
+				<sites>38,36</sites>
+			</extent>
+			<extent name="C">
+				<sites>36,8</sites>
+			</extent>
+			<extent name="D">
+				<sites>8,37</sites>
+			</extent>
+			<extent name="E">
+				<sites>37,31</sites>
+			</extent>
+			<extent name="F">
+				<sites>31,22</sites>
+			</extent>
+			<extent name="G">
+				<sites>22,17</sites>
+			</extent>
+			<extent name="H">
+				<sites>17,29</sites>
+			</extent>
+		</extents> 
+	</sensor_network> 
+</source>

@@ -2,7 +2,7 @@ package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
 
 public class StoppingCriteria
 {
-  private static int numberOfIterationsTillStop = 100;
+  private static int numberOfIterationsTillStop = 300;
   
   public static  boolean satisifiesStoppingCriteria(int interations)
   {

@@ -18,6 +18,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.Successor;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.SuccessorUtils;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 
 public class PlannerUtils
@@ -83,7 +84,7 @@ public class PlannerUtils
        Successor successor =  successorIterator.next();
        new RTUtils(successor.getQep().getRT()).exportAsDotFile(successorFolder.toString() + sep + "rt");
        new DAFUtils(successor.getQep().getDAF()).exportAsDotFile(successorFolder.toString() + sep + "daf");
-       new IOTUtils(successor.getQep().getIOT(), null).exportAsDOTFile(successorFolder.toString() + sep + "iot", "", true);
+       new IOTUtils(successor.getQep().getIOT(), null).exportAsDotFileWithFrags(successorFolder.toString() + sep + "iot", "", true);
        new AgendaUtils(successor.getQep().getAgenda(), false).exportAsLatex(successorFolder.toString() + sep + "agenda");
        successorCount ++;
      }

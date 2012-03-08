@@ -307,13 +307,13 @@ public class Plotter implements Serializable
     lifetimeWriter.write(queryID +  "_(" + global.getNewQep().getAgendaIOT().getBufferingFactor() + ") ");
     if(global != null)
     {
-      lifetimeWriter.write(df.format(global.getLifetimeEstimate() / new Double(1000) / new Double(1024)) + " ");
-      lifetimeYMax = Math.max(lifetimeYMax, global.getLifetimeEstimate() /new Double(1000) / new Double(1024));
+      lifetimeWriter.write(df.format(global.getLifetimeEstimate() / new Double(1000) ) + " ");
+      lifetimeYMax = Math.max(lifetimeYMax, global.getLifetimeEstimate() /new Double(1000) );
     }
     if(partial != null)
     {
-      lifetimeWriter.write(df.format(partial.getLifetimeEstimate() / new Double(1000) / new Double(1024)) + " ");
-      lifetimeYMax = Math.max(lifetimeYMax, partial.getLifetimeEstimate() / new Double(1000) / new Double(1024));
+      lifetimeWriter.write(df.format(partial.getLifetimeEstimate() / new Double(1000)) + " ");
+      lifetimeYMax = Math.max(lifetimeYMax, partial.getLifetimeEstimate() / new Double(1000) );
     }
     else
     {
@@ -321,8 +321,8 @@ public class Plotter implements Serializable
     }
     if(local != null)
     {
-      lifetimeWriter.write(df.format(local.getLifetimeEstimate() / new Double(1000) / new Double(1024)) + " ");
-      lifetimeYMax = Math.max(lifetimeYMax, local.getLifetimeEstimate() /new Double(1000) / new Double(1024));
+      lifetimeWriter.write(df.format(local.getLifetimeEstimate() / new Double(1000) ) + " ");
+      lifetimeYMax = Math.max(lifetimeYMax, local.getLifetimeEstimate() /new Double(1000) );
     }
     else
     {

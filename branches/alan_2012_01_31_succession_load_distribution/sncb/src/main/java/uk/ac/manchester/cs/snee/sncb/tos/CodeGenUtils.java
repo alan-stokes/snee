@@ -118,8 +118,7 @@ public final class CodeGenUtils {
 	if (op.isFragmentRoot()) {
 	    return generateTypeName(prefix, op.getContainingFragment());
 	} else if (op instanceof SensornetExchangeOperator) {
-	    return generateTypeName(prefix, ((SensornetOperator)op.getInput(0))
-		    .getContainingFragment());
+	    return generateTypeName(prefix, ((SensornetExchangeOperator) op).getSourceFragment());
 	} else {
 	    return prefix + "Op" + op.getID();
 	}

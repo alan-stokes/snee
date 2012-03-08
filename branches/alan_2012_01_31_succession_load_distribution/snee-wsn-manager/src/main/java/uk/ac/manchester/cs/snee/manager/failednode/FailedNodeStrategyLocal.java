@@ -361,8 +361,6 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           //rewire children
           rewireNodes(clonedIOT, failedNodeID, equivilentNodeID, overlay.getQep().getIOT());
           new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay after nodes");
-          System.out.println("");
-          System.out.println("");
         }
         new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iot", "iot with eqiv nodes", true);
         
@@ -380,7 +378,6 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotAfterReconnect", "iot with eqiv nodes", true);
           new DAFUtils(newIOT.getDAF()).exportAsDotFile(localFolder.toString() + sep + "daf");
           new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay after disconnect and reconnect");
-          System.out.println("");
         
           //run new iot though when scheduler and locate changes
           AgendaIOT newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());

@@ -11,6 +11,7 @@ import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceWhereSchedular;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
@@ -78,8 +79,10 @@ public class AlternativeGenerator extends AutonomicManagerComponent
 	  
 	  Iterator<RT> routeIterator = candidateRoutes.iterator();
     int routeCounter = 1;
+    System.out.println("storing alternatives");
     while(routeIterator.hasNext())
     {
+      System.out.println("storing alternative " + routeCounter);
       File planOutputFolder =  new File(this.outputFolder.toString() + sep + "plan" + routeCounter);
       planOutputFolder.mkdir();
       RT routingTree = routeIterator.next();
@@ -97,9 +100,11 @@ public class AlternativeGenerator extends AutonomicManagerComponent
       WhenScheduler whenScheduling = new WhenScheduler(allowDiscontinuousSensing, this.qep.getCostParameters(), useNetworkController);
       Agenda agenda = whenScheduling.doWhenScheduling(daf, this.qep.getQos(), this.qep.getQueryName());
       AgendaIOT agendaIOT = whenScheduling.doWhenScheduling(iot, this.qep.getQos(), this.qep.getQueryName(), this.qep.getCostParameters());
+      new AgendaIOTUtils(agendaIOT, iot, true).generateImage(planOutputFolder.toString());
       qeps.add(new SensorNetworkQueryPlan(this.qep.getDLAF(), routingTree, daf, iot, agendaIOT, agenda, this.qep.getQueryName() + ":ALT" + routeCounter ));
       routeCounter++;
     }
+    System.out.println("finished storing alternatives");
     return qeps;
   }
 } 
