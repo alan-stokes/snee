@@ -38,6 +38,7 @@ import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.executer.Executer;
 import uk.ac.manchester.cs.snee.manager.monitor.Monitor;
+import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessor;
 import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
 import uk.ac.manchester.cs.snee.manager.planner.model.Model;
@@ -267,8 +268,10 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
 
   @Override
   public void simulateEnergyDrainofAganedaExecutionCycles(
-      int fixedNumberOfAgendaExecutionCycles)
+      int fixedNumberOfAgendaExecutionCycles) throws FileNotFoundException, IOException, OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException
   {
+    SensorNetworkQueryPlan qep = (SensorNetworkQueryPlan) this.currentQEP;
+    ChoiceAssessor.calculateEstimatedLifetimewithFailedNodes(qep.getIOT(), qep.getAgendaIOT(), new ArrayList<String>(), this.runningSites);
     monitor.simulateNumeriousAgendaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
   }
 
@@ -508,7 +511,8 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   public Double getEstimatedLifetime(SensorNetworkQueryPlan originalQEP,
       ArrayList<String> fails)
   throws FileNotFoundException, IOException, OptimizationException,
-  SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  SchemaMetadataException, TypeMappingException, SNEEConfigurationException,
+  CodeGenerationException
   {
     return this.planner.getEstimatedLifetime(originalQEP, fails, this.runningSites);
   }

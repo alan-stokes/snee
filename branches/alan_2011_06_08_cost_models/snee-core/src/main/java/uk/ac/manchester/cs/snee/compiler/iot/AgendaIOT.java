@@ -795,7 +795,9 @@ public class AgendaIOT extends SNEEAlgebraicForm{
       if (currentNode.getOutputs().length > 0) 
       {
     		final HashSet<InstanceExchangePart> tuplesToSend = new HashSet<InstanceExchangePart>();
-    		final Iterator<InstanceExchangePart> exchCompIter = iot.getSite(currentNode.getID()).getInstanceExchangeComponents().iterator();
+    		Site s = iot.getSite(currentNode.getID());
+    		
+    		final Iterator<InstanceExchangePart> exchCompIter = s.getInstanceExchangeComponents().iterator();
     		//.getExchangeOperators(currentNode).iterator();
     		//TODO fix to use instance exchange parts.
     		while (exchCompIter.hasNext()) 
@@ -1101,6 +1103,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     long cpuActiveTimeBms = 0;
     
     double sensorEnergy = 0;
+    boolean requiresSensorEnergy = false;
     ArrayList<Task> siteTasks = this.tasks.get(site);
     //not within the QEP. so no cost
     if(siteTasks == null)
@@ -1119,19 +1122,17 @@ public class AgendaIOT extends SNEEAlgebraicForm{
       if (t instanceof FragmentTask) {
         FragmentTask ft = (FragmentTask)t;
         Fragment f = ft.getFragment();
-        if (f.containsOperatorType(SensornetAcquireOperator.class)) {
-          sensorEnergy += AvroraCostParameters.getSensorEnergyCost();
+        if (f.containsAcqOperator()) {
+          requiresSensorEnergy = true;
         }
-        sumEnergy += sensorEnergy;
       }
       else if(t instanceof InstanceFragmentTask)
       {
         InstanceFragmentTask ft = (InstanceFragmentTask)t;
         InstanceFragment f = ft.getFragment();
-        if (f.containsOperatorType(SensornetAcquireOperator.class)) {
-          sensorEnergy += AvroraCostParameters.getSensorEnergyCost();
+        if (f.containsAcqOperator()) {
+          requiresSensorEnergy = true;
         }
-        sumEnergy += sensorEnergy;
       }
       else if (t instanceof CommunicationTask) {
         CommunicationTask ct = (CommunicationTask)t;
@@ -1145,6 +1146,9 @@ public class AgendaIOT extends SNEEAlgebraicForm{
         sumEnergy += taskEnergy;
       }
     }
+    if(requiresSensorEnergy)
+      sensorEnergy = AvroraCostParameters.getSensorEnergyCost(this.getDeliveryTime_ms());
+    sumEnergy += sensorEnergy;
     sumEnergy += getCPUEnergy(cpuActiveTimeBms);
     return sumEnergy;
   } 

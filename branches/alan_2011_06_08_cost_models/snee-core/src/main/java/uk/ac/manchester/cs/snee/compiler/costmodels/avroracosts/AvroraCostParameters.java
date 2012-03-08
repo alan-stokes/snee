@@ -491,9 +491,11 @@ public final class AvroraCostParameters {
         return 1000 * ((double)cycles) / FREQUENCY;
     }
     
-    public static double getSensorEnergyCost() 
+    public static double getSensorEnergyCost(Long agendaDuration) 
     {
-      return 0.00000003222;
+      double v = (agendaDuration + 0.017) * 0.0000006 * 3;
+      return v;
+      //return 0.00000003222;
     }
     
     public static double getBetweenPackets()

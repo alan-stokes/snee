@@ -44,7 +44,7 @@ public class FailedNodeTimeClientUtils
     plot.newWriters(queryID);
   }
   
-  private void sortout(ArrayList<Adaptation> adaptations, boolean bestAd)
+  public void sortout(ArrayList<Adaptation> adaptations, boolean bestAd)
   {
     
     if(bestAd)
@@ -53,7 +53,13 @@ public class FailedNodeTimeClientUtils
       while(adaptIterator.hasNext())
       {
         Adaptation ad = adaptIterator.next();
-        best = ad;
+        if(best != null)
+        {
+          if(best.getLifetimeEstimate() < ad.getLifetimeEstimate())
+            best = ad;
+        }
+        else
+          best = ad; 
       }
     }
     else
@@ -252,5 +258,10 @@ public class FailedNodeTimeClientUtils
   public void plotTopology(int testID) throws IOException
   {
     plot.writeLifetimes(testID);
+  }
+
+  public Adaptation getBest()
+  {
+   return this.best;
   }
 }

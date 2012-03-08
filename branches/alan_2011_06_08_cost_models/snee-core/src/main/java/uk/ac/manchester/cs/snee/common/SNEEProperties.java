@@ -266,7 +266,7 @@ public class SNEEProperties {
     }
     else if(propName.equals("wsn_manager.k_resilence_sense"))
     {
-      setSetting(propName, "false");
+      setSetting(propName, "true");
       return getSetting(propName);
     }
     else if(propName.equals("runCostModel"))

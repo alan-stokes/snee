@@ -25,9 +25,9 @@ public class Adaptation implements Serializable
   private SensorNetworkQueryPlan oldQep = null;
   private Long timeCost = null;
   private HashMap<String, Double> siteEnergyCosts = new HashMap<String, Double>();
-  private Double overallEnergyCost = null;
-  private Double runtimeCost = null;
-  private Double lifetimeEstimate = null; 
+  private Double overallEnergyCost = null; // J
+  private Double runtimeCost = null; // J
+  private Double lifetimeEstimate = null; //in seconds
   private StrategyIDEnum id;
   private int numberID;
   private String nodeIdWhichEndsQuery = null;

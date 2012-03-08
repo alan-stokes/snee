@@ -159,7 +159,7 @@ public class ChoiceAssessor implements Serializable
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    */
-  private Double calculateEstimatedLifetime(Adaptation adapt) 
+  private Double calculateEstimatedLifetime(Adaptation adapt) //seconds
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException
   {

@@ -286,8 +286,6 @@ public class IOTUtils
             String OpInstOutputPhysicalID = paOpInst.getSensornetOperator().getID();
             SensornetOperator dafSensorNetOperator = (SensornetOperator)cDAF.getOperatorTree().getNode(OpInstOutputPhysicalID);
             Fragment destFrag = dafSensorNetOperator.getContainingFragment();
-            if(sourceSite == null || destSite == null)
-            	System.out.println();
             final Path path = cDAF.getRT().getPath(sourceSite.getID(), destSite.getID());
           
             cDAF.placeFragment(sourceFrag, sourceSite);

@@ -35,6 +35,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyEnum;
 import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -60,6 +61,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	private static int queryid = 1;
 	protected static int testNo = 1;
 	private static String dictonary = "testsSize30";
+  //private static String dictonary = "testsSize100";
+	//private static String dictonary = "testsNatural";
 	
 	//used to calculate agenda cycles
 	protected static int maxNumberofFailures = 8;
@@ -178,31 +181,40 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   {
     try
     {
-      //runOriginalTests(currentQuery, allowDeathOfAcquires);
       if(position == 0)
       {
-        //runGlobalTests(currentQuery, allowDeathOfAcquires);
+       // runOriginalTests(currentQuery, allowDeathOfAcquires);
+        System.out.println("finished running original");
         runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
       }
-      else if(position == 1)
+      if(position == 1)
       {
-        //runPartialTests(currentQuery, allowDeathOfAcquires);
+        runGlobalTests(currentQuery, allowDeathOfAcquires);
+        System.out.println("finished running global");
         runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
       }
       else if(position == 2)
       {
-        runOverlayTests(currentQuery, allowDeathOfAcquires);
+        //runPartialTests(currentQuery, allowDeathOfAcquires);
+        System.out.println("finished running partial");
         runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
       }
       else if(position == 3)
       {
-       // runBestTests(currentQuery, allowDeathOfAcquires);
+       // runOverlayTests(currentQuery, allowDeathOfAcquires);
+        System.out.println("finished running overlay");
+        runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
+      }
+      else if(position == 4)
+      {
+        //runBestTests(currentQuery, allowDeathOfAcquires);
+        System.out.println("finished running best");
         runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
       }    
     }
     catch(Exception e)
     {
-      if(position + 1 == 4)
+      if(position + 1 == 5)
       {
         System.out.println("system failed as: " + e.getMessage());
         e.printStackTrace();
@@ -222,10 +234,12 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     //client.resetDataSources(originalQEP);
     System.out.println("running tests for orgiinal ");
     SNEEController control = (SNEEController) client.controller;
+    client.resetDataSources((SensorNetworkQueryPlan) control.getQEP());
     Double leftOverLifetime = control.getEstimatedLifetime((SensorNetworkQueryPlan) control.getQEP(), new ArrayList<String>());
     SensorNetworkQueryPlan currentQEP = (SensorNetworkQueryPlan) control.getQEP();
     Double agendas = leftOverLifetime / (currentQEP.getAgendaIOT().getLength_bms(false)/ 1024);
     System.out.println("originalQEP : " + agendas);
+    client.resetDataSources((SensorNetworkQueryPlan) control.getQEP());
     //run for orgiinal 
     for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
     {
@@ -242,8 +256,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       }
       currentlyFailedNodes.clear();
       double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures ;
-      lifetime = currentLifetime + lifetime;
-      lifetime = lifetime / 1000;
+      lifetime = currentLifetime + lifetime; // seconds
+      lifetime = lifetime / (originalQEP.getAgendaIOT().getLength_bms(false) / 1024);  // agendas
       utils.storeoriginal(queryid, currentNumberOfFailures, lifetime, fails);
       System.out.println("orginal :- " + lifetime);
       utils.plotTopology(testNo -1);
@@ -309,8 +323,13 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         testNo++;
       }
       currentlyFailedNodes.clear();
-      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures ;
+      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures ; // seconds
+      ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
+          testNo + sep + "Planner" + sep + "storedObjects"));
+      utils.sortout(adapts, false);
+      currentLifetime = currentLifetime + utils.getPartial().getLifetimeEstimate();
       utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.PARTIAL, fails);
+      
       utils.plotTopology(testNo -1);
       client.resetDataSources(originalQEP);
     }
@@ -344,6 +363,10 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       }
       currentlyFailedNodes.clear();
       double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures;
+      ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
+          (testNo -1) + sep + "Planner" + sep + "storedObjects"));
+      utils.sortout(adapts, false);
+      currentLifetime = currentLifetime + utils.getGlobal().getLifetimeEstimate();
       utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.GLOBAL, fails);
       utils.plotTopology(testNo -1);
       client.resetDataSources(originalQEP);
@@ -381,6 +404,10 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       }
       currentlyFailedNodes.clear();
       double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures;
+      ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
+          testNo + sep + "Planner" + sep + "storedObjects"));
+      utils.sortout(adapts, false);
+      currentLifetime = currentLifetime + utils.getLocal().getLifetimeEstimate();
       utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.LOCAL, fails);
       utils.plotTopology(testNo -1);
       client.resetDataSources(originalQEP);
@@ -407,14 +434,16 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   private static void runBestTests(String currentQuery, boolean allowDeathOfAcquires) 
   throws Exception
   {
-    client.resetDataSources(originalQEP);
+    //client.resetDataSources(originalQEP);
     originalQEP = client.getQEP();
     System.out.println("running tests for best ");
     SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, ChoiceAssessorPreferenceEnum.Best.toString());
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_STRATEGIES, FailedNodeStrategyEnum.All.toString());
     testNo = 1;
     for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
     {
       calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
+      client.setupOverlay();
       System.out.println("running tests with " + currentNumberOfFailures + " failures");
       ArrayList<String> fails = new ArrayList<String>();
       for(int currentFailure = 1; currentFailure <= currentNumberOfFailures; currentFailure++)
@@ -426,6 +455,10 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       }
       currentlyFailedNodes.clear();
       double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures;
+      ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
+          testNo + sep + "Planner" + sep + "storedObjects"));
+      utils.sortout(adapts, true);
+      currentLifetime = currentLifetime + utils.getBest().getLifetimeEstimate();
       utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.ALL, fails);
       utils.plotTopology(testNo -1);
       client.resetDataSources(originalQEP);
@@ -475,6 +508,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     double timeBetweenFailures =  originalLifetime / (currentNumberOfFailures + 1); //s
     Long agendaLength = originalQEP.getAgendaIOT().getLength_bms(false) / 1024; // s
     numberOfExectutionCycles = (int) (timeBetweenFailures/agendaLength);
+    System.out.println("");
   }
 
   /**
@@ -590,13 +624,14 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     RT routingTree = qep.getRT();
     Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
     applicableConfulenceSites.clear();
+    
     SNEEController snee = (SNEEController) controller;
     SourceMetadataAbstract metadata = snee.getMetaData().getSource(qep.getMetaData().getOutputAttributes().get(1).getExtentName());
     SensorNetworkSourceMetadata sensornetworkMetadata = (SensorNetworkSourceMetadata) metadata;
     int[] sources = sensornetworkMetadata.getSourceSites(qep.getDAF().getPAF());
     String sinkID = qep.getRT().getRoot().getID();
     
-    /*while(siteIterator.hasNext())
+    while(siteIterator.hasNext())
     {
       Site currentSite = siteIterator.next();
       if((allowDeathOfAcquires ||  (!allowDeathOfAcquires && !isSource(currentSite, sources))) &&
@@ -616,7 +651,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         if(!site.isSource())
           applicableConfulenceSites.add(site.getID());
       }
-    }*/
+    }
     if(applicableConfulenceSites.size() == 0)
     {
       siteIterator = qep.getRT().siteIterator(TraversalOrder.POST_ORDER);
@@ -639,7 +674,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       applicableConfulenceSites.remove(fail);
     }
   }
-
+ 
   private boolean isSource(Site currentSite, int[] sources)
   {
     String siteIDs = currentSite.getID();

@@ -339,7 +339,9 @@ public class Dispatcher {
     return _autonomicManager.getCurrentQEP();
   }
 
-  public void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles)
+  public void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles) 
+  throws FileNotFoundException, IOException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException, SNEEConfigurationException
   {
     _autonomicManager.simulateEnergyDrainofAganedaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
   }
@@ -363,7 +365,7 @@ public class Dispatcher {
   public Double getEstimatedLifetime(SensorNetworkQueryPlan originalQEP,
       ArrayList<String> fails) 
   throws FileNotFoundException, IOException, OptimizationException,
-  SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  SchemaMetadataException, TypeMappingException, SNEEConfigurationException, CodeGenerationException
   {
     return _autonomicManager.getEstimatedLifetime(originalQEP, fails);
   }

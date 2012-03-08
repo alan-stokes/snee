@@ -90,7 +90,9 @@ public interface AutonomicManager
   
   public abstract void runSimulatedNumberOfAgendaExecutionCycles(int numberofAgendaExecutionCycles);
 
-  public abstract void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles);
+  public abstract void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles)
+  throws FileNotFoundException, IOException, OptimizationException, SchemaMetadataException, 
+  TypeMappingException, SNEEConfigurationException;
 
   public abstract void forceFailedNodes(ArrayList<String> failedNodesID) 
   throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, 
@@ -116,6 +118,6 @@ public interface AutonomicManager
   public abstract Double getEstimatedLifetime(
       SensorNetworkQueryPlan originalQEP, ArrayList<String> fails)
   throws FileNotFoundException, IOException, OptimizationException, 
-  SchemaMetadataException, TypeMappingException, SNEEConfigurationException;
+  SchemaMetadataException, TypeMappingException, SNEEConfigurationException, CodeGenerationException;
 
 }

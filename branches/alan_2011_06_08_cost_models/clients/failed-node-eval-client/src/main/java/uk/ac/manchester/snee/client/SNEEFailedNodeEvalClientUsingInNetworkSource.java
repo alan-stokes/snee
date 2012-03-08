@@ -164,7 +164,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
       qep = currentQEP;
       routingTree = currentQEP.getRT();
       System.out.println("running tests");
-      allowDeathOfAcquires = true;
+      allowDeathOfAcquires = false;
       client.runTests(client, currentQuery, queryid, allowDeathOfAcquires);
       queryid ++;
       System.out.println("Ran all tests on query " + (queryid));
@@ -416,6 +416,7 @@ private void resetMetaData()
     System.out.println("Query: " + _query);
     System.out.println("Failed nodes" + failedNodes.toString() );
     SNEEController control = (SNEEController) controller;
+    this.resetMetaData();
     control.giveAutonomicManagerQuery(_query);
     Model.setCompiledAlready(false);
     control.runSimulatedNodeFailure(failedNodes);

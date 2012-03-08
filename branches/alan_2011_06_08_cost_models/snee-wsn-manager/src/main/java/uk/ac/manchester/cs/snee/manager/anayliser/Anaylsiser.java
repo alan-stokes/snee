@@ -107,10 +107,10 @@ public class Anaylsiser extends AutonomicManagerComponent
         new FailedNodeStrategyLocal(manager, _metadata, _metadataManager);
       FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
         new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
-      frameworks.add(failedNodeFrameworkLocal);
       frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
       //frameworks.add(failedNodeFrameworkSpacePinned);
-      frameworks.add(failedNodeFrameworkGlobal);     
+      frameworks.add(failedNodeFrameworkGlobal);   
+      frameworks.add(failedNodeFrameworkLocal);
     }
   }
 
@@ -288,6 +288,7 @@ public class Anaylsiser extends AutonomicManagerComponent
   	Iterator<StrategyAbstract> frameworkIterator = frameworks.iterator();
   	String choice = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);
   	boolean feasiable = true;
+  	boolean overlayFailed = false;
   	//go though methodologyies till located a adapatation.
   	while(frameworkIterator.hasNext() && feasiable)
   	{
@@ -301,11 +302,16 @@ public class Anaylsiser extends AutonomicManagerComponent
        )
   	  {
        List<Adaptation> frameworkOutput = framework.adapt(failedNodes);
+       if(frameworkOutput.size() == 0 && framework instanceof FailedNodeStrategyLocal)
+         overlayFailed = true;
   	  if(frameworkOutput.size() == 0 && framework instanceof FailedNodeStrategyGlobal)
   	    feasiable = false;
   	  adapatations.addAll(frameworkOutput);
   	  }
   	}
+  	//if(!overlayFailed && choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()) && adapatations.getSize() == 2)
+  	 // return new AdaptationCollection();
+  	
     return adapatations;
   }
 

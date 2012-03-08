@@ -46,6 +46,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
@@ -538,5 +539,17 @@ public class Fragment implements Serializable{
 	public void removeOperator(SensornetOperator op) {
 		this.operators.remove(op);
 	}
+
+  public boolean containsAcqOperator()
+  {
+    final Iterator<SensornetOperator> i = this.operators.iterator();
+    while (i.hasNext()) {
+        final SensornetOperator op = i.next();
+        if (op instanceof SensornetAcquireOperator) {
+      return true;
+        }
+    }
+    return false;
+    } 
     
 }

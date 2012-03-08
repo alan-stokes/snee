@@ -55,7 +55,14 @@ public class Model
     {
       //create folder for this adaptation 
       adaptFolder.mkdir();
-      imageGenerator.generateNesCCode(adapt.getNewQep(), adaptFolder.toString() + sep, Model._metadataManager);
+      try
+      {
+        imageGenerator.generateNesCCode(adapt.getNewQep(), adaptFolder.toString() + sep, Model._metadataManager);
+      }
+      catch(Exception e)
+      {
+        return (long) 0;
+      }
       imageGenerator.compileNesCCode(adaptFolder.toString()+ sep);
       compiledAlready = true;
     }

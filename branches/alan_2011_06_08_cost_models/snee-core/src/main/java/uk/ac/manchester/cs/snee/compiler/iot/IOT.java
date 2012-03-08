@@ -891,6 +891,6 @@ public class IOT extends SNEEAlgebraicForm
 	  if(site.getID().equals(equivilentNodeID))
 		  return site;
 	}
-	return null;
+	return this.rt.getSite(equivilentNodeID);
   }
 }

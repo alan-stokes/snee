@@ -248,12 +248,12 @@ public class Planner extends AutonomicManagerComponent
   }
 
   public Double getEstimatedLifetime(SensorNetworkQueryPlan qep,
-      ArrayList<String> fails, HashMap<String, RunTimeSite> runningSites)
+      ArrayList<String> fails, HashMap<String, RunTimeSite> runningSitesorg)
   throws FileNotFoundException, IOException, OptimizationException, SchemaMetadataException, 
   TypeMappingException, SNEEConfigurationException
   {
     return ChoiceAssessor.calculateEstimatedLifetimewithFailedNodes(qep.getIOT(), 
-        qep.getAgendaIOT(), fails, runningSites);
+        qep.getAgendaIOT(), fails, runningSitesorg);
   }
   
 }

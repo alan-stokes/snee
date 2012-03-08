@@ -19,6 +19,8 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
 public class InstanceFragment implements Serializable
 {
@@ -272,6 +274,18 @@ public class InstanceFragment implements Serializable
   }
   return false;
   }
+  
+  public final boolean containsAcqOperator() {
+    final Iterator<InstanceOperator> i = this.operators.iterator();
+    while (i.hasNext()) {
+        final InstanceOperator op = i.next();
+        SensornetOperator sop = op.getSensornetOperator();
+        if (sop instanceof SensornetAcquireOperator) {
+      return true;
+        }
+    }
+    return false;
+    }
 
   public final boolean isLocationSensitive() {
   boolean found = false;
