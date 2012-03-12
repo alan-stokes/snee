@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collection;
@@ -154,8 +155,14 @@ public interface SNEE {
 	 * allows the monitor to simulate the energy drain of 
 	 * Numerous agenda execution cycles, without going though avrora
 	 * @param fixedNumberOfAgendaExecutionCycles
+	 * @throws SNEEConfigurationException 
+	 * @throws TypeMappingException 
+	 * @throws SchemaMetadataException 
+	 * @throws OptimizationException 
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
 	 */
-  public void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles);
+  public void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles) throws FileNotFoundException, IOException, OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException;
 
 
 }

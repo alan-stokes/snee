@@ -144,7 +144,7 @@ public class Planner extends AutonomicManagerComponent
   throws 
   IOException, OptimizationException, 
   SchemaMetadataException, TypeMappingException, 
-  CodeGenerationException
+  CodeGenerationException, SNEEConfigurationException
   {
     orginal.setNewQep(oldQEP);
     assessor.assessChoice(orginal, runningSites, true);

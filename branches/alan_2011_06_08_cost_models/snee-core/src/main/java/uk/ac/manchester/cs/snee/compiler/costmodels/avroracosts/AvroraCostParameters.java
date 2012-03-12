@@ -498,6 +498,11 @@ public final class AvroraCostParameters {
       //return 0.00000003222;
     }
     
+    public static double getSensorEnergyCost() 
+    {
+      return 0.00000003222;
+    }
+    
     public static double getBetweenPackets()
     {
       return 4;

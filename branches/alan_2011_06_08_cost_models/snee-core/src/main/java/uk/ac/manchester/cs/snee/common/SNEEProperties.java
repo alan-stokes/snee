@@ -294,6 +294,11 @@ public class SNEEProperties {
       setSetting(propName, "false");
       return getSetting(propName);
     }
+    else if(propName.equals("energyModelWithPermSense"))
+    {
+      setSetting(propName, "false");
+      return getSetting(propName);
+    }
       return null;
   }
 

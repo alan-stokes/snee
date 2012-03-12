@@ -1088,14 +1088,15 @@ public class AgendaIOT extends SNEEAlgebraicForm{
   }
   
   /**
-   * Returns the total site energy in Joules according to model.
+   * Returns the total site energy in Joules according to model where 
+   * sensor energy is permently on.
    * @param site
    * @return
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    */
-  public double getSiteEnergyConsumption(Site site) 
+  public double getSiteEnergyConsumptionSensorOn(Site site) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException 
   {
@@ -1149,6 +1150,70 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     if(requiresSensorEnergy)
       sensorEnergy = AvroraCostParameters.getSensorEnergyCost(this.getDeliveryTime_ms());
     sumEnergy += sensorEnergy;
+    sumEnergy += getCPUEnergy(cpuActiveTimeBms);
+    return sumEnergy;
+  } 
+  
+  /**
+   * Returns the total site energy in Joules according to model model without sense permently on.
+   * @param site
+   * @return
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
+   */
+  public double getSiteEnergyConsumption(Site site) 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
+    double sumEnergy = 0;
+    long cpuActiveTimeBms = 0;
+    
+    double sensorEnergy = 0;
+    ArrayList<Task> siteTasks = this.tasks.get(site);
+    //not within the QEP. so no cost
+    if(siteTasks == null)
+    {
+      return 0;
+    }
+    for (int i=0; i<siteTasks.size(); i++) 
+    {
+      Task t = siteTasks.get(i);
+      if (t instanceof SleepTask) 
+      {
+        continue;
+      }
+      
+      cpuActiveTimeBms += t.getDuration();
+      if (t instanceof FragmentTask) {
+        FragmentTask ft = (FragmentTask)t;
+        Fragment f = ft.getFragment();
+        if (f.containsOperatorType(SensornetAcquireOperator.class)) {
+          sensorEnergy += AvroraCostParameters.getSensorEnergyCost();
+        }
+        sumEnergy += sensorEnergy;
+      }
+      else if(t instanceof InstanceFragmentTask)
+      {
+        InstanceFragmentTask ft = (InstanceFragmentTask)t;
+        InstanceFragment f = ft.getFragment();
+        if (f.containsOperatorType(SensornetAcquireOperator.class)) {
+          sensorEnergy += AvroraCostParameters.getSensorEnergyCost();
+        }
+        sumEnergy += sensorEnergy;
+      }
+      else if (t instanceof CommunicationTask) {
+        CommunicationTask ct = (CommunicationTask)t;
+        sumEnergy += getRadioEnergy(ct);
+        
+      } else if (t instanceof RadioOnTask) {
+        double taskDuration = bmsToMs(t.getDuration())/1000.0;
+        double radioRXAmp = AvroraCostParameters.getRadioReceiveAmpere(); 
+        double voltage = AvroraCostParameters.VOLTAGE;
+        double taskEnergy = taskDuration * radioRXAmp * voltage;        
+        sumEnergy += taskEnergy;
+      }
+    }
     sumEnergy += getCPUEnergy(cpuActiveTimeBms);
     return sumEnergy;
   } 

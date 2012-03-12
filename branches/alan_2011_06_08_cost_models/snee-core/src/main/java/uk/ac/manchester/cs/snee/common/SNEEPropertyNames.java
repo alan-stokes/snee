@@ -246,6 +246,13 @@ public final class SNEEPropertyNames {
 	 * used by the batch processing to stop avrora running
 	 */
   public static final String RUN_AVRORA_SIMULATOR = "runAvrora";
+  
+  /**
+   * used to determine if the autonomic manager's cost assessor will use a qep cost with full 
+   * sense cost or just the period to which its used.
+   * 
+   */
+  public static final String WSN_MANAGER_ENERGY_SENSE_PERM = "energyModelWithPermSense";
 	
 }
 

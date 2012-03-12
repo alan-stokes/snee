@@ -78,12 +78,13 @@ public class ChoiceAssessor implements Serializable
    * @throws SchemaMetadataException
    * @throws TypeMappingException
    * @throws CodeGenerationException 
+   * @throws SNEEConfigurationException 
    */
   public void assessChoices(List<Adaptation> choices, HashMap<String, RunTimeSite> runningSites) 
   throws 
   IOException, OptimizationException, 
   SchemaMetadataException, TypeMappingException, 
-  CodeGenerationException
+  CodeGenerationException, SNEEConfigurationException
   {
     AssessmentFolder = new File(outputFolder.toString() + sep + "assessment");
     AssessmentFolder.mkdir();
@@ -158,10 +159,11 @@ public class ChoiceAssessor implements Serializable
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
+   * @throws SNEEConfigurationException 
    */
   private Double calculateEstimatedLifetime(Adaptation adapt) //seconds
   throws OptimizationException, SchemaMetadataException, 
-  TypeMappingException
+  TypeMappingException, SNEEConfigurationException
   {
     double shortestLifetime = Double.MAX_VALUE; //s
     
@@ -172,7 +174,12 @@ public class ChoiceAssessor implements Serializable
       Site site = siteIter.next();
       RunTimeSite rSite = runningSites.get(site.getID());
       double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
-      double siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site); // J
+      boolean permamentSenseCost = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_ENERGY_SENSE_PERM);
+      double siteEnergyCons;
+      if(permamentSenseCost)
+        siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumptionSensorOn(site); // J
+      else
+        siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site);
       runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
       adapt.putSiteEnergyCost(site.getID(), siteEnergyCons);
       double agendaLength = Agenda.bmsToMs(adapt.getNewQep().getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
@@ -209,12 +216,13 @@ public class ChoiceAssessor implements Serializable
    * @throws SchemaMetadataException
    * @throws TypeMappingException
    * @throws CodeGenerationException
+   * @throws SNEEConfigurationException 
    */
   public void assessChoice(Adaptation orginal, HashMap<String, RunTimeSite> runningSites, boolean reset)
   throws 
   IOException, OptimizationException, 
   SchemaMetadataException, TypeMappingException, 
-  CodeGenerationException
+  CodeGenerationException, SNEEConfigurationException
   {
     AssessmentFolder = new File(outputFolder.toString() + sep + "assessment");
     AssessmentFolder.mkdir();
