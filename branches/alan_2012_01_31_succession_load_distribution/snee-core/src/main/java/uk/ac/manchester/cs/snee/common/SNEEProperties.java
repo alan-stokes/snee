@@ -299,6 +299,11 @@ public class SNEEProperties {
       setSetting(propName, "false");
       return getSetting(propName);
     }
+    else if(propName.equals("wsn_manager.setup_frameworks"))
+    {
+      setSetting(propName, "true");
+      return getSetting(propName);
+    }
       return null;
   }
 

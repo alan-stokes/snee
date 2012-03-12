@@ -32,5 +32,6 @@
 		<module>cco-both</module>
 		<module>failed-node-eval-client</module>
 		<module>failedNodeEvalClientTimeIntergrated</module>
+		<module>successorClient</module>
 	</modules>
 </project>

@@ -116,7 +116,9 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     planner = new Planner(this, _metadata, _metadataManager);
     setupRunningSites((SensorNetworkQueryPlan) qep);
     monitor.initilise(_metadata, qep, resultSet);
-    anyliser.initilise(qep, numberOfTreesToUse);
+    boolean initiliseFrameworks = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS);
+    if(initiliseFrameworks)
+      anyliser.initilise(qep, numberOfTreesToUse);
     
     //if successor relation set to generate
     boolean successor = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR);
