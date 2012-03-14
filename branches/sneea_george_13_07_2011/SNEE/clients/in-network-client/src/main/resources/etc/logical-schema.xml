@@ -42,7 +42,17 @@
          </column>
          <datParams type="CLASSIFIER" subtype="LinearRegressionFunction">
 			<derivedAttribute name="voltage"/>
+			<source>SELECT seaLevel, voltage FROM SeaDefenceEast[FROM NOW-60 seconds TO NOW SLIDE 60 seconds]</source>
+
+			<!-- 
 			<source>SELECT seaLevel, voltage FROM SeaDefenceEast[FROM NOW-10 seconds TO NOW SLIDE 10 seconds]</source>
+			-->
+
+			<!-- Queries that result in ArrayIndexOutOfBounds Exception in Avrora
+			<source>SELECT seaLevel, voltage FROM SeaDefenceEast[FROM NOW-60 seconds TO NOW SLIDE 60 seconds]</source>
+			<source>SELECT seaLevel, voltage FROM SeaDefenceEast[FROM NOW-60 seconds TO NOW SLIDE 70 seconds]</source>
+			<source>SELECT seaLevel, voltage FROM SeaDefenceEast[FROM NOW-180 seconds TO NOW SLIDE 10 seconds]</source>
+			-->
          </datParams>
      </stream>     
 

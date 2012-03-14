@@ -71,7 +71,7 @@ public class SNEEClientUsingInNetworkSource extends SNEEClient {
 //			"          FROM ( " +
 //			"            SELECT RSTREAM SUM(q11.sqr_x1) / COUNT(q11.sqr_x1) as sqrSD1, COUNT(q11.sqr_x1) as cnt" +
 //			"            FROM ( " +
-//			"              SELECT RSTREAM (t.seaLevel - src.avg1)^2 as sqr_x1" +
+//			"              SELECT (t.seaLevel - src.avg1)^2 as sqr_x1" +
 //			"              FROM " +
 //			"                seaDefence[FROM NOW-20 MIN TO NOW SLIDE 5 MIN] t," +
 //			"                ( " +
