@@ -10,11 +10,11 @@ import java.util.Set;
 
 public class FailedNodeLocalLogicalOverlayUtils
 {
-  private LogicalOverlayNetwork cluster;
+  private LogicalOverlayNetworkImpl cluster;
   private File outputFolder;
   private String sep = System.getProperty("file.separator");
   
-  public FailedNodeLocalLogicalOverlayUtils(LogicalOverlayNetwork cluster, File outputfolder)
+  public FailedNodeLocalLogicalOverlayUtils(LogicalOverlayNetworkImpl cluster, File outputfolder)
   {
     this.cluster = cluster;
     this.outputFolder = outputfolder;

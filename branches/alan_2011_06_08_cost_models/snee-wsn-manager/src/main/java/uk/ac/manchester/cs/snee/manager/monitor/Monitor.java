@@ -30,6 +30,8 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostParameters;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -128,7 +130,16 @@ public class Monitor extends AutonomicManagerComponent implements Observer
     {
       String key = keyIterator.next();
       RunTimeSite site = runningSites.get(key);
-      site.removeQEPExecutionCost();
+      if(site.getQepExecutionCost() == 0.0)
+      {
+        double voltage = AvroraCostParameters.VOLTAGE;
+        double sleepCurrent = AvroraCostParameters.CPUPOWERSAVEAMPERE;
+        this.qep.getAgendaIOT();
+        double sleepDrain = (AgendaIOT.bmsToMs(this.qep.getAgendaIOT().getLength_bms(false)) / 1000) * sleepCurrent * voltage;
+        site.removeArbitaryCost(sleepDrain);
+      }
+      else
+        site.removeQEPExecutionCost();
       if(site.getCurrentEnergy() < site.getThresholdEnergy())
         proactiveFailures.add(site);
     }

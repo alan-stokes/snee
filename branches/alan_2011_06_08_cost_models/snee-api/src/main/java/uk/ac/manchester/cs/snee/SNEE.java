@@ -164,5 +164,4 @@ public interface SNEE {
 	 */
   public void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles) throws FileNotFoundException, IOException, OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException;
 
-
 }

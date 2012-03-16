@@ -9,6 +9,7 @@ import java.util.Set;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.manager.LogicalOverlayNetwork;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
@@ -17,7 +18,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
  * @author alan
  *
  */
-public class LogicalOverlayNetwork implements Serializable
+public class LogicalOverlayNetworkImpl implements Serializable, LogicalOverlayNetwork
 {
   /**
    * serialVersionUID
@@ -34,14 +35,14 @@ public class LogicalOverlayNetwork implements Serializable
   /**
    * constructor
    */
-  public LogicalOverlayNetwork()
+  public LogicalOverlayNetworkImpl()
   {
     clusters = new HashMapList<String, String>();
     id = "Overlay" + idCounter.toString();
     idCounter++;
   }
   
-  public LogicalOverlayNetwork(HashMapList<String, String> newHashMapList)
+  public LogicalOverlayNetworkImpl(HashMapList<String, String> newHashMapList)
   {
     clusters = new HashMapList<String, String>();
     Iterator<String> keys = newHashMapList.keySet().iterator();
@@ -222,15 +223,15 @@ public class LogicalOverlayNetwork implements Serializable
     return id;
   }
 
-  public LogicalOverlayNetwork generateClone()
+  public LogicalOverlayNetworkImpl generateClone()
   {
-    return new LogicalOverlayNetwork(this.clusters);
+    return new LogicalOverlayNetworkImpl(this.clusters);
   }
   
   @Override
   public boolean equals(Object other)
   {
-    LogicalOverlayNetwork otherNetwork = (LogicalOverlayNetwork) other;
+    LogicalOverlayNetworkImpl otherNetwork = (LogicalOverlayNetworkImpl) other;
     if(otherNetwork.getKeySet().size() == this.getKeySet().size())
     {
       Iterator<String> keyIterator = otherNetwork.getKeySet().iterator();

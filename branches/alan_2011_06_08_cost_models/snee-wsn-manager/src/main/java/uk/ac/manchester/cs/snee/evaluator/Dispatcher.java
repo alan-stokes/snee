@@ -64,6 +64,9 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
+import uk.ac.manchester.cs.snee.manager.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetworkImpl;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -359,7 +362,12 @@ public class Dispatcher {
   IOException, SNEEConfigurationException, CodeGenerationException
   {
     _autonomicManager.setupOverlay();
-    
+    _autonomicManager.resetRunningSites((SensorNetworkQueryPlan) _autonomicManager.getCurrentQEP());
+  }
+  
+  public LogicalOverlayNetwork getLogicalOverlay()
+  {
+    return _autonomicManager.getOverlay();
   }
 
   public Double getEstimatedLifetime(SensorNetworkQueryPlan originalQEP,
@@ -368,6 +376,24 @@ public class Dispatcher {
   SchemaMetadataException, TypeMappingException, SNEEConfigurationException, CodeGenerationException
   {
     return _autonomicManager.getEstimatedLifetime(originalQEP, fails);
+  }
+
+  public void simulateEnergyDrainofAganedaExecutionCycles(
+      int numberOfExectutionCycles, SensorNetworkQueryPlan oldQep,
+      SensorNetworkQueryPlan newQep)
+  throws FileNotFoundException, IOException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException, SNEEConfigurationException,
+  CodeGenerationException
+  {
+    _autonomicManager.simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles, oldQep, newQep); 
+  }
+
+  public void resetOverlayCost(LogicalOverlayNetworkImpl orginialOverlay)
+  throws IOException, OptimizationException, SchemaMetadataException, TypeMappingException,
+  CodeGenerationException, SNEEConfigurationException
+  {
+    _autonomicManager.resetOverlayCost(orginialOverlay);
+    
   }
 
 }

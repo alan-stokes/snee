@@ -15,17 +15,19 @@ import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayGenerator;
-import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork; 
+import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetworkImpl; 
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.FailedNodeLocalLogicalOverlayUtils;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetworkUtils;
 import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessorPreferenceEnum;
@@ -50,7 +52,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
    */
   private static final long serialVersionUID = -7562607134737502147L;
   private Topology network = null;
-  private LogicalOverlayNetwork logicalOverlay;
+  private LogicalOverlayNetworkImpl logicalOverlay;
   private File localFolder;
   private String sep = System.getProperty("file.separator");
   private MetadataManager _metadataManager;
@@ -85,7 +87,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   {  
     
     this.currentQEP = (SensorNetworkQueryPlan) oldQep;
-    logicalOverlay = new LogicalOverlayNetwork();
+    logicalOverlay = new LogicalOverlayNetworkImpl();
     network = getWsnTopology();
     String choice = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);
     if(choice.equals(ChoiceAssessorPreferenceEnum.Local.toString()) || choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))
@@ -97,7 +99,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     //if k_resilence level is zero, and no clusters are found, then a empty overlay is satifisable.
     if(logicalOverlay == null && k_resilence_level == 0)
     {
-      logicalOverlay = new LogicalOverlayNetwork();
+      logicalOverlay = new LogicalOverlayNetworkImpl();
       logicalOverlay.setQep(currentQEP);
     }
     //if no overlay is generated, then throw error
@@ -110,6 +112,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     
     manager.setCurrentQEP(logicalOverlay.getQep());
     new FailedNodeLocalLogicalOverlayUtils(logicalOverlay, localFolder).outputAsTextFile();
+    
     }
   }
 
@@ -159,7 +162,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
    * @param primary cluster head
    * @return new cluster head or null 
    */
-  public String retrieveNewClusterHead(String primary, List<Node> list, Node parent, LogicalOverlayNetwork overlay)
+  public String retrieveNewClusterHead(String primary, List<Node> list, Node parent, LogicalOverlayNetworkImpl overlay)
   {
     if(isThereACluster(primary, overlay))
     {
@@ -179,13 +182,13 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   /**
    * checks if for this overlay, an adaptation can be done
    */
-  public boolean canAdapt(String failedNode, LogicalOverlayNetwork overlay)
+  public boolean canAdapt(String failedNode, LogicalOverlayNetworkImpl overlay)
   {
     return isThereACluster(failedNode, overlay);
   }
   
   private boolean isThereACluster(String primary,
-      LogicalOverlayNetwork overlay)
+      LogicalOverlayNetworkImpl overlay)
   {
     if(overlay.getEquivilentNodes(primary).size() != 0)
       return true;
@@ -206,7 +209,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
    * @return
    */
   private boolean canAdaptToAll(ArrayList<String> failedNodes,
-                                LogicalOverlayNetwork overlay)
+                                LogicalOverlayNetworkImpl overlay)
   {
     Iterator<String> failedNodeIterator = failedNodes.iterator();
     boolean success = true;
@@ -308,10 +311,10 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     //remove dangling pointers to failed node stuff
     failedSite.clearInstanceExchangeComponents();
     failedSite.clearExchangeComponents();
-    clonedIOT.removeSiteFromMapping(failedSite);
     clonedIOT.removeFragment(failedSite);
     //add output to the new node for agenda
     equivilentSite.addOutput(outputSite);
+    clonedIOT.removeSiteFromMapping(failedSite);
   }
   
   
@@ -326,7 +329,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   /**
    * adapts to node failures on a specific overlay (used in calculating the 
    */
-  public List<Adaptation> adapt(ArrayList<String> failedNodeIDs, LogicalOverlayNetwork overlay) 
+  public List<Adaptation> adapt(ArrayList<String> failedNodeIDs, LogicalOverlayNetworkImpl overlay) 
   throws OptimizationException
   {
     try
@@ -340,6 +343,8 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
       
         IOT clonedIOT = cloner.deepClone(overlay.getQep().getIOT());
         RT currentRoutingTree = clonedIOT.getRT();
+        new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotBeforeAnything", "iotBeforeAnything", true, true);
+       
         while(failedNodeIDsIterator.hasNext())
         {
           String failedNodeID = failedNodeIDsIterator.next();
@@ -384,8 +389,8 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           System.out.println("");
         
           //run new iot though when scheduler and locate changes
-          AgendaIOT newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
-          Agenda newAgenda = doOldSNWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
+          AgendaIOT newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters(), currentQEP.getBufferingFactor());
+          Agenda newAgenda = doOldSNWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters(), currentQEP.getBufferingFactor());
           //output new and old agendas
           new FailedNodeStrategyLocalUtils().outputAgendas(newAgendaIOT, currentQEP.getAgendaIOT(), 
                                                                currentQEP.getIOT(), newIOT, localFolder);
@@ -405,7 +410,9 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
         return adapatation;
       }
       else
+      {
         return adapatation;
+      }
     }
     catch(Exception e)
     {
@@ -424,7 +431,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   }
   
 
-  public void update(Adaptation finalChoice, LogicalOverlayNetwork network)
+  public void update(Adaptation finalChoice, LogicalOverlayNetworkImpl network)
   {
     Iterator<String> failedNodeIterator = finalChoice.getFailedNodes().iterator();
     while(failedNodeIterator.hasNext())
@@ -464,10 +471,10 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
       String reprogrammedNode = reproNodeIterator.next();
       network.removeNode(reprogrammedNode);
     }
-    this.logicalOverlay.setQep(finalChoice.getNewQep());
+    network.setQep(finalChoice.getNewQep());
   }
 
-  public LogicalOverlayNetwork getLogicalOverlay()
+  public LogicalOverlayNetworkImpl getLogicalOverlay()
   {
     return this.logicalOverlay;
   }

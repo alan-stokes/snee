@@ -23,13 +23,13 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 public class PhysicalToLogicalConversion
 {
   
-  private LogicalOverlayNetwork logicalOverlay = null;
+  private LogicalOverlayNetworkImpl logicalOverlay = null;
   private Topology network = null;
   private File localFolder;
   private String sep = System.getProperty("file.separator");
   private Cloner cloner = new Cloner();
   
-  public PhysicalToLogicalConversion(LogicalOverlayNetwork logicalOverlay, 
+  public PhysicalToLogicalConversion(LogicalOverlayNetworkImpl logicalOverlay, 
                                      Topology network,
                                      File localFolder)
   {
@@ -125,7 +125,6 @@ public class PhysicalToLogicalConversion
         InstanceExchangePart outPart = part.getNext();
         clonedPart.setNextExchange(outPart);
         clonedPart.clearOutputs();
-        clonedPart.addOutput(outPart);
   
         clonedPart.setDestFrag(part.getDestFrag());
         clonedPart.getSourceFrag().setSite(equilvientSite); 
@@ -215,35 +214,23 @@ public class PhysicalToLogicalConversion
     }
     
     Iterator<Node> inputIterator = operator.getInputsList().iterator();
-    while(inputIterator.hasNext())
+    boolean stopped = false;
+    InstanceOperator op = null;
+    while(inputIterator.hasNext() && !stopped)
     {
-      InstanceOperator op = (InstanceOperator) inputIterator.next();
+      op = (InstanceOperator) inputIterator.next();
       if(op.getSite().getID().equals(clusterHeadSite.getID()))
       {
         sortOutChildren(op, equilvientSite, clusterHeadSite, qep, operator);
       }
       else
       {
-        operator.replaceInput(op, qep.getIOT().getOperatorInstance(op.getID()));
-        InstanceExchangePart part = (InstanceExchangePart) operator;
-        equilvientSite.addInstanceExchangePart(part);
-        Site previousSite = null;
-        if(part.getPrevious() == null)
-          previousSite = qep.getIOT().getRT().getSite(part.getSourceSite().getID());
-        else
-          previousSite = qep.getIOT().getRT().getSite(part.getPrevious().getSite().getID());
-        Iterator<InstanceExchangePart> previousSitesExchanges = previousSite.getInstanceExchangeComponents().iterator();
-        while(previousSitesExchanges.hasNext())
-        {
-          InstanceExchangePart previousSitePart = previousSitesExchanges.next();
-          if(previousSitePart.getID().equals(part.getPrevious().getID()))
-          {
-            part.setPreviousExchange(previousSitePart);
-            part.clearInputs();
-            part.addInput(previousSitePart);
-          }
-        }
+        stopped = true;
       }
+    }
+    if(stopped)
+    {
+      operator.clearInputs();
     }
   }
 

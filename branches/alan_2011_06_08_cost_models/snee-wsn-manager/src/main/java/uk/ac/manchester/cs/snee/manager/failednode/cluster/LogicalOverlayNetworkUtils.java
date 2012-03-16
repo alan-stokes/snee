@@ -33,7 +33,7 @@ public class LogicalOverlayNetworkUtils
   }
   
   
-  public void storeOverlayAsFile(LogicalOverlayNetwork overlay, File outputFile) 
+  public void storeOverlayAsFile(LogicalOverlayNetworkImpl overlay, File outputFile) 
   throws FileNotFoundException, IOException
   {
     if(!outputFile.exists())
@@ -45,7 +45,7 @@ public class LogicalOverlayNetworkUtils
     outputStream.close();
   }
   
-  public void storeOverlayAsTextFile(LogicalOverlayNetwork overlay, File outputFile)
+  public void storeOverlayAsTextFile(LogicalOverlayNetworkImpl overlay, File outputFile)
   throws FileNotFoundException, IOException
   {
     BufferedWriter out = new BufferedWriter(new FileWriter(outputFile));
@@ -61,7 +61,7 @@ public class LogicalOverlayNetworkUtils
     out.close();
   }
   
-  public LogicalOverlayNetwork retrieveOverlayFromFile(File outputFile, String id) 
+  public LogicalOverlayNetworkImpl retrieveOverlayFromFile(File outputFile, String id) 
   throws IOException
   {
     ObjectInputStream inputStream = null;
@@ -80,24 +80,24 @@ public class LogicalOverlayNetworkUtils
     }
     
     //if its of the correct format, return overlay
-    if (obj instanceof LogicalOverlayNetwork) 
+    if (obj instanceof LogicalOverlayNetworkImpl) 
     {
-      LogicalOverlayNetwork overlay = (LogicalOverlayNetwork) obj;
+      LogicalOverlayNetworkImpl overlay = (LogicalOverlayNetworkImpl) obj;
       return overlay;
     }   
     return null;
   }
 
 
-  public void storeSetAsTextFile(ArrayList<LogicalOverlayNetwork> setsOfClusters, File outputFile)
+  public void storeSetAsTextFile(ArrayList<LogicalOverlayNetworkImpl> setsOfClusters, File outputFile)
   throws IOException
   {
     BufferedWriter out = new BufferedWriter(new FileWriter(outputFile));
-    Iterator<LogicalOverlayNetwork> iterator = setsOfClusters.iterator();
+    Iterator<LogicalOverlayNetworkImpl> iterator = setsOfClusters.iterator();
     int id = 1;
     while(iterator.hasNext())
     {
-      LogicalOverlayNetwork overlay = iterator.next();
+      LogicalOverlayNetworkImpl overlay = iterator.next();
       Iterator<String> keys = overlay.getKeySet().iterator();
       out.write(new Integer(id).toString());
       while(keys.hasNext())
@@ -115,7 +115,7 @@ public class LogicalOverlayNetworkUtils
     
   }
   
-  public void exportAsADotFile(IOT iot, LogicalOverlayNetwork overlay, String fileName)
+  public void exportAsADotFile(IOT iot, LogicalOverlayNetworkImpl overlay, String fileName)
   {
     try
     {

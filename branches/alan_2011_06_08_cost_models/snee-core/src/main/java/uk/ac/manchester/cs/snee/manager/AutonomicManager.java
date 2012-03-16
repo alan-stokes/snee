@@ -120,4 +120,15 @@ public interface AutonomicManager
   throws FileNotFoundException, IOException, OptimizationException, 
   SchemaMetadataException, TypeMappingException, SNEEConfigurationException, CodeGenerationException;
 
+  public abstract void simulateEnergyDrainofAganedaExecutionCycles(
+      int numberOfExectutionCycles, SensorNetworkQueryPlan oldQep,
+      SensorNetworkQueryPlan newQep) 
+  throws FileNotFoundException, IOException, OptimizationException, SchemaMetadataException,
+  TypeMappingException, SNEEConfigurationException, CodeGenerationException;
+
+  public abstract LogicalOverlayNetwork getOverlay();
+
+  public abstract void resetOverlayCost(LogicalOverlayNetwork orginialOverlay) 
+  throws IOException, OptimizationException, SchemaMetadataException, TypeMappingException,
+  CodeGenerationException, SNEEConfigurationException;
 }

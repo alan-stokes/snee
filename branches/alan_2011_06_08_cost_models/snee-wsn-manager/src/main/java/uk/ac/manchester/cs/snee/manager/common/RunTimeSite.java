@@ -86,7 +86,7 @@ public class RunTimeSite implements Serializable
     currentEnergy = currentEnergy - qepExecutionCost;
   }
   
-  public void removeReprogrammingCostCost()
+  public void removeAdaptationCost()
   {
     currentEnergy = currentEnergy - currentAdaptationEnergyCost;
   }
@@ -109,6 +109,11 @@ public class RunTimeSite implements Serializable
   public void resetAdaptEnergyCosts()
   {
     resetCurrentAdaptationEnergyCost();
+  }
+
+  public void removeArbitaryCost(double sleepDrain)
+  {
+    this.currentEnergy = this.currentEnergy - sleepDrain;
   }
   
 }

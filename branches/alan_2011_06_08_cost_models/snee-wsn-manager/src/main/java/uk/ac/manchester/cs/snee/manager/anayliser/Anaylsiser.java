@@ -30,7 +30,7 @@ import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyGlobal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyPartial;
-import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetworkImpl;
 import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -346,7 +346,7 @@ public class Anaylsiser extends AutonomicManagerComponent
     }
   }
 
-  public LogicalOverlayNetwork getOverlay()
+  public LogicalOverlayNetworkImpl getOverlay()
   {
     Iterator<StrategyAbstract> frameworkIterator = frameworks.iterator();
     while(frameworkIterator.hasNext())
@@ -358,7 +358,7 @@ public class Anaylsiser extends AutonomicManagerComponent
         return local.getLogicalOverlay();
       }
     }
-    LogicalOverlayNetwork overlay = new LogicalOverlayNetwork();
+    LogicalOverlayNetworkImpl overlay = new LogicalOverlayNetworkImpl();
     overlay.setQep(qep);
     return overlay;
   }

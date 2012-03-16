@@ -62,6 +62,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
+import uk.ac.manchester.cs.snee.manager.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetworkImpl;
 import uk.ac.manchester.cs.snee.manager.planner.model.Model;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -732,7 +734,11 @@ public class SNEEController implements SNEE {
   IOException, SNEEConfigurationException, CodeGenerationException
   {
     _dispatcher.setupOverlay();
-    
+  }
+  
+  public LogicalOverlayNetwork getOverlay()
+  {
+    return _dispatcher.getLogicalOverlay();
   }
 
   public Double getEstimatedLifetime(SensorNetworkQueryPlan originalQEP,
@@ -741,5 +747,23 @@ public class SNEEController implements SNEE {
   SchemaMetadataException, TypeMappingException, SNEEConfigurationException, CodeGenerationException
   {
     return _dispatcher.getEstimatedLifetime(originalQEP, fails);
+  }
+
+  public void simulateEnergyDrainofAganedaExecutionCycles(
+      int numberOfExectutionCycles, SensorNetworkQueryPlan oldQep,
+      SensorNetworkQueryPlan newQep)
+  throws FileNotFoundException, IOException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException, SNEEConfigurationException,
+  CodeGenerationException
+  {
+    _dispatcher.simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles, oldQep, newQep);
+    
+  }
+
+  public void resetOverlayCost(LogicalOverlayNetworkImpl orginialOverlay)
+  throws IOException, OptimizationException, SchemaMetadataException, TypeMappingException, 
+  CodeGenerationException, SNEEConfigurationException
+  {
+    _dispatcher.resetOverlayCost(orginialOverlay);
   }
 }

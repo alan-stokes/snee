@@ -76,7 +76,7 @@ public class LogicalOverlayGeneratorUtils
    * @throws FileNotFoundException
    * @throws IOException
    */
-  public void storeOverlayAsText(LogicalOverlayNetwork logicalOverlay, File localFolder) 
+  public void storeOverlayAsText(LogicalOverlayNetworkImpl logicalOverlay, File localFolder) 
   throws FileNotFoundException, IOException
   {
     new LogicalOverlayNetworkUtils().storeOverlayAsTextFile(logicalOverlay, 

@@ -144,8 +144,8 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
                                                 useNetworkController);
     try
     {
-      newAgendaIOT = whenSched.doWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getQueryName(), currentQEP.getCostParameters());
-      newAgenda = whenSched.doWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getQueryName());
+      newAgendaIOT = whenSched.doWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getQueryName(), currentQEP.getCostParameters(), currentQEP.getBufferingFactor());
+      newAgenda = whenSched.doWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getQueryName(), currentQEP.getBufferingFactor() );
       new AgendaIOTUtils(newAgendaIOT, newIOT, false).exportAsLatex(globalFile.toString() + sep + "newAgenda");
       new AgendaIOTUtils(newAgendaIOT, newIOT, false).generateImage(globalFile.toString());
     }

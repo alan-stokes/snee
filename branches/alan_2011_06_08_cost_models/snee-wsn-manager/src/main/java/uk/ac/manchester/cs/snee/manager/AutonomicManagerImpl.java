@@ -31,12 +31,13 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.anayliser.Anaylsiser;
-import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
+import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationUtils;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.executer.Executer;
+import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetworkImpl;
 import uk.ac.manchester.cs.snee.manager.monitor.Monitor;
 import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessor;
 import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessorPreferenceEnum;
@@ -466,7 +467,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     while(siteIdIterator.hasNext())
     {
       Integer siteIDInt = siteIdIterator.next();
-      orgianlOTAProgramCost.addReprogrammedSite(siteIDInt.toString());
+      ((Adaptation) orgianlOTAProgramCost).addReprogrammedSite(siteIDInt.toString());
     }
     orgianlOTAProgramCost.setNewQep(sqep);
     File output = new File(outputFolder + sep + "OTASection");
@@ -482,12 +483,17 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     while(siteIdIterator.hasNext())
     {
       Integer siteIDInt = siteIdIterator.next();
-      runningSites.get(siteIDInt.toString()).removeReprogrammingCostCost();
+      runningSites.get(siteIDInt.toString()).removeAdaptationCost();
       runningSites.get(siteIDInt.toString()).resetAdaptEnergyCosts();
     }  
     
   }
 
+  public LogicalOverlayNetworkImpl getOverlay()
+  {
+    return this.anyliser.getOverlay();
+  }
+  
   @Override
   public void setupOverlay() 
   throws SchemaMetadataException, TypeMappingException, OptimizationException, 
@@ -503,7 +509,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
    */
   public void updateStrategies(Adaptation finalChoice)
   {
-    this.anyliser.updateFrameworks(finalChoice);
+    this.anyliser.updateFrameworks((Adaptation) finalChoice);
     
   }
 
@@ -515,5 +521,41 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   CodeGenerationException
   {
     return this.planner.getEstimatedLifetime(originalQEP, fails, this.runningSites);
+  }
+
+  @Override
+  public void simulateEnergyDrainofAganedaExecutionCycles( int numberOfExectutionCycles, 
+                                                          SensorNetworkQueryPlan oldQep,
+                                                          SensorNetworkQueryPlan newQep) 
+  throws FileNotFoundException, IOException, OptimizationException, SchemaMetadataException,
+  TypeMappingException, SNEEConfigurationException, CodeGenerationException
+  {
+    Iterator<String> runtimeSiteKeyIterator = this.runningSites.keySet().iterator();
+    AdaptationCollection col = new AdaptationCollection();
+    Adaptation ad = new Adaptation(oldQep, newQep, StrategyIDEnum.FailedNodeGlobal, 0);
+    col.add(ad);
+    planner.updateRunningSites();
+    planner.assessChoices(col);
+    while(runtimeSiteKeyIterator.hasNext())
+    {
+      RunTimeSite site = this.runningSites.get(runtimeSiteKeyIterator.next());
+      site.resetQEPExecutionEnergyCost();
+      site.removeAdaptationCost();
+      site.resetCurrentAdaptationEnergyCost();
+    }
+    ChoiceAssessor.calculateEstimatedLifetimewithFailedNodes(oldQep.getIOT(), oldQep.getAgendaIOT(), new ArrayList<String>(), this.runningSites);
+    monitor.simulateNumeriousAgendaExecutionCycles(numberOfExectutionCycles);
+  }
+
+  @Override
+  public void resetOverlayCost(LogicalOverlayNetwork orginialOverlay)
+  throws IOException, OptimizationException, SchemaMetadataException,
+  TypeMappingException, CodeGenerationException, SNEEConfigurationException
+  {
+    SensorNetworkQueryPlan sqep = (SensorNetworkQueryPlan) currentQEP;
+    Adaptation orgianlOTAProgramCost = new Adaptation(sqep, sqep, StrategyIDEnum.Orginal, 0);
+    File output = new File(outputFolder + sep + "OTASection");
+    output.mkdir();
+    planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false, (LogicalOverlayNetworkImpl) orginialOverlay);
   }
 }

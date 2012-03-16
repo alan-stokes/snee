@@ -169,7 +169,8 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
    * @throws SNEECompilerException 
    */
   protected AgendaIOT doSNWhenScheduling(IOT newIOT, QoSExpectations qos,
-                                       String id, CostParameters costParameters)
+                                       String id, CostParameters costParameters,
+                                       long bufferingFactor)
   throws SNEEConfigurationException, SNEEException, 
   SchemaMetadataException, OptimizationException, 
   MalformedURLException, TypeMappingException, 
@@ -186,7 +187,7 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
       AgendaIOT agenda;
       try
       {
-        agenda = whenSched.doWhenScheduling(newIOT, qos, currentQEP.getID(), currentQEP.getCostParameters());
+        agenda = whenSched.doWhenScheduling(newIOT, qos, currentQEP.getID(), currentQEP.getCostParameters(), bufferingFactor);
       }
       catch (WhenSchedulerException e)
       {
@@ -221,7 +222,8 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
 	 * @throws SNEECompilerException 
 	 */
 	protected Agenda doOldSNWhenScheduling(DAF daf, QoSExpectations qos,
-	                                     String id, CostParameters costParameters)
+	                                     String id, CostParameters costParameters,
+	                                     long bufferingFactor)
 	throws SNEEConfigurationException, SNEEException, 
 	SchemaMetadataException, OptimizationException, 
 	MalformedURLException, TypeMappingException, 
@@ -238,7 +240,7 @@ public abstract class FailedNodeStrategyAbstract extends StrategyAbstract implem
 	  Agenda agenda;
 	  try
 	  {
-	    agenda = whenSched.doWhenScheduling(daf, qos, currentQEP.getID());
+	    agenda = whenSched.doWhenScheduling(daf, qos, currentQEP.getID(), bufferingFactor);
 	  }
 	  catch (WhenSchedulerException e)
 	  {

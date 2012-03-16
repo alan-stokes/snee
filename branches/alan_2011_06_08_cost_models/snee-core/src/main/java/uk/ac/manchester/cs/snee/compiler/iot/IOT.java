@@ -514,21 +514,24 @@ public class IOT extends SNEEAlgebraicForm
     Node[] inputs = childOpInst.getInputs();
     Node[] outputs = childOpInst.getOutputs();
     //check for something which is not possible
-    if (outputs.length != 1)
-        throw new OptimizationException("Unable to remove node " + childOpInst.getID()
-          + " as it does not have exactly one output");
+   // if (outputs.length != 1)
+     //   throw new OptimizationException("Unable to remove node " + childOpInst.getID()
+       //   + " as it does not have exactly one output");
     //Replace the inputs output with the operators output (skipping)
     for (int i=0; i<inputs.length; i++) {
         inputs[i].replaceOutput(childOpInst, outputs[0]);        
     }
     //replace the outputs input with the ops first child.
-    outputs[0].replaceInput(childOpInst, inputs[0]);
-    //update graph
-    instanceOperatorTree.addEdge(inputs[0], outputs[0]);
-    
-    for (int i=1; i<inputs.length; i++) {
-      outputs[0].addInput(inputs[i]);
-      instanceOperatorTree.addEdge(inputs[i], outputs[0]);
+    if(inputs.length != 0)
+    {
+      outputs[0].replaceInput(childOpInst, inputs[0]);
+      //update graph
+      instanceOperatorTree.addEdge(inputs[0], outputs[0]);
+      
+      for (int i=1; i<inputs.length; i++) {
+        outputs[0].addInput(inputs[i]);
+        instanceOperatorTree.addEdge(inputs[i], outputs[0]);
+      }
     }
     //remove operator instance from both graph and instanceDAF data structure
     instanceOperatorTree.removeNode(childOpInst.getID());

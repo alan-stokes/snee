@@ -455,5 +455,39 @@ public class WhenScheduler {
           logger.warn(e);
           throw new WhenSchedulerException(e.getMessage()); }
     }
+    
+    
+    public AgendaIOT doWhenScheduling(IOT iot, QoSExpectations qos, String queryName, 
+        CostParameters costParams, long bufferingFactor)
+    throws OptimizationException, WhenSchedulerException, 
+    SNEEException, SNEEConfigurationException 
+    {
+      try 
+      {
+        final AgendaIOT agenda = new AgendaIOT(qos.getMaxAcquisitionInterval(), 
+              bufferingFactor , iot, costParams, queryName, allowDiscontinuousSensing);
+        return agenda;
+      } catch (Exception e) 
+      {
+        logger.warn("When Scheduler exception", e);
+        throw new WhenSchedulerException(e);
+      }
+    }
+    public Agenda doWhenScheduling(final DAF daf, 
+        final QoSExpectations qos, final String queryName,
+        long bufferingFactor)
+      throws OptimizationException, WhenSchedulerException 
+    {
+      try 
+      {   
+        final Agenda agenda = new Agenda(qos.getMaxAcquisitionInterval(), 
+            bufferingFactor , daf, costParams, queryName, allowDiscontinuousSensing);
+        return agenda;
+      } catch (Exception e) 
+      {
+        logger.warn("When Scheduler exception", e);
+        throw new WhenSchedulerException(e);
+      }
+    }
 }	
 	

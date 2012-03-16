@@ -227,8 +227,8 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
       IOT newIOT = instanceWhere.getIOT();
       //run new iot though when scheduler and locate changes
      this.currentQEP.getAgendaIOT().setID("old Agenda");
-      AgendaIOT newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
-      Agenda newAgenda = doOldSNWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
+      AgendaIOT newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters(), currentQEP.getBufferingFactor());
+      Agenda newAgenda = doOldSNWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters(), currentQEP.getBufferingFactor());
       //output new and old agendas
       new FailedNodeStrategyPartialUtils(this).outputAgendas(newAgendaIOT, currentQEP.getAgendaIOT(), this.currentQEP.getIOT(), newIOT, choiceFolder);
       boolean success = assessQEPsAgendas(this.currentQEP.getIOT(), newIOT, this.currentQEP.getAgendaIOT(), newAgendaIOT, newAgenda,

@@ -19,7 +19,7 @@ import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
-import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetworkImpl;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -220,7 +220,7 @@ public class Planner extends AutonomicManagerComponent
   }
 
   public void assessOTACosts(File output, Adaptation orgianlOTAProgramCost,
-      HashMap<String, RunTimeSite> runningSites, boolean reset, LogicalOverlayNetwork logicalOverlayNetwork) 
+      HashMap<String, RunTimeSite> runningSites, boolean reset, LogicalOverlayNetworkImpl logicalOverlayNetwork) 
   throws IOException, OptimizationException, SchemaMetadataException, 
   TypeMappingException, CodeGenerationException, SNEEConfigurationException
   {
@@ -237,7 +237,7 @@ public class Planner extends AutonomicManagerComponent
   }
 
   public void assessOverlayCosts(File outputFolder, Adaptation overlayOTAProgramCost, 
-                                 LogicalOverlayNetwork current,
+                                 LogicalOverlayNetworkImpl current,
                                  FailedNodeStrategyLocal failedNodeStrategyLocal) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException,
   IOException, CodeGenerationException, SNEEConfigurationException
@@ -254,6 +254,11 @@ public class Planner extends AutonomicManagerComponent
   {
     return ChoiceAssessor.calculateEstimatedLifetimewithFailedNodes(qep.getIOT(), 
         qep.getAgendaIOT(), fails, runningSitesorg);
+  }
+  
+  public void updateRunningSites()
+  {
+    runningSites = manager.getRunningSites();
   }
   
 }

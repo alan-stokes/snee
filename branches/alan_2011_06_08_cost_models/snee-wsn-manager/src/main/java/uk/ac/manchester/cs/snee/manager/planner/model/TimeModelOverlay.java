@@ -9,7 +9,7 @@ import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostParame
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
-import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetworkImpl;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -40,7 +40,7 @@ public class TimeModelOverlay extends TimeModel
    * @throws SchemaMetadataException 
    * @throws IOException 
    */
-  private double calculateTimePerReprogram(String site, Adaptation adapt, LogicalOverlayNetwork current) 
+  private double calculateTimePerReprogram(String site, Adaptation adapt, LogicalOverlayNetworkImpl current) 
   throws IOException, SchemaMetadataException, TypeMappingException, 
   OptimizationException, CodeGenerationException
   {
@@ -99,7 +99,7 @@ public class TimeModelOverlay extends TimeModel
   private Long calculateTimePacketsCost(Iterator<String> siteIterator,
                                  CostParameters parameters, Adaptation adapt,
                                  Long packets, boolean deactivatedNodesChecking,
-                                 LogicalOverlayNetwork current) 
+                                 LogicalOverlayNetworkImpl current) 
   throws 
   IOException, SchemaMetadataException, 
   TypeMappingException, OptimizationException, 
@@ -128,7 +128,7 @@ public class TimeModelOverlay extends TimeModel
    * @param adapt
    * @return
    */
-  public Long calculateTimeCost(Adaptation adapt, LogicalOverlayNetwork current) 
+  public Long calculateTimeCost(Adaptation adapt, LogicalOverlayNetworkImpl current) 
   throws IOException, SchemaMetadataException, TypeMappingException, 
   OptimizationException, CodeGenerationException
   {

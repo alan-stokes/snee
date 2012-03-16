@@ -15,7 +15,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
-import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetworkImpl;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -45,7 +45,7 @@ public class EnergyModelOverlay extends EnergyModel
    * @param adapt
    * @return returns the cost in energy units.
    */
-  public double calculateEnergyCost(Adaptation adapt, LogicalOverlayNetwork current)
+  public double calculateEnergyCost(Adaptation adapt, LogicalOverlayNetworkImpl current)
   throws IOException, SchemaMetadataException, 
   TypeMappingException, OptimizationException, 
   CodeGenerationException
@@ -70,7 +70,7 @@ public class EnergyModelOverlay extends EnergyModel
    * @throws CodeGenerationException
    */
   private void calculateReprogrammingCostNeat(Adaptation adapt,
-      CostParameters parameters, LogicalOverlayNetwork current) 
+      CostParameters parameters, LogicalOverlayNetworkImpl current) 
   throws IOException, SchemaMetadataException, TypeMappingException, 
   OptimizationException, CodeGenerationException
   {
@@ -100,7 +100,7 @@ public class EnergyModelOverlay extends EnergyModel
    * @throws CodeGenerationException
    */
   private double  communicationCost(Site site, Adaptation adapt, CostParameters parameters, 
-                                    LogicalOverlayNetwork current) 
+                                    LogicalOverlayNetworkImpl current) 
   throws IOException, SchemaMetadataException, TypeMappingException, 
   OptimizationException, CodeGenerationException
   {
@@ -122,7 +122,7 @@ public class EnergyModelOverlay extends EnergyModel
    * @return
    */
   private double transmissionCost(Site site, Adaptation adapt, CostParameters parameters, 
-                                  LogicalOverlayNetwork current)
+                                  LogicalOverlayNetworkImpl current)
   throws IOException, SchemaMetadataException, TypeMappingException, 
   OptimizationException, CodeGenerationException
   {
@@ -151,7 +151,7 @@ public class EnergyModelOverlay extends EnergyModel
    * @throws SchemaMetadataException 
    * @throws IOException 
    */
-  private double transmissionCostOfOverlay(LogicalOverlayNetwork current,
+  private double transmissionCostOfOverlay(LogicalOverlayNetworkImpl current,
       Site currentSite, Adaptation adapt, CostParameters parameters)
   throws IOException, SchemaMetadataException, TypeMappingException, 
   OptimizationException, CodeGenerationException
@@ -181,7 +181,7 @@ public class EnergyModelOverlay extends EnergyModel
    * @throws IOException 
    */
   private double CPUOverlay(Site child, Site currentSite, Adaptation adapt,
-      CostParameters parameters, LogicalOverlayNetwork current) 
+      CostParameters parameters, LogicalOverlayNetworkImpl current) 
   throws IOException, SchemaMetadataException, TypeMappingException, 
   OptimizationException, CodeGenerationException
   {
@@ -210,7 +210,7 @@ public class EnergyModelOverlay extends EnergyModel
    * @throws IOException 
    */
   private double tCostOverlay(Site child, Site currentSite, Adaptation adapt,
-      CostParameters parameters, LogicalOverlayNetwork current) 
+      CostParameters parameters, LogicalOverlayNetworkImpl current) 
   throws IOException, SchemaMetadataException, TypeMappingException, 
   OptimizationException, CodeGenerationException
   {
@@ -244,7 +244,7 @@ public class EnergyModelOverlay extends EnergyModel
    * @throws CodeGenerationException
    */
   private double transmissionCost(Iterator<Site> childrenIterator, Site currentSite,
-      Adaptation adapt, CostParameters parameters, LogicalOverlayNetwork current) 
+      Adaptation adapt, CostParameters parameters, LogicalOverlayNetworkImpl current) 
   throws IOException, SchemaMetadataException, TypeMappingException, 
   OptimizationException, CodeGenerationException
   {
@@ -271,7 +271,7 @@ public class EnergyModelOverlay extends EnergyModel
    * @throws IOException 
    */
   private double transmissionCostOf(Site site, Site currentSite, Adaptation adapt,
-                                    CostParameters parameters, LogicalOverlayNetwork current ) 
+                                    CostParameters parameters, LogicalOverlayNetworkImpl current ) 
   throws IOException, SchemaMetadataException, TypeMappingException, 
   OptimizationException, CodeGenerationException
   {
@@ -445,7 +445,7 @@ public class EnergyModelOverlay extends EnergyModel
    * @throws CodeGenerationException
    */
   private double reprogrammingCost(Site site, Adaptation adapt, CostParameters parameters,
-                                   LogicalOverlayNetwork current) 
+                                   LogicalOverlayNetworkImpl current) 
   throws IOException, SchemaMetadataException, TypeMappingException, 
   OptimizationException, CodeGenerationException
   {
