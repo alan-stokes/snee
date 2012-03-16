@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.geneticrouter;
+package uk.ac.manchester.cs.snee.manager.planner.successorrelation.alternativegenerator;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,14 +37,15 @@ public class GeneticRouter extends AutonomicManagerComponent
   private File geneicFolder = null;
   
 
-  public GeneticRouter(SourceMetadataAbstract _metadata, PAF paf, File plannerFile)
+  public GeneticRouter(SourceMetadataAbstract _metadata, Topology top, 
+                       PAF paf, File plannerFile)
   {
     geneicFolder = new File(plannerFile.toString() + sep + "geneticRouter");
     geneicFolder.mkdir();
     this._metadata = _metadata;
     this.paf = paf;
     SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) _metadata;
-    network = sm.getTopology();
+    network = top;
     int sink = sm.getGateway(); 
     int[] sources = sm.getSourceSites(paf);
     
@@ -54,9 +55,9 @@ public class GeneticRouter extends AutonomicManagerComponent
     
   }
   
-  public ArrayList<Tree> generateAlternativeRoutes(ArrayList<Tree> alternativePlans)
+  public ArrayList<Tree> generateAlternativeRoutes(ArrayList<RT> candidateRoutes)
   {
-    ArrayList<Genome> initalPopulation = generateInitialPopulation(alternativePlans);
+    ArrayList<Genome> initalPopulation = generateInitialPopulation(candidateRoutes);
     int currentIteration = 0;
     ArrayList<Genome> currentPopulation = initalPopulation;
    
@@ -67,7 +68,7 @@ public class GeneticRouter extends AutonomicManagerComponent
       currentPopulation = repopulate(currentPopulation);
       locateAlternatives(currentPopulation, iterationFolder);
       currentIteration++;
-      System.out.println("Now starting iteration " + currentIteration);
+      System.out.println("Now starting genetic router iteration " + currentIteration);
     }
     
     generateTrees();
@@ -218,14 +219,15 @@ public class GeneticRouter extends AutonomicManagerComponent
    return newPop;
   }
 
-  private  ArrayList<Genome> generateInitialPopulation(ArrayList<Tree> alternativePlans)
+  private  ArrayList<Genome> generateInitialPopulation(ArrayList<RT> candidateRoutes)
   {
     ArrayList<Genome> population = new ArrayList<Genome>();
-    Iterator<Tree> rtIterator = alternativePlans.iterator();
+    Iterator<RT> rtIterator = candidateRoutes.iterator();
     Random randomNumberGenerator = new Random();
     while(rtIterator.hasNext() && population.size() < populationSize)
     {
-      Tree curenttree = rtIterator.next();
+      RT currentRT = rtIterator.next();
+      Tree curenttree = currentRT.getSiteTree();
       ArrayList<Boolean> currentDNA = new ArrayList<Boolean>();
       for(int index = 0; index < this.nodeIds.size(); index ++)
       {

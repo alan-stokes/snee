@@ -1,8 +1,11 @@
-package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
+package uk.ac.manchester.cs.snee.manager.planner.successorrelation.tabu;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import uk.ac.manchester.cs.snee.manager.planner.common.Successor;
+import uk.ac.manchester.cs.snee.manager.planner.common.SuccessorPath;
 
 public class TABUSearchUtils
 {

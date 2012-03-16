@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
+package uk.ac.manchester.cs.snee.manager.planner.successorrelation.tabu;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,6 +9,8 @@ import java.util.Set;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.manager.planner.common.Successor;
+import uk.ac.manchester.cs.snee.manager.planner.common.SuccessorPath;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 
@@ -46,14 +48,14 @@ public class TABUList
     {
       if(entireity)
       {
-        TABUSuccessor tabued = new TABUSuccessor(successor.qep, successor.newRunTimeSites, true);
+        TABUSuccessor tabued = new TABUSuccessor(successor.getQep(), successor.getNewRunTimeSites(), true);
         diversificationTABUList.add(tabued);
       }
       else
       {
         ArrayList<Integer> times = new ArrayList<Integer>();
-        times.add(successor.agendaCount);
-        diversificationTABUList.add(new TABUSuccessor(successor.qep, successor.newRunTimeSites,
+        times.add(successor.getAgendaCount());
+        diversificationTABUList.add(new TABUSuccessor(successor.getQep(), successor.getNewRunTimeSites(),
                                                       times));
       }
     }
@@ -109,8 +111,8 @@ public class TABUList
     {
       Successor pathSuccessor = successorIterator.next();
       if(!pathSuccessor.toString().equals(initialSuccessor.toString()))
-        diversificationTABUList.add(new TABUSuccessor(pathSuccessor.qep, 
-                                                      pathSuccessor.newRunTimeSites, 
+        diversificationTABUList.add(new TABUSuccessor(pathSuccessor.getQep(), 
+                                                      pathSuccessor.getNewRunTimeSites(), 
                                                       true));
     }
     //remove any off TABUTenure
@@ -233,7 +235,7 @@ public class TABUList
           DiverseTABUList = new HashSet<TABUSuccessor>();
         }
         Successor pathSuccessor = currentPath.getSuccessorList().get(position);
-        DiverseTABUList.add(new TABUSuccessor(pathSuccessor.getQep(), pathSuccessor.newRunTimeSites, 
+        DiverseTABUList.add(new TABUSuccessor(pathSuccessor.getQep(), pathSuccessor.getNewRunTimeSites(), 
                                               new ArrayList<Integer>(pathSuccessor.getAgendaCount())));
         TABUList.put(position, DiverseTABUList);
        

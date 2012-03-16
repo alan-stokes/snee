@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
+package uk.ac.manchester.cs.snee.manager.planner.successorrelation.tabu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,6 +6,7 @@ import java.util.HashMap;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
+import uk.ac.manchester.cs.snee.manager.planner.common.Successor;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 

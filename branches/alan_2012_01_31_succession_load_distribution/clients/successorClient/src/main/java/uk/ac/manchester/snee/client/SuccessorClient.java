@@ -46,6 +46,7 @@ public class SuccessorClient extends SNEEClient
 	private static int max = 120;
   private static File testFolder =  new File("src/main/resources/testsNatural");
   private static File sneetestFolder =  new File("testsNatural");
+  @SuppressWarnings("unused")
   private static boolean inRecoveryMode = false;
 	
 	//private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;

@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
+package uk.ac.manchester.cs.snee.manager.planner.successorrelation.tabu;
 
 public class StoppingCriteria
 {

@@ -21,9 +21,7 @@ import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
-import uk.ac.manchester.cs.snee.manager.planner.successorrelation.AlternativeGenerator;
-import uk.ac.manchester.cs.snee.manager.planner.successorrelation.SuccessorPath;
-import uk.ac.manchester.cs.snee.manager.planner.successorrelation.TabuSearch;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.SuccessorRelation;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -321,46 +319,8 @@ public class Planner extends AutonomicManagerComponent
   SNEEException, SchemaMetadataException, OptimizationException, 
   WhenSchedulerException, TypeMappingException, IOException, CodeGenerationException
   {
-    try
-    {
-    File successorFolder = new File(this.plannerFolder.toString() + sep + "successorRelation");
-    if(successorFolder.exists())
-    {
-      manager.deleteFileContents(successorFolder);
-      successorFolder.mkdir();
-    }
-    else
-    {
-      successorFolder.mkdir();
-    }
-    
-    //set up the generator
-	  AlternativeGenerator altGenerator = new AlternativeGenerator(qep, this.getWsnTopology(), 
-	                                            successorFolder, this._metadata, this.manager);
-	  TabuSearch search = null;
-	  //collect alternatives
-	  ArrayList<SensorNetworkQueryPlan> alternativePlans = altGenerator.generateAlternatives();
-	    
-	  //set up TABU folder
-	  File TABUFolder = new File(successorFolder.toString() + sep + "TABU");
-    if(TABUFolder.exists())
-    {
-      manager.deleteFileContents(TABUFolder);
-      TABUFolder.mkdir();
-    }
-    else
-    {
-      TABUFolder.mkdir();
-    }
-    //search though space
-	  search = new TabuSearch(manager, alternativePlans, runningSites, _metadata, _metadataManager, TABUFolder);
-	  SuccessorPath bestSuccessorRelation = search.findSuccessorsPath(qep);
-	  new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList());
-    }
-    catch(Exception e)
-    {
-      e.printStackTrace();
-    }
+    SuccessorRelation successorRelation = new SuccessorRelation(plannerFolder, runningSites, _metadataManager, _metadata, manager);
+    successorRelation.executeSuccessorRelation(qep);
   }
   
 }

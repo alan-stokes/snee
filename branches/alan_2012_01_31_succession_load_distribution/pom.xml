@@ -20,7 +20,6 @@
 		<module>compiler</module>
 		<module>clients</module>
 		<module>snee-wsn-manager</module>
-		<module>successorClient</module>
 	</modules>
 
 	<organization>

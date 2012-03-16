@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
+package uk.ac.manchester.cs.snee.manager.planner.successorrelation.tabu;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +9,10 @@ import java.util.logging.Logger;
 
 import com.rits.cloning.Cloner;
 
+import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
@@ -18,6 +21,8 @@ import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyAbstract;
 import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessor;
+import uk.ac.manchester.cs.snee.manager.planner.common.Successor;
+import uk.ac.manchester.cs.snee.manager.planner.common.SuccessorPath;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -47,8 +52,8 @@ public class TabuSearch extends AutonomicManagerComponent
    * @throws IOException 
    */
   public TabuSearch(AutonomicManagerImpl autonomicManager, 
-                    ArrayList<SensorNetworkQueryPlan> alternativePlans, 
-                    HashMap<String, RunTimeSite> runningSites, SourceMetadataAbstract _metadata,
+                    HashMap<String, RunTimeSite> runningSites, 
+                    SourceMetadataAbstract _metadata,
                     MetadataManager _metaManager, File outputFolder) 
   throws IOException
   {
@@ -59,7 +64,8 @@ public class TabuSearch extends AutonomicManagerComponent
 	  this.TABUOutputFolder = outputFolder;
 	  this.Utils = new TABUSearchUtils(TABUOutputFolder.toString());
 	  this.TABUList = new TABUList();
-	  this.generator = new NeighbourhoodGenerator(alternativePlans, TABUList);
+	  this.generator = new NeighbourhoodGenerator(TABUList, autonomicManager, _metaManager,
+	                                              runningSites,_metadata, outputFolder);
   }
   
   /**
@@ -71,10 +77,16 @@ public class TabuSearch extends AutonomicManagerComponent
    * @throws OptimizationException 
    * @throws CodeGenerationException 
    * @throws IOException 
+   * @throws WhenSchedulerException 
+   * @throws SNEEException 
+   * @throws SNEEConfigurationException 
+   * @throws NumberFormatException 
    */
   public SuccessorPath findSuccessorsPath(SensorNetworkQueryPlan initialPoint) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException,
-  IOException, CodeGenerationException
+  IOException, CodeGenerationException,
+  NumberFormatException, SNEEConfigurationException,
+  SNEEException, WhenSchedulerException
   {
     SuccessorPath currentPath = null;
     initalSitesEnergy = this.updateRunningSites(initalSitesEnergy, initialPoint);
@@ -154,7 +166,7 @@ public class TabuSearch extends AutonomicManagerComponent
   OptimizationException, CodeGenerationException
   {
     Adaptation adapt = StrategyAbstract.generateAdaptationObject(currentPosition.getQep(), successor.getQep());
-    File assessorFolder = new File(this.TABUOutputFolder.toString() + sep + iteration + ":Successor");
+    File assessorFolder = new File(this.TABUOutputFolder.toString() + sep + "Successor");
     if(assessorFolder.exists())
     {
       manager.deleteFileContents(assessorFolder);
@@ -172,7 +184,6 @@ public class TabuSearch extends AutonomicManagerComponent
     }
     catch(Exception e)
     {
-      generator.removeAAlterative(successor.getQep());
       return 0;
     }
     successor.substractAdaptationCostOffRunTimeSites(adapt);
