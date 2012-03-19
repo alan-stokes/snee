@@ -218,9 +218,9 @@ public class AlternativeGenerator extends AutonomicManagerComponent
                                         this.successor.getQep().getCostParameters());
       new AgendaIOTUtils(agendaIOT, iot, true).generateImage(planOutputFolder.toString());
       qeps.add(
-          new SensorNetworkQueryPlan(this.successor.getQep().getDLAF(), routingTree, daf, 
+          new SensorNetworkQueryPlan(this.successor.getQep().getDLAF(), routingTree,  
                                      iot, agendaIOT, agenda, this.successor.getQep().getQueryName() + 
-                                     ":ALT" + routeCounter ));
+                                     ":ALT" + routeCounter, this.successor.getQoS()));
       routeCounter++;
     }
     System.out.println("finished storing alternatives");

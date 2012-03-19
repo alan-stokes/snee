@@ -221,6 +221,7 @@ public class SuccessorClient extends SNEEClient
     }
     catch(Exception e)
     {
+      System.out.println("something major failed");
       e.printStackTrace();
       queryid ++;
       if(queryid <= max)

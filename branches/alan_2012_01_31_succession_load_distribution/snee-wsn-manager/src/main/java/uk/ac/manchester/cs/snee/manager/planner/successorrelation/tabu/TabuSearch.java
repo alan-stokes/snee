@@ -184,6 +184,7 @@ public class TabuSearch extends AutonomicManagerComponent
     }
     catch(Exception e)
     {
+      e.printStackTrace();
       return 0;
     }
     successor.substractAdaptationCostOffRunTimeSites(adapt);

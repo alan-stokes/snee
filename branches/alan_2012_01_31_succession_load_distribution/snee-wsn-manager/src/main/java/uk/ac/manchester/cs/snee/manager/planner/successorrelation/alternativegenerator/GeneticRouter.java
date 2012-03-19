@@ -291,6 +291,7 @@ public class GeneticRouter extends AutonomicManagerComponent
     }
     catch(Exception e)
     {
+    //  e.printStackTrace();
       return 0;
     }
   }

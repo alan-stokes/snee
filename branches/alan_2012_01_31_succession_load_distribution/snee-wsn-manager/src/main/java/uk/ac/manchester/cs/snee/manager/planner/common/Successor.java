@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import com.rits.cloning.Cloner;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
@@ -183,5 +184,10 @@ public class Successor implements Comparable<Successor>
   public HashMap<String, RunTimeSite> getNewRunTimeSites()
   {
     return newRunTimeSites;
+  }
+  
+  public QoSExpectations getQoS()
+  {
+    return this.qep.getQos();
   }
 }
