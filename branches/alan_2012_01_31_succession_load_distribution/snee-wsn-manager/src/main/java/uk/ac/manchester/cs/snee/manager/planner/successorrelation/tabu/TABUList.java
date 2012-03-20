@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.Set;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
@@ -79,7 +80,7 @@ public class TABUList
     while(tabuList.hasNext())
     {
       TABUSuccessor tabu = tabuList.next();
-      if(tabu.toString().equals(plan.getID()))
+      if(tabu.getFormat().equals(plan.getIOT().getStringForm()))
         return true;
     }
     return false;
@@ -224,7 +225,18 @@ public class TABUList
   { 
     //update TABUList
     int length = currentPath.successorLength() -1;
-    int positionToMoveTo = length -1;
+    Random random = new Random();
+    //int positionToMoveTo = length -1;
+    int positionToMoveTo = 0;
+    if(length == 1 || length == 0)
+    {
+      positionToMoveTo = 0;
+    }
+    else
+    {
+      positionToMoveTo = random.nextInt(length -1);
+    }
+    
     if(positionToMoveTo >= 0)
     {
       for(int position = currentPath.successorLength() -1; position > positionToMoveTo; position--)

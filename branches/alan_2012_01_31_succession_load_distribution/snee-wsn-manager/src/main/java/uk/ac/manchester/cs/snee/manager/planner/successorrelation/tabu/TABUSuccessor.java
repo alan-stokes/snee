@@ -73,6 +73,11 @@ public class TABUSuccessor extends Successor
     return this.qep.getID();
   }
   
+  public String getFormat()
+  {
+    return this.qep.getIOT().getStringForm();
+  }
+  
   public String getTimes()
   {
     if(this.entirelyTABUed)

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -878,6 +879,92 @@ public class IOT extends SNEEAlgebraicForm
       Edge edge = edgeRemovealIterator.next();
       this.instanceOperatorTree.removeEdge(edge.getID());
     }
+    
+  }
+
+
+  
+  public String siteOperatorFormat(Site site)
+  {
+    String format = "";
+    format = format.concat(site.getID() + "[");
+    ArrayList<InstanceOperator> inops = this.getOpInstances(this.rt.getRoot());
+    Iterator<InstanceOperator> inopsIterator = inops.iterator();
+    while(inopsIterator.hasNext())
+    {
+      InstanceOperator op = inopsIterator.next();
+      String name = op.getSensornetOperator().getNesCTemplateName();
+      if(inopsIterator.hasNext())
+        format = format.concat(name + ",");
+      else
+        format = format.concat(name + "]");
+    }
+    return format;
+  }
+  
+  public String recursiveString(Site site)
+  {
+    String format = "";
+    format = format.concat(siteOperatorFormat(this.rt.getRoot()));
+    if(site.getInDegree() != 0)
+    {
+      List<Node> inputs = site.getInputsList();
+      inputs = sort(inputs);
+      Iterator<Node> inputIterator = inputs.iterator();
+      while(inputIterator.hasNext())
+      {
+        Node input = inputIterator.next();
+        Site inputSite = this.rt.getSite(input.getID());
+        format = format.concat(siteOperatorFormat(inputSite));
+        recursiveString(inputSite);
+      }
+    }
+    return format;
+    
+  }
+  
+  
+  private List<Node> sort(List<Node> inputs)
+  {
+    List<Node> organised = new ArrayList<Node>();
+    Iterator<Node> inputIterator = inputs.iterator();
+    while(inputIterator.hasNext())
+    {
+      Node input = inputIterator.next();
+      if(organised.size() == 0)
+        organised.add(input);
+      else
+      {
+        int index =0;
+        boolean plugged = false;
+        while(!plugged)
+        {
+          if(index >= organised.size())
+          {
+            organised.add(input);
+            plugged = true;
+          }
+          else
+          {
+            if(new Integer(organised.get(index).getID()) < new Integer(input.getID()))
+            {
+              organised.add(index, input);
+              plugged = true;
+            }
+          }
+        }
+      }
+    }
+    return organised;
+  }
+
+
+  public String getStringForm()
+  {
+    String format = "";
+    format = format.concat(recursiveString(this.rt.getRoot()));
+    return format;
+    
     
   }
 }

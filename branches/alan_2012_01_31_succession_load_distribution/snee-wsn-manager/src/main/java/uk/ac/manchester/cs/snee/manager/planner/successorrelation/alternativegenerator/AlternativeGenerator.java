@@ -96,63 +96,61 @@ public class AlternativeGenerator extends AutonomicManagerComponent
   WhenSchedulerException, TypeMappingException, IOException, CodeGenerationException
   {
     this.successor = successor;
-    int attempts = 0;
     ArrayList<Successor> successors = new ArrayList<Successor>();
-    while(successors.size() < aspirationPlusBounds && attempts < maxNeighbourHoodGeneration)
+    //choose time to switch and remvoe cost of running for tiem period
+    int randomLifetime = randomtimeGenerator();
+    HashMap<String, RunTimeSite> runtimeSites = removeQEPRunningCost(randomLifetime);
+    //remove dead nodes
+    Topology workingTopology = reduceTopology(runtimeSites);
+    //run hueristic router and then genetic router seeded with the huristic router.
+    ArrayList<RT> candidateRoutes = HuristicRouter(this.successor.getQep().getDAF().getPAF(), workingTopology);
+    ArrayList<Tree> geneticRoutes = GeneticRouter(candidateRoutes, workingTopology);
+    //add routes together
+    Iterator<RT> heuristicTrees = candidateRoutes.iterator();
+    while(heuristicTrees.hasNext())
     {
-      //choose time to switch and remvoe cost of running for tiem period
-      int randomLifetime = randomtimeGenerator();
-      HashMap<String, RunTimeSite> runtimeSites = removeQEPRunningCost(randomLifetime);
-      //remove dead nodes
-      Topology workingTopology = reduceTopology(runtimeSites);
-      //run hueristic router and then genetic router seeded with the huristic router.
-      ArrayList<RT> candidateRoutes = HuristicRouter(this.successor.getQep().getDAF().getPAF(), workingTopology);
-      ArrayList<Tree> geneticRoutes = GeneticRouter(candidateRoutes, workingTopology);
-      //add routes together
-      Iterator<RT> heuristicTrees = candidateRoutes.iterator();
-      while(heuristicTrees.hasNext())
+      RT heursticTree = heuristicTrees.next();
+      geneticRoutes.add(heursticTree.getSiteTree());
+    }
+    //remove duplicates trees
+    geneticRoutes = CandiateRouter.removeDuplicates(geneticRoutes);
+    
+    //turn trees into rts
+    Iterator<Tree> finalTreeSetIterator = geneticRoutes.iterator();
+    ArrayList<RT> finalRTs = new ArrayList<RT>();
+    int routingTreeID = 1;
+    while(finalTreeSetIterator.hasNext())
+    {
+      Tree tree = finalTreeSetIterator.next();
+      finalRTs.add(new RT(successor.getQep().getIOT().getPAF(), "Alt" + routingTreeID, tree, workingTopology));
+      routingTreeID++;
+    }
+    
+    //turn rts into qeps and then into successors
+    Iterator<SensorNetworkQueryPlan> qepIterator = 
+      new ArrayList<SensorNetworkQueryPlan>(convertRTToQEP(finalRTs)).iterator();
+    while(qepIterator.hasNext())
+    {
+      successors.add(new Successor(qepIterator.next(), randomLifetime, successor.getCopyOfRunTimeSites() ,successor.getAgendaCount()));
+    }
+    
+    //locate tabu plans
+    ArrayList<Successor> toremove = new ArrayList<Successor>();
+    Iterator<Successor> planIterator = successors.iterator();
+    while(planIterator.hasNext())
+    {
+      Successor plan = planIterator.next();
+      if(tabuList.isEntirelyTABU(plan.getQep(), position))
       {
-        RT heursticTree = heuristicTrees.next();
-        geneticRoutes.add(heursticTree.getSiteTree());
+        toremove.add(plan);
       }
-      //remove duplicates
-      geneticRoutes = CandiateRouter.removeDuplicates(geneticRoutes);
-      //turn trees into rts
-      Iterator<Tree> finalTreeSetIterator = geneticRoutes.iterator();
-      ArrayList<RT> finalRTs = new ArrayList<RT>();
-      int routingTreeID = 1;
-      while(finalTreeSetIterator.hasNext())
-      {
-        Tree tree = finalTreeSetIterator.next();
-        finalRTs.add(new RT(successor.getQep().getIOT().getPAF(), "Alt" + routingTreeID, tree, workingTopology));
-        routingTreeID++;
-      }
-      
-      //turn rts into qeps and then into successors
-      Iterator<SensorNetworkQueryPlan> qepIterator = 
-        new ArrayList<SensorNetworkQueryPlan>(convertRTToQEP(finalRTs)).iterator();
-      while(qepIterator.hasNext())
-      {
-        successors.add(new Successor(qepIterator.next(), randomLifetime, successor.getCopyOfRunTimeSites() ,successor.getAgendaCount()));
-      }
-      
-      //remove all entire tabued plans
-      ArrayList<Successor> toremove = new ArrayList<Successor>();
-      Iterator<Successor> planIterator = successors.iterator();
-      while(planIterator.hasNext())
-      {
-        Successor plan = planIterator.next();
-        if(tabuList.isEntirelyTABU(plan.getQep(), position))
-        {
-          toremove.add(plan);
-        }
-      }
-      planIterator= toremove.iterator();
-      while(planIterator.hasNext())
-      {
-        Successor plan = planIterator.next();
-        successors.remove(plan);
-      }
+    }
+    //remove tabu plans
+    planIterator= toremove.iterator();
+    while(planIterator.hasNext())
+    {
+      Successor plan = planIterator.next();
+      successors.remove(plan);
     }
     return successors;
   }
