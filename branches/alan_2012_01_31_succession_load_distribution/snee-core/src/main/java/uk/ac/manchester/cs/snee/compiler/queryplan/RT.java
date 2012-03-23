@@ -307,4 +307,54 @@ public class RT extends SNEEAlgebraicForm {
     }
     site.clearOutputs();
   }
+  
+  /**
+   * compares 2 routing trees.
+   * @param firstRT
+   * @param otherRT
+   * @return
+   */
+  public static boolean equals(RT firstRT, RT otherRT)
+  {
+    Tree template = firstRT.getSiteTree();
+    Tree compare = otherRT.getSiteTree();
+    ArrayList<Node> templateNodes = new ArrayList<Node>(template.getNodes());
+    ArrayList<Node> compareNodes = new ArrayList<Node>(compare.getNodes());
+    if(templateNodes.size() == compareNodes.size())
+    {
+      Iterator<Node> templateIterator = templateNodes.iterator();
+      Iterator<Node> compareIterator = compareNodes.iterator();
+      while(templateIterator.hasNext())
+      {
+        Node currentNode = templateIterator.next();
+        if(!compareNodeToArray(currentNode, compareNodes))
+          return false;        
+      }
+      while(compareIterator.hasNext())
+      {
+        Node currentNode = compareIterator.next();
+        if(!compareNodeToArray(currentNode, templateNodes))
+          return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * helper method for determining if 2 RT's are equal
+   * @param currentNode
+   * @param compareNodes
+   * @return
+   */
+  private static boolean compareNodeToArray(Node currentNode,
+      ArrayList<Node> compareNodes)
+  {
+    for(int index = 0; index < compareNodes.size(); index++)
+    {
+      if(currentNode.getID().equals(compareNodes.get(index).getID()))
+        return true;
+    }
+    return false;
+  }
 }

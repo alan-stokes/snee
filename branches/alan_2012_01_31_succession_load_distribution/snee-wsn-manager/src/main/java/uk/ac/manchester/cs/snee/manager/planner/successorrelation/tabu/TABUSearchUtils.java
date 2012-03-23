@@ -78,5 +78,13 @@ public class TABUSearchUtils
     out.write(iteration + " : NO DIVERSIFICATION TECHNIQUE: Already at beginning \n");
     out.flush();
   }
+
+  public void writeNoSuccessor(int iteration) 
+  throws IOException
+  {
+    out.write(iteration + " : No Neighbourhood generated therefore no Successor Found"  + "\n");
+    out.flush();
+    
+  }
   
 }

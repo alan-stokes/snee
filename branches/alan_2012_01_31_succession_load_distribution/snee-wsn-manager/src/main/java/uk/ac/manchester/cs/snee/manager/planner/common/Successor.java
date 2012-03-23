@@ -36,7 +36,13 @@ public class Successor implements Comparable<Successor>
     this.updateSitesRunningCosts();
   }
   
-  private void updateSitesRunningCosts() 
+  public Successor(Integer agendaCount, Integer prevAgendaCount)
+  {
+    this.agendaCount = agendaCount;
+    this.previousAgendaCount = prevAgendaCount;
+  }
+  
+  public void updateSitesRunningCosts() 
   throws OptimizationException, SchemaMetadataException, TypeMappingException
   {
     Iterator<String> siteKeyIterator = this.getNewRunTimeSites().keySet().iterator();
@@ -61,7 +67,7 @@ public class Successor implements Comparable<Successor>
     return getNewRunTimeSites();
   }
 
-  protected void setQep(SensorNetworkQueryPlan qep)
+  public void setQep(SensorNetworkQueryPlan qep)
   {
     this.qep = qep;
   }
@@ -164,8 +170,12 @@ public class Successor implements Comparable<Successor>
   @Override
   public boolean equals(Object other)
   {
-    if(other.toString().equals(this.toString()))
-      return true;
+    if(other instanceof SensorNetworkQueryPlan)
+    {
+      SensorNetworkQueryPlan otherqep = (SensorNetworkQueryPlan) other;
+      return this.getQep().getIOT().getStringForm().equals(
+          otherqep.getIOT().getStringForm());
+    }
     else
       return false;
   }

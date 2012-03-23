@@ -42,15 +42,18 @@ public class InstanceWhereSchedular
   private PAF paf;
   private String fileDirectory;
   String fileSeparator = System.getProperty("file.separator");
+  private boolean hasAOutputFolder;
   
   
-  public InstanceWhereSchedular(PAF paf, RT routingTree, CostParameters costs) 
+  public InstanceWhereSchedular(PAF paf, RT routingTree, CostParameters costs, boolean outputFolder) 
   throws SNEEException, SchemaMetadataException, OptimizationException, SNEEConfigurationException
   {
     this.paf = paf;
     this.routingTree = routingTree;
     this.costs = costs;
-    fileDirectory = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + fileSeparator + paf.getQueryName() + fileSeparator + "costModelImages";
+    if(outputFolder)
+      fileDirectory = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + fileSeparator + paf.getQueryName() + fileSeparator + "costModelImages";
+    hasAOutputFolder = outputFolder;
     InstanceFragment.resetFragmentCounter();
     IOT();
   }
@@ -70,29 +73,44 @@ public class InstanceWhereSchedular
   throws SNEEException, SchemaMetadataException, OptimizationException, SNEEConfigurationException
   {
     //make directory withoutput folder to place cost model images
-    boolean success = new File(fileDirectory).mkdir();
-    if(!success)
+    if(this.hasAOutputFolder)
     {
-      deleteFileContents(new File(fileDirectory));
-      new File(fileDirectory).mkdir();
+      boolean success = new File(fileDirectory).mkdir();
+      if(!success)
+      {
+        deleteFileContents(new File(fileDirectory));
+        new File(fileDirectory).mkdir();
+      }
+      new RTUtils(routingTree).exportAsDotFile(fileDirectory + fileSeparator + "RT.dot");
+      //output paf
+      new PAFUtils(paf).exportAsDotFile(fileDirectory + fileSeparator + "PAF.dot");
     }
-    new RTUtils(routingTree).exportAsDotFile(fileDirectory + fileSeparator + "RT.dot");
-    //output paf
-    new PAFUtils(paf).exportAsDotFile(fileDirectory + fileSeparator + "PAF.dot");
     //remove excahgnes from the paf. which coudl mess the partial daf.
     new IOTUtils().removeExchangesFromPAF(paf);
     //generate floating operators / fixed locations
     generatePartialDaf();
-    //produce image output so that can be validated
-    new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT.dot", "", true);
+    if(hasAOutputFolder)
+    {
+      //produce image output so that can be validated
+      new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT.dot", "", true);
+    }
     //do heuristic placement
     doInstanceOperatorSiteAssignment();
-    new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "siteAssignment.dot", "", true);
+    if(hasAOutputFolder)
+    {
+      new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "siteAssignment.dot", "", true);
+    }
     //remove instances which are redundant
     removeRedundantOpInstances();
-    new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "cleanedSiteAssignment.dot", "", true);
+    if(hasAOutputFolder)
+    {
+      new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "cleanedSiteAssignment.dot", "", true);
+    }
     startFragmentation();
-    new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "fragmentedIOT.dot", "", false);
+    if(hasAOutputFolder)
+    {
+      new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "fragmentedIOT.dot", "", false);
+    }
     try
     {
     addExchangeParts();
@@ -104,10 +122,16 @@ public class InstanceWhereSchedular
     //needs to be placed here, as updating links breaks the cDAF manufacture
     cDAF = new IOTUtils(iot, costs).convertToDAF();
     iot.setDAF(cDAF);
-    new DAFUtils(cDAF).exportAsDotFile(fileDirectory + fileSeparator + "CDAF.dot");
+    if(hasAOutputFolder)
+    {
+      new DAFUtils(cDAF).exportAsDotFile(fileDirectory + fileSeparator + "CDAF.dot");
+    }
     updateOperatorLinksToIncludeExchangeParts();
-    new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "IOT.dot", "", true);
-    new TopologyUtils(this.routingTree.getNetwork()).exportAsDOTFile(fileDirectory + fileSeparator + "Topology.dot", false);
+    if(hasAOutputFolder)
+    {
+      new IOTUtils(iot, costs).exportAsDotFileWithFrags(fileDirectory + fileSeparator + "IOT.dot", "", true);
+      new TopologyUtils(this.routingTree.getNetwork()).exportAsDOTFile(fileDirectory + fileSeparator + "Topology.dot", false);
+    }
   }
   
   private void deleteFileContents(File firstOutputFolder)
@@ -629,14 +653,17 @@ public class InstanceWhereSchedular
         disconnectedChildOpInstSet.add(opInst);
         //remove what are now connected instances from the disconnected Operator hash
         disconnectedChildOpInstSet.removeAll(confluenceOpInstSet);
-        try
+        if(this.hasAOutputFolder)
         {
-          new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
-        }
-        catch (SchemaMetadataException e)
-        {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+          try
+          {
+            new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
+          }
+          catch (SchemaMetadataException e)
+          {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
         }
         break;
       }
@@ -660,14 +687,17 @@ public class InstanceWhereSchedular
         disconnectedChildOpInstSet.add(opInst);
         //remove what are now connected instances from the disconnected Operator hash
         disconnectedChildOpInstSet.removeAll(confluenceOpInstSet); 
-        try
+        if(this.hasAOutputFolder)
         {
-          new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
-        }
-        catch (SchemaMetadataException e)
-        {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+          try
+          {
+            new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
+          }
+          catch (SchemaMetadataException e)
+          {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
         }
     }
     }
@@ -693,13 +723,16 @@ public class InstanceWhereSchedular
         disconnectedOpInstMapping.add(op.getID(), opInst);//add to temp hash map which holds operators which dont have a connection upwards
         connectChildOperators(op, opInst, iot, disconnectedOpInstMapping);
       }
-      try
+      if(this.hasAOutputFolder)
       {
-        new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + counter + ".dot", "", true);
-      }
-      catch (SchemaMetadataException e)
-      {
-        e.printStackTrace();
+        try
+        {
+          new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + counter + ".dot", "", true);
+        }
+        catch (SchemaMetadataException e)
+        {
+          e.printStackTrace();
+        }
       }
       counter ++;
     }
@@ -933,14 +966,17 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         disconnectedChildOpInstSet.add(opInst);
         //remove what are now connected instances from the disconnected Operator hash
         disconnectedChildOpInstSet.removeAll(confluenceOpInstSet);
-        try
+        if(this.hasAOutputFolder)
         {
-          new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
-        }
-        catch (SchemaMetadataException e)
-        {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+          try
+          {
+            new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
+          }
+          catch (SchemaMetadataException e)
+          {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
         }
         break;
       }
@@ -964,16 +1000,19 @@ private void addOtherOpTypeInstances(SensornetOperator op,
         disconnectedChildOpInstSet.add(opInst);
         //remove what are now connected instances from the disconnected Operator hash
         disconnectedChildOpInstSet.removeAll(confluenceOpInstSet); 
-        try
+        if(this.hasAOutputFolder)
         {
-          new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
+          try
+          {
+            new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "partialIOT" + ".dot", "", true);
+          }
+          catch (SchemaMetadataException e)
+          {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
         }
-        catch (SchemaMetadataException e)
-        {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
-    }
+      }
     }
     //set all operators with this id to be the of input instances operators.
     disconnectedOpInstMapping.set(op.getID(), disconnectedChildOpInstSet);
@@ -1045,7 +1084,10 @@ private void addOtherOpTypeInstances(SensornetOperator op,
   {
     //move duplicate aggerates upwards
     //moveAggeratesInitsUpwards();
-    new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "movedInitsUpwards.dot", "", true);
+    if(this.hasAOutputFolder)
+    {
+      new IOTUtils(iot, costs).exportAsDOTFile(fileDirectory + fileSeparator + "movedInitsUpwards.dot", "", true);
+    }
     removeRedundantAggrIterOpInstances();
     removeRedundantSiblingOpInstances();  
     removeRedundantAggrIterOpAfterInitMergeInstances();

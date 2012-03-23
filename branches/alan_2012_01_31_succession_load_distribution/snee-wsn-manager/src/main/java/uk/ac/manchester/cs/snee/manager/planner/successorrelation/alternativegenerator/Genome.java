@@ -5,20 +5,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
-
-public class Genome implements Comparable<Genome>
+public class Genome 
 {
    private ArrayList<Boolean> DNA;
+   private int timePeriod = 0;
    private final static int crossoverPercentage = 90;
    private final static int mutationPercentage = 2;
+   private final static int timeMutationPercentage = 50;
    private double fitness;
-   private double eliteFitness;
-   private RT rt;
-   
   
-  
-   public Genome(int sink, int [] sources, int NumberOfSites)
+   //set of constructors
+   public Genome(int sink, int [] sources, int NumberOfSites, int time)
    {
      DNA = new ArrayList<Boolean>(NumberOfSites);
      fillDNA(NumberOfSites);
@@ -27,33 +24,43 @@ public class Genome implements Comparable<Genome>
      {
        DNA.set(sources[index], true);
      }
+     this.timePeriod = time;
    }
-   
-   private void fillDNA(int numberOfSites)
+
+  public Genome(ArrayList<Boolean> DNA, int time)
   {
-    for(int index = 0; index < numberOfSites; index++)
+     this.DNA = DNA;
+     this.timePeriod = time;
+  }
+   
+  public Genome(ArrayList<Integer> activeSites, int NumberOfSites, int time)
+  {
+    DNA = new ArrayList<Boolean>(NumberOfSites);
+    Iterator<Integer> indexIterator = activeSites.iterator();
+    while(indexIterator.hasNext())
     {
-      DNA.add(false);
+      Integer index = indexIterator.next();
+       DNA.set(index, true);
     }
   }
-
-  public Genome(ArrayList<Boolean> DNA)
-   {
-     this.DNA = DNA;
-   }
    
-   public Genome(ArrayList<Integer> activeSites, int NumberOfSites)
+   //helper constructor method
+   private void fillDNA(int numberOfSites)
    {
-     DNA = new ArrayList<Boolean>(NumberOfSites);
-     Iterator<Integer> indexIterator = activeSites.iterator();
-     while(indexIterator.hasNext())
+     for(int index = 0; index < numberOfSites; index++)
      {
-       Integer index = indexIterator.next();
-       DNA.set(index, true);
+       DNA.add(false);
      }
    }
    
-   public static ArrayList<Genome> mergeGenomes(Genome first, Genome second, Genome master)
+   /**
+    * takes two genotypes and merges them to generate new offspring. using basic crossover and mutation
+    * @param first
+    * @param second
+    * @param master
+    * @return
+    */
+   public static ArrayList<Genome> mergeGenomes(Genome first, Genome second, Genome master, int successorLifetime)
    {
      Random randomNumberGenerator = new Random();
      int randomNumber = randomNumberGenerator.nextInt(100);
@@ -62,11 +69,18 @@ public class Genome implements Comparable<Genome>
      randomNumber = randomNumberGenerator.nextInt(100);
      if(randomNumber <= mutationPercentage)
        mutate(second);
+     randomNumber = randomNumberGenerator.nextInt(100);
+     if(randomNumber <= timeMutationPercentage)
+       mutateTime(first, successorLifetime);
+     randomNumber = randomNumberGenerator.nextInt(100);
+     if(randomNumber <= timeMutationPercentage)
+       mutateTime(second, successorLifetime);
+       
      int size = first.getSize();
      double part1 = new Integer(size).doubleValue() / 100.00;
      part1 = part1 * crossoverPercentage;
      int positionToCrossOver = (int) part1;
-
+     //get sections of DNA
      List<Boolean> firstSectionFirstChild = first.getSection(0, positionToCrossOver);
      List<Boolean> firstSectionSecondChild = second.getSection(0, positionToCrossOver);
      List<Boolean> secondSectionFirstChild = second.getSection(positionToCrossOver, size);
@@ -76,12 +90,12 @@ public class Genome implements Comparable<Genome>
      ArrayList<Boolean> firstChild = new ArrayList<Boolean>(size);
      firstChild.addAll(firstSectionFirstChild);
      firstChild.addAll(secondSectionFirstChild);
-     Genome firstChildGenome = new Genome(firstChild);
+     Genome firstChildGenome = new Genome(firstChild, first.timePeriod);
      //second child
      ArrayList<Boolean> secondChild = new ArrayList<Boolean>(size);
      secondChild.addAll(firstSectionSecondChild);
      secondChild.addAll(secondSectionSecondChild);
-     Genome secondChildGenome = new Genome(secondChild);
+     Genome secondChildGenome = new Genome(secondChild, second.timePeriod);
      //add to array, and return
      ArrayList<Genome> children = new ArrayList<Genome>();
      firstChildGenome = Genome.XorGenome(firstChildGenome, master);
@@ -92,6 +106,12 @@ public class Genome implements Comparable<Genome>
      return children;
    }
    
+  /**
+   * helper method to keep sure the genotype router section has the correct Steiner nodes.
+   * @param first
+   * @param master
+   * @return
+   */
   public static Genome XorGenome(Genome first, Genome master)
   {
     Iterator<Boolean> firstGeneIterator = first.geneIterator();
@@ -107,9 +127,13 @@ public class Genome implements Comparable<Genome>
       else
         newDNA.add(false);
     }
-    return new Genome(newDNA);
+    return new Genome(newDNA, first.timePeriod);
   }
 
+  /**
+   * masic mutation function
+   * @param clean
+   */
   private static void mutate(Genome clean)
   {
     Random randomGeneGenerator = new Random();
@@ -118,27 +142,56 @@ public class Genome implements Comparable<Genome>
     clean.replaceGene(gene, !value);
   }
   
+  public static void mutateTime(Genome clean, int successorLifetime)
+  {
+    Random randomGeneGenerator = new Random();
+    clean.timePeriod = randomGeneGenerator.nextInt(successorLifetime);
+  }
+  
+  /**
+   * gene iterator
+   * @return
+   */
   public Iterator<Boolean> geneIterator()
   {
     return this.DNA.iterator();
   }
   
-  
+  /**
+   * get value of a specific gene
+   * @param index
+   * @return
+   */
   public boolean geneValue(int index)
   {
     return DNA.get(index);
   }
   
+  /**
+   * replace a specific gene
+   * @param index
+   * @param newValue
+   */
   public void replaceGene(int index, Boolean newValue)
   {
     this.DNA.set(index, newValue);
   }
   
+  /**
+   * get number of genes in the DNA
+   * @return
+   */
   public int getSize()
   {
     return this.DNA.size();
   }
   
+  /**
+   * helper method to slice a section of DNA
+   * @param start
+   * @param finish
+   * @return
+   */
   public List<Boolean> getSection(int start, int finish)
   {
     ArrayList<Boolean> list = new ArrayList<Boolean>(finish - start);
@@ -149,32 +202,27 @@ public class Genome implements Comparable<Genome>
     return list;
   }
 
+  /**
+   * set fitness of genotype
+   * @param fitness
+   */
   public void setFitness(double fitness)
   {
     this.fitness = fitness;
   }
 
+  /**
+   * get fitness of genotype
+   * @return
+   */
   public double getFitness()
   {
     return fitness;
   }
-
-  public void setEliteFitness(double eliteFitness)
+  
+  public int getTimePeriod()
   {
-    this.eliteFitness = eliteFitness;
-  }
-
-  public double getEliteFitness()
-  {
-    return eliteFitness;
-  }
-
-  @Override
-  public int compareTo(Genome o)
-  {
-    Double value = this.eliteFitness;
-    Double otherValue = o.eliteFitness;
-    return value.compareTo(otherValue);
+    return this.timePeriod;
   }
   
   @Override
@@ -198,15 +246,5 @@ public class Genome implements Comparable<Genome>
     }
     else
       return false;
-  }
-
-  public void setRt(RT rt)
-  {
-    this.rt = rt;
-  }
-
-  public RT getRt()
-  {
-    return rt;
   }
 }

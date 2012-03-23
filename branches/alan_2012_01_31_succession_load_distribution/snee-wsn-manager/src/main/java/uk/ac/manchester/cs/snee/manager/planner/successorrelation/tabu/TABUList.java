@@ -93,7 +93,7 @@ public class TABUList
     while(tabuIterator.hasNext())
     {
       TABUSuccessor tabu= tabuIterator.next();
-      if(tabu.toString().equals(plan.getID()))
+      if(tabu.equals(plan))
         return tabu;
     }
     return null;
@@ -119,7 +119,8 @@ public class TABUList
     //remove any off TABUTenure
     while(diversificationTABUList.size() > TABUTenure)
     {
-      diversificationTABUList.remove(0);
+      TABUSuccessor removal = diversificationTABUList.iterator().next();
+      diversificationTABUList.remove(removal);
     }
     //restore
     TABUList.put(position, diversificationTABUList); 
@@ -220,7 +221,8 @@ public class TABUList
    */
   public Successor engageDiversificationTechnique(ArrayList<Successor> neighbourHood, 
                                                   Successor currentBestSuccessor,
-                                                  SuccessorPath currentPath, int iteration) 
+                                                  SuccessorPath currentPath, int iteration,
+                                                  TABUSearchUtils utils) 
   throws IOException, OptimizationException, SchemaMetadataException, TypeMappingException
   { 
     //update TABUList
@@ -228,42 +230,58 @@ public class TABUList
     Random random = new Random();
     //int positionToMoveTo = length -1;
     int positionToMoveTo = 0;
-    if(length == 1 || length == 0)
+    if(length == 0)
     {
-      positionToMoveTo = 0;
+      utils.outputNODiversification(iteration);
     }
     else
     {
-      positionToMoveTo = random.nextInt(length -1);
-    }
-    
-    if(positionToMoveTo >= 0)
-    {
-      for(int position = currentPath.successorLength() -1; position > positionToMoveTo; position--)
+      if(length == 1)
       {
-        Set<TABUSuccessor> DiverseTABUList = TABUList.get(position);
-        if(DiverseTABUList == null)
-        {
-          DiverseTABUList = new HashSet<TABUSuccessor>();
-        }
-        Successor pathSuccessor = currentPath.getSuccessorList().get(position);
-        DiverseTABUList.add(new TABUSuccessor(pathSuccessor.getQep(), pathSuccessor.getNewRunTimeSites(), 
-                                              new ArrayList<Integer>(pathSuccessor.getAgendaCount())));
-        TABUList.put(position, DiverseTABUList);
-       
-        currentPath.removeSuccessor(position);
-        currentBestSuccessor = currentPath.getSuccessorList().get(currentPath.getSuccessorList().size() -1);
-        
-        //remove all tabuList after the next position
-        Iterator<Integer> keyIterator = TABUList.keySet().iterator();
-        while(keyIterator.hasNext())
-        {
-          Integer key = keyIterator.next();
-          if(key > positionToMoveTo)
-            TABUList.remove(key);
-        }
+        positionToMoveTo = 0;
       }
-    } 
+      else
+      {
+        positionToMoveTo = random.nextInt(length -1);
+      }
+      
+      if(positionToMoveTo >= 0)
+      {
+        for(int position = currentPath.successorLength() -1; position > positionToMoveTo; position--)
+        {
+          Set<TABUSuccessor> DiverseTABUList = TABUList.get(position);
+          if(DiverseTABUList == null)
+          {
+            DiverseTABUList = new HashSet<TABUSuccessor>();
+          }
+          Successor pathSuccessor = currentPath.getSuccessorList().get(position);
+          DiverseTABUList.add(new TABUSuccessor(pathSuccessor.getQep(), pathSuccessor.getNewRunTimeSites(), 
+                                                new ArrayList<Integer>(pathSuccessor.getAgendaCount())));
+          TABUList.put(position, DiverseTABUList);
+         
+          currentPath.removeSuccessor(position);
+          currentBestSuccessor = currentPath.getSuccessorList().get(currentPath.getSuccessorList().size() -1);
+          
+          //remove all tabuList after the next position
+          Iterator<Integer> keyIterator = TABUList.keySet().iterator();
+          ArrayList<Integer> keysToRemove = new ArrayList<Integer>();
+          while(keyIterator.hasNext())
+          {
+            Integer key = keyIterator.next();
+            if(key > positionToMoveTo)
+              keysToRemove.add(key);
+          }
+          keyIterator = keysToRemove.iterator();
+          while(keyIterator.hasNext())
+          {
+            Integer key = keyIterator.next();
+            TABUList.remove(key);
+          }
+        }
+      } 
+      utils.outputDiversification(iteration, positionToMoveTo);
+      return currentBestSuccessor;
+    }
     return currentBestSuccessor;
   }
   

@@ -86,6 +86,10 @@ public class TABUSuccessor extends Successor
       return this.timesTABUed.toString();
   }
   
-  
+  @Override
+  public boolean equals(Object other)
+  {
+    return super.equals(other);
+  }
   
 }

@@ -35,11 +35,12 @@ public class TabuSearch extends AutonomicManagerComponent
   private static final long serialVersionUID = -7392168097799519214L;
   private SuccessorPath bestPath = null;
   private Successor InitialSuccessor= null;
+  private Successor currentBestSuccessor = null;
   private TABUList TABUList;
   private NeighbourhoodGenerator generator;
   private TABUSearchUtils Utils;
   private HashMap<String, RunTimeSite> initalSitesEnergy;
-	private int numberOfIterationsWithoutImprovement = 5;
+	private int numberOfIterationsWithoutImprovement = 2;
 	private int currentNumberOfIterationsWithoutImprovement = 0;
 	private SourceMetadataAbstract _metadata;
 	private MetadataManager _metaManager;
@@ -95,52 +96,30 @@ public class TabuSearch extends AutonomicManagerComponent
     initialList.add(InitialSuccessor);
     currentPath = new SuccessorPath(initialList);
     bestPath = new SuccessorPath(initialList);
-    Successor currentBestSuccessor = InitialSuccessor;
-    int iteration = 0;
+    currentBestSuccessor = InitialSuccessor;
     
-    while(!StoppingCriteria.satisifiesStoppingCriteria(iteration))
+    int iteration = 0;
+    int iterationsFailedAtInitial = 0;
+    
+    while(!StoppingCriteria.satisifiesStoppingCriteria(iteration, iterationsFailedAtInitial))
     {
       ArrayList<Successor> neighbourHood = 
         generator.generateNeighbourHood(currentBestSuccessor, currentPath.successorLength() -1, iteration);
       
-      Successor bestNeighbourHoodSuccessor = locateBestSuccessor(neighbourHood, currentBestSuccessor,
-                                                                 iteration);
+      Successor bestNeighbourHoodSuccessor = locateBestSuccessor(neighbourHood, iteration);
       if(bestNeighbourHoodSuccessor != null)
       {
-        if(fitness(bestNeighbourHoodSuccessor, currentBestSuccessor, iteration) > currentBestSuccessor.getLifetimeInAgendas())
+        iterationsFailedAtInitial = 0;
+        checkNewSuccessor(bestNeighbourHoodSuccessor,  iterationsFailedAtInitial, 
+                          currentPath, neighbourHood);
+      }
+      else
+      {
+        if(currentPath.successorLength() -1 == 0)
         {
-          Utils.writeNewSuccessor(bestNeighbourHoodSuccessor, iteration, currentBestSuccessor, currentPath);
-          currentBestSuccessor = bestNeighbourHoodSuccessor;
-          TABUList.addToTABUList(bestNeighbourHoodSuccessor, currentPath.successorLength() -1, false);
-          currentPath.add(bestNeighbourHoodSuccessor);
-          TABUList.addAllPathIntoTABUList(currentPath, currentPath.successorLength() -1, this.InitialSuccessor);
-          
-          if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
-            bestPath = currentPath;
+          iterationsFailedAtInitial ++;
         }
-        else
-        {
-          Utils.writeFailedSuccessor(bestNeighbourHoodSuccessor, iteration,currentBestSuccessor , currentPath);
-          TABUList.addToTABUList(bestNeighbourHoodSuccessor, currentPath.successorLength() -1, false);
-          currentNumberOfIterationsWithoutImprovement++;
-          if(currentNumberOfIterationsWithoutImprovement >= numberOfIterationsWithoutImprovement)
-          {
-            if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
-            {
-              bestPath.updateList(currentPath.getSuccessorList());
-            }
-            int positionToMoveTo = currentPath.successorLength() -2;
-            if(positionToMoveTo >= 0)
-            {
-              Utils.outputDiversification(iteration, positionToMoveTo);
-              currentBestSuccessor = TABUList.engageDiversificationTechnique(neighbourHood, currentBestSuccessor, currentPath, iteration);
-            }
-            else
-              Utils.outputNODiversification(iteration);
-            //reset counter
-            currentNumberOfIterationsWithoutImprovement = 0;
-          }
-        }
+        possibleDiversitySetoff(currentPath, iterationsFailedAtInitial, neighbourHood);
       }
       Utils.outputTABUList(iteration, TABUList);
       iteration++;
@@ -149,6 +128,65 @@ public class TabuSearch extends AutonomicManagerComponent
     if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
       bestPath = currentPath;
     return bestPath;
+  }
+
+  private void possibleDiversitySetoff(SuccessorPath currentPath, int iteration,
+                                       ArrayList<Successor> neighbourHood)
+  throws IOException, OptimizationException, SchemaMetadataException, TypeMappingException
+  {
+    currentNumberOfIterationsWithoutImprovement++;
+    Utils.writeNoSuccessor(iteration);
+    if(currentNumberOfIterationsWithoutImprovement >= numberOfIterationsWithoutImprovement)
+    {
+      if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
+      {
+        bestPath.updateList(currentPath.getSuccessorList());
+      }
+        currentBestSuccessor = 
+          TABUList.engageDiversificationTechnique(neighbourHood, currentBestSuccessor, 
+                                                  currentPath, iteration, Utils);
+      //reset counter
+      currentNumberOfIterationsWithoutImprovement = 0;
+    }
+  }
+
+  private void checkNewSuccessor(Successor bestNeighbourHoodSuccessor,
+                                 int iteration, SuccessorPath currentPath, 
+                                 ArrayList<Successor> neighbourHood) 
+  throws SchemaMetadataException, TypeMappingException, IOException, OptimizationException, 
+  CodeGenerationException
+  {
+    if(fitness(bestNeighbourHoodSuccessor, currentBestSuccessor, iteration) > currentBestSuccessor.getLifetimeInAgendas())
+    {
+      Utils.writeNewSuccessor(bestNeighbourHoodSuccessor, iteration, currentBestSuccessor, currentPath);
+      currentBestSuccessor = bestNeighbourHoodSuccessor;
+      TABUList.addToTABUList(bestNeighbourHoodSuccessor, currentPath.successorLength() -1, false);
+      currentPath.add(bestNeighbourHoodSuccessor);
+      TABUList.addAllPathIntoTABUList(currentPath, currentPath.successorLength() -1, this.InitialSuccessor);
+      
+      if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
+        bestPath = currentPath;
+      currentNumberOfIterationsWithoutImprovement = 0;
+    }
+    else
+    {
+      Utils.writeFailedSuccessor(bestNeighbourHoodSuccessor, iteration,currentBestSuccessor , currentPath);
+      TABUList.addToTABUList(bestNeighbourHoodSuccessor, currentPath.successorLength() -1, false);
+      currentNumberOfIterationsWithoutImprovement++;
+      if(currentNumberOfIterationsWithoutImprovement >= numberOfIterationsWithoutImprovement)
+      {
+        if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
+        {
+          bestPath.updateList(currentPath.getSuccessorList());
+        }
+        currentBestSuccessor = 
+           TABUList.engageDiversificationTechnique(neighbourHood, currentBestSuccessor, 
+                                                  currentPath, iteration, Utils);
+        //reset counter
+        currentNumberOfIterationsWithoutImprovement = 0;
+      }
+    }
+    
   }
 
   /**
@@ -194,7 +232,6 @@ public class TabuSearch extends AutonomicManagerComponent
   /**
    * locates the best successor out of the neighbourhood
    * @param neighbourHood
-   * @param currentBestSuccessor 
    * @return
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
@@ -202,9 +239,7 @@ public class TabuSearch extends AutonomicManagerComponent
    * @throws OptimizationException 
    * @throws IOException 
    */
-  private Successor locateBestSuccessor(ArrayList<Successor> neighbourHood, 
-                                        Successor currentBestSuccessor,
-                                        int iteration) 
+  private Successor locateBestSuccessor(ArrayList<Successor> neighbourHood, int iteration) 
   throws SchemaMetadataException, TypeMappingException,
   IOException, OptimizationException, CodeGenerationException
   {
@@ -252,5 +287,5 @@ public class TabuSearch extends AutonomicManagerComponent
     }
     return runTimeSites;
   }
-     
+
 }

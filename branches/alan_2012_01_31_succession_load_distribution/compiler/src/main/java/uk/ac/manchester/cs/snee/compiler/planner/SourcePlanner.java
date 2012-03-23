@@ -131,7 +131,7 @@ public class SourcePlanner {
 		logger.info("Starting Routing for query " + queryID);		
 		RT rt = doSNRouting(paf, queryID);
 		logger.info("Starting Where-Scheduling for query " + queryID);
-		InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, rt, costParams);
+		InstanceWhereSchedular instanceWhere = new InstanceWhereSchedular(paf, rt, costParams, true);
 		IOT iot = instanceWhere.getIOT();
 		DAF daf = instanceWhere.getDAF();
 		//new DAFUtils(daf).generateGraphImage();

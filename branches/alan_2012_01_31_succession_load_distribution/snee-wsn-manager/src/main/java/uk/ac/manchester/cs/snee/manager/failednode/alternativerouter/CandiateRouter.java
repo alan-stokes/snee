@@ -396,7 +396,7 @@ public class CandiateRouter extends Router
         new CandiateRouterUtils(workingTopology).exportRouteFragments(desintatedOutputFolder, routes, paf, currentTree);
         routes.add(currentTree);
       }
-      routes = removeDuplicates(routes);
+      routes = removeDuplicates(routes, true);
       new CandiateRouterUtils(network).exportSavedRoutes(routes, chainFolder, paf);
       return routes;
     }
@@ -425,7 +425,7 @@ public class CandiateRouter extends Router
    * removes all routes which are duplicates from routes.
    * @param routes
    */
-  public static ArrayList<Tree> removeDuplicates(ArrayList<Tree> routes)
+  public static ArrayList<Tree> removeDuplicates(ArrayList<Tree> routes, boolean clearDuplicates)
   {
     Tree [] temporaryArray = new Tree[routes.size()];
     routes.toArray(temporaryArray);
@@ -474,13 +474,26 @@ public class CandiateRouter extends Router
         }
       }
     }   
-    routes = new ArrayList<Tree>();
-    for(int tempIndex = 0; tempIndex < temporaryArray.length; tempIndex++)
+    if(clearDuplicates)
     {
-      if(temporaryArray[tempIndex] != null)
-        routes.add(temporaryArray[tempIndex]);
+      routes = new ArrayList<Tree>();
+      for(int tempIndex = 0; tempIndex < temporaryArray.length; tempIndex++)
+      {
+        if(temporaryArray[tempIndex] != null)
+          routes.add(temporaryArray[tempIndex]);
+      }
+      return routes;
     }
-    return routes;
+    else
+    {
+      routes = new ArrayList<Tree>();
+      for(int tempIndex = 0; tempIndex < temporaryArray.length; tempIndex++)
+      {
+        if(temporaryArray[tempIndex] == null)
+          routes.add(temporaryArray[tempIndex]);
+      }
+      return routes;
+    }
   }
   
   /**
@@ -673,7 +686,7 @@ public class CandiateRouter extends Router
     ArrayList<RT> routes = new ArrayList<RT>();
     ArrayList<Tree> trees = new ArrayList<Tree>();
     generateRoutesRecursively(trees);
-    trees = removeDuplicates(trees);
+    trees = removeDuplicates(trees, true);
     
     Iterator<Tree> treeIterator = trees.iterator();
     while(treeIterator.hasNext())
@@ -708,7 +721,7 @@ public class CandiateRouter extends Router
         Tree currentTree = treeGenerator.produceTree(set, sourcesString, sinkString, workingTopology, paf);
         routes.add(currentTree);
       }
-      routes = removeDuplicates(routes);
+      routes = removeDuplicates(routes, true);
       return routes;
     }
     catch(Exception e)

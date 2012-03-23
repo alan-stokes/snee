@@ -952,6 +952,7 @@ public class IOT extends SNEEAlgebraicForm
               plugged = true;
             }
           }
+          index++;
         }
       }
     }
