@@ -210,7 +210,7 @@ public class FailedNodeTimeClientUtils
   public void writeOriginal(int tests, double value)
   throws IOException
   {
-    originalOut.write(tests + " : " + value);
+    originalOut.write(tests + " : " + value + "\n");
     originalOut.flush();
   }
   

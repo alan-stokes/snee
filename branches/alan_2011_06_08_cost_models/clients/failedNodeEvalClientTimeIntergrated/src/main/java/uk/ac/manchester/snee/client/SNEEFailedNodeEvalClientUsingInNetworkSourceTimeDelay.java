@@ -293,7 +293,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       lifetime = lifetime / (originalQEP.getAgendaIOT().getLength_bms(false) / 1024);  // agendas
       utils.storeoriginal(queryid, currentNumberOfFailures, lifetime, fails);
       System.out.println("orginal :- " + lifetime);
-      utils.writeOriginal(currentNumberOfFailures, currentLifetime);
+      utils.writeOriginal(currentNumberOfFailures, lifetime);
       utils.plotTopology(testNo -1);
       
       client.resetDataSources(originalQEP);
@@ -454,6 +454,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     System.out.println("running tests for local ");
     SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, ChoiceAssessorPreferenceEnum.Local.toString());
     testNo = 1;
+    orginialOverlay = client.getOverlay();
     for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
     {
       calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
@@ -889,14 +890,17 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       resetMetaData(originalQEP);
       resetQEP(originalQEP);
       try{
-      control.resetOverlayCost(orginialOverlay);
-      updateMetaDataBackToCurrentState(control);
-      resetQEP((SensorNetworkQueryPlan) lastPlan);
-      controller.simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles);
-      System.out.println("system failed to adapt with node " + failedNode + " so will try node " + deadNode);
-      boolean success = runSimulatedNodeFailure(deadNode, control, fails);
-      fails.add(deadNode);
-      return success;
+        String setting = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);
+        if(setting.equals(ChoiceAssessorPreferenceEnum.Local.toString()) || 
+           setting.equals(ChoiceAssessorPreferenceEnum.Best.toString()))
+            control.resetOverlayCost(orginialOverlay);
+        updateMetaDataBackToCurrentState(control);
+        resetQEP((SensorNetworkQueryPlan) lastPlan);
+        controller.simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles);
+        System.out.println("system failed to adapt with node " + failedNode + " so will try node " + deadNode);
+        boolean success = runSimulatedNodeFailure(deadNode, control, fails);
+        fails.add(deadNode);
+        return success;
       }
       catch(Exception f)
       {

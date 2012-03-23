@@ -209,7 +209,7 @@ public class CandiateRouter extends Router
     catch(Exception e)
     {
       System.out.println("something died in the recursive mergement of routing tree fragments: " + e.getMessage());
-      e.printStackTrace();
+      //e.printStackTrace();
       return newRoutingTrees; 
     }
   }
