@@ -644,7 +644,7 @@ public class SNEEController implements SNEE {
 	  _dispatcher.giveAutonomicManagerQuery(query);
 	}
 	
-	public void runSimulatedNodeFailure(ArrayList<String> failedNodesID) 
+	public void runSimulatedNodeFailure(ArrayList<String> failedNodesID, boolean OTA) 
 	throws 
 	MalformedURLException, SNEEConfigurationException, 
 	OptimizationException, SchemaMetadataException, 
@@ -655,7 +655,7 @@ public class SNEEController implements SNEE {
 	SNCBException, SNEECompilerException, IOException, 
 	CodeGenerationException, AutonomicManagerException
 	{
-	  _dispatcher.runSimulatedNodeFailure(failedNodesID);
+	  _dispatcher.runSimulatedNodeFailure(failedNodesID, OTA);
 	}
 	
 	public MetadataManager getMetaData()
@@ -727,6 +727,7 @@ public class SNEEController implements SNEE {
     SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) metadata;
     sm.removeSourceSite(new Integer(failedID));
     sm.removeNodeFromTopology(failedID);  
+    _dispatcher.updateOverlay(failedID);
   }
 
   public void setupOverlay()
@@ -737,6 +738,8 @@ public class SNEEController implements SNEE {
   }
   
   public LogicalOverlayNetwork getOverlay()
+  throws SchemaMetadataException, TypeMappingException, OptimizationException,
+  IOException, SNEEConfigurationException, CodeGenerationException
   {
     return _dispatcher.getLogicalOverlay();
   }

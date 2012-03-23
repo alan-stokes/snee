@@ -62,10 +62,13 @@ public class PlannerUtils
           outputStream.close();
       }
       
-      ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(objectFolder.toString() + sep + orginal.getOverallID()));
-      outputStream.writeObject(orginal);
-      outputStream.flush();
-      outputStream.close();
+      if(orginal != null)
+      {
+        ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(objectFolder.toString() + sep + orginal.getOverallID()));
+        outputStream.writeObject(orginal);
+        outputStream.flush();
+        outputStream.close();
+      }
     }
     catch(Exception e)
     {

@@ -200,6 +200,11 @@ public class LogicalOverlayNetworkImpl implements Serializable, LogicalOverlayNe
     return qep;
   }
   
+  public void updateTopology(Topology network)
+  {
+    this.qep.getRT().setNetwork(network);
+  }
+  
   /**
    * updates a cluster by removing head and changing the candidate to the head
    * @param head

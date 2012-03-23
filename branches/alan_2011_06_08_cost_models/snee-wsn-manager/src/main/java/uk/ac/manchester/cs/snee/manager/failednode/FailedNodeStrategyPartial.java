@@ -215,6 +215,8 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     {
       //set up current objects
       RT routingTree =  routeIterator.next();
+      Topology network = this.getWsnTopology();
+      routingTree.setNetwork(network);
       Adaptation currentAdapatation = new Adaptation(currentQEP, StrategyIDEnum.FailedNodePartial, choice);
       
       File choiceFolder = new File(choiceFolderMain.toString() + sep + "choice" + choice);
@@ -394,7 +396,10 @@ public class FailedNodeStrategyPartial extends FailedNodeStrategyAbstract
     PAF paf = this.currentQEP.getIOT().getPAF(); 
     ArrayList<String> disconnectedNodes = new ArrayList<String>();
     List<Adaptation> totalAdapatations = new ArrayList<Adaptation>();
-    return adaptationAttempt(failedNodes, disconnectedNodes, paf, this.currentQEP.getIOT().getRT(), partialFolder, 
+    totalAdapatations = adaptationAttempt(failedNodes, disconnectedNodes, paf, this.currentQEP.getIOT().getRT(), partialFolder, 
                              totalAdapatations, false);
+    if(totalAdapatations.size() == 0)
+      System.out.println("dynamic strategy failed to adapt for a reason");
+    return totalAdapatations;
   }
 }

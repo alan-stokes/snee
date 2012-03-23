@@ -131,7 +131,6 @@ class Field(object):
 		tmp1 = math.ceil((math.log(minTxPower, 10) + 1.8) / 0.12)
 		tmp2 = math.ceil((math.log(minTxPower, 10) + 0.06459) / 0.00431)
 		txPowerSetting = max(1, tmp1, tmp2)
-		print "%d" %(txPowerSetting)
 		return txPowerSetting
 
 
@@ -153,8 +152,6 @@ class Field(object):
 			self.edges = []
 			for i in range(0, numNodes):
 				self.edges.append({})
-
-
 			for i in range(0,numNodes):
 				for j in range(0,numNodes):
 					if (i>=j):
@@ -186,7 +183,6 @@ class Field(object):
 		index = 0
 		while index < (len(foundNodes) -1):
 			for j in range(0, (len(self.edges[foundNodes[index]].keys())) -1):
-				print "%d_in_%d" % (j, len(self.edges[foundNodes[index]].keys()))
 				k = self.edges[foundNodes[index]][self.edges[foundNodes[index]].keys()[j]]
 				if k == 0:
 					return connectedNodes
@@ -232,27 +228,36 @@ class Field(object):
 			newid = n.id + numNodes
 			self.addNodeNoEdge(newid, n.xPos, n.yPos)
 			self.edges.append({})
-			for j in self.edges[i].keys():
+			keys = self.edges[i].keys()
+			for j in keys:
 				e = self.edges[i][j]
 				f = e * 2
 				if(f >= 254):
 					f = 254
-				if(i != 0 & j != 0):
-					i2 = i + numNodes
-					j2 = j + numNodes
-					self.edges[i2][j2] = f
-					self.edges[j2][i2] = f
-				else:
-					if(i != 0 & j == 0):
-						i2 = i + numNodes
-						self.edges[i2][j] = f
-						self.edges[j][i2] = f
-					else:
-						if(i == 0 & j != 0):
-							j2 = j + numNodes
-							self.edges[i][j2] = f
-							self.edges[j2][i] = f
-				
+				j2 = j + numNodes
+				if(j2 != numNodes):
+					self.edges[i][j2] = f
+			keys = self.edges[i].keys()
+			
+		for i in range(1, numNodes):
+			n = self.nodes[i]
+			newid = n.id + numNodes
+			keys = self.edges[i].keys()
+			for j in keys:
+				e = self.edges[i][j]
+				f = e * 2
+				if(f >= 254):
+					f = 254
+				i2 = i + numNodes
+				self.edges[i2][j] = f	
+			keys = self.edges[i].keys()
+			
+		for i in range(0, numNodes * 2):
+			n = self.nodes[i]
+			keys = self.edges[i].keys()
+			for j in keys:
+				e = self.edges[i][j]
+				self.edges[j][i] = e
 
 	#Trims random edges in the network graph until the average edge degree is above a certain threshold
 	def trimEdgesRandomlyToMeetAverageDegree(self, targetEdgeDegree):
@@ -328,7 +333,7 @@ rankdir="BT";""")
 
 	#Creates a file with network in Sneeql QoS-aware format (with energy/latency associated with each radio link)
 	def generateSneeqlNetFile(self, fname):
-		self.updateEdges()
+	
 	
 		outFile = open(fname, 'w')
 #TODO: review units in XML QoS top file -- they are not really applicable now
@@ -370,7 +375,7 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk network-topology.xsd">
 
 #creates the site res file for use in local tests
 	def generateSiteResFile(self, fname):
-		self.updateEdges()
+		
 		outFile = open(fname, 'w')
 		outFile.writelines("""<?xml version="1.0"?>
 
@@ -423,7 +428,7 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk site-resources.xsd">
 
 	#Creates file with network in Tossim format (showing connectivity between nodes only)
 	def generateTossimNetFile(self, fname):
-		self.updateEdges()
+		
 	
 		outFile = open(fname, 'w')	
 		numNodes = len(self.nodes.keys())

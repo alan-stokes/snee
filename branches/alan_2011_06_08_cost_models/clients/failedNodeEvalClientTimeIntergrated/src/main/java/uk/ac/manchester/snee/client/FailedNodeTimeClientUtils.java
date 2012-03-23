@@ -24,6 +24,8 @@ public class FailedNodeTimeClientUtils
   private Adaptation local = null;
   private Adaptation best = null;
   
+  private BufferedWriter originalOut;
+  
   private FailedNodeTimePlotter plot = null;
   
   public FailedNodeTimeClientUtils()
@@ -197,6 +199,26 @@ public class FailedNodeTimeClientUtils
    // plot.addLocalLifetime(orginal.get(0).getLifetimeEstimate(), new ArrayList<String>());
    // plot.addBestLifetime(orginal.get(0).getLifetimeEstimate(), new ArrayList<String>());
     
+  }
+  
+  public void setupOriginal(int queryID)
+  throws IOException
+  {
+    originalOut = new BufferedWriter(new FileWriter(new File("plots" + sep + "orginial" + queryID)));
+  }
+  
+  public void writeOriginal(int tests, double value)
+  throws IOException
+  {
+    originalOut.write(tests + " : " + value);
+    originalOut.flush();
+  }
+  
+  public void closeOriginal()
+  throws IOException
+  {
+    originalOut.flush();
+    originalOut.close();
   }
 
   public Adaptation getGlobal()

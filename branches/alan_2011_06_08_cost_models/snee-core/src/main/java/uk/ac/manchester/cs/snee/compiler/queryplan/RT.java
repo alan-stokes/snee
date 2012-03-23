@@ -307,4 +307,9 @@ public class RT extends SNEEAlgebraicForm {
     }
     site.clearOutputs();
   }
+
+  public void setNetwork(Topology network)
+  {
+    this.network = network;
+  }
 }

@@ -62,6 +62,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SNEEAlgebraicForm;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -1137,7 +1138,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
       }
       else if (t instanceof CommunicationTask) {
         CommunicationTask ct = (CommunicationTask)t;
-        sumEnergy += getRadioEnergy(ct);
+        sumEnergy += getRadioEnergy(ct, null);
         
       } else if (t instanceof RadioOnTask) {
         double taskDuration = bmsToMs(t.getDuration())/1000.0;
@@ -1157,12 +1158,13 @@ public class AgendaIOT extends SNEEAlgebraicForm{
   /**
    * Returns the total site energy in Joules according to model model without sense permently on.
    * @param site
+   * @param autonomicManagerImpl 
    * @return
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    */
-  public double getSiteEnergyConsumption(Site site) 
+  public double getSiteEnergyConsumption(Site site, AutonomicManager autonomicManagerImpl) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException 
   {
@@ -1204,7 +1206,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
       }
       else if (t instanceof CommunicationTask) {
         CommunicationTask ct = (CommunicationTask)t;
-        sumEnergy += getRadioEnergy(ct);
+        sumEnergy += getRadioEnergy(ct,  autonomicManagerImpl);
         
       } else if (t instanceof RadioOnTask) {
         double taskDuration = bmsToMs(t.getDuration())/1000.0;
@@ -1227,7 +1229,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    */
-  public double getRadioEnergy(CommunicationTask ct) 
+  public double getRadioEnergy(CommunicationTask ct, AutonomicManager man) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException 
   {
@@ -1242,7 +1244,14 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     }
     Site sender = ct.getSourceNode();
     Site receiver = (Site)sender.getOutput(0);
-    int txPower = (int)iot.getRT().getRadioLink(sender, receiver).getEnergyCost();
+    
+    int txPower = 0;
+    if(iot.getRT().getRadioLink(sender, receiver) == null)
+    {
+      txPower = (int)man.getWsnTopology().getRadioLink(sender, receiver).getEnergyCost();
+    }
+    else
+      txPower = (int)iot.getRT().getRadioLink(sender, receiver).getEnergyCost();
     double radioTXAmp = AvroraCostParameters.getTXAmpere(txPower);
     
     HashSet<InstanceExchangePart> exchComps = ct.getInstanceExchangeComponents();
@@ -1296,7 +1305,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
   {
     double sumEnergy = 0;
     long cpuActiveTimeBms = task.getDuration();
-    double RadioEnergy = getRadioEnergy(task, packets);
+    double RadioEnergy = getRadioEnergy(task, packets, null);
     sumEnergy += RadioEnergy; 
     sumEnergy += getCPUEnergyNoAgenda(cpuActiveTimeBms);
     double taskDuration = bmsToMs(task.getDuration())/1000.0;
@@ -1331,7 +1340,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    */
-  public double getRadioEnergy(CommunicationTask ct, double packets) 
+  public double getRadioEnergy(CommunicationTask ct, double packets, AutonomicManager man) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException 
   {
@@ -1346,7 +1355,14 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     }
     Site sender = ct.getSourceNode();
     Site receiver = (Site)sender.getOutput(0);
-    int txPower = (int)iot.getRT().getRadioLink(sender, receiver).getEnergyCost();
+    int txPower = 0;
+    if(iot.getRT().getRadioLink(sender, receiver) == null)
+    {
+      txPower = (int)man.getWsnTopology().getRadioLink(sender, receiver).getEnergyCost();
+    }
+    else
+      txPower = (int)iot.getRT().getRadioLink(sender, receiver).getEnergyCost();
+    
     double radioTXAmp = AvroraCostParameters.getTXAmpere(txPower);
     
     AvroraCostExpressions  costExpressions = new AvroraCostExpressions(daf, costParams, this);

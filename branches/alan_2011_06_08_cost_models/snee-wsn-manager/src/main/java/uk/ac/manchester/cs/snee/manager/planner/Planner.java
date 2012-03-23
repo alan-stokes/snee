@@ -82,7 +82,7 @@ public class Planner extends AutonomicManagerComponent
    * @throws OptimizationException 
    * @throws CodeGenerationException 
    */
-  public Adaptation assessChoices(AdaptationCollection choices) 
+  public Adaptation assessChoices(AdaptationCollection choices, boolean doOriginal) 
   throws 
   IOException, OptimizationException, 
   SchemaMetadataException, TypeMappingException, 
@@ -96,8 +96,12 @@ public class Planner extends AutonomicManagerComponent
       Adaptation bestLocal = null;
       List<Adaptation> partialAds = choices.getPartialAdaptations();
       List<Adaptation> localAds = choices.getLocalAdaptations();
-      orginal = choices.getOriginal(); 
-      doOrginalAssessment(orginal, orginal.getOldQep());
+      
+      if(doOriginal)
+      {
+        orginal = choices.getOriginal(); 
+        doOrginalAssessment(orginal, orginal.getOldQep());
+      }
       
       //find the best of each framework
       if(!partialAds.isEmpty())
@@ -253,7 +257,7 @@ public class Planner extends AutonomicManagerComponent
   TypeMappingException, SNEEConfigurationException
   {
     return ChoiceAssessor.calculateEstimatedLifetimewithFailedNodes(qep.getIOT(), 
-        qep.getAgendaIOT(), fails, runningSitesorg);
+        qep.getAgendaIOT(), fails, runningSitesorg, manager);
   }
   
   public void updateRunningSites()

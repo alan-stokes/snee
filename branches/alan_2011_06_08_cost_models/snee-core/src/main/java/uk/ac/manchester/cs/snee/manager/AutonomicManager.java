@@ -24,6 +24,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
@@ -107,7 +108,7 @@ public interface AutonomicManager
   throws OptimizationException, SchemaMetadataException, TypeMappingException, 
   IOException, CodeGenerationException;
 
-  public abstract void queryStarting()
+  public abstract void queryStarting(boolean oTA)
   throws IOException, OptimizationException, SchemaMetadataException,
   TypeMappingException, CodeGenerationException, SNEEConfigurationException;
 
@@ -122,13 +123,19 @@ public interface AutonomicManager
 
   public abstract void simulateEnergyDrainofAganedaExecutionCycles(
       int numberOfExectutionCycles, SensorNetworkQueryPlan oldQep,
-      SensorNetworkQueryPlan newQep) 
+      SensorNetworkQueryPlan newQep, boolean doOriginal) 
   throws FileNotFoundException, IOException, OptimizationException, SchemaMetadataException,
   TypeMappingException, SNEEConfigurationException, CodeGenerationException;
 
-  public abstract LogicalOverlayNetwork getOverlay();
+  public abstract LogicalOverlayNetwork getOverlay() 
+  throws SchemaMetadataException, TypeMappingException, OptimizationException, 
+  IOException, SNEEConfigurationException, CodeGenerationException;
 
   public abstract void resetOverlayCost(LogicalOverlayNetwork orginialOverlay) 
   throws IOException, OptimizationException, SchemaMetadataException, TypeMappingException,
   CodeGenerationException, SNEEConfigurationException;
+
+  public abstract void updateOverlay(String failedID);
+  
+  public abstract Topology getWsnTopology();
 }

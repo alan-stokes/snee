@@ -17,6 +17,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationUtils;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
@@ -167,7 +168,7 @@ public class ChoiceAssessor implements Serializable
   TypeMappingException, SNEEConfigurationException
   {
     double shortestLifetime = Double.MAX_VALUE; //s
-    
+    System.out.println("testing the " + adapt.getOverallID() + "adaptation");
     Iterator<Site> siteIter = 
                    adapt.getNewQep().getIOT().getRT().siteIterator(TraversalOrder.POST_ORDER);
     while (siteIter.hasNext()) 
@@ -180,7 +181,7 @@ public class ChoiceAssessor implements Serializable
       if(permamentSenseCost)
         siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumptionSensorOn(site); // J
       else
-        siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site);
+        siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site, null);
       runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
       adapt.putSiteEnergyCost(site.getID(), siteEnergyCons);
       double agendaLength = Agenda.bmsToMs(adapt.getNewQep().getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
@@ -299,6 +300,7 @@ public class ChoiceAssessor implements Serializable
   TypeMappingException, SNEEConfigurationException, FileNotFoundException, IOException
   {
     double shortestLifetime = Double.MAX_VALUE; //s
+    System.out.println("testing the " + adapt.getOverallID() + "adaptation with overlay");
     double overallShortestLifetime = 0;
     new LogicalOverlayNetworkUtils().storeOverlayAsFile(current, outputFolder);
     boolean adapted = true;
@@ -317,7 +319,7 @@ public class ChoiceAssessor implements Serializable
         if(permamentSenseCost)
           siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumptionSensorOn(site); // J
         else
-          siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site);
+          siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site, null);
         runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
         adapt.putSiteEnergyCost(site.getID(), siteEnergyCons);
         double agendaLength = Agenda.bmsToMs( adapt.getNewQep().getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
@@ -398,6 +400,7 @@ public class ChoiceAssessor implements Serializable
   TypeMappingException, SNEEConfigurationException
   {
     double shortestLifetime = Double.MAX_VALUE; //s
+    System.out.println("testing the " + adapt.getOverallID() + "adaptation  with overlay");
     new LogicalOverlayNetworkUtils().storeOverlayAsFile(logicalOverlayNetwork, outputFolder);
     Iterator<Site> siteIter = 
       adapt.getNewQep().getRT().siteIterator(TraversalOrder.POST_ORDER);
@@ -411,7 +414,7 @@ public class ChoiceAssessor implements Serializable
       if(permamentSenseCost)
         siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumptionSensorOn(site); // J
       else
-        siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site);
+        siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site, null);
       runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
       adapt.putSiteEnergyCost(site.getID(), siteEnergyCons);
       double agendaLength = Agenda.bmsToMs( adapt.getNewQep().getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
@@ -436,6 +439,7 @@ public class ChoiceAssessor implements Serializable
   
   /**
    * calculates the estiamted time left for a IOT whilst not counting failed nodes
+   * @param autonomicManagerImpl 
    * @param adapt
    * @param logicalOverlayNetwork
    * @return
@@ -448,12 +452,14 @@ public class ChoiceAssessor implements Serializable
    */
   public static Double calculateEstimatedLifetimewithFailedNodes(IOT iot, AgendaIOT agenda,
                                                            ArrayList<String> failedIds,
-                                                           HashMap<String, RunTimeSite> runningSites) 
+                                                           HashMap<String, RunTimeSite> runningSites,
+                                                           AutonomicManagerImpl autonomicManagerImpl) 
   throws FileNotFoundException, IOException, 
   OptimizationException, SchemaMetadataException, 
   TypeMappingException, SNEEConfigurationException
   {
     double shortestLifetime = Double.MAX_VALUE; //s
+    System.out.println("testing the " + iot.getID() + "IOT");
     Iterator<Site> siteIter = 
       iot.getRT().siteIterator(TraversalOrder.POST_ORDER);
     while (siteIter.hasNext()) 
@@ -466,7 +472,7 @@ public class ChoiceAssessor implements Serializable
       if(permamentSenseCost)
         siteEnergyCons = agenda.getSiteEnergyConsumptionSensorOn(site); // J
       else
-        siteEnergyCons = agenda.getSiteEnergyConsumption(site);
+        siteEnergyCons = agenda.getSiteEnergyConsumption(site, autonomicManagerImpl);
       runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
       double agendaLength = Agenda.bmsToMs( agenda.getLength_bms(false))/new Double(1000); // ms to s
       double siteLifetime = (currentEnergySupply / siteEnergyCons) * agendaLength;

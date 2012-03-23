@@ -65,7 +65,6 @@ import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.LogicalOverlayNetwork;
-import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetworkImpl;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -180,7 +179,7 @@ public class Dispatcher {
 			  String sep = System.getProperty("file.separator");
 				String outputDir = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) + sep + queryPlan.getQueryName() + sep;
 				sncb = snQueryPlan.getSNCB();
-				_autonomicManager.queryStarting();
+				_autonomicManager.queryStarting(true);
 				if(runCostModel)
                   _autonomicManager.runCostModels();
 				if(runNodeFailure)
@@ -316,7 +315,7 @@ public class Dispatcher {
     
   }
 
-  public void runSimulatedNodeFailure(ArrayList<String> failedNodesID) 
+  public void runSimulatedNodeFailure(ArrayList<String> failedNodesID, boolean OTA) 
   throws 
   MalformedURLException, SNEEConfigurationException, 
   OptimizationException, SchemaMetadataException, 
@@ -327,7 +326,7 @@ public class Dispatcher {
   SNCBException, SNEECompilerException, IOException, 
   CodeGenerationException, AutonomicManagerException
   {
-    _autonomicManager.queryStarting();
+    _autonomicManager.queryStarting(OTA);
     _autonomicManager.forceFailedNodes(failedNodesID);
   }
 
@@ -366,6 +365,8 @@ public class Dispatcher {
   }
   
   public LogicalOverlayNetwork getLogicalOverlay()
+  throws SchemaMetadataException, TypeMappingException, OptimizationException, 
+  IOException, SNEEConfigurationException, CodeGenerationException
   {
     return _autonomicManager.getOverlay();
   }
@@ -385,7 +386,7 @@ public class Dispatcher {
   SchemaMetadataException, TypeMappingException, SNEEConfigurationException,
   CodeGenerationException
   {
-    _autonomicManager.simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles, oldQep, newQep); 
+    _autonomicManager.simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles, oldQep, newQep, false); 
   }
 
   public void resetOverlayCost(LogicalOverlayNetworkImpl orginialOverlay)
@@ -393,6 +394,12 @@ public class Dispatcher {
   CodeGenerationException, SNEEConfigurationException
   {
     _autonomicManager.resetOverlayCost(orginialOverlay);
+    
+  }
+
+  public void updateOverlay(String failedID)
+  {
+    _autonomicManager.updateOverlay(failedID);
     
   }
 

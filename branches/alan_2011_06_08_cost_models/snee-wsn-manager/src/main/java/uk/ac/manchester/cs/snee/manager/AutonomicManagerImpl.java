@@ -133,7 +133,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     {
       Site currentSite = (Site) siteIterator.next();
       Double energyStock = new Double(currentSite.getEnergyStock() / new Double(1000));
-      Double qepExecutionCost = qep.getAgendaIOT().getSiteEnergyConsumption(currentSite); // J
+      Double qepExecutionCost = qep.getAgendaIOT().getSiteEnergyConsumption(currentSite, this); // J
       runningSites.put(currentSite.getID(), 
                        new RunTimeSite(energyStock,currentSite.getID(),qepExecutionCost));
     }
@@ -230,7 +230,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     {
       new AdaptationUtils(choices.getAll(), _metadataManager.getCostParameters()).FileOutput(outputFolder);
       new AdaptationUtils(choices.getAll(), _metadataManager.getCostParameters()).systemOutput();
-      Adaptation finalChoice = planner.assessChoices(choices);
+      Adaptation finalChoice = planner.assessChoices(choices, false);
       new AdaptationUtils(finalChoice,  _metadataManager.getCostParameters()).FileOutputFinalChoice(outputFolder);
       anyliser.updateFrameworks(finalChoice);
       executer.adapt(finalChoice);
@@ -268,11 +268,13 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   }
 
   @Override
-  public void simulateEnergyDrainofAganedaExecutionCycles(
-      int fixedNumberOfAgendaExecutionCycles) throws FileNotFoundException, IOException, OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  public void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles)
+  throws FileNotFoundException, IOException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException, SNEEConfigurationException
   {
     SensorNetworkQueryPlan qep = (SensorNetworkQueryPlan) this.currentQEP;
-    ChoiceAssessor.calculateEstimatedLifetimewithFailedNodes(qep.getIOT(), qep.getAgendaIOT(), new ArrayList<String>(), this.runningSites);
+    ChoiceAssessor.calculateEstimatedLifetimewithFailedNodes(qep.getIOT(), qep.getAgendaIOT(), 
+                                                             new ArrayList<String>(), this.runningSites, this);
     monitor.simulateNumeriousAgendaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
   }
 
@@ -456,7 +458,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   }
 
   @Override
-  public void queryStarting()
+  public void queryStarting(boolean OTA)
   throws IOException, OptimizationException, SchemaMetadataException, 
   TypeMappingException, CodeGenerationException, SNEEConfigurationException
   {
@@ -473,23 +475,39 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     File output = new File(outputFolder + sep + "OTASection");
     output.mkdir();
     Model.setCompiledAlready(false);
-    String choice = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);
-    if(choice.equals(ChoiceAssessorPreferenceEnum.Local.toString()) || choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))
-      planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false, anyliser.getOverlay());
-    else
-      planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false, null);
-    // update running sites energy stores
-    siteIdIterator = sqep.getRT().getSiteIDs().iterator();
-    while(siteIdIterator.hasNext())
+    if(OTA)
     {
-      Integer siteIDInt = siteIdIterator.next();
-      runningSites.get(siteIDInt.toString()).removeAdaptationCost();
-      runningSites.get(siteIDInt.toString()).resetAdaptEnergyCosts();
-    }  
+      String choice = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);
+      if(choice.equals(ChoiceAssessorPreferenceEnum.Local.toString()) || choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))
+        planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false, anyliser.getOverlay());
+      else
+        planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false, null);
+      // update running sites energy stores
+      siteIdIterator = sqep.getRT().getSiteIDs().iterator();
+      while(siteIdIterator.hasNext())
+      {
+        Integer siteIDInt = siteIdIterator.next();
+        runningSites.get(siteIDInt.toString()).removeAdaptationCost();
+        runningSites.get(siteIDInt.toString()).resetAdaptEnergyCosts();
+      }  
+    }
+    else
+    {
+      Iterator<String> siteKeyIterator = runningSites.keySet().iterator();
+      while(siteKeyIterator.hasNext())
+      {
+        String key = siteKeyIterator.next();
+        RunTimeSite site = runningSites.get(key);
+        Site rtSite = sqep.getRT().getSite(site.toString());
+        site.setQepExecutionCost(sqep.getAgendaIOT().getSiteEnergyConsumption(rtSite, this));
+      }   
+    }
     
   }
 
   public LogicalOverlayNetworkImpl getOverlay()
+  throws SchemaMetadataException, TypeMappingException, OptimizationException, 
+  IOException, SNEEConfigurationException, CodeGenerationException
   {
     return this.anyliser.getOverlay();
   }
@@ -526,7 +544,8 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   @Override
   public void simulateEnergyDrainofAganedaExecutionCycles( int numberOfExectutionCycles, 
                                                           SensorNetworkQueryPlan oldQep,
-                                                          SensorNetworkQueryPlan newQep) 
+                                                          SensorNetworkQueryPlan newQep,
+                                                          boolean doOriginal) 
   throws FileNotFoundException, IOException, OptimizationException, SchemaMetadataException,
   TypeMappingException, SNEEConfigurationException, CodeGenerationException
   {
@@ -535,7 +554,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     Adaptation ad = new Adaptation(oldQep, newQep, StrategyIDEnum.FailedNodeGlobal, 0);
     col.add(ad);
     planner.updateRunningSites();
-    planner.assessChoices(col);
+    planner.assessChoices(col, doOriginal);
     while(runtimeSiteKeyIterator.hasNext())
     {
       RunTimeSite site = this.runningSites.get(runtimeSiteKeyIterator.next());
@@ -543,7 +562,9 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
       site.removeAdaptationCost();
       site.resetCurrentAdaptationEnergyCost();
     }
-    ChoiceAssessor.calculateEstimatedLifetimewithFailedNodes(oldQep.getIOT(), oldQep.getAgendaIOT(), new ArrayList<String>(), this.runningSites);
+    ChoiceAssessor.
+    calculateEstimatedLifetimewithFailedNodes(oldQep.getIOT(), oldQep.getAgendaIOT(), 
+                                              new ArrayList<String>(), this.runningSites, this);
     monitor.simulateNumeriousAgendaExecutionCycles(numberOfExectutionCycles);
   }
 
@@ -556,6 +577,13 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     Adaptation orgianlOTAProgramCost = new Adaptation(sqep, sqep, StrategyIDEnum.Orginal, 0);
     File output = new File(outputFolder + sep + "OTASection");
     output.mkdir();
+    orginialOverlay.updateTopology(getWsnTopology());
     planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false, (LogicalOverlayNetworkImpl) orginialOverlay);
+  }
+
+  @Override
+  public void updateOverlay(String failedID)
+  {
+    this.anyliser.updateOverlay(failedID);
   }
 }

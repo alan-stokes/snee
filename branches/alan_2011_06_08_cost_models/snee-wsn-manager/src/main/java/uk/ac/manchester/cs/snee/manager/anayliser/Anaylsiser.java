@@ -288,7 +288,6 @@ public class Anaylsiser extends AutonomicManagerComponent
   	Iterator<StrategyAbstract> frameworkIterator = frameworks.iterator();
   	String choice = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);
   	boolean feasiable = true;
-  	boolean overlayFailed = false;
   	//go though methodologyies till located a adapatation.
   	while(frameworkIterator.hasNext() && feasiable)
   	{
@@ -302,8 +301,6 @@ public class Anaylsiser extends AutonomicManagerComponent
        )
   	  {
        List<Adaptation> frameworkOutput = framework.adapt(failedNodes);
-       if(frameworkOutput.size() == 0 && framework instanceof FailedNodeStrategyLocal)
-         overlayFailed = true;
   	  if(frameworkOutput.size() == 0 && framework instanceof FailedNodeStrategyGlobal)
   	    feasiable = false;
   	  adapatations.addAll(frameworkOutput);
@@ -319,7 +316,7 @@ public class Anaylsiser extends AutonomicManagerComponent
   throws OptimizationException, SchemaMetadataException, 
          TypeMappingException
   {
-    return this.qep.getAgendaIOT().getSiteEnergyConsumption(currentSite); // J
+    return this.qep.getAgendaIOT().getSiteEnergyConsumption(currentSite, manager); // J
   }
 
   public void updateFrameWorkStorageLocation(File outputFolder)
@@ -346,7 +343,9 @@ public class Anaylsiser extends AutonomicManagerComponent
     }
   }
 
-  public LogicalOverlayNetworkImpl getOverlay()
+  public LogicalOverlayNetworkImpl getOverlay() 
+  throws SchemaMetadataException, TypeMappingException, OptimizationException,
+  IOException, SNEEConfigurationException, CodeGenerationException
   {
     Iterator<StrategyAbstract> frameworkIterator = frameworks.iterator();
     while(frameworkIterator.hasNext())
@@ -355,6 +354,7 @@ public class Anaylsiser extends AutonomicManagerComponent
       if(framework instanceof FailedNodeStrategyLocal)
       {
         FailedNodeStrategyLocal local = (FailedNodeStrategyLocal) framework;
+        local.initilise(this.manager.getCurrentQEP());
         return local.getLogicalOverlay();
       }
     }
@@ -376,5 +376,20 @@ public class Anaylsiser extends AutonomicManagerComponent
         currentFrameWork.initilise(this.qep, 0);
       }
     }
+  }
+
+  public void updateOverlay(String failedID)
+  {
+    Iterator<StrategyAbstract> frameworkIterator = frameworks.iterator();
+    while(frameworkIterator.hasNext())
+    {
+      StrategyAbstract currentFrameWork = frameworkIterator.next();
+      if(currentFrameWork instanceof FailedNodeStrategyLocal)
+      {
+        FailedNodeStrategyLocal local = (FailedNodeStrategyLocal) currentFrameWork;
+        local.updateOverlay(failedID);
+      }
+    }
+    
   }
 }

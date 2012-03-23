@@ -15,14 +15,12 @@ import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
@@ -85,7 +83,15 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   OptimizationException, IOException, SNEEConfigurationException,
   CodeGenerationException
   {  
-    
+    initilise(oldQep);
+  }
+  
+  public void initilise(QueryExecutionPlan oldQep) 
+  throws 
+  SchemaMetadataException, TypeMappingException, 
+  OptimizationException, IOException, SNEEConfigurationException,
+  CodeGenerationException
+  {  
     this.currentQEP = (SensorNetworkQueryPlan) oldQep;
     logicalOverlay = new LogicalOverlayNetworkImpl();
     network = getWsnTopology();
@@ -391,6 +397,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
           //run new iot though when scheduler and locate changes
           AgendaIOT newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters(), currentQEP.getBufferingFactor());
           Agenda newAgenda = doOldSNWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters(), currentQEP.getBufferingFactor());
+          newIOT.getRT().setNetwork(this.getWsnTopology());
           //output new and old agendas
           new FailedNodeStrategyLocalUtils().outputAgendas(newAgendaIOT, currentQEP.getAgendaIOT(), 
                                                                currentQEP.getIOT(), newIOT, localFolder);
@@ -483,6 +490,11 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   public void setQEP(SensorNetworkQueryPlan  currentQEP)
   {
     this.logicalOverlay.setQep(currentQEP);
+  }
+
+  public void updateOverlay(String failedID)
+  {
+    this.logicalOverlay.removeNode(failedID);
   }
 
 }

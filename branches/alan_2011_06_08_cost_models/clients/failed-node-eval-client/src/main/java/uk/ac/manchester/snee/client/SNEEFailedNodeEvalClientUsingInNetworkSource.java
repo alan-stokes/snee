@@ -419,7 +419,7 @@ private void resetMetaData()
     this.resetMetaData();
     control.giveAutonomicManagerQuery(_query);
     Model.setCompiledAlready(false);
-    control.runSimulatedNodeFailure(failedNodes);
+    control.runSimulatedNodeFailure(failedNodes, true);
     //  List<ResultSet> results1 = resultStore.getResults();
     System.out.println("Stopping query " + queryid + ".");
     controller.close();

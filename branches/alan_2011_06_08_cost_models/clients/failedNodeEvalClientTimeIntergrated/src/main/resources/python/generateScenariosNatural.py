@@ -209,7 +209,6 @@ def generateSpiderNetwork(numNodes, rValue, networkId, outputDir, siteResID):
             	 key = "new %d_%d_%d" % (i, n.xPos, n.yPos)
 				 
             if not (key in dupsCheckList):
-            	print "instilled_%d_ %s" % (i, key)
 #                print dupsCheckList
                 success = True
                 dupsCheckList += [key]
@@ -524,8 +523,8 @@ def main():
 	  os.remove(optOutputDir1+os.sep+"queries"+".txt")
     #dense topology
     generateScenarios1(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 1, 30)
-    generateScenarios2(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 30, 60)
-    generateScenarios3(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 60, 90)
+   # generateScenarios2(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 30, 60)
+   # generateScenarios3(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 60, 90)
     generateScenarios4(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 90, 120)
     #not so dense network
     #global topologyDensity

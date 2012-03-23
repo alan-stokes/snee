@@ -107,6 +107,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
 	  Adaptation adapt = new Adaptation(currentQEP, StrategyIDEnum.FailedNodeGlobal, 1);
 		SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) _metadata;
 		network = sm.getTopology();
+		network = cloner.deepClone(network);
 		
 	  makeNetworkFile();
 		//remove exchanges from PAF
@@ -121,9 +122,11 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
     try
     {
       routingTree = router.doRouting(paf, currentQEP.getQueryName(), network, _metadata);
+      routingTree.setNetwork(this.getWsnTopology());
     }
     catch (RouterException e1)
     {
+      System.out.println("golbal strategy faield to adapt due to a router exception");
       return adaptation;
     }
 		//where
@@ -151,6 +154,7 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
     }
     catch (WhenSchedulerException e)
     {
+      System.out.println("golbal strategy faield to adapt due to a when scheduler exception");
       throw new SNEECompilerException(e);
     }
     
@@ -160,6 +164,8 @@ public class FailedNodeStrategyGlobal extends FailedNodeStrategyAbstract
     
     if(success)
       adaptation.add(adapt);
+    else
+      System.out.println("golbal strategy faield to adapt due to a assessment exception");
 		return adaptation;
 	}
 

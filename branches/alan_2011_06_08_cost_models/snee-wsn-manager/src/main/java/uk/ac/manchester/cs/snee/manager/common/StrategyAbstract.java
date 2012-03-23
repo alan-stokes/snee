@@ -218,7 +218,7 @@ public abstract class StrategyAbstract implements Serializable
                             duration, newAgenda, oldAgenda, adjust, ad);
               if(changed)
               {
-                findAffectedSites(nextChild, affectedSites, newAgenda, ad, adjust);
+                findAffectedSites(nextChild, affectedSites, newAgenda, ad, adjust, oldAgenda);
                 adjust.setAffectedSites(affectedSites);
                 ad.addTemporalSite(adjust);
               }
@@ -238,36 +238,40 @@ public abstract class StrategyAbstract implements Serializable
    * @param newAgenda
    * @param ad
    * @param adjust
+   * @param oldAgenda 
    */
   private void findAffectedSites(Node start, ArrayList<String> affectedSites, AgendaIOT newAgenda,
-                             Adaptation ad, TemporalAdjustment adjust)
+                             Adaptation ad, TemporalAdjustment adjust, AgendaIOT oldAgenda)
   {
     affectedSites.add(start.getID());
     if(!newAgenda.getIOT().getRT().getRoot().getID().equals(start.getID()))
     {
       Task comm = newAgenda.getTransmissionTask(start); 
       if(comm == null)
-        System.out.println("");
-      ArrayList<Node> sites =  newAgenda.sitesWithTransmissionTasksAfterTime(comm.getStartTime());
-      Iterator<Node> siteIterator = sites.iterator();
-      while(siteIterator.hasNext())
+        comm = oldAgenda.getTransmissionTask(start); 
+      if(comm != null)
       {
-        start = siteIterator.next();
-        ArrayList<String> allAffectedSites = ad.getSitesAffectedByAllTemporalChanges();
-        if(allAffectedSites.contains(start.getID()))
+        ArrayList<Node> sites =  newAgenda.sitesWithTransmissionTasksAfterTime(comm.getStartTime());
+        Iterator<Node> siteIterator = sites.iterator();
+        while(siteIterator.hasNext())
         {
-          TemporalAdjustment otherAdjust = ad.getAdjustmentContainingSite((Site) start);
-          if(otherAdjust.getAdjustmentDuration() < adjust.getAdjustmentDuration())
+          start = siteIterator.next();
+          ArrayList<String> allAffectedSites = ad.getSitesAffectedByAllTemporalChanges();
+          if(allAffectedSites.contains(start.getID()))
           {
-              affectedSites.add(start.getID());
-              otherAdjust.removeSiteFromAffectedSites(start.getID());
+            TemporalAdjustment otherAdjust = ad.getAdjustmentContainingSite((Site) start);
+            if(otherAdjust.getAdjustmentDuration() < adjust.getAdjustmentDuration())
+            {
+                affectedSites.add(start.getID());
+                otherAdjust.removeSiteFromAffectedSites(start.getID());
+            }
           }
-        }
-        else
-        {
-          affectedSites.add(start.getID()); 
-        }
-      }   
+          else
+          {
+            affectedSites.add(start.getID()); 
+          }
+        } 
+      }
     }
   }
 
@@ -386,17 +390,22 @@ public abstract class StrategyAbstract implements Serializable
       Site site = siteIterator.next();
       ArrayList<InstanceOperator> instanceOperatorsNew = newIOT.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
       ArrayList<InstanceOperator> instanceOperatorsOld = oldIOT.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
-      InstanceExchangePart exchangeNew = (InstanceExchangePart) instanceOperatorsNew.get(0);
-      InstanceExchangePart exchangeOld = null;
-      if(instanceOperatorsOld.size() == 0)
+      if(instanceOperatorsNew.size() == 0)
       {}
       else
       {
-        exchangeOld = (InstanceExchangePart) instanceOperatorsOld.get(0);
-        if(!exchangeNew.getNext().getSite().getID().equals(exchangeOld.getNext().getSite().getID())
-            && !ad.getReprogrammingSites().contains(site.getID()))
+        InstanceExchangePart exchangeNew = (InstanceExchangePart) instanceOperatorsNew.get(0);
+        InstanceExchangePart exchangeOld = null;
+        if(instanceOperatorsOld.size() == 0)
+        {}
+        else
         {
-          ad.addRedirectedSite(site.getID());
+          exchangeOld = (InstanceExchangePart) instanceOperatorsOld.get(0);
+          if(!exchangeNew.getNext().getSite().getID().equals(exchangeOld.getNext().getSite().getID())
+              && !ad.getReprogrammingSites().contains(site.getID()))
+          {
+            ad.addRedirectedSite(site.getID());
+          }
         }
       }
     }
