@@ -59,6 +59,7 @@ import uk.ac.manchester.cs.snee.compiler.params.qos.QoSException;
 import uk.ac.manchester.cs.snee.compiler.parser.ParserException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.ExpressionException;
+import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
 import uk.ac.manchester.cs.snee.compiler.sn.when.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -184,7 +185,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	TypeMappingException, SchemaMetadataException,
 	ExpressionException, OptimizationException, ParserException, 
 	SNEEConfigurationException, MetadataException, EvaluatorException,
-	SNEECompilerException, SourceAllocatorException, WhenSchedulerException  
+	SNEECompilerException, SourceAllocatorException, WhenSchedulerException, RouterException  
 	{		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery, null)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
@@ -204,7 +205,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	ExpressionException, OptimizationException, ParserException, 
 	EvaluatorException, RecognitionException, TokenStreamException,
 	SNEEConfigurationException, SNEECompilerException, MetadataException, 
-	SourceAllocatorException, WhenSchedulerException {
+	SourceAllocatorException, WhenSchedulerException, RouterException {
 		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery, null)).andReturn(mockPlan);
 		mockDispatcher.startQuery(1, mockResultset, mockPlan);
@@ -244,7 +245,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 	ExpressionException, OptimizationException, ParserException, 
 	EvaluatorException, RecognitionException, TokenStreamException, 
 	SNEEConfigurationException, SNEECompilerException, MetadataException,
-	SourceAllocatorException, WhenSchedulerException
+	SourceAllocatorException, WhenSchedulerException, RouterException
 	{
 		//Record expected calls to the mock objects
 		expect(mockQueryCompiler.compileQuery(1, mQuery, null)).andReturn(mockPlan);

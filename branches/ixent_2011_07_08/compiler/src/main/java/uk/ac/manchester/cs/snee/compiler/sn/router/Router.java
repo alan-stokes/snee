@@ -14,6 +14,7 @@ import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.DisconnectedTopologyException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.LinkCostMetric;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -51,8 +52,9 @@ public class Router {
 	 * @param paf
 	 * @param queryName
 	 * @return
+	 * @throws RouterException 
 	 */
-	public RT doRouting(PAF paf, String queryName) {
+	public RT doRouting(PAF paf, String queryName) throws RouterException {
 		if (logger.isDebugEnabled())
 			logger.debug("ENTER doRouting() with " + paf.getID());
 		//XXX: There is potentially one routing tree for each Sensor Network Source
@@ -62,7 +64,12 @@ public class Router {
 		Topology network = sm.getTopology();
 		int sink = sm.getGateway(); 
 		int[] sources = sm.getSourceSites(paf);
-		Tree steinerTree = computeSteinerTree(network, sink, sources); 
+		Tree steinerTree;
+		try {
+			steinerTree = computeSteinerTree(network, sink, sources);
+		} catch (DisconnectedTopologyException e) {
+			throw new RouterException(e);
+		} 
 		RT rt = new RT(paf, queryName, steinerTree);
 		if (logger.isDebugEnabled())
 			logger.debug("RETURN doRouting()");
@@ -80,9 +87,10 @@ public class Router {
      * Simple algorithm used taken from "Protocols and Architectures from 
      * Wireless Sensor Networks" by Holger Karl and Andreas Willig,
      * page 309. 
+     * @throws DisconnectedTopologyException 
      */
     private Tree computeSteinerTree(Topology network, final int sink, 
-    		final int[] sources) {
+    		final int[] sources) throws DisconnectedTopologyException {
 		if (logger.isTraceEnabled())
 			logger.trace("ENTER computeSteinerTree() with sink=" +sink+
 					" sources="+sources.toString());    	

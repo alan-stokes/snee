@@ -126,11 +126,12 @@ public class Topology extends Graph {
      * Compute the shortest distance between two vertices using Dijkstra's algorithm
      * @param 	sourceID	The identifier of the source vertex.
      * @param 	destID		The identifier of the destination vertex. 
+     * @throws DisconnectedTopologyException 
      * 
      */
     public Path getShortestPath(final String sourceID, 
     		final String destID,
-    		final LinkCostMetric linkCostMetric) {
+    		final LinkCostMetric linkCostMetric) throws DisconnectedTopologyException {
     	
 	final HashMap<String, Double> distance = new HashMap<String, Double>();
 	final HashMap<String, String> previous = new HashMap<String, String>();
@@ -189,8 +190,9 @@ public class Topology extends Graph {
 	    }
 	    logger.info("Shortest path: " + path.toString());
 	} else if (!sourceID.equals(destID)) {
-	    logger.info("Sites " + sourceID + " and " + destID
-		    + " are not linked.");
+		String message = "No path from site " + sourceID + " to site " + destID + " found.";
+	    logger.error(message);
+	    throw new DisconnectedTopologyException(message);
 	}
 	return path;
     }
