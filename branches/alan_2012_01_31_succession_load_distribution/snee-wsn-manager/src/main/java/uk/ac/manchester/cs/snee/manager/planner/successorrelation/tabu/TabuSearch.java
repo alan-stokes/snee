@@ -110,8 +110,7 @@ public class TabuSearch extends AutonomicManagerComponent
       if(bestNeighbourHoodSuccessor != null)
       {
         iterationsFailedAtInitial = 0;
-        checkNewSuccessor(bestNeighbourHoodSuccessor,  iterationsFailedAtInitial, 
-                          currentPath, neighbourHood);
+        checkNewSuccessor(bestNeighbourHoodSuccessor, iteration, currentPath, neighbourHood);
       }
       else
       {
@@ -119,14 +118,12 @@ public class TabuSearch extends AutonomicManagerComponent
         {
           iterationsFailedAtInitial ++;
         }
-        possibleDiversitySetoff(currentPath, iterationsFailedAtInitial, neighbourHood);
+        possibleDiversitySetoff(currentPath, iteration, neighbourHood);
       }
       Utils.outputTABUList(iteration, TABUList);
       iteration++;
     }
     Utils.close();
-    if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
-      bestPath = currentPath;
     return bestPath;
   }
 
@@ -165,7 +162,7 @@ public class TabuSearch extends AutonomicManagerComponent
       TABUList.addAllPathIntoTABUList(currentPath, currentPath.successorLength() -1, this.InitialSuccessor);
       
       if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
-        bestPath = currentPath;
+        bestPath.updateList(currentPath.getSuccessorList());
       currentNumberOfIterationsWithoutImprovement = 0;
     }
     else
@@ -249,9 +246,6 @@ public class TabuSearch extends AutonomicManagerComponent
     while(neighbourHoodIterator.hasNext())
     {
       Successor successor = neighbourHoodIterator.next();
-      //TODO remove if need be (currently used to reduce neighbourhood size).
-      //this.addToTABUList(successor);
-      //int successorLifetimeTime = fitness(successor, currentBestSuccessor, iteration);
       int successorLifetimeTime = successor.getLifetimeInAgendas();
       if(currentBestLifetime < successorLifetimeTime)
       {

@@ -9,7 +9,8 @@ public class SuccessorPath
   
   public SuccessorPath(ArrayList<Successor> listOfSuccessors)
   {
-    this.listOfSuccessors = listOfSuccessors;
+    this.listOfSuccessors = new ArrayList<Successor>();
+    this.listOfSuccessors.addAll(listOfSuccessors);
   }
   
   public int overallAgendaLifetime()
@@ -28,7 +29,8 @@ public class SuccessorPath
   
   public void updateList(ArrayList<Successor> listOfSuccessors)
   {
-    this.listOfSuccessors = listOfSuccessors;
+    clearPath();
+    this.listOfSuccessors.addAll(listOfSuccessors);
   }
   
   public ArrayList<Successor> getSuccessorList()
@@ -49,5 +51,10 @@ public class SuccessorPath
   public void add(Successor nextSuccessor)
   {
     this.listOfSuccessors.add(nextSuccessor);
+  }
+
+  public void clearPath()
+  {
+    this.listOfSuccessors.clear();
   }
 }

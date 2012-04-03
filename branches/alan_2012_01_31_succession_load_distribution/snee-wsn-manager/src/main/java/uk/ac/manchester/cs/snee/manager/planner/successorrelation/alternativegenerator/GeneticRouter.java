@@ -112,7 +112,7 @@ public class GeneticRouter extends AutonomicManagerComponent
     while(popIterator.hasNext())
     {
       Genome pop = popIterator.next();
-      Phenome popPhenome = this.fitness.determineFitness(pop, qep.getLifetimeInAgendas());
+      Phenome popPhenome = this.fitness.determineFitness(pop, qep.getAgendaCount() + qep.getPreviousAgendaCount());
       pop.setFitness(popPhenome.getFitness());
       if(popPhenome.getFitness() == 1)
       {

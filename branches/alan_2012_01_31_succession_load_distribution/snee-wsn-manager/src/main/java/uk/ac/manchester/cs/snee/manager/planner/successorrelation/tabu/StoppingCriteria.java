@@ -3,7 +3,7 @@ package uk.ac.manchester.cs.snee.manager.planner.successorrelation.tabu;
 public class StoppingCriteria
 {
   private static int numberOfIterationsTillStop = 300;
-  private static int numberOfIterationsTillStopAtInitial = 3;
+  private static int numberOfIterationsTillStopAtInitial = 5;
   
   
   /**

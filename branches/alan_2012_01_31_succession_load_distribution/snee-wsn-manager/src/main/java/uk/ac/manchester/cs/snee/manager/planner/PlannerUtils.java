@@ -97,19 +97,22 @@ public class PlannerUtils
     {
       
       
-      int maxSize = successorRelation.size() -1;
       BufferedWriter out = new BufferedWriter(new FileWriter(objectFolder.toString() + sep + "path.dot"));
       out.write("digraph \"successor path\" { \n size = \"8.5,11\"; \n rankdir=\"BT\"; \n label=\"successor Path\";");
       int counter = 0;
-      while(counter <= maxSize)
+      Iterator<Successor> successorIterator = successorRelation.iterator();
+      while(successorIterator.hasNext())
       {
-        out.write("\"" + counter + "\"; \n");
+        Successor successor = successorIterator.next();
+        out.write("\"" + counter + "\" [label =\" " + counter +
+                  " \\n " + successor.getLifetimeInAgendas() + "\" ; \n");
         counter++;
       }
+     
       out.write("\n\n");
       counter = 0;
       int nextCounter = counter +1;
-      Iterator<Successor> successorIterator = successorRelation.iterator();
+      successorIterator = successorRelation.iterator();
       successorIterator.next(); // get rid of the first successor
       out.write("\"" + counter + "\" -> \"" + nextCounter + "\" [fontsize=9 label = \"");
       while(successorIterator.hasNext())
@@ -117,7 +120,7 @@ public class PlannerUtils
         Successor successor = successorIterator.next();
         String file = mkdir(counter, objectFolder);
         new SuccessorUtils(successor).exportSuccessor(file);
-        out.write( successor.getAgendaCount() + "\"]; \n");
+        out.write( successor.getAgendaCount() +  "\"]; \n");
         counter++;
         nextCounter = counter +1;
         if(successorIterator.hasNext())
