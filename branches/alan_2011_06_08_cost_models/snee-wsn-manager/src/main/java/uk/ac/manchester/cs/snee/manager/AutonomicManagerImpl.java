@@ -85,6 +85,9 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   private File outputFolder = new File("AutonomicManagerData");
   private HashMap<String, RunTimeSite> runningSites;
   
+  // to stop errors 
+  private Topology perfrectTopology;
+  
   //private final static Logger resultsLogger = Logger.getLogger(AutonomicManagerImpl.class.getName());
 
   //fixed parameters of autonomic calculations
@@ -107,6 +110,9 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     queryName = "query" + queryid;
     setupOutputFolder();
     this._metadata = _metadata;
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    this.perfrectTopology = cloner.deepClone(this.getWsnTopology());
     runningSites = new HashMap<String, RunTimeSite>();
     anyliser = new Anaylsiser(this, _metadata, _metadataManager);
     planner = new Planner(this, _metadata, _metadataManager);
@@ -585,5 +591,11 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   public void updateOverlay(String failedID)
   {
     this.anyliser.updateOverlay(failedID);
+  }
+
+  @Override
+  public Topology getPerfectTopology()
+  {
+    return this.perfrectTopology;
   }
 }

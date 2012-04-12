@@ -138,4 +138,6 @@ public interface AutonomicManager
   public abstract void updateOverlay(String failedID);
   
   public abstract Topology getWsnTopology();
+  
+  public abstract Topology getPerfectTopology();
 }

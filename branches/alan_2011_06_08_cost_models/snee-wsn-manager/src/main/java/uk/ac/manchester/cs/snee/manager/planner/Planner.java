@@ -40,7 +40,7 @@ public class Planner extends AutonomicManagerComponent
   public Planner(AutonomicManagerImpl autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager)   
   {
     manager = autonomicManager;
-    assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder);
+    assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder, manager);
     runningSites = manager.getRunningSites();
   }
   
@@ -49,7 +49,7 @@ public class Planner extends AutonomicManagerComponent
   {
     manager = autonomicManager;
     this.plannerFolder = plannerFolder;
-    assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder);
+    assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder, manager);
     this.runningSites = runningSites;
   }
   

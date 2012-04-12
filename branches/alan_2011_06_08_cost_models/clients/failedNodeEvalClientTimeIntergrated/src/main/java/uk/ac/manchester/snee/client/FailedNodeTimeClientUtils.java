@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 
@@ -285,5 +288,42 @@ public class FailedNodeTimeClientUtils
   public Adaptation getBest()
   {
    return this.best;
+  }
+
+  public void removeBinaries(int queryid) throws SNEEConfigurationException
+  {
+    String outputDir = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR);
+    File file = new File(outputDir + sep + "query" + queryid);
+    if(file.isDirectory())
+    {
+      String [] fileList = file.list();
+      for(int fileIndex = 0; fileIndex < fileList.length; fileIndex++)
+      {
+        removeBinaries(file.getAbsolutePath() + sep + fileList[fileIndex]);
+      }
+    }
+    
+    
+  }
+  
+  private void removeBinaries(String filePath)
+  {
+    File file = new File(filePath);
+    if(file.isDirectory())
+    {
+      String [] fileList = file.list();
+      for(int fileIndex = 0; fileIndex < fileList.length; fileIndex++)
+      {
+        if(fileList[fileIndex].equals("avrora_micaz_t2"))
+        {
+          File binaryFile = new File(file.getAbsolutePath() + sep + fileList[fileIndex]);
+          this.deleteAllFilesInResultsFolder(binaryFile);
+        }
+        else
+        {
+          removeBinaries(file.getAbsolutePath() + sep + fileList[fileIndex]);
+        }
+      }
+    }
   }
 }

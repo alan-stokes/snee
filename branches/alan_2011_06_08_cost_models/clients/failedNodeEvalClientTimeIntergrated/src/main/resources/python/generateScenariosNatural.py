@@ -6,7 +6,7 @@
 #TODO: Move query generator out to a separate library
 import os, random, RandomSeeder, math, networkLibNatural, SneeqlLib, sys, getopt, UtilLib
 
-optNumNodes = 30
+optNumNodes = 100
 optScenariosFile = 'scenarios.csv'
 
 #Scenarios 1
@@ -523,8 +523,8 @@ def main():
 	  os.remove(optOutputDir1+os.sep+"queries"+".txt")
     #dense topology
     generateScenarios1(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 1, 30)
-   # generateScenarios2(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 30, 60)
-   # generateScenarios3(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 60, 90)
+    generateScenarios2(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 30, 60)
+    generateScenarios3(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 60, 90)
     generateScenarios4(optNumScenarios, optNumNodes, optOutputDir1, optScenariosFile, 90, 120)
     #not so dense network
     #global topologyDensity

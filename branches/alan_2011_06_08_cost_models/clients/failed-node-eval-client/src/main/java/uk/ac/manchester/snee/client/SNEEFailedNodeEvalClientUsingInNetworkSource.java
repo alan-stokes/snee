@@ -24,6 +24,8 @@ import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.client.SNEEClient;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
@@ -32,6 +34,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
+import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyEnum;
 import uk.ac.manchester.cs.snee.manager.planner.model.Model;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -62,8 +65,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 	private static SensorNetworkQueryPlan qep;
 	private static ClientUtils utils = new ClientUtils();
 	private static int max = 120;
-	private static File testFolder =  new File("src/main/resources/testsSize30");
-	private static File sneetestFolder =  new File("testsSize30");
+	private static File testFolder =  new File("src/main/resources/testsNatural");
+	private static File sneetestFolder =  new File("testsNatural");
 	
 	public SNEEFailedNodeEvalClientUsingInNetworkSource(String query, 
 			double duration, String queryParams, String csvFile, String sneeProperties) 
@@ -211,6 +214,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
     System.out.println("Query: " + _query);
     SNEEController control = (SNEEController) controller;
     control.addQuery(_query, _queryParams, null, true, false, true);
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_STRATEGIES, FailedNodeStrategyEnum.FailedNodePartial.toString());
     controller.close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");

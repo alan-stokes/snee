@@ -121,12 +121,20 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	    queryIterator = queries.iterator();
 	    failedOutput = utils.createFailedTestListWriter();
 	    
-	    while(queryIterator.hasNext())
-	    {
+	   // for(int index = 0; index < 60; index++ )
+	  //  {
+	   //   queryIterator.next();
+	  //    queryid++;
+	  //  }
+	    //while(queryIterator.hasNext())
+	    //{
 	      recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
+	      utils.removeBinaries(queryid);
 	      calculated = false;
 	      queryid++;
-      }
+	      testNo = 1;
+	      
+      //}
 	    failedOutput.write("\\end{document}");
 	    failedOutput.flush();
 	    failedOutput.close();  
@@ -201,7 +209,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     {
       if(position == 0)
       {
-        runOriginalTests(currentQuery, allowDeathOfAcquires);
+     //   runOriginalTests(currentQuery, allowDeathOfAcquires);
         System.out.println("finished running original");
         runSeveralTests(position + 1, currentQuery, 
                         allowDeathOfAcquires, queryIterator, 
@@ -209,7 +217,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       }
       if(position == 1)
       {
-        runGlobalTests(currentQuery, allowDeathOfAcquires);
+       // runGlobalTests(currentQuery, allowDeathOfAcquires);
         System.out.println("finished running global");
         runSeveralTests(position + 1, currentQuery,
                         allowDeathOfAcquires, queryIterator, 
@@ -217,7 +225,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       }
       else if(position == 2)
       {
-        runPartialTests(currentQuery, allowDeathOfAcquires);
+        //runPartialTests(currentQuery, allowDeathOfAcquires);
         System.out.println("finished running partial");
         runSeveralTests(position + 1, currentQuery,
                         allowDeathOfAcquires, queryIterator, 
@@ -225,7 +233,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       }
       else if(position == 3)
       {
-        runOverlayTests(currentQuery, allowDeathOfAcquires);
+        //runOverlayTests(currentQuery, allowDeathOfAcquires);
         System.out.println("finished running overlay");
         runSeveralTests(position + 1, currentQuery, 
                         allowDeathOfAcquires, queryIterator, 
@@ -248,6 +256,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         e.printStackTrace();
         utils.plotTopology(maxNumberofFailures);
         queryid ++;
+        testNo = 1;
         utils.newPlotters(queryid);
         System.out.println("Ran all tests on query " + (queryid) + " going onto next topology");
         recursiveRun(null, null, currentQuery, allowDeathOfAcquires, failedOutput);
@@ -349,7 +358,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     originalQEP = client.getQEP();
     System.out.println("running tests for partial ");
     SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, ChoiceAssessorPreferenceEnum.Partial.toString());
-    
+    testNo = 1;
     //run for partial 
     for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
     {

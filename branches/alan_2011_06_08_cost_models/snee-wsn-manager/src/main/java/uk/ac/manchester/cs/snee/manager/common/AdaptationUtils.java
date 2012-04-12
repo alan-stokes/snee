@@ -10,6 +10,7 @@ import java.util.List;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
+import uk.ac.manchester.cs.snee.compiler.queryplan.PAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 
@@ -103,6 +104,7 @@ public class AdaptationUtils
         writer.write(adapt.toString() + "\n");
         writer.flush();
         writer.close();
+        new PAFUtils(adapt.getNewQep().getIOT().getPAF()).exportAsDotFile(adaptFolder.toString() + sep + "paf");
         new IOTUtils(adapt.getNewQep().getIOT(), costs).
                     exportAsDotFileWithFrags(adaptFolder.toString() + sep + "NEWIOT", "", true);
         new IOTUtils(adapt.getOldQep().getIOT(), costs).

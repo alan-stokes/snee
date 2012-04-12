@@ -88,6 +88,8 @@ public class ClientUtils
     while(adIterator.hasNext())
     {
       ad = adIterator.next();
+      if(ad != null)
+      {
       agendaTime = ad.getNewQep().getAgendaIOT().getLength_bms(false);
       CardinalityEstimatedCostModel tupleModel = new CardinalityEstimatedCostModel(ad.getNewQep());
       tupleModel.runModel();
@@ -107,6 +109,7 @@ public class ClientUtils
                 "dea " + ad.getDeactivationSites().toString() + " \\newline " +
                 "act " + ad.getActivateSites().toString() + " \\newline " + 
                 "tem " + ad.getTemporalSites().toString() + " \\\\ \n \\hline \n");
+      }
     }
     String id = queryid + "-" + testID;
     out.write("\\end{tabular} \n \\caption{query " + id + " with failed nodes " + 
@@ -128,6 +131,8 @@ public class ClientUtils
     while(adaptIterator.hasNext())
     {
       Adaptation ad = adaptIterator.next();
+      if(ad != null)
+      {
       if(ad.getOverallID().contains("Global"))
         global = ad;
       else if(ad.getOverallID().contains("Partial"))
@@ -138,6 +143,7 @@ public class ClientUtils
       {original = ad;}
       else
         throw new NoSuchElementException("there is no overall id");
+      }
     } 
   }
 
@@ -200,12 +206,15 @@ public class ClientUtils
     while(adaptationIterator.hasNext())
     {
       adapt = adaptationIterator.next();
+      if(adapt != null)
+      {
       new RTUtils(adapt.getNewQep().getRT()).exportAsDotFile(outputImageFolder.toString() + sep + 
                                                              adapt.getOverallID() + "RT", false);
       out.write("\\subfloat[] [" + adapt.getOverallID() + "RT"  + 
                 "]{\\includegraphics[scale=0.35]{" + "." + sep + id + sep +
                 adapt.getOverallID() + "RT"+ "}} \n \\hspace{20pt}");
       out.flush();
+      }
     }
     
     new TopologyUtils(adapt.getNewQep().getRT().getNetwork()).exportAsDOTFile(outputImageFolder.toString() + sep + "topology", "topology", true);

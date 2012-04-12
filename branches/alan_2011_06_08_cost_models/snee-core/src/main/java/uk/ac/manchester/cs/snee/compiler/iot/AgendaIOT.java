@@ -897,6 +897,25 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     }
     return null;
   }
+  
+  /**
+   * used to locate a transmission task for the child node with just a node id
+   * 
+   * @param nodeID
+   * @return
+   */
+  public CommunicationTask getTransmissionTask(String nodeID)
+  {
+    Iterator<Site> siteIterator = this.tasks.keySet().iterator();
+    while(siteIterator.hasNext())
+    {
+      Site testSite = siteIterator.next();
+      if(testSite.getID().equals(nodeID))
+        return getTransmissionTask(testSite);
+    }
+    return null;
+  }
+ 
 
   /**
    * gets last communication task temporally which is a receive.
@@ -1299,13 +1318,13 @@ public class AgendaIOT extends SNEEAlgebraicForm{
    * @throws SchemaMetadataException
    * @throws TypeMappingException
    */
-  public double evaluateCommunicationTask(CommunicationTask task, double packets)
+  public double evaluateCommunicationTask(CommunicationTask task, double packets,  AutonomicManager man)
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException 
   {
     double sumEnergy = 0;
     long cpuActiveTimeBms = task.getDuration();
-    double RadioEnergy = getRadioEnergy(task, packets, null);
+    double RadioEnergy = getRadioEnergy(task, packets, man);
     sumEnergy += RadioEnergy; 
     sumEnergy += getCPUEnergyNoAgenda(cpuActiveTimeBms);
     double taskDuration = bmsToMs(task.getDuration())/1000.0;
@@ -1358,7 +1377,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     int txPower = 0;
     if(iot.getRT().getRadioLink(sender, receiver) == null)
     {
-      txPower = (int)man.getWsnTopology().getRadioLink(sender, receiver).getEnergyCost();
+      txPower = (int)man.getPerfectTopology().getRadioLink(sender, receiver).getEnergyCost();
     }
     else
       txPower = (int)iot.getRT().getRadioLink(sender, receiver).getEnergyCost();

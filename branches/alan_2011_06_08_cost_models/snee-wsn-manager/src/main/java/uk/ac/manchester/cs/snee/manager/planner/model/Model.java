@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
+import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -23,6 +24,7 @@ public class Model
   protected static SNCB imageGenerator = null;
   protected static MetadataManager _metadataManager;  
   protected static boolean underSpareTime;
+  protected AutonomicManager man;
   
   public Model(SNCB imageGenerator)
   {

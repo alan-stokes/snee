@@ -301,7 +301,11 @@ public abstract class StrategyAbstract implements Serializable
       //needs to distinguqise between sink and other nodes
       if(!failedSite.getID().equals(oldAgenda.getIOT().getRT().getRoot().getID()))
       {
-        failedSite = oldAgenda.getTransmissionTask(failedSite).getDestNode();
+        if(failedSite == null || oldAgenda == null)
+          System.out.println("ws");
+        if(oldAgenda.getTransmissionTask(failedSite.getID()) == null)
+          System.out.println("ws");
+        failedSite = oldAgenda.getTransmissionTask(failedSite.getID()).getDestNode();
         commTimeOld = oldAgenda.getCommunicationTaskBetween(failedSite, parent);
       }
       else
@@ -340,9 +344,9 @@ public abstract class StrategyAbstract implements Serializable
   private void checkIOT(IOT newIOT, IOT oldIOT, ArrayList<String> failedNodes, Adaptation currentAdapatation)
   {
     //check reprogrammed nodes
+    checkForDeactivatedNodes(newIOT, oldIOT, failedNodes, currentAdapatation);
     checkForReProgrammedNodes(newIOT, oldIOT, currentAdapatation);
     checkForReDirectionNodes(newIOT, oldIOT, currentAdapatation);
-    checkForDeactivatedNodes(newIOT, oldIOT, failedNodes, currentAdapatation);
   }
 
   /**
@@ -363,11 +367,18 @@ public abstract class StrategyAbstract implements Serializable
     while(siteIterator.hasNext())
     {
       Site site = siteIterator.next();
+      Site newSite = newIOT.getRT().getSite(site.getID());
+      if(newSite == null)
+        ad.addDeactivatedSite(site.getID());
+      /*
+      boolean found = false;
       ArrayList<InstanceOperator> instanceOperatorsNew = newIOT.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
       if(instanceOperatorsNew.size() == 0 && !failedNodes.contains(site.getID()))
       {
         ad.addDeactivatedSite(site.getID());
-      }
+        found = true;
+      }*/
+      
     }
   }
 

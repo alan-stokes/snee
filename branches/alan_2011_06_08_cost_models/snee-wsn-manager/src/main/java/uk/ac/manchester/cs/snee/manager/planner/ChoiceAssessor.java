@@ -17,6 +17,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationUtils;
@@ -59,15 +60,15 @@ public class ChoiceAssessor implements Serializable
   private static int overlayAdaptationCount = 1;
   
   public ChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager,
-                        File outputFolder)
+                        File outputFolder, AutonomicManager man)
   {
     this._metadataManager = _metadataManager;
     this.outputFolder = outputFolder;
     this.imageGenerator = new TinyOS_SNCB_Controller();
     timeModel = new TimeModel(imageGenerator);
-    energyModel = new EnergyModel(imageGenerator);
+    energyModel = new EnergyModel(imageGenerator, man);
     timeModelOverlay = new TimeModelOverlay(imageGenerator);
-    energyModelOverlay = new EnergyModelOverlay(imageGenerator);
+    energyModelOverlay = new EnergyModelOverlay(imageGenerator, man);
   }
 
   /**

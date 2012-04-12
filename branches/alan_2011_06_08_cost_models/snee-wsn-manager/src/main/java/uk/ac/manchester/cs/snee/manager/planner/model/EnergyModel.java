@@ -12,6 +12,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.manager.AutonomicManager;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.TemporalAdjustment;
@@ -29,9 +30,10 @@ public class EnergyModel extends Model
   protected HashMap<String, RunTimeSite> runningSites;
   
   
-  public EnergyModel(SNCB imageGenerator)
+  public EnergyModel(SNCB imageGenerator, AutonomicManager man)
   {
     super(imageGenerator);
+    this.man = man;
   }
   
   public void initilise(File imageGenerationFolder, MetadataManager _metadataManager, 
@@ -543,13 +545,13 @@ public class EnergyModel extends Model
           
           if(!deactivedNodes)
           {
-            sourceCost = adapt.getNewQep().getAgendaIOT().evaluateCommunicationTask(sourceTask, new Long(1));
-            destCost = adapt.getNewQep().getAgendaIOT().evaluateCommunicationTask(destTask, new Long(1));
+            sourceCost = adapt.getNewQep().getAgendaIOT().evaluateCommunicationTask(sourceTask, new Long(1), man);
+            destCost = adapt.getNewQep().getAgendaIOT().evaluateCommunicationTask(destTask, new Long(1), man);
           }
           else
           {
-            sourceCost = adapt.getOldQep().getAgendaIOT().evaluateCommunicationTask(sourceTask, new Long(1));
-            destCost = adapt.getOldQep().getAgendaIOT().evaluateCommunicationTask(sourceTask, new Long(1));
+            sourceCost = adapt.getOldQep().getAgendaIOT().evaluateCommunicationTask(sourceTask, new Long(1), man);
+            destCost = adapt.getOldQep().getAgendaIOT().evaluateCommunicationTask(sourceTask, new Long(1), man);
           }
           runningSites.get(dest.getID()).addToCurrentAdaptationEnergyCost(destCost);
           runningSites.get(source.getID()).addToCurrentAdaptationEnergyCost(sourceCost);
