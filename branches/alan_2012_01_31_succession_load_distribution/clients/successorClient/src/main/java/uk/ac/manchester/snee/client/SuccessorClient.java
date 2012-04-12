@@ -91,6 +91,7 @@ public class SuccessorClient extends SNEEClient
       while(queryIterator.hasNext() && queryid <= max)
       {
         recursiveRun(queryIterator, duration, queryParams, true);
+        removeBinaries(queryid);
       }
     }
     catch (Exception e)
@@ -257,5 +258,42 @@ public class SuccessorClient extends SNEEClient
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
   }
+	
+	 public static void removeBinaries(int queryid) throws SNEEConfigurationException
+	  {
+	   String outputDir = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR);
+	    File file = new File(outputDir + sep + "query" + queryid);
+	    if(file.isDirectory())
+	    {
+	      String [] fileList = file.list();
+	      for(int fileIndex = 0; fileIndex < fileList.length; fileIndex++)
+	      {
+	        removeBinaries(file.getAbsolutePath() + sep + fileList[fileIndex]);
+	      }
+	    }
+	    
+	    
+	  }
+	  
+	  private static void removeBinaries(String filePath)
+	  {
+	    File file = new File(filePath);
+	    if(file.isDirectory())
+	    {
+	      String [] fileList = file.list();
+	      for(int fileIndex = 0; fileIndex < fileList.length; fileIndex++)
+	      {
+	        if(fileList[fileIndex].equals("avrora_micaz_t2"))
+	        {
+	          File binaryFile = new File(file.getAbsolutePath() + sep + fileList[fileIndex]);
+	          SuccessorClient.deleteAllFilesInResultsFolder(binaryFile);
+	        }
+	        else
+	        {
+	          removeBinaries(file.getAbsolutePath() + sep + fileList[fileIndex]);
+	        }
+	      }
+	    }
+	  }
 	
 }

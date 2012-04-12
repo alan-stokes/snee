@@ -34,7 +34,6 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
-import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyUtils;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB_Controller;
 

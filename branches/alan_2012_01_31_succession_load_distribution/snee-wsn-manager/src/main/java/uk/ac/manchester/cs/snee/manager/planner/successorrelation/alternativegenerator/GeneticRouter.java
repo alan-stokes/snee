@@ -12,7 +12,6 @@ import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
-import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.planner.common.Successor;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.tabu.TABUList;
@@ -80,14 +79,14 @@ public class GeneticRouter extends AutonomicManagerComponent
       System.out.println("Now starting genetic router iteration " + currentIteration);
     }
     
-    generateTrees();
+    collectSolutions();
     return eliteSolutions;
   }
 
   /**
    * collects successors from the best phenomes
    */
-  private void generateTrees()
+  private void collectSolutions()
   {
     Iterator<Phenome> eliteIterator = elitePhenomes.iterator();
     while(eliteIterator.hasNext())
@@ -116,13 +115,13 @@ public class GeneticRouter extends AutonomicManagerComponent
       pop.setFitness(popPhenome.getFitness());
       if(popPhenome.getFitness() == 1)
       {
-        double eliteFitness = popPhenome.elitefitness();
         if(!tabuList.isEntirelyTABU(popPhenome.getSuccessor().getQep(), position))
         {
           if(!alreadyContainsRT(popPhenome.getRt()))
           {
             if(elitePhenomes.size() == populationSize)
             {
+              double eliteFitness = popPhenome.elitefitness();
               if(elitePhenomes.get(elitePhenomes.size()-1).elitefitness() > eliteFitness)
               {
                 addedNewSolution = true;
