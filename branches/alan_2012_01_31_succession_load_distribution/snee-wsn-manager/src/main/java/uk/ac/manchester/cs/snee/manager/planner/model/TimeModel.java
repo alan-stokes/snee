@@ -28,9 +28,14 @@ public class TimeModel extends Model
   
   public void initilise(File imageGenerationFolder, MetadataManager _metadataManager)
   {
-    super.initilise(imageGenerationFolder, _metadataManager);
+    super.initilise(imageGenerationFolder, _metadataManager, false);
   }
   
+  public void initilise(File imageGenerationFolder, MetadataManager _metadataManager, 
+                        Boolean useModelForBinaries)
+  {
+    super.initilise(imageGenerationFolder, _metadataManager, useModelForBinaries);
+  }
   
   /**
    * Method which determines the time cost of an adaptation

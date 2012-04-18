@@ -36,7 +36,7 @@ public class EnergyModelOverlay extends EnergyModel
   public void initilise(File imageGenerationFolder, MetadataManager _metadataManager, 
                         HashMap<String, RunTimeSite> runningSites)
   {
-    super.initilise(imageGenerationFolder, _metadataManager);
+    super.initilise(imageGenerationFolder, _metadataManager, false);
     this.runningSites = runningSites;
   }
   

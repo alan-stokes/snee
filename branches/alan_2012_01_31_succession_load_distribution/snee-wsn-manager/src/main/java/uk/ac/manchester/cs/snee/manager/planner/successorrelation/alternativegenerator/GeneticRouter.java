@@ -64,7 +64,7 @@ public class GeneticRouter extends AutonomicManagerComponent
   throws IOException, SchemaMetadataException, TypeMappingException,
   OptimizationException, CodeGenerationException
   {
-    fitness = new GeneticRouterFitness(qep, geneicFolder , metamanager, network, nodeIds, _metadata);
+    fitness = new GeneticRouterFitness(qep, geneicFolder , metamanager, network, nodeIds, _metadata, true);
     ArrayList<Genome> initalPopulation = generateInitialPopulation(candidateRoutes, qep);
     int currentIteration = 0;
     ArrayList<Genome> currentPopulation = initalPopulation;
@@ -73,7 +73,9 @@ public class GeneticRouter extends AutonomicManagerComponent
     {
       File iterationFolder = new File(geneicFolder.toString() + sep + "iteration" + currentIteration);
       iterationFolder.mkdir();
+      System.out.println("repop");
       currentPopulation = repopulate(currentPopulation, qep);
+      System.out.println("locate");
       locateAlternatives(currentPopulation, iterationFolder, qep);
       currentIteration++;
       System.out.println("Now starting genetic router iteration " + currentIteration);
@@ -124,16 +126,17 @@ public class GeneticRouter extends AutonomicManagerComponent
               double eliteFitness = popPhenome.elitefitness();
               if(elitePhenomes.get(elitePhenomes.size()-1).elitefitness() > eliteFitness)
               {
-                addedNewSolution = true;
-                elitePhenomes.set(elitePhenomes.size()-1, popPhenome);
-                Collections.sort(elitePhenomes);
+                addedNewSolution = true; 
+                addInCorrectPos(popPhenome);
+                elitePhenomes = new ArrayList<Phenome>(elitePhenomes.subList(0, elitePhenomes.size() -1));
               } 
             }
             else
             {
               addedNewSolution = true;
               elitePhenomes.add(popPhenome);
-              Collections.sort(elitePhenomes);
+              addInCorrectPos(popPhenome);
+              //Collections.sort(elitePhenomes);
             }
           }
         }
@@ -156,6 +159,26 @@ public class GeneticRouter extends AutonomicManagerComponent
     //  new RTUtils(eliteGen.getRt()).exportAsDotFile(iterationFolder + sep + "elite" + id);
     //  id ++;
     //}
+  }
+
+  /**
+   * used to speed up system. faster than collections.sort
+   * @param popPhenome
+   */
+  private void addInCorrectPos(Phenome popPhenome)
+  {
+    Iterator<Phenome> pehoneIterator = this.elitePhenomes.iterator();
+    boolean found = false;
+    int position = 0;
+    while(!found && pehoneIterator.hasNext())
+    {
+      Phenome next = pehoneIterator.next();
+      if(next.elitefitness() <= popPhenome.elitefitness())
+        found = true;
+      else
+        position++;
+    }
+    elitePhenomes.add(position, popPhenome);
   }
 
   /**

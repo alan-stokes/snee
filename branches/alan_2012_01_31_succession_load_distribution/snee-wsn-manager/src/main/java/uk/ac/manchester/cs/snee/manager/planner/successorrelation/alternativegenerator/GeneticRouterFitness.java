@@ -47,10 +47,12 @@ public class GeneticRouterFitness extends AutonomicManagerComponent
   private Topology network;
   private ArrayList<String> nodeIds;
   private static int planCounter = 1;
+  private boolean usecostModelForPackets;
 
   public GeneticRouterFitness(Successor successor, File outputFolder, 
                               MetadataManager metamanager, Topology network,
-                              ArrayList<String> nodeIds, SourceMetadataAbstract _metadataManager)
+                              ArrayList<String> nodeIds, SourceMetadataAbstract _metadataManager,
+                              Boolean usecostModelForPackets)
   throws IOException, SchemaMetadataException, TypeMappingException,
   OptimizationException, CodeGenerationException
   {
@@ -61,6 +63,7 @@ public class GeneticRouterFitness extends AutonomicManagerComponent
     this.network = network;
     this.nodeIds = nodeIds;
     lowEnergyTheshold = determineEnergyTheshold(successor);
+    this.usecostModelForPackets = usecostModelForPackets;
   }
   
   /**
@@ -99,22 +102,29 @@ public class GeneticRouterFitness extends AutonomicManagerComponent
   throws IOException, SchemaMetadataException, TypeMappingException,
   OptimizationException, CodeGenerationException
   {
-    TinyOS_SNCB_Controller imageGenerator = new TinyOS_SNCB_Controller();
-    File adaptFolder = new File(this.outputFolder.toString() + sep + "worseSiteTemp");
-    //create folder for this adaptation 
-    adaptFolder.mkdir();
-    imageGenerator.generateNesCCode(successor.getQep(), adaptFolder.toString() + sep, metamanager);
-    ArrayList<String> sites = new ArrayList<String>();
-    sites.add(worseSite.getID());
-    imageGenerator.compileReducedNesCCode(adaptFolder.toString()+ sep, sites);
-    File moteQEP = new File(adaptFolder.toString() + sep + "avrora_micaz_t2" + sep + "mote" + worseSite.getID() + ".elf");
     Long fileSize = new Long(0);
-    if(moteQEP.exists())
-      fileSize = moteQEP.length();
+    if(this.usecostModelForPackets)
+    {
+      TinyOS_SNCB_Controller imageGenerator = new TinyOS_SNCB_Controller();
+      File adaptFolder = new File(this.outputFolder.toString() + sep + "worseSiteTemp");
+      //create folder for this adaptation 
+      adaptFolder.mkdir();
+      imageGenerator.generateNesCCode(successor.getQep(), adaptFolder.toString() + sep, metamanager);
+      ArrayList<String> sites = new ArrayList<String>();
+      sites.add(worseSite.getID());
+      imageGenerator.compileReducedNesCCode(adaptFolder.toString()+ sep, sites);
+      File moteQEP = new File(adaptFolder.toString() + sep + "avrora_micaz_t2" + sep + "mote" + worseSite.getID() + ".elf");
+      if(moteQEP.exists())
+        fileSize = moteQEP.length();
+      else
+      {
+        fileSize = (long) 0; //needs to be changed back to error. results in issue with joins where join is on sink for code generator
+        //throw new IOException("cant find image");
+      }
+    }
     else
     {
-      fileSize = (long) 0; //needs to be changed back to error. results in issue with joins where join is on sink for code generator
-      //throw new IOException("cant find image");
+      
     }
     //locate packets required to be recieved.
     CostParameters parameters = metamanager.getCostParameters();
@@ -262,6 +272,7 @@ public class GeneticRouterFitness extends AutonomicManagerComponent
     }
     catch(Exception e)
     {
+      System.out.println("genotype failed to pass though the snee stack. Will produce a fitness of 0");
       e.printStackTrace();
       return null;
     }

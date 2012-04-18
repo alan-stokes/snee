@@ -53,9 +53,16 @@ public class ChoiceAssessor implements Serializable
   private TimeModel timeModel = null;
   private TimeModelOverlay timeModelOverlay = null;
   private EnergyModelOverlay energyModelOverlay = null;
+  private Boolean useModelForBinaries;
   
   public ChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager,
                         File outputFolder)
+  {
+    new ChoiceAssessor(_metadata, _metadataManager, outputFolder, false);
+  }
+
+  public ChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager, 
+                        File outputFolder, boolean useCostModelForBinaries)
   {
     this._metadataManager = _metadataManager;
     this.outputFolder = outputFolder;
@@ -64,6 +71,7 @@ public class ChoiceAssessor implements Serializable
     energyModel = new EnergyModel(imageGenerator);
     timeModelOverlay = new TimeModelOverlay(imageGenerator);
     energyModelOverlay = new EnergyModelOverlay(imageGenerator);
+    useModelForBinaries = useCostModelForBinaries;
   }
 
   /**
@@ -95,8 +103,8 @@ public class ChoiceAssessor implements Serializable
     {
       resetRunningSitesAdaptCost();
       Adaptation adapt = choiceIterator.next();
-      timeModel.initilise(imageGenerationFolder, _metadataManager);
-      energyModel.initilise(imageGenerationFolder, _metadataManager, runningSites);
+      timeModel.initilise(imageGenerationFolder, _metadataManager, useModelForBinaries);
+      energyModel.initilise(imageGenerationFolder, _metadataManager, runningSites, useModelForBinaries);
       adapt.setTimeCost(timeModel.calculateTimeCost(adapt));
       adapt.setEnergyCost(energyModel.calculateEnergyCost(adapt));
       adapt.setLifetimeEstimate(this.calculateEstimatedLifetime(adapt));
@@ -214,22 +222,40 @@ public class ChoiceAssessor implements Serializable
   SchemaMetadataException, TypeMappingException, 
   CodeGenerationException
   {
+    try{
+      System.out.println("creating folders");
     AssessmentFolder = new File(outputFolder.toString() + sep + "assessment");
     AssessmentFolder.mkdir();
     imageGenerationFolder = new File(AssessmentFolder.toString() + sep + "Adaptations");
     imageGenerationFolder.mkdir();
-    
+    System.out.println("updating sites");
     this.runningSites = runningSites;
+    System.out.println("reset sites");
     resetRunningSitesAdaptCost();
+    System.out.println("adapt = original");
     Adaptation adapt = orginal;
-    timeModel.initilise(imageGenerationFolder, _metadataManager);
-    energyModel.initilise(imageGenerationFolder, _metadataManager, runningSites);
+    System.out.println("tmodel initilise");
+    timeModel.initilise(imageGenerationFolder, _metadataManager, true);
+    System.out.println("emnodel initilise");
+    energyModel.initilise(imageGenerationFolder, _metadataManager, runningSites, true);
+    System.out.println("set time");
     adapt.setTimeCost(timeModel.calculateTimeCost(adapt));
+    System.out.println("set energy");
     adapt.setEnergyCost(energyModel.calculateEnergyCost(adapt));
+    System.out.println("set lifetime");
     adapt.setLifetimeEstimate(this.calculateEstimatedLifetime(adapt));
+    System.out.println("set runtime");
     adapt.setRuntimeCost(calculateEnergyQEPExecutionCost());
+    System.out.println("if reset");
     if(reset)
+    {
+      System.out.println("reset");
       resetRunningSitesAdaptCost(); 
+    }
+    }catch(Exception e)
+    {
+      e.printStackTrace();
+    }
   }
 
   /**

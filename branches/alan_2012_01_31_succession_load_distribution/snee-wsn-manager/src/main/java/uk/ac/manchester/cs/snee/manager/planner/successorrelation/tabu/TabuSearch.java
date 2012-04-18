@@ -92,12 +92,13 @@ public class TabuSearch extends AutonomicManagerComponent
     SuccessorPath currentPath = null;
     initalSitesEnergy = this.updateRunningSites(initalSitesEnergy, initialPoint);
     InitialSuccessor = new Successor(initialPoint, 0, this.initalSitesEnergy, 0);
+    TABUList.addToTABUList(InitialSuccessor, 0, true);
     ArrayList<Successor> initialList = new ArrayList<Successor>();
     initialList.add(InitialSuccessor);
     currentPath = new SuccessorPath(initialList);
     bestPath = new SuccessorPath(initialList);
     currentBestSuccessor = InitialSuccessor;
-    
+    try{
     int iteration = 0;
     int iterationsFailedAtInitial = 0;
     
@@ -125,6 +126,12 @@ public class TabuSearch extends AutonomicManagerComponent
     }
     Utils.close();
     return bestPath;
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+      return null;
+    }
   }
 
   private void possibleDiversitySetoff(SuccessorPath currentPath, int iteration,
@@ -153,6 +160,7 @@ public class TabuSearch extends AutonomicManagerComponent
   throws SchemaMetadataException, TypeMappingException, IOException, OptimizationException, 
   CodeGenerationException
   {
+    try{
     if(fitness(bestNeighbourHoodSuccessor, currentBestSuccessor, iteration) > currentBestSuccessor.getLifetimeInAgendas())
     {
       Utils.writeNewSuccessor(bestNeighbourHoodSuccessor, iteration, currentBestSuccessor, currentPath);
@@ -183,6 +191,10 @@ public class TabuSearch extends AutonomicManagerComponent
         currentNumberOfIterationsWithoutImprovement = 0;
       }
     }
+    }catch(Exception e)
+    {
+      e.printStackTrace();
+    }
     
   }
 
@@ -211,19 +223,22 @@ public class TabuSearch extends AutonomicManagerComponent
     {
       assessorFolder.mkdir();
     }
-    ChoiceAssessor assessAdaptation = new ChoiceAssessor(_metadata, _metaManager, assessorFolder);
+    ChoiceAssessor assessAdaptation = new ChoiceAssessor(_metadata, _metaManager, assessorFolder, true);
     System.out.println("assessing successor " + successor.toString());
     try
     {
+      System.out.println("W");
       assessAdaptation.assessChoice(adapt, successor.getTheRunTimeSites(), false);
+      System.out.println("E");
+      successor.substractAdaptationCostOffRunTimeSites(adapt);
+      System.out.println("WE");
+      return successor.getLifetimeInAgendas();
     }
     catch(Exception e)
     {
       e.printStackTrace();
       return 0;
     }
-    successor.substractAdaptationCostOffRunTimeSites(adapt);
-    return successor.getLifetimeInAgendas();
   }
 
   /**

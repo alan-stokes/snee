@@ -23,16 +23,19 @@ public class Model
   protected static SNCB imageGenerator = null;
   protected static MetadataManager _metadataManager;  
   protected static boolean underSpareTime;
+  protected Boolean useModelForBinaries;
   
   public Model(SNCB imageGenerator)
   {
     Model.imageGenerator = imageGenerator;
   }
   
-  protected void initilise(File imageGenerationFolder, MetadataManager _metadataManager)
+  protected void initilise(File imageGenerationFolder, MetadataManager _metadataManager,
+                           Boolean useModelForBinaries)
   {
     Model.imageGenerationFolder = imageGenerationFolder;
     Model._metadataManager = _metadataManager;
+    this.useModelForBinaries = useModelForBinaries;
   }
   
   /**
@@ -45,6 +48,46 @@ public class Model
    * @throws IOException 
    */
   protected Long calculateNumberOfPacketsForSiteQEP(Adaptation adapt, String reprogrammedSite) 
+  throws 
+  IOException, SchemaMetadataException, 
+  TypeMappingException, OptimizationException, 
+  CodeGenerationException
+  {
+    if(this.useModelForBinaries)
+    {
+      return calculatePacketsFromModel(adapt, reprogrammedSite);
+    }
+    else
+    {   
+      return calculatePacketsFromNescBinaries(adapt, reprogrammedSite);
+    }
+  }
+  
+  /**
+   * calculates the number of packets based off a cost model of the binaries.
+   * @param adapt
+   * @param reprogrammedSite
+   * @return
+   */
+  private Long calculatePacketsFromModel(Adaptation adapt,
+      String reprogrammedSite)
+  {
+    return (long) 0;
+  }
+
+  
+  /**
+   * calculates number of packets based off the NesC compilers binaries.
+   * @param adapt
+   * @param reprogrammedSite
+   * @return
+   * @throws IOException
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   * @throws OptimizationException
+   * @throws CodeGenerationException
+   */
+  private Long calculatePacketsFromNescBinaries(Adaptation adapt, String reprogrammedSite)
   throws 
   IOException, SchemaMetadataException, 
   TypeMappingException, OptimizationException, 

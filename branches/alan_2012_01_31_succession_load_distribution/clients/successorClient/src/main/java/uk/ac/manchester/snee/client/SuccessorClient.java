@@ -286,7 +286,7 @@ public class SuccessorClient extends SNEEClient
 	        if(fileList[fileIndex].equals("avrora_micaz_t2"))
 	        {
 	          File binaryFile = new File(file.getAbsolutePath() + sep + fileList[fileIndex]);
-	          SuccessorClient.deleteAllFilesInResultsFolder(binaryFile);
+	          SuccessorClient.deleteFileContents(binaryFile);
 	        }
 	        else
 	        {
@@ -295,5 +295,31 @@ public class SuccessorClient extends SNEEClient
 	      }
 	    }
 	  }
-	
+	  
+	  
+	  /**
+	   * cleaning method
+	   * @param firstOutputFolder
+	   */
+	public static void deleteFileContents(File firstOutputFolder)
+	{
+    if(firstOutputFolder.exists())
+    {
+      File[] contents = firstOutputFolder.listFiles();
+      for(int index = 0; index < contents.length; index++)
+      {
+        File delete = contents[index];
+        if(delete.isDirectory())
+          if(delete != null && delete.listFiles().length > 0)
+          {
+            deleteFileContents(delete);
+            delete.delete();
+          }
+          else
+            delete.delete();
+        else
+          delete.delete();
+      }
+    } 
+  }	  
 }
