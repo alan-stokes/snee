@@ -403,4 +403,9 @@ public class Dispatcher {
     
   }
 
+  public int getAdaptationCount()
+  {
+    return _autonomicManager.getAdaptionCount();
+  }
+
 }

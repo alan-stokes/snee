@@ -769,4 +769,9 @@ public class SNEEController implements SNEE {
   {
     _dispatcher.resetOverlayCost(orginialOverlay);
   }
+
+  public int getAdaptationCount()
+  {
+    return _dispatcher.getAdaptationCount();
+  }
 }

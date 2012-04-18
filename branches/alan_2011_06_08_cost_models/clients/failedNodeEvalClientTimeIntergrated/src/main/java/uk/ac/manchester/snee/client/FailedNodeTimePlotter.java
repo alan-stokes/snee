@@ -94,7 +94,7 @@ public class FailedNodeTimePlotter implements Serializable
     
     
     DecimalFormat df = new DecimalFormat("#.#####");
-    int counter = 0;
+    int counter = 1;
     lifetimeWriter.close();
     lifetimeWriter = new BufferedWriter(new FileWriter(lifetimePlotFile));
     failureWriter.close();

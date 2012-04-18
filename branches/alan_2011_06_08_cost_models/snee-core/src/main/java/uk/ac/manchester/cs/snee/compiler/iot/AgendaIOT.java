@@ -1116,7 +1116,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    */
-  public double getSiteEnergyConsumptionSensorOn(Site site) 
+  public double getSiteEnergyConsumptionSensorOn(Site site, AutonomicManager man) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException 
   {
@@ -1157,7 +1157,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
       }
       else if (t instanceof CommunicationTask) {
         CommunicationTask ct = (CommunicationTask)t;
-        sumEnergy += getRadioEnergy(ct, null);
+        sumEnergy += getRadioEnergy(ct, man);
         
       } else if (t instanceof RadioOnTask) {
         double taskDuration = bmsToMs(t.getDuration())/1000.0;
@@ -1267,7 +1267,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     int txPower = 0;
     if(iot.getRT().getRadioLink(sender, receiver) == null)
     {
-      txPower = (int)man.getWsnTopology().getRadioLink(sender, receiver).getEnergyCost();
+      txPower = (int)man.getPerfectTopology().getRadioLink(sender, receiver).getEnergyCost();
     }
     else
       txPower = (int)iot.getRT().getRadioLink(sender, receiver).getEnergyCost();

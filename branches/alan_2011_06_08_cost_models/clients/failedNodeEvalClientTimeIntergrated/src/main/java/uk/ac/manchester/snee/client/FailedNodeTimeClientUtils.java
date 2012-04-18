@@ -302,14 +302,12 @@ public class FailedNodeTimeClientUtils
         removeBinaries(file.getAbsolutePath() + sep + fileList[fileIndex]);
       }
     }
-    
-    
   }
   
   private void removeBinaries(String filePath)
   {
     File file = new File(filePath);
-    if(file.isDirectory())
+    if(file.isDirectory() && !file.isFile())
     {
       String [] fileList = file.list();
       for(int fileIndex = 0; fileIndex < fileList.length; fileIndex++)
@@ -317,7 +315,7 @@ public class FailedNodeTimeClientUtils
         if(fileList[fileIndex].equals("avrora_micaz_t2"))
         {
           File binaryFile = new File(file.getAbsolutePath() + sep + fileList[fileIndex]);
-          this.deleteAllFilesInResultsFolder(binaryFile);
+          this.deleteFileContents(binaryFile);
         }
         else
         {
@@ -325,5 +323,41 @@ public class FailedNodeTimeClientUtils
         }
       }
     }
+  }
+  
+  /**
+   * cleaning method
+   * @param firstOutputFolder
+   */
+  public void deleteFileContents(File firstOutputFolder)
+  {
+    if(firstOutputFolder.exists())
+    {
+      File[] contents = firstOutputFolder.listFiles();
+      for(int index = 0; index < contents.length; index++)
+      {
+        File delete = contents[index];
+        if(delete.isDirectory())
+          if(delete != null && delete.listFiles().length > 0)
+          {
+            deleteFileContents(delete);
+            delete.delete();
+          }
+          else
+            delete.delete();
+        else
+          delete.delete();
+      }
+    } 
+  }
+
+  public void storeOriginalLifetime(Double agendas) 
+  throws IOException
+  {
+    writeOriginal(0, agendas);
+    plot.addGlobalLifetime(agendas * 1000, new ArrayList<String>());
+    plot.addPartialLifetime(agendas * 1000, new ArrayList<String>());
+    plot.addLocalLifetime(agendas * 1000, new ArrayList<String>());
+    plot.addBestLifetime(agendas * 1000, new ArrayList<String>());
   }
 }

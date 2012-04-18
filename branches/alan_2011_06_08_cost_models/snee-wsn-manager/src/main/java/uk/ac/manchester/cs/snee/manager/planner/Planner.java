@@ -106,13 +106,13 @@ public class Planner extends AutonomicManagerComponent
       //find the best of each framework
       if(!partialAds.isEmpty())
       {
-        assessor.assessChoices(partialAds, runningSites);
+        assessor.assessChoices(partialAds, runningSites, this.manager);
         bestPartial = chooseBestAdaptation(partialAds, ChoiceAssessorPreferenceEnum.Partial.toString());
       }
       
       if(!localAds.isEmpty())
       {
-        assessor.assessChoices(localAds, runningSites);
+        assessor.assessChoices(localAds, runningSites, this.manager);
         
         bestLocal = chooseBestAdaptation(localAds,  ChoiceAssessorPreferenceEnum.Local.toString());
       }
@@ -125,7 +125,7 @@ public class Planner extends AutonomicManagerComponent
       if(choices.getGlobalAdaptation() != null)
         bestChoices.add(choices.getGlobalAdaptation());
       //assess to find best overall adaptation
-      assessor.assessChoices(bestChoices, runningSites);
+      assessor.assessChoices(bestChoices, runningSites, this.manager);
       String choicePreference = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);    
       bestOverall = chooseBestAdaptation(bestChoices, choicePreference);
       //output bests, then all.
@@ -151,7 +151,7 @@ public class Planner extends AutonomicManagerComponent
   CodeGenerationException, SNEEConfigurationException
   {
     orginal.setNewQep(oldQEP);
-    assessor.assessChoice(orginal, runningSites, true);
+    assessor.assessChoice(orginal, runningSites, true, this.manager);
   }
 
   private Adaptation chooseBestAdaptation(List<Adaptation> choices, String choicePreference) throws SNEEConfigurationException
@@ -230,9 +230,9 @@ public class Planner extends AutonomicManagerComponent
   {
     this.assessor.updateStorageLocation(output);
     if(logicalOverlayNetwork == null)
-      this.assessor.assessChoice(orgianlOTAProgramCost, runningSites, reset);
+      this.assessor.assessChoice(orgianlOTAProgramCost, runningSites, reset, this.manager);
     else
-      this.assessor.assessChoice(orgianlOTAProgramCost, runningSites, reset, logicalOverlayNetwork);
+      this.assessor.assessChoice(orgianlOTAProgramCost, runningSites, reset, logicalOverlayNetwork, this.manager);
      
     this.assessor.updateStorageLocation(plannerFolder);
     new PlannerUtils(orgianlOTAProgramCost, manager, output, orgianlOTAProgramCost).writeObjectsToFile(); 
@@ -247,7 +247,7 @@ public class Planner extends AutonomicManagerComponent
   IOException, CodeGenerationException, SNEEConfigurationException
   {
     this.assessor.updateStorageLocation(outputFolder);
-    this.assessor.assessOverlayChoice(overlayOTAProgramCost, runningSites, current, failedNodeStrategyLocal);
+    this.assessor.assessOverlayChoice(overlayOTAProgramCost, runningSites, current, failedNodeStrategyLocal, this.manager);
     this.assessor.updateStorageLocation(plannerFolder);
   }
 

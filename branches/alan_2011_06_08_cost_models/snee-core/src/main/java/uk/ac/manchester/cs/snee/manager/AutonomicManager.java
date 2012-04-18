@@ -140,4 +140,6 @@ public interface AutonomicManager
   public abstract Topology getWsnTopology();
   
   public abstract Topology getPerfectTopology();
+
+  public abstract int getAdaptionCount();
 }

@@ -83,7 +83,8 @@ public class ChoiceAssessor implements Serializable
    * @throws CodeGenerationException 
    * @throws SNEEConfigurationException 
    */
-  public void assessChoices(List<Adaptation> choices, HashMap<String, RunTimeSite> runningSites) 
+  public void assessChoices(List<Adaptation> choices, HashMap<String, RunTimeSite> runningSites,
+                            AutonomicManager man) 
   throws 
   IOException, OptimizationException, 
   SchemaMetadataException, TypeMappingException, 
@@ -105,7 +106,7 @@ public class ChoiceAssessor implements Serializable
       energyModel.initilise(imageGenerationFolder, _metadataManager, runningSites);
       adapt.setTimeCost(timeModel.calculateTimeCost(adapt));
       adapt.setEnergyCost(energyModel.calculateEnergyCost(adapt));
-      adapt.setLifetimeEstimate(this.calculateEstimatedLifetime(adapt));
+      adapt.setLifetimeEstimate(this.calculateEstimatedLifetime(adapt, man));
       adapt.setRuntimeCost(calculateEnergyQEPExecutionCost());
       File adaptFolder = new File(imageGenerationFolder.toString() + sep + adapt.getOverallID());
       if(!adaptFolder.exists())
@@ -164,7 +165,7 @@ public class ChoiceAssessor implements Serializable
    * @throws OptimizationException 
    * @throws SNEEConfigurationException 
    */
-  private Double calculateEstimatedLifetime(Adaptation adapt) //seconds
+  private Double calculateEstimatedLifetime(Adaptation adapt, AutonomicManager man) //seconds
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException, SNEEConfigurationException
   {
@@ -180,7 +181,7 @@ public class ChoiceAssessor implements Serializable
       boolean permamentSenseCost = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_ENERGY_SENSE_PERM);
       double siteEnergyCons;
       if(permamentSenseCost)
-        siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumptionSensorOn(site); // J
+        siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumptionSensorOn(site, man); // J
       else
         siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site, null);
       runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
@@ -221,7 +222,8 @@ public class ChoiceAssessor implements Serializable
    * @throws CodeGenerationException
    * @throws SNEEConfigurationException 
    */
-  public void assessChoice(Adaptation orginal, HashMap<String, RunTimeSite> runningSites, boolean reset)
+  public void assessChoice(Adaptation orginal, HashMap<String, RunTimeSite> runningSites,
+                           boolean reset, AutonomicManager man)
   throws 
   IOException, OptimizationException, 
   SchemaMetadataException, TypeMappingException, 
@@ -239,7 +241,7 @@ public class ChoiceAssessor implements Serializable
     energyModel.initilise(imageGenerationFolder, _metadataManager, runningSites);
     adapt.setTimeCost(timeModel.calculateTimeCost(adapt));
     adapt.setEnergyCost(energyModel.calculateEnergyCost(adapt));
-    adapt.setLifetimeEstimate(this.calculateEstimatedLifetime(adapt));
+    adapt.setLifetimeEstimate(this.calculateEstimatedLifetime(adapt, man));
     adapt.setRuntimeCost(calculateEnergyQEPExecutionCost());
     if(reset)
       resetRunningSitesAdaptCost(); 
@@ -262,7 +264,8 @@ public class ChoiceAssessor implements Serializable
   public void assessOverlayChoice(Adaptation overlayOTAProgramCost,
                                   HashMap<String, RunTimeSite> runningSites, 
                                   LogicalOverlayNetworkImpl current,
-                                  FailedNodeStrategyLocal failedNodeStrategyLocal) 
+                                  FailedNodeStrategyLocal failedNodeStrategyLocal,
+                                  AutonomicManager man) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException, IOException, CodeGenerationException, SNEEConfigurationException
   {
@@ -278,7 +281,7 @@ public class ChoiceAssessor implements Serializable
     energyModelOverlay.initilise(imageGenerationFolder, _metadataManager, runningSites);
     adapt.setTimeCost(timeModelOverlay.calculateTimeCost(adapt, current));
     adapt.setEnergyCost(energyModelOverlay.calculateEnergyCost(adapt, current));
-    adapt.setLifetimeEstimate(this.calculateEstimatedLifetimeOverlay(adapt, current, failedNodeStrategyLocal));
+    adapt.setLifetimeEstimate(this.calculateEstimatedLifetimeOverlay(adapt, current, failedNodeStrategyLocal, man));
     adapt.setRuntimeCost(calculateEnergyQEPExecutionCost());
   }
 
@@ -296,7 +299,8 @@ public class ChoiceAssessor implements Serializable
    * @throws FileNotFoundException 
    */
   private Double calculateEstimatedLifetimeOverlay(Adaptation adapt, LogicalOverlayNetworkImpl current,
-                                                   FailedNodeStrategyLocal failedNodeStrategyLocal) 
+                                                   FailedNodeStrategyLocal failedNodeStrategyLocal,
+                                                   AutonomicManager man) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException, SNEEConfigurationException, FileNotFoundException, IOException
   {
@@ -318,7 +322,7 @@ public class ChoiceAssessor implements Serializable
         boolean permamentSenseCost = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_ENERGY_SENSE_PERM);
         double siteEnergyCons;
         if(permamentSenseCost)
-          siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumptionSensorOn(site); // J
+          siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumptionSensorOn(site, man); // J
         else
           siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site, null);
         runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
@@ -373,7 +377,8 @@ public class ChoiceAssessor implements Serializable
 
   public void assessChoice(Adaptation orgianlOTAProgramCost,
       HashMap<String, RunTimeSite> runningSites, boolean reset,
-      LogicalOverlayNetworkImpl logicalOverlayNetwork)
+      LogicalOverlayNetworkImpl logicalOverlayNetwork,
+      AutonomicManagerImpl man)
   throws IOException, SchemaMetadataException, TypeMappingException, 
   OptimizationException, CodeGenerationException, SNEEConfigurationException
   {
@@ -389,13 +394,14 @@ public class ChoiceAssessor implements Serializable
     energyModelOverlay.initilise(imageGenerationFolder, _metadataManager, runningSites);
     adapt.setTimeCost(timeModelOverlay.calculateTimeCost(adapt,logicalOverlayNetwork ));
     adapt.setEnergyCost(energyModelOverlay.calculateEnergyCost(adapt, logicalOverlayNetwork));
-    adapt.setLifetimeEstimate(this.calculateEstimatedLifetimeOverlay(adapt, logicalOverlayNetwork));
+    adapt.setLifetimeEstimate(this.calculateEstimatedLifetimeOverlay(adapt, logicalOverlayNetwork, man));
     adapt.setRuntimeCost(calculateEnergyQEPExecutionCost());
     
   }
 
   private Double calculateEstimatedLifetimeOverlay(Adaptation adapt,
-      LogicalOverlayNetworkImpl logicalOverlayNetwork) 
+      LogicalOverlayNetworkImpl logicalOverlayNetwork,
+      AutonomicManagerImpl autonomicManagerImpl) 
   throws FileNotFoundException, IOException, 
   OptimizationException, SchemaMetadataException, 
   TypeMappingException, SNEEConfigurationException
@@ -413,7 +419,7 @@ public class ChoiceAssessor implements Serializable
       boolean permamentSenseCost = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_ENERGY_SENSE_PERM);
       double siteEnergyCons;
       if(permamentSenseCost)
-        siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumptionSensorOn(site); // J
+        siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumptionSensorOn(site, autonomicManagerImpl); // J
       else
         siteEnergyCons = adapt.getNewQep().getAgendaIOT().getSiteEnergyConsumption(site, null);
       runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
@@ -471,7 +477,7 @@ public class ChoiceAssessor implements Serializable
       boolean permamentSenseCost = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_ENERGY_SENSE_PERM);
       double siteEnergyCons;
       if(permamentSenseCost)
-        siteEnergyCons = agenda.getSiteEnergyConsumptionSensorOn(site); // J
+        siteEnergyCons = agenda.getSiteEnergyConsumptionSensorOn(site, autonomicManagerImpl); // J
       else
         siteEnergyCons = agenda.getSiteEnergyConsumption(site, autonomicManagerImpl);
       runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
