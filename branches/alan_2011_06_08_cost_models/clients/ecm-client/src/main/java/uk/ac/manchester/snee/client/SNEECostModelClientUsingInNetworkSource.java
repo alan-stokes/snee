@@ -27,13 +27,17 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.UtilsException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public class SNEECostModelClientUsingInNetworkSource extends SNEEClient 
 {
-	private static ArrayList<Integer> siteIDs = new ArrayList<Integer>();
+	private static ArrayList<String> siteIDs = new ArrayList<String>();
 	private static RT routingTree;
 	
 	@SuppressWarnings("unused")
@@ -108,7 +112,7 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
         updateRecoveryFile();
         
         client.run();
-        routingTree = client.getRT();
+        routingTree = client.getQEP().getRT();
         System.out.println("ran control: success");
         runTests(client, currentQuery);
         queryid ++;
@@ -162,7 +166,11 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
     
   }
 
-  private static void runTests(SNEECostModelClientUsingInNetworkSource client, String currentQuery) throws SNEECompilerException, MetadataException, EvaluatorException, SNEEException, SNEEConfigurationException, IOException, OptimizationException, SQLException, UtilsException
+  private static void runTests(SNEECostModelClientUsingInNetworkSource client, String currentQuery)
+  throws SNEECompilerException, MetadataException, EvaluatorException, SNEEException, 
+  SNEEConfigurationException, IOException, OptimizationException, SQLException, 
+  UtilsException, NumberFormatException, SchemaMetadataException, TypeMappingException, 
+  CodeGenerationException, WhenSchedulerException
   {
     //go though all sites looking for confluence sites which are sites which will cause likely changes to results when lost
 	  Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
@@ -173,19 +181,20 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
   	  Site currentSite = siteIterator.next();
   	  if(currentSite.getInDegree() > 1)
   		  if(!siteIDs.contains(Integer.parseInt(currentSite.getID())))
-  		    siteIDs.add(Integer.parseInt(currentSite.getID()));
+  		    siteIDs.add(currentSite.getID());
   	}
   	 
     int noSites = siteIDs.size();
     int position = 0;
-    ArrayList<Integer> deadNodes = new ArrayList<Integer>();
+    ArrayList<String> deadNodes = new ArrayList<String>();
     writeIncludeImageSection();
     
     chooseNodes(deadNodes, noSites, position, client, currentQuery);
   }
 
-  private static void chooseNodes(ArrayList<Integer> deadNodes, int noSites,
-      int position, SNEECostModelClientUsingInNetworkSource client, String currentQuery) throws SNEECompilerException, MetadataException, EvaluatorException, SNEEException, SNEEConfigurationException, IOException, OptimizationException, SQLException, UtilsException
+  private static void chooseNodes(ArrayList<String> deadNodes, int noSites,
+      int position, SNEECostModelClientUsingInNetworkSource client, String currentQuery) throws SNEECompilerException, MetadataException, EvaluatorException, SNEEException, SNEEConfigurationException, IOException, 
+      OptimizationException, SQLException, UtilsException, NumberFormatException, SchemaMetadataException, TypeMappingException, CodeGenerationException, WhenSchedulerException
   {
     if(position < noSites)
     {
@@ -240,13 +249,13 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
   }
 
   public void runForTests()throws SNEECompilerException, MetadataException, EvaluatorException,
-  SNEEException, SQLException, SNEEConfigurationException
+  SNEEException, SQLException, SNEEConfigurationException, NumberFormatException, SchemaMetadataException, TypeMappingException, OptimizationException, IOException, CodeGenerationException, WhenSchedulerException
   {
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
     SNEEController control = (SNEEController) controller;
-    int queryId1 = control.addQueryWithoutCompilation(_query, _queryParams);
+    int queryId1 = control.addQuery(_query, _queryParams, queryid, false, true, true);
     
 
     long startTime = System.currentTimeMillis();
