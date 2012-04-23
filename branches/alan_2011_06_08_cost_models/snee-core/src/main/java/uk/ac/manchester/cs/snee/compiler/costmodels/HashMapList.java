@@ -102,4 +102,9 @@ public class HashMapList<K,V> implements Serializable{
     }
   }
   
+  public void clear()
+  {
+    mapping.clear();
+  }
+  
 }

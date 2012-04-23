@@ -26,6 +26,7 @@ public class FailedNodeTimeClientUtils
   private Adaptation partial = null;
   private Adaptation local = null;
   private Adaptation best = null;
+  private BufferedWriter positions = null;
   
   private BufferedWriter originalOut;
   
@@ -36,6 +37,7 @@ public class FailedNodeTimeClientUtils
     try
     {
       plot = new FailedNodeTimePlotter(new File("plots"));
+      positions = new BufferedWriter(new FileWriter(new File("plots" + sep + "positions")));
     }
     catch (IOException e)
     {
@@ -238,6 +240,37 @@ public class FailedNodeTimeClientUtils
   {
     return local;
   }
+  
+  public void storeIntermediateAdaptation(int queryid, int failedID, int adaptationid, PlotterEnum which)
+  {
+    File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + adaptationid + sep + "Planner" +  sep + "storedObjects");
+    ArrayList<Adaptation> adaptations = this.readInObjects(inputFolder);
+    if(which == PlotterEnum.ALL)
+      this.sortout(adaptations, true);
+    else
+      this.sortout(adaptations, false);
+    if(which == PlotterEnum.GLOBAL && global != null)
+    {
+      plot.addGlobalEnergy(global.getEnergyCost(), failedID);
+      plot.addGlobalTime(global.getTimeCost(), failedID);
+    }
+    else if(which == PlotterEnum.PARTIAL && partial != null)
+    {
+      plot.addPartialEnergy(partial.getEnergyCost(), failedID);
+      plot.addPartialTime(partial.getTimeCost(), failedID);
+    }
+    else if(which == PlotterEnum.LOCAL & local != null)
+    {
+      plot.addLocalEnergy(local.getEnergyCost(), failedID);
+      plot.addLocalTime(local.getTimeCost(), failedID);
+    }
+    else if(which == PlotterEnum.ALL & best != null)
+    {
+      plot.addBestEnergy(best.getEnergyCost(), failedID);
+      plot.addBestTime(best.getTimeCost(), failedID);
+    }
+  }
+  
 
   public void storeAdaptation(int queryid, int testid, double currentLifetime, PlotterEnum which, ArrayList<String> fails)
   {
@@ -283,6 +316,7 @@ public class FailedNodeTimeClientUtils
   public void plotTopology(int testID) throws IOException
   {
     plot.writeLifetimes(testID);
+    plot.writeEnergiesAndTimes(testID);
   }
 
   public Adaptation getBest()
@@ -359,5 +393,11 @@ public class FailedNodeTimeClientUtils
     plot.addPartialLifetime(agendas * 1000, new ArrayList<String>());
     plot.addLocalLifetime(agendas * 1000, new ArrayList<String>());
     plot.addBestLifetime(agendas * 1000, new ArrayList<String>());
+  }
+
+  public void writeCount(PlotterEnum value, int maxNumberofFailures, int adaptCount, int queryid) throws IOException
+  {
+    positions.write(queryid + " " + value.toString() + " for" + maxNumberofFailures + " failures starts at " + adaptCount);
+    positions.flush();
   }
 }

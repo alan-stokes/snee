@@ -12,6 +12,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 
@@ -27,11 +28,15 @@ public class FailedNodeTimePlotter implements Serializable
   private int queryID = 1;
   private String sep = System.getProperty("file.separator");
   private File lifetimePlotFile = null;
+  private File energyPlotFile = null;
+  private File timePlotFile = null;
   private File nodeFailures = null;
   private double lifetimeYMax = 0;
   private int numberOfAdaptations = 0;
   private BufferedWriter lifetimeWriter;
   private BufferedWriter failureWriter;
+  private BufferedWriter energyWriter;
+  private BufferedWriter timeWriter;
   private ArrayList<ArrayList<String>> failedNodesGlobal = new ArrayList<ArrayList<String>>();
   private ArrayList<ArrayList<String>> failedNodesPartial = new ArrayList<ArrayList<String>>();
   private ArrayList<ArrayList<String>> failedNodesLocal = new ArrayList<ArrayList<String>>();
@@ -42,6 +47,14 @@ public class FailedNodeTimePlotter implements Serializable
   private ArrayList<Double> localLifetimes = new ArrayList<Double>();
   private ArrayList<Double> mixedLifetimes = new ArrayList<Double>();
   private ArrayList<Double> orgininalLifetimes = new ArrayList<Double>();
+  private HashMapList<Integer, Long> globalTimes = new HashMapList<Integer, Long>();
+  private HashMapList<Integer, Long> partialTimes = new HashMapList<Integer, Long>();
+  private HashMapList<Integer, Long> localTimes = new HashMapList<Integer, Long>();
+  private HashMapList<Integer, Long> mixedTimes = new HashMapList<Integer, Long>();
+  private HashMapList<Integer, Double> globalenergy = new HashMapList<Integer, Double>();
+  private HashMapList<Integer, Double> partialenergy = new HashMapList<Integer, Double>();
+  private HashMapList<Integer, Double> localenergy = new HashMapList<Integer, Double>();
+  private HashMapList<Integer, Double> mixedenergy = new HashMapList<Integer, Double>();
 //  private ArrayList<Double> globalTupleProduction = new ArrayList<Double>();
  // private ArrayList<Double> partialTupleProduction = new ArrayList<Double>();
  // private ArrayList<Double> localTupleProduction = new ArrayList<Double>();
@@ -80,6 +93,8 @@ public class FailedNodeTimePlotter implements Serializable
     return mixedLifetimes.add(e);
   }
   
+  
+  
   public void writeLifetimes(int testID) throws IOException
   {
     Iterator<Double> globalLifetimeIterator = globalLifetimes.iterator();
@@ -99,7 +114,9 @@ public class FailedNodeTimePlotter implements Serializable
     lifetimeWriter = new BufferedWriter(new FileWriter(lifetimePlotFile));
     failureWriter.close();
     failureWriter = new BufferedWriter(new FileWriter(nodeFailures));
-    
+    lifetimeWriter.close();
+    energyWriter = new BufferedWriter(new FileWriter(energyPlotFile));
+    timeWriter = new BufferedWriter(new FileWriter(timePlotFile));
     
     try
     {
@@ -203,6 +220,9 @@ public class FailedNodeTimePlotter implements Serializable
     
     lifetimePlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "lifetimePlot.tex");
     nodeFailures = new File(this.outputFolder.toString() + sep + "query" + queryid + "NodeFailures.tex");
+    energyPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "energy");
+    timePlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "times");
+    
     if(lifetimePlotFile.exists())
     {
       lifetimePlotFile.delete();
@@ -213,8 +233,21 @@ public class FailedNodeTimePlotter implements Serializable
       nodeFailures.delete();
       nodeFailures.createNewFile();
     }
+    if(energyPlotFile.exists())
+    {
+      energyPlotFile.delete();
+      energyPlotFile.createNewFile();
+    }
+    if(timePlotFile.exists())
+    {
+      timePlotFile.delete();
+      timePlotFile.createNewFile();
+    }
+    
     lifetimeWriter = new BufferedWriter(new FileWriter(lifetimePlotFile));
     failureWriter = new BufferedWriter(new FileWriter(nodeFailures));
+    energyWriter = new BufferedWriter(new FileWriter(energyPlotFile));
+    timeWriter = new BufferedWriter(new FileWriter(timePlotFile));
   }
   
   public FailedNodeTimePlotter (File outputFolder) 
@@ -232,6 +265,8 @@ public class FailedNodeTimePlotter implements Serializable
     
     lifetimePlotFile = new File(this.outputFolder.toString() + sep + "query1" + "lifetimePlot.tex");
     nodeFailures = new File(this.outputFolder.toString() + sep + "query1" + "NodeFailures.tex");
+    energyPlotFile = new File(this.outputFolder.toString() + sep + "query1" +  "energy");
+    timePlotFile = new File(this.outputFolder.toString() + sep + "query1" +  "times");
     
     if(lifetimePlotFile.exists())
     {
@@ -243,9 +278,21 @@ public class FailedNodeTimePlotter implements Serializable
       nodeFailures.delete();
       nodeFailures.createNewFile();
     }
+    if(energyPlotFile.exists())
+    {
+      energyPlotFile.delete();
+      energyPlotFile.createNewFile();
+    }
+    if(timePlotFile.exists())
+    {
+      timePlotFile.delete();
+      timePlotFile.createNewFile();
+    }
     
     lifetimeWriter = new BufferedWriter(new FileWriter(lifetimePlotFile));
     failureWriter = new BufferedWriter(new FileWriter(nodeFailures));
+    energyWriter = new BufferedWriter(new FileWriter(energyPlotFile));
+    timeWriter = new BufferedWriter(new FileWriter(timePlotFile));
   }
   
   
@@ -368,6 +415,9 @@ public class FailedNodeTimePlotter implements Serializable
   {
     lifetimePlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "lifetimePlot.tex");
     nodeFailures = new File(this.outputFolder.toString() + sep + "query" + queryid + "NodeFailures.tex");
+    energyPlotFile = new File(this.outputFolder.toString() + sep + "query1" +  "energy");
+    timePlotFile = new File(this.outputFolder.toString() + sep + "query1" +  "times");
+    
     
     if(lifetimePlotFile.exists())
     {
@@ -380,14 +430,283 @@ public class FailedNodeTimePlotter implements Serializable
       nodeFailures.delete();
       nodeFailures.createNewFile();
     }
+    if(energyPlotFile.exists())
+    {
+      energyPlotFile.delete();
+      energyPlotFile.createNewFile();
+    }
+    if(timePlotFile.exists())
+    {
+      timePlotFile.delete();
+      timePlotFile.createNewFile();
+    }
     
     lifetimeWriter = new BufferedWriter(new FileWriter(lifetimePlotFile));
     failureWriter = new BufferedWriter(new FileWriter(nodeFailures));
+    energyWriter = new BufferedWriter(new FileWriter(energyPlotFile));
+    timeWriter = new BufferedWriter(new FileWriter(timePlotFile));
    
     globalLifetimes.clear();
     partialLifetimes.clear();
     localLifetimes.clear();
     mixedLifetimes.clear();
+    this.globalenergy.clear();
+    this.partialenergy.clear();
+    this.localenergy.clear();
+    this.globalTimes.clear();
+    this.partialTimes.clear();
+    this.localTimes.clear();
+  }
+
+
+  /**
+   * could be refractured to non repeated.
+   * @param testID
+   * @throws IOException
+   */
+  public void writeEnergiesAndTimes(int testID) throws IOException
+  {
+    Iterator<Integer> globalenergyKeyIterator = globalenergy.keySet().iterator();
+    Iterator<Integer> partialenergyKeyIterator = partialenergy.keySet().iterator();
+    Iterator<Integer> localenergyKeyIterator = localenergy.keySet().iterator();
+    Iterator<Integer> mixedenergyKeyIterator = mixedenergy.keySet().iterator();
+    Iterator<Integer> globalTimeKeyIterator = globalTimes.keySet().iterator();
+    Iterator<Integer> partialTimeKeyIterator = partialTimes.keySet().iterator();
+    Iterator<Integer> localTimeKeyIterator = localTimes.keySet().iterator();
+    Iterator<Integer> mixedTimeKeyIterator = mixedTimes.keySet().iterator();
+    
+    
+    energyWriter.close();
+    energyWriter = new BufferedWriter(new FileWriter(energyPlotFile));
+    timeWriter.close();
+    timeWriter = new BufferedWriter(new FileWriter(timePlotFile));
+    
+    try
+    {
+      while(globalenergyKeyIterator.hasNext())
+      {
+        Integer globalKey = globalenergyKeyIterator.next();
+        energyWriter.write(globalKey + " ");
+        ArrayList<Double> energies = globalenergy.get(globalKey);
+        Iterator<Double> energiesIterator = energies.iterator();
+        while(energiesIterator.hasNext())
+        {
+          Double energy = energiesIterator.next();
+          energyWriter.write(energy + " ");
+        }
+        energyWriter.newLine();
+      }
+      
+      energyWriter.newLine();
+      energyWriter.newLine();
+      
+      while(partialenergyKeyIterator.hasNext())
+      {
+        Integer partialKey = partialenergyKeyIterator.next();
+        energyWriter.write(partialKey + " ");
+        ArrayList<Double> energies = partialenergy.get(partialKey);
+        Iterator<Double> energiesIterator = energies.iterator();
+        while(energiesIterator.hasNext())
+        {
+          Double energy = energiesIterator.next();
+          energyWriter.write(energy + " ");
+        }
+        energyWriter.newLine();
+      }
+      
+      energyWriter.newLine();
+      energyWriter.newLine();
+      
+      while(localenergyKeyIterator.hasNext())
+      {
+        Integer localKey = localenergyKeyIterator.next();
+        energyWriter.write(localKey + " ");
+        ArrayList<Double> energies = localenergy.get(localKey);
+        Iterator<Double> energiesIterator = energies.iterator();
+        while(energiesIterator.hasNext())
+        {
+          Double energy = energiesIterator.next();
+          energyWriter.write(energy + " ");
+        }
+        energyWriter.newLine();
+      }
+      
+      energyWriter.newLine();
+      energyWriter.newLine();
+      
+      while(localenergyKeyIterator.hasNext())
+      {
+        Integer localKey = localenergyKeyIterator.next();
+        energyWriter.write(localKey + " ");
+        ArrayList<Double> energies = localenergy.get(localKey);
+        Iterator<Double> energiesIterator = energies.iterator();
+        while(energiesIterator.hasNext())
+        {
+          Double energy = energiesIterator.next();
+          energyWriter.write(energy + " ");
+        }
+        energyWriter.newLine();
+      }
+      
+      energyWriter.newLine();
+      energyWriter.newLine();
+      
+      while(mixedenergyKeyIterator.hasNext())
+      {
+        Integer mixedKey = mixedenergyKeyIterator.next();
+        energyWriter.write(mixedKey + " ");
+        ArrayList<Double> energies = mixedenergy.get(mixedKey);
+        Iterator<Double> energiesIterator = energies.iterator();
+        while(energiesIterator.hasNext())
+        {
+          Double energy = energiesIterator.next();
+          energyWriter.write(energy + " ");
+        }
+        energyWriter.newLine();
+      }
+      energyWriter.flush();
+      energyWriter.close();
+      
+      //times
+      
+      while(globalTimeKeyIterator.hasNext())
+      {
+        Integer globalKey = globalTimeKeyIterator.next();
+        timeWriter.write(globalKey + " ");
+        ArrayList<Long> times = globalTimes.get(globalKey);
+        Iterator<Long> timesIterator = times.iterator();
+        while(timesIterator.hasNext())
+        {
+          Long time = timesIterator.next();
+          timeWriter.write(time + " ");
+        }
+        timeWriter.newLine();
+      }
+      
+      timeWriter.newLine();
+      timeWriter.newLine();
+      
+      while(partialTimeKeyIterator.hasNext())
+      {
+        Integer partialKey = partialTimeKeyIterator.next();
+        timeWriter.write(partialKey + " ");
+        ArrayList<Long> times = partialTimes.get(partialKey);
+        Iterator<Long> timesIterator = times.iterator();
+        while(timesIterator.hasNext())
+        {
+          Long time = timesIterator.next();
+          timeWriter.write(time + " ");
+        }
+        timeWriter.newLine();
+      }
+      
+      timeWriter.newLine();
+      timeWriter.newLine();
+      
+      while(localTimeKeyIterator.hasNext())
+      {
+        Integer localKey = localTimeKeyIterator.next();
+        timeWriter.write(localKey + " ");
+        ArrayList<Long> times = localTimes.get(localKey);
+        Iterator<Long> timesIterator = times.iterator();
+        while(timesIterator.hasNext())
+        {
+          Long time = timesIterator.next();
+          timeWriter.write(time + " ");
+        }
+        timeWriter.newLine();
+      }
+      
+      timeWriter.newLine();
+      timeWriter.newLine();
+      
+      while(localTimeKeyIterator.hasNext())
+      {
+        Integer localKey = localTimeKeyIterator.next();
+        timeWriter.write(localKey + " ");
+        ArrayList<Long> times = localTimes.get(localKey);
+        Iterator<Long> timesIterator = times.iterator();
+        while(timesIterator.hasNext())
+        {
+          Long time = timesIterator.next();
+          timeWriter.write(time + " ");
+        }
+        timeWriter.newLine();
+      }
+      
+      timeWriter.newLine();
+      timeWriter.newLine();
+      
+      while(mixedTimeKeyIterator.hasNext())
+      {
+        Integer mixedKey = mixedTimeKeyIterator.next();
+        timeWriter.write(mixedKey + " ");
+        ArrayList<Long> times = mixedTimes.get(mixedKey);
+        Iterator<Long> timesIterator = times.iterator();
+        while(timesIterator.hasNext())
+        {
+          Long time = timesIterator.next();
+          timeWriter.write(time + " ");
+        }
+        timeWriter.newLine();
+      }
+      timeWriter.flush();
+      timeWriter.close();
+    }
+    catch(Exception e)
+    {
+      System.out.println(e.getMessage());
+    }
+    generatePlots(testID); 
+    
+  }
+
+
+  public void addGlobalEnergy(Double energyCost, int failedID)
+  {
+    this.globalenergy.add(failedID, energyCost);
+  }
+
+
+  public void addGlobalTime(Long timeCost, int failedID)
+  {
+   this.globalTimes.add(failedID, timeCost);
+  }
+
+
+  public void addPartialEnergy(Double energyCost, int failedID)
+  {
+    this.partialenergy.add(failedID, energyCost);
+  }
+
+
+  public void addPartialTime(Long timeCost, int failedID)
+  {
+    this.partialTimes.add(failedID, timeCost);
+  }
+
+
+  public void addLocalEnergy(Double energyCost, int failedID)
+  {
+    this.localenergy.add(failedID, energyCost);
+  }
+
+
+  public void addLocalTime(Long timeCost, int failedID)
+  {
+    this.localTimes.add(failedID, timeCost);
+  }
+
+
+  public void addBestEnergy(Double energyCost, int failedID)
+  {
+    this.mixedenergy.add(failedID, energyCost);
+  }
+
+
+  public void addBestTime(Long timeCost, int failedID)
+  {
+    this.mixedTimes.add(failedID, timeCost);
   }
   
 }

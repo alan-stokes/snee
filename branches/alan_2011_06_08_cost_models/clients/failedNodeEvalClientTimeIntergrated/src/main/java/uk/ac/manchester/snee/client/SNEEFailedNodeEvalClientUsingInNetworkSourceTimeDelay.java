@@ -121,11 +121,11 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	    queryIterator = queries.iterator();
 	    failedOutput = utils.createFailedTestListWriter();
 	    
-	    //for(int index = 0; index < 60; index++ )
-	    //{
-	     //queryIterator.next();
-	     //queryid++;
-	    //}
+	    for(int index = 0; index < 60; index++ )
+	    {
+	     queryIterator.next();
+	     queryid++;
+	    }
 	    while(queryIterator.hasNext())
 	    {
 	      recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
@@ -367,6 +367,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     //run for partial 
     for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
     {
+      int adaptCount = client.getAdaptationCount();
+      utils.writeCount(PlotterEnum.PARTIAL, currentNumberOfFailures, adaptCount, queryid);
       calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
       System.out.println("running tests with " + currentNumberOfFailures + " failures");
       ArrayList<String> fails = new ArrayList<String>();
@@ -379,13 +381,14 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
             (testNo -1) + sep + "Planner" + sep + "storedObjects"));
         utils.sortout(adapts, false);
+        utils.storeIntermediateAdaptation(queryid, currentNumberOfFailures, testNo -1, PlotterEnum.PARTIAL);
         currentSuccessfulAdaptations.add(utils.getPartial());
       }
       currentlyFailedNodes.clear();
       double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures ; // seconds
       int count = client.getAdaptationCount();
       ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
-          (count) + sep + "Planner" + sep + "storedObjects"));
+          (count -1) + sep + "Planner" + sep + "storedObjects"));
       utils.sortout(adapts, false);
       currentLifetime = currentLifetime + utils.getPartial().getLifetimeEstimate();
       utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.PARTIAL, fails);
@@ -428,6 +431,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, ChoiceAssessorPreferenceEnum.Global.toString());
     for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
     {
+      int adaptCount = client.getAdaptationCount();
+      utils.writeCount(PlotterEnum.GLOBAL, currentNumberOfFailures, adaptCount, queryid);
       calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
       ArrayList<String> fails = new ArrayList<String>();
       System.out.println("running tests with " + currentNumberOfFailures + " failures");
@@ -440,6 +445,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
             (testNo -1) + sep + "Planner" + sep + "storedObjects"));
         utils.sortout(adapts, false);
+        utils.storeIntermediateAdaptation(queryid, currentNumberOfFailures, testNo -1, PlotterEnum.GLOBAL);
         currentSuccessfulAdaptations.add(utils.getGlobal());
       }
       currentlyFailedNodes.clear();
@@ -483,6 +489,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     orginialOverlay = client.getOverlay();
     for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
     {
+      int adaptCount = client.getAdaptationCount();
+      utils.writeCount(PlotterEnum.LOCAL, currentNumberOfFailures, adaptCount, queryid);
       calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
       System.out.println("running tests with " + currentNumberOfFailures + " failures");
       client.setupOverlay();
@@ -500,6 +508,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
             (testNo -1) + sep + "Planner" + sep + "storedObjects"));
         utils.sortout(adapts, false);
+        utils.storeIntermediateAdaptation(queryid, currentNumberOfFailures, testNo -1, PlotterEnum.LOCAL);
         currentSuccessfulAdaptations.add(utils.getLocal());
       }
       currentlyFailedNodes.clear();
@@ -559,6 +568,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     lastPlan = originalQEP;
     for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
     {
+      int adaptCount = client.getAdaptationCount();
+      utils.writeCount(PlotterEnum.ALL, currentNumberOfFailures, adaptCount, queryid);
       calculateAgendaExecutionsBetweenFailures(currentNumberOfFailures, client); 
       client.setupOverlay();
       System.out.println("running tests with " + currentNumberOfFailures + " failures");
@@ -575,6 +586,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
             (adaptationCount -1) + sep + "Planner" + sep + "storedObjects"));
         utils.sortout(adapts, false);
+        utils.storeIntermediateAdaptation(queryid, currentNumberOfFailures, testNo -1, PlotterEnum.ALL);
         currentSuccessfulAdaptations.add(utils.getBest());
       }
       lastPlan = originalQEP;

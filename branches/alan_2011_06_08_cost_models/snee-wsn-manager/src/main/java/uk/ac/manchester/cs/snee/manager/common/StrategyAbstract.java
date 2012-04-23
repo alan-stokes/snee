@@ -301,11 +301,14 @@ public abstract class StrategyAbstract implements Serializable
       //needs to distinguqise between sink and other nodes
       if(!failedSite.getID().equals(oldAgenda.getIOT().getRT().getRoot().getID()))
       {
-        if(failedSite == null || oldAgenda == null)
-          System.out.println("ws");
-        if(oldAgenda.getTransmissionTask(failedSite.getID()) == null)
-          System.out.println("ws");
-        failedSite = oldAgenda.getTransmissionTask(failedSite.getID()).getDestNode();
+        try
+        {
+          failedSite = oldAgenda.getTransmissionTask(failedSite.getID()).getDestNode();
+        }
+        catch(Exception e)
+        {
+          return false;
+        }
         commTimeOld = oldAgenda.getCommunicationTaskBetween(failedSite, parent);
       }
       else
@@ -388,37 +391,48 @@ public abstract class StrategyAbstract implements Serializable
    * @param oldIOT
    * @param ad
    */
-  private void checkForReDirectionNodes(IOT newIOT, IOT oldIOT,
+  private boolean checkForReDirectionNodes(IOT newIOT, IOT oldIOT,
       Adaptation ad)
   {
-    RT rt = newIOT.getRT();
-    Iterator<Site> siteIterator = rt.siteIterator(TraversalOrder.PRE_ORDER);
-    //get rid of root site (no exchanges to work with)
-    siteIterator.next();
-    //go though each site, looking to see if destination sites are the same for exchanges.
-    while(siteIterator.hasNext())
+    try
     {
-      Site site = siteIterator.next();
-      ArrayList<InstanceOperator> instanceOperatorsNew = newIOT.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
-      ArrayList<InstanceOperator> instanceOperatorsOld = oldIOT.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
-      if(instanceOperatorsNew.size() == 0)
-      {}
-      else
+      RT rt = newIOT.getRT();
+      Iterator<Site> siteIterator = rt.siteIterator(TraversalOrder.PRE_ORDER);
+      //get rid of root site (no exchanges to work with)
+      siteIterator.next();
+      //go though each site, looking to see if destination sites are the same for exchanges.
+      while(siteIterator.hasNext())
       {
-        InstanceExchangePart exchangeNew = (InstanceExchangePart) instanceOperatorsNew.get(0);
-        InstanceExchangePart exchangeOld = null;
-        if(instanceOperatorsOld.size() == 0)
-        {}
-        else
+        Site site = siteIterator.next();
+        if(!site.getID().equals(rt.getRoot().getID()))
         {
-          exchangeOld = (InstanceExchangePart) instanceOperatorsOld.get(0);
-          if(!exchangeNew.getNext().getSite().getID().equals(exchangeOld.getNext().getSite().getID())
-              && !ad.getReprogrammingSites().contains(site.getID()))
+          ArrayList<InstanceOperator> instanceOperatorsNew = newIOT.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
+          ArrayList<InstanceOperator> instanceOperatorsOld = oldIOT.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
+          if(instanceOperatorsNew.size() == 0)
+          {}
+          else
           {
-            ad.addRedirectedSite(site.getID());
+            InstanceExchangePart exchangeNew = (InstanceExchangePart) instanceOperatorsNew.get(0);
+            InstanceExchangePart exchangeOld = null;
+            if(instanceOperatorsOld.size() == 0)
+            {}
+            else
+            {
+              exchangeOld = (InstanceExchangePart) instanceOperatorsOld.get(0);
+              if(!exchangeNew.getNext().getSite().getID().equals(exchangeOld.getNext().getSite().getID())
+                  && !ad.getReprogrammingSites().contains(site.getID()))
+              {
+                ad.addRedirectedSite(site.getID());
+              }
+            }
           }
         }
       }
+      return true;
+    }
+    catch(Exception e)
+    {
+      return false;
     }
   }
   
