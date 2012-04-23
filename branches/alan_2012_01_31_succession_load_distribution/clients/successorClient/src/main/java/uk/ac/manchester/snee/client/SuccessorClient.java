@@ -68,9 +68,9 @@ public class SuccessorClient extends SNEEClient
 	{
 		//This method represents the web server wrapper
 		// Configure logging
-		PropertyConfigurator.configure(
-				SuccessorClient.class.
-				getClassLoader().getResource("etc/common/log4j.properties"));
+	//	PropertyConfigurator.configure(
+			//	SuccessorClient.class.
+			//	getClassLoader().getResource("etc/common/log4j.properties"));
 		
 		
 	  Long duration = Long.valueOf("120");

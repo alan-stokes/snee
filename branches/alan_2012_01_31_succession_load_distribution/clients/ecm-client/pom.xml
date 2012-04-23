@@ -5,11 +5,11 @@
   <parent>
     <artifactId>clients</artifactId>
     <groupId>uk.ac.manchester.cs.snee</groupId>
-    <version>1.5.4-SNAPSHOT</version>
+    <version>1.6.4-SNAPSHOT</version>
   </parent>
   <groupId>uk.ac.manchester.cs.snee</groupId>
   <artifactId>ecm-client</artifactId>
-  <version>1.5.4-SNAPSHOT</version>
+  <version>1.6.4-SNAPSHOT</version>
   <name>ecm-client</name>
   <url>http://maven.apache.org</url>
   <properties>
