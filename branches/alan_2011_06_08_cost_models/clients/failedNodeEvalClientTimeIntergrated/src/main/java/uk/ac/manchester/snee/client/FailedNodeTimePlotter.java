@@ -114,10 +114,6 @@ public class FailedNodeTimePlotter implements Serializable
     lifetimeWriter = new BufferedWriter(new FileWriter(lifetimePlotFile));
     failureWriter.close();
     failureWriter = new BufferedWriter(new FileWriter(nodeFailures));
-    lifetimeWriter.close();
-    energyWriter = new BufferedWriter(new FileWriter(energyPlotFile));
-    timeWriter = new BufferedWriter(new FileWriter(timePlotFile));
-    
     try
     {
       while(globalLifetimeIterator.hasNext() || partialLifetimeIterator.hasNext() || 

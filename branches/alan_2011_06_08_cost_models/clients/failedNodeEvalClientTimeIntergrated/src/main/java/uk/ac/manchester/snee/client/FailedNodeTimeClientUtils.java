@@ -245,6 +245,10 @@ public class FailedNodeTimeClientUtils
   {
     File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + adaptationid + sep + "Planner" +  sep + "storedObjects");
     ArrayList<Adaptation> adaptations = this.readInObjects(inputFolder);
+    global = null;
+    partial = null;
+    local = null;
+    best = null;
     if(which == PlotterEnum.ALL)
       this.sortout(adaptations, true);
     else
@@ -315,8 +319,15 @@ public class FailedNodeTimeClientUtils
 
   public void plotTopology(int testID) throws IOException
   {
-    plot.writeLifetimes(testID);
-    plot.writeEnergiesAndTimes(testID);
+    try
+    {
+      plot.writeLifetimes(testID);
+      plot.writeEnergiesAndTimes(testID);
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
   }
 
   public Adaptation getBest()
@@ -398,6 +409,7 @@ public class FailedNodeTimeClientUtils
   public void writeCount(PlotterEnum value, int maxNumberofFailures, int adaptCount, int queryid) throws IOException
   {
     positions.write(queryid + " " + value.toString() + " for" + maxNumberofFailures + " failures starts at " + adaptCount);
+    positions.newLine();
     positions.flush();
   }
 }

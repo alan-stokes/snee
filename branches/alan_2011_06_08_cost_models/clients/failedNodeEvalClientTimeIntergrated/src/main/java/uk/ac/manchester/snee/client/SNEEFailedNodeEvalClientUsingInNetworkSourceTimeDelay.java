@@ -121,7 +121,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	    queryIterator = queries.iterator();
 	    failedOutput = utils.createFailedTestListWriter();
 	    
-	    for(int index = 0; index < 60; index++ )
+	    for(int index = 0; index < 59; index++ )
 	    {
 	     queryIterator.next();
 	     queryid++;
@@ -378,10 +378,12 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         client.getQEP().getLAF().setQueryName("query" + queryid + "-" + maxNumberofFailures);
         client.runTests(client, currentQuery, queryid, allowDeathOfAcquires, fails);
         testNo++;
+        
+        int adaptationCount = client.getAdaptationCount();
         ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
-            (testNo -1) + sep + "Planner" + sep + "storedObjects"));
+            (adaptationCount -1) + sep + "Planner" + sep + "storedObjects"));
         utils.sortout(adapts, false);
-        utils.storeIntermediateAdaptation(queryid, currentNumberOfFailures, testNo -1, PlotterEnum.PARTIAL);
+        utils.storeIntermediateAdaptation(queryid, currentNumberOfFailures, adaptationCount -1, PlotterEnum.PARTIAL);
         currentSuccessfulAdaptations.add(utils.getPartial());
       }
       currentlyFailedNodes.clear();
@@ -442,10 +444,11 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         client.getQEP().getLAF().setQueryName("query" + queryid + "-"+ currentFailure + "-" + maxNumberofFailures);
         client.runTests(client, currentQuery, queryid, allowDeathOfAcquires, fails);
         testNo++;
+        int adaptationCount = client.getAdaptationCount();
         ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
-            (testNo -1) + sep + "Planner" + sep + "storedObjects"));
+            ( adaptationCount-1) + sep + "Planner" + sep + "storedObjects"));
         utils.sortout(adapts, false);
-        utils.storeIntermediateAdaptation(queryid, currentNumberOfFailures, testNo -1, PlotterEnum.GLOBAL);
+        utils.storeIntermediateAdaptation(queryid, currentNumberOfFailures, adaptationCount -1, PlotterEnum.GLOBAL);
         currentSuccessfulAdaptations.add(utils.getGlobal());
       }
       currentlyFailedNodes.clear();
@@ -504,11 +507,11 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         if(!successful)
           failedTests++;
         testNo++;
-        
+        int adaptationCount = client.getAdaptationCount();
         ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
-            (testNo -1) + sep + "Planner" + sep + "storedObjects"));
+            (adaptationCount -1) + sep + "Planner" + sep + "storedObjects"));
         utils.sortout(adapts, false);
-        utils.storeIntermediateAdaptation(queryid, currentNumberOfFailures, testNo -1, PlotterEnum.LOCAL);
+        utils.storeIntermediateAdaptation(queryid, currentNumberOfFailures, adaptationCount -1, PlotterEnum.LOCAL);
         currentSuccessfulAdaptations.add(utils.getLocal());
       }
       currentlyFailedNodes.clear();
@@ -559,6 +562,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   throws Exception
   {
     client.resetDataSources(originalQEP);
+    orginialOverlay = client.getOverlay();
     try{
     originalQEP = client.getQEP();
     System.out.println("running tests for best ");
