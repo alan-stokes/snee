@@ -400,10 +400,10 @@ public class FailedNodeTimeClientUtils
   throws IOException
   {
     writeOriginal(0, agendas);
-    plot.addGlobalLifetime(agendas * 1000, new ArrayList<String>());
-    plot.addPartialLifetime(agendas * 1000, new ArrayList<String>());
-    plot.addLocalLifetime(agendas * 1000, new ArrayList<String>());
-    plot.addBestLifetime(agendas * 1000, new ArrayList<String>());
+    plot.addGlobalLifetime(agendas, new ArrayList<String>());
+    plot.addPartialLifetime(agendas, new ArrayList<String>());
+    plot.addLocalLifetime(agendas, new ArrayList<String>());
+    plot.addBestLifetime(agendas, new ArrayList<String>());
   }
 
   public void writeCount(PlotterEnum value, int maxNumberofFailures, int adaptCount, int queryid) throws IOException
@@ -411,5 +411,10 @@ public class FailedNodeTimeClientUtils
     positions.write(queryid + " " + value.toString() + " for" + maxNumberofFailures + " failures starts at " + adaptCount);
     positions.newLine();
     positions.flush();
+  }
+
+  public void storeDelivery(long deliveryLength)
+  {
+    plot.storeDelivery(deliveryLength);
   }
 }

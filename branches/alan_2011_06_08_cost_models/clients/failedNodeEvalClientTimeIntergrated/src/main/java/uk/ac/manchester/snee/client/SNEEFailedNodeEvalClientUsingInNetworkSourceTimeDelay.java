@@ -125,13 +125,14 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	    {
 	     queryIterator.next();
 	     queryid++;
-	    }
+	   }
 	    while(queryIterator.hasNext())
 	    {
 	      recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
 	      utils.removeBinaries(queryid);
 	      calculated = false;
 	      queryid++;
+	      utils.newPlotters(queryid);
 	      testNo = 1;
 	      
       }
@@ -284,9 +285,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     client.resetDataSources((SensorNetworkQueryPlan) control.getQEP());
     Double leftOverLifetime = control.getEstimatedLifetime((SensorNetworkQueryPlan) control.getQEP(), new ArrayList<String>());
     SensorNetworkQueryPlan currentQEP = (SensorNetworkQueryPlan) control.getQEP();
-    Double agendas = leftOverLifetime / (currentQEP.getAgendaIOT().getLength_bms(false)/ 1024);
-    System.out.println("originalQEP : " + agendas);
-    utils.storeOriginalLifetime(agendas);
+    utils.storeOriginalLifetime(leftOverLifetime);
+    utils.storeDelivery(currentQEP.getAgenda().getDeliveryTime_ms() / 1000);
     client.resetDataSources((SensorNetworkQueryPlan) control.getQEP());
     //run for orgiinal 
     for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
@@ -303,7 +303,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         testNo++;
       }
       currentlyFailedNodes.clear();
-      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures ;
+      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures;
       lifetime = currentLifetime + lifetime; // seconds
       lifetime = lifetime / (originalQEP.getAgendaIOT().getLength_bms(false) / 1024);  // agendas
       utils.storeoriginal(queryid, currentNumberOfFailures, lifetime, fails);
@@ -392,7 +392,6 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
           (count -1) + sep + "Planner" + sep + "storedObjects"));
       utils.sortout(adapts, false);
-      currentLifetime = currentLifetime + utils.getPartial().getLifetimeEstimate();
       utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.PARTIAL, fails);
       
       utils.plotTopology(testNo -1);
@@ -452,11 +451,10 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         currentSuccessfulAdaptations.add(utils.getGlobal());
       }
       currentlyFailedNodes.clear();
-      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures;
+      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures ;
       ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
           (testNo -1) + sep + "Planner" + sep + "storedObjects"));
       utils.sortout(adapts, false);
-      currentLifetime = currentLifetime + utils.getGlobal().getLifetimeEstimate();
       utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.GLOBAL, fails);
       utils.plotTopology(testNo -1);
       client.resetDataSources(originalQEP);
@@ -515,15 +513,13 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         currentSuccessfulAdaptations.add(utils.getLocal());
       }
       currentlyFailedNodes.clear();
-      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * (currentNumberOfFailures - failedTests);
+      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures;
       
       int adaptationcount = client.getAdaptationCount();
       ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
           (adaptationcount -1) + sep + "Planner" + sep + "storedObjects"));
       utils.sortout(adapts, false);
-      if(failedTests  == 0)
-        currentLifetime = currentLifetime + utils.getLocal().getLifetimeEstimate();
-      utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.LOCAL, fails);
+     utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.LOCAL, fails);
       utils.plotTopology(testNo -1);
       client.resetDataSources(originalQEP);
       currentSuccessfulAdaptations.clear();
@@ -561,7 +557,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   private static void runBestTests(String currentQuery, boolean allowDeathOfAcquires) 
   throws Exception
   {
-    client.resetDataSources(originalQEP);
+    //client.resetDataSources(originalQEP);
     orginialOverlay = client.getOverlay();
     try{
     originalQEP = client.getQEP();
@@ -590,18 +586,16 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
             (adaptationCount -1) + sep + "Planner" + sep + "storedObjects"));
         utils.sortout(adapts, false);
-        utils.storeIntermediateAdaptation(queryid, currentNumberOfFailures, testNo -1, PlotterEnum.ALL);
+        utils.storeIntermediateAdaptation(queryid, currentNumberOfFailures, adaptationCount -1, PlotterEnum.ALL);
         currentSuccessfulAdaptations.add(utils.getBest());
       }
       lastPlan = originalQEP;
       currentlyFailedNodes.clear();
-      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * (currentNumberOfFailures - failedTests);
+      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures;
       int adaptationCount = client.getAdaptationCount();
       ArrayList<Adaptation> adapts = utils.readInObjects(new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + 
           (adaptationCount -1) + sep + "Planner" + sep + "storedObjects"));
       utils.sortout(adapts, true);
-      if(failedTests == 0)
-        currentLifetime = currentLifetime + utils.getBest().getLifetimeEstimate();
       utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.ALL, fails);
       utils.plotTopology(testNo -1);
       client.resetDataSources(originalQEP);

@@ -37,6 +37,7 @@ public class FailedNodeTimePlotter implements Serializable
   private BufferedWriter failureWriter;
   private BufferedWriter energyWriter;
   private BufferedWriter timeWriter;
+  private Long deliveryLength;
   private ArrayList<ArrayList<String>> failedNodesGlobal = new ArrayList<ArrayList<String>>();
   private ArrayList<ArrayList<String>> failedNodesPartial = new ArrayList<ArrayList<String>>();
   private ArrayList<ArrayList<String>> failedNodesLocal = new ArrayList<ArrayList<String>>();
@@ -167,12 +168,10 @@ public class FailedNodeTimePlotter implements Serializable
         else
           bestFails = new ArrayList<String>();
         
-        
-        log.fatal(counter + " " + df.format(globalLife / 1000) + " " + df.format(partialLife/ 1000) + 
-                  " " + df.format(localLife/ 1000) +  " " + df.format(mixedLife/ 1000));
-        lifetimeWriter.write(counter + " " + df.format(globalLife / 1000) + " " + 
-                             df.format(partialLife / 1000) + " " + df.format(localLife / 1000) +
-                             " " + df.format(mixedLife / 1000));
+          lifetimeWriter.write(counter + " " + df.format((globalLife / this.deliveryLength)) + " " + 
+              df.format((partialLife / this.deliveryLength)) + " " + df.format((localLife/ this.deliveryLength)) +
+              " " + df.format((mixedLife / this.deliveryLength)));
+     
         lifetimeWriter.newLine();
         lifetimeWriter.flush();
         lifetimeYMax = Math.max(lifetimeYMax, globalLife / 1000);
@@ -411,8 +410,8 @@ public class FailedNodeTimePlotter implements Serializable
   {
     lifetimePlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "lifetimePlot.tex");
     nodeFailures = new File(this.outputFolder.toString() + sep + "query" + queryid + "NodeFailures.tex");
-    energyPlotFile = new File(this.outputFolder.toString() + sep + "query1" +  "energy");
-    timePlotFile = new File(this.outputFolder.toString() + sep + "query1" +  "times");
+    energyPlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "energy");
+    timePlotFile = new File(this.outputFolder.toString() + sep + "query" + queryid + "times");
     
     
     if(lifetimePlotFile.exists())
@@ -703,6 +702,12 @@ public class FailedNodeTimePlotter implements Serializable
   public void addBestTime(Long timeCost, int failedID)
   {
     this.mixedTimes.add(failedID, timeCost);
+  }
+
+
+  public void storeDelivery(long deliveryLength)
+  {
+    this.deliveryLength = deliveryLength;
   }
   
 }
