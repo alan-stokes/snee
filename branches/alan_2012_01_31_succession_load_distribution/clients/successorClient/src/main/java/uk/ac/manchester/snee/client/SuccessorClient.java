@@ -44,8 +44,8 @@ public class SuccessorClient extends SNEEClient
 	private static int queryid = 1;
 	protected static int testNo = 1;
 	private static int max = 120;
-  private static File testFolder =  new File("src/main/resources/testsNatural");
-  private static File sneetestFolder =  new File("testsNatural");
+  private static File testFolder =  new File("src/main/resources/testsSize100");
+  private static File sneetestFolder =  new File("testsSize100");
   @SuppressWarnings("unused")
   private static boolean inRecoveryMode = false;
 	
@@ -86,7 +86,7 @@ public class SuccessorClient extends SNEEClient
       collectQueries(queries);
       
       queryIterator = queries.iterator();
-     
+      
       //TODO remove to allow full run
       while(queryIterator.hasNext() && queryid <= max)
       {

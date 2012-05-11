@@ -69,7 +69,7 @@ public class GeneticRouter extends AutonomicManagerComponent
     int currentIteration = 0;
     ArrayList<Genome> currentPopulation = initalPopulation;
    
-    while(currentIteration < maxIterations && consecutiveTimesWithoutNewSolutions <= AllowedNumberOfIterationsWithoutNewSolution)
+    while(!meetStoppingCriteria(currentIteration))
     {
       File iterationFolder = new File(geneicFolder.toString() + sep + "iteration" + currentIteration);
       iterationFolder.mkdir();
@@ -83,6 +83,29 @@ public class GeneticRouter extends AutonomicManagerComponent
     
     collectSolutions();
     return eliteSolutions;
+  }
+
+  /**
+   * verifies when to stop searching
+   * @param currentIteration
+   * @return
+   */
+  private Boolean meetStoppingCriteria(int currentIteration)
+  {
+    if(currentIteration > maxIterations)
+      return true;
+    else
+    {
+      if(elitePhenomes.size() > 0)
+      {
+        if(consecutiveTimesWithoutNewSolutions <= AllowedNumberOfIterationsWithoutNewSolution)
+          return false;
+        else
+          return true;
+      }
+      else
+        return false;
+    }
   }
 
   /**
@@ -150,15 +173,6 @@ public class GeneticRouter extends AutonomicManagerComponent
     {
       consecutiveTimesWithoutNewSolutions = 0;
     }
-      
-   // Iterator<Phenome> eliteIterator = elitePhenomes.iterator();
-   // int id = 1;
-   // while(eliteIterator.hasNext())
-   // {
-    //  Phenome eliteGen = eliteIterator.next();
-    //  new RTUtils(eliteGen.getRt()).exportAsDotFile(iterationFolder + sep + "elite" + id);
-    //  id ++;
-    //}
   }
 
   /**
@@ -199,6 +213,12 @@ public class GeneticRouter extends AutonomicManagerComponent
     return false;
   }
 
+  /**
+   * does the mutation and crossover
+   * @param currentPopulation
+   * @param successor
+   * @return
+   */
   private ArrayList<Genome> repopulate(ArrayList<Genome> currentPopulation, Successor successor)
   {
     ArrayList<Genome> newPop = new ArrayList<Genome>();

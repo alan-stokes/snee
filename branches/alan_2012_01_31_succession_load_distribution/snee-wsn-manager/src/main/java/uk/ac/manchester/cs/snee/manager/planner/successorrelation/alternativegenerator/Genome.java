@@ -142,6 +142,11 @@ public class Genome
     clean.replaceGene(gene, !value);
   }
   
+  /**
+   * mutation aspect for time
+   * @param clean
+   * @param successorLifetime
+   */
   public static void mutateTime(Genome clean, int successorLifetime)
   {
     Random randomGeneGenerator = new Random();
@@ -220,11 +225,18 @@ public class Genome
     return fitness;
   }
   
+  /**
+   * returns time period of genome
+   * @return
+   */
   public int getTimePeriod()
   {
     return this.timePeriod;
   }
   
+  /**
+   * compares 2 genomes to determine if they are equal
+   */
   @Override
   public boolean equals(Object o)
   {

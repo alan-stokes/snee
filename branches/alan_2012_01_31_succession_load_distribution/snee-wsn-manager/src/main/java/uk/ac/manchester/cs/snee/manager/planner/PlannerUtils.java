@@ -6,7 +6,9 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -17,6 +19,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.DAFUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.planner.common.Successor;
 import uk.ac.manchester.cs.snee.manager.planner.common.SuccessorUtils;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -86,9 +89,41 @@ public class PlannerUtils
        new DAFUtils(successor.getQep().getDAF()).exportAsDotFile(successorFolder.toString() + sep + "daf");
        new IOTUtils(successor.getQep().getIOT(), null).exportAsDotFileWithFrags(successorFolder.toString() + sep + "iot", "", true);
        new AgendaUtils(successor.getQep().getAgenda(), false).exportAsLatex(successorFolder.toString() + sep + "agenda");
+       networkEnergyReport(successor, successorFolder);
        successorCount ++;
      }
    }
+
+  /**
+   * ouputs the energies left by the network once the qep has failed
+   * @param successor
+   */
+  private void networkEnergyReport(Successor successor, File successorFolder)
+  {
+    try 
+    {
+      final PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(successorFolder.toString() + sep + "energyReport")));
+      HashMap<String, RunTimeSite> runtimeSites = successor.getTheRunTimeSites();
+      Integer agendas = successor.getBasicLifetimeInAgendas();
+      Iterator<String> keys = runtimeSites.keySet().iterator();
+      while(keys.hasNext())
+      {
+        String key = keys.next();
+        RunTimeSite site = runtimeSites.get(key);
+        Double cost = site.getQepExecutionCost() * agendas;
+        Double leftOverEnergy = site.getCurrentEnergy() - cost;
+        out.println("Node " + key + " has residual energy " + 
+                    leftOverEnergy + " and had energy of " + site.getCurrentEnergy() + 
+                    " and qep Cost of " + site.getQepExecutionCost()) ; 
+      }
+      out.flush();
+      out.close();
+    }
+    catch(Exception e)
+    {
+      System.out.println("couldnt write the energy report");
+    }
+  }
 
   private void outputdotFile(ArrayList<Successor> successorRelation, File objectFolder) 
   throws SNEEConfigurationException, SchemaMetadataException

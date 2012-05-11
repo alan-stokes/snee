@@ -40,7 +40,6 @@ public class TabuSearch extends AutonomicManagerComponent
   private NeighbourhoodGenerator generator;
   private TABUSearchUtils Utils;
   private HashMap<String, RunTimeSite> initalSitesEnergy;
-	private int numberOfIterationsWithoutImprovement = 2;
 	private int currentNumberOfIterationsWithoutImprovement = 0;
 	private SourceMetadataAbstract _metadata;
 	private MetadataManager _metaManager;
@@ -98,13 +97,16 @@ public class TabuSearch extends AutonomicManagerComponent
     currentPath = new SuccessorPath(initialList);
     bestPath = new SuccessorPath(initialList);
     currentBestSuccessor = InitialSuccessor;
+    ArrayList<Successor> neighbourHood = new ArrayList<Successor>();
     try{
     int iteration = 0;
     int iterationsFailedAtInitial = 0;
     
-    while(!StoppingCriteria.satisifiesStoppingCriteria(iteration, iterationsFailedAtInitial))
+    while(!StoppingCriteria.satisifiesStoppingCriteria(iteration, iterationsFailedAtInitial, 
+                                                       this.bestPath.successorLength(), 
+                                                       neighbourHood.size()))
     {
-      ArrayList<Successor> neighbourHood = 
+        neighbourHood = 
         generator.generateNeighbourHood(currentBestSuccessor, currentPath.successorLength() -1, iteration);
       
       Successor bestNeighbourHoodSuccessor = locateBestSuccessor(neighbourHood, iteration);
@@ -140,7 +142,7 @@ public class TabuSearch extends AutonomicManagerComponent
   {
     currentNumberOfIterationsWithoutImprovement++;
     Utils.writeNoSuccessor(iteration);
-    if(currentNumberOfIterationsWithoutImprovement >= numberOfIterationsWithoutImprovement)
+    if(currentNumberOfIterationsWithoutImprovement >= allowance(currentPath.successorLength()))
     {
       if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
       {
@@ -152,6 +154,14 @@ public class TabuSearch extends AutonomicManagerComponent
       //reset counter
       currentNumberOfIterationsWithoutImprovement = 0;
     }
+  }
+
+  private int allowance(int successorLength)
+  {
+    if(successorLength < 2)
+      return 2;
+    else
+      return successorLength;
   }
 
   private void checkNewSuccessor(Successor bestNeighbourHoodSuccessor,
@@ -178,7 +188,7 @@ public class TabuSearch extends AutonomicManagerComponent
       Utils.writeFailedSuccessor(bestNeighbourHoodSuccessor, iteration,currentBestSuccessor , currentPath);
       TABUList.addToTABUList(bestNeighbourHoodSuccessor, currentPath.successorLength() -1, false);
       currentNumberOfIterationsWithoutImprovement++;
-      if(currentNumberOfIterationsWithoutImprovement >= numberOfIterationsWithoutImprovement)
+      if(currentNumberOfIterationsWithoutImprovement >= allowance(currentPath.successorLength()))
       {
         if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
         {
@@ -227,11 +237,8 @@ public class TabuSearch extends AutonomicManagerComponent
     System.out.println("assessing successor " + successor.toString());
     try
     {
-      System.out.println("W");
       assessAdaptation.assessChoice(adapt, successor.getTheRunTimeSites(), false);
-      System.out.println("E");
       successor.substractAdaptationCostOffRunTimeSites(adapt);
-      System.out.println("WE");
       return successor.getLifetimeInAgendas();
     }
     catch(Exception e)
