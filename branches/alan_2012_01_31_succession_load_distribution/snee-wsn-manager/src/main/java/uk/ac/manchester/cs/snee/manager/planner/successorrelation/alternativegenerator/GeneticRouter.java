@@ -237,7 +237,7 @@ public class GeneticRouter extends AutonomicManagerComponent
     ArrayList<Genome> order = new ArrayList<Genome>(makesTrees);
     order.addAll(failesToMakeTrees);
     Iterator<Genome> orderedGenomes = order.iterator();
-    Random random = new Random();
+    Random random = new Random(new Long(0));
     while(newPop.size() < populationSize)
     {
       Genome first = null;
@@ -268,7 +268,7 @@ public class GeneticRouter extends AutonomicManagerComponent
   {
     ArrayList<Genome> population = new ArrayList<Genome>();
     Iterator<RT> rtIterator = candidateRoutes.iterator();
-    Random randomNumberGenerator = new Random();
+    Random randomNumberGenerator = new Random(new Long(0));
     while(rtIterator.hasNext() && population.size() < populationSize)
     {
       RT currentRT = rtIterator.next();

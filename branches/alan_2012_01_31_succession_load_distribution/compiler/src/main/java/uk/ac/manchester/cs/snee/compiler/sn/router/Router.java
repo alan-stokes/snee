@@ -13,12 +13,14 @@ import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.LinkCostMetric;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyUtils;
 
 public class Router {
 
@@ -64,6 +66,7 @@ public class Router {
 		SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) 
 			paf.getDLAF().getSources().iterator().next();
 		Topology network = sm.getTopology();
+		outputTopology(network, queryName);
 		int sink = sm.getGateway(); 
 		int[] sources = sm.getSourceSites(paf);
 		this.paf = paf;
@@ -75,6 +78,27 @@ public class Router {
 	}
 	
 	/**
+	 * used to output the topology to the output folder
+	 * @param network
+	 */
+	private void outputTopology(Topology network, String queryName)
+  {
+	  try
+    {
+      String sep = System.getProperty("file.separator");
+	    String generalOutputFolder = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR);
+      String queryid = queryName + sep + "query-plan";
+      String outputFolder = generalOutputFolder + sep + queryid;
+      new TopologyUtils(network).exportAsDOTFile(outputFolder + sep + "defaultTopology", true);
+    }
+    catch (Exception e)
+    {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
+
+  /**
 	 * used by the global and partial frameworks for partial optimisation
 	 * @param paf
 	 * @param queryName

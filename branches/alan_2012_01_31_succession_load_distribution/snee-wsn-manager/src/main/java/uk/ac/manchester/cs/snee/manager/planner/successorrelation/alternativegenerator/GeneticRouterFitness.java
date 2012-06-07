@@ -14,7 +14,6 @@ import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostParameters;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
-//import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceWhereSchedular;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;

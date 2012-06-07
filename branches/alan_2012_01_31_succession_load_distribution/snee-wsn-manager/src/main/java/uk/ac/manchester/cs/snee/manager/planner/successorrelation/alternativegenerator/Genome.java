@@ -62,7 +62,7 @@ public class Genome
     */
    public static ArrayList<Genome> mergeGenomes(Genome first, Genome second, Genome master, int successorLifetime)
    {
-     Random randomNumberGenerator = new Random();
+     Random randomNumberGenerator = new Random(new Long(0));
      int randomNumber = randomNumberGenerator.nextInt(100);
      if(randomNumber <= mutationPercentage)
        mutate(first);
@@ -136,7 +136,7 @@ public class Genome
    */
   private static void mutate(Genome clean)
   {
-    Random randomGeneGenerator = new Random();
+    Random randomGeneGenerator = new Random(new Long(0));
     int gene = randomGeneGenerator.nextInt(clean.getSize());
     Boolean value = clean.geneValue(gene);
     clean.replaceGene(gene, !value);
@@ -149,7 +149,7 @@ public class Genome
    */
   public static void mutateTime(Genome clean, int successorLifetime)
   {
-    Random randomGeneGenerator = new Random();
+    Random randomGeneGenerator = new Random(new Long(0));
     clean.timePeriod = randomGeneGenerator.nextInt(successorLifetime);
   }
   

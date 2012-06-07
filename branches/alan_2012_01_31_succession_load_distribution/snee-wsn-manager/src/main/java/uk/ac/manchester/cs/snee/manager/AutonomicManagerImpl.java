@@ -125,7 +125,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     if(successor)
     {
       planner.updateStorageLocation(outputFolder);
-      planner.determimeCheaperPaths(26, 0, this.getWsnTopology(), 233);
+     // planner.determimeCheaperPaths(26, 0, this.getWsnTopology(), 233);
       planner.startSuccessorRelation((SensorNetworkQueryPlan) qep);
     }
   }

@@ -227,7 +227,7 @@ public class TABUList
   { 
     //update TABUList
     int length = currentPath.successorLength() -1;
-    Random random = new Random();
+    Random random = new Random(new Long(0));
     //int positionToMoveTo = length -1;
     int positionToMoveTo = 0;
     if(length == 0)
