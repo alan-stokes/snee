@@ -125,6 +125,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     if(successor)
     {
       planner.updateStorageLocation(outputFolder);
+      planner.determimeCheaperPaths(26, 0, this.getWsnTopology(), 233);
       planner.startSuccessorRelation((SensorNetworkQueryPlan) qep);
     }
   }
@@ -352,7 +353,6 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     storeRunTimeSiteEnergy();
   }
 
-
   private void storeRunTimeSiteEnergy()
   {
     
@@ -364,7 +364,6 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   {
     anyliser.anaylsisSNEECard(sneeTuplesPerEpoch);
   }
-  
 
   @Override
   public void callAnaysliserAnaylsisSNEECard()

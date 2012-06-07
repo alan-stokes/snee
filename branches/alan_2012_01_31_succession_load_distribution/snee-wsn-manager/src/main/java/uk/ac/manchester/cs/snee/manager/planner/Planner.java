@@ -11,6 +11,7 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -26,6 +27,9 @@ import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public class Planner extends AutonomicManagerComponent
@@ -321,6 +325,81 @@ public class Planner extends AutonomicManagerComponent
   {
     SuccessorRelation successorRelation = new SuccessorRelation(plannerFolder, runningSites, _metadataManager, _metadata, manager);
     successorRelation.executeSuccessorRelation(qep);
+  }
+
+  
+  /**
+   * HACK to determine how well the router is doing to locate different paths 
+   * (requires input in the autonomic manager and is only used as a backwards calculator)
+   * @param source
+   * @param destination
+   * @param wsnTopology
+   * @param maxCost
+   */
+  public void determimeCheaperPaths(int source, int destination, 
+                                    Topology wsnTopology, int maxCost)
+  {
+    Node sourceNode = wsnTopology.getNode(source);
+    Iterator<Node> inputIterator = sourceNode.getInputsList().iterator();
+    while(inputIterator.hasNext())
+    {
+      Node input = inputIterator.next();
+      if(Integer.parseInt(input.getID()) == destination && 
+         wsnTopology.getLinkEnergyCost((Site)sourceNode, (Site)input) < maxCost)
+      {
+        System.out.println(source + " -" + 
+            wsnTopology.getLinkEnergyCost((Site)sourceNode, (Site)input) +
+            "> " + input + "(" + (wsnTopology.getLinkEnergyCost((Site)sourceNode, (Site)input) - maxCost) + ")");
+      }
+      else if (wsnTopology.getLinkEnergyCost((Site)sourceNode, (Site)input) < maxCost)
+      {
+        Path path = new Path();
+        path.append((Site) input);
+        locateMorePaths(input, destination, path, wsnTopology, 
+                        maxCost - wsnTopology.getLinkEnergyCost((Site)sourceNode, (Site)input));
+      }
+    }
+    
+  }
+
+  /**
+   * recursive algorthium
+   * @param sourceNode
+   * @param destination
+   * @param path
+   * @param wsnTopology
+   * @param maxCost
+   */
+  private void locateMorePaths(Node sourceNode, int destination, Path path,
+      Topology wsnTopology, double maxCost)
+  {
+    Iterator<Node> inputIterator = sourceNode.getInputsList().iterator();
+    while(inputIterator.hasNext())
+    {
+      Node input = inputIterator.next();
+      if(Integer.parseInt(input.getID()) == destination && 
+         wsnTopology.getLinkEnergyCost((Site)sourceNode, (Site)input) < maxCost)
+      {
+        Iterator<Site> pathIterator = path.iterator();
+        Site source = pathIterator.next();
+        while(pathIterator.hasNext())
+        {
+          Site dest = pathIterator.next();
+          System.out.print(source + " -" + 
+              wsnTopology.getLinkEnergyCost((Site)sourceNode, (Site)dest) +
+              "> " + dest + "(" + (wsnTopology.getLinkEnergyCost((Site)sourceNode, (Site)dest) - maxCost) + ")" + " -> ");
+          source  = dest;
+          System.out.print("\n");
+        }
+      }
+      else if (wsnTopology.getLinkEnergyCost((Site)sourceNode, (Site)input) < maxCost)
+      {
+        path.append((Site) input);
+        locateMorePaths(input, destination, path, wsnTopology, 
+                        maxCost - wsnTopology.getLinkEnergyCost((Site)sourceNode, (Site)input));
+      }
+    }
+    
   }
   
 }
