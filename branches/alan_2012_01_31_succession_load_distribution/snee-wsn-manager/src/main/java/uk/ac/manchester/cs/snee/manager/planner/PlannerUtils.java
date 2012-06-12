@@ -59,11 +59,11 @@ public class PlannerUtils
      this.manager = manager;
    }
    
-   public void writeSuccessorToFile(ArrayList<Successor> successorRelation) 
+   public void writeSuccessorToFile(ArrayList<Successor> successorRelation, String name) 
    throws SNEEConfigurationException, SchemaMetadataException
    {
      int successorCount = 1;
-     File finalSolution = new File(plannerOutputFolder.toString() + sep + "finalSolution");
+     File finalSolution = new File(plannerOutputFolder.toString() + sep + name);
      if(finalSolution.exists())
      {
        manager.deleteFileContents(finalSolution);

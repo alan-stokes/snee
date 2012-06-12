@@ -77,7 +77,7 @@ public class ChoiceAssessor implements Serializable
   /**
    * checks all constraints to executing the changes and locates the best choice 
    * @param choices
- * @param runningSites 
+   * @param runningSites 
    * @return
    * @throws IOException
    * @throws OptimizationException
@@ -228,6 +228,8 @@ public class ChoiceAssessor implements Serializable
     AssessmentFolder.mkdir();
     imageGenerationFolder = new File(AssessmentFolder.toString() + sep + "Adaptations");
     imageGenerationFolder.mkdir();
+    timeModel = new TimeModel(imageGenerator);
+    energyModel = new EnergyModel(imageGenerator);
     System.out.println("updating sites");
     this.runningSites = runningSites;
     System.out.println("reset sites");
@@ -235,6 +237,8 @@ public class ChoiceAssessor implements Serializable
     System.out.println("adapt = original");
     Adaptation adapt = orginal;
     System.out.println("tmodel initilise");
+    if(timeModel == null)
+      System.out.println();
     timeModel.initilise(imageGenerationFolder, _metadataManager, true);
     System.out.println("emnodel initilise");
     energyModel.initilise(imageGenerationFolder, _metadataManager, runningSites, true);

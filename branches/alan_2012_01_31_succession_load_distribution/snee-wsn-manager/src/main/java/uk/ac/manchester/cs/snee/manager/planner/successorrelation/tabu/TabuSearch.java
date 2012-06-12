@@ -135,6 +135,87 @@ public class TabuSearch extends AutonomicManagerComponent
       return null;
     }
   }
+  
+  /**
+   * searches the search space looking for the best path from initial to final plan
+   * @param initialPoint
+   * @return
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
+   * @throws CodeGenerationException 
+   * @throws IOException 
+   * @throws WhenSchedulerException 
+   * @throws SNEEException 
+   * @throws SNEEConfigurationException 
+   * @throws NumberFormatException 
+   */
+  public SuccessorPath findSuccessorsPath(SuccessorPath initialPath)
+  throws OptimizationException, SchemaMetadataException, TypeMappingException,
+  IOException, CodeGenerationException,
+  NumberFormatException, SNEEConfigurationException,
+  SNEEException, WhenSchedulerException
+  {
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    SuccessorPath original = cloner.deepClone(initialPath);
+    
+    SuccessorPath currentPath = initialPath;
+    initalSitesEnergy = initialPath.getSuccessorList().get(initialPath.successorLength() -1).getCopyOfRunTimeSites();
+    InitialSuccessor = initialPath.getSuccessorList().get(initialPath.successorLength() -1);
+    
+    //add each successor to the tabuList
+    ArrayList<Successor> successors = initialPath.getSuccessorList();
+    for(int TABUpositionIndex = 1; TABUpositionIndex < initialPath.successorLength(); TABUpositionIndex++)
+    {
+      for(int successionIndex = 0; successionIndex < TABUpositionIndex;successionIndex ++)
+      {
+        TABUList.addToTABUList(successors.get(successionIndex), TABUpositionIndex, false);
+      }
+    }
+    TABUList.addToTABUList(successors.get(0), 0, true);
+    ArrayList<Successor> initialList = new ArrayList<Successor>();
+    initialList.add(InitialSuccessor);
+    bestPath = original;
+    currentBestSuccessor = InitialSuccessor;
+    ArrayList<Successor> neighbourHood = new ArrayList<Successor>();
+    try{
+    int iteration = 0;
+    int iterationsFailedAtInitial = 0;
+    
+    while(!StoppingCriteria.satisifiesStoppingCriteria(iteration, iterationsFailedAtInitial, 
+                                                       this.bestPath.successorLength(), 
+                                                       neighbourHood.size()))
+    {
+        neighbourHood = 
+        generator.generateNeighbourHood(currentBestSuccessor, currentPath.successorLength() -1, iteration);
+      
+      Successor bestNeighbourHoodSuccessor = locateBestSuccessor(neighbourHood, iteration);
+      if(bestNeighbourHoodSuccessor != null)
+      {
+        iterationsFailedAtInitial = 0;
+        checkNewSuccessor(bestNeighbourHoodSuccessor, iteration, currentPath, neighbourHood);
+      }
+      else
+      {
+        if(currentPath.successorLength() -1 == 0)
+        {
+          iterationsFailedAtInitial ++;
+        }
+        possibleDiversitySetoff(currentPath, iteration, neighbourHood);
+      }
+      Utils.outputTABUList(iteration, TABUList);
+      iteration++;
+    }
+    Utils.close();
+    return bestPath;
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+      return null;
+    }
+  }
 
   private void possibleDiversitySetoff(SuccessorPath currentPath, int iteration,
                                        ArrayList<Successor> neighbourHood)

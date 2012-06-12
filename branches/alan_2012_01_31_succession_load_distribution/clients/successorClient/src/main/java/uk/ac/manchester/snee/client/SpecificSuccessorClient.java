@@ -32,7 +32,7 @@ public class SpecificSuccessorClient extends SNEEClient
   private static String sep = System.getProperty("file.separator");
   private static int queryid = 1;
   protected static int testNo = 1;
-  private static File sneetestFolder =  new File("sniperRealWSN");
+  private static File sneetestFolder =  new File("testsNatural");
   
   //private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;
 
@@ -78,8 +78,9 @@ public class SpecificSuccessorClient extends SNEEClient
   throws IOException 
   {
     //get query & schemas
-    String currentQuery = "SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x;";
-    String propertiesPath = sneetestFolder.toString() + sep + "snee1.properties";
+    //String currentQuery = "SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x;";
+    String currentQuery = "SELECT * FROM A[now];";
+    String propertiesPath = sneetestFolder.toString() + sep + "snee2.properties";
     
     System.out.println("Running Tests on query " + (queryid));
     try
@@ -122,7 +123,7 @@ public class SpecificSuccessorClient extends SNEEClient
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS, "FALSE");
     
-    control.addQuery(_query, _queryParams);
+    control.addQuery(_query, _queryParams,1, true, false, true);
     controller.close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");

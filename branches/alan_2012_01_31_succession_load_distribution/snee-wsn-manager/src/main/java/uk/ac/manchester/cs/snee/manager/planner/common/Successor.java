@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.planner.common;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
@@ -16,8 +17,14 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
-public class Successor implements Comparable<Successor>
+public class Successor implements Comparable<Successor>, Serializable
 {
+  /**
+   * serialVersionUID
+   */
+  private static final long serialVersionUID = -1413775377251844130L;
+  
+  
   protected SensorNetworkQueryPlan qep;
   protected Integer agendaCount;
   protected Integer previousAgendaCount = 0;
@@ -32,8 +39,8 @@ public class Successor implements Comparable<Successor>
     this.setAgendaCount(agendaCount); 
     this.setNewRunTimeSites(RunTimeSites);
     this.previousAgendaCount = prevAgendaCount;
-    this.subtractWaitingSiteEnergyCosts();
     this.updateSitesRunningCosts();
+    this.subtractWaitingSiteEnergyCosts();
   }
   
   public Successor(Integer agendaCount, Integer prevAgendaCount)
@@ -67,7 +74,8 @@ public class Successor implements Comparable<Successor>
     return getNewRunTimeSites();
   }
 
-  public void setQep(SensorNetworkQueryPlan qep)
+  public void setQep(SensorNetworkQueryPlan qep) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException
   {
     this.qep = qep;
   }
@@ -199,5 +207,15 @@ public class Successor implements Comparable<Successor>
   public QoSExpectations getQoS()
   {
     return this.qep.getQos();
+  }
+
+  public HashMap<String, RunTimeSite> recalculateRunningSitesCosts(
+                                     HashMap<String, RunTimeSite> runningSites)
+  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  {
+    this.newRunTimeSites = runningSites;
+    this.updateSitesRunningCosts();
+    this.subtractWaitingSiteEnergyCosts();
+    return newRunTimeSites;
   }
 }
