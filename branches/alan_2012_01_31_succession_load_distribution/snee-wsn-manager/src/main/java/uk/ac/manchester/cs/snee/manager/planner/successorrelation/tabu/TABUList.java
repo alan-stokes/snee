@@ -161,7 +161,7 @@ public class TABUList
       return tabued.getTimesTABUed();
     }
     else
-      return null;
+      return new ArrayList<Integer>();
   }
   
   /**

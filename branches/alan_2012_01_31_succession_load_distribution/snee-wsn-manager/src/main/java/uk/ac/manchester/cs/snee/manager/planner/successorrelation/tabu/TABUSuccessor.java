@@ -14,7 +14,7 @@ public class TABUSuccessor extends Successor
 {
   private boolean entirelyTABUed;
   private ArrayList<Integer> timesTABUed = new ArrayList<Integer>();
-  private static final int maxiumumTimesLookedAt = 8;
+  private static final int maxiumumTimesLookedAt = 32;
   
   
   public TABUSuccessor(SensorNetworkQueryPlan qep, HashMap<String, RunTimeSite> newRunTimeSites,

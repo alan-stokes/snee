@@ -68,19 +68,19 @@ public class SuccessorRelation extends AutonomicManagerComponent
       }
       //search though space
         search = new TabuSearch(manager, runningSites, _metadata, _metadataManager, TABUFolder);
-     // SuccessorPath bestSuccessorRelation = search.findSuccessorsPath(initialPoint);
-     // new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
+        SuccessorPath bestSuccessorRelation = search.findSuccessorsPath(initialPoint);
+        new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
       
      // writeSuccessorPathToFile(bestSuccessorRelation);
-      SuccessorPath bestSuccessorRelation = readInSuccessor();
-      
+   //   SuccessorPath bestSuccessorRelation = readInSuccessor();
+      //new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
+     
       //added code to see how well tuned the plan is without recomputing
-      // SuccessorPath twiddleBestSuccessorRelation = TimeTwiddler.adjustTimesTest(bestSuccessorRelation, runningSites, false, search);      
+     //  SuccessorPath twiddleBestSuccessorRelation = TimeTwiddler.adjustTimesTest(bestSuccessorRelation, runningSites, false, search);      
       //new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(twiddleBestSuccessorRelation.getSuccessorList(), "finalTwiddleSolution");
-      
       //added code to see how well tuned successor is by adjusting and then running entire system
-      SuccessorPath twiddleBestSuccessorRelation = TimeTwiddler.adjustTimesTest(bestSuccessorRelation, runningSites, true, search);      
-      new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(twiddleBestSuccessorRelation.getSuccessorList(), "finalTwiddleSolutionWithRecompute");
+   //   SuccessorPath twiddleBestSuccessorRelation = TimeTwiddler.adjustTimesTest(bestSuccessorRelation, runningSites, true, search);      
+     // new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(twiddleBestSuccessorRelation.getSuccessorList(), "finalTwiddleSolutionWithRecompute");
       
       return bestSuccessorRelation;
     }

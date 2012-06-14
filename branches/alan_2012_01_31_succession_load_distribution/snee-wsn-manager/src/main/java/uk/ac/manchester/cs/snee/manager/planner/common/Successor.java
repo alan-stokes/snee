@@ -85,7 +85,7 @@ public class Successor implements Comparable<Successor>, Serializable
     return qep;
   }
 
-  protected void setAgendaCount(Integer agendaCount)
+  public void setAgendaCount(Integer agendaCount)
   {
     this.agendaCount = agendaCount;
   }
@@ -216,6 +216,6 @@ public class Successor implements Comparable<Successor>, Serializable
     this.newRunTimeSites = runningSites;
     this.updateSitesRunningCosts();
     this.subtractWaitingSiteEnergyCosts();
-    return newRunTimeSites;
+    return this.getCopyOfRunTimeSites();
   }
 }

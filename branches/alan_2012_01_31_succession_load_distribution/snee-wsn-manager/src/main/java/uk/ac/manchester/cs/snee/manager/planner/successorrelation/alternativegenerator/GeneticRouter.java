@@ -39,6 +39,7 @@ public class GeneticRouter extends AutonomicManagerComponent
   private int position;
   private int consecutiveTimesWithoutNewSolutions = 0;
   private static final int AllowedNumberOfIterationsWithoutNewSolution = 4;
+  private GenomeTimeBitMap mapping = null;
   
 
   public GeneticRouter(SourceMetadataAbstract _metadata, Topology top, 
@@ -53,7 +54,7 @@ public class GeneticRouter extends AutonomicManagerComponent
     network = top;
     int sink = sm.getGateway(); 
     int[] sources = sm.getSourceSites(paf);
-    requiredSites = new Genome(sink, sources, network.getNodes().size(), 0);
+    requiredSites = new Genome(sink, sources, network.getNodes().size(), mapping, 0);
     nodeIds.addAll(network.getAllNodes().keySet());
     Collections.sort(nodeIds);
     
@@ -65,6 +66,7 @@ public class GeneticRouter extends AutonomicManagerComponent
   OptimizationException, CodeGenerationException
   {
     fitness = new GeneticRouterFitness(qep, geneicFolder , metamanager, network, nodeIds, _metadata, true);
+    mapping = new GenomeTimeBitMap(qep.getLifetimeInAgendas());
     ArrayList<Genome> initalPopulation = generateInitialPopulation(candidateRoutes, qep);
     int currentIteration = 0;
     ArrayList<Genome> currentPopulation = initalPopulation;
@@ -73,12 +75,9 @@ public class GeneticRouter extends AutonomicManagerComponent
     {
       File iterationFolder = new File(geneicFolder.toString() + sep + "iteration" + currentIteration);
       iterationFolder.mkdir();
-      System.out.println("repop");
       currentPopulation = repopulate(currentPopulation, qep);
-      System.out.println("locate");
       locateAlternatives(currentPopulation, iterationFolder, qep);
       currentIteration++;
-      System.out.println("Now starting genetic router iteration " + currentIteration);
     }
     
     collectSolutions();
@@ -142,7 +141,9 @@ public class GeneticRouter extends AutonomicManagerComponent
       {
         if(!tabuList.isEntirelyTABU(popPhenome.getSuccessor().getQep(), position))
         {
-          if(!alreadyContainsRT(popPhenome.getRt()))
+          ArrayList<Boolean> results = alreadyContainsRTAndTime(popPhenome);
+          //if we dont already contain the rt in the elite collection
+          if(!results.get(0))
           {
             if(elitePhenomes.size() == populationSize)
             {
@@ -162,6 +163,21 @@ public class GeneticRouter extends AutonomicManagerComponent
               //Collections.sort(elitePhenomes);
             }
           }
+          else
+          {
+            if(!results.get(1))
+            {
+              if(!tabuList.getTABUTimes(popPhenome.getSuccessor().getQep(), position)
+                  .contains(popPhenome.getGenomeTime()))
+              {
+                double eliteFitness = popPhenome.elitefitness();
+                if(elitePhenomes.get(elitePhenomes.size()-1).elitefitness() > eliteFitness)
+                {
+                  updateElitePhenomeTime(popPhenome.getGenomeMappingValue(), popPhenome);
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -172,6 +188,26 @@ public class GeneticRouter extends AutonomicManagerComponent
     else
     {
       consecutiveTimesWithoutNewSolutions = 0;
+    }
+  }
+
+  /**
+   * updates a elite QEp with a better time switch
+   * @param genomeMappingValue
+   */
+  private void updateElitePhenomeTime(Integer genomeMappingValue, Phenome popPhenome)
+  {
+    ArrayList<Boolean> results = new ArrayList<Boolean>(2);
+    RT rt = popPhenome.getRt();
+    Iterator<Phenome> eliteGenomeIterator = this.elitePhenomes.iterator();
+    while(eliteGenomeIterator.hasNext())
+    {
+      Phenome elitePhenome = eliteGenomeIterator.next();
+      RT eliteRT = elitePhenome.getRt();
+      if(RT.equals(eliteRT, rt))
+      {
+        elitePhenome.setGenomeMappingValue(genomeMappingValue);
+      }
     }
   }
 
@@ -200,17 +236,28 @@ public class GeneticRouter extends AutonomicManagerComponent
    * @param rt
    * @return
    */
-  private boolean alreadyContainsRT(RT rt)
+  private ArrayList<Boolean> alreadyContainsRTAndTime(Phenome pop)
   {
+    ArrayList<Boolean> results = new ArrayList<Boolean>(2);
+    RT rt = pop.getRt();
     Iterator<Phenome> eliteGenomeIterator = this.elitePhenomes.iterator();
     while(eliteGenomeIterator.hasNext())
     {
       Phenome elitePhenome = eliteGenomeIterator.next();
       RT eliteRT = elitePhenome.getRt();
       if(RT.equals(eliteRT, rt))
-        return true;
+      {
+        results.add(true);
+        if(pop.getGenomeTime() == elitePhenome.getGenomeTime())
+          results.add(true);
+        else
+          results.add(false);
+        return results;
+      }
     }
-    return false;
+    results.add(false);
+    results.add(false);
+    return results;
   }
 
   /**
@@ -268,7 +315,7 @@ public class GeneticRouter extends AutonomicManagerComponent
   {
     ArrayList<Genome> population = new ArrayList<Genome>();
     Iterator<RT> rtIterator = candidateRoutes.iterator();
-    Random randomNumberGenerator = new Random(new Long(0));
+    Random randomNumberGenerator = new Random(new Long(1));
     while(rtIterator.hasNext() && population.size() < populationSize)
     {
       RT currentRT = rtIterator.next();
@@ -285,8 +332,8 @@ public class GeneticRouter extends AutonomicManagerComponent
             currentDNA.add(false);
         }   
       }
-      int agendaTime = randomNumberGenerator.nextInt(qep.getLifetimeInAgendas());
-      Genome newPop = new Genome(currentDNA, agendaTime);
+      int agendaTime = randomNumberGenerator.nextInt(mapping.getMaxSegments());
+      Genome newPop = new Genome(currentDNA, mapping, agendaTime);
       this.fitness.determineFitness(newPop, qep.getLifetimeInAgendas());
       population.add(newPop);
     }
@@ -301,8 +348,8 @@ public class GeneticRouter extends AutonomicManagerComponent
         else
           currentDNA.add(false);
       }
-      int agendaTime = randomNumberGenerator.nextInt(qep.getLifetimeInAgendas());
-      Genome newPop = new Genome(currentDNA, agendaTime);
+      int agendaTime = randomNumberGenerator.nextInt(mapping.getMaxSegments());
+      Genome newPop = new Genome(currentDNA,  mapping, agendaTime);
       newPop = Genome.XorGenome(newPop, requiredSites);
       population.add(newPop);
     }

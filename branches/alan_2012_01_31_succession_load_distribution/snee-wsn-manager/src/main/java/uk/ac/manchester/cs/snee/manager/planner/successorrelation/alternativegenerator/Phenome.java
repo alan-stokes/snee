@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.manager.planner.successorrelation.alternativegenerator;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.planner.common.Successor;
 
 public class Phenome implements Comparable<Phenome>
@@ -89,4 +90,18 @@ public class Phenome implements Comparable<Phenome>
     return DNA.getTimePeriod();
   }
 
+  public Integer getGenomeMappingValue()
+  {
+    return DNA.getMappingValue();
+  }
+
+  public void setGenomeMappingValue(Integer genomeMappingValue)
+  {
+    DNA.setMappingValue(genomeMappingValue);
+  }
+  
+  public String toString()
+  {
+    return DNA.toString();
+  }
 }

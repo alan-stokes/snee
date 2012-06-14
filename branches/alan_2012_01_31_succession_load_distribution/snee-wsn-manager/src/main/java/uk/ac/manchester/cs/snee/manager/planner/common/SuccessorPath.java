@@ -101,6 +101,10 @@ public class SuccessorPath implements Serializable
     while(pathSuccessors.hasNext())
     {
       Successor currentSuccessor = pathSuccessors.next();
+  //   if(pathSuccessors.hasNext() == false)
+    //  {
+      //  System.out.println("");
+      //}
       runningSites = currentSuccessor.recalculateRunningSitesCosts(runningSites);
     }
   }

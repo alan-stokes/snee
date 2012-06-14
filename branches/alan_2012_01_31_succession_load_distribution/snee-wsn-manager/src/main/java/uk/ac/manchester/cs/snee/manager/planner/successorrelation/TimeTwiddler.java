@@ -25,6 +25,7 @@ public class TimeTwiddler
   public static int bestFoundLifetime;
   public static SuccessorPath bestPath;
   public static HashMap<String, RunTimeSite> runningSites;
+  public static Cloner cloner = new Cloner();
   /**
    * tweaks the times of the path to see how well tuned the final path is.
    * @param search 
@@ -51,7 +52,6 @@ public class TimeTwiddler
       System.out.println("starting twiddle time tests with recompution though genetics");
     else
       System.out.println("starting twiddle time tests with no recompution though genetics");
-    Cloner cloner = new Cloner();
     cloner.dontClone(Logger.class);
     
     SuccessorPath usableCopy = cloner.deepClone(original);
@@ -60,6 +60,8 @@ public class TimeTwiddler
     bestFoundLifetime = overallLifetime;
     bestPath = original;
     runningSites = originalRunningSites;
+    //clear agenda count of last successor (being not correct)
+    usableCopy.getSuccessorList().get(usableCopy.successorLength() -1).setAgendaCount(0);
     
     //iterate though successors adjusting times
     ArrayList<Successor> successors = usableCopy.getSuccessorList();
@@ -70,6 +72,7 @@ public class TimeTwiddler
     }
     
     System.out.println("finished twiddle.");
+    System.out.println("best successor time is " + bestFoundLifetime);
     return bestPath;
   }
 
@@ -92,18 +95,19 @@ public class TimeTwiddler
       if(newlifetime > bestFoundLifetime)
       {
         bestFoundLifetime = newlifetime;
-        bestPath = usableCopy;
+        bestPath = cloner.deepClone(usableCopy);
       }
       int finalPlanLifetime = 
         usableCopy.getSuccessorList().get(usableCopy.successorLength()-1).calculateLifetime();
       if(WithRecompute && finalPlanLifetime > 0)
       {
-        SuccessorPath path = search.findSuccessorsPath(usableCopy);
+        SuccessorPath path = search.findSuccessorsPath(cloner.deepClone(usableCopy));
         newlifetime = path.overallAgendaLifetime();
         if(newlifetime > bestFoundLifetime)
         {
           bestFoundLifetime = newlifetime;
-          bestPath = path;
+          bestPath = cloner.deepClone(path);
+          System.out.println("new best plan has a lifetime of " + bestFoundLifetime);
         }
       }
       adjustTimesTestRecursive(successors, successorIndex+1, usableCopy, 
@@ -119,18 +123,19 @@ public class TimeTwiddler
       if(newlifetime > bestFoundLifetime)
       {
         bestFoundLifetime = newlifetime;
-        bestPath = usableCopy;
+        bestPath = cloner.deepClone(usableCopy);
       }
       int finalPlanLifetime = 
         usableCopy.getSuccessorList().get(usableCopy.successorLength()-1).calculateLifetime();
       if(WithRecompute && finalPlanLifetime > 0)
       {
-        SuccessorPath path = search.findSuccessorsPath(usableCopy);
+        SuccessorPath path = search.findSuccessorsPath(cloner.deepClone(usableCopy));
         newlifetime = path.overallAgendaLifetime();
         if(newlifetime > bestFoundLifetime)
         {
           bestFoundLifetime = newlifetime;
-          bestPath = path;
+          bestPath = cloner.deepClone(path);
+          System.out.println("new best plan has a lifetime of " + bestFoundLifetime);
         }
       }
       adjustTimesTestRecursive(successors, successorIndex+1, usableCopy, 

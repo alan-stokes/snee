@@ -8,14 +8,16 @@ import java.util.Random;
 public class Genome 
 {
    private ArrayList<Boolean> DNA;
-   private int timePeriod = 0;
+   private GenomeTimeBitMap timingMapping = null;
+   private int mappingValue = 0;
    private final static int crossoverPercentage = 90;
    private final static int mutationPercentage = 2;
    private final static int timeMutationPercentage = 50;
    private double fitness;
+   private static Random randomGeneGenerator = new Random(new Long(0));
   
    //set of constructors
-   public Genome(int sink, int [] sources, int NumberOfSites, int time)
+   public Genome(int sink, int [] sources, int NumberOfSites, GenomeTimeBitMap mapping, int mapValue)
    {
      DNA = new ArrayList<Boolean>(NumberOfSites);
      fillDNA(NumberOfSites);
@@ -24,24 +26,15 @@ public class Genome
      {
        DNA.set(sources[index], true);
      }
-     this.timePeriod = time;
+     this.timingMapping = mapping;
+     this.mappingValue = mapValue;
    }
 
-  public Genome(ArrayList<Boolean> DNA, int time)
+  public Genome(ArrayList<Boolean> DNA, GenomeTimeBitMap mapping, int mapValue)
   {
      this.DNA = DNA;
-     this.timePeriod = time;
-  }
-   
-  public Genome(ArrayList<Integer> activeSites, int NumberOfSites, int time)
-  {
-    DNA = new ArrayList<Boolean>(NumberOfSites);
-    Iterator<Integer> indexIterator = activeSites.iterator();
-    while(indexIterator.hasNext())
-    {
-      Integer index = indexIterator.next();
-       DNA.set(index, true);
-    }
+     this.timingMapping = mapping;
+     this.mappingValue = mapValue;
   }
    
    //helper constructor method
@@ -90,12 +83,12 @@ public class Genome
      ArrayList<Boolean> firstChild = new ArrayList<Boolean>(size);
      firstChild.addAll(firstSectionFirstChild);
      firstChild.addAll(secondSectionFirstChild);
-     Genome firstChildGenome = new Genome(firstChild, first.timePeriod);
+     Genome firstChildGenome = new Genome(firstChild, first.getBitMapping(), first.getMappingValue());
      //second child
      ArrayList<Boolean> secondChild = new ArrayList<Boolean>(size);
      secondChild.addAll(firstSectionSecondChild);
      secondChild.addAll(secondSectionSecondChild);
-     Genome secondChildGenome = new Genome(secondChild, second.timePeriod);
+     Genome secondChildGenome = new Genome(secondChild, second.getBitMapping(), second.getMappingValue());
      //add to array, and return
      ArrayList<Genome> children = new ArrayList<Genome>();
      firstChildGenome = Genome.XorGenome(firstChildGenome, master);
@@ -127,7 +120,7 @@ public class Genome
       else
         newDNA.add(false);
     }
-    return new Genome(newDNA, first.timePeriod);
+    return new Genome(newDNA, first.getBitMapping(), first.mappingValue);
   }
 
   /**
@@ -136,7 +129,6 @@ public class Genome
    */
   private static void mutate(Genome clean)
   {
-    Random randomGeneGenerator = new Random(new Long(0));
     int gene = randomGeneGenerator.nextInt(clean.getSize());
     Boolean value = clean.geneValue(gene);
     clean.replaceGene(gene, !value);
@@ -149,10 +141,27 @@ public class Genome
    */
   public static void mutateTime(Genome clean, int successorLifetime)
   {
-    Random randomGeneGenerator = new Random(new Long(0));
-    clean.timePeriod = randomGeneGenerator.nextInt(successorLifetime);
+    clean.setTimeMap(randomGeneGenerator.nextInt(clean.getBitMapping().getMaxSegments()));
   }
   
+  /**
+   * sets the mapping value
+   * @param nextInt
+   */
+  private void setTimeMap(int mapping)
+  {
+    this.mappingValue = mapping;
+  }
+  
+  /**
+   * returns the genomes mapping value for the bit map
+   * @return
+   */
+  public int getMappingValue()
+  {
+    return this.mappingValue;
+  }
+
   /**
    * gene iterator
    * @return
@@ -231,7 +240,24 @@ public class Genome
    */
   public int getTimePeriod()
   {
-    return this.timePeriod;
+    return this.timingMapping.getTime(mappingValue);
+  }
+  
+  /**
+   * returns the mapping for times
+   * @return
+   */
+  public GenomeTimeBitMap getBitMapping()
+  {
+    return this.timingMapping;
+  }
+  
+  /**
+   * changes the mapping value of the genome
+   */
+  public void setMappingValue(Integer genomeMappingValue)
+  {
+    this.mappingValue = genomeMappingValue; 
   }
   
   /**
@@ -258,5 +284,21 @@ public class Genome
     }
     else
       return false;
+  }
+  
+  public String toString()
+  {
+    String form = "";
+    Iterator<Boolean> dnaIterator = this.DNA.iterator();
+    while(dnaIterator.hasNext())
+    {
+      boolean active = dnaIterator.next();
+      if(active)
+        form = form.concat("1 ");
+      else
+        form = form.concat("0 ");
+    }
+    form = form.concat(new Integer(this.mappingValue).toString());
+    return form;
   }
 }
