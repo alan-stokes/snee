@@ -1,7 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.planner.successorrelation.alternativegenerator;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
-import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.planner.common.Successor;
 
 public class Phenome implements Comparable<Phenome>

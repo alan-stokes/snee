@@ -1,8 +1,10 @@
 package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
@@ -26,9 +28,11 @@ public class TimeTwiddler
   public static SuccessorPath bestPath;
   public static HashMap<String, RunTimeSite> runningSites;
   public static Cloner cloner = new Cloner();
+  public static BufferedWriter out;
   /**
    * tweaks the times of the path to see how well tuned the final path is.
    * @param search 
+   * @param out 
    * @param runningSites 
    * @param bestSuccessorRelation
    * @throws TypeMappingException 
@@ -43,7 +47,8 @@ public class TimeTwiddler
    */
   public static SuccessorPath adjustTimesTest(SuccessorPath original,
                                               HashMap<String, RunTimeSite> originalRunningSites,
-                                              boolean WithRecompute, TabuSearch search)
+                                              boolean WithRecompute, TabuSearch search,
+                                              BufferedWriter outWriter)
   throws OptimizationException, SchemaMetadataException, TypeMappingException,
   NumberFormatException, IOException, CodeGenerationException, SNEEConfigurationException, 
   SNEEException, WhenSchedulerException
@@ -53,7 +58,7 @@ public class TimeTwiddler
     else
       System.out.println("starting twiddle time tests with no recompution though genetics");
     cloner.dontClone(Logger.class);
-    
+    out = outWriter;
     SuccessorPath usableCopy = cloner.deepClone(original);
     int numberofAgendasToJumpBetween = 1000;
     int overallLifetime = original.overallAgendaLifetime();
@@ -110,8 +115,10 @@ public class TimeTwiddler
           System.out.println("new best plan has a lifetime of " + bestFoundLifetime);
         }
       }
+      writeSuccessorsTimes(usableCopy);
       adjustTimesTestRecursive(successors, successorIndex+1, usableCopy, 
                                numberofAgendasToJumpBetween, overallLifetime, WithRecompute, search);
+    
     }
     newSuccessorTimeSwitch = currentSuccessorTimeSwitch;
     
@@ -138,8 +145,28 @@ public class TimeTwiddler
           System.out.println("new best plan has a lifetime of " + bestFoundLifetime);
         }
       }
+      writeSuccessorsTimes(usableCopy);
       adjustTimesTestRecursive(successors, successorIndex+1, usableCopy, 
                                numberofAgendasToJumpBetween, overallLifetime, WithRecompute, search);
+    }
+  }
+
+  private static void writeSuccessorsTimes(SuccessorPath usableCopy) throws IOException
+  {
+    Iterator<Successor> successorIterator = usableCopy.getSuccessorList().iterator();
+    String output = "";
+    int counter = 0;
+    if(usableCopy.overallAgendaLifetime() > 0)
+    {
+      while(successorIterator.hasNext())
+      {
+        Successor nextSuccessor = successorIterator.next();
+        output = output.concat("successor " + counter + " time " + nextSuccessor.getAgendaCount());
+        counter ++;
+      }
+      output = output.concat(" lifetime " + usableCopy.overallAgendaLifetime());
+      out.write(output + "\n");
+      out.flush();
     }
   }
 

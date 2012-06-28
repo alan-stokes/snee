@@ -9,15 +9,18 @@ public class GenomeTimeBitMap
   
   public GenomeTimeBitMap(int maxRange)
   {
+    System.out.println(" segments with maxRange = " + maxRange );
     //if not enough slots, just make slots size 1
     if(maxRange < maxSegments)
       maxSegments = maxRange;
     double eachSegment = maxRange / maxSegments;
-    double middle = eachSegment / 2;
-    for(int index = 0; index < maxSegments; index++)
+    for(int index = 0; index <= maxSegments; index++)
     {
-      mapping.add((int) (middle + (eachSegment * index)));
+      mapping.add((int) (eachSegment * index));
+      System.out.println("segment " + index + " is = " +  eachSegment * index);
     }
+    //sort out loss of precision
+    mapping.set(maxSegments -1, maxRange);
   }
   
   public Integer getTime(int mappingIndex)

@@ -197,7 +197,6 @@ public class GeneticRouter extends AutonomicManagerComponent
    */
   private void updateElitePhenomeTime(Integer genomeMappingValue, Phenome popPhenome)
   {
-    ArrayList<Boolean> results = new ArrayList<Boolean>(2);
     RT rt = popPhenome.getRt();
     Iterator<Phenome> eliteGenomeIterator = this.elitePhenomes.iterator();
     while(eliteGenomeIterator.hasNext())

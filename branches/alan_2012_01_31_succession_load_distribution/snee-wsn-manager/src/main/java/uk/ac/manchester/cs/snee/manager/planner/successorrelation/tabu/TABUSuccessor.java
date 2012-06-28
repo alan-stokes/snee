@@ -12,6 +12,10 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 
 public class TABUSuccessor extends Successor
 {
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
   private boolean entirelyTABUed;
   private ArrayList<Integer> timesTABUed = new ArrayList<Integer>();
   private static final int maxiumumTimesLookedAt = 32;
