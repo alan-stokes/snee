@@ -2,15 +2,20 @@ package uk.ac.manchester.cs.snee.manager.failednode.cluster;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.rits.cloning.Cloner;
+
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
+import org.apache.log4j.Logger;
 
 /**
  * class used to represent a set of nodes used within the local strategy for node failure
@@ -27,9 +32,11 @@ public class LogicalOverlayNetwork implements Serializable
   
   // cluster rep
   private HashMapList<String, String> clusters = null; 
+  private HashMap<String, RunTimeSite> finalRunningSites;
   private SensorNetworkQueryPlan qep = null;
   private String id = "";
   private static Integer idCounter = 1;
+  private int estimatedLifetime;
   
   /**
    * constructor
@@ -275,5 +282,38 @@ public class LogicalOverlayNetwork implements Serializable
     //add root
     array.add(this.qep.getRT().getRoot().getID());
     return array.iterator();
+  }
+
+  public int getEstimatedLifetime() 
+  {
+	  return estimatedLifetime;
+  }
+
+  public void setMaxLifetime(int maxLifetime) 
+  {
+    estimatedLifetime = maxLifetime;
+	
+  }
+
+  public void setFinalEnergyModel(HashMap<String, RunTimeSite> runningSites)
+  {
+    setFinalRunningSites(runningSites);
+  }
+
+  public void setFinalRunningSites(HashMap<String, RunTimeSite> finalRunningSites)
+  {
+    this.finalRunningSites = finalRunningSites;
+  }
+
+  public HashMap<String, RunTimeSite> getFinalRunningSites()
+  {
+    return finalRunningSites;
+  }
+
+  public HashMap<String, RunTimeSite> getCopyOfFinalRunningSites()
+  {
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    return cloner.deepClone(finalRunningSites);
   }
 }

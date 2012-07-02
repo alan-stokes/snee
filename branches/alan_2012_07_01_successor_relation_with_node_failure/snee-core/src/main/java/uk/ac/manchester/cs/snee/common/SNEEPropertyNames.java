@@ -258,6 +258,17 @@ public final class SNEEPropertyNames {
 	 * used by the batch processing to stop avrora running
 	 */
   public static final String RUN_AVRORA_SIMULATOR = "runAvrora";
+
+  /**
+   * used by the autonomic managers planner to determine which successor relation to run
+   */
+  public static final String WSN_MANAGER_PLANNER_OVERLAYSUCCESSOR = "runOverlaySuccessor";
+  
+  /**
+   * used by the autonomic managers planner to determine which successor relation to run
+   */
+  public static final String WSN_MANAGER_PLANNER_SUCCESSOR = "runSuccessor";
+  
 	
 }
 

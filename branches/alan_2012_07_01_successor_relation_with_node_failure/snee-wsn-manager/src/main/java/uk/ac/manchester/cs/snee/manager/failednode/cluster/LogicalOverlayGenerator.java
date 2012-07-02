@@ -131,6 +131,7 @@ public class LogicalOverlayGenerator
       {
         transferQEPsToCandiates(currentOverlay, qepID);
         Double minLifetime = determineMinumalLifetime(currentOverlay, failedNodeStrategyLocal);
+        currentOverlay.setMaxLifetime(minLifetime.intValue());
         if(minLifetime >= bestMinLifetime)
         {
           bestOverlayNetwork = currentOverlay.getId();

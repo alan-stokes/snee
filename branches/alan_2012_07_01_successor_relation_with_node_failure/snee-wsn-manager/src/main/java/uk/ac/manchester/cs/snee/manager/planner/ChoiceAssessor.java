@@ -365,6 +365,7 @@ public class ChoiceAssessor implements Serializable
       else
       {
         adapted = false;
+        current.setFinalEnergyModel(runningSites);
         overallShortestLifetime += shortestLifetime;
       }
     }
