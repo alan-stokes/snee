@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+
+<network-topology
+xmlns="http://snee.cs.manchester.ac.uk"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://snee.cs.manchester.ac.uk network-topology.xsd">
+
+<units>
+	<energy>MILLIJOULES</energy>
+	<memory>BYTES</memory>
+	<time>MILLISECONDS</time>
+</units>
+
+<radio-links>
+	<radio-link source="0" dest="1" bidirectional="true" energy="251" time="59" radio-loss="0"/>
+	<radio-link source="1" dest="2" bidirectional="true" energy="253" time="59" radio-loss="0"/>
+	<radio-link source="1" dest="3" bidirectional="true" energy="251" time="59" radio-loss="0"/>
+	<radio-link source="1" dest="5" bidirectional="true" energy="252" time="59" radio-loss="0"/>
+	<radio-link source="1" dest="7" bidirectional="true" energy="237" time="55" radio-loss="0"/>
+	<radio-link source="2" dest="3" bidirectional="true" energy="12" time="10" radio-loss="0"/>
+	<radio-link source="2" dest="5" bidirectional="true" energy="30" time="19" radio-loss="0"/>
+	<radio-link source="2" dest="8" bidirectional="true" energy="252" time="59" radio-loss="0"/>
+	<radio-link source="2" dest="14" bidirectional="true" energy="35" time="20" radio-loss="0"/>
+	<radio-link source="3" dest="5" bidirectional="true" energy="10" time="8" radio-loss="0"/>
+	<radio-link source="3" dest="8" bidirectional="true" energy="217" time="50" radio-loss="0"/>
+	<radio-link source="3" dest="14" bidirectional="true" energy="14" time="14" radio-loss="0"/>
+	<radio-link source="5" dest="6" bidirectional="true" energy="228" time="52" radio-loss="0"/>
+	<radio-link source="5" dest="7" bidirectional="true" energy="230" time="53" radio-loss="0"/>
+	<radio-link source="5" dest="8" bidirectional="true" energy="188" time="43" radio-loss="0"/>
+	<radio-link source="5" dest="10" bidirectional="true" energy="227" time="52" radio-loss="0"/>
+	<radio-link source="5" dest="14" bidirectional="true" energy="14" time="15" radio-loss="0"/>
+	<radio-link source="6" dest="7" bidirectional="true" energy="151" time="36" radio-loss="0"/>
+	<radio-link source="6" dest="8" bidirectional="true" energy="155" time="36" radio-loss="0"/>
+	<radio-link source="6" dest="10" bidirectional="true" energy="98" time="27" radio-loss="0"/>
+	<radio-link source="6" dest="12" bidirectional="true" energy="232" time="53" radio-loss="0"/>
+	<radio-link source="6" dest="13" bidirectional="true" energy="253" time="59" radio-loss="0"/>
+	<radio-link source="6" dest="14" bidirectional="true" energy="253" time="59" radio-loss="0"/>
+	<radio-link source="7" dest="10" bidirectional="true" energy="10" time="8" radio-loss="0"/>
+	<radio-link source="8" dest="9" bidirectional="true" energy="254" time="59" radio-loss="0"/>
+	<radio-link source="8" dest="10" bidirectional="true" energy="247" time="58" radio-loss="0"/>
+	<radio-link source="8" dest="11" bidirectional="true" energy="252" time="59" radio-loss="0"/>
+	<radio-link source="8" dest="12" bidirectional="true" energy="126" time="31" radio-loss="0"/>
+	<radio-link source="8" dest="14" bidirectional="true" energy="172" time="40" radio-loss="0"/>
+	<radio-link source="9" dest="11" bidirectional="true" energy="202" time="46" radio-loss="0"/>
+	<radio-link source="9" dest="12" bidirectional="true" energy="255" time="60" radio-loss="0"/>
+	<radio-link source="11" dest="12" bidirectional="true" energy="148" time="35" radio-loss="0"/>
+
+</radio-links>
+		
+</network-topology>			

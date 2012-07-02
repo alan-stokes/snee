@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+
+<network-topology
+xmlns="http://snee.cs.manchester.ac.uk"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://snee.cs.manchester.ac.uk network-topology.xsd">
+
+<units>
+	<energy>MILLIJOULES</energy>
+	<memory>BYTES</memory>
+	<time>MILLISECONDS</time>
+</units>
+
+<radio-links>
+
+	<radio-link source="0" dest="1" bidirectional="true" energy="50" time="5" radio-loss="0"/>
+	
+	<radio-link source="1" dest="2" bidirectional="true" energy="50" time="5" radio-loss="0"/>
+	<radio-link source="1" dest="3" bidirectional="true" energy="60" time="5" radio-loss="0"/>
+	<radio-link source="3" dest="4" bidirectional="true" energy="50" time="5" radio-loss="0"/>	
+	<radio-link source="3" dest="5" bidirectional="true" energy="90" time="10" radio-loss="0"/>
+	<radio-link source="8" dest="4" bidirectional="true" energy="60" time="10" radio-loss="0"/>
+	<radio-link source="5" dest="9" bidirectional="true" energy="50" time="5" radio-loss="0"/>
+	<radio-link source="5" dest="14" bidirectional="true" energy="150" time="10" radio-loss="0"/>
+	<radio-link source="8" dest="14" bidirectional="true" energy="150" time="10" radio-loss="0"/>	
+	<radio-link source="14" dest="2" bidirectional="true" energy="50" time="5" radio-loss="0"/>
+	<radio-link source="2" dest="7" bidirectional="true" energy="50" time="5" radio-loss="0"/>	
+	<radio-link source="5" dest="7" bidirectional="true" energy="50" time="5" radio-loss="0"/>	
+	<radio-link source="7" dest="8" bidirectional="true" energy="50" time="5" radio-loss="0"/>	
+	<radio-link source="6" dest="8" bidirectional="true" energy="50" time="5" radio-loss="0"/>
+	<radio-link source="12" dest="10" bidirectional="true" energy="50" time="5" radio-loss="0"/>
+	<radio-link source="12" dest="11" bidirectional="true" energy="50" time="5" radio-loss="0"/>
+	<radio-link source="12" dest="13" bidirectional="true" energy="50" time="5" radio-loss="0"/>
+	<radio-link source="13" dest="1" bidirectional="true" energy="50" time="5" radio-loss="0"/>
+</radio-links>
+		<!-- Node 7 -->
+</network-topology>	

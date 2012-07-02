@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<source xmlns="http://snee.cs.man.ac.uk/namespace/physical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../schema/physical-schema.xsd ">
+
+	<sensor_network name="wsn1">
+		<topology>notation/wsn4-topology.xml</topology>
+		<site-resources>etc/common/telosb.xml</site-resources>
+		<gateways>8</gateways>
+		<extents>
+			<extent name="Castilla">
+				<sites>6,7,9</sites>
+				<sensorTypes>
+					<attribute name="light" sensorType="seaLevel"/>
+					<attribute name="water" sensorType="voltage"/>		
+				</sensorTypes>	
+			</extent>
+		</extents>
+	</sensor_network>
+
+</source>

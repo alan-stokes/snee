@@ -1,0 +1,20 @@
+digraph "sensornet-topology" {
+label = "";
+rankdir="BT";"0"->"6" [arrowhead = "both"] 
+"0"->"8" [arrowhead = "both"] 
+"0"->"12" [arrowhead = "both"] 
+"1"->"5" [arrowhead = "both"] 
+"1"->"7" [arrowhead = "both"] 
+"2"->"8" [arrowhead = "both"] 
+"2"->"12" [arrowhead = "both"] 
+"3"->"5" [arrowhead = "both"] 
+"3"->"11" [arrowhead = "both"] 
+"4"->"8" [arrowhead = "both"] 
+"4"->"13" [arrowhead = "both"] 
+"5"->"7" [arrowhead = "both"] 
+"6"->"12" [arrowhead = "both"] 
+"7"->"13" [arrowhead = "both"] 
+"8"->"12" [arrowhead = "both"] 
+"9"->"14" [arrowhead = "both"] 
+"10"->"13" [arrowhead = "both"] 
+}
