@@ -293,15 +293,10 @@ public class TabuSearch extends AutonomicManagerComponent
    * determines the lifetime of the successor after adapting. 
    * @param successor
    * @return lifetime of the successor
-   * @throws TypeMappingException 
-   * @throws SchemaMetadataException 
-   * @throws CodeGenerationException 
-   * @throws OptimizationException 
-   * @throws IOException 
+   * @throws Exception 
    */
   private int fitness(Successor successor, Successor currentPosition, int iteration) 
-  throws SchemaMetadataException, TypeMappingException, IOException,
-  OptimizationException, CodeGenerationException
+  throws Exception
   {
     Adaptation adapt = StrategyAbstract.generateAdaptationObject(currentPosition.getQep(), successor.getQep());
     File assessorFolder = new File(this.TABUOutputFolder.toString() + sep + "Successor");

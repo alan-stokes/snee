@@ -3,6 +3,7 @@ package uk.ac.manchester.cs.snee.manager.failednode;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -23,6 +24,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RTUtils;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayGenerator;
 import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork; 
@@ -67,6 +69,16 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   }
 	
   /**
+   * helper constructor for objects that do not require a predefined set of the energy sites. 
+   */
+  public void initilise(QueryExecutionPlan oldQep, Integer noTrees) 
+  throws SchemaMetadataException, TypeMappingException, OptimizationException, 
+  IOException, SNEEConfigurationException, CodeGenerationException 
+  {
+    initilise(oldQep, noTrees, null);
+  }
+  
+  /**
    * sets up framework by detecting equivalent nodes and placing them in a cluster
    * @param oldQep
    * @throws OptimizationException 
@@ -77,7 +89,8 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
    * @throws CodeGenerationException 
    * @throws ClassNotFoundException 
    */
-  public void initilise(QueryExecutionPlan oldQep, Integer noTrees) 
+  public void initilise(QueryExecutionPlan oldQep, Integer noTrees,
+                        HashMap<String, RunTimeSite> copyOfRunningSites) 
   throws 
   SchemaMetadataException, TypeMappingException, 
   OptimizationException, IOException, SNEEConfigurationException,
@@ -92,24 +105,24 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
     {
       LogicalOverlayGenerator logcalOverlayGenerator = 
       new LogicalOverlayGenerator(network, this.currentQEP, this.manager, localFolder, _metadata, _metadataManager);
-    logicalOverlay =  logcalOverlayGenerator.generateOverlay((SensorNetworkQueryPlan) oldQep, this);
-    int k_resilence_level = SNEEProperties.getIntSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_LEVEL);
-    //if k_resilence level is zero, and no clusters are found, then a empty overlay is satifisable.
-    if(logicalOverlay == null && k_resilence_level == 0)
-    {
-      logicalOverlay = new LogicalOverlayNetwork();
-      logicalOverlay.setQep(currentQEP);
-    }
-    //if no overlay is generated, then throw error
-    if(logicalOverlay == null)
-    {
-      throw new SchemaMetadataException("current metatdata does not support a logical overlay structure " +
-          "with the current k resilience value. Possible solutions is to reduce the k resilience level, or " +
-          "add more nodes to compensate");
-    }
-    
-    manager.setCurrentQEP(logicalOverlay.getQep());
-    new FailedNodeLocalLogicalOverlayUtils(logicalOverlay, localFolder).outputAsTextFile();
+      logicalOverlay =  logcalOverlayGenerator.generateOverlay((SensorNetworkQueryPlan) oldQep, this, copyOfRunningSites);
+      int k_resilence_level = SNEEProperties.getIntSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_LEVEL);
+      //if k_resilence level is zero, and no clusters are found, then a empty overlay is satifisable.
+      if(logicalOverlay == null && k_resilence_level == 0)
+      {
+        logicalOverlay = new LogicalOverlayNetwork();
+        logicalOverlay.setQep(currentQEP);
+      }
+      //if no overlay is generated, then throw error
+      if(logicalOverlay == null)
+      {
+        throw new SchemaMetadataException("current metatdata does not support a logical overlay structure " +
+            "with the current k resilience value. Possible solutions is to reduce the k resilience level, or " +
+            "add more nodes to compensate");
+      }
+      
+      manager.setCurrentQEP(logicalOverlay.getQep());
+      new FailedNodeLocalLogicalOverlayUtils(logicalOverlay, localFolder).outputAsTextFile();
     }
   }
 
@@ -472,7 +485,8 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
   
   public void setQEP(SensorNetworkQueryPlan  currentQEP)
   {
-    this.logicalOverlay.setQep(currentQEP);
+    if(this.logicalOverlay != null)
+      this.logicalOverlay.setQep(currentQEP);
   }
 
 }

@@ -41,22 +41,30 @@ public class Planner extends AutonomicManagerComponent
   private File plannerFolder = null;
   private MetadataManager _metadataManager;
   
-  public Planner(AutonomicManagerImpl autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager)   
+  public Planner(AutonomicManagerImpl autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager) 
+  throws SNEEConfigurationException   
   {
     manager = autonomicManager;
-    assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder);
     this._metadata = _metadata;
     this._metadataManager = _metadataManager;
+    assessor = new ChoiceAssessor(this._metadata, this._metadataManager, plannerFolder);
     runningSites = manager.getRunningSites();
+    if(manager == null || this._metadata == null || this._metadataManager == null)
+      throw new SNEEConfigurationException("input files are null");
   }
   
   public Planner(AutonomicManagerImpl autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager,
-                 HashMap<String, RunTimeSite> runningSites, File plannerFolder)   
+                 HashMap<String, RunTimeSite> runningSites, File plannerFolder)
+  throws SNEEConfigurationException   
   {
     manager = autonomicManager;
+    this._metadata = _metadata;
+    this._metadataManager = _metadataManager;
     this.plannerFolder = plannerFolder;
-    assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder);
+    assessor = new ChoiceAssessor(this._metadata, this._metadataManager, plannerFolder);
     this.runningSites = runningSites;
+    if(manager == null || this._metadata == null || this._metadataManager == null)
+      throw new SNEEConfigurationException("input files are null");
   }
   
   

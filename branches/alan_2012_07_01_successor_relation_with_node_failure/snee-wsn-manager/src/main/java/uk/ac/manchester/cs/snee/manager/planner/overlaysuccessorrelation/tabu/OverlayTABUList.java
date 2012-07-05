@@ -41,7 +41,7 @@ public class OverlayTABUList
       if(entireity)
         tabuedSuccesor.setEntirelyTABUed(entireity);
       else
-        tabuedSuccesor.addTimesTABUed(successor.getAgendaCount());
+        tabuedSuccesor.addTimesTABUed(successor.getEstimatedLifetimeInAgendaCountBeforeSwitch());
       diversificationTABUList.remove(tabuedSuccesor);
       diversificationTABUList.add(tabuedSuccesor);
     }
@@ -55,7 +55,7 @@ public class OverlayTABUList
       else
       {
         ArrayList<Integer> times = new ArrayList<Integer>();
-        times.add(successor.getAgendaCount());
+        times.add(successor.getEstimatedLifetimeInAgendaCountBeforeSwitch());
         diversificationTABUList.add(new OverlayTABUSuccessor(successor.getQep(), successor.getNewRunTimeSites(),
                                                       times));
       }
@@ -202,7 +202,7 @@ public class OverlayTABUList
    */
   public boolean passesAspirationCriteria(OverlaySuccessor successor, OverlaySuccessor bestCurrentSuccessor)
   {
-    if(successor.getLifetimeInAgendas() > bestCurrentSuccessor.getLifetimeInAgendas())
+    if(successor.getEstimatedLifetimeInAgendas() > bestCurrentSuccessor.getEstimatedLifetimeInAgendas())
       return true;
     else
       return false;
@@ -257,7 +257,7 @@ public class OverlayTABUList
           }
           OverlaySuccessor pathSuccessor = currentPath.getSuccessorList().get(position);
           DiverseTABUList.add(new OverlayTABUSuccessor(pathSuccessor.getQep(), pathSuccessor.getNewRunTimeSites(), 
-                                                new ArrayList<Integer>(pathSuccessor.getAgendaCount())));
+                                                new ArrayList<Integer>(pathSuccessor.getEstimatedLifetimeInAgendaCountBeforeSwitch())));
           TABUList.put(position, DiverseTABUList);
          
           currentPath.removeSuccessor(position);

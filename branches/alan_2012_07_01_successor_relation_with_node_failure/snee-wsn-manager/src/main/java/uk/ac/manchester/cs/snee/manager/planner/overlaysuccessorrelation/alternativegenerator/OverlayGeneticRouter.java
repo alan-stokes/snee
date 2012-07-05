@@ -139,7 +139,7 @@ public class OverlayGeneticRouter extends AutonomicManagerComponent
     {
       OverlayGenome pop = popIterator.next();
       OverlayPhenome popPhenome = 
-    	  this.fitness.determineFitness(pop, qep.getAgendaCount() + qep.getPreviousAgendaCount(),
+    	  this.fitness.determineFitness(pop, qep.getEstimatedLifetimeInAgendaCountBeforeSwitch() + qep.getPreviousAgendaCount(),
     			                        localNodeFailureStrategy, qep.getLogicalOverlayNetwork());
       pop.setFitness(popPhenome.getFitness());
       if(popPhenome.getFitness() == 1 && 
@@ -174,6 +174,7 @@ public class OverlayGeneticRouter extends AutonomicManagerComponent
     {
       consecutiveTimesWithoutNewSolutions = 0;
     }
+    
   }
 
   /**
@@ -262,7 +263,7 @@ public class OverlayGeneticRouter extends AutonomicManagerComponent
         second = order.get(randomIndex);
       }
       ArrayList<OverlayGenome> children = OverlayGenome.mergeGenomes(first, second, 
-                                  requiredSites, OverlaySuccessor.getLifetimeInAgendas());
+                                  requiredSites, OverlaySuccessor.getEstimatedLifetimeInAgendas());
       newPop.addAll(children); 
     }
    return newPop;
@@ -293,7 +294,7 @@ public class OverlayGeneticRouter extends AutonomicManagerComponent
         }   
       }
       OverlayGenome newPop = new OverlayGenome(currentDNA);
-      this.fitness.determineFitness(newPop, qep.getLifetimeInAgendas(),
+      this.fitness.determineFitness(newPop, qep.getEstimatedLifetimeInAgendas(),
                                     localNodeFailureStrategy, qep.getLogicalOverlayNetwork());
       population.add(newPop);
     }

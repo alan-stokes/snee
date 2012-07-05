@@ -272,7 +272,7 @@ public class PlannerUtils
       {
         OverlaySuccessor successor = successorIterator.next();
         out.write("\"" + counter + "\" [label =\" " + counter +
-                  " \\n " + successor.getLifetimeInAgendas() + "\" ; \n");
+                  " \\n " + successor.getEstimatedLifetimeInAgendas() + "\" ; \n");
         counter++;
       }
      
@@ -287,7 +287,7 @@ public class PlannerUtils
         OverlaySuccessor successor = successorIterator.next();
         String file = mkdir(counter, objectFolder);
         new OverlaySuccessorUtils(successor).exportSuccessor(file);
-        out.write( successor.getAgendaCount() +  "\"]; \n");
+        out.write( successor.getEstimatedLifetimeInAgendaCountBeforeSwitch() +  "\"]; \n");
         counter++;
         nextCounter = counter +1;
         if(successorIterator.hasNext())
@@ -306,7 +306,7 @@ public class PlannerUtils
       while(successorIterator.hasNext())
       {
         OverlaySuccessor successor = successorIterator.next();
-        out.write(counter + " : " + successor.getLifetimeInAgendas() + " \n");
+        out.write(counter + " : " + successor.getEstimatedLifetimeInAgendas() + " \n");
         counter++;
       }
       out.flush();

@@ -33,7 +33,7 @@ public class OverlaySuccessorPath implements Serializable
     while(successorIterator.hasNext())
     {
       OverlaySuccessor successor = successorIterator.next();
-      agendaCount += successor.getAgendaCount();
+      agendaCount += successor.getEstimatedLifetimeInAgendaCountBeforeSwitch();
       if(!successorIterator.hasNext())
         agendaCount += successor.getBasicLifetimeInAgendas();
     }

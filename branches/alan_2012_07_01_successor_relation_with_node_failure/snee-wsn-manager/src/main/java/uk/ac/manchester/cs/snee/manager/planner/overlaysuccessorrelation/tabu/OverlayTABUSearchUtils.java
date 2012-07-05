@@ -28,7 +28,7 @@ public class OverlayTABUSearchUtils
   throws IOException
   {
     out.write(iteration + " : " + successor.toString() + " : " + 
-              successor.getLifetimeInAgendas() + " : " + preivousBest.getLifetimeInAgendas() + " : " +
+              successor.getEstimatedLifetimeInAgendas() + " : " + preivousBest.getEstimatedLifetimeInAgendas() + " : " +
               (currentPath.successorLength() -1) + "\n");
     out.flush();
   }
@@ -38,8 +38,8 @@ public class OverlayTABUSearchUtils
   throws IOException
   {
     out.write(iteration + " : BEST OPTION FAILED (" + bestNeighbourHoodSuccessor.toString() + " : " + 
-        bestNeighbourHoodSuccessor.getLifetimeInAgendas() + " : " + 
-        currentBestSuccessor.getLifetimeInAgendas() + " ) " + "\n");
+        bestNeighbourHoodSuccessor.getEstimatedLifetimeInAgendas() + " : " + 
+        currentBestSuccessor.getEstimatedLifetimeInAgendas() + " ) " + "\n");
     out.flush();
   }
 

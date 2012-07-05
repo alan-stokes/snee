@@ -97,6 +97,7 @@ public class OverlayTabuSearch extends AutonomicManagerComponent
     LogicalOverlayNetwork network = localNodeFailureStrategy.getLogicalOverlay();
     initalSitesEnergy = this.updateRunningSites(initalSitesEnergy, initialPoint);
     InitialSuccessor = new OverlaySuccessor(initialPoint, this.initalSitesEnergy, 0, network);
+    
     TABUList.addToTABUList(InitialSuccessor, 0, true);
     ArrayList<OverlaySuccessor> initialList = new ArrayList<OverlaySuccessor>();
     initialList.add(InitialSuccessor);
@@ -258,7 +259,7 @@ public class OverlayTabuSearch extends AutonomicManagerComponent
   CodeGenerationException
   {
     try{
-    if(fitness(bestNeighbourHoodSuccessor, currentBestSuccessor, iteration) > currentBestSuccessor.getLifetimeInAgendas())
+    if(fitness(bestNeighbourHoodSuccessor, currentBestSuccessor, iteration) > currentBestSuccessor.getEstimatedLifetimeInAgendas())
     {
       Utils.writeNewSuccessor(bestNeighbourHoodSuccessor, iteration, currentBestSuccessor, currentPath);
       currentBestSuccessor = bestNeighbourHoodSuccessor;
@@ -299,15 +300,10 @@ public class OverlayTabuSearch extends AutonomicManagerComponent
    * determines the lifetime of the successor after adapting. 
    * @param successor
    * @return lifetime of the successor
-   * @throws TypeMappingException 
-   * @throws SchemaMetadataException 
-   * @throws CodeGenerationException 
-   * @throws OptimizationException 
-   * @throws IOException 
+   * @throws Exception 
    */
   private int fitness(OverlaySuccessor successor, OverlaySuccessor currentPosition, int iteration) 
-  throws SchemaMetadataException, TypeMappingException, IOException,
-  OptimizationException, CodeGenerationException
+  throws Exception
   {
     Adaptation adapt = StrategyAbstract.generateAdaptationObject(currentPosition.getQep(), successor.getQep());
     File assessorFolder = new File(this.TABUOutputFolder.toString() + sep + "Successor");
@@ -326,7 +322,7 @@ public class OverlayTabuSearch extends AutonomicManagerComponent
     {
       assessAdaptation.assessChoice(adapt, successor.getTheRunTimeSites(), false);
       successor.substractAdaptationCostOffRunTimeSites(adapt);
-      return successor.getLifetimeInAgendas();
+      return successor.getEstimatedLifetimeInAgendas();
     }
     catch(Exception e)
     {
@@ -355,7 +351,7 @@ public class OverlayTabuSearch extends AutonomicManagerComponent
     while(neighbourHoodIterator.hasNext())
     {
     	OverlaySuccessor successor = neighbourHoodIterator.next();
-      int successorLifetimeTime = successor.getLifetimeInAgendas();
+      int successorLifetimeTime = successor.getEstimatedLifetimeInAgendas();
       if(currentBestLifetime < successorLifetimeTime)
       {
         currentBestLifetime = successorLifetimeTime;

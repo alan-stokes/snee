@@ -27,7 +27,7 @@ public class OverlaySuccessor implements Comparable<OverlaySuccessor>, Serializa
   
   
   protected SensorNetworkQueryPlan qep;
-  protected Integer agendaCount;
+  protected Integer estimatedLifetimeInAgendasBeforeSwitch;
   protected Integer previousAgendaCount = 0;
   private HashMap<String, RunTimeSite> newRunTimeSites = null;
   private LogicalOverlayNetwork logicalOverlayNetwork = null;
@@ -43,6 +43,7 @@ public class OverlaySuccessor implements Comparable<OverlaySuccessor>, Serializa
     this.setNewRunTimeSites(RunTimeSites);
     this.previousAgendaCount = prevAgendaCount;
     this.updateSitesRunningCosts();
+    this.estimatedLifetimeInAgendasBeforeSwitch = logicalOverlayNetwork.getEstimatedLifetime();
     this.subtractWaitingSiteEnergyCosts();
     this.setLogicalOverlayNetwork(logicalOverlayNetwork);
   }
@@ -90,17 +91,17 @@ public class OverlaySuccessor implements Comparable<OverlaySuccessor>, Serializa
 
   public void setAgendaCount(Integer agendaCount)
   {
-    this.agendaCount = agendaCount;
+    this.estimatedLifetimeInAgendasBeforeSwitch = agendaCount;
   }
 
-  public Integer getAgendaCount()
+  public Integer getEstimatedLifetimeInAgendaCountBeforeSwitch()
   {
-    return agendaCount;
+    return estimatedLifetimeInAgendasBeforeSwitch;
   }
 
-  public Integer getLifetimeInAgendas()
+  public Integer getEstimatedLifetimeInAgendas()
   {
-    return this.calculateLifetime() + agendaCount + this.previousAgendaCount;
+    return this.calculateLifetime() + estimatedLifetimeInAgendasBeforeSwitch + this.previousAgendaCount;
   }
   
   public Integer getBasicLifetimeInAgendas()
@@ -124,7 +125,7 @@ public class OverlaySuccessor implements Comparable<OverlaySuccessor>, Serializa
     {
       Site site = siteIterator.next();
       Double siteEnergyCost = this.getNewRunTimeSites().get(site.getID()).getQepExecutionCost();
-      siteEnergyCost = siteEnergyCost * this.agendaCount;
+      siteEnergyCost = siteEnergyCost * this.estimatedLifetimeInAgendasBeforeSwitch;
       getNewRunTimeSites().get(site.getID()).removeDefinedCost(siteEnergyCost);
     }
   }
@@ -194,7 +195,7 @@ public class OverlaySuccessor implements Comparable<OverlaySuccessor>, Serializa
   @Override
   public String toString()
   {
-    return this.qep.getID() + " AT " + this.getAgendaCount().toString();
+    return this.qep.getID() + " AT " + this.getEstimatedLifetimeInAgendaCountBeforeSwitch().toString();
   }
 
   public void setNewRunTimeSites(HashMap<String, RunTimeSite> newRunTimeSites)

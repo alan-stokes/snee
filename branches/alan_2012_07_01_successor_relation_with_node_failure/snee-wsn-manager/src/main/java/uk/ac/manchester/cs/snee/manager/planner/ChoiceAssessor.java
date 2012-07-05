@@ -56,13 +56,22 @@ public class ChoiceAssessor implements Serializable
   private Boolean useModelForBinaries;
   
   public ChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager,
-                        File outputFolder)
+                        File outputFolder) 
+  throws SNEEConfigurationException
   {
-    new ChoiceAssessor(_metadata, _metadataManager, outputFolder, false);
+    ChoiceAssessorInitisation(_metadata, _metadataManager, outputFolder, true);
+  }
+  
+  public ChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager,
+                        File outputFolder, boolean useCostModelForBinaries) 
+  throws SNEEConfigurationException
+  {
+    ChoiceAssessorInitisation(_metadata, _metadataManager, outputFolder, useCostModelForBinaries);
   }
 
-  public ChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager, 
-                        File outputFolder, boolean useCostModelForBinaries)
+  public void ChoiceAssessorInitisation(SourceMetadataAbstract _metadata, MetadataManager _metadataManager, 
+                        File outputFolder, boolean useCostModelForBinaries) 
+  throws SNEEConfigurationException
   {
     this._metadataManager = _metadataManager;
     this.outputFolder = outputFolder;
@@ -72,6 +81,8 @@ public class ChoiceAssessor implements Serializable
     timeModelOverlay = new TimeModelOverlay(imageGenerator);
     energyModelOverlay = new EnergyModelOverlay(imageGenerator);
     useModelForBinaries = useCostModelForBinaries;
+    if(this._metadataManager == null || this.timeModel == null || this.timeModelOverlay == null)
+      throw new SNEEConfigurationException("one of the constructors values is null");
   }
 
   /**

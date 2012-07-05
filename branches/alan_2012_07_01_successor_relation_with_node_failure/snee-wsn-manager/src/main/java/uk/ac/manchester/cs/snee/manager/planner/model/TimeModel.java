@@ -28,7 +28,7 @@ public class TimeModel extends Model
   
   public void initilise(File imageGenerationFolder, MetadataManager _metadataManager)
   {
-    super.initilise(imageGenerationFolder, _metadataManager, false);
+    super.initilise(imageGenerationFolder, _metadataManager, true);
   }
   
   public void initilise(File imageGenerationFolder, MetadataManager _metadataManager, 

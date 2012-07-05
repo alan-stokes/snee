@@ -66,7 +66,8 @@ public class LogicalOverlayGenerator
   }
   
   public LogicalOverlayNetwork generateOverlay(SensorNetworkQueryPlan qep, 
-                                               FailedNodeStrategyLocal failedNodeStrategyLocal) 
+                                               FailedNodeStrategyLocal failedNodeStrategyLocal,
+                                               HashMap<String, RunTimeSite> copyOfRunningSites) 
   throws SchemaMetadataException, TypeMappingException, OptimizationException, 
   IOException, CodeGenerationException, SNEEConfigurationException
   {
@@ -81,7 +82,7 @@ public class LogicalOverlayGenerator
     ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays = reductionPhase(superLogicalOverlay);
   //  setsOfLogicalOverlays = KResilenceCheck(setsOfLogicalOverlays);
     LogicalOverlayNetwork logicalOverlay = 
-      assessmentPhase(setsOfLogicalOverlays, failedNodeStrategyLocal, qep.getID(), qep.getRT());
+      assessmentPhase(setsOfLogicalOverlays, failedNodeStrategyLocal, qep.getID(), qep.getRT(), copyOfRunningSites);
     if(logicalOverlay != null)
       new LogicalOverlayGeneratorUtils().storeOverlayAsText(logicalOverlay, localFolder);
     return logicalOverlay;
@@ -106,20 +107,20 @@ public class LogicalOverlayGenerator
    * @param setsOfLogicalOverlays 
    * @param failedNodeStrategyLocal 
    * @param qep 
+   * @throws IOException 
    * @throws CodeGenerationException 
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
-   * @throws IOException 
-   * @throws SNEEConfigurationException 
+   * @throws Exception 
    * @throws ClassNotFoundException 
    */
   private LogicalOverlayNetwork assessmentPhase(ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays,
                                                 FailedNodeStrategyLocal failedNodeStrategyLocal,
-                                                final String qepID, RT qepRT) 
-  throws IOException, OptimizationException, SchemaMetadataException, 
-  TypeMappingException, CodeGenerationException, 
-  SNEEConfigurationException 
+                                                final String qepID, RT qepRT, 
+                                                HashMap<String, RunTimeSite> copyOfRunningSites) 
+  throws SNEEConfigurationException, IOException,
+  OptimizationException, SchemaMetadataException, TypeMappingException, CodeGenerationException 
   {
     int overlayIndex = 0;
     String bestOverlayNetwork = null;
@@ -130,7 +131,8 @@ public class LogicalOverlayGenerator
       if(hasCorrectLevelsOfResileince(currentOverlay, qepRT))
       {
         transferQEPsToCandiates(currentOverlay, qepID);
-        Double minLifetime = determineMinumalLifetime(currentOverlay, failedNodeStrategyLocal);
+        Double minLifetime = determineMinumalLifetime(currentOverlay, failedNodeStrategyLocal, 
+                                                      copyOfRunningSites);
         currentOverlay.setMaxLifetime(minLifetime.intValue());
         if(minLifetime >= bestMinLifetime)
         {
@@ -162,18 +164,24 @@ public class LogicalOverlayGenerator
    * @param failedNodeStrategyLocal 
    * @return
    * @throws CodeGenerationException 
+   * @throws IOException 
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
-   * @throws IOException 
-   * @throws SNEEConfigurationException 
+   * @throws Exception 
    */
   private Double determineMinumalLifetime(LogicalOverlayNetwork currentOverlay,
-                                          FailedNodeStrategyLocal failedNodeStrategyLocal) 
-  throws IOException, OptimizationException, SchemaMetadataException, 
-  TypeMappingException, CodeGenerationException, SNEEConfigurationException
+                                          FailedNodeStrategyLocal failedNodeStrategyLocal,
+                                          HashMap<String, RunTimeSite> copyOfRunningSites) 
+  throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, 
+  TypeMappingException, IOException, CodeGenerationException
   {
-    HashMap<String, RunTimeSite> runningSites = manager.getCopyOfRunningSites();
+    HashMap<String, RunTimeSite> runningSites = null;
+    if(copyOfRunningSites == null)
+      runningSites = manager.getCopyOfRunningSites();
+    else
+      runningSites = copyOfRunningSites;
+    
     //remove OTA effects from running sites
     SensorNetworkQueryPlan sqep = (SensorNetworkQueryPlan)currentQEP;
     Adaptation overlayOTAProgramCost = new Adaptation(sqep, StrategyIDEnum.Orginal, 0);

@@ -262,12 +262,12 @@ public final class SNEEPropertyNames {
   /**
    * used by the autonomic managers planner to determine which successor relation to run
    */
-  public static final String WSN_MANAGER_PLANNER_OVERLAYSUCCESSOR = "runOverlaySuccessor";
+  public static final String WSN_MANAGER_PLANNER_OVERLAYSUCCESSOR = "wsn_manager.run_Overlay_Successor";
   
   /**
    * used by the autonomic managers planner to determine which successor relation to run
    */
-  public static final String WSN_MANAGER_PLANNER_SUCCESSOR = "runSuccessor";
+  public static final String WSN_MANAGER_PLANNER_SUCCESSOR = "wsn_manager.run_Successor";
   
 	
 }

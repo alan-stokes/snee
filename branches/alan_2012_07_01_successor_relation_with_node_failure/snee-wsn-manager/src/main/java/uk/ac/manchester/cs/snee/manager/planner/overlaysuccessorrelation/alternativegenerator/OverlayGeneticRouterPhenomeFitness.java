@@ -219,8 +219,9 @@ public class OverlayGeneticRouterPhenomeFitness extends AutonomicManagerComponen
         // set up logical overlay if possible
         try
         {
-          localNodeFailureStrategy.initilise(qep, 48);
+          localNodeFailureStrategy.initilise(qep, 48, previousOverlay.getCopyOfFinalRunningSites());
           phenome.setOverlaySuccessor(localNodeFailureStrategy.getLogicalOverlay());
+          phenome.getOverlaySuccessor().setAgendaCount(phenome.getOverlaySuccessor().getEstimatedLifetimeInAgendaCountBeforeSwitch());
           phenome.setFitness(1);
           return phenome;
         }

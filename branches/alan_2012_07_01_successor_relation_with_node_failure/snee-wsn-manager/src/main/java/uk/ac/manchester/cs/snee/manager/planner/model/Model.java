@@ -23,7 +23,7 @@ public class Model
   protected static SNCB imageGenerator = null;
   protected static MetadataManager _metadataManager;  
   protected static boolean underSpareTime;
-  protected Boolean useModelForBinaries;
+  protected static Boolean useModelForBinaries;
   
   public Model(SNCB imageGenerator)
   {
@@ -35,7 +35,7 @@ public class Model
   {
     Model.imageGenerationFolder = imageGenerationFolder;
     Model._metadataManager = _metadataManager;
-    this.useModelForBinaries = useModelForBinaries;
+    Model.useModelForBinaries = useModelForBinaries;
   }
   
   /**
@@ -53,7 +53,7 @@ public class Model
   TypeMappingException, OptimizationException, 
   CodeGenerationException
   {
-    if(this.useModelForBinaries)
+    if(Model.useModelForBinaries)
     {
       return calculatePacketsFromModel(adapt, reprogrammedSite);
     }
