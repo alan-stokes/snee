@@ -1,0 +1,23 @@
+
+# simple topology specification
+#
+# syntax: nodeName x y z
+# nodeName: any string without space
+# coordinates: integer values,
+# one line per node
+# negative coordinates are welcome
+node0 9 28 0
+node1 -19 23 0
+node2 -6 49 0
+node3 38 30 0
+node4 -49 16 0
+node5 -48 -14 0
+node6 -65 41 0
+node7 -18 52 0
+node8 -43 60 0
+node9 -17 74 0
+node10 6 92 0
+node11 -48 48 0
+node12 -61 -12 0
+node13 -94 51 0
+node14 12 67 0

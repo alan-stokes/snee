@@ -1,0 +1,116 @@
+package uk.ac.manchester.cs.snee.manager;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Map;
+
+import uk.ac.manchester.cs.snee.MetadataException;
+import uk.ac.manchester.cs.snee.ResultStore;
+import uk.ac.manchester.cs.snee.SNEECompilerException;
+import uk.ac.manchester.cs.snee.SNEEDataSourceException;
+import uk.ac.manchester.cs.snee.SNEEException;
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
+import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
+import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.metadata.CostParametersException;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.schema.UnsupportedAttributeTypeException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataException;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderException;
+import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
+import uk.ac.manchester.cs.snee.sncb.SNCBException;
+import uk.ac.manchester.cs.snee.sncb.SNCBSerialPortReceiver;
+
+public interface AutonomicManager
+{
+
+  public abstract void runFailedNodeFramework(ArrayList<String> failedNodes)
+      throws SNEEConfigurationException, OptimizationException,
+      SchemaMetadataException, TypeMappingException, AgendaException,
+      SNEEException, MalformedURLException,
+      MetadataException, UnsupportedAttributeTypeException,
+      SourceMetadataException, TopologyReaderException,
+      SNEEDataSourceException, CostParametersException, 
+      SNCBException, SNEECompilerException, 
+      IOException, CodeGenerationException, AutonomicManagerException;
+
+  public abstract void runCostModels() throws OptimizationException;
+
+  public abstract void runAnyliserWithDeadNodes() throws OptimizationException;
+
+  public abstract void setDeadNodes(ArrayList<String> deadNodes);
+
+  public abstract void setNoDeadNodes(int noDeadNodes);
+
+  public abstract float getCECMEpochResult() throws OptimizationException;
+
+  public abstract float getCECMAgendaResult() throws OptimizationException;
+
+  public abstract void callAnaysliserAnaylsisSNEECard(
+      Map<Integer, Integer> sneeTuplesPerEpoch);
+
+  public abstract void queryEnded();
+  
+  public abstract void initilise(SourceMetadataAbstract _metadata, QueryExecutionPlan queryPlan, 
+                                 ResultStore resultSet, int queryID) 
+  throws SNEEException, SNEEConfigurationException, 
+  SchemaMetadataException, TypeMappingException, 
+  OptimizationException, IOException, CodeGenerationException,
+  NumberFormatException, WhenSchedulerException;
+
+  //no tuples received this query
+  public abstract void callAnaysliserAnaylsisSNEECard();
+
+  public abstract void setQuery(String query);
+
+  public abstract File getOutputFolder();
+  
+  public abstract void setListener(SNCBSerialPortReceiver mr);
+  
+  public abstract void runSimulatedNodeFailure()throws OptimizationException,
+  SNEEConfigurationException, SchemaMetadataException,
+  TypeMappingException, AgendaException, SNEEException,
+  MalformedURLException, MetadataException,
+  UnsupportedAttributeTypeException, SourceMetadataException,
+  TopologyReaderException, SNEEDataSourceException,
+  CostParametersException, SNCBException, 
+  SNEECompilerException, IOException, CodeGenerationException, AutonomicManagerException;
+
+  public abstract void setQueryParams(QoSExpectations qoS);
+
+  public abstract QueryExecutionPlan getCurrentQEP();
+  
+  public abstract void runSimulatedNumberOfAgendaExecutionCycles(int numberofAgendaExecutionCycles);
+
+  public abstract void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles);
+
+  public abstract void forceFailedNodes(ArrayList<String> failedNodesID) 
+  throws SNEEConfigurationException, OptimizationException, SchemaMetadataException, 
+  TypeMappingException, AgendaException, SNEEException, MetadataException, 
+  CodeGenerationException, UnsupportedAttributeTypeException, SourceMetadataException, 
+  TopologyReaderException, SNEEDataSourceException, CostParametersException, SNCBException, 
+  SNEECompilerException, IOException, AutonomicManagerException;
+
+  public abstract void setCurrentQEP(SensorNetworkQueryPlan newQEP);
+
+  public abstract void resetRunningSites(SensorNetworkQueryPlan qep)
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, 
+  IOException, CodeGenerationException;
+
+  public abstract void queryStarting()
+  throws IOException, OptimizationException, SchemaMetadataException,
+  TypeMappingException, CodeGenerationException, SNEEConfigurationException;
+
+  public abstract void setupOverlay() 
+  throws SchemaMetadataException, TypeMappingException, OptimizationException, 
+  IOException, SNEEConfigurationException, CodeGenerationException;
+
+}
