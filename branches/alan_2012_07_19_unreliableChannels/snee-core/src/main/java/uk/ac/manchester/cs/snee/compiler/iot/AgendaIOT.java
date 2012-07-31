@@ -46,12 +46,12 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AlphaBetaExpression;
 import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostExpressions;
 import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostParameters;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaLengthException;
+import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
@@ -74,74 +74,82 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
  * @author 	Alan Stokes
  *
  */
-public class AgendaIOT extends SNEEAlgebraicForm{
+public class AgendaIOT extends SNEEAlgebraicForm
+{
 
     /**
    * serialVersionUID
    */
   private static final long serialVersionUID = -271011672606150076L;
 
-    /**
-     * Logger for this class.
-     */
-    private static final Logger logger = Logger.getLogger(AgendaIOT.class.getName());
-	
-    /**
-     * The acquisition interval, in binary ms.  The finest granularity that 
-     * may be given is 1/32ms (=32 bms)
-     */
-    private long alpha;
+  /**
+   * Logger for this class.
+   */
+  private static final Logger logger = Logger.getLogger(AgendaIOT.class.getName());
 
-    /**
-     * The buffering factor.
-     */
-    private long beta;
+  /**
+   * The acquisition interval, in binary ms.  The finest granularity that 
+   * may be given is 1/32ms (=32 bms)
+   */
+  protected long alpha;
 
-	boolean allowDiscontinuousSensing = true;
-    
-    /**
-     * The task schedule for all the sites. 
-     */
-    //the list of tasks for each sensor network node
-    private final HashMap<Site, ArrayList<Task>> tasks = 
-    	new HashMap<Site, ArrayList<Task>>();
+  /**
+   * The buffering factor.
+   */
+  protected long beta;
 
-    //the list of all start times (used to display schedule)
-    private ArrayList<Long> startTimes = new ArrayList<Long>();
+  protected boolean allowDiscontinuousSensing = true;
+  
+  /**
+   * The task schedule for all the sites. 
+   */
+  //the list of tasks for each sensor network node
+  protected HashMap<Site, ArrayList<Task>> tasks = 
+  	new HashMap<Site, ArrayList<Task>>();
 
-    public static final boolean IGNORE_SLEEP = true;
+  //the list of all start times (used to display schedule)
+  protected ArrayList<Long> startTimes = new ArrayList<Long>();
 
-    public static final boolean INCLUDE_SLEEP = false;
+  public static final boolean IGNORE_SLEEP = true;
 
-    private IOT iot;
+  public static final boolean INCLUDE_SLEEP = false;
 
-    private String name;
+  protected String name;
 
-    private CostParameters costParams;
-    
-    /**
-     * Counter to assign unique id to different candidates.
-     */
-    private static int candidateCount = 0;
-    
-    private DAF daf;
-    /**
-     * Start of nonLeaf part of the agenda.
-     * This will be where the last leaf jumps to at the end of the query duration 
-     */
-    private long nonLeafStart = Integer.MAX_VALUE;
-
-    public AgendaIOT(final long acquisitionInterval, final long bfactor,
-	final IOT iot, CostParameters costParams, final String queryName,
-	boolean allowDiscontinuousSensing) 
-    throws AgendaException, AgendaLengthException, OptimizationException, 
-    SchemaMetadataException, TypeMappingException, SNEEException, SNEEConfigurationException {
+  protected CostParameters costParams;
+  
+  /**
+   * Counter to assign unique id to different candidates.
+   */
+  protected static int candidateCount = 0;
+  
+  /**
+   * both structures that contain the deployment of operators on nodes (
+   * due to other downstream systems requiring different structures)
+   */
+  protected DAF daf;
+  protected IOT iot;
+  /**
+   * Start of nonLeaf part of the agenda.
+   * This will be where the last leaf jumps to at the end of the query duration 
+   */
+  protected long nonLeafStart = Integer.MAX_VALUE;
+  
+  
+  public AgendaIOT(final long acquisitionInterval, final long bfactor,
+	                 final IOT iot, CostParameters costParams, 
+	                 final String queryName, boolean allowDiscontinuousSensing) 
+  throws AgendaException, AgendaLengthException, OptimizationException, 
+    SchemaMetadataException, TypeMappingException, SNEEException, 
+    SNEEConfigurationException 
+  {
     	super(queryName);
 		this.alpha = msToBms_RoundUp(acquisitionInterval);
 		this.beta = bfactor;
 		this.iot = iot;
 		this.allowDiscontinuousSensing=allowDiscontinuousSensing;
 		this.daf = iot.getDAF();
+		this.tasks.clear();
 		if (!queryName.equals("")) {
 			this.name = generateID(queryName);
 		}
@@ -815,7 +823,7 @@ public class AgendaIOT extends SNEEAlgebraicForm{
 	  }
   }
 
-	private void scheduleFinalSleepTask() throws AgendaException {
+	protected void scheduleFinalSleepTask() throws AgendaException {
 		final long sleepStart = this.getLength_bms(AgendaIOT.INCLUDE_SLEEP);
 		
 		//A sleep task of at least 10 ms needs to be added here, to turn the radio off

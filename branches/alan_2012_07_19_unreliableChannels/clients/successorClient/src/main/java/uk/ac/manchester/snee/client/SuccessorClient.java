@@ -25,9 +25,10 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -44,8 +45,8 @@ public class SuccessorClient extends SNEEClient
 	private static int queryid = 1;
 	protected static int testNo = 1;
 	private static int max = 120;
-  private static File testFolder =  new File("src/main/resources/testsNatural");
-  private static File sneetestFolder =  new File("testsNatural");
+  private static File testFolder =  new File("src/main/resources/testsSize100");
+  private static File sneetestFolder =  new File("testsSize100");
   @SuppressWarnings("unused")
   private static boolean inRecoveryMode = false;
 	
@@ -241,13 +242,14 @@ public class SuccessorClient extends SNEEClient
   UnsupportedAttributeTypeException, SourceMetadataException, 
   TopologyReaderException, SNEEDataSourceException, 
   CostParametersException, SNCBException, IOException, 
-  CodeGenerationException, NumberFormatException, WhenSchedulerException 
+  CodeGenerationException, NumberFormatException, WhenSchedulerException,
+  AgendaLengthException 
   {
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
     SNEEController control = (SNEEController) controller;
-    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR, "TRUE");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_SIM_FAILED_NODES, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");

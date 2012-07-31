@@ -55,13 +55,14 @@ import uk.ac.manchester.cs.snee.compiler.QueryCompiler;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlanAbstract;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.evaluator.Dispatcher;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
-import uk.ac.manchester.cs.snee.manager.planner.model.Model;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentDoesNotExistException;
@@ -119,6 +120,8 @@ public class SNEEController implements SNEE {
 	private boolean runNodeFailure = false;
 	private boolean runWithDeadNodes = false;
 	private boolean runAvroraSimulator = false;
+	private boolean starting;
+	private boolean dspatching;
 
 	/**
 	 * Stores the results for each registered query
@@ -366,11 +369,13 @@ public class SNEEController implements SNEE {
 	 */
 	public int addQuery(String query, String queryParamsFile) 
 	throws EvaluatorException, SNEECompilerException, SNEEException,
-	MetadataException, SNEEConfigurationException,
-	SchemaMetadataException, TypeMappingException, 
-	OptimizationException, IOException, CodeGenerationException,
-	NumberFormatException, WhenSchedulerException 
+	       MetadataException, SNEEConfigurationException,	SchemaMetadataException, 
+	       TypeMappingException, OptimizationException, IOException, 
+	       CodeGenerationException,	NumberFormatException, WhenSchedulerException, 
+	       AgendaException, AgendaLengthException 
 	{
+	  starting = true;
+	  dspatching = true;
 		if (logger.isDebugEnabled()) {
 			logger.debug("ENTER addQuery() with " + query);
 		}
@@ -410,12 +415,14 @@ public class SNEEController implements SNEE {
 	@Override
   public int addQuery(String query, String queryParamsFile, Integer queryID,
       boolean compilation, boolean starting, boolean dispatching) 
-	throws SNEECompilerException,
-      MetadataException, EvaluatorException, SNEEException,
-      SNEEConfigurationException, SchemaMetadataException,
-      TypeMappingException, OptimizationException, IOException,
-      CodeGenerationException, NumberFormatException, WhenSchedulerException
+	throws SNEECompilerException, MetadataException, EvaluatorException, SNEEException,
+         SNEEConfigurationException, SchemaMetadataException, TypeMappingException,
+         OptimizationException, IOException, CodeGenerationException, 
+         NumberFormatException, WhenSchedulerException, AgendaException,
+         AgendaLengthException
   {
+	  this.starting = starting;
+	  this.dspatching = dispatching;
 	  if (logger.isDebugEnabled()) {
       logger.debug("ENTER addQuery() with " + query);
     }
@@ -463,13 +470,18 @@ public class SNEEController implements SNEE {
 	 * @see uk.ac.manchester.cs.snee.SNEE#removeQuery(int)
 	 */
 	public void removeQuery(int queryId) throws SNEEException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("ENTER removeQuery() with " + queryId);
-		}
-		_dispatcher.stopQuery(queryId);
-		if (logger.isDebugEnabled()) {
-    		logger.debug("RETURN removeQuery()");
-    	}
+	  if(starting && dspatching)
+	  {
+  		if (logger.isDebugEnabled()) 
+  		{
+  			logger.debug("ENTER removeQuery() with " + queryId);
+  		}
+  		_dispatcher.stopQuery(queryId);
+  		if (logger.isDebugEnabled()) 
+  		{
+        logger.debug("RETURN removeQuery()");
+      }
+	  }
 	}
 		
 	/**
@@ -495,13 +507,16 @@ public class SNEEController implements SNEE {
 	 * @throws SNEEConfigurationException 
 	 * @throws WhenSchedulerException 
 	 * @throws NumberFormatException 
+	 * @throws AgendaLengthException 
+	 * @throws AgendaException 
 	 */
 	private int dispatchQuery(int queryId, String query, QueryParameters queryParams, 
 	                          boolean starting) 
 	throws SNEEException, MetadataException, EvaluatorException,
-	SNEEConfigurationException, SchemaMetadataException, 
-	TypeMappingException, OptimizationException, IOException, CodeGenerationException,
-	NumberFormatException, WhenSchedulerException
+	       SNEEConfigurationException, SchemaMetadataException, 
+	       TypeMappingException, OptimizationException, IOException, 
+	       CodeGenerationException, NumberFormatException, WhenSchedulerException, 
+	       AgendaException, AgendaLengthException
 	{
 		if (logger.isTraceEnabled()) {
 			logger.trace("ENTER dispatchQuery() with " + queryId +

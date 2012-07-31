@@ -7,6 +7,8 @@ import java.util.Collection;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -73,7 +75,8 @@ public interface SNEE {
 	throws SNEECompilerException, MetadataException, 
 	EvaluatorException, SNEEException, SNEEConfigurationException,
 	SchemaMetadataException, TypeMappingException, OptimizationException, 
-	IOException, CodeGenerationException, NumberFormatException, WhenSchedulerException;
+	IOException, CodeGenerationException, NumberFormatException, WhenSchedulerException,
+	AgendaException, AgendaLengthException;
 
 	/**
    * Adds a query to the set of registered queries and returns the 
@@ -99,14 +102,16 @@ public interface SNEE {
 	 * @throws CodeGenerationException 
 	 * @throws WhenSchedulerException 
 	 * @throws NumberFormatException 
+	 * @throws AgendaLengthException 
+	 * @throws AgendaException 
    */
 	
 	public int addQuery(String query, String parametersFile, Integer queryID, 
 	                    boolean compilation, boolean starting, boolean dispatching)
-	throws SNEECompilerException, MetadataException, 
-  EvaluatorException, SNEEException, SNEEConfigurationException, 
-  SchemaMetadataException, TypeMappingException, OptimizationException, 
-  IOException, CodeGenerationException, NumberFormatException, WhenSchedulerException;
+	throws SNEECompilerException, MetadataException, EvaluatorException, SNEEException, 
+	SNEEConfigurationException, SchemaMetadataException, TypeMappingException, 
+	OptimizationException, IOException, CodeGenerationException, NumberFormatException, 
+	WhenSchedulerException, AgendaException, AgendaLengthException;
 	
   /**
    * Adds a query to the set of registered queries and returns the 

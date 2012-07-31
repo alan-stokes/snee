@@ -15,7 +15,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
-import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyEnum;
+import uk.ac.manchester.cs.snee.manager.common.FailedNodeStrategyEnum;
 
 public class Plotter implements Serializable
 {

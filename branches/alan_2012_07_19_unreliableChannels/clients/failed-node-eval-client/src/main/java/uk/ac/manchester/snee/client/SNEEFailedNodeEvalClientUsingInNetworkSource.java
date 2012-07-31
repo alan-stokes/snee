@@ -25,14 +25,15 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.client.SNEEClient;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
-import uk.ac.manchester.cs.snee.manager.planner.model.Model;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -204,7 +205,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
   UnsupportedAttributeTypeException, SourceMetadataException, 
   TopologyReaderException, SNEEDataSourceException, 
   CostParametersException, SNCBException, IOException, 
-  CodeGenerationException, NumberFormatException, WhenSchedulerException 
+  CodeGenerationException, NumberFormatException, WhenSchedulerException,
+  AgendaLengthException 
   {
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");

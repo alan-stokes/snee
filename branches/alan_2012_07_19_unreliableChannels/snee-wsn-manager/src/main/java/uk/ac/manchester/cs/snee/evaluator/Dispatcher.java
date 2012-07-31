@@ -53,10 +53,11 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.params.QueryParameters;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.EvaluatorQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.LAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
@@ -207,12 +208,12 @@ public class Dispatcher {
 
 	public void initiliseAutonomicManager(int queryID, ResultStore resultSet, 
                                         QueryExecutionPlan queryPlan) 
-  throws 
-  SNEEException, MetadataException, 
-  EvaluatorException, SNEEConfigurationException, 
-  SchemaMetadataException, TypeMappingException, 
-  OptimizationException, IOException, CodeGenerationException,
-  NumberFormatException, WhenSchedulerException 
+  throws SNEEException, MetadataException, 
+         EvaluatorException, SNEEConfigurationException, 
+         SchemaMetadataException, TypeMappingException, 
+         OptimizationException, IOException, CodeGenerationException,
+         NumberFormatException, WhenSchedulerException, AgendaException, 
+         AgendaLengthException 
   {
 	  SensorNetworkQueryPlan snQueryPlan = (SensorNetworkQueryPlan)queryPlan;
     sncb = snQueryPlan.getSNCB();

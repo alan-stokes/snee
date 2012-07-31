@@ -26,6 +26,8 @@ import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEController;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -222,7 +224,8 @@ public abstract class SNEEClient implements Observer {
 	throws SNEECompilerException, MetadataException, EvaluatorException,
 	SNEEException, SQLException, SNEEConfigurationException,
 	SchemaMetadataException, TypeMappingException, OptimizationException, 
-	IOException, CodeGenerationException, NumberFormatException, WhenSchedulerException {
+	IOException, CodeGenerationException, NumberFormatException, WhenSchedulerException,
+	AgendaException, AgendaLengthException {
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER");
 		

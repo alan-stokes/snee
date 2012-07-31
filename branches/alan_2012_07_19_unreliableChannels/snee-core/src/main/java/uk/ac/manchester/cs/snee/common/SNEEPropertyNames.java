@@ -226,6 +226,13 @@ public final class SNEEPropertyNames {
     * used by the planning phase of the manager to determine if 
     * the successor relation should be generated
     */
+   public static final String WSN_MANAGER_UNRELIABLE_CHANNELS = "wsn_manager.unreliable.channels";
+  
+	 
+	 /**
+    * used by the planning phase of the manager to determine if 
+    * the successor relation should be generated
+    */
    public static final String WSN_MANAGER_INITILISE_FRAMEWORKS = "wsn_manager.setup_frameworks";
 	 
 	/**

@@ -26,6 +26,8 @@ import uk.ac.manchester.cs.snee.client.SNEEClient;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.Utils;
 import uk.ac.manchester.cs.snee.common.UtilsException;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
@@ -170,7 +172,8 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
   throws SNEECompilerException, MetadataException, EvaluatorException, 
   SNEEException, SNEEConfigurationException, IOException, OptimizationException, 
   SQLException, UtilsException, NumberFormatException, SchemaMetadataException, 
-  TypeMappingException, CodeGenerationException, WhenSchedulerException
+  TypeMappingException, CodeGenerationException, WhenSchedulerException,
+  AgendaException, AgendaLengthException
   {
     //go though all sites looking for confluence sites which are sites which will cause likely changes to results when lost
 	  Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
@@ -197,7 +200,7 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
   throws SNEECompilerException, MetadataException, EvaluatorException, SNEEException, 
   SNEEConfigurationException, IOException, OptimizationException, SQLException, UtilsException, 
   NumberFormatException, SchemaMetadataException, TypeMappingException, CodeGenerationException,
-  WhenSchedulerException
+  WhenSchedulerException, AgendaException, AgendaLengthException
   {
     if(position < noSites)
     {
@@ -255,7 +258,7 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
   throws SNEECompilerException, MetadataException, EvaluatorException,
   SNEEException, SQLException, SNEEConfigurationException, NumberFormatException, 
   SchemaMetadataException, TypeMappingException, OptimizationException, IOException,
-  CodeGenerationException, WhenSchedulerException
+  CodeGenerationException, WhenSchedulerException, AgendaException, AgendaLengthException
   {
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");

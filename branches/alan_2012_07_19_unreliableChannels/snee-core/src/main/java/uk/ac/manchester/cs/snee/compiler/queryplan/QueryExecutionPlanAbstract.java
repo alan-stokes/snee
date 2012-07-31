@@ -40,7 +40,7 @@ public abstract class QueryExecutionPlanAbstract implements QueryExecutionPlan, 
 	/**
 	 * Underlying DLAF.
 	 */
-	DLAF dlaf;
+	protected DLAF dlaf;
 	
 	/**
 	 * Constructor for QueryExecutionPlan.

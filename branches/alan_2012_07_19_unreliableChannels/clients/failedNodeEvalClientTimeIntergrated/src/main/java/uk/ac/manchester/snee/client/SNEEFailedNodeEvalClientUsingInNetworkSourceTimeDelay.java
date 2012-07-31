@@ -26,16 +26,17 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.Utils;
+import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerException;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
-import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessorPreferenceEnum;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -150,7 +151,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   OptimizationException, SchemaMetadataException, TypeMappingException, 
   AgendaException, UnsupportedAttributeTypeException, SourceMetadataException, 
   TopologyReaderException, SNEEDataSourceException, CostParametersException,
-  SNCBException, CodeGenerationException, NumberFormatException, WhenSchedulerException 
+  SNCBException, CodeGenerationException, NumberFormatException, WhenSchedulerException,
+  AgendaLengthException 
 	{
 	//get query & schemas
     String currentQuery = queryIterator.next();
@@ -433,7 +435,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   UnsupportedAttributeTypeException, SourceMetadataException, 
   TopologyReaderException, SNEEDataSourceException, 
   CostParametersException, SNCBException, IOException, 
-  CodeGenerationException, NumberFormatException, WhenSchedulerException 
+  CodeGenerationException, NumberFormatException, WhenSchedulerException,
+  AgendaLengthException 
   {
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");

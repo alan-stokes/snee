@@ -271,6 +271,11 @@ public class SNEEProperties {
     }
     else if(propName.equals("wsn_manager.successor"))
     {
+      setSetting(propName, "false");
+      return getSetting(propName);
+    }
+    else if(propName.equals("wsn_manager.unreliable.channels"))
+    {
       setSetting(propName, "true");
       return getSetting(propName);
     }

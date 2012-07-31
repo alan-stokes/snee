@@ -14,9 +14,10 @@ import uk.ac.manchester.cs.snee.client.SNEEClient;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -32,7 +33,7 @@ public class SpecificSuccessorClient extends SNEEClient
   private static String sep = System.getProperty("file.separator");
   private static int queryid = 1;
   protected static int testNo = 1;
-  private static File sneetestFolder =  new File("sniperRealWSN");
+  private static File sneetestFolder =  new File("testsNatural");
   
   //private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;
 
@@ -78,8 +79,8 @@ public class SpecificSuccessorClient extends SNEEClient
   throws IOException 
   {
     //get query & schemas
-    String currentQuery = "SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x;";
-    //String currentQuery = "SELECT * FROM A[now], B[now];";
+   // String currentQuery = "SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x;";
+    String currentQuery = "SELECT * FROM A[now]";
     String propertiesPath = sneetestFolder.toString() + sep + "snee1.properties";
     
     System.out.println("Running Tests on query " + (queryid));
@@ -111,7 +112,8 @@ public class SpecificSuccessorClient extends SNEEClient
   UnsupportedAttributeTypeException, SourceMetadataException, 
   TopologyReaderException, SNEEDataSourceException, 
   CostParametersException, SNCBException, IOException, 
-  CodeGenerationException, NumberFormatException, WhenSchedulerException 
+  CodeGenerationException, NumberFormatException, WhenSchedulerException,
+  AgendaLengthException 
   {
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");

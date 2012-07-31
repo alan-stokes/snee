@@ -15,8 +15,8 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.sn.router.RouterException;
@@ -25,13 +25,13 @@ import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
+import uk.ac.manchester.cs.snee.manager.common.FailedNodeStrategyEnum;
 import uk.ac.manchester.cs.snee.manager.common.StrategyAbstract;
-import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyEnum;
-import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyGlobal;
-import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
-import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyPartial;
-import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
-import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessorPreferenceEnum;
+import uk.ac.manchester.cs.snee.manager.failednodestrategies.completerecompilationstrategy.CompleteReCompilationStrategy;
+import uk.ac.manchester.cs.snee.manager.failednodestrategies.localrepairstrategy.LocalRepairStrategy;
+import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.LogicalOverlayStrategy;
+import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -69,23 +69,29 @@ public class Anaylsiser extends AutonomicManagerComponent
   {
     manager = autonomicManager;
     frameworks = new ArrayList<StrategyAbstract>();
+    SetupFailedNodeFrameWorks(_metadataManager);
+  }
+
+  private void SetupFailedNodeFrameWorks(MetadataManager _metadataManager) 
+  throws SNEEConfigurationException
+  {
     String prop = SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_STRATEGIES);
     if(prop.equals(FailedNodeStrategyEnum.FailedNodeLocal.toString()))
     {
-      FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
-        new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
-      FailedNodeStrategyLocal failedNodeFrameworkLocal = 
-        new FailedNodeStrategyLocal(manager, _metadata, _metadataManager);
+      CompleteReCompilationStrategy failedNodeFrameworkGlobal = 
+        new CompleteReCompilationStrategy(manager, _metadata, _metadataManager);
+      LogicalOverlayStrategy failedNodeFrameworkLocal = 
+        new LogicalOverlayStrategy(manager, _metadata, _metadataManager);
       frameworks.add(failedNodeFrameworkGlobal);
       frameworks.add(failedNodeFrameworkLocal);
       
     }
     if(prop.equals(FailedNodeStrategyEnum.FailedNodePartial.toString()))
     {
-      FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
-        new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
-      FailedNodeStrategyPartial failedNodeFrameworkSpaceAndTimePinned = 
-        new FailedNodeStrategyPartial(manager, _metadata, true, true);
+      CompleteReCompilationStrategy failedNodeFrameworkGlobal = 
+        new CompleteReCompilationStrategy(manager, _metadata, _metadataManager);
+      LocalRepairStrategy failedNodeFrameworkSpaceAndTimePinned = 
+        new LocalRepairStrategy(manager, _metadata, true, true);
       //FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
        // new FailedNodeStrategyPartial(manager, _metadata, true, false);
       frameworks.add(failedNodeFrameworkGlobal);
@@ -93,25 +99,26 @@ public class Anaylsiser extends AutonomicManagerComponent
     }
     if(prop.equals(FailedNodeStrategyEnum.FailedNodeGlobal.toString()))
     {
-      FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
-        new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
+      CompleteReCompilationStrategy failedNodeFrameworkGlobal = 
+        new CompleteReCompilationStrategy(manager, _metadata, _metadataManager);
       frameworks.add(failedNodeFrameworkGlobal);
     }
     if(prop.equals(FailedNodeStrategyEnum.All.toString()))
     { 
-      FailedNodeStrategyPartial failedNodeFrameworkSpaceAndTimePinned = 
-        new FailedNodeStrategyPartial(manager, _metadata, true, true);
+      LocalRepairStrategy failedNodeFrameworkSpaceAndTimePinned = 
+        new LocalRepairStrategy(manager, _metadata, true, true);
       //FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
       //  new FailedNodeStrategyPartial(manager, _metadata, true, false);
-      FailedNodeStrategyLocal failedNodeFrameworkLocal = 
-        new FailedNodeStrategyLocal(manager, _metadata, _metadataManager);
-      FailedNodeStrategyGlobal failedNodeFrameworkGlobal = 
-        new FailedNodeStrategyGlobal(manager, _metadata, _metadataManager);
+      LogicalOverlayStrategy failedNodeFrameworkLocal = 
+        new LogicalOverlayStrategy(manager, _metadata, _metadataManager);
+      CompleteReCompilationStrategy failedNodeFrameworkGlobal = 
+        new CompleteReCompilationStrategy(manager, _metadata, _metadataManager);
       frameworks.add(failedNodeFrameworkLocal);
       frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
       //frameworks.add(failedNodeFrameworkSpacePinned);
       frameworks.add(failedNodeFrameworkGlobal);     
     }
+    
   }
 
   /**
@@ -292,16 +299,16 @@ public class Anaylsiser extends AutonomicManagerComponent
   	while(frameworkIterator.hasNext() && feasiable)
   	{
   	  StrategyAbstract framework = frameworkIterator.next();
-  	  if((framework instanceof FailedNodeStrategyGlobal 
+  	  if((framework instanceof CompleteReCompilationStrategy 
   	      && (choice.equals(ChoiceAssessorPreferenceEnum.Global.toString()) || choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))) 
-  	   || (framework instanceof FailedNodeStrategyPartial 
+  	   || (framework instanceof LocalRepairStrategy 
           && (choice.equals(ChoiceAssessorPreferenceEnum.Partial.toString()) || choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))) 
-  	   || (framework instanceof FailedNodeStrategyLocal 
+  	   || (framework instanceof LogicalOverlayStrategy 
           && (choice.equals(ChoiceAssessorPreferenceEnum.Local.toString()) || choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))) 
        )
   	  {
        List<Adaptation> frameworkOutput = framework.adapt(failedNodes);
-  	  if(frameworkOutput.size() == 0 && framework instanceof FailedNodeStrategyGlobal)
+  	  if(frameworkOutput.size() == 0 && framework instanceof CompleteReCompilationStrategy)
   	    feasiable = false;
   	  adapatations.addAll(frameworkOutput);
   	  }
@@ -346,9 +353,9 @@ public class Anaylsiser extends AutonomicManagerComponent
     while(frameworkIterator.hasNext())
     {
       StrategyAbstract framework = frameworkIterator.next();
-      if(framework instanceof FailedNodeStrategyLocal)
+      if(framework instanceof LogicalOverlayStrategy)
       {
-        FailedNodeStrategyLocal local = (FailedNodeStrategyLocal) framework;
+        LogicalOverlayStrategy local = (LogicalOverlayStrategy) framework;
         return local.getLogicalOverlay();
       }
     }
@@ -365,7 +372,7 @@ public class Anaylsiser extends AutonomicManagerComponent
     while(frameworkIterator.hasNext())
     {
       StrategyAbstract currentFrameWork = frameworkIterator.next();
-      if(currentFrameWork instanceof FailedNodeStrategyLocal)
+      if(currentFrameWork instanceof LogicalOverlayStrategy)
       {
         currentFrameWork.initilise(this.qep, 0);
       }

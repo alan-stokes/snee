@@ -4,5 +4,5 @@ import java.io.Serializable;
 
 public enum StrategyIDEnum implements Serializable
 {
-  FailedNodeGlobal, FailedNodePartial, FailedNodeLocal, Orginal, Successor;
+  FailedNodeGlobal, FailedNodePartial, FailedNodeLocal, Orginal, Successor, Unreliable;
 }

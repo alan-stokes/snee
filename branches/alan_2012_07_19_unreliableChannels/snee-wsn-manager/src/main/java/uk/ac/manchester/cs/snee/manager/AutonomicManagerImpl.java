@@ -24,10 +24,11 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.anayliser.Anaylsiser;
@@ -38,9 +39,9 @@ import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.executer.Executer;
 import uk.ac.manchester.cs.snee.manager.monitor.Monitor;
-import uk.ac.manchester.cs.snee.manager.planner.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
-import uk.ac.manchester.cs.snee.manager.planner.model.Model;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -99,13 +100,15 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
    * sets up all dependent objects for the manager
    * @throws WhenSchedulerException 
    * @throws NumberFormatException 
+   * @throws AgendaLengthException 
+   * @throws AgendaException 
    */
   public void initilise(SourceMetadataAbstract _metadata, QueryExecutionPlan qep, 
                         ResultStore resultSet, int queryid) 
   throws SNEEException, SNEEConfigurationException, 
   SchemaMetadataException, TypeMappingException, 
   OptimizationException, IOException, CodeGenerationException,
-  NumberFormatException, WhenSchedulerException
+  NumberFormatException, WhenSchedulerException, AgendaException, AgendaLengthException
   {
     this.currentQEP = qep;
     queryName = "query" + queryid;
@@ -125,9 +128,17 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     if(successor)
     {
       planner.updateStorageLocation(outputFolder);
-     // planner.determimeCheaperPaths(26, 0, this.getWsnTopology(), 233);
       planner.startSuccessorRelation((SensorNetworkQueryPlan) qep);
     }
+    
+    //if unreliable channels set to generate
+    boolean unreliableChannels = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS);
+    if(unreliableChannels)
+    {
+      planner.updateStorageLocation(outputFolder);
+      planner.startUnreliableChannelStrategy((SensorNetworkQueryPlan) qep);
+    }
+    
   }
 
   /**

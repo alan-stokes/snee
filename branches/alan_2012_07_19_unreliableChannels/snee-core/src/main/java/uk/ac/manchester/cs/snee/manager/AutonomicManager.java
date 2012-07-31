@@ -12,10 +12,11 @@ import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
-import uk.ac.manchester.cs.snee.compiler.queryplan.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
@@ -59,12 +60,14 @@ public interface AutonomicManager
 
   public abstract void queryEnded();
   
-  public abstract void initilise(SourceMetadataAbstract _metadata, QueryExecutionPlan queryPlan, 
+  public abstract void initilise(SourceMetadataAbstract _metadata, 
+                                 QueryExecutionPlan queryPlan, 
                                  ResultStore resultSet, int queryID) 
   throws SNEEException, SNEEConfigurationException, 
   SchemaMetadataException, TypeMappingException, 
   OptimizationException, IOException, CodeGenerationException,
-  NumberFormatException, WhenSchedulerException;
+  NumberFormatException, WhenSchedulerException, AgendaException,
+  AgendaLengthException;
 
   //no tuples received this query
   public abstract void callAnaysliserAnaylsisSNEECard();

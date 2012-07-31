@@ -12,17 +12,24 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
+import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
-import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
-import uk.ac.manchester.cs.snee.manager.failednode.cluster.LogicalOverlayNetwork;
-import uk.ac.manchester.cs.snee.manager.planner.successorrelation.SuccessorRelation;
+import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.LogicalOverlayStrategy;
+import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessor;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorUtils;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.SuccessorRelationManager;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelManager;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -296,7 +303,7 @@ public class Planner extends AutonomicManagerComponent
    */
   public void assessOverlayCosts(File outputFolder, Adaptation overlayOTAProgramCost, 
                                  LogicalOverlayNetwork current,
-                                 FailedNodeStrategyLocal failedNodeStrategyLocal) 
+                                 LogicalOverlayStrategy failedNodeStrategyLocal) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException,
   IOException, CodeGenerationException, SNEEConfigurationException
   {
@@ -323,7 +330,7 @@ public class Planner extends AutonomicManagerComponent
   SNEEException, SchemaMetadataException, OptimizationException, 
   WhenSchedulerException, TypeMappingException, IOException, CodeGenerationException
   {
-    SuccessorRelation successorRelation = new SuccessorRelation(plannerFolder, runningSites, _metadataManager, _metadata, manager);
+    SuccessorRelationManager successorRelation = new SuccessorRelationManager(plannerFolder, runningSites, _metadataManager, _metadata, manager);
     successorRelation.executeSuccessorRelation(qep);
   }
 
@@ -400,6 +407,16 @@ public class Planner extends AutonomicManagerComponent
       }
     }
     
+  }
+
+  public RobustSensorNetworkQueryPlan startUnreliableChannelStrategy(SensorNetworkQueryPlan qep) 
+  throws SchemaMetadataException, TypeMappingException, OptimizationException, 
+         IOException, SNEEConfigurationException, CodeGenerationException, 
+         AgendaException, AgendaLengthException, SNEEException
+  {
+    UnreliableChannelManager unreliableChannelManager = 
+      new UnreliableChannelManager(manager, _metadata, _metadataManager, this.plannerFolder);
+    return unreliableChannelManager.generateEdgeRobustQEP(qep);
   }
   
 }
