@@ -292,7 +292,7 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
             InstanceExchangePart eqPart = eqivExchangeIterator.next();
             if(nextPart.getID().equals(eqPart.getPreviousId()))
             {
-              clonedIOT.removeAllEdgesWithSource(part);
+              clonedIOT.removeAllEdgesWithDefinedPosition(part, true);
               assert eqPart.getSite().getID().equals(equivilentSite.getID());
               assert !part.getSite().getID().equals(equivilentSite.getID());
               clonedIOT.addEdge(part, eqPart);
@@ -319,7 +319,7 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
           InstanceExchangePart eqPart = eqivExchangeIterator.next();
           if(previousPart.getID().equals(eqPart.getPreviousId()))
           {
-            clonedIOT.removeAllEdgesWithDest(parentpart);
+            clonedIOT.removeAllEdgesWithDefinedPosition(parentpart, false);
             clonedIOT.addEdge(eqPart, parentpart);
             parentpart.setPreviousExchange(eqPart);
           }

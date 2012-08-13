@@ -55,8 +55,11 @@ public class LocalClusterSuperEquivalenceRelation implements Serializable
     //get memories
     Long primarySiteMemoryUsage = memoryRequiredForQEP(primarySite, qep);
     Long secondarySiteMemoryAvilible = secondarySite.getRAM();
-    
-    
+    if((first.getID().equals("66") || second.getID().equals("66")) &&
+        (first.getID().equals("16") || second.getID().equals("16")))
+    {
+      System.out.println("");
+    }
     
     if(first.getID().equals(qep.getRT().getRoot().getID()))
     	return false;
@@ -89,7 +92,7 @@ public class LocalClusterSuperEquivalenceRelation implements Serializable
     {
       return false;
     }
-    if(!sameConnections(primarySite, secondarySite, network))
+    if(!sameConnections(primarySite, secondarySite, network, qep))
     {
       return false;
     }
@@ -101,37 +104,38 @@ public class LocalClusterSuperEquivalenceRelation implements Serializable
    * @param primarySite
    * @param secondarySite
    * @param network
+   * @param qep 
    * @return
    */
   private static boolean sameConnections(Site primarySite, Site secondarySite,
-      Topology network)
+      Topology network, SensorNetworkQueryPlan qep)
   {
     //gets each nodes edges
-    HashSet<EdgeImplementation> primaryEdges = network.getNodeEdges(primarySite.getID());
+    ArrayList<Node> primaryNodes = new ArrayList<Node>();
+    primaryNodes.addAll(qep.getRT().getSite(primarySite.getID()).getInputsList());
+    primaryNodes.add(qep.getRT().getSite(primarySite.getID()).getOutput(0));
     HashSet<EdgeImplementation> secondaryEdges = network.getNodeEdges(secondarySite.getID());
-    Iterator<EdgeImplementation> primaryEdgesIterator = primaryEdges.iterator();
+    Iterator<Node> primaryEdgesIterator = primaryNodes.iterator();
     //goes though primary nodes edges looking for simular one in the secondary nodes set
     boolean overallFound = true;
     while(primaryEdgesIterator.hasNext() && overallFound)
     {
-      EdgeImplementation primaryEdge = primaryEdgesIterator.next();
-      if(primaryEdge.getDestID().equals(primarySite.getID()))
+      Node primaryNode = primaryEdgesIterator.next();
+      Iterator<EdgeImplementation> secondaryEdgeIterator = secondaryEdges.iterator();
+      boolean found = false;
+      while(secondaryEdgeIterator.hasNext() && !found)
       {
-        Iterator<EdgeImplementation> secondaryEdgeIterator = secondaryEdges.iterator();
-        boolean found = false;
-        while(secondaryEdgeIterator.hasNext() && !found)
-        {
-          EdgeImplementation secondaryEdge = secondaryEdgeIterator.next();
-          //checks other set looking for same source id
-          if(secondaryEdge.getSourceID().equals(primaryEdge.getSourceID()))
-            found = true;
-        }
-        if(found)
-          overallFound = true;
-        else
-        {
-          overallFound = false;
-        }
+        EdgeImplementation secondaryEdge = secondaryEdgeIterator.next();
+        //checks other set looking for same source id
+        if(secondaryEdge.getSourceID().equals(primaryNode.getID())
+          || secondaryEdge.getDestID().equals(primaryNode.getID()))
+          found = true;
+      }
+      if(found)
+        overallFound = true;
+      else
+      {
+        overallFound = false;
       }
     }
     return overallFound;

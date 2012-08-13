@@ -176,10 +176,7 @@ public class InstanceExchangePart extends InstanceOperator{
     }
     else
     {
-      String tempid = this.id;
-      this.id = "F" + sourceFrag.getID() + "_S" + this.getSite().getID() + "_" + partType.toString().toLowerCase();
-      if(!tempid.equals(this.id))
-        previousId = tempid;
+      this.id = "F" + sourceFrag.getID() + "_S" + this.getSite().getID() + "_" + partType.toString().toLowerCase() + "(C)";
     }
   }
 
@@ -542,6 +539,19 @@ public class InstanceExchangePart extends InstanceOperator{
 	  this.prev = pre;
 	}
 	
+	public void setSite(Site site)
+	{
+	  if(this.getSite() != null)
+	  {
+	    this.previousId = this.getSite().getID();
+	    super.setSite(site);
+	  }
+	  else
+	  {
+	    super.setSite(site);
+	  }
+	}
+	
 	public void setDestinitionSite(Site newDestinationSite)
 	{
 	  this.destSite = newDestinationSite;
@@ -557,6 +567,12 @@ public class InstanceExchangePart extends InstanceOperator{
     }
 	}
 	
+	public void setSourceFragment(InstanceFragment sourceFrag)
+	{
+	  this.sourceFrag = sourceFrag;
+	  this.sourceSite = sourceFrag.getSite();
+	  this.regenerateID();
+	}
 	
 	public void setSourceSite(Site newSourceSite)
   {

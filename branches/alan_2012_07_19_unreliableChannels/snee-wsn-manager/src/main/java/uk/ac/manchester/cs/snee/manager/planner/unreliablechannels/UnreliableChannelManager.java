@@ -19,6 +19,7 @@ import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 /**
@@ -74,7 +75,8 @@ public class UnreliableChannelManager extends AutonomicManagerComponent
    * @throws AgendaLengthException 
    * @throws AgendaException 
    */
-  public RobustSensorNetworkQueryPlan generateEdgeRobustQEP(SensorNetworkQueryPlan qep)
+  public RobustSensorNetworkQueryPlan generateEdgeRobustQEP(SensorNetworkQueryPlan qep, 
+                                                            Topology network)
   throws SchemaMetadataException, TypeMappingException, OptimizationException, 
          IOException, SNEEConfigurationException, CodeGenerationException,
          AgendaException, AgendaLengthException, SNEEException
@@ -86,9 +88,12 @@ public class UnreliableChannelManager extends AutonomicManagerComponent
     boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
         SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
     UnreliableChannelAgenda overlayAgenda = 
-      new UnreliableChannelAgenda(logicaloverlayNetwork, qep, allowDiscontinuousSensing);
-    new UnreliableChannelAgendaUtils(overlayAgenda, qep.getIOT(), true).generateImage(outputFolder.toString());
-    return new RobustSensorNetworkQueryPlan(qep, logicaloverlayNetwork, overlayAgenda);
+      new UnreliableChannelAgenda(logicaloverlayNetwork,logicaloverlayNetwork.getQep(),
+                                  network, allowDiscontinuousSensing);
+    new UnreliableChannelAgendaUtils(overlayAgenda, logicaloverlayNetwork.getQep().getIOT(), 
+                                     true).generateImage(outputFolder.toString());
+    return new RobustSensorNetworkQueryPlan(logicaloverlayNetwork.getQep(), 
+                                            logicaloverlayNetwork, overlayAgenda);
     }
     catch(Exception e)
     {

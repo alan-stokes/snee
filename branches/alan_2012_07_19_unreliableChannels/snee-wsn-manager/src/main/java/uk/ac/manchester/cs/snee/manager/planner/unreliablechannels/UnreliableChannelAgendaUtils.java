@@ -68,7 +68,8 @@ public class UnreliableChannelAgendaUtils
       sitesIterator.next();
       sitesCount++;
     }
-    return (sitesCount + 1) * CELL_WIDTH;
+    
+    return (sitesCount + 2) * CELL_WIDTH;
   }
 
   // computes the height of the schedule image
@@ -107,7 +108,7 @@ public class UnreliableChannelAgendaUtils
     g2.setColor(Color.WHITE);
     g2.fill(new Rectangle(0, 0, this.computeWidth(), this.computeHeight()));
 
-    Integer xpos = 10;
+    Integer xpos = 20;
     Integer ypos = 20;
 
     g2.setColor(Color.BLACK);
@@ -129,20 +130,20 @@ public class UnreliableChannelAgendaUtils
       ypos += CELL_HEIGHT;
     }
 
-    xpos = 50;
+    xpos = 80;
 
     final Iterator<Site> siteIter = this.iot.siteIterator(TraversalOrder.POST_ORDER);
     while (siteIter.hasNext()) 
     {
       Site site = siteIter.next();
-      outputSiteAgenda(site, xpos, ypos, g2, startTimeIter);
+      xpos = outputSiteAgenda(site, xpos, ypos, g2, startTimeIter);
       ArrayList<String> clusterSites = agenda.getLogicalOverlayNetwork().getEquivilentNodes(site.getID());
       Iterator<String> clusterSitesIterator = clusterSites.iterator();
       while(clusterSitesIterator.hasNext())
       {
         String clusterNodeID = clusterSitesIterator.next();
-        site = (Site) this.iot.getNode(clusterNodeID);
-        outputSiteAgenda(site, xpos, ypos, g2, startTimeIter);
+        site = (Site) this.iot.getSiteFromID(clusterNodeID);
+        xpos = outputSiteAgenda(site, xpos, ypos, g2, startTimeIter);
       }
     }
     g2.drawString(agenda.getDescendantsString(), 25, ypos + CELL_HEIGHT);
@@ -173,7 +174,7 @@ public class UnreliableChannelAgendaUtils
    * @param g2
    * @param startTimeIter
    */
-  private void outputSiteAgenda(Site site, Integer xpos, int ypos, 
+  private int outputSiteAgenda(Site site, Integer xpos, int ypos, 
                                 Graphics2D g2, Iterator<Long> startTimeIter)
   {
     ypos = 20;
@@ -200,21 +201,21 @@ public class UnreliableChannelAgendaUtils
         } while (sTime.intValue() != task.getStartTime());
 
         if (task instanceof CommunicationTask) 
+        {
           g2.setColor(Color.YELLOW);
+        }
         else 
           g2.setColor(Color.WHITE);
-        g2.fill(new Rectangle(xpos, ypos - CELL_HEIGHT, CELL_WIDTH,
-            CELL_HEIGHT));
+        g2.fill(new Rectangle(xpos, ypos - CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT));
         g2.setColor(Color.BLUE);
-        g2.draw(new Rectangle(xpos, ypos - CELL_HEIGHT, CELL_WIDTH,
-            CELL_HEIGHT));
+        g2.draw(new Rectangle(xpos, ypos - CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT));
         String output = task.toString();
-        g2.drawString(output, xpos + 12, ypos + 12
-            - CELL_HEIGHT);
+        g2.drawString(output, xpos + 12, ypos + 12 - CELL_HEIGHT);
 
       }
       xpos += CELL_WIDTH;
     }
+    return xpos;
   }
 
   public final void exportAsLatex() throws SNEEConfigurationException

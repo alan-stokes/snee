@@ -39,6 +39,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+
 /**
  * @author Ixent Galpin
  * 
@@ -165,12 +167,23 @@ public class NodeImplementation implements Node, Serializable {
 
 	/**
 	 * Get the output nodes
-	 * @return outouts
+	 * @return outputs
 	 */
 	public List<Node> getOutputsList() {
 		return outputs;
 	}
 
+	public List<Site> getOutputsListInSiteForm()
+	{
+	  List<Site> outputs = new ArrayList<Site>();
+	  Iterator<Node> outputIterator = this.outputs.iterator();
+	  while(outputIterator.hasNext())
+	  {
+	    Node output = outputIterator.next();
+	    outputs.add((Site) output);
+	  }
+	  return outputs;
+	}
 
 	public boolean hasOutput(Node n) {
 		return (this.outputs.contains(n));

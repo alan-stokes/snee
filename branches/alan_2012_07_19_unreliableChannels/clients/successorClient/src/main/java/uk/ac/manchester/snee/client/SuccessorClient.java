@@ -12,8 +12,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.log4j.PropertyConfigurator;
-
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEECompilerException;
@@ -45,8 +43,8 @@ public class SuccessorClient extends SNEEClient
 	private static int queryid = 1;
 	protected static int testNo = 1;
 	private static int max = 120;
-  private static File testFolder =  new File("src/main/resources/testsSize100");
-  private static File sneetestFolder =  new File("testsSize100");
+  private static File testFolder =  new File("src/main/resources/testsSize30");
+  private static File sneetestFolder =  new File("testsSize30");
   @SuppressWarnings("unused")
   private static boolean inRecoveryMode = false;
 	

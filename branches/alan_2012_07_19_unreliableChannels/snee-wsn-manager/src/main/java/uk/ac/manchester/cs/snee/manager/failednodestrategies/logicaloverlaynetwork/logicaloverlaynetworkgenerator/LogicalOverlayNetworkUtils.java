@@ -172,7 +172,7 @@ public class LogicalOverlayNetworkUtils
           }
         }
         //add exchanges if needed
-          HashSet<InstanceExchangePart> exchangeParts = currentSite.getInstanceExchangeComponents();
+          ArrayList<InstanceExchangePart> exchangeParts = iot.getExchangeOperatorsThoughSiteMapping(currentSite);
           Iterator<InstanceExchangePart> exchangePartsIterator = exchangeParts.iterator();
           while(exchangePartsIterator.hasNext())
           {
@@ -208,7 +208,6 @@ public class LogicalOverlayNetworkUtils
     System.out.println("Export failed: " + e.toString());
     System.err.println("Export failed: " + e.toString());
   }
-  
   }
   
 }

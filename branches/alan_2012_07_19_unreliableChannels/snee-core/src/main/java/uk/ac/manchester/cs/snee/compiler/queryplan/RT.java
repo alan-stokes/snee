@@ -200,6 +200,11 @@ public class RT extends SNEEAlgebraicForm {
     	return this.siteTree.nodeIterator(traversalOrder);
     }
     
+    public Site locateLastNodeToVisitThoughPreOrderTraversal(Node input)
+    {
+      return this.siteTree.locateLastNodeToVisitThoughPreOrderTraversal(input);
+    }
+    
     public final Iterator<Site> siteIterator(
         Site rootSite,
         final TraversalOrder traversalOrder) {

@@ -161,6 +161,19 @@ public class Tree extends Graph {
     this.doLeafNodeIterator(this.getRoot(), leafNodes); 
     return leafNodes;
   }
+  
+  public Site locateLastNodeToVisitThoughPreOrderTraversal(Node input)
+  {
+    return this.doLastNodeIterator(this.getNode(input.getID()));
+  }
+
+  private Site doLastNodeIterator(Node node)
+  {
+    if(node.getInDegree() != 0)
+      return this.doLastNodeIterator(node.getInput(node.getInDegree() -1));
+    else
+      return (Site) node;
+  }
 
   /**
    * helper method for get leaf nodes

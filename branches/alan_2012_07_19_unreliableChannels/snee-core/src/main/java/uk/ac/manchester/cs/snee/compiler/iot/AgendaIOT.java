@@ -135,7 +135,41 @@ public class AgendaIOT extends SNEEAlgebraicForm
    */
   protected long nonLeafStart = Integer.MAX_VALUE;
   
+  public AgendaIOT(final long acquisitionInterval, final long bfactor,
+      final IOT iot, final String queryName, 
+      boolean allowDiscontinuousSensing) 
+  throws AgendaException, AgendaLengthException, OptimizationException, 
+         SchemaMetadataException, TypeMappingException, SNEEException, 
+         SNEEConfigurationException 
+{
+  super(queryName);
+  this.alpha = msToBms_RoundUp(acquisitionInterval);
+  this.beta = bfactor;
+  this.iot = iot;
+  this.allowDiscontinuousSensing=allowDiscontinuousSensing;
+  this.daf = iot.getDAF();
+  this.tasks.clear();
+  if (!queryName.equals("")) {
+    this.name = generateID(queryName);
+  }
+}
   
+  /**
+   * constructor used by children of this class (reliable channel agenda)
+   * @param acquisitionInterval
+   * @param bfactor
+   * @param iot
+   * @param costParams
+   * @param queryName
+   * @param allowDiscontinuousSensing
+   * @throws AgendaException
+   * @throws AgendaLengthException
+   * @throws OptimizationException
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   * @throws SNEEException
+   * @throws SNEEConfigurationException
+   */
   public AgendaIOT(final long acquisitionInterval, final long bfactor,
 	                 final IOT iot, CostParameters costParams, 
 	                 final String queryName, boolean allowDiscontinuousSensing) 
@@ -306,7 +340,7 @@ public class AgendaIOT extends SNEEAlgebraicForm
      * @param site
      * @throws AgendaException
      */
-    private void assertConsistentStartTime(final double startTime,
+    protected void assertConsistentStartTime(final double startTime,
 	    final Site site) throws AgendaException {
 
 	if (startTime < this.getNextAvailableTime(site, INCLUDE_SLEEP)) {
@@ -356,7 +390,7 @@ public class AgendaIOT extends SNEEAlgebraicForm
 
 
 //    //adds a task to a nodes schedule, performing the necessary checks
-    private void addTask(final Task t, final Site site) {
+    protected void addTask(final Task t, final Site site) {
 	
 		//add node to schedule if necessary
 		if (this.tasks.get(site) == null) {
@@ -438,6 +472,9 @@ public class AgendaIOT extends SNEEAlgebraicForm
 		occurrence, this.alpha, this.beta, daf, costParams);
 	this.addTask(fragTask, node);
 
+	if(frag == null || node == null)
+	  System.out.println("");
+	
 	logger.trace("Scheduled Fragment " + frag.getID() + " on node "
 		+ node.getID() + " at time " + startTime);
 
@@ -485,7 +522,7 @@ public class AgendaIOT extends SNEEAlgebraicForm
      * @throws SNEEException 
      */ 
     
-    public final void appendCommunicationTask(final Site sourceNode,
+    public void appendCommunicationTask(final Site sourceNode,
 	    final Site destNode,
 	    final HashSet<InstanceExchangePart> tuplesToSend)
 	    throws AgendaException, OptimizationException, SchemaMetadataException, TypeMappingException, SNEEException, SNEEConfigurationException {
@@ -507,7 +544,7 @@ public class AgendaIOT extends SNEEAlgebraicForm
 		+ tuplesToSend.size() + " exchange components )");
     }
 
-    public final void addSleepTask(final long sleepStart, final long sleepEnd,
+    public void addSleepTask(final long sleepStart, final long sleepEnd,
 	    final boolean lastInAgenda) throws AgendaException {
 	if (sleepStart < 0) {
 	    throw new AgendaException("Start time < 0");
@@ -800,7 +837,7 @@ public class AgendaIOT extends SNEEAlgebraicForm
       if (currentNode.getOutputs().length > 0) 
       {
     		final HashSet<InstanceExchangePart> tuplesToSend = new HashSet<InstanceExchangePart>();
-    		final Iterator<InstanceExchangePart> exchCompIter = iot.getExchangeOperators(currentNode).iterator();
+    		final Iterator<InstanceExchangePart> exchCompIter = iot.getExchangeOperatorsThoughInputs(currentNode).iterator();
     		//TODO fix to use instance exchange parts.
     		while (exchCompIter.hasNext()) 
     		{

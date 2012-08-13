@@ -54,6 +54,11 @@ public class IOT extends SNEEAlgebraicForm
   protected boolean showTupleTypes = false;
   protected static int candidateCount = 0;
   
+  /**
+   * Spare edges used to link logical nodes together.
+   */
+  private TreeMap<String, Edge> logicalNodeEdges = new TreeMap<String, Edge>(); 
+  
   
   public IOT(final PAF paf, final RT rt, final String queryName) 
   throws SNEEException, SchemaMetadataException
@@ -309,10 +314,10 @@ public class IOT extends SNEEAlgebraicForm
   }
   
   /**
-   * iterator over all instance operators within the iot
+   * iterator over all instance operators within the iot related to PAF
    * @return
    */
-  public Iterator<InstanceOperator> iterateOverInstanceOperators()
+  public Iterator<InstanceOperator> iterateOverInstanceOperatorsInPAF()
   {
     Iterator<Node> phOps = paf.getOperatorTree().nodeIterator(TraversalOrder.POST_ORDER);
     ArrayList<InstanceOperator> ops = new  ArrayList<InstanceOperator>();
@@ -320,6 +325,23 @@ public class IOT extends SNEEAlgebraicForm
     {
       Node op = phOps.next();
       ops.addAll(this.opInstMapping.get(op.getID()));
+    }
+    return ops.iterator();
+  }
+  
+  /**
+   * iterator over all instance operators within the iot (includes exchanges) not in any order
+   * @return
+   */
+  public Iterator<InstanceOperator> iterateOverInstanceOperatorsInIOT()
+  {
+    Iterator<Site> phOps = this.siteToOpInstMap.keySet().iterator();
+    ArrayList<InstanceOperator> ops = new  ArrayList<InstanceOperator>();
+    while(phOps.hasNext())
+    {
+      Site key = phOps.next();
+      ArrayList<InstanceOperator> opsOnSite = this.siteToOpInstMap.get(key);
+      ops.addAll(opsOnSite);
     }
     return ops.iterator();
   }
@@ -342,6 +364,7 @@ public class IOT extends SNEEAlgebraicForm
   public void assign(InstanceOperator opInst, Site site) 
   {  
     opInst.setSite(site);
+    opInst.setDeepestConfluenceSite(site);
     this.siteToOpInstMap.add(site, opInst);
   }
   
@@ -661,6 +684,8 @@ public class IOT extends SNEEAlgebraicForm
   
   public boolean hasSiteGotInstFrag( Site site, InstanceFragment frag)
   {
+    if(site == null || frag == null)
+      System.out.println();
     return frag.site.getID().equals(site.getID());
   }
   
@@ -764,14 +789,35 @@ public class IOT extends SNEEAlgebraicForm
   }
   
   /**
-   * gets all exchange operators located on a site
+   * gets all exchange operators located on a site though the input path
    * @param site
    * @return
    */
-  public ArrayList<InstanceExchangePart> getExchangeOperators(Site site)
+  public ArrayList<InstanceExchangePart> getExchangeOperatorsThoughInputs(Site site)
   {
     ArrayList<InstanceExchangePart> outwardsExchanges = new ArrayList<InstanceExchangePart>();
     ArrayList<InstanceOperator> instanceOperatorsOnSite = this.getOpInstances(site, true);
+    Iterator<InstanceOperator> operatorsOnSiteIterator = instanceOperatorsOnSite.iterator();
+    while(operatorsOnSiteIterator.hasNext())
+    {
+      InstanceOperator op = operatorsOnSiteIterator.next();
+      if(op instanceof InstanceExchangePart)
+      {
+        outwardsExchanges.add((InstanceExchangePart) op);
+      }
+    }
+    return outwardsExchanges;
+  }
+  
+  /**
+   * gets all exchange operators located on a site from site mapping
+   * @param site
+   * @return
+   */
+  public ArrayList<InstanceExchangePart> getExchangeOperatorsThoughSiteMapping(Site site)
+  {
+    ArrayList<InstanceExchangePart> outwardsExchanges = new ArrayList<InstanceExchangePart>();
+    ArrayList<InstanceOperator> instanceOperatorsOnSite = this.siteToOpInstMap.get(site);
     Iterator<InstanceOperator> operatorsOnSiteIterator = instanceOperatorsOnSite.iterator();
     while(operatorsOnSiteIterator.hasNext())
     {
@@ -827,6 +873,10 @@ public class IOT extends SNEEAlgebraicForm
   }
 
 
+  /**
+   * removes the failed site and all operators from the site mapping
+   * @param failedSite
+   */
   public void removeSiteFromMapping(Site failedSite)
   {
     Iterator<Site> keyIterator = this.siteToOpInstMap.keySet().iterator();
@@ -840,8 +890,11 @@ public class IOT extends SNEEAlgebraicForm
     this.siteToOpInstMap.remove(site);
   }
 
-
-  public void removeAllEdgesWithDest(InstanceExchangePart destNode)
+  /**
+   * 
+   * @param sourceNode
+   */
+  public void removeAllEdgesWithDefinedPosition(InstanceExchangePart node, boolean source)
   {
     Iterator<String> keyIterator = this.instanceOperatorTree.getEdges().keySet().iterator();
     ArrayList<Edge> edgesToRemove = new ArrayList<Edge>();
@@ -849,8 +902,16 @@ public class IOT extends SNEEAlgebraicForm
     {
       String key = keyIterator.next();
       Edge edge = this.instanceOperatorTree.getEdge(key);
-      if(edge.getDestID().equals(destNode.getID()))
+      if(source)
+      {
+      if(edge.getSourceID().equals(node.getID()))
         edgesToRemove.add(edge);
+      }
+      else
+      {
+        if(edge.getDestID().equals(node.getID()))
+          edgesToRemove.add(edge);
+      }
     }
     Iterator<Edge> edgeRemovealIterator = edgesToRemove.iterator();
     while(edgeRemovealIterator.hasNext())
@@ -862,28 +923,11 @@ public class IOT extends SNEEAlgebraicForm
   }
 
 
-  public void removeAllEdgesWithSource(InstanceExchangePart sourceNode)
-  {
-    Iterator<String> keyIterator = this.instanceOperatorTree.getEdges().keySet().iterator();
-    ArrayList<Edge> edgesToRemove = new ArrayList<Edge>();
-    while(keyIterator.hasNext())
-    {
-      String key = keyIterator.next();
-      Edge edge = this.instanceOperatorTree.getEdge(key);
-      if(edge.getSourceID().equals(sourceNode.getID()))
-        edgesToRemove.add(edge);
-    }
-    Iterator<Edge> edgeRemovealIterator = edgesToRemove.iterator();
-    while(edgeRemovealIterator.hasNext())
-    {
-      Edge edge = edgeRemovealIterator.next();
-      this.instanceOperatorTree.removeEdge(edge.getID());
-    }
-    
-  }
-
-
-  
+  /**
+   * returns the string formation of the all the oeprators on a site.
+   * @param site
+   * @return
+   */
   public String siteOperatorFormat(Site site)
   {
     String format = "";
@@ -902,28 +946,11 @@ public class IOT extends SNEEAlgebraicForm
     return format;
   }
   
-  public String recursiveString(Site site)
-  {
-    String format = "";
-    format = format.concat(siteOperatorFormat(this.rt.getRoot()));
-    if(site.getInDegree() != 0)
-    {
-      List<Node> inputs = site.getInputsList();
-      inputs = sort(inputs);
-      Iterator<Node> inputIterator = inputs.iterator();
-      while(inputIterator.hasNext())
-      {
-        Node input = inputIterator.next();
-        Site inputSite = this.rt.getSite(input.getID());
-        format = format.concat(siteOperatorFormat(inputSite));
-        recursiveString(inputSite);
-      }
-    }
-    return format;
-    
-  }
-  
-  
+  /**
+   * organises input based off the input nodes ids
+   * @param inputs
+   * @return
+   */
   private List<Node> sort(List<Node> inputs)
   {
     List<Node> organised = new ArrayList<Node>();
@@ -959,13 +986,58 @@ public class IOT extends SNEEAlgebraicForm
     return organised;
   }
 
-
+ /**
+ * returns a string formation of the iot object
+ * @return
+ */
   public String getStringForm()
   {
     String format = "";
     format = format.concat(recursiveString(this.rt.getRoot()));
     return format;
+  }
+  
+  /**
+   * helper method for the string formation method
+   * @param site
+   * @return
+   */
+  public String recursiveString(Site site)
+  {
+    String format = "";
+    format = format.concat(siteOperatorFormat(this.rt.getRoot()));
+    if(site.getInDegree() != 0)
+    {
+      List<Node> inputs = site.getInputsList();
+      inputs = sort(inputs);
+      Iterator<Node> inputIterator = inputs.iterator();
+      while(inputIterator.hasNext())
+      {
+        Node input = inputIterator.next();
+        Site inputSite = this.rt.getSite(input.getID());
+        format = format.concat(siteOperatorFormat(inputSite));
+        recursiveString(inputSite);
+      }
+    }
+    return format;
     
-    
+  }
+
+
+  /**
+   * returns the site object from a given string id from the IOT's site mapping
+   * @param physicalNodeID
+   * @return
+   */
+  public Site getSiteFromID(String physicalNodeID)
+  {
+    Iterator<Site> keyIterator = this.siteToOpInstMap.keySet().iterator();
+    while(keyIterator.hasNext())
+    {
+      Site key = keyIterator.next();
+      if(key.getID().equals(physicalNodeID))
+        return key;
+    }
+    return null;
   }
 }

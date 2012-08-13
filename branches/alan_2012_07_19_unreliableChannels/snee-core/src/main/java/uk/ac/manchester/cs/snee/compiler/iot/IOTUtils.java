@@ -101,11 +101,15 @@ public class IOTUtils
       if(!(rootOp.getSensornetOperator() instanceof SensornetDeliverOperator))
       {
         InstanceExchangePart exchange = currentFrag.getParentExchangeOperator();
+        //add the exchange to the iot site data
+        Site exchangeSite = exchange.getSite();
+        iot.addOpInstToSite(exchange, exchangeSite);
         //always have 1 output
         rootOp.replaceOutput(rootOp.getOutput(0), exchange);
         while(exchange.getNext() != null)
         {
           InstanceExchangePart nextExchange = exchange.getNext(); 
+          iot.addOpInstToSite(nextExchange, nextExchange.getCurrentSite());
           exchange = nextExchange;  
         }
         //get root operator of higher frag frag

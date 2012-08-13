@@ -416,7 +416,7 @@ public class Planner extends AutonomicManagerComponent
   {
     UnreliableChannelManager unreliableChannelManager = 
       new UnreliableChannelManager(manager, _metadata, _metadataManager, this.plannerFolder);
-    return unreliableChannelManager.generateEdgeRobustQEP(qep);
+    return unreliableChannelManager.generateEdgeRobustQEP(qep, manager.getWsnTopology());
   }
   
 }

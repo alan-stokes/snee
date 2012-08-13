@@ -334,6 +334,7 @@ public class InstanceWhereSchedular
                                               null, costs);
               lastPart = part;
               instance.setParentExchange(part);
+              iot.addOpInstToSite(part, currentPathSite);
             }
             else
             {
@@ -344,6 +345,7 @@ public class InstanceWhereSchedular
                                                 lastPart, costs);
                 lastPart = part;
                 parent.addChildExchange(part);
+                iot.addOpInstToSite(part, currentPathSite);
                 
               }
               else
@@ -352,6 +354,7 @@ public class InstanceWhereSchedular
                                                 currentPathSite, ExchangePartType.RELAY, false, 
                                                 lastPart, costs);
                 lastPart = part;
+                iot.addOpInstToSite(part, currentPathSite);
               }
             }
           }
@@ -369,6 +372,8 @@ public class InstanceWhereSchedular
                                      part, costs);
           instance.setParentExchange(part);
           parent.addChildExchange(part2);
+          iot.addOpInstToSite(part, instance.getSite());
+          iot.addOpInstToSite(part2, instance.getSite());
         }
       }
     }
@@ -378,7 +383,7 @@ public class InstanceWhereSchedular
   {
     //iterate over operators looking for ones which haven't got a fixed location
     Iterator<InstanceOperator> InstanceOperatorIterator 
-    = iot.iterateOverInstanceOperators();
+    = iot.iterateOverInstanceOperatorsInPAF();
     while(InstanceOperatorIterator.hasNext())
     {
       InstanceOperator instance = InstanceOperatorIterator.next();      

@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import com.rits.cloning.Cloner;
 
 import uk.ac.manchester.cs.snee.common.graph.Node;
-import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragment;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
@@ -26,6 +25,7 @@ public class PhysicalToLogicalConversion
   private LogicalOverlayNetwork logicalOverlay = null;
   private Topology network = null;
   private File localFolder;
+  private File transferFolder;
   private String sep = System.getProperty("file.separator");
   
   public PhysicalToLogicalConversion(LogicalOverlayNetwork logicalOverlay, 
@@ -35,6 +35,8 @@ public class PhysicalToLogicalConversion
     this.logicalOverlay = logicalOverlay;
     this.network = network;
     this.localFolder = localFolder;
+    this.transferFolder = new File(localFolder.toString() + sep + "QEPtransferFolder");
+    this.transferFolder.mkdir();
   }
   
   /**
@@ -42,6 +44,7 @@ public class PhysicalToLogicalConversion
    */
   public void transferQEPs() 
   {
+    new LogicalOverlayNetworkUtils().exportAsADotFile(logicalOverlay.getQep().getIOT(), logicalOverlay, this.transferFolder.toString() + sep + "iotBeforeQEPTransfer");
     Iterator<String> keys = logicalOverlay.getKeySet().iterator();
     while(keys.hasNext())
     {
@@ -56,8 +59,52 @@ public class PhysicalToLogicalConversion
         transferSiteQEP(logicalOverlay.getQep(), clusterHead, equilvientNode);
       }
     }
+    new LogicalOverlayNetworkUtils().exportAsADotFile(logicalOverlay.getQep().getIOT(), logicalOverlay, this.transferFolder.toString() + sep + "iotAfterQEPTransferBeforeExchanges");
+    sortOutExchanges(logicalOverlay.getQep());
+    new LogicalOverlayNetworkUtils().exportAsADotFile(logicalOverlay.getQep().getIOT(), logicalOverlay, this.transferFolder.toString() + sep + "iotAfterQEPTransfer");
   }
   
+  /**
+   * renames the edges and updates the source fragments of all edges to reflect new changes.
+   * @param qep
+   */
+  private void sortOutExchanges(SensorNetworkQueryPlan qep)
+  {
+    Iterator<InstanceOperator> opIt = qep.getIOT().iterateOverInstanceOperatorsInIOT();
+    while(opIt.hasNext())
+    {
+      InstanceOperator op = opIt.next();
+      if(op instanceof InstanceExchangePart)
+      {
+        InstanceExchangePart inExPa = (InstanceExchangePart) op;
+        if(inExPa.getID().contains("(C)"))
+        {
+          String fragStringID = inExPa.getSourceFrag().getID();
+          String fragid;
+          if(!fragStringID.contains("c"))
+          {
+            fragid = new Integer(inExPa.getSourceFrag().getID()) + "c" ;
+          }
+          else
+          {
+            fragid = inExPa.getSourceFrag().getID();
+          }
+          InstanceFragment frag = qep.getIOT().getInstanceFragment(fragid);
+          if(frag.getSite().getID().equals(op.getSite().getID()))
+          {
+            qep.getIOT().removeEdge(frag.getRootOperator(), op);
+            inExPa.setSourceFragment(frag);
+            qep.getIOT().addEdge(frag.getRootOperator(), op);
+          }
+          else
+          {
+            inExPa.setSourceFragment(frag);
+          }
+        }
+      }
+    }
+  }
+
   /**
    * clones operators onto new site, so that when the iot is called, they should work correctly
    * @param qep
@@ -67,7 +114,6 @@ public class PhysicalToLogicalConversion
   private void transferSiteQEP(SensorNetworkQueryPlan qep, Node clusterHead,
                            Node equilvientNode)
   {
-    new IOTUtils(qep.getIOT(), qep.getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotBefore", "iot with eqiv nodes", true);
 
     Site equilvientSite = (Site) equilvientNode;
     Site clusterHeadSite = (Site) clusterHead;
@@ -75,6 +121,7 @@ public class PhysicalToLogicalConversion
     cloner.dontClone(Logger.class);
     cloner.dontClone(SensornetOperator.class);
     cloner.dontClone(Site.class);
+    equilvientSite.clearOutputs();
     
     //set up iot with new operators 
     ArrayList<InstanceOperator> ClusterHeadsiteInstanceOperators = 
@@ -105,12 +152,13 @@ public class PhysicalToLogicalConversion
       //set correct operators to try to reduce overheads
       clonedRootOp.setSensornetOperator(rootOp.getSensornetOperator());
       
+      //first operator would be an exchange or a deliver, due to being the root operator with exchanges
       if(!(rootOp.getSensornetOperator() instanceof SensornetDeliverOperator))
       {
-        qep.getIOT().assign(clonedRootOp, equilvientSite);
-        clonedRootOp.setDeepestConfluenceSite(equilvientSite);
         InstanceExchangePart clonedPart = (InstanceExchangePart) clonedRootOp; 
         clonedPart.setSite(equilvientSite);
+        
+        qep.getIOT().addOpInstToSite(clonedRootOp, equilvientSite);
         clonedPart.regenerateID();
         equilvientSite.addInstanceExchangePart(clonedPart);
         InstanceExchangePart part = (InstanceExchangePart) rootOp;
@@ -147,40 +195,43 @@ public class PhysicalToLogicalConversion
       SensorNetworkQueryPlan qep, InstanceFragment frag)
   {
      ArrayList<Node> inputs = new ArrayList<Node>();
-     inputs.addAll(inOp.getInputsList());
-     Iterator<Node> nodeIterator = inputs.iterator();
-     while(nodeIterator.hasNext())
+     if(inOp.getInputsList().size() != 0)
      {
-       InstanceOperator input = (InstanceOperator) nodeIterator.next();
-       if(input.getSite().getID().equals(equilvientSite.getID()))
+       inputs.addAll(inOp.getInputsList());
+       Iterator<Node> nodeIterator = inputs.iterator();
+       while(nodeIterator.hasNext())
        {
-         if(input.getCorraspondingFragment() != null)
+         InstanceOperator input = (InstanceOperator) nodeIterator.next();
+         // locate any nodes placed on the equivalant site.
+         if(input.getSite().getID().equals(equilvientSite.getID()))
          {
-           if(frag != null)
+           //if operator exists in a fragment
+           if(input.getCorraspondingFragment() != null)
            {
-             if(!frag.getFragID().equals(input.getCorraspondingFragment().getFragID()))
+             if(frag != null)
+             {
+               if(!frag.getFragID().equals(input.getCorraspondingFragment().getFragID()))
+               {
+                 input.getCorraspondingFragment().setCloned(true);
+                 input.getCorraspondingFragment().setSite(equilvientSite);
+                 qep.getIOT().addInstanceFragment(input.getCorraspondingFragment());
+               }
+               sortOutFragments(input, equilvientSite, qep, input.getCorraspondingFragment());
+             }
+             else
              {
                input.getCorraspondingFragment().setCloned(true);
                qep.getIOT().addInstanceFragment(input.getCorraspondingFragment());
+               sortOutFragments(input, equilvientSite, qep, input.getCorraspondingFragment());
              }
-             sortOutFragments(input, equilvientSite, qep, input.getCorraspondingFragment());
            }
            else
            {
-             input.getCorraspondingFragment().setCloned(true);
-             qep.getIOT().addInstanceFragment(input.getCorraspondingFragment());
              sortOutFragments(input, equilvientSite, qep, input.getCorraspondingFragment());
            }
          }
-         else
-         {
-           sortOutFragments(input, equilvientSite, qep, input.getCorraspondingFragment());
-         }
        }
-       
      }
-     
-    
   }
 
   /**
@@ -191,9 +242,8 @@ public class PhysicalToLogicalConversion
   private void sortOutChildren(InstanceOperator operator, Site equilvientSite, Site clusterHeadSite, 
                                SensorNetworkQueryPlan qep, InstanceOperator pastOp)
   { 
-    
+    //put this operator on the equilvient site in the iot
     qep.getIOT().assign(operator, equilvientSite);
-    operator.setDeepestConfluenceSite(equilvientSite);
     
     if(pastOp != null)
       qep.getIOT().addEdge(operator, pastOp);

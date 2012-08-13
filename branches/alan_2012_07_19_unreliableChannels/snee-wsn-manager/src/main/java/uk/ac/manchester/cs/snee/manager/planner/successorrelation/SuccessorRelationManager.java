@@ -1,13 +1,15 @@
 package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
 
+/*
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
+*/
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -96,6 +98,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
    * code to read in a successor to bypass running search if best path is already known
    * @return
    */
+  /*
   private SuccessorPath readInSuccessor()
   {
     try
@@ -115,7 +118,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
       return null;
     }
   }
-
+*/
   private void writeSuccessorPathToFile(SuccessorPath bestSuccessorRelation)
   {
     try

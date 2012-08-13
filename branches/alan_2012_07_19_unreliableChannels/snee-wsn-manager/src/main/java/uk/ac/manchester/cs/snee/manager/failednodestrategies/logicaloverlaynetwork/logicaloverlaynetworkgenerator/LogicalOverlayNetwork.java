@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 
+import uk.ac.manchester.cs.snee.common.graph.Edge;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
@@ -30,7 +32,8 @@ public class LogicalOverlayNetwork implements Serializable
   private SensorNetworkQueryPlan qep = null;
   private String id = "";
   private static Integer idCounter = 1;
-  
+  private TreeMap<String, String> logicalNodeIds = new TreeMap<String, String>();
+  private String currentNextID ="A";
   /**
    * constructor
    */
@@ -62,8 +65,25 @@ public class LogicalOverlayNetwork implements Serializable
   public void addClusterNode(String primary, ArrayList<String> equivilentNodes)
   {
     this.clusters.addAll(primary, equivilentNodes);
+    addNewID(primary);
   }
   
+  private void addNewID(String primary)
+  {
+    logicalNodeIds.put(primary, currentNextID);
+    String lastCharachter = currentNextID.substring(currentNextID.length() -1);
+    int asciiValue = lastCharachter.charAt(0);
+    if(asciiValue == 90)
+    {
+      currentNextID = currentNextID.concat("A");
+    }
+    else
+    {
+      currentNextID = currentNextID.substring(0, currentNextID.length() -1);
+      currentNextID = currentNextID.concat(Character.toString ((char) (asciiValue + 1)));
+    }
+  }
+
   /**
    * searches though the rest of the clusters, looking for the equivilentNode.
    * If none exist, tyhen add, else choose which cluster owns the node
@@ -212,21 +232,35 @@ public class LogicalOverlayNetwork implements Serializable
     clusters.set(newHead, candidates);
   }
 
+  /**
+   * removes the QEP associated with this logical overlay network
+   */
   public void removeQEP()
   {
     this.qep = null;
   }
 
+  /**
+   * return a string id for the logical overlay network
+   * @return
+   */
   public String getId()
   {
     return id;
   }
 
+  /**
+   * cloner method for the logical overlay network
+   * @return
+   */
   public LogicalOverlayNetwork generateClone()
   {
     return new LogicalOverlayNetwork(this.clusters);
   }
   
+  /**
+   * Comparison helper method.
+   */
   @Override
   public boolean equals(Object other)
   {
@@ -257,6 +291,11 @@ public class LogicalOverlayNetwork implements Serializable
     return true;
   }
   
+  /**
+   * iterator of all sites within the logical overlay network, including cluster heads.
+   * no particular order of cluster heads, but clusters are output together
+   * @return
+   */
   public Iterator<String> siteIdIterator()
   {
     ArrayList<String> array = new ArrayList<String>();
