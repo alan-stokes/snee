@@ -589,4 +589,9 @@ public class InstanceExchangePart extends InstanceOperator{
     }
   }
 
+  public int getmaxPackets(DAF daf, long beta, CostParameters costParams)
+  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  {
+    return this.packetsPerTask(daf, beta, costParams);
+  }
 }

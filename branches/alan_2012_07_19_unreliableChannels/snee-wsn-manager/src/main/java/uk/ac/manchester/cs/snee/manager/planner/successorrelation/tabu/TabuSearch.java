@@ -20,9 +20,10 @@ import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyAbstract;
-import uk.ac.manchester.cs.snee.manager.planner.common.Successor;
-import uk.ac.manchester.cs.snee.manager.planner.common.SuccessorPath;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessor;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteEnergyModel;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor.Successor;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor.SuccessorPath;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -219,7 +220,8 @@ public class TabuSearch extends AutonomicManagerComponent
 
   private void possibleDiversitySetoff(SuccessorPath currentPath, int iteration,
                                        ArrayList<Successor> neighbourHood)
-  throws IOException, OptimizationException, SchemaMetadataException, TypeMappingException
+  throws IOException, OptimizationException, SchemaMetadataException,
+  TypeMappingException, SNEEConfigurationException
   {
     currentNumberOfIterationsWithoutImprovement++;
     Utils.writeNoSuccessor(iteration);
@@ -314,7 +316,8 @@ public class TabuSearch extends AutonomicManagerComponent
     {
       assessorFolder.mkdir();
     }
-    ChoiceAssessor assessAdaptation = new ChoiceAssessor(_metadata, _metaManager, assessorFolder, true);
+    ChoiceAssessor assessAdaptation = 
+      new ChoiceAssessor(_metadata, _metaManager, assessorFolder, true, this.getWsnTopology());
     System.out.println("assessing successor " + successor.toString());
     try
     {
@@ -366,20 +369,22 @@ public class TabuSearch extends AutonomicManagerComponent
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
+   * @throws SNEEConfigurationException 
    */
   private HashMap<String, RunTimeSite> updateRunningSites(HashMap<String, RunTimeSite> sites,
                                                           SensorNetworkQueryPlan altPlan) 
-  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException, SNEEConfigurationException
   {
     Cloner cloner = new Cloner();
     cloner.dontClone(Logger.class);
     HashMap<String, RunTimeSite> runTimeSites = cloner.deepClone(sites);
-    
+    SiteEnergyModel siteModel = new SiteEnergyModel(altPlan.getAgendaIOT());
     Iterator<Site> siteIter = altPlan.getIOT().getRT().siteIterator(TraversalOrder.POST_ORDER);
     while (siteIter.hasNext()) 
     {
       Site site = siteIter.next();
-      double siteEnergyCons = altPlan.getAgendaIOT().getSiteEnergyConsumption(site); // J
+      double siteEnergyCons = siteModel.getSiteEnergyConsumption(site); // J
       runTimeSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
     }
     return runTimeSites;

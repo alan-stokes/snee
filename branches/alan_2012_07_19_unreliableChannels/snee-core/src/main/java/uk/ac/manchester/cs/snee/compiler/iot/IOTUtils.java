@@ -1,8 +1,14 @@
 package uk.ac.manchester.cs.snee.compiler.iot;
 
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -607,6 +613,64 @@ public class IOTUtils
       System.out.println("Export failed: " + e.toString());
       System.err.println("Export failed: " + e.toString());
     }
-    
   }
+  
+  /**
+   * stores a IOT into a file
+   * @param iot
+   * @param localFolder
+   * @throws FileNotFoundException
+   * @throws IOException
+   */
+  public void storeIOT(IOT iot, File localFolder) 
+  throws FileNotFoundException, IOException
+  {
+    
+    String sep = System.getProperty("file.separator");
+    ObjectOutputStream outputStream = 
+      new ObjectOutputStream(new FileOutputStream(localFolder.toString() + sep + iot.getID()));
+    outputStream.writeObject(iot);
+    outputStream.flush();
+    outputStream.reset();
+    outputStream.close();
+  }
+
+  /**
+   * retrieves a IOT from a folder given an ID
+   * @param localFolder
+   * @param id
+   * @return
+   * @throws FileNotFoundException
+   * @throws IOException
+   */
+  public IOT retrieveIOT(File localFolder, String id) 
+  throws FileNotFoundException, IOException
+  {
+    String sep = System.getProperty("file.separator");
+    ObjectInputStream inputStream = null;
+    File file = new File(localFolder + sep + id);
+    inputStream = new ObjectInputStream(new FileInputStream(file));
+        
+    Object obj = null;
+    //try reading in object
+    try
+    {
+      obj = inputStream.readObject();
+      inputStream.close();
+    }
+    catch (ClassNotFoundException e)
+    {
+     throw new IOException(e.getLocalizedMessage());
+    }
+    
+    //if its of the correct format, return overlay
+    if (obj instanceof IOT) 
+    {
+      IOT topology = (IOT) obj;
+      return topology;
+    }   
+    return null;
+  }
+  
+  
 }

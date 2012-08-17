@@ -348,7 +348,7 @@ public class Dispatcher {
 
   public void resetQEP(SensorNetworkQueryPlan qep) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException, 
-  IOException, CodeGenerationException
+  IOException, CodeGenerationException, SNEEConfigurationException
   {
     _autonomicManager.setCurrentQEP(qep); 
     _autonomicManager.resetRunningSites(qep);

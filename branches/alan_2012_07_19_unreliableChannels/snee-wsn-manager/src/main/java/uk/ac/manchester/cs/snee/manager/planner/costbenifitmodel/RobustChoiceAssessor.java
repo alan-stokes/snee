@@ -24,11 +24,9 @@ import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwo
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetworkUtils;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.AdaptationEnergyModel;
-import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.AdaptationEnergyModelOverlay;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteEnergyModel;
-import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteOverlayEnergyModel;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteOverlayRobustEnergyModel;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.time.TimeModel;
-import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.time.TimeModelOverlay;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -37,55 +35,24 @@ import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
-import uk.ac.manchester.cs.snee.sncb.SNCB;
-import uk.ac.manchester.cs.snee.sncb.TinyOS_SNCB_Controller;
 
-public class ChoiceAssessor implements Serializable
+public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
 {
   /**
    * serialVersionUID
    */
   private static final long serialVersionUID = 4727493480043344592L;
   
-  protected String sep = System.getProperty("file.separator");
-  protected File AssessmentFolder;
-  protected MetadataManager _metadataManager;
-  protected File outputFolder;
-  protected File imageGenerationFolder;
-  protected SNCB imageGenerator = null;
-  protected HashMap<String, RunTimeSite> runningSites;
-  protected AdaptationEnergyModel energyModel = null;
-  protected TimeModel timeModel = null;
-  protected TimeModelOverlay timeModelOverlay = null;
-  protected AdaptationEnergyModelOverlay energyModelOverlay = null;
-  protected Boolean useModelForBinaries;
-  protected Topology network;
-  
-  public ChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager,
+  public RobustChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager,
                         File outputFolder, Topology network)
   {
-    ChoiceAssessorInitiliser(_metadata, _metadataManager, outputFolder, true, network);
+    super(_metadata,_metadataManager, outputFolder,  network);
   }
   
-  public ChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager, 
+  public RobustChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager, 
       File outputFolder, boolean useCostModelForBinaries, Topology network)
   {
-    ChoiceAssessorInitiliser(_metadata, _metadataManager, outputFolder, useCostModelForBinaries, network);
-  }
-
-  private void ChoiceAssessorInitiliser(SourceMetadataAbstract _metadata,
-                                        MetadataManager _metadataManager, File outputFolder,
-                                        boolean useCostModelForBinaries, Topology network)
-  {
-    this._metadataManager = _metadataManager;
-    this.outputFolder = outputFolder;
-    this.imageGenerator = new TinyOS_SNCB_Controller();
-    timeModel = new TimeModel(imageGenerator);
-    energyModel = new AdaptationEnergyModel(imageGenerator);
-    timeModelOverlay = new TimeModelOverlay(imageGenerator);
-    energyModelOverlay = new AdaptationEnergyModelOverlay(imageGenerator);
-    useModelForBinaries = useCostModelForBinaries;
-    this.network = network;
+    super(_metadata, _metadataManager, outputFolder, useCostModelForBinaries,network );
   }
 
   /**
@@ -295,7 +262,8 @@ public class ChoiceAssessor implements Serializable
   public void assessOverlayChoice(Adaptation overlayOTAProgramCost,
                                   HashMap<String, RunTimeSite> runningSites, 
                                   LogicalOverlayNetwork current,
-                                  LogicalOverlayStrategy failedNodeStrategyLocal) 
+                                  LogicalOverlayStrategy failedNodeStrategyLocal,
+                                  int networkSize) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException, IOException, CodeGenerationException, SNEEConfigurationException
   {
@@ -311,7 +279,7 @@ public class ChoiceAssessor implements Serializable
     energyModelOverlay.initilise(imageGenerationFolder, _metadataManager, runningSites);
     adapt.setTimeCost(timeModelOverlay.calculateTimeCost(adapt, current));
     adapt.setEnergyCost(energyModelOverlay.calculateEnergyCost(adapt, current));
-    adapt.setLifetimeEstimate(this.calculateEstimatedLifetimeOverlay(adapt, current, failedNodeStrategyLocal));
+    adapt.setLifetimeEstimate(this.calculateEstimatedLifetimeOverlay(adapt, current, failedNodeStrategyLocal, networkSize));
     adapt.setRuntimeCost(calculateEnergyQEPExecutionCost());
   }
   
@@ -330,7 +298,7 @@ public class ChoiceAssessor implements Serializable
    * @throws FileNotFoundException 
    */
   private Double calculateEstimatedLifetimeOverlay(Adaptation adapt, LogicalOverlayNetwork current,
-      LogicalOverlayStrategy failedNodeStrategyLocal)
+      LogicalOverlayStrategy failedNodeStrategyLocal, int networkSize)
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException, SNEEConfigurationException, FileNotFoundException, IOException
   {
@@ -339,12 +307,14 @@ public class ChoiceAssessor implements Serializable
     
     double overallShortestLifetime = 0;
     boolean adapted = true;
-    double agendaLength = Agenda.bmsToMs( adapt.getNewQep().getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
+    RobustSensorNetworkQueryPlan rQEP = (RobustSensorNetworkQueryPlan) adapt.getNewQep();
+    double agendaLength = Agenda.bmsToMs( rQEP.getUnreliableAgenda().getLength_bms(false))/new Double(1000); // ms to s
     
     new LogicalOverlayNetworkUtils().storeOverlayAsFile(current, outputFolder);
     while(adapted)
     {
-      SiteOverlayEnergyModel siteModel = new SiteOverlayEnergyModel(adapt.getNewQep().getAgendaIOT(), current);
+      SiteOverlayRobustEnergyModel siteModel = 
+        new SiteOverlayRobustEnergyModel(rQEP.getUnreliableAgenda(), current, networkSize, globalFailedNodes);
       
       Iterator<Node> siteIter = this.network.siteIterator();
       

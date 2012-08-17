@@ -1,10 +1,11 @@
-package uk.ac.manchester.cs.snee.manager.planner.common;
+package uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -78,10 +79,12 @@ public class SuccessorPath implements Serializable
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
+   * @throws SNEEConfigurationException 
    */
   public void adjustSuccessorSwitchTime(int newSuccessorTimeSwitch, int successorIndex,
                                         HashMap<String, RunTimeSite> runningSites) 
-  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  throws OptimizationException, SchemaMetadataException,
+  TypeMappingException, SNEEConfigurationException
   {
     this.listOfSuccessors.get(successorIndex).setAgendaCount(newSuccessorTimeSwitch);
     recaulcateLifetime(runningSites);
@@ -93,9 +96,11 @@ public class SuccessorPath implements Serializable
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
+   * @throws SNEEConfigurationException 
    */
   private void recaulcateLifetime(HashMap<String, RunTimeSite> runningSites) 
-  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  throws OptimizationException, SchemaMetadataException,
+  TypeMappingException, SNEEConfigurationException
   {
     Iterator<Successor> pathSuccessors = this.listOfSuccessors.iterator();
     while(pathSuccessors.hasNext())

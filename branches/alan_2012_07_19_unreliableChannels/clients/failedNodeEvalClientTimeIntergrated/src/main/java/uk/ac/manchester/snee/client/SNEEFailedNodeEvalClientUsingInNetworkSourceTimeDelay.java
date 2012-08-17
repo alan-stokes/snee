@@ -658,7 +658,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 
   private void resetQEP(SensorNetworkQueryPlan qep) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException, 
-  IOException, CodeGenerationException
+  IOException, CodeGenerationException, SNEEConfigurationException
   {
     SNEEController control = (SNEEController) controller;
     control.resetQEP(qep);

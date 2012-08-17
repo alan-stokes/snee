@@ -42,6 +42,7 @@ import uk.ac.manchester.cs.snee.manager.monitor.Monitor;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteEnergyModel;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -148,18 +149,21 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
    * @throws TypeMappingException
    * @throws IOException
    * @throws CodeGenerationException
+   * @throws SNEEConfigurationException 
    */
   private void setupRunningSites(SensorNetworkQueryPlan qep) 
   throws 
   OptimizationException, SchemaMetadataException, 
-  TypeMappingException, IOException, CodeGenerationException
+  TypeMappingException, IOException, CodeGenerationException,
+  SNEEConfigurationException
   {
+    SiteEnergyModel siteModel = new SiteEnergyModel(qep.getAgendaIOT());
     Iterator<Node> siteIterator = this.getWsnTopology().getNodes().iterator();
     while(siteIterator.hasNext())
     {
       Site currentSite = (Site) siteIterator.next();
       Double energyStock = new Double(currentSite.getEnergyStock() / new Double(1000));
-      Double qepExecutionCost = qep.getAgendaIOT().getSiteEnergyConsumption(currentSite); // J
+      Double qepExecutionCost = siteModel.getSiteEnergyConsumption(currentSite); // J
       runningSites.put(currentSite.getID(), 
                        new RunTimeSite(energyStock,currentSite.getID(),qepExecutionCost));
     }
@@ -463,7 +467,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   @Override
   public void resetRunningSites(SensorNetworkQueryPlan qep) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException, 
-  IOException, CodeGenerationException
+  IOException, CodeGenerationException, SNEEConfigurationException
   {
     runningSites.clear();
     setupRunningSites(qep);

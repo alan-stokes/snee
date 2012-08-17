@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.common;
+package uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor;
 
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.iot.IOTUtils;

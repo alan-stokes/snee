@@ -2,15 +2,19 @@ package uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetw
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 
-import uk.ac.manchester.cs.snee.common.graph.Edge;
+import com.rits.cloning.Cloner;
+
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
@@ -30,6 +34,7 @@ public class LogicalOverlayNetwork implements Serializable
   // cluster rep
   private HashMapList<String, String> clusters = null; 
   private SensorNetworkQueryPlan qep = null;
+  private HashMap<String, RunTimeSite> finalRunningSites;
   private String id = "";
   private static Integer idCounter = 1;
   private TreeMap<String, String> logicalNodeIds = new TreeMap<String, String>();
@@ -102,7 +107,8 @@ public class LogicalOverlayNetwork implements Serializable
 
   public ArrayList<String> getEquivilentNodes(String key)
   {
-    return clusters.get(key);
+    ArrayList<String> cluster = clusters.get(key);
+    return cluster;
   }
   
   /**
@@ -160,6 +166,9 @@ public class LogicalOverlayNetwork implements Serializable
    */
   public String getClusterHeadFor(String candidate)
   {
+    if(this.isClusterHead(candidate))
+      return candidate; 
+    
     Iterator<String> keys = this.getKeySet().iterator();
     while(keys.hasNext())
     {
@@ -168,7 +177,8 @@ public class LogicalOverlayNetwork implements Serializable
       if(candiates.contains(candidate))
         return key;
     }
-    return null;
+    
+    return candidate;
   }
 
   /**
@@ -314,5 +324,32 @@ public class LogicalOverlayNetwork implements Serializable
     //add root
     array.add(this.qep.getRT().getRoot().getID());
     return array.iterator();
+  }
+  
+  public void setFinalEnergyModel(HashMap<String, RunTimeSite> runningSites)
+  {
+    setFinalRunningSites(runningSites);
+  }
+
+  public void setFinalRunningSites(HashMap<String, RunTimeSite> finalRunningSites)
+  {
+    this.finalRunningSites = finalRunningSites;
+  }
+
+  public HashMap<String, RunTimeSite> getFinalRunningSites()
+  {
+    return finalRunningSites;
+  }
+
+  public HashMap<String, RunTimeSite> getCopyOfFinalRunningSites()
+  {
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    return cloner.deepClone(finalRunningSites);
+  }
+
+  public boolean isClusterHead(String sourceID)
+  {
+    return this.clusters.keySet().contains(sourceID);
   }
 }

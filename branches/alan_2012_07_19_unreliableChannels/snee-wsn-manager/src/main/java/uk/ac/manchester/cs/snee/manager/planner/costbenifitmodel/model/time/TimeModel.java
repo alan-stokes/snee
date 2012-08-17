@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model;
+package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.time;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +10,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.TemporalAdjustment;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -28,7 +29,7 @@ public class TimeModel extends Model
   
   public void initilise(File imageGenerationFolder, MetadataManager _metadataManager)
   {
-    super.initilise(imageGenerationFolder, _metadataManager, false);
+    super.initilise(imageGenerationFolder, _metadataManager, true);
   }
   
   public void initilise(File imageGenerationFolder, MetadataManager _metadataManager, 

@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.common;
+package uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -7,12 +7,14 @@ import java.util.logging.Logger;
 
 import com.rits.cloning.Cloner;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.params.qos.QoSExpectations;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteEnergyModel;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -33,7 +35,8 @@ public class Successor implements Comparable<Successor>, Serializable
   
   public Successor(SensorNetworkQueryPlan qep, Integer agendaCount, 
                    HashMap<String, RunTimeSite> RunTimeSites, Integer prevAgendaCount) 
-  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  throws OptimizationException, SchemaMetadataException,
+  TypeMappingException, SNEEConfigurationException
   {
     this.setQep(qep);
     this.setAgendaCount(agendaCount); 
@@ -50,15 +53,17 @@ public class Successor implements Comparable<Successor>, Serializable
   }
   
   public void updateSitesRunningCosts() 
-  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  throws OptimizationException, SchemaMetadataException,
+  TypeMappingException, SNEEConfigurationException
   {
+    SiteEnergyModel siteModel = new SiteEnergyModel(this.qep.getAgendaIOT());
     Iterator<String> siteKeyIterator = this.getNewRunTimeSites().keySet().iterator();
     while(siteKeyIterator.hasNext())
     {
       String key = siteKeyIterator.next();
       RunTimeSite site = getNewRunTimeSites().get(key);
       Site rtSite = this.qep.getRT().getSite(site.toString());
-      site.setQepExecutionCost(this.qep.getAgendaIOT().getSiteEnergyConsumption(rtSite));
+      site.setQepExecutionCost(siteModel.getSiteEnergyConsumption(rtSite));
     }   
   }
 
@@ -211,7 +216,8 @@ public class Successor implements Comparable<Successor>, Serializable
 
   public HashMap<String, RunTimeSite> recalculateRunningSitesCosts(
                                      HashMap<String, RunTimeSite> runningSites)
-  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  throws OptimizationException, SchemaMetadataException,
+  TypeMappingException, SNEEConfigurationException
   {
     this.newRunTimeSites = runningSites;
     this.updateSitesRunningCosts();

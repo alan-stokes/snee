@@ -77,6 +77,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
     private long beta;
 
     private HashSet<InstanceExchangePart> instanceExchangeComponents;
+    private int maxPacketsEspectedToTransmit;
     
     /**
      * Create an instance of a CommunicationTask.
@@ -245,6 +246,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
       				|| (exchComp.getComponentType() 
       					== ExchangePartType.RELAY)) {
       			result += exchComp.getTimeCost(daf, beta, costParams);
+      			this.maxPacketsEspectedToTransmit += exchComp.getmaxPackets(daf, beta, costParams);
       		}
       	}
       	result += getTimeCostOverhead(costParams);
@@ -260,6 +262,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
             || (exchComp.getComponentType() 
               == ExchangePartType.RELAY)) {
           result += exchComp.getTimeCost(daf, beta, costParams);
+          this.maxPacketsEspectedToTransmit += exchComp.getmaxPackets(daf, beta, costParams);
         }
       }
       result += getTimeCostOverhead(costParams);
@@ -317,5 +320,10 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
       return EQUAL;
     else
       return AFTER;
+  }
+  
+  public int getMaxPacektsTransmitted()
+  {
+    return this.maxPacketsEspectedToTransmit;
   }
 }

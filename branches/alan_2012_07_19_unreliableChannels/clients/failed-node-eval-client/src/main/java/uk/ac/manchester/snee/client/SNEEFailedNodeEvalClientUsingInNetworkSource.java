@@ -390,7 +390,8 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
 
   private void resetQEP()
   throws OptimizationException, SchemaMetadataException, 
-  TypeMappingException, IOException, CodeGenerationException 
+  TypeMappingException, IOException, CodeGenerationException,
+  SNEEConfigurationException 
   {
     SNEEController control = (SNEEController) controller;
     control.resetQEP(qep);

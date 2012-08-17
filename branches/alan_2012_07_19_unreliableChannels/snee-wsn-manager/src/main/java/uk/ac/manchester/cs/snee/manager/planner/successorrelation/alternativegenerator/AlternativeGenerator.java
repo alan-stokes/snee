@@ -13,7 +13,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.localrepairstrategy.heursticsrouter.CandiateRouter;
-import uk.ac.manchester.cs.snee.manager.planner.common.Successor;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor.Successor;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.tabu.TABUList;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;

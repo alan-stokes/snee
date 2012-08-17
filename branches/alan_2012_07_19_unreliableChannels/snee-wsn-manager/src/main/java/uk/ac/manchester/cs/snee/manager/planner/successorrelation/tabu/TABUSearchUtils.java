@@ -4,8 +4,8 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import uk.ac.manchester.cs.snee.manager.planner.common.Successor;
-import uk.ac.manchester.cs.snee.manager.planner.common.SuccessorPath;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor.Successor;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor.SuccessorPath;
 
 public class TABUSearchUtils
 {

@@ -129,7 +129,7 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
     {//create new qep, add qep to list of adapatations.
       DAF daf = new IOTUtils(newIOT, costs).getDAF();
       SensorNetworkQueryPlan newQep 
-      = new SensorNetworkQueryPlan(dlaf, routingTree, daf, newIOT, newAgendaIOT, newAgenda, id);
+      = new SensorNetworkQueryPlan(dlaf, routingTree, daf, newIOT, newAgendaIOT, null, id);
       newQep.setQos(adaptation.getOldQep().getQos());
       adaptation.setNewQep(newQep);
     }

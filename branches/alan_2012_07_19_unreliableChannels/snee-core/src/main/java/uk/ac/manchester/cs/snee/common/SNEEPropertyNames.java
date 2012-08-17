@@ -265,6 +265,11 @@ public final class SNEEPropertyNames {
 	 * used by the batch processing to stop avrora running
 	 */
   public static final String RUN_AVRORA_SIMULATOR = "runAvrora";
+
+  /**
+   * used by the energy model to determine if a node has transmitted or not
+   */
+  public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_CLEANRADIO = "wsn_manager.unreliable.channels.clean.radio";
 	
 }
 

@@ -309,7 +309,12 @@ public class SNEEProperties {
       setSetting(propName, "true");
       return getSetting(propName);
     }
-      return null;
+    else if(propName.equals("wsn_manager.unreliable.channels.clean.radio"))
+    {
+      setSetting(propName, "true");
+      return getSetting(propName);
+    }
+    else return null;
   }
 
   public static int getIntSetting(String propName) 

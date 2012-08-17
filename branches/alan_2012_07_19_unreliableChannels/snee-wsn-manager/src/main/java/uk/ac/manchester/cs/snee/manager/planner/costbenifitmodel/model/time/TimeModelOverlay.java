@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model;
+package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.time;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,6 +10,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -146,7 +147,14 @@ public class TimeModelOverlay extends TimeModel
     {
       timeTakesSoFar += calculateTimePerReprogram(reporgrammedSitesIterator.next(), adapt, current);
     }
-    long goldenFrame = calculateGoldenTimeFrame(adapt.getOldQep().getAgendaIOT());
+    long goldenFrame = 0;
+    if(adapt.getOldQep() instanceof RobustSensorNetworkQueryPlan)
+    {
+      RobustSensorNetworkQueryPlan rQEP = (RobustSensorNetworkQueryPlan) adapt.getOldQep();
+      goldenFrame = calculateGoldenTimeFrame(rQEP.getUnreliableAgenda());
+    }
+    else
+      goldenFrame = calculateGoldenTimeFrame(adapt.getOldQep().getAgendaIOT());
     if(timeTakesSoFar > goldenFrame)
       underSpareTime = false;
     else

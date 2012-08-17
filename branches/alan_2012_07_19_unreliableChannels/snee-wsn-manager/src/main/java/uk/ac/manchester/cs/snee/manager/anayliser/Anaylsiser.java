@@ -32,6 +32,7 @@ import uk.ac.manchester.cs.snee.manager.failednodestrategies.localrepairstrategy
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.LogicalOverlayStrategy;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteEnergyModel;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -318,9 +319,10 @@ public class Anaylsiser extends AutonomicManagerComponent
 
   public Double calculateQepRunningCostForSite(Site currentSite) 
   throws OptimizationException, SchemaMetadataException, 
-         TypeMappingException
+         TypeMappingException, SNEEConfigurationException
   {
-    return this.qep.getAgendaIOT().getSiteEnergyConsumption(currentSite); // J
+    SiteEnergyModel siteModel = new SiteEnergyModel(this.qep.getAgendaIOT());
+    return siteModel.getSiteEnergyConsumption(currentSite); // J
   }
 
   public void updateFrameWorkStorageLocation(File outputFolder)

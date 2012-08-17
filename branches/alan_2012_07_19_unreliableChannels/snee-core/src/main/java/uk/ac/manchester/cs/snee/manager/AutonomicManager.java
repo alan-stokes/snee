@@ -106,7 +106,7 @@ public interface AutonomicManager
 
   public abstract void resetRunningSites(SensorNetworkQueryPlan qep)
   throws OptimizationException, SchemaMetadataException, TypeMappingException, 
-  IOException, CodeGenerationException;
+  IOException, CodeGenerationException, SNEEConfigurationException;
 
   public abstract void queryStarting()
   throws IOException, OptimizationException, SchemaMetadataException,

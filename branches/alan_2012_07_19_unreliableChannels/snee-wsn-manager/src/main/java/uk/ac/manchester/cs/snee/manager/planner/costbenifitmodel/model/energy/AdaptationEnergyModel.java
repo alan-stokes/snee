@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model;
+package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +15,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.TemporalAdjustment;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -24,12 +25,12 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 
-public class EnergyModel extends Model
+public class AdaptationEnergyModel extends Model
 {
   protected HashMap<String, RunTimeSite> runningSites;
   
   
-  public EnergyModel(SNCB imageGenerator)
+  public AdaptationEnergyModel(SNCB imageGenerator)
   {
     super(imageGenerator);
   }
@@ -524,7 +525,7 @@ public class EnergyModel extends Model
   OptimizationException, SchemaMetadataException, 
   TypeMappingException
   {
-    
+    SiteEnergyModel siteModel = new SiteEnergyModel(adapt.getNewQep().getAgendaIOT());
     RT routingTree;
     if(!deactivedNodes)
       routingTree = adapt.getNewQep().getRT();
@@ -551,13 +552,13 @@ public class EnergyModel extends Model
           
           if(!deactivedNodes)
           {
-            sourceCost = adapt.getNewQep().getAgendaIOT().evaluateCommunicationTask(sourceTask, new Long(1));
-            destCost = adapt.getNewQep().getAgendaIOT().evaluateCommunicationTask(destTask, new Long(1));
+            sourceCost = siteModel.evaluateCommunicationTask(sourceTask, new Long(1));
+            destCost = siteModel.evaluateCommunicationTask(destTask, new Long(1));
           }
           else
           {
-            sourceCost = adapt.getOldQep().getAgendaIOT().evaluateCommunicationTask(sourceTask, new Long(1));
-            destCost = adapt.getOldQep().getAgendaIOT().evaluateCommunicationTask(sourceTask, new Long(1));
+            sourceCost = siteModel.evaluateCommunicationTask(sourceTask, new Long(1));
+            destCost = siteModel.evaluateCommunicationTask(sourceTask, new Long(1));
           }
           runningSites.get(dest.getID()).addToCurrentAdaptationEnergyCost(destCost);
           runningSites.get(source.getID()).addToCurrentAdaptationEnergyCost(sourceCost);

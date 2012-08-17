@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model;
+package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +16,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -25,10 +26,10 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCB;
 
-public class EnergyModelOverlay extends EnergyModel
+public class AdaptationEnergyModelOverlay extends AdaptationEnergyModel
 {
  
-  public EnergyModelOverlay(SNCB imageGenerator)
+  public AdaptationEnergyModelOverlay(SNCB imageGenerator)
   {
     super(imageGenerator);
   }
@@ -36,7 +37,7 @@ public class EnergyModelOverlay extends EnergyModel
   public void initilise(File imageGenerationFolder, MetadataManager _metadataManager, 
                         HashMap<String, RunTimeSite> runningSites)
   {
-    super.initilise(imageGenerationFolder, _metadataManager, false);
+    super.initilise(imageGenerationFolder, _metadataManager, true);
     this.runningSites = runningSites;
   }
   
@@ -542,7 +543,7 @@ public class EnergyModelOverlay extends EnergyModel
   OptimizationException, SchemaMetadataException, 
   TypeMappingException
   {
-    
+    SiteEnergyModel siteModel = new SiteEnergyModel(adapt.getNewQep().getAgendaIOT());
     RT routingTree;
     if(!deactivedNodes)
       routingTree = adapt.getNewQep().getRT();
@@ -569,13 +570,13 @@ public class EnergyModelOverlay extends EnergyModel
           
           if(!deactivedNodes)
           {
-            sourceCost = adapt.getNewQep().getAgendaIOT().evaluateCommunicationTask(sourceTask, new Long(1));
-            destCost = adapt.getNewQep().getAgendaIOT().evaluateCommunicationTask(destTask, new Long(1));
+            sourceCost = siteModel.evaluateCommunicationTask(sourceTask, new Long(1));
+            destCost = siteModel.evaluateCommunicationTask(destTask, new Long(1));
           }
           else
           {
-            sourceCost = adapt.getOldQep().getAgendaIOT().evaluateCommunicationTask(sourceTask, new Long(1));
-            destCost = adapt.getOldQep().getAgendaIOT().evaluateCommunicationTask(sourceTask, new Long(1));
+            sourceCost = siteModel.evaluateCommunicationTask(sourceTask, new Long(1));
+            destCost = siteModel.evaluateCommunicationTask(sourceTask, new Long(1));
           }
           runningSites.get(dest.getID()).addToCurrentAdaptationEnergyCost(destCost);
           runningSites.get(source.getID()).addToCurrentAdaptationEnergyCost(sourceCost);

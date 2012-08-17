@@ -172,6 +172,7 @@ public class LogicalOverlayGenerator
     //reads in the best overlay from file (stored in a file for memory reasons
     if(bestOverlayNetwork != null)
     {
+      System.out.println(bestMinLifetime);
       LogicalOverlayNetworkUtils utils = new LogicalOverlayNetworkUtils();
       return  utils.retrieveOverlayFromFile(new File(localFolder + sep + "OTASection"), bestOverlayNetwork);
     }

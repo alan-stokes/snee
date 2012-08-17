@@ -481,4 +481,10 @@ public class ExchangePart implements Serializable{
 		this.destFrag = fragment;
 	}
 
+    public int getmaxPackets(DAF daf, long beta, CostParameters costParams)
+    throws OptimizationException, SchemaMetadataException, TypeMappingException
+    {
+      return this.packetsPerTask(daf, beta, costParams);
+    }
+
 }

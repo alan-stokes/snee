@@ -88,7 +88,7 @@ public class Agenda extends SNEEAlgebraicForm{
      * The task schedule for all the sites. 
      */
     //the list of tasks for each sensor network node
-    private final HashMap<Site, ArrayList<Task>> tasks = 
+    private HashMap<Site, ArrayList<Task>> tasks = 
     	new HashMap<Site, ArrayList<Task>>();
 
     //the list of all start times (used to display schedule)
@@ -128,6 +128,7 @@ public class Agenda extends SNEEAlgebraicForm{
 		this.beta = bfactor;
 		this.daf = daf;
 		this.allowDiscontinuousSensing=allowDiscontinuousSensing;
+		tasks.clear();
 		
 		if (!queryName.equals("")) {
 			this.name = generateID(queryName);

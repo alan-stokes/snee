@@ -23,7 +23,9 @@ public class Model
   protected static SNCB imageGenerator = null;
   protected static MetadataManager _metadataManager;  
   protected static boolean underSpareTime;
-  protected Boolean useModelForBinaries;
+  protected Boolean useModelForBinaries = true;
+  
+  protected Model(){}
   
   public Model(SNCB imageGenerator)
   {

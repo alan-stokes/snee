@@ -1,7 +1,7 @@
 package uk.ac.manchester.cs.snee.manager.planner.unreliablechannels;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -18,6 +18,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -450,5 +451,24 @@ public class UnreliableChannelAgenda extends AgendaIOT
       }
       
     }
+  }
+
+  public Iterator<Task> taskIteratorOrderedByTime()
+  {
+    ArrayList<Task> orderedTasks = new  ArrayList<Task>();
+    ArrayList<Long> startTimes = this.getStartTimes();
+    Collections.sort(startTimes);
+    Iterator<Long> siteTimeIterator = startTimes.iterator();
+    while(siteTimeIterator.hasNext())
+    {
+      Long startTime = siteTimeIterator.next();
+      Iterator<Task> taskIterator = this.taskIterator(startTime);
+      while(taskIterator.hasNext())
+      {
+        Task task = taskIterator.next();
+        orderedTasks.add(task);
+      }
+    }
+    return orderedTasks.iterator();
   }
 }

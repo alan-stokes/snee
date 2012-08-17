@@ -8,10 +8,11 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.manager.planner.common.Successor;
-import uk.ac.manchester.cs.snee.manager.planner.common.SuccessorPath;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor.Successor;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor.SuccessorPath;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 
@@ -26,7 +27,8 @@ public class TABUList
   }
   
   public void addToTABUList(Successor successor, int position, boolean entireity)
-  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  throws OptimizationException, SchemaMetadataException,
+  TypeMappingException, SNEEConfigurationException
   {
     Set<TABUSuccessor> diversificationTABUList = new HashSet<TABUSuccessor>();
     //get correct tabuList
@@ -100,7 +102,8 @@ public class TABUList
   }
 
   public void addAllPathIntoTABUList(SuccessorPath path, int position, Successor initialSuccessor) 
-  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  throws OptimizationException, SchemaMetadataException,
+  TypeMappingException, SNEEConfigurationException
   {
     Iterator<Successor> successorIterator = path.getSuccessorList().iterator();
     Set<TABUSuccessor> diversificationTABUList = new HashSet<TABUSuccessor>();
@@ -218,12 +221,14 @@ public class TABUList
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
+   * @throws SNEEConfigurationException 
    */
   public Successor engageDiversificationTechnique(ArrayList<Successor> neighbourHood, 
                                                   Successor currentBestSuccessor,
                                                   SuccessorPath currentPath, int iteration,
                                                   TABUSearchUtils utils) 
-  throws IOException, OptimizationException, SchemaMetadataException, TypeMappingException
+  throws IOException, OptimizationException, SchemaMetadataException,
+  TypeMappingException, SNEEConfigurationException
   { 
     //update TABUList
     int length = currentPath.successorLength() -1;

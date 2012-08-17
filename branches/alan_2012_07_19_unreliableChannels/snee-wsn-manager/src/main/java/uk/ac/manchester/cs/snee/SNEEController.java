@@ -724,7 +724,7 @@ public class SNEEController implements SNEE {
 
   public void resetQEP(SensorNetworkQueryPlan qep) 
   throws OptimizationException, SchemaMetadataException, 
-  TypeMappingException, IOException, CodeGenerationException
+  TypeMappingException, IOException, CodeGenerationException, SNEEConfigurationException
   {
     _dispatcher.resetQEP(qep);
   }

@@ -32,16 +32,16 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlanAbstract {
 	 */
 	private final static Logger logger = Logger.getLogger(SensorNetworkQueryPlan.class.getName());
 	
-	private DAF daf;
+	protected DAF daf;
 	
-	private RT rt;
+	protected RT rt;
 	
-	private Agenda agenda;
-	private AgendaIOT agendaIOT;
+	protected Agenda agenda;
+	protected AgendaIOT agendaIOT;
 	
-	private IOT iot;
+	protected IOT iot;
 	
-	private QoSExpectations qos = null;
+	protected QoSExpectations qos = null;
 
   /**
 	 * Constructor

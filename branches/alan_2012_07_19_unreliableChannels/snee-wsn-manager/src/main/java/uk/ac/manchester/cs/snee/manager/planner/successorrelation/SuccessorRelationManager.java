@@ -19,8 +19,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
-import uk.ac.manchester.cs.snee.manager.planner.PlannerUtils;
-import uk.ac.manchester.cs.snee.manager.planner.common.SuccessorPath;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor.SuccessorPath;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.tabu.TabuSearch;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
@@ -70,7 +69,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
       //search though space
       search = new TabuSearch(manager, runningSites, _metadata, _metadataManager, TABUFolder);
       SuccessorPath bestSuccessorRelation = search.findSuccessorsPath(initialPoint);
-      new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
+      new SuccessorRelationManagerUtils(this.manager, successorFolder).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
       
      writeSuccessorPathToFile(bestSuccessorRelation);
       //SuccessorPath bestSuccessorRelation = readInSuccessor();

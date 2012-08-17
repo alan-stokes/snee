@@ -16,6 +16,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 
@@ -24,7 +25,7 @@ public class PhysicalToLogicalConversion
   
   private LogicalOverlayNetwork logicalOverlay = null;
   private Topology network = null;
-  private File localFolder;
+  //private File localFolder;
   private File transferFolder;
   private String sep = System.getProperty("file.separator");
   
@@ -34,7 +35,7 @@ public class PhysicalToLogicalConversion
   {
     this.logicalOverlay = logicalOverlay;
     this.network = network;
-    this.localFolder = localFolder;
+   // this.localFolder = localFolder;
     this.transferFolder = new File(localFolder.toString() + sep + "QEPtransferFolder");
     this.transferFolder.mkdir();
   }
@@ -244,6 +245,12 @@ public class PhysicalToLogicalConversion
   { 
     //put this operator on the equilvient site in the iot
     qep.getIOT().assign(operator, equilvientSite);
+    //attempt to remove build up of data in IOT
+    if(operator.getSensornetOperator() instanceof SensornetAcquireOperator)
+    {
+      SensornetAcquireOperator op = (SensornetAcquireOperator) operator.getSensornetOperator();
+      op.setMetaData(null);
+    }
     
     if(pastOp != null)
       qep.getIOT().addEdge(operator, pastOp);

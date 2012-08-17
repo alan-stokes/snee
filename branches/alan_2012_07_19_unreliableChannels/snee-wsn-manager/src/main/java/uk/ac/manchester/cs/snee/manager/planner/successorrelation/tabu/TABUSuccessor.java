@@ -3,10 +3,11 @@ package uk.ac.manchester.cs.snee.manager.planner.successorrelation.tabu;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
-import uk.ac.manchester.cs.snee.manager.planner.common.Successor;
+import uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor.Successor;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 
@@ -23,7 +24,8 @@ public class TABUSuccessor extends Successor
   
   public TABUSuccessor(SensorNetworkQueryPlan qep, HashMap<String, RunTimeSite> newRunTimeSites,
                        boolean entirely) 
-  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  throws OptimizationException, SchemaMetadataException,
+  TypeMappingException, SNEEConfigurationException
   {
     super(qep, 0, newRunTimeSites, 0);
     this.entirelyTABUed = entirely;
@@ -33,7 +35,8 @@ public class TABUSuccessor extends Successor
   public TABUSuccessor(SensorNetworkQueryPlan qep, HashMap<String, RunTimeSite> newRunTimeSites,
                        ArrayList<Integer> times
                       ) 
-  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  throws OptimizationException, SchemaMetadataException,
+  TypeMappingException, SNEEConfigurationException
   {
     super(qep, 0, newRunTimeSites, 0);
     entirelyTABUed = false;

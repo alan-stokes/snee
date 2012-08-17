@@ -22,11 +22,13 @@ import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
+import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.LogicalOverlayStrategy;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessor;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorUtils;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.RobustChoiceAssessor;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.SuccessorRelationManager;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelManager;
@@ -54,7 +56,7 @@ public class Planner extends AutonomicManagerComponent
   public Planner(AutonomicManagerImpl autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager)   
   {
     manager = autonomicManager;
-    assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder);
+    assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder, this.manager.getWsnTopology());
     this._metadata = _metadata;
     this._metadataManager = _metadataManager;
     runningSites = manager.getRunningSites();
@@ -65,7 +67,7 @@ public class Planner extends AutonomicManagerComponent
   {
     manager = autonomicManager;
     this.plannerFolder = plannerFolder;
-    assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder);
+    assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder, this.manager.getWsnTopology());
     this.runningSites = runningSites;
   }
   
@@ -280,12 +282,16 @@ public class Planner extends AutonomicManagerComponent
     if(logicalOverlayNetwork == null)
       this.assessor.assessChoice(orgianlOTAProgramCost, runningSites, reset);
     else
-      this.assessor.assessChoice(orgianlOTAProgramCost, runningSites, reset, logicalOverlayNetwork);
+    {
+      LogicalOverlayStrategy local = new LogicalOverlayStrategy(manager, _metadata, _metadataManager);
+      local.initilise(orgianlOTAProgramCost.getNewQep(), 1, logicalOverlayNetwork);
+      this.assessor.assessOverlayChoice(orgianlOTAProgramCost, runningSites, logicalOverlayNetwork, local);
+    }
      
     this.assessor.updateStorageLocation(plannerFolder);
     new PlannerUtils(orgianlOTAProgramCost, manager, output, orgianlOTAProgramCost).writeObjectsToFile(); 
     new ChoiceAssessorUtils(runningSites, orgianlOTAProgramCost.getNewQep().getRT())
-    .exportRTWithEnergies(output.toString()+ sep + "energies" , "");
+    .exportWithEnergies(output.toString()+ sep + "energies" , "");
   }
 
   /**
@@ -416,7 +422,16 @@ public class Planner extends AutonomicManagerComponent
   {
     UnreliableChannelManager unreliableChannelManager = 
       new UnreliableChannelManager(manager, _metadata, _metadataManager, this.plannerFolder);
-    return unreliableChannelManager.generateEdgeRobustQEP(qep, manager.getWsnTopology());
+    RobustSensorNetworkQueryPlan rQEP = 
+      unreliableChannelManager.generateEdgeRobustQEP(qep, manager.getWsnTopology());
+    LogicalOverlayStrategy local = new LogicalOverlayStrategy(manager, _metadata, _metadataManager);
+    local.initilise(rQEP, 1, rQEP.getLogicalOverlayNetwork());
+    Adaptation storage = new Adaptation(rQEP, rQEP, StrategyIDEnum.Unreliable, 0);
+    RobustChoiceAssessor assessor = new RobustChoiceAssessor(_metadata, _metadataManager, plannerFolder, this.manager.getWsnTopology());
+    assessor.assessOverlayChoice(storage, runningSites, rQEP.getLogicalOverlayNetwork(), local, manager.getWsnTopology().getNumNodes());
+    System.out.println("new robust lifetime = " + storage.getLifetimeEstimate());
+    System.exit(0);
+    return rQEP;
   }
   
 }

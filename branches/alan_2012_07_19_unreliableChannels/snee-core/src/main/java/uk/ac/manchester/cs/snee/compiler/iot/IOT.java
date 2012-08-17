@@ -52,13 +52,7 @@ public class IOT extends SNEEAlgebraicForm
   private PAF paf;
   private DAF cDAF;
   protected boolean showTupleTypes = false;
-  protected static int candidateCount = 0;
-  
-  /**
-   * Spare edges used to link logical nodes together.
-   */
-  private TreeMap<String, Edge> logicalNodeEdges = new TreeMap<String, Edge>(); 
-  
+  protected static int candidateCount = 0;  
   
   public IOT(final PAF paf, final RT rt, final String queryName) 
   throws SNEEException, SchemaMetadataException
