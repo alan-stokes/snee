@@ -93,77 +93,7 @@ public class UnreliableChannelAgendaUtils
   public void generateImage(String outputDir) 
   throws SNEEConfigurationException 
   {
-
-    String sep = System.getProperty("file.separator");
-    String pngFilePath = "";
-    if(this.useMilliSeconds)  
-      pngFilePath = outputDir + sep + agenda.getID() + "MS.png";
-    else
-      pngFilePath = outputDir + sep + agenda.getID() + "BMS.png";
-
-    final BufferedImage offImage = new BufferedImage(this.computeWidth(),
-        this.computeHeight(), BufferedImage.TYPE_INT_RGB);
-    final Graphics2D g2 = offImage.createGraphics();
-
-    g2.setColor(Color.WHITE);
-    g2.fill(new Rectangle(0, 0, this.computeWidth(), this.computeHeight()));
-
-    Integer xpos = 20;
-    Integer ypos = 20;
-
-    g2.setColor(Color.BLACK);
-    Iterator<Long> startTimeIter = this.agenda.startTimeIterator();
-    while (startTimeIter.hasNext())
-    {
-      final Long startTime = startTimeIter.next();
-      g2.setFont(new Font("Arial", Font.BOLD, 12));
-
-      if (this.useMilliSeconds) 
-      {
-        g2.drawString(new Long(Agenda.bmsToMs(startTime)).toString(), xpos, ypos + 12);
-      } 
-      else 
-      {
-        g2.drawString(startTime.toString(), xpos, ypos + 12);	
-      }
-      g2.setFont(new Font("Arial", Font.PLAIN, 12));
-      ypos += CELL_HEIGHT;
-    }
-
-    xpos = 80;
-
-    final Iterator<Site> siteIter = this.iot.siteIterator(TraversalOrder.POST_ORDER);
-    while (siteIter.hasNext()) 
-    {
-      Site site = siteIter.next();
-      xpos = outputSiteAgenda(site, xpos, ypos, g2, startTimeIter);
-      ArrayList<String> clusterSites = agenda.getLogicalOverlayNetwork().getEquivilentNodes(site.getID());
-      Iterator<String> clusterSitesIterator = clusterSites.iterator();
-      while(clusterSitesIterator.hasNext())
-      {
-        String clusterNodeID = clusterSitesIterator.next();
-        site = (Site) this.iot.getSiteFromID(clusterNodeID);
-        xpos = outputSiteAgenda(site, xpos, ypos, g2, startTimeIter);
-      }
-    }
-    g2.drawString(agenda.getDescendantsString(), 25, ypos + CELL_HEIGHT);
-
-    try 
-    {
-      boolean status;
-
-      final File outputfile = new File(pngFilePath);
-      status = ImageIO.write(offImage, "png", outputfile);
-
-      if (status == false) 
-        logger.warn("No png writer found for schedule image type");
-
-    } 
-    catch (final IOException e) 
-    {
-      logger.warn("Error encountered writing agenda image.");
-    }
-
+    generateImage(outputDir, this.agenda.getID());
   }    
 
   /**
@@ -177,32 +107,40 @@ public class UnreliableChannelAgendaUtils
   private int outputSiteAgenda(Site site, Integer xpos, int ypos, 
                                 Graphics2D g2, Iterator<Long> startTimeIter)
   {
-    ypos = 20;
-    g2.setColor(Color.BLACK);
-    g2.setFont(new Font("Arial", Font.BOLD, 12));
-    g2.drawString("Node " + site.getID(), xpos + 15, ypos - 5);
-
-    startTimeIter = this.agenda.startTimeIterator();
-
-    g2.setFont(new Font("Arial", Font.PLAIN, 12));
-
     if (this.agenda.hasTasks(site)) 
     {
+      ypos = 20;
+      g2.setColor(Color.BLACK);
+      g2.setFont(new Font("Arial", Font.BOLD, 12));
+      g2.drawString("Node " + site.getID(), xpos + 15, ypos - 5);
+
+      startTimeIter = this.agenda.startTimeIterator();
+
+      g2.setFont(new Font("Arial", Font.PLAIN, 12));
+      
       final Iterator<Task> taskIter = this.agenda.taskIterator(site);
       while (taskIter.hasNext()) 
       {
         final Task task = taskIter.next();
 
-        Long sTime;
+        Long sTime = new Long(0);
         do 
         {
-          sTime = startTimeIter.next();
+          try{
+          sTime = startTimeIter.next();}
+          catch(Exception e)
+          {
+            System.out.println("");
+          }
           ypos += CELL_HEIGHT;
         } while (sTime.intValue() != task.getStartTime());
 
         if (task instanceof CommunicationTask) 
         {
-          g2.setColor(Color.YELLOW);
+          if(task.isRan())
+            g2.setColor(Color.YELLOW);
+          else
+            g2.setColor(Color.BLUE);
         }
         else 
           g2.setColor(Color.WHITE);
@@ -289,14 +227,16 @@ public class UnreliableChannelAgendaUtils
             final CommunicationTask ct = (CommunicationTask) t;
             if (ct.getMode() == CommunicationTask.RECEIVE) 
             {
-              out
-              .print("& \\textit{rx" + ct.getSourceID()
-                  + "} ");
+              out.print("& \\textit{rx" + ct.getSourceID() + "} ");
             } 
-            else 
+            else if (ct.getMode() == CommunicationTask.TRANSMIT)
             {
               out.print("& \\textit{tx" + ct.getDestID() + "} ");
             }
+            else if(ct.getMode() == CommunicationTask.ACKRECEIVE)
+              out.print("& \\textit{rxa" + ct.getSourceID() + "} ");
+            else
+              out.print("& \\textit{txa" + ct.getDestID() + "} ");
           } 
           else if (t instanceof FragmentTask) 
           {
@@ -332,6 +272,82 @@ public class UnreliableChannelAgendaUtils
       final String outputFileName) 
   {
     this.exportAsLatex(outputDirName + outputFileName);
+  }
+
+  public void generateImage(String outputDir, String fileName)
+  throws SNEEConfigurationException 
+  {
+    String sep = System.getProperty("file.separator");
+    String pngFilePath = "";
+    if(this.useMilliSeconds)  
+      pngFilePath = outputDir + sep + fileName + "MS.png";
+    else
+      pngFilePath = outputDir + sep + fileName + "BMS.png";
+
+    final BufferedImage offImage = new BufferedImage(this.computeWidth(),
+        this.computeHeight(), BufferedImage.TYPE_INT_RGB);
+    final Graphics2D g2 = offImage.createGraphics();
+
+    g2.setColor(Color.WHITE);
+    g2.fill(new Rectangle(0, 0, this.computeWidth(), this.computeHeight()));
+
+    Integer xpos = 20;
+    Integer ypos = 20;
+
+    g2.setColor(Color.BLACK);
+    Iterator<Long> startTimeIter = this.agenda.startTimeIterator();
+    while (startTimeIter.hasNext())
+    {
+      final Long startTime = startTimeIter.next();
+      g2.setFont(new Font("Arial", Font.BOLD, 12));
+
+      if (this.useMilliSeconds) 
+      {
+        g2.drawString(new Long(Agenda.bmsToMs(startTime)).toString(), xpos, ypos + 12);
+      } 
+      else 
+      {
+        g2.drawString(startTime.toString(), xpos, ypos + 12); 
+      }
+      g2.setFont(new Font("Arial", Font.PLAIN, 12));
+      ypos += CELL_HEIGHT;
+    }
+
+    xpos = 80;
+
+    final Iterator<Site> siteIter = this.iot.siteIterator(TraversalOrder.POST_ORDER);
+    while (siteIter.hasNext()) 
+    {
+      Site site = siteIter.next();
+      site = this.agenda.getSiteByID(site);
+      xpos = outputSiteAgenda(site, xpos, ypos, g2, startTimeIter);
+      ArrayList<String> clusterSites = agenda.getLogicalOverlayNetwork().getEquivilentNodes(site.getID());
+      Iterator<String> clusterSitesIterator = clusterSites.iterator();
+      while(clusterSitesIterator.hasNext())
+      {
+        String clusterNodeID = clusterSitesIterator.next();
+        site = (Site) this.agenda.getSiteByID(clusterNodeID);
+        xpos = outputSiteAgenda(site, xpos, ypos, g2, startTimeIter);
+      }
+    }
+    g2.drawString(agenda.getDescendantsString(), 25, ypos + CELL_HEIGHT);
+
+    try 
+    {
+      boolean status;
+
+      final File outputfile = new File(pngFilePath);
+      status = ImageIO.write(offImage, "png", outputfile);
+
+      if (status == false) 
+        logger.warn("No png writer found for schedule image type");
+
+    } 
+    catch (final IOException e) 
+    {
+      logger.warn("Error encountered writing agenda image.");
+    }
+    
   }	
 
 }

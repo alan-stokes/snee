@@ -71,6 +71,10 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
     public static final int RECEIVE = 0;
 
     public static final int TRANSMIT = 1;
+    
+    public static final int ACKRECEIVE = 2;
+    
+    public static final int ACKTRANSMIT = 3;
 
    // private long alpha;
 
@@ -78,6 +82,24 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
 
     private HashSet<InstanceExchangePart> instanceExchangeComponents;
     private int maxPacketsEspectedToTransmit;
+    
+    public CommunicationTask(final long startTime, final Site sourceNode,
+                             final Site destNode, final int mode, final long alpha, 
+                             final long bufferingFactor, final DAF daf, int maxPackets,
+                             CostParameters costParams) 
+    throws OptimizationException, SchemaMetadataException, TypeMappingException 
+    {
+    super(startTime, costParams);
+    this.sourceNode = sourceNode;
+    this.destNode = destNode;
+    this.instanceExchangeComponents = null;
+    this.maxPacketsEspectedToTransmit = maxPackets;
+    this.beta = bufferingFactor;
+    this.endTime = startTime + (long) Math.ceil(costParams.getSendPacket() * maxPacketsEspectedToTransmit);
+    this.mode = mode;
+    
+      }
+    
     
     /**
      * Create an instance of a CommunicationTask.
@@ -177,12 +199,16 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
     }
     
     @Override
-	public final Site getSite() {
-	if (this.mode == RECEIVE) {
+	public final Site getSite() 
+  {
+	  if (this.mode == RECEIVE) 
 	    return this.destNode;
-	} else {
+	  else if(this.mode == TRANSMIT)
 	    return this.sourceNode;
-	}
+	  else if(this.mode == ACKRECEIVE)
+	    return this.destNode;
+	  else
+	    return this.sourceNode;
     }
 
     @Override
@@ -301,12 +327,17 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
      * String representation.
      */
     @Override
-	public final String toString() {
-	if (this.mode == RECEIVE) {
+	public final String toString() 
+  {
+	  if (this.mode == RECEIVE) 
 	    return "RX " + this.sourceNode.getID() + "_" + this.destNode.getID();
-	}
-	return "TX " + this.sourceNode.getID() + "_" + this.destNode.getID();
-    }
+	  else if(this.mode == TRANSMIT)
+	    return "TX " + this.sourceNode.getID() + "_" + this.destNode.getID();
+	  else if(this.mode == ACKRECEIVE)
+	    return "RXA " + this.sourceNode.getID() + "_" + this.destNode.getID();
+	  else 
+	    return "TXA " + this.sourceNode.getID() + "_" + this.destNode.getID();
+  }
 
   @Override
   public int compareTo(CommunicationTask other)

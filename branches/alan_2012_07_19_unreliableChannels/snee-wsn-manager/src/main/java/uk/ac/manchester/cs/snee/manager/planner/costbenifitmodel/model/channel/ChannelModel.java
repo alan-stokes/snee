@@ -52,23 +52,26 @@ public class ChannelModel implements Serializable
     while(taskIterator.hasNext())
     {
       Task task = taskIterator.next();
-      int siteID = Integer.parseInt(task.getSite().getID());
-      if(task instanceof CommunicationTask)
+      if(task instanceof CommunicationTask )
       {
         CommunicationTask cTask = (CommunicationTask) task;
-        System.out.println("task = " + cTask.toString() + " at " + cTask.getStartTime());
-        int packetsToTransmit = cTask.getMaxPacektsTransmitted();
-        
-        if(!failedNodes.contains(cTask.getSourceID()) && 
-           !failedNodes.contains(cTask.getDestID()) &&
-            tranmissionTaskNeeded(cTask.getSourceID()))
+        if(cTask.getMode() == CommunicationTask.RECEIVE ||
+           cTask.getMode() == CommunicationTask.TRANSMIT)
         {
-          for(int packetID = 0; packetID < packetsToTransmit; packetID++)
+          int packetsToTransmit = cTask.getMaxPacektsTransmitted();
+          
+          if(!failedNodes.contains(cTask.getSourceID()) && 
+             !failedNodes.contains(cTask.getDestID()) &&
+              tranmissionTaskNeeded(cTask.getSourceID()))
           {
-            System.out.println("Try sending data from " + cTask.getSourceID() + " to "  +cTask.getDestID());
-            tryTransmission(cTask.getDestID(), Integer.parseInt(cTask.getSourceID()), packetID);
+            for(int packetID = 0; packetID < packetsToTransmit; packetID++)
+            {
+              tryTransmission(cTask.getDestID(), Integer.parseInt(cTask.getSourceID()), packetID);
+            }
+            ChannelModelSite site = channelModel.get(Integer.parseInt(cTask.getSourceID()));
+            site.setNeedTransmit();
+            verifyAck(cTask.getDestID(), cTask.getSourceID());
           }
-          verifyAck(cTask.getDestID(), cTask.getSourceID());
         }
       }
     }
@@ -79,7 +82,7 @@ public class ChannelModel implements Serializable
     ChannelModelSite site = channelModel.get(Integer.parseInt(sourceID)); 
     if(site == null)
       return false;
-    return site.needToTransmit();
+    return site.channelModelNeedToTransmit();
   }
 
   private void verifyAck(String destID, String siteID)
@@ -98,16 +101,18 @@ public class ChannelModel implements Serializable
       ChannelModelSite outputSite = siteiterator.next();
       if(outputSite.needToTransmitAckTo(childClusterHead.toString()))
       {
-        if(didPacketGetRecived(outputSite.toString(), Integer.parseInt(childClusterHead.toString())))
+        outputSite.channelModelSetToTransmitACK(true);
+        outputSite.incrementTransmittedAcks();
+        if(didPacketGetRecived(childClusterHead.toString(), Integer.parseInt(outputSite.toString())))
         {
-          childClusterHead.receivedACK();
+          childClusterHead.receivedACK(outputSite);
         }
         Iterator<ChannelModelSite> childSiteIterator = inputSites.iterator();
         while(childSiteIterator.hasNext())
         {
           ChannelModelSite childSite = childSiteIterator.next();
-          if(didPacketGetRecived(outputSite.toString(), Integer.parseInt(childSite.toString())))
-            childSite.receivedACK();
+          if(didPacketGetRecived(childSite.toString(), Integer.parseInt(outputSite.toString())))
+            childSite.receivedACK(outputSite);
         }
       }
     }
@@ -139,10 +144,7 @@ public class ChannelModel implements Serializable
       ChannelModelSite outputSite = siteiterator.next();
       if(didPacketGetRecived(destID, siteID))
       {
-        String childClusterHeadid = logicaloverlayNetwork.getClusterHeadFor(siteID.toString());
-        if(outputSite == null || childClusterHeadid == null )
-          System.out.println();
-        outputSite.recivedInputPacket(childClusterHeadid, packetID);
+        outputSite.recivedInputPacket(siteID.toString(), packetID);
       }
     }
   }
@@ -152,16 +154,21 @@ public class ChannelModel implements Serializable
     try
     {
       boolean cleanRadioChannels = 
-        SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_CLEANRADIO);
+       SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_CLEANRADIO);
       boolean relibaleChannels = 
         SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS);
+      if(cleanRadioChannels && relibaleChannels)
+      {
+        return true;
+      }
+      else
+        return false;
     }
     catch (SNEEConfigurationException e)
     {
-      // TODO Auto-generated catch block
       e.printStackTrace();
+      return false;
     }
-    return true;
   }
 
   private void createChannelSites()
@@ -170,33 +177,46 @@ public class ChannelModel implements Serializable
     while(siteIDIterator.hasNext())
     {
       String siteID = siteIDIterator.next();
-      System.out.println("node id " + siteID);
       Integer siteIDInt = Integer.parseInt(siteID);
       String clusterHeadID = logicaloverlayNetwork.getClusterHeadFor(siteID);
-      System.out.println(siteID);
       Iterator<Node> inputNodes = logicaloverlayNetwork.getQep().getRT().getSite(clusterHeadID).getInputsList().iterator();
       HashMap<String, Integer> expectedPackets = new  HashMap<String, Integer>();
       while(inputNodes.hasNext())
       {
         Node input = inputNodes.next();
-        System.out.println("finding transmission task for " + input.getID());
         Node agendaInput = agenda.getSiteByID((Site) input);
         CommunicationTask task = agenda.getTransmissionTask(agendaInput);
-        if(task == null)
-          System.out.println();
         int packetsToRecieve = task.getMaxPacektsTransmitted();
         expectedPackets.put(input.getID(), packetsToRecieve);
+        Iterator<String> equivNodes = logicaloverlayNetwork.getEquivilentNodes(input.getID()).iterator();
+        while(equivNodes.hasNext())
+        {
+          String equivNode = equivNodes.next();
+          Node agendaEquivInput = agenda.getSiteByID(equivNode);
+          task = agenda.getTransmissionTask(agendaEquivInput);
+          packetsToRecieve = task.getMaxPacektsTransmitted();
+          expectedPackets.put(equivNode, packetsToRecieve);
+        } 
       }
       if(logicaloverlayNetwork.getQep().getRT().getRoot().getID().equals(clusterHeadID))
       {
-        ChannelModelSite site = new ChannelModelSite(expectedPackets, 0, siteID);
+        ChannelModelSite site = new ChannelModelSite(expectedPackets, 0, siteID, logicaloverlayNetwork, 0);
         channelModel.set(siteIDInt, site);
       }
       else
       {
         Node output = logicaloverlayNetwork.getQep().getRT().getSite(clusterHeadID).getOutput(0);
         int parents = logicaloverlayNetwork.getEquivilentNodes(output.getID()).size() + 1;
-        ChannelModelSite site = new ChannelModelSite(expectedPackets, parents, siteID);
+        ChannelModelSite site;
+        if(logicaloverlayNetwork.isClusterHead(siteID))
+          site = new ChannelModelSite(expectedPackets, parents, siteID, logicaloverlayNetwork, 0);
+        else
+        {
+          ArrayList<String> nodes = logicaloverlayNetwork.getEquivilentNodes(logicaloverlayNetwork.getClusterHeadFor(siteID));
+          int position = nodes.indexOf(siteID) + 1;
+          site = new ChannelModelSite(expectedPackets, parents, siteID, logicaloverlayNetwork, position);
+        }
+          
         channelModel.set(siteIDInt, site);
       }
     }
@@ -206,7 +226,7 @@ public class ChannelModel implements Serializable
   {
     if(failedNodes.contains(siteID.toString()))
       return false;
-    return channelModel.get(siteID).needToTransmit();
+    return channelModel.get(siteID).energyModelNeedToTransmit();
   }
   
   public boolean needToListenTo(String childID, Integer siteID)
@@ -220,6 +240,31 @@ public class ChannelModel implements Serializable
   public boolean needToRunFrags(int siteID)
   {
     return needToTransmit(siteID);
+  }
+  
+  public boolean needToTransmitACK(Integer siteID, String child)
+  {
+    if(failedNodes.contains(siteID.toString())|| 
+       failedNodes.contains(child))
+      return false;
+    String clusterHead = this.logicaloverlayNetwork.getClusterHeadFor(child);
+    return channelModel.get(siteID).needToTransmitAckTo(clusterHead);
+  }
+
+  public boolean recievedACK(Integer source, String child)
+  {
+    if(failedNodes.contains(source.toString())|| 
+       failedNodes.contains(child))
+      return false;
+    ChannelModelSite sourceSite = channelModel.get(source);
+    ChannelModelSite destSite = channelModel.get(Integer.parseInt(child));
+    if(sourceSite.getEnergyModeltransmittedAcks() <= destSite.getPosition())
+      return true;
+    else 
+      return false;
+    
+      
+    
   }
   
 }

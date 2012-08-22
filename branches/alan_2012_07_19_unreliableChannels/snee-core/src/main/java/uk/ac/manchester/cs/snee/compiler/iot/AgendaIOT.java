@@ -1139,4 +1139,16 @@ public class AgendaIOT extends SNEEAlgebraicForm
     }
     return null;
   }
+  
+  public Site getSiteByID(String siteID)
+  {
+    Iterator<Site> siteIterator = this.tasks.keySet().iterator();
+    while(siteIterator.hasNext())
+    {
+      Site agendaSite = siteIterator.next();
+      if(agendaSite.getID().equals(siteID))
+        return agendaSite;
+    }
+    return null;
+  }
 }

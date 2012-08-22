@@ -28,6 +28,7 @@ import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.Si
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteOverlayRobustEnergyModel;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.time.TimeModel;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgendaUtils;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -347,6 +348,8 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
       new ChoiceAssessorUtils(current, runningSites, adapt.getNewQep().getRT()).exportWithEnergies(
                       AssessmentFolder.toString() + sep + "Node" + failedSite , null);
       globalFailedNodes.add(failedSite);
+      new UnreliableChannelAgendaUtils(rQEP.getUnreliableAgenda(), rQEP.getLogicalOverlayNetwork().getQep().getIOT(), false)
+      .generateImage(outputFolder.toString(), "with" + (globalFailedNodes.size() -1) + " failures");
       if(failedNodeStrategyLocal.canAdapt(failedSite, current))
       {
         ArrayList<String> failedNodeIDs = new ArrayList<String>();
@@ -372,6 +375,7 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
       }
     }
     return overallShortestLifetime;
+   
   }
   
   /**

@@ -3,8 +3,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
-import uk.ac.manchester.cs.snee.common.SNEEProperties;
-import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AlphaBetaExpression;
 import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostExpressions;
@@ -69,6 +67,7 @@ public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
      for (int i=0; i<siteTasks.size(); i++) 
      {
        Task t = siteTasks.get(i);
+       t.setRan(true);
        if (t instanceof SleepTask) 
        {
          continue;
@@ -79,6 +78,7 @@ public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
        {
          if(!channelModel.needToRunFrags(Integer.parseInt(site.getID())))
          { 
+           t.setRan(false);
            cpuActiveTimeBms -= t.getDuration();
          }
          else
@@ -94,6 +94,7 @@ public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
        {
           if(!channelModel.needToRunFrags(Integer.parseInt(site.getID())))
           { 
+            t.setRan(false);
             cpuActiveTimeBms -= t.getDuration();
           }
           else
@@ -109,10 +110,19 @@ public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
        {
          CommunicationTask ct = (CommunicationTask)t;
          
-         if((!channelModel.needToTransmit(Integer.parseInt(ct.getDestID())) && ct.getMode() == CommunicationTask.TRANSMIT)
-           ||!channelModel.needToListenTo(ct.getSourceID(), 
-                                          Integer.parseInt(ct.getDestID())) && ct.getMode() == CommunicationTask.RECEIVE)
+         if((ct.getMode() == CommunicationTask.TRANSMIT &&
+             !channelModel.needToTransmit(Integer.parseInt(ct.getSourceID())))
+           || 
+             ((ct.getMode() == CommunicationTask.RECEIVE &&
+             !channelModel.needToListenTo(ct.getSourceID(), Integer.parseInt(ct.getDestID()))))
+           ||
+             (ct.getMode() == CommunicationTask.ACKTRANSMIT &&
+             !channelModel.needToTransmitACK(Integer.parseInt(ct.getSourceID()), ct.getDestID()))
+           || 
+             (ct.getMode() == CommunicationTask.ACKRECEIVE &&
+             !channelModel.recievedACK(Integer.parseInt(ct.getSourceID()), ct.getDestID())))
          { 
+           t.setRan(false);
            cpuActiveTimeBms -= t.getDuration();
          }
          else
@@ -156,16 +166,24 @@ public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
        return taskEnergy;
      }
      Site sender = ct.getSourceNode();
-     Site receiver = (Site)sender.getOutput(0);
+     Site receiver = ct.getDestNode();
      int txPower = (int)agenda.getIOT().getRT().getRadioLink(sender, receiver).getEnergyCost();
      double radioTXAmp = AvroraCostParameters.getTXAmpere(txPower);
      
      HashSet<InstanceExchangePart> exchComps = ct.getInstanceExchangeComponents();
      AvroraCostExpressions  costExpressions = 
        new AvroraCostExpressions(agenda.getIOT().getDAF(), agenda.getCostParameters(), agenda);
-     AlphaBetaExpression txTimeExpr = AlphaBetaExpression.multiplyBy(
-         costExpressions.getPacketsSent(exchComps, true),
-         AvroraCostParameters.PACKETTRANSMIT);
+     AlphaBetaExpression txTimeExpr = null;
+     if(exchComps == null)
+     {
+       txTimeExpr = AlphaBetaExpression.multiplyBy(new AlphaBetaExpression(ct.getMaxPacektsTransmitted()),  
+                                                   AvroraCostParameters.PACKETTRANSMIT);
+     }
+     else
+     {
+       txTimeExpr = AlphaBetaExpression.multiplyBy(costExpressions.getPacketsSent(exchComps, true),
+                                                   AvroraCostParameters.PACKETTRANSMIT);
+     }
      double txTime = (txTimeExpr.evaluate(agenda.getAcquisitionInterval_bms(), 
                                           agenda.getBufferingFactor()))/1000.0;
      double rxTime = taskDuration-txTime;

@@ -77,7 +77,8 @@ public class UnreliableChannelAgenda extends AgendaIOT
     scheduleFinalSleepTask();
     
     long length = this.getLength_bms(UnreliableChannelAgenda.INCLUDE_SLEEP);
-    logger.trace("Agenda alpha=" + this.alpha + " beta=" + this.beta + " alpha*beta = " + this.alpha * this.beta + " length="+length);
+    logger.trace("Agenda alpha=" + this.alpha + " beta=" + this.beta + 
+                 " alpha*beta = " + this.alpha * this.beta + " length="+length);
     
     if (length > (this.alpha * this.beta) && (!allowDiscontinuousSensing)) 
     {
@@ -242,20 +243,21 @@ public class UnreliableChannelAgenda extends AgendaIOT
     final Iterator<Site> siteIter = iot.getRT().siteIterator(TraversalOrder.POST_ORDER);
     while (siteIter.hasNext()) 
     {
-      //schedule head site
+      //start with the head site
       final Site currentNode = siteIter.next();
-      scheduleSite(currentNode);
       /*get the logical overlay to which this site is head of and time for each 
       node within the logical node*/
       ArrayList<String> physicalNodesForlogicalNode = 
         logicaloverlayNetwork.getEquivilentNodes(currentNode.getID());
+      //schedule the sibling site
+      scheduleSite(currentNode, physicalNodesForlogicalNode);
       Iterator<String> physicalNodesForlogicalNodeIterator = 
         physicalNodesForlogicalNode.iterator();
       while(physicalNodesForlogicalNodeIterator.hasNext())
       {
         String physicalNodeID = physicalNodesForlogicalNodeIterator.next();
         Site physicalSite = (Site) iot.getSiteFromID(physicalNodeID);
-        scheduleSite(physicalSite);
+        scheduleSite(physicalSite, physicalNodesForlogicalNode);
       }
     }
   }
@@ -263,8 +265,9 @@ public class UnreliableChannelAgenda extends AgendaIOT
   /**
    * schedules all tasks related to a non leaf site
    * @param currentNode
+   * @param physicalNodesForlogicalNode 
    */
-  private void scheduleSite(Site currentNode)
+  private void scheduleSite(Site currentNode, ArrayList<String> physicalNodesForlogicalNode)
   throws AgendaException, OptimizationException, SNEEConfigurationException,
          SchemaMetadataException, TypeMappingException, SNEEException
   {
@@ -275,12 +278,13 @@ public class UnreliableChannelAgenda extends AgendaIOT
       nonLeafStart = startTime;
     }
     scheduleSiteFragments(currentNode);
-    scheduleOnwardTransmissions(currentNode);
+    scheduleOnwardTransmissions(currentNode, physicalNodesForlogicalNode);
   }
 
   /**
    * Schedules any onward transmissions given a site
    * @param currentNode
+   * @param physicalNodesForlogicalNode 
    * @throws SNEEConfigurationException 
    * @throws SNEEException 
    * @throws TypeMappingException 
@@ -288,7 +292,8 @@ public class UnreliableChannelAgenda extends AgendaIOT
    * @throws OptimizationException 
    * @throws AgendaException 
    */
-  private void scheduleOnwardTransmissions(Site currentNode)
+  private void scheduleOnwardTransmissions(Site currentNode,
+                                           ArrayList<String> physicalNodesForlogicalNode)
   throws AgendaException, OptimizationException, SchemaMetadataException, 
          TypeMappingException, SNEEException, SNEEConfigurationException
   {
@@ -317,7 +322,7 @@ public class UnreliableChannelAgenda extends AgendaIOT
       {
         ArrayList<Site> destSites = new ArrayList<Site>();
         destSites.addAll(currentNode.getOutputsListInSiteForm());
-          this.appendCommunicationTask(currentNode, destSites, tuplesToSend);
+          this.appendCommunicationTask(currentNode, destSites, tuplesToSend, physicalNodesForlogicalNode);
       }
     }
   }
@@ -328,6 +333,7 @@ public class UnreliableChannelAgenda extends AgendaIOT
    * @param sourceNode        the node transmitting data
    * @param destNode          the node receiving data
    * @param tuplesToSend    the data being sent
+   * @param physicalNodesForlogicalNode 
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
@@ -336,7 +342,8 @@ public class UnreliableChannelAgenda extends AgendaIOT
    */ 
   
   public void appendCommunicationTask(final Site sourceNode, ArrayList<Site> destNodes,
-                                      final HashSet<InstanceExchangePart> tuplesToSend)
+                                      final HashSet<InstanceExchangePart> tuplesToSend,
+                                      ArrayList<String> physicalNodesForlogicalNode)
   throws AgendaException, OptimizationException, SchemaMetadataException, 
   TypeMappingException, SNEEException, SNEEConfigurationException 
   {
@@ -355,6 +362,47 @@ public class UnreliableChannelAgenda extends AgendaIOT
         new CommunicationTask(startTime, sourceNode, destSite,CommunicationTask.RECEIVE,
                               tuplesToSend, this.alpha, this.beta, daf, costParams);
       this.addTask(commTaskRx, destSite);
+    }
+    destSites = destNodes.iterator();
+    
+    while(destSites.hasNext())
+    {
+      Site destSite = destSites.next();
+      long startTimeForAck = this.getLength_bms(true);
+      CommunicationTask commTaskAckT = 
+        new CommunicationTask(startTimeForAck, destSite , sourceNode, CommunicationTask.ACKTRANSMIT,
+                              this.alpha, this.beta, daf, 1, costParams);
+      this.addTask(commTaskAckT, destSite);
+      //do ackr tasks
+      CommunicationTask commTaskAckR = null;
+      if(this.logicaloverlayNetwork.isClusterHead(sourceNode.getID()))
+      {
+        //start with head
+        commTaskAckR = new CommunicationTask(startTimeForAck, destSite, sourceNode ,
+                                             CommunicationTask.ACKRECEIVE, this.alpha, 
+                                             this.beta, daf, 1, costParams);
+        this.addTask(commTaskAckR, sourceNode);
+      }
+      else
+      {
+        String clusterHeadID = this.logicaloverlayNetwork.getClusterHeadFor(sourceNode.getID());
+        Site clusterHead = this.iot.getSiteFromID(clusterHeadID);
+        commTaskAckR = new CommunicationTask(startTimeForAck, destSite, clusterHead ,
+                                             CommunicationTask.ACKRECEIVE, this.alpha, 
+                                             this.beta, daf, 1, costParams);
+        this.addTask(commTaskAckR, clusterHead);
+      }
+      //do for all other siblings in current ln
+      Iterator<String> inputIds = physicalNodesForlogicalNode.iterator();
+      while(inputIds.hasNext())
+      {
+        String inputID = inputIds.next();
+        Site inputSite = iot.getSiteFromID(inputID);
+        commTaskAckR =  new CommunicationTask(startTimeForAck, destSite, inputSite ,
+                                              CommunicationTask.ACKRECEIVE, this.alpha, this.beta,
+                                              daf, 1, costParams);
+        this.addTask(commTaskAckR, inputSite);
+      }
     }
 
     logger.trace("Scheduled Communication task from node "

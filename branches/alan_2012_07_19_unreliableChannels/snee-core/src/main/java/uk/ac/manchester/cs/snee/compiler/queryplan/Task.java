@@ -64,6 +64,8 @@ public abstract class Task implements Serializable {
      *  The end time of this task.
      */
     protected long endTime;
+    
+    protected boolean ran = true;
 
     protected CostParameters costParams;
     
@@ -124,5 +126,15 @@ public abstract class Task implements Serializable {
 			}
     	}
     	return false;	
+    }
+    
+    public boolean isRan()
+    {
+      return ran;
+    }
+
+    public void setRan(boolean ran)
+    {
+      this.ran = ran;
     }
 }
