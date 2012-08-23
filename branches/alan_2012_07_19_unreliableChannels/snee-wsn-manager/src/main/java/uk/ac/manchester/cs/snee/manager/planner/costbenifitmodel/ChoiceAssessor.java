@@ -29,7 +29,6 @@ import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.Si
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteOverlayEnergyModel;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.time.TimeModel;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.time.TimeModelOverlay;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -401,6 +400,7 @@ public class ChoiceAssessor implements Serializable
         new LogicalOverlayNetworkUtils().storeOverlayAsFile(oldCurrent, outputFolder);
       }
     }
+    new ChoiceAssessorUtils(runningSites, adapt.getNewQep().getRT()).exportWithEnergies(outputFolder.toString() + sep + "final energy", "");
     return overallShortestLifetime;
   }
   

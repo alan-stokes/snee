@@ -104,13 +104,13 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
   OptimizationException, IOException, SNEEConfigurationException,
   CodeGenerationException
   {  
-    
     this.currentQEP = (SensorNetworkQueryPlan) oldQep;
     logicalOverlay = new LogicalOverlayNetwork();
     network = getWsnTopology();
     String choice = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);
     if(choice.equals(ChoiceAssessorPreferenceEnum.Local.toString()) || choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))
     {
+      System.out.println("Determining Logical Overlay network");
       LogicalOverlayGenerator logcalOverlayGenerator = 
       new LogicalOverlayGenerator(network, this.currentQEP, this.manager, localFolder, _metadata, _metadataManager);
       logicalOverlay =  logcalOverlayGenerator.generateOverlay((SensorNetworkQueryPlan) oldQep, this);
@@ -131,6 +131,7 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
       
       manager.setCurrentQEP(logicalOverlay.getQep());
       new FailedNodeLocalLogicalOverlayUtils(logicalOverlay, localFolder).outputAsTextFile();
+      System.out.println("Finished Determining Logical Overlay network");
     }
   }
   

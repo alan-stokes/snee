@@ -374,6 +374,7 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
         new LogicalOverlayNetworkUtils().storeOverlayAsFile(oldCurrent, outputFolder);
       }
     }
+    new ChoiceAssessorUtils(runningSites, rQEP.getRT()).exportWithEnergies(outputFolder.toString() + sep +"final energy", "");
     return overallShortestLifetime;
    
   }
