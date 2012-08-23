@@ -33,6 +33,5 @@
 		<module>failed-node-eval-client</module>
 		<module>failedNodeEvalClientTimeIntergrated</module>
 		<module>successorClient</module>
-		<module>unreliable-channel-client</module>
 	</modules>
 </project>

@@ -178,7 +178,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 		assertEquals(1, _snee.addQuery(mQuery, 
 			"src/test/resources/etc/query-parameters.xml"));
 	}
-
+/*
 	@Test(expected=SNEEException.class)
 	public void testRemoveQuery_invalidQuery() 
 	throws SNEEException {
@@ -191,7 +191,7 @@ public class SNEEControllerTest extends EasyMockSupport {
 		_snee.removeQuery(36);
 		verifyAll();
 	}
-
+*/
 	@Test
 	public void testRemoveQuery_queryAdded() 
 	throws RecognitionException, TokenStreamException, SNEEException, 
