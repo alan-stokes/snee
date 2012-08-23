@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<source xmlns="http://snee.cs.man.ac.uk/namespace/physical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../schema/physical-schema.xsd ">
+
+	<sensor_network name="wsn1">
+		<topology>sniperRealWSN/topology.xml</topology>
+		<site-resources>sniperRealWSN/res.xml</site-resources>
+		<gateways>0</gateways>
+		<extents>
+			<extent name="DetectorA">
+				<sites>38,45,44,49,46,42,40</sites>
+			</extent>
+			<extent name="DetectorB">
+				<sites>14,17,18,8,22</sites>
+			</extent>
+		</extents> 
+	</sensor_network> 
+</source>
