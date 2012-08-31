@@ -130,33 +130,16 @@ public class AgendaIOT extends SNEEAlgebraicForm
    */
   protected long nonLeafStart = Integer.MAX_VALUE;
   
-  public AgendaIOT(final long acquisitionInterval, final long bfactor,
-      final IOT iot, final String queryName, 
-      boolean allowDiscontinuousSensing) 
-  throws AgendaException, AgendaLengthException, OptimizationException, 
-         SchemaMetadataException, TypeMappingException, SNEEException, 
-         SNEEConfigurationException 
-{
-  super(queryName);
-  this.alpha = msToBms_RoundUp(acquisitionInterval);
-  this.beta = bfactor;
-  this.iot = iot;
-  this.allowDiscontinuousSensing=allowDiscontinuousSensing;
-  this.daf = iot.getDAF();
-  this.tasks.clear();
-  if (!queryName.equals("")) {
-    this.name = generateID(queryName);
-  }
-}
-  
   /**
    * constructor used by children of this class (reliable channel agenda)
+   * (only executes if last boolean set to true)
    * @param acquisitionInterval
    * @param bfactor
    * @param iot
    * @param costParams
    * @param queryName
    * @param allowDiscontinuousSensing
+   * @param doExecution
    * @throws AgendaException
    * @throws AgendaLengthException
    * @throws OptimizationException
@@ -167,7 +150,8 @@ public class AgendaIOT extends SNEEAlgebraicForm
    */
   public AgendaIOT(final long acquisitionInterval, final long bfactor,
 	                 final IOT iot, CostParameters costParams, 
-	                 final String queryName, boolean allowDiscontinuousSensing) 
+	                 final String queryName, boolean allowDiscontinuousSensing,
+	                 boolean doExecution) 
   throws AgendaException, AgendaLengthException, OptimizationException, 
     SchemaMetadataException, TypeMappingException, SNEEException, 
     SNEEConfigurationException 
@@ -183,31 +167,34 @@ public class AgendaIOT extends SNEEAlgebraicForm
 			this.name = generateID(queryName);
 		}
 		this.costParams=costParams;
-		
-		logger.trace("Scheduling leaf fragments alpha=" + this.alpha + " bms beta=" + this.beta);
-		scheduleLeafFragments();
-		logger.trace("Scheduling the non-leaf fragments");
-		scheduleNonLeafFragments();
-		logger.trace("Scheduling network management section");
-		logger.trace("Scheduled final sleep task");
-		scheduleFinalSleepTask();
-		
-		long length = this.getLength_bms(AgendaIOT.INCLUDE_SLEEP);
-		logger.trace("Agenda alpha=" + this.alpha + " beta=" + this.beta + " alpha*beta = " + this.alpha * this.beta + " length="+length);
-		
-		if (length > (this.alpha * this.beta) && (!allowDiscontinuousSensing)) {
- 			//display the invalid agenda, for debugging purposes
-// 			this.display(QueryCompiler.queryPlanOutputDir,
-//					this.getName()+"-invalid");
- 			String msg = "Invalid agenda: alpha*beta = " + 
- 				bmsToMs(this.alpha * this.beta) + "ms, length = " + 
- 				bmsToMs(length) + "ms, alpha = "+bmsToMs(alpha) + "ms, beta = "
- 				+ bmsToMs(beta);
- 			logger.warn(msg);
-			throw new AgendaLengthException(msg);
-			
-		}
+		if(doExecution)
+		{
+  		logger.trace("Scheduling leaf fragments alpha=" + this.alpha + " bms beta=" + this.beta);
+  		scheduleLeafFragments();
+  		logger.trace("Scheduling the non-leaf fragments");
+  		scheduleNonLeafFragments();
+  		logger.trace("Scheduling network management section");
+  		logger.trace("Scheduled final sleep task");
+  		scheduleFinalSleepTask();
+  		
+  		long length = this.getLength_bms(AgendaIOT.INCLUDE_SLEEP);
+  		logger.trace("Agenda alpha=" + this.alpha + " beta=" + this.beta + " alpha*beta = " + this.alpha * this.beta + " length="+length);
+  		
+  		if (length > (this.alpha * this.beta) && (!allowDiscontinuousSensing)) 
+  		{
+   			//display the invalid agenda, for debugging purposes
+  // 			this.display(QueryCompiler.queryPlanOutputDir,
+  //					this.getName()+"-invalid");
+   			String msg = "Invalid agenda: alpha*beta = " + 
+   				bmsToMs(this.alpha * this.beta) + "ms, length = " + 
+   				bmsToMs(length) + "ms, alpha = "+bmsToMs(alpha) + "ms, beta = "
+   				+ bmsToMs(beta);
+   			logger.warn(msg);
+  			throw new AgendaLengthException(msg);
+  			
+  		}
     }
+  }
     
 	/**
      * Resets the counter; use prior to compiling the next query.
@@ -459,20 +446,23 @@ public class AgendaIOT extends SNEEAlgebraicForm
      * @throws SchemaMetadataException 
      * @throws SNEEException 
      */
-    public final void addFragmentTask(final long startTime, final InstanceFragment frag,
-	    final Site node, final long occurrence) throws AgendaException, OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException {
+    public final Long addFragmentTask(final long startTime, final InstanceFragment frag,
+	    final Site node, final long occurrence) 
+    throws AgendaException, OptimizationException, SNEEException, SchemaMetadataException, 
+    SNEEConfigurationException 
+    {
 
-	this.assertConsistentStartTime(startTime, node);
-	final InstanceFragmentTask fragTask = new InstanceFragmentTask(startTime, frag, node,
-		occurrence, this.alpha, this.beta, daf, costParams);
-	this.addTask(fragTask, node);
-
-	if(frag == null || node == null)
-	  System.out.println("");
-	
-	logger.trace("Scheduled Fragment " + frag.getID() + " on node "
-		+ node.getID() + " at time " + startTime);
-
+    	this.assertConsistentStartTime(startTime, node);
+    	final InstanceFragmentTask fragTask = new InstanceFragmentTask(startTime, frag, node,
+    		occurrence, this.alpha, this.beta, daf, costParams);
+    	this.addTask(fragTask, node);
+    
+    	if(frag == null || node == null)
+    	  System.out.println("");
+    	
+    	logger.trace("Scheduled Fragment " + frag.getID() + " on node "
+    		+ node.getID() + " at time " + startTime);
+    	return fragTask.getDuration();
     }
 
     public final void addFragmentTask(final int startTime, final InstanceFragment frag,
@@ -491,12 +481,12 @@ public class AgendaIOT extends SNEEAlgebraicForm
      * @throws SchemaMetadataException 
      * @throws SNEEException 
      */
-    public final void addFragmentTask(final InstanceFragment frag, final Site node)
+    public final Long addFragmentTask(final InstanceFragment frag, final Site node)
 	    throws AgendaException, OptimizationException, SNEEException, SchemaMetadataException, SNEEConfigurationException {
 
-	final long startTime = this.getNextAvailableTime(node, INCLUDE_SLEEP);
-	logger.trace("start time =" + startTime);
-	this.addFragmentTask(startTime, frag, node, 1);
+	   final long startTime = this.getNextAvailableTime(node, INCLUDE_SLEEP);
+	  logger.trace("start time =" + startTime);
+	  return this.addFragmentTask(startTime, frag, node, 1);
     }
 
     public final void addFragmentTask(final InstanceFragment fragment, final Site node,

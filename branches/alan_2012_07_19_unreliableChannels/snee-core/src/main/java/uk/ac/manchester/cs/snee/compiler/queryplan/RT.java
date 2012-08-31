@@ -362,4 +362,17 @@ public class RT extends SNEEAlgebraicForm {
     }
     return false;
   }
+
+  public int getNoSitesBelow(Node node)
+  {
+    int counter = 0;
+    Iterator<Node> nodeInputIterator = node.getInputsList().iterator();
+    while(nodeInputIterator.hasNext())
+    {
+      Node input = nodeInputIterator.next();
+      counter++;
+      counter += getNoSitesBelow(input);
+    }
+    return counter;
+  }
 }

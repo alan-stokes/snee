@@ -36,7 +36,6 @@ import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwo
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetworkUtils;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgenda;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -465,9 +464,9 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
           if(currentQEP instanceof RobustSensorNetworkQueryPlan)
           {
             RobustSensorNetworkQueryPlan rQEP = (RobustSensorNetworkQueryPlan) currentQEP;
-            UnreliableChannelAgenda  newAgendaIOT = rQEP.getUnreliableAgenda();
             RobustSensorNetworkQueryPlan newRQEP = 
-              new RobustSensorNetworkQueryPlan(currentQEP, overlay, newAgendaIOT);
+              new RobustSensorNetworkQueryPlan(currentQEP, rQEP.getUnreliableAgenda().getActiveLogicalOverlay(), 
+                                               rQEP.getUnreliableAgenda());
             adapt.setNewQep(newRQEP);
             adapt.setFailedNodes(failedNodeIDs);
             adapatation.add(adapt);

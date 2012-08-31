@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -261,7 +262,7 @@ public class LogicalOverlayGenerator
       while(overlayIterator.hasNext())
       {
         curerntOverlay = overlayIterator.next();
-        currentSetsOfClusters.addAll(alternative(trueCluster, input.getID(), currentSetsOfClusters, curerntOverlay, superLogicalOverlay));
+        currentSetsOfClusters.addAll(alternative(trueCluster, input.getID(), currentSetsOfClusters, curerntOverlay, superLogicalOverlay, 0));
         ArrayList<LogicalOverlayNetwork> cleanedSetsOfClusters = new ArrayList<LogicalOverlayNetwork>();
         cleanedSetsOfClusters.addAll(removeDuplicates(currentSetsOfClusters));
         currentSetsOfClusters.clear();
@@ -382,7 +383,8 @@ public class LogicalOverlayGenerator
                            ArrayList<String> parentCluster, String childID,
                            ArrayList<LogicalOverlayNetwork> setsOfClusters, 
                            LogicalOverlayNetwork currentOverlay,
-                           LogicalOverlayNetwork superLogicalOverlay)
+                           LogicalOverlayNetwork superLogicalOverlay,
+                           int noSitesDone)
   {
     ArrayList<String> childCluster = superLogicalOverlay.getEquivilentNodes(childID);
     ArrayList<String> trueChildCluster = new ArrayList<String>();
@@ -416,15 +418,37 @@ public class LogicalOverlayGenerator
       {
         LogicalOverlayNetwork nextOverlay = overlayIterator.next();
         ArrayList<String> combination = nextOverlay.getEquivilentNodes(childInput.getOutput(0).getID());
-        currentSetsOfClusters.addAll(alternative(combination, childInput.getID(), currentSetsOfClusters, nextOverlay, superLogicalOverlay));
+        currentSetsOfClusters.addAll(alternative(combination, childInput.getID(), currentSetsOfClusters, nextOverlay, superLogicalOverlay, noSitesDone + 1));
         ArrayList<LogicalOverlayNetwork> cleanedSetsOfClusters = new ArrayList<LogicalOverlayNetwork>();
-        cleanedSetsOfClusters.addAll(removeDuplicates(currentSetsOfClusters));
+        ArrayList<LogicalOverlayNetwork> tempCleanedSetsOfClusters = new ArrayList<LogicalOverlayNetwork>();
+        tempCleanedSetsOfClusters.addAll(removeFailedClusters(noSitesDone, currentSetsOfClusters));
+        cleanedSetsOfClusters.addAll(removeDuplicates(tempCleanedSetsOfClusters));
         currentSetsOfClusters.clear();
         currentSetsOfClusters.addAll(cleanedSetsOfClusters);
       }
       setsOfClusters = currentSetsOfClusters;
     }
     return setsOfClusters;
+  }
+
+  /**
+   * removes malformed clusters
+   * @param noSitesBelow
+   * @param currentSetsOfClusters
+   * @return
+   */
+  private List<LogicalOverlayNetwork> removeFailedClusters(int noSitesBelow, 
+                                            ArrayList<LogicalOverlayNetwork> currentSetsOfClusters)
+  {
+    List<LogicalOverlayNetwork> goodClusters = new ArrayList<LogicalOverlayNetwork>();
+    Iterator<LogicalOverlayNetwork> clusteriterator = currentSetsOfClusters.iterator();
+    while(clusteriterator.hasNext())
+    {
+      LogicalOverlayNetwork candidate = clusteriterator.next();
+      if(candidate.getKeySet().size() >= noSitesBelow)
+        goodClusters.add(candidate);
+    }
+    return goodClusters;
   }
 
   /**

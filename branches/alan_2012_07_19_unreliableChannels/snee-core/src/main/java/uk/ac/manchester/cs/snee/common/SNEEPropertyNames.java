@@ -271,6 +271,17 @@ public final class SNEEPropertyNames {
    */
   public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_CLEANRADIO = "wsn_manager.unreliable.channels.clean.radio";
 	
+  /**
+   * used by the unreliable channel agenda to detemrine how many nodes are not to be used within the system
+   */
+  public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_RESILIENTLEVEL = "wsn_manager.unreliable.channels.resilientlevel";
+  
+  /**
+   * used by the unreliable channel agenda to detemrine how many nodes are not to be used within the system
+   */
+  public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_REDUNDANTCYCLES = "wsn_manager.unreliable.channels.redundantcycles";
+  
+  
 }
 
 

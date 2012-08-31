@@ -428,9 +428,8 @@ public class Planner extends AutonomicManagerComponent
     local.initilise(rQEP, 1, rQEP.getLogicalOverlayNetwork());
     Adaptation storage = new Adaptation(rQEP, rQEP, StrategyIDEnum.Unreliable, 0);
     RobustChoiceAssessor assessor = new RobustChoiceAssessor(_metadata, _metadataManager, plannerFolder, this.manager.getWsnTopology());
-    assessor.assessOverlayChoice(storage, runningSites, rQEP.getLogicalOverlayNetwork(), local, manager.getWsnTopology().getNumNodes());
+    assessor.assessOverlayChoice(storage, runningSites, rQEP.getLogicalOverlayNetwork(), local, manager.getWsnTopology().getMaxNodeID());
     System.out.println("new robust lifetime = " + storage.getLifetimeEstimate());
-    System.exit(0);
     return rQEP;
   }
   

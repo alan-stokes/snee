@@ -9,18 +9,18 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
-import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgenda;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.LogicalOverlayNetworkHierarchy;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
-public class ChannelModel implements Serializable
+public class ChannelModelReduced implements Serializable
 {
   /**
    * 
    */
   private static final long serialVersionUID = 7449374992445910226L;
   private ArrayList<ChannelModelSite> channelModel = new ArrayList<ChannelModelSite>();
-  private LogicalOverlayNetwork logicaloverlayNetwork;
+  private LogicalOverlayNetworkHierarchy logicaloverlayNetwork;
   private UnreliableChannelAgenda agenda;
   private ArrayList<String> failedNodes;
   private NoiseModel noiseModel; 
@@ -34,7 +34,7 @@ public class ChannelModel implements Serializable
    * @param failedNodes
    * @throws SNEEConfigurationException 
    */
-  public ChannelModel (LogicalOverlayNetwork logicaloverlayNetwork,  
+  public ChannelModelReduced (LogicalOverlayNetworkHierarchy logicaloverlayNetwork,  
                        UnreliableChannelAgenda agenda, int networkSize,
                        ArrayList<String> failedNodes)
   throws SNEEConfigurationException
@@ -54,7 +54,7 @@ public class ChannelModel implements Serializable
    */
   private void setupEmptyArray(int networkSize)
   {
-    for(int index = 0; index < networkSize; index++)
+    for(int index = 0; index <= networkSize; index++)
     {
       channelModel.add(null);
     }

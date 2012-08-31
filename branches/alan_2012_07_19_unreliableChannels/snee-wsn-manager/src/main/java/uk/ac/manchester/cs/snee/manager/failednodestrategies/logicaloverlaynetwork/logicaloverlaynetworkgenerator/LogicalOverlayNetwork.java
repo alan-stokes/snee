@@ -352,4 +352,9 @@ public class LogicalOverlayNetwork implements Serializable
   {
     return this.clusters.keySet().contains(sourceID);
   }
+  
+  public HashMapList<String, String> getClusters()
+  {
+    return this.clusters;
+  }
 }

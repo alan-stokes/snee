@@ -170,7 +170,7 @@ public class TopologyReader {
 	
 		    logger.info("Graph \"" + sensornet.getName() + "\" parsed.");
 		    logger.info("The graph has " + sensornet.getNumEdges()
-			+ " edges and " + sensornet.getNumNodes() + " vertices");
+			+ " edges and " + sensornet.getMaxNodeID() + " vertices");
 		    
 		} catch (IOException e) {
 			throw new TopologyReaderException("IO Error reading topology file.");

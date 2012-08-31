@@ -435,7 +435,7 @@ public class WhenScheduler {
 
             try {
               final AgendaIOT agenda = new AgendaIOT(qos.getMaxAcquisitionInterval(), 
-                  maxBFactorSoFar, iot, costParams, queryName, allowDiscontinuousSensing);
+                  maxBFactorSoFar, iot, costParams, queryName, allowDiscontinuousSensing, true);
             if (logger.isDebugEnabled())
               logger.debug("RETURN doWhenScheduling()");
               return agenda;

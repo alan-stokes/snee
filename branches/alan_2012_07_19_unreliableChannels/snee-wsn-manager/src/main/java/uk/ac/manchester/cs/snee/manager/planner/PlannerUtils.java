@@ -1,14 +1,20 @@
 package uk.ac.manchester.cs.snee.manager.planner;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
+
 public class PlannerUtils
 {
    private List<Adaptation> adaptations;
@@ -72,5 +78,32 @@ public class PlannerUtils
       e.printStackTrace();
       System.exit(0);
     } 
+  }
+  
+  /**
+   * ouputs the energies left by the network once the qep has failed
+   * @param successor
+   */
+  public void networkEnergyReport(HashMap<String, RunTimeSite> runtimeSites, File outputFolder)
+  {
+    try 
+    {
+      final PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(outputFolder.toString() + sep + "energyReport")));
+      Iterator<String> keys = runtimeSites.keySet().iterator();
+      while(keys.hasNext())
+      {
+        String key = keys.next();
+        RunTimeSite site = runtimeSites.get(key);
+        Double leftOverEnergy = site.getCurrentEnergy();
+        out.println("Node " + key + " has residual energy " + 
+                    leftOverEnergy + " and qep Cost of " + site.getQepExecutionCost()) ; 
+      }
+      out.flush();
+      out.close();
+    }
+    catch(Exception e)
+    {
+      System.out.println("couldnt write the energy report");
+    }
   }
 }

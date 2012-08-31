@@ -17,9 +17,9 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.FragmentTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RadioOnTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
-import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
-import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModel;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgenda;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModelReduced;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.LogicalOverlayNetworkHierarchy;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.UnreliableChannelAgendaReduced;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -29,14 +29,15 @@ import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
 { 
   
-   private ChannelModel channelModel = null;
-   public SiteOverlayRobustEnergyModel(UnreliableChannelAgenda agenda,
-                                      LogicalOverlayNetwork overlayNetwork,
+   private ChannelModelReduced channelModel = null;
+   public SiteOverlayRobustEnergyModel(UnreliableChannelAgendaReduced agenda,
+                                      LogicalOverlayNetworkHierarchy overlayNetwork,
                                       int networkSize,
                                       ArrayList<String> failedNodes)
+   throws SNEEConfigurationException
    {
      super(agenda, overlayNetwork);
-     channelModel = new ChannelModel(overlayNetwork, agenda, networkSize, failedNodes);
+     channelModel = new ChannelModelReduced(overlayNetwork, agenda, networkSize, failedNodes);
    }
    
    /**

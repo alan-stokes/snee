@@ -29,6 +29,7 @@ import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.Si
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.time.TimeModel;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgendaUtils;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.LogicalOverlayNetworkHierarchy;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -262,7 +263,7 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
    */
   public void assessOverlayChoice(Adaptation overlayOTAProgramCost,
                                   HashMap<String, RunTimeSite> runningSites, 
-                                  LogicalOverlayNetwork current,
+                                  LogicalOverlayNetworkHierarchy current,
                                   LogicalOverlayStrategy failedNodeStrategyLocal,
                                   int networkSize) 
   throws OptimizationException, SchemaMetadataException, 
@@ -298,7 +299,7 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
    * @throws IOException 
    * @throws FileNotFoundException 
    */
-  private Double calculateEstimatedLifetimeOverlay(Adaptation adapt, LogicalOverlayNetwork current,
+  private Double calculateEstimatedLifetimeOverlay(Adaptation adapt, LogicalOverlayNetworkHierarchy current,
       LogicalOverlayStrategy failedNodeStrategyLocal, int networkSize)
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException, SNEEConfigurationException, FileNotFoundException, IOException
@@ -350,6 +351,7 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
       globalFailedNodes.add(failedSite);
       new UnreliableChannelAgendaUtils(rQEP.getUnreliableAgenda(), rQEP.getLogicalOverlayNetwork().getQep().getIOT(), false)
       .generateImage(outputFolder.toString(), "with" + (globalFailedNodes.size() -1) + " failures");
+      //if can adapt, adapt and repeat
       if(failedNodeStrategyLocal.canAdapt(failedSite, current))
       {
         ArrayList<String> failedNodeIDs = new ArrayList<String>();
@@ -359,15 +361,15 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
         failedNodeStrategyLocal.update(result.get(0), current);
         adapt.setNewQep(result.get(0).getNewQep());
         current.setQep(result.get(0).getNewQep());
-        updateSitesEnergyLevels(shortestLifetime, adapt);
+        updateSitesEnergyLevels(shortestLifetime, adapt, globalFailedNodes);
         overallShortestLifetime += (shortestLifetime * agendaLength);
         shortestLifetime =  Double.MAX_VALUE;
       }
-      else
+      else //can't adapt, get estimated lifetime and stop
       {
         System.out.println("node " + failedSite);
         adapted = false;
-        updateSitesEnergyLevels(shortestLifetime, adapt);
+        updateSitesEnergyLevels(shortestLifetime, adapt, globalFailedNodes);
         overallShortestLifetime += (shortestLifetime * agendaLength);
         LogicalOverlayNetwork oldCurrent = new LogicalOverlayNetworkUtils().retrieveOverlayFromFile(outputFolder, current.getId());
         oldCurrent.setFinalRunningSites(runningSites);
@@ -375,23 +377,7 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
       }
     }
     new ChoiceAssessorUtils(runningSites, rQEP.getRT()).exportWithEnergies(outputFolder.toString() + sep +"final energy", "");
+    new ChoiceAssessorUtils(runningSites, rQEP.getRT()).networkEnergyReport(runningSites, outputFolder);
     return overallShortestLifetime;
-   
-  }
-  
-  /**
-   * removes the amount of energy off the runtime sites for the lifetime of the shortest node
-   * @param shortestLifetime
-   * @param adapt 
-   */
-  private void updateSitesEnergyLevels(double shortestLifetime, Adaptation adapt)
-  {
-    Iterator<Node> siteIter = this.network.siteIterator();
-    while (siteIter.hasNext()) 
-    {
-      Node site = siteIter.next();
-      RunTimeSite rSite = runningSites.get(site.getID());
-      rSite.removeDefinedCost(rSite.getQepExecutionCost() * shortestLifetime);
-    }
   }
 }

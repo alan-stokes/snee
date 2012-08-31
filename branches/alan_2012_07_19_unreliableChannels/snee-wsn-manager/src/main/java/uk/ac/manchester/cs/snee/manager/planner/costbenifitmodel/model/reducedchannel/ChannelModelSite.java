@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel;
+package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.reducedchannel;
 
 import java.io.Serializable;
 import java.util.ArrayList;

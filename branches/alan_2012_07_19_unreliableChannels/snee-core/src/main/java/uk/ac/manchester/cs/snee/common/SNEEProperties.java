@@ -314,6 +314,17 @@ public class SNEEProperties {
       setSetting(propName, "true");
       return getSetting(propName);
     }
+    else if(propName.equals("wsn_manager.unreliable.channels.resilientlevel"))
+    {
+      setSetting(propName, "2");
+      return getSetting(propName);
+    }
+    else if(propName.equals("wsn_manager.unreliable.channels.redundantcycles"))
+    {
+      setSetting(propName, "1");
+      return getSetting(propName);
+    }
+    
     else return null;
   }
 

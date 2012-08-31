@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel;
+package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.reducedchannel;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -10,6 +10,7 @@ import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.NoiseModel;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgenda;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
@@ -25,7 +26,6 @@ public class ChannelModel implements Serializable
   private ArrayList<String> failedNodes;
   private NoiseModel noiseModel; 
   
-  
   /**
    * constructor for channel model
    * @param logicaloverlayNetwork
@@ -36,7 +36,7 @@ public class ChannelModel implements Serializable
    */
   public ChannelModel (LogicalOverlayNetwork logicaloverlayNetwork,  
                        UnreliableChannelAgenda agenda, int networkSize,
-                       ArrayList<String> failedNodes)
+                       ArrayList<String> failedNodes) 
   throws SNEEConfigurationException
   {
     this.agenda = agenda;

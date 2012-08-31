@@ -385,7 +385,7 @@ public class ChoiceAssessor implements Serializable
         failedNodeStrategyLocal.update(result.get(0), current);
         adapt.setNewQep(result.get(0).getNewQep());
         current.setQep(result.get(0).getNewQep());
-        updateSitesEnergyLevels(shortestLifetime, adapt);
+        updateSitesEnergyLevels(shortestLifetime, adapt, globalFailedNodes);
         overallShortestLifetime += (shortestLifetime * agendaLength);
         shortestLifetime =  Double.MAX_VALUE;
       }
@@ -393,7 +393,7 @@ public class ChoiceAssessor implements Serializable
       {
         System.out.println("node " + failedSite);
         adapted = false;
-        updateSitesEnergyLevels(shortestLifetime, adapt);
+        updateSitesEnergyLevels(shortestLifetime, adapt, globalFailedNodes);
         overallShortestLifetime += (shortestLifetime * agendaLength);
         LogicalOverlayNetwork oldCurrent = new LogicalOverlayNetworkUtils().retrieveOverlayFromFile(outputFolder, current.getId());
         oldCurrent.setFinalRunningSites(runningSites);
@@ -401,6 +401,7 @@ public class ChoiceAssessor implements Serializable
       }
     }
     new ChoiceAssessorUtils(runningSites, adapt.getNewQep().getRT()).exportWithEnergies(outputFolder.toString() + sep + "final energy", "");
+    new ChoiceAssessorUtils(runningSites, adapt.getNewQep().getRT()).networkEnergyReport(runningSites, outputFolder);
     return overallShortestLifetime;
   }
   
@@ -408,15 +409,21 @@ public class ChoiceAssessor implements Serializable
    * removes the amount of energy off the runtime sites for the lifetime of the shortest node
    * @param shortestLifetime
    * @param adapt 
+   * @param globalFailedNodes 
    */
-  private void updateSitesEnergyLevels(double shortestLifetime, Adaptation adapt)
+  protected void updateSitesEnergyLevels(Double shortestLifetime, Adaptation adapt,
+                                       ArrayList<String> globalFailedNodes)
   {
     Iterator<Node> siteIter = this.network.siteIterator();
+    shortestLifetime = Math.floor(shortestLifetime);
     while (siteIter.hasNext()) 
     {
       Node site = siteIter.next();
-      RunTimeSite rSite = runningSites.get(site.getID());
-      rSite.removeDefinedCost(rSite.getQepExecutionCost() * shortestLifetime);
+      if(!globalFailedNodes.contains(site.getID()) || globalFailedNodes.get(globalFailedNodes.size() -1).equals(site.getID()))
+      {
+        RunTimeSite rSite = runningSites.get(site.getID());
+        rSite.removeDefinedCost(rSite.getQepExecutionCost() * shortestLifetime);
+      }
     }
   }
 }

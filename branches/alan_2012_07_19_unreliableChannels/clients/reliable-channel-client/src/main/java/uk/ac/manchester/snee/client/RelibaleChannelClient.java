@@ -43,8 +43,8 @@ public class RelibaleChannelClient extends SNEEClient
 	private static int queryid = 1;
 	protected static int testNo = 1;
 	private static int max = 120;
-  private static File testFolder =  new File("src/main/resources/testsSize30");
-  private static File sneetestFolder =  new File("testsSize30");
+  private static File testFolder =  new File("src/main/resources/testsSize45");
+  private static File sneetestFolder =  new File("testsSize45");
   @SuppressWarnings("unused")
   private static boolean inRecoveryMode = false;
 	
@@ -217,6 +217,7 @@ public class RelibaleChannelClient extends SNEEClient
       updateRecoveryFile();
       client.runCompilelation();
       System.out.println("Ran all tests on query " + (queryid));
+      System.exit(0);
       queryid ++;
     }
     catch(Exception e)
@@ -224,6 +225,7 @@ public class RelibaleChannelClient extends SNEEClient
       System.out.println("something major failed");
       e.printStackTrace();
       queryid ++;
+      System.exit(0);
       if(queryid <= max)
       {
       recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires);

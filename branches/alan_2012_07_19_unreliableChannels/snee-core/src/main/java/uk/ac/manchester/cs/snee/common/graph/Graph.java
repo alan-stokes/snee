@@ -200,8 +200,17 @@ public class Graph implements Cloneable, Serializable{
 	/**
 	 * Returns the number of vertices the graph contains.
 	 */
-	public int getNumNodes() {
-		return this.nodes.size();
+	public int getMaxNodeID() 
+	{
+	  int maxNodeID = 0;
+	  Iterator<String> nodeIterator= this.nodes.keySet().iterator();
+	  while(nodeIterator.hasNext())
+	  {
+	    Integer nodeID = Integer.parseInt(nodeIterator.next());
+	    if(nodeID > maxNodeID)
+	      maxNodeID = nodeID;
+	  }
+		return maxNodeID;
 	}
 
 	/**
@@ -549,7 +558,7 @@ public class Graph implements Cloneable, Serializable{
 	 * @param newNode	replacement node
 	 */
 	private void replaceSameNode(Node replace, Node newNode) {
-		logger.trace("start Size = " + getNumNodes());
+		logger.trace("start Size = " + getMaxNodeID());
 		logger.trace(replace.getID() + " and " + newNode.getID());
 		nodes.put(newNode.getID(), newNode);
 		Node[] inputs = replace.getInputs();
@@ -558,7 +567,7 @@ public class Graph implements Cloneable, Serializable{
 			n.replaceOutput(replace, newNode);
 			newNode.addInput(n);
 		}
-		logger.trace("Mid Size = " + getNumNodes());
+		logger.trace("Mid Size = " + getMaxNodeID());
 
 		Node[] outputs = replace.getOutputs();
 		for (int i = 0; i < outputs.length; i++) {
@@ -566,7 +575,7 @@ public class Graph implements Cloneable, Serializable{
 			n.replaceInput(replace, newNode);
 			newNode.addOutput(n);
 		}
-		logger.trace("Last Size = " + getNumNodes());
+		logger.trace("Last Size = " + getMaxNodeID());
 	}
 
 	//CB OLD method

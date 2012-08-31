@@ -163,6 +163,39 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
 
     }
 
+    /**
+     * constructor which adds a defined overhead t the duration of the communication task 
+     * (therefore keeping the radio turned on to encapsulate possible different sources in the 
+     * unreliable channel strategy.)
+     * @param startTime
+     * @param sourceNode
+     * @param destNode
+     * @param mode
+     * @param tuplesToSend
+     * @param alpha
+     * @param beta
+     * @param daf
+     * @param costParams
+     * @param overhead
+     * @throws OptimizationException
+     * @throws SchemaMetadataException
+     * @throws TypeMappingException
+     */
+    public CommunicationTask(long startTime, Site sourceNode, Site destNode,
+        int mode, HashSet<InstanceExchangePart> tuplesToSend, long alpha,
+        long beta, DAF daf, CostParameters costParams, Long overhead)
+    throws OptimizationException, SchemaMetadataException, TypeMappingException
+    {
+      super(startTime, costParams);
+      this.sourceNode = sourceNode;
+      this.destNode = destNode;
+      this.instanceExchangeComponents = tuplesToSend;
+      this.beta = beta;
+      this.endTime = startTime + this.getTimeCost(daf) + overhead;
+      this.mode = mode;
+    }
+
+
     public final Site getSourceNode() {
 	return this.sourceNode;
     }

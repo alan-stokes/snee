@@ -15,6 +15,8 @@ import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.LogicalOverlayStrategy;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.UnreliableChannelAgendaReduced;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.UnreliableChannelAgendaReducedUtils;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -87,13 +89,13 @@ public class UnreliableChannelManager extends AutonomicManagerComponent
     LogicalOverlayNetwork logicaloverlayNetwork = overlayGenerator.getLogicalOverlay();
     boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
         SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
-    UnreliableChannelAgenda overlayAgenda = 
-      new UnreliableChannelAgenda(logicaloverlayNetwork,logicaloverlayNetwork.getQep(),
-                                  network, allowDiscontinuousSensing);
-    new UnreliableChannelAgendaUtils(overlayAgenda, logicaloverlayNetwork.getQep().getIOT(), 
+    UnreliableChannelAgendaReduced overlayAgenda = 
+      new UnreliableChannelAgendaReduced(logicaloverlayNetwork, logicaloverlayNetwork.getQep(), 
+                                         network, allowDiscontinuousSensing);
+    new UnreliableChannelAgendaReducedUtils(overlayAgenda, logicaloverlayNetwork.getQep().getIOT(), 
                                      true).generateImage(outputFolder.toString());
-    return new RobustSensorNetworkQueryPlan(logicaloverlayNetwork.getQep(), 
-                                            logicaloverlayNetwork, overlayAgenda);
+    return new RobustSensorNetworkQueryPlan(overlayAgenda.getActiveLogicalOverlay().getQep(), 
+                                            overlayAgenda.getActiveLogicalOverlay(), overlayAgenda);
     }
     catch(Exception e)
     {

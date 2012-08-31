@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.unreliablechannels;
+package uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -30,13 +30,13 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
-public class UnreliableChannelAgendaUtils 
+public class UnreliableChannelAgendaReducedUtils 
 {
 
   /**
    * Logger for this class.
    */
-  private static final Logger logger = Logger.getLogger(UnreliableChannelAgendaUtils.class.getName());
+  private static final Logger logger = Logger.getLogger(UnreliableChannelAgendaReducedUtils.class.getName());
 
 
   private static final int CELL_WIDTH = 100;
@@ -45,11 +45,11 @@ public class UnreliableChannelAgendaUtils
 
   IOT iot;
 
-  UnreliableChannelAgenda agenda;
+  UnreliableChannelAgendaReduced agenda;
 
   private boolean useMilliSeconds;
 
-  public UnreliableChannelAgendaUtils(final UnreliableChannelAgenda agenda, IOT iot, 
+  public UnreliableChannelAgendaReducedUtils(final UnreliableChannelAgendaReduced agenda, IOT iot, 
                                       final boolean useMilliSeconds) 
   {
     this.agenda = agenda;
@@ -319,9 +319,7 @@ public class UnreliableChannelAgendaUtils
     while (siteIter.hasNext()) 
     {
       Site site = siteIter.next();
-      site = this.agenda.getSiteByID(site);
-      xpos = outputSiteAgenda(site, xpos, ypos, g2, startTimeIter);
-      ArrayList<String> clusterSites = agenda.getLogicalOverlayNetwork().getEquivilentNodes(site.getID());
+      ArrayList<String> clusterSites = agenda.getActiveLogicalOverlay().getActiveEquivilentNodes(site.getID());
       Iterator<String> clusterSitesIterator = clusterSites.iterator();
       while(clusterSitesIterator.hasNext())
       {

@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
@@ -18,6 +19,7 @@ public class ChoiceAssessorUtils extends RTUtils
 {
    private HashMap<String, RunTimeSite> runningSites;
    private LogicalOverlayNetwork logicalOverlayNetwork = null;
+   private String sep = System.getProperty("file.separator");
    
    public ChoiceAssessorUtils(HashMap<String, RunTimeSite> runningSites, RT rt)
    {
@@ -143,6 +145,34 @@ public class ChoiceAssessorUtils extends RTUtils
      e.printStackTrace();
    }
    }
+  
+  /**
+   * ouputs the energies left by the network once the qep has failed
+   * @param successor
+   */
+  public void networkEnergyReport(HashMap<String, RunTimeSite> runtimeSites, File outputFolder)
+  {
+    try 
+    {
+      DecimalFormat formatter = new DecimalFormat("#.000000");
+      final PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(outputFolder.toString() + sep + "energyReport")));
+      Iterator<String> keys = runtimeSites.keySet().iterator();
+      while(keys.hasNext())
+      {
+        String key = keys.next();
+        RunTimeSite site = runtimeSites.get(key);
+        Double leftOverEnergy = site.getCurrentEnergy();
+        out.println("Node " + key + " has residual energy " + 
+            formatter.format(leftOverEnergy) + " and qep Cost of " + site.getQepExecutionCost()) ; 
+      }
+      out.flush();
+      out.close();
+    }
+    catch(Exception e)
+    {
+      System.out.println("couldnt write the energy report");
+    }
+  }
    
    
   

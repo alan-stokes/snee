@@ -4,7 +4,8 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryPlanMetadata;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.LogicalOverlayNetworkHierarchy;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.UnreliableChannelAgendaReduced;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
@@ -23,8 +24,8 @@ public class RobustSensorNetworkQueryPlan extends SensorNetworkQueryPlan {
 	 * Logger for this class.
 	 */
 	private final static Logger logger = Logger.getLogger(RobustSensorNetworkQueryPlan.class.getName());
-	private LogicalOverlayNetwork logicaloverlaynetwork;
-	private UnreliableChannelAgenda overlayAgenda;
+	private LogicalOverlayNetworkHierarchy logicaloverlaynetwork;
+	private UnreliableChannelAgendaReduced overlayAgenda;
 
   /**
 	 * Constructor
@@ -33,8 +34,8 @@ public class RobustSensorNetworkQueryPlan extends SensorNetworkQueryPlan {
 	 * @throws SchemaMetadataException 
 	 */
 	public RobustSensorNetworkQueryPlan(SensorNetworkQueryPlan qep, 
-	                                    LogicalOverlayNetwork logicaloverlaynetwork, 
-	                                    UnreliableChannelAgenda overlayAgenda) 
+	                                    LogicalOverlayNetworkHierarchy logicaloverlaynetwork, 
+	                                    UnreliableChannelAgendaReduced overlayAgenda) 
 	throws  SchemaMetadataException, TypeMappingException 
 	{
 		super(qep.getDLAF(), qep.getRT(), qep.getDAF(), qep.getIOT(), qep.getAgenda(), qep.getQueryName());
@@ -53,7 +54,7 @@ public class RobustSensorNetworkQueryPlan extends SensorNetworkQueryPlan {
 	/**
 	 * @return the logicla overlay for this QEP
 	 */
-	public LogicalOverlayNetwork getLogicalOverlayNetwork()
+	public LogicalOverlayNetworkHierarchy getLogicalOverlayNetwork()
 	{
 	  return this.logicaloverlaynetwork;
 	}
@@ -61,7 +62,7 @@ public class RobustSensorNetworkQueryPlan extends SensorNetworkQueryPlan {
 	/**
 	 * @return the agenda associated with the logical overlay
 	 */
-	public  UnreliableChannelAgenda getUnreliableAgenda()
+	public  UnreliableChannelAgendaReduced getUnreliableAgenda()
 	{
 	  return this.overlayAgenda;
 	}
