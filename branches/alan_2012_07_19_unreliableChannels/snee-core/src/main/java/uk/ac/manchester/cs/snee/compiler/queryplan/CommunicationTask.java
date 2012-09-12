@@ -76,6 +76,10 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
     
     public static final int ACKTRANSMIT = 3;
 
+    private boolean redundantTask = false;
+    
+    private Site originalDestNode = null;
+    
    // private long alpha;
 
     private long beta;
@@ -83,24 +87,63 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
     private HashSet<InstanceExchangePart> instanceExchangeComponents;
     private int maxPacketsEspectedToTransmit;
     
+    
+    /**
+     * constructor for a comm task
+     * @param startTime
+     * @param sourceNode
+     * @param destNode
+     * @param mode
+     * @param alpha
+     * @param bufferingFactor
+     * @param daf
+     * @param maxPackets
+     * @param costParams
+     * @param IsRedundantTask
+     * @throws OptimizationException
+     * @throws SchemaMetadataException
+     * @throws TypeMappingException
+     */
     public CommunicationTask(final long startTime, final Site sourceNode,
                              final Site destNode, final int mode, final long alpha, 
                              final long bufferingFactor, final DAF daf, int maxPackets,
-                             CostParameters costParams) 
+                             CostParameters costParams, boolean redundant,
+                             Site originalDestNode) 
     throws OptimizationException, SchemaMetadataException, TypeMappingException 
     {
-    super(startTime, costParams);
-    this.sourceNode = sourceNode;
-    this.destNode = destNode;
-    this.instanceExchangeComponents = null;
-    this.maxPacketsEspectedToTransmit = maxPackets;
-    this.beta = bufferingFactor;
-    this.endTime = startTime + (long) Math.ceil(costParams.getSendPacket() * maxPacketsEspectedToTransmit);
-    this.mode = mode;
+      super(startTime, costParams);
+      this.sourceNode = sourceNode;
+      this.destNode = destNode;
+      this.redundantTask = redundant;
+      this.instanceExchangeComponents = null;
+      this.maxPacketsEspectedToTransmit = maxPackets;
+      this.beta = bufferingFactor;
+      this.endTime = startTime + (long) Math.ceil(costParams.getSendPacket() * maxPacketsEspectedToTransmit);
+      this.mode = mode;
+      this.originalDestNode = originalDestNode;
+      generateID();
+    }
     
+    private void generateID()
+    {
+      if(this.mode == CommunicationTask.RECEIVE)
+      {
+        this.id = "TX " + this.sourceNode.getID() + " to " + this.destNode.getID() + "(" + startTime + ")";
       }
-    
-    
+      if(this.mode == CommunicationTask.TRANSMIT)
+      {
+        this.id = "RX " + this.sourceNode.getID() + " to " + this.destNode.getID() + "(" + startTime + ")";
+      }
+      if(this.mode == CommunicationTask.ACKRECEIVE)
+      {
+        this.id = "ARX " + this.sourceNode.getID() + " to " + this.destNode.getID() + "(" + startTime + ")";
+      }
+      if(this.mode == CommunicationTask.ACKTRANSMIT)
+      {
+        this.id = "ATX " + this.sourceNode.getID() + " to " + this.destNode.getID() + "(" + startTime + ")";
+      }
+    }
+
     /**
      * Create an instance of a CommunicationTask.
      * @param startTime
@@ -108,34 +151,59 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
      * @param destNode
      * @param tuplesToSend
      * @param mode
+     * @param IsRedundantTask
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
      * @throws OptimizationException 
      */
-    public CommunicationTask(final long startTime, final Site sourceNode,
-	    final Site destNode,
-	    final int mode, final HashSet<InstanceExchangePart> tuplesToSend,
-	     final long alpha, final long bufferingFactor, final DAF daf,  
-	    CostParameters costParams) throws OptimizationException, SchemaMetadataException, TypeMappingException {
-	super(startTime, costParams);
-	this.sourceNode = sourceNode;
-	this.destNode = destNode;
-	this.instanceExchangeComponents = tuplesToSend;
-	this.beta = bufferingFactor;
-	this.endTime = startTime + this.getTimeCost(daf);
-	this.mode = mode;
-	
-    }
+  public CommunicationTask(final long startTime, final Site sourceNode,
+	                         final Site destNode, final int mode, 
+	                         final HashSet<InstanceExchangePart> tuplesToSend,
+	                         final long alpha, final long bufferingFactor, final DAF daf,  
+	                         CostParameters costParams, boolean redundant,
+	                         Site originalDestNode) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException 
+  {
+  	super(startTime, costParams);
+  	this.sourceNode = sourceNode;
+  	this.destNode = destNode;
+  	this.instanceExchangeComponents = tuplesToSend;
+  	this.beta = bufferingFactor;
+  	this.endTime = startTime + this.getTimeCost(daf);
+  	this.mode = mode;
+  	this.redundantTask = redundant;
+  	this.originalDestNode = originalDestNode;
+    generateID();
+  }
     
-    public CommunicationTask(final long startTime, final Site sourceNode,
-        final Site destNode, final int mode, Long packets, CostParameters costParams) 
-    throws OptimizationException, SchemaMetadataException, TypeMappingException {
+  /**
+   * Create an instance of a CommunicationTask.
+   * @param startTime
+   * @param sourceNode
+   * @param destNode
+   * @param mode
+   * @param packets
+   * @param costParams
+   * @param redundant
+   * @throws OptimizationException
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   */
+  public CommunicationTask(final long startTime, final Site sourceNode,
+                           final Site destNode, final int mode, Long packets, 
+                           CostParameters costParams, boolean redundant,
+                           Site originalDestNode) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException 
+  {
     super(startTime, costParams);
     this.sourceNode = sourceNode;
     this.destNode = destNode;
     this.endTime = startTime + this.getTimeCost(packets);
     this.mode = mode;
-      }
+    this.redundantTask = redundant;
+    this.originalDestNode = originalDestNode;
+    generateID();
+  }
     
     /**
      * Create an instance of a CommunicationTask.
@@ -144,31 +212,35 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
      * @param destNode
      * @param tuplesToSend
      * @param mode
+     * @param redundant
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
      * @throws OptimizationException 
      */
-    public CommunicationTask(final long startTime, final Site sourceNode,
-      final Site destNode,
-      final HashSet<ExchangePart> tuplesToSend,
-      final int mode, final long alpha, final long bufferingFactor, final DAF daf,  
-      CostParameters costParams) throws OptimizationException, SchemaMetadataException, TypeMappingException {
-  super(startTime, costParams);
-  this.sourceNode = sourceNode;
-  this.destNode = destNode;
-  this.exchangeComponents = tuplesToSend;
-  this.beta = bufferingFactor;
-  this.endTime = startTime + this.getTimeCost(daf);
-  this.mode = mode;
-
-    }
+  public CommunicationTask(final long startTime, final Site sourceNode,
+                           final Site destNode, final HashSet<ExchangePart> tuplesToSend,
+                           final int mode, final long alpha, final long bufferingFactor, 
+                           final DAF daf,  CostParameters costParams, boolean redundant,
+                           Site originalDestNode) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException 
+  {
+    super(startTime, costParams);
+    this.sourceNode = sourceNode;
+    this.destNode = destNode;
+    this.exchangeComponents = tuplesToSend;
+    this.beta = bufferingFactor;
+    this.endTime = startTime + this.getTimeCost(daf);
+    this.mode = mode;
+    this.redundantTask = redundant;
+    this.originalDestNode = originalDestNode;
+    generateID();
+  }
 
     /**
      * constructor which adds a defined overhead t the duration of the communication task 
-     * (therefore keeping the radio turned on to encapsulate possible different sources in the 
-     * unreliable channel strategy.)
+     * (therefore keeping the radio turned on to encapsulate possible different sources)
      * @param startTime
-     * @param sourceNode
+     * @partrueam sourceNode
      * @param destNode
      * @param mode
      * @param tuplesToSend
@@ -177,25 +249,29 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
      * @param daf
      * @param costParams
      * @param overhead
+     * @param redundant
      * @throws OptimizationException
      * @throws SchemaMetadataException
      * @throws TypeMappingException
      */
-    public CommunicationTask(long startTime, Site sourceNode, Site destNode,
-        int mode, HashSet<InstanceExchangePart> tuplesToSend, long alpha,
-        long beta, DAF daf, CostParameters costParams, Long overhead)
-    throws OptimizationException, SchemaMetadataException, TypeMappingException
-    {
-      super(startTime, costParams);
-      this.sourceNode = sourceNode;
-      this.destNode = destNode;
-      this.instanceExchangeComponents = tuplesToSend;
-      this.beta = beta;
-      this.endTime = startTime + this.getTimeCost(daf) + overhead;
-      this.mode = mode;
-    }
-
-
+  public CommunicationTask(long startTime, Site sourceNode, Site destNode,
+                           int mode, HashSet<InstanceExchangePart> tuplesToSend, long alpha,
+                           long beta, DAF daf, CostParameters costParams, Long overhead,
+                           boolean redundant, Site originalDestNode)
+  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  {
+    super(startTime, costParams);
+    this.sourceNode = sourceNode;
+    this.destNode = destNode;
+    this.instanceExchangeComponents = tuplesToSend;
+    this.beta = beta;
+    this.endTime = startTime + this.getTimeCost(daf) + overhead;
+    this.mode = mode;
+    this.redundantTask = redundant;
+    this.originalDestNode = originalDestNode;
+    generateID();
+  }
+  
     public final Site getSourceNode() {
 	return this.sourceNode;
     }
@@ -389,5 +465,15 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
   public int getMaxPacektsTransmitted()
   {
     return this.maxPacketsEspectedToTransmit;
+  }
+  
+  public boolean isRedundantTask()
+  {
+    return this.redundantTask;
+  }
+  
+  public Site getOriginalDestNode()
+  {
+    return this.originalDestNode;
   }
 }

@@ -172,7 +172,7 @@ public class InstanceFragment implements Serializable
   public  String getID() {
     String id = new Integer(this.fragID).toString();
     if(cloned)
-      return id + "c";
+      return id + "c" + this.site.getID();
     else
       return id;
   }

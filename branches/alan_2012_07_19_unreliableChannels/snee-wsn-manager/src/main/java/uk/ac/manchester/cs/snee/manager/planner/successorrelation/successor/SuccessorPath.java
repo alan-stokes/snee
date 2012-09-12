@@ -34,9 +34,11 @@ public class SuccessorPath implements Serializable
     while(successorIterator.hasNext())
     {
       Successor successor = successorIterator.next();
-      agendaCount += successor.getAgendaCount();
+      if(successor.getAgendaCount() >= 0)
+        agendaCount += successor.getAgendaCount();
       if(!successorIterator.hasNext())
-        agendaCount += successor.getBasicLifetimeInAgendas();
+        if(successor.getBasicLifetimeInAgendas() >= 0)
+          agendaCount += successor.getBasicLifetimeInAgendas();
     }
     return agendaCount;
   }

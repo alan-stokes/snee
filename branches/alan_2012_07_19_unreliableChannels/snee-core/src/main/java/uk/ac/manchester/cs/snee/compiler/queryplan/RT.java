@@ -299,7 +299,10 @@ public class RT extends SNEEAlgebraicForm {
 
   public RadioLink getRadioLink(Site sender, Site receiver)
   {
-    return network.getRadioLink(sender, receiver);
+    if(network.getRadioLink(sender, receiver) == null)
+      return network.getRadioLink(receiver, sender);
+    else
+      return network.getRadioLink(sender, receiver);
   }
 
   public void clearOutputs(Site site)

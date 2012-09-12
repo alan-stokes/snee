@@ -145,12 +145,12 @@ public class InstanceExchangePart extends InstanceOperator{
 		this.sourceSite = sourceSite;
 		this.destFrag = destFrag;
 		this.destSite = destSite;
-		this.setSite(currentSite);
+		this.setSite(currentSite, false);
 		this.partType = partType;
 		this.isRemote = isRemote;
 		this.setInstanceOperator(new SensornetExchangeOperator(costs));
 		this.id = "F" + sourceFrag.getID() + "_S" + this.getSite().getID() + "_" + partType.toString().toLowerCase();
-	
+	  this.previousId = this.id;
 		//link components in a path
 		this.prev = prev;
 		if (partType != ExchangePartType.PRODUCER) {
@@ -167,15 +167,16 @@ public class InstanceExchangePart extends InstanceOperator{
 		return id;
 	}
     
-  public void regenerateID()
+  public void regenerateID(boolean cloned)
   {
-    if(previousId == null)
+    if(!cloned)
     {
-      previousId = this.id;
       this.id = "F" + sourceFrag.getID() + "_S" + this.getSite().getID() + "_" + partType.toString().toLowerCase();
     }
     else
     {
+      if(previousId == null)
+        previousId = this.id;
       this.id = "F" + sourceFrag.getID() + "_S" + this.getSite().getID() + "_" + partType.toString().toLowerCase() + "(C)";
     }
   }
@@ -539,12 +540,12 @@ public class InstanceExchangePart extends InstanceOperator{
 	  this.prev = pre;
 	}
 	
-	public void setSite(Site site)
+	public void setSite(Site site, boolean cloned)
 	{
 	  if(this.getSite() != null)
 	  {
-	    this.previousId = this.getSite().getID();
 	    super.setSite(site);
+	    this.regenerateID(cloned);
 	  }
 	  else
 	  {
@@ -571,7 +572,7 @@ public class InstanceExchangePart extends InstanceOperator{
 	{
 	  this.sourceFrag = sourceFrag;
 	  this.sourceSite = sourceFrag.getSite();
-	  this.regenerateID();
+	  this.regenerateID(true);
 	}
 	
 	public void setSourceSite(Site newSourceSite)

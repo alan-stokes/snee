@@ -84,7 +84,7 @@ public class PhysicalToLogicalConversion
           String fragid;
           if(!fragStringID.contains("c"))
           {
-            fragid = new Integer(inExPa.getSourceFrag().getID()) + "c" ;
+            fragid = new Integer(inExPa.getSourceFrag().getID()) + "c" + inExPa.getSourceFrag().getSite().getID();
           }
           else
           {
@@ -157,10 +157,10 @@ public class PhysicalToLogicalConversion
       if(!(rootOp.getSensornetOperator() instanceof SensornetDeliverOperator))
       {
         InstanceExchangePart clonedPart = (InstanceExchangePart) clonedRootOp; 
-        clonedPart.setSite(equilvientSite);
+        clonedPart.setSite(equilvientSite, true);
         
         qep.getIOT().addOpInstToSite(clonedRootOp, equilvientSite);
-        clonedPart.regenerateID();
+        clonedPart.regenerateID(true);
         equilvientSite.addInstanceExchangePart(clonedPart);
         InstanceExchangePart part = (InstanceExchangePart) rootOp;
         

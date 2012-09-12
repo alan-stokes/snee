@@ -354,7 +354,7 @@ public class UnreliableChannelAgenda extends AgendaIOT
     final long startTime = this.getLength_bms(true);
     final CommunicationTask commTaskTx = 
       new CommunicationTask(startTime, sourceNode, mostExpensiveSite,CommunicationTask.TRANSMIT,
-                            tuplesToSend, this.alpha, this.beta, daf, costParams);
+                            tuplesToSend, this.alpha, this.beta, daf, costParams, false, mostExpensiveSite);
     this.addTask(commTaskTx, sourceNode);
     
     Iterator<Site> destSites = destNodes.iterator();
@@ -363,7 +363,7 @@ public class UnreliableChannelAgenda extends AgendaIOT
       Site destSite = destSites.next();
       final CommunicationTask commTaskRx = 
         new CommunicationTask(startTime, sourceNode, destSite,CommunicationTask.RECEIVE,
-                              tuplesToSend, this.alpha, this.beta, daf, costParams);
+                              tuplesToSend, this.alpha, this.beta, daf, costParams, false, destSite);
       this.addTask(commTaskRx, destSite);
     }
     destSites = destNodes.iterator();
@@ -374,7 +374,7 @@ public class UnreliableChannelAgenda extends AgendaIOT
       long startTimeForAck = this.getLength_bms(true);
       CommunicationTask commTaskAckT = 
         new CommunicationTask(startTimeForAck, destSite , sourceNode, CommunicationTask.ACKTRANSMIT,
-                              this.alpha, this.beta, daf, 1, costParams);
+                              this.alpha, this.beta, daf, 1, costParams, false, sourceNode);
       this.addTask(commTaskAckT, destSite);
       //do ackr tasks
       CommunicationTask commTaskAckR = null;
@@ -383,7 +383,7 @@ public class UnreliableChannelAgenda extends AgendaIOT
         //start with head
         commTaskAckR = new CommunicationTask(startTimeForAck, destSite, sourceNode ,
                                              CommunicationTask.ACKRECEIVE, this.alpha, 
-                                             this.beta, daf, 1, costParams);
+                                             this.beta, daf, 1, costParams, false, sourceNode);
         this.addTask(commTaskAckR, sourceNode);
       }
       else
@@ -392,7 +392,7 @@ public class UnreliableChannelAgenda extends AgendaIOT
         Site clusterHead = this.iot.getSiteFromID(clusterHeadID);
         commTaskAckR = new CommunicationTask(startTimeForAck, destSite, clusterHead ,
                                              CommunicationTask.ACKRECEIVE, this.alpha, 
-                                             this.beta, daf, 1, costParams);
+                                             this.beta, daf, 1, costParams, false, clusterHead);
         this.addTask(commTaskAckR, clusterHead);
       }
       //do for all other siblings in current ln
@@ -403,7 +403,7 @@ public class UnreliableChannelAgenda extends AgendaIOT
         Site inputSite = iot.getSiteFromID(inputID);
         commTaskAckR =  new CommunicationTask(startTimeForAck, destSite, inputSite ,
                                               CommunicationTask.ACKRECEIVE, this.alpha, this.beta,
-                                              daf, 1, costParams);
+                                              daf, 1, costParams, false, inputSite);
         this.addTask(commTaskAckR, inputSite);
       }
     }
@@ -514,10 +514,50 @@ public class UnreliableChannelAgenda extends AgendaIOT
     {
       Long startTime = siteTimeIterator.next();
       Iterator<Task> taskIterator = this.taskIterator(startTime);
+      boolean comms = false;
+      //determine if the tasks in this start time are communication tasks
       while(taskIterator.hasNext())
       {
         Task task = taskIterator.next();
-        orderedTasks.add(task);
+        if(task instanceof CommunicationTask) 
+          comms = true;
+      }
+      //if tasks are comm tasks, then locate transmission task first. 
+      if(comms)
+      {
+        //locate transmission
+        taskIterator = this.taskIterator(startTime);
+        while(taskIterator.hasNext())
+        {
+          Task task = taskIterator.next();
+          CommunicationTask cTask = (CommunicationTask) task;
+          if(cTask.getMode() == CommunicationTask.TRANSMIT || 
+             cTask.getMode() == CommunicationTask.ACKTRANSMIT ) 
+          {
+            orderedTasks.add(task);
+          }
+        }
+        //store all receives (no particular order)
+        taskIterator = this.taskIterator(startTime);
+        while(taskIterator.hasNext())
+        {
+          Task task = taskIterator.next();
+          CommunicationTask cTask = (CommunicationTask) task;
+          if(cTask.getMode() == CommunicationTask.ACKRECEIVE || 
+             cTask.getMode() == CommunicationTask.RECEIVE ) 
+          {
+            orderedTasks.add(task);
+          }
+        }
+      }
+      else //not comms, just add them in any order
+      {
+        taskIterator = this.taskIterator(startTime);
+        while(taskIterator.hasNext())
+        {
+          Task task = taskIterator.next();
+          orderedTasks.add(task);
+        }
       }
     }
     return orderedTasks.iterator();

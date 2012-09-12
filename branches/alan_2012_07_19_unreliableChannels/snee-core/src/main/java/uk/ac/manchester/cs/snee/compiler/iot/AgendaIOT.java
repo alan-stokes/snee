@@ -515,10 +515,10 @@ public class AgendaIOT extends SNEEAlgebraicForm
     final long startTime = this.getLength_bms(true);
 	final CommunicationTask commTaskTx = new CommunicationTask(startTime,
 		sourceNode, destNode,CommunicationTask.TRANSMIT,
-		tuplesToSend, this.alpha, this.beta, daf, costParams);
+		tuplesToSend, this.alpha, this.beta, daf, costParams, false, destNode);
 	final CommunicationTask commTaskRx = new CommunicationTask(startTime,
 		sourceNode, destNode,CommunicationTask.RECEIVE,
-		tuplesToSend, this.alpha, this.beta, daf, costParams);
+		tuplesToSend, this.alpha, this.beta, daf, costParams, false, destNode);
 
 	this.addTask(commTaskTx, sourceNode);
 	this.addTask(commTaskRx, destNode);
@@ -1041,10 +1041,10 @@ public class AgendaIOT extends SNEEAlgebraicForm
 
     final CommunicationTask commTaskTx = new CommunicationTask(startTime,
     sourceNode, destNode, CommunicationTask.TRANSMIT, 
-    exchangeComponents, this.alpha, this.beta, daf, costParams);
+    exchangeComponents, this.alpha, this.beta, daf, costParams, false, destNode);
     final CommunicationTask commTaskRx = new CommunicationTask(startTime,
     sourceNode, destNode, CommunicationTask.RECEIVE, 
-    exchangeComponents, this.alpha, this.beta, daf, costParams);
+    exchangeComponents, this.alpha, this.beta, daf, costParams, false, destNode);
   
     this.addTask(commTaskTx, sourceNode, childIndex);
     this.addTask(commTaskRx, destNode);

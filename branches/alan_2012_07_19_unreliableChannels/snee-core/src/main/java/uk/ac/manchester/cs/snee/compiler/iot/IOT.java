@@ -653,6 +653,7 @@ public class IOT extends SNEEAlgebraicForm
     while(fragIterator.hasNext())
     {
       InstanceFragment frag = fragIterator.next();
+      String fr = frag.getID();
       if(frag.getID().equals(fragid))
         return frag;
     }

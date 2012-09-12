@@ -66,6 +66,8 @@ public abstract class Task implements Serializable {
     protected long endTime;
     
     protected boolean ran = true;
+    
+    protected String id = "";
 
     protected CostParameters costParams;
     
@@ -136,5 +138,10 @@ public abstract class Task implements Serializable {
     public void setRan(boolean ran)
     {
       this.ran = ran;
+    }
+    
+    public String toString()
+    {
+      return this.id;
     }
 }

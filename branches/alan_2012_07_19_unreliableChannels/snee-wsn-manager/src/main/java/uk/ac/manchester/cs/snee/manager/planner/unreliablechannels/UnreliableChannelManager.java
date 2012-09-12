@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.manager.planner.unreliablechannels;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
@@ -93,7 +94,7 @@ public class UnreliableChannelManager extends AutonomicManagerComponent
       new UnreliableChannelAgendaReduced(logicaloverlayNetwork, logicaloverlayNetwork.getQep(), 
                                          network, allowDiscontinuousSensing);
     new UnreliableChannelAgendaReducedUtils(overlayAgenda, logicaloverlayNetwork.getQep().getIOT(), 
-                                     true).generateImage(outputFolder.toString());
+                                     true, new ArrayList<String>()).generateImage(outputFolder.toString());
     return new RobustSensorNetworkQueryPlan(overlayAgenda.getActiveLogicalOverlay().getQep(), 
                                             overlayAgenda.getActiveLogicalOverlay(), overlayAgenda);
     }

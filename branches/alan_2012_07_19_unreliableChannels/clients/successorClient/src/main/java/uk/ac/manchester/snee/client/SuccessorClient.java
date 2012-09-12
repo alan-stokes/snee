@@ -40,8 +40,8 @@ public class SuccessorClient extends SNEEClient
 {
 	
   private static String sep = System.getProperty("file.separator");
-	private static int queryid = 1;
-	protected static int testNo = 1;
+	private static int queryid = 3;
+	protected static int testNo = 3;
 	private static int max = 120;
   private static File testFolder =  new File("src/main/resources/testsSize30");
   private static File sneetestFolder =  new File("testsSize30");
@@ -85,6 +85,13 @@ public class SuccessorClient extends SNEEClient
       collectQueries(queries);
       
       queryIterator = queries.iterator();
+      
+      int counter = 1;
+      while(counter < queryid)
+      {
+        queryIterator.next();
+        counter++;
+      }
       
       //TODO remove to allow full run
       while(queryIterator.hasNext() && queryid <= max)

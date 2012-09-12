@@ -28,8 +28,8 @@ import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.Si
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteOverlayRobustEnergyModel;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.time.TimeModel;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgendaUtils;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.LogicalOverlayNetworkHierarchy;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.UnreliableChannelAgendaReducedUtils;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -313,8 +313,12 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
     double agendaLength = Agenda.bmsToMs( rQEP.getUnreliableAgenda().getLength_bms(false))/new Double(1000); // ms to s
     
     new LogicalOverlayNetworkUtils().storeOverlayAsFile(current, outputFolder);
+    
     while(adapted)
     {
+      new UnreliableChannelAgendaReducedUtils(rQEP.getUnreliableAgenda(), rQEP.getLogicalOverlayNetwork().getQep().getIOT(), false, new ArrayList<String>())
+      .generateImage(outputFolder.toString(), "before" + (globalFailedNodes.size()) + " adaptations");
+      
       SiteOverlayRobustEnergyModel siteModel = 
         new SiteOverlayRobustEnergyModel(rQEP.getUnreliableAgenda(), current, networkSize, globalFailedNodes);
       
@@ -346,10 +350,12 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
           }
         }
       }
+      new UnreliableChannelAgendaReducedUtils(rQEP.getUnreliableAgenda(), rQEP.getLogicalOverlayNetwork().getQep().getIOT(), false, new ArrayList<String>())
+      .generateImage(outputFolder.toString(), "before" + (globalFailedNodes.size() -1) + " failures");
       new ChoiceAssessorUtils(current, runningSites, adapt.getNewQep().getRT()).exportWithEnergies(
                       AssessmentFolder.toString() + sep + "Node" + failedSite , null);
       globalFailedNodes.add(failedSite);
-      new UnreliableChannelAgendaUtils(rQEP.getUnreliableAgenda(), rQEP.getLogicalOverlayNetwork().getQep().getIOT(), false)
+      new UnreliableChannelAgendaReducedUtils(rQEP.getUnreliableAgenda(), rQEP.getLogicalOverlayNetwork().getQep().getIOT(), false, new ArrayList<String>())
       .generateImage(outputFolder.toString(), "with" + (globalFailedNodes.size() -1) + " failures");
       //if can adapt, adapt and repeat
       if(failedNodeStrategyLocal.canAdapt(failedSite, current))

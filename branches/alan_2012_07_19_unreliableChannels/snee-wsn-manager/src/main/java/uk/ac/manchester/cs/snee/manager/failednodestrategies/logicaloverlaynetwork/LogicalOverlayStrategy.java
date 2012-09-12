@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +37,9 @@ import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwo
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetworkUtils;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.LogicalOverlayNetworkHierarchy;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.UnreliableChannelAgendaReduced;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.UnreliableChannelAgendaReducedUtils;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -228,6 +232,24 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
       return null;
   }
   
+  /**
+   * checks if a cluster exists, if so then gives the first node in the cluster, otherwise 
+   * gives null pointer.
+   * @param primary cluster head
+   * @return new cluster head or null 
+   */
+  public String retrieveNewClusterHead(String primary, List<Node> list, Node parent, 
+                                       LogicalOverlayNetworkHierarchy overlay)
+  {
+    if(isThereACluster(primary, overlay))
+    {
+      return overlay.getReplacement(primary, list, parent, network);
+    }
+    else
+      return null;
+  }
+  
+  
 
   @Override
   public boolean canAdapt(String failedNode)
@@ -309,7 +331,7 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
     currentRoutingTree.getSiteTree().updateNodesAndEdgesColls(currentRoutingTree.getSiteTree().getRoot());
   }
 
-  private void rewireNodes(IOT clonedIOT, String failedNodeID, String equivilentNodeID, IOT iot, Site failedSite)
+  private void rewireOperators(IOT clonedIOT, String failedNodeID, String equivilentNodeID, IOT iot, Site failedSite)
   throws OptimizationException
   {
     ///children first
@@ -330,7 +352,7 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
           while(eqivExchangeIterator.hasNext())
           {
             InstanceExchangePart eqPart = eqivExchangeIterator.next();
-            if(nextPart.getID().equals(eqPart.getPreviousId()))
+            if(nextPart.getPreviousId().equals(eqPart.getPreviousId()))
             {
               clonedIOT.removeAllEdgesWithDefinedPosition(part, true);
               assert eqPart.getSite().getID().equals(equivilentSite.getID());
@@ -411,91 +433,14 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
       List<Adaptation> adapatation = new ArrayList<Adaptation>();
       if(this.canAdaptToAll(failedNodeIDs, overlay))
       {
-        Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
-        Adaptation adapt = new Adaptation(overlay.getQep(), StrategyIDEnum.FailedNodeLocal, 1);
-      
-        new IOTUtils().storeIOT(overlay.getQep().getIOT(), localFolder);
-        String oldid = overlay.getQep().getIOT().getID();
-        IOT clonedIOT = overlay.getQep().getIOT();
-        RT currentRoutingTree = clonedIOT.getRT();
-        while(failedNodeIDsIterator.hasNext())
+        if(overlay instanceof LogicalOverlayNetworkHierarchy)
         {
-          String failedNodeID = failedNodeIDsIterator.next();
-          Site failedSite = cloner.deepClone(overlay.getQep().getRT().getSite(failedNodeID));
-          String equivilentNodeID = 
-            retrieveNewClusterHead(failedNodeID,
-                                   currentRoutingTree.getSite(failedNodeID).getInputsList(),
-                                   currentRoutingTree.getSite(failedNodeID).getOutput(0), overlay);
-          if(failedNodeID == null)
-            return null;
-          //sort out adaptation data structs.
-          adapt.addActivatedSite(equivilentNodeID);
-          Iterator<Node> redirectedNodesIterator = overlay.getQep().getRT().getSite(failedNodeID).getInputsList().iterator();
-          while(redirectedNodesIterator.hasNext())
-          {
-            adapt.addRedirectedSite(redirectedNodesIterator.next().getID());
-          }
-          //rewire routing tree
-          rewireRoutingTree(failedNodeID, equivilentNodeID, currentRoutingTree);
-          new RTUtils(currentRoutingTree).exportAsDOTFile(localFolder.toString() + sep + "new RT");
-          new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay Before nodes ");
-          //rewire children
-          rewireNodes(clonedIOT, failedNodeID, equivilentNodeID, overlay.getQep().getIOT(), failedSite);
-          new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay after nodes");
+          return executeHierarchyAdaptation(failedNodeIDs, (LogicalOverlayNetworkHierarchy) overlay);
         }
-        new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iot", "iot with eqiv nodes", true);
-        
-        new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotInputs", "iot with eqiv nodes", true, true);
-        
-        new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay");
-        try
+        else
         {
-          IOT newIOT = clonedIOT;
-          newIOT.setID("new iot");
-          IOTUtils utils = new IOTUtils(newIOT, currentQEP.getCostParameters());
-          utils.disconnectExchanges();
-         // newIOT.setDAF(utils.convertToDAF());
-          utils.reconnectExchanges();
-          new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotAfterReconnect", "iot with eqiv nodes", true);
-          //new DAFUtils(newIOT.getDAF()).exportAsDotFile(localFolder.toString() + sep + "daf");
-          new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay after disconnect and reconnect");
-          
-          
-          if(currentQEP instanceof RobustSensorNetworkQueryPlan)
-          {
-            RobustSensorNetworkQueryPlan rQEP = (RobustSensorNetworkQueryPlan) currentQEP;
-            RobustSensorNetworkQueryPlan newRQEP = 
-              new RobustSensorNetworkQueryPlan(currentQEP, rQEP.getUnreliableAgenda().getActiveLogicalOverlay(), 
-                                               rQEP.getUnreliableAgenda());
-            adapt.setNewQep(newRQEP);
-            adapt.setFailedNodes(failedNodeIDs);
-            adapatation.add(adapt);
-            return adapatation;
-          }
-          else
-          {
-            //run new iot though when scheduler and locate changes
-            AgendaIOT  newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
-           // Agenda newAgenda = doOldSNWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
-            //output new and old agendas
-            new LogicalOverlayStrategyUtils().outputAgendas(newAgendaIOT, currentQEP.getAgendaIOT(), 
-                                                                 currentQEP.getIOT(), newIOT, localFolder);
-            IOT oldIOT = new IOTUtils().retrieveIOT(localFolder, oldid);
-            boolean success = assessQEPsAgendas(oldIOT, newIOT, overlay.getQep().getAgendaIOT(), newAgendaIOT, null, 
-                                              false, adapt, failedNodeIDs, currentRoutingTree, false,
-                                              this.currentQEP.getDLAF(), this.currentQEP.getID(), this.currentQEP.getCostParameters());
-            adapt.setFailedNodes(failedNodeIDs);
-            if(success)
-              adapatation.add(adapt);
-            return adapatation;
-          }
+          return executeAdaptation(failedNodeIDs, overlay);
         }
-        catch (Exception e)
-        {
-          e.printStackTrace();
-          System.exit(0);
-        }
-        return adapatation;
       }
       else
         return adapatation;
@@ -510,6 +455,195 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
     }
   }
   
+  private List<Adaptation> executeAdaptation(ArrayList<String> failedNodeIDs,
+                                             LogicalOverlayNetwork overlay) 
+  throws FileNotFoundException, IOException, OptimizationException, SchemaMetadataException
+  {
+    List<Adaptation> adapatation = new ArrayList<Adaptation>();
+    Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
+    Adaptation adapt = new Adaptation(overlay.getQep(), StrategyIDEnum.FailedNodeLocal, 1);
+  
+    new IOTUtils().storeIOT(overlay.getQep().getIOT(), localFolder);
+    String oldid = overlay.getQep().getIOT().getID();
+    IOT clonedIOT = overlay.getQep().getIOT();
+    RT currentRoutingTree = clonedIOT.getRT();
+    while(failedNodeIDsIterator.hasNext())
+    {
+      String failedNodeID = failedNodeIDsIterator.next();
+      Site failedSite = cloner.deepClone(overlay.getQep().getRT().getSite(failedNodeID));
+      String equivilentNodeID = 
+        retrieveNewClusterHead(failedNodeID,
+                               currentRoutingTree.getSite(failedNodeID).getInputsList(),
+                               currentRoutingTree.getSite(failedNodeID).getOutput(0), overlay);
+      if(failedNodeID == null)
+        return null;
+      //sort out adaptation data structs.
+      adapt.addActivatedSite(equivilentNodeID);
+      Iterator<Node> redirectedNodesIterator = overlay.getQep().getRT().getSite(failedNodeID).getInputsList().iterator();
+      while(redirectedNodesIterator.hasNext())
+      {
+        adapt.addRedirectedSite(redirectedNodesIterator.next().getID());
+      }
+      //rewire routing tree
+      rewireRoutingTree(failedNodeID, equivilentNodeID, currentRoutingTree);
+      new RTUtils(currentRoutingTree).exportAsDOTFile(localFolder.toString() + sep + "new RT");
+      new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay Before nodes ");
+      //rewire children
+      rewireOperators(clonedIOT, failedNodeID, equivilentNodeID, overlay.getQep().getIOT(), failedSite);
+      new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay after nodes");
+    }
+    new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iot", "iot with eqiv nodes", true);
+    
+    new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotInputs", "iot with eqiv nodes", true, true);
+    
+    new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay");
+    try
+    {
+      IOT newIOT = clonedIOT;
+      newIOT.setID("new iot");
+      IOTUtils utils = new IOTUtils(newIOT, currentQEP.getCostParameters());
+      utils.disconnectExchanges();
+     // newIOT.setDAF(utils.convertToDAF());
+      utils.reconnectExchanges();
+      new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotAfterReconnect", "iot with eqiv nodes", true);
+      //new DAFUtils(newIOT.getDAF()).exportAsDotFile(localFolder.toString() + sep + "daf");
+      new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay after disconnect and reconnect");
+      
+      
+      if(currentQEP instanceof RobustSensorNetworkQueryPlan)
+      {
+        RobustSensorNetworkQueryPlan rQEP = (RobustSensorNetworkQueryPlan) currentQEP;
+        RobustSensorNetworkQueryPlan newRQEP = 
+          new RobustSensorNetworkQueryPlan(currentQEP, rQEP.getUnreliableAgenda().getActiveLogicalOverlay(), 
+                                           rQEP.getUnreliableAgenda());
+        adapt.setNewQep(newRQEP);
+        adapt.setFailedNodes(failedNodeIDs);
+        adapatation.add(adapt);
+        return adapatation;
+      }
+      else
+      {
+        //run new iot though when scheduler and locate changes
+        AgendaIOT  newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
+       // Agenda newAgenda = doOldSNWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
+        //output new and old agendas
+        new LogicalOverlayStrategyUtils().outputAgendas(newAgendaIOT, currentQEP.getAgendaIOT(), 
+                                                             currentQEP.getIOT(), newIOT, localFolder);
+        IOT oldIOT = new IOTUtils().retrieveIOT(localFolder, oldid);
+        boolean success = assessQEPsAgendas(oldIOT, newIOT, overlay.getQep().getAgendaIOT(), newAgendaIOT, null, 
+                                          false, adapt, failedNodeIDs, currentRoutingTree, false,
+                                          this.currentQEP.getDLAF(), this.currentQEP.getID(), this.currentQEP.getCostParameters());
+        adapt.setFailedNodes(failedNodeIDs);
+        if(success)
+          adapatation.add(adapt);
+        return adapatation;
+      }
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      System.exit(0);
+    }
+    return adapatation; 
+  }
+
+  private List<Adaptation> executeHierarchyAdaptation(ArrayList<String> failedNodeIDs,
+                                                      LogicalOverlayNetworkHierarchy overlay)
+  throws FileNotFoundException, IOException, OptimizationException, SchemaMetadataException
+  {
+    List<Adaptation> adapatation = new ArrayList<Adaptation>();
+    Iterator<String> failedNodeIDsIterator = failedNodeIDs.iterator();
+    Adaptation adapt = new Adaptation(overlay.getQep(), StrategyIDEnum.FailedNodeLocal, 1);
+  
+    new IOTUtils().storeIOT(overlay.getQep().getIOT(), localFolder);
+    String oldid = overlay.getQep().getIOT().getID();
+    IOT clonedIOT = overlay.getQep().getIOT();
+    RT currentRoutingTree = clonedIOT.getRT();
+    while(failedNodeIDsIterator.hasNext())
+    {
+      String failedNodeID = failedNodeIDsIterator.next();
+      Site failedSite = cloner.deepClone(overlay.getQep().getRT().getSite(failedNodeID));
+      String equivilentNodeID = 
+        retrieveNewClusterHead(failedNodeID,
+                               currentRoutingTree.getSite(failedNodeID).getInputsList(),
+                               currentRoutingTree.getSite(failedNodeID).getOutput(0), overlay);
+      //sort out adaptation data structs.
+      adapt.addActivatedSite(equivilentNodeID);
+      Iterator<Node> redirectedNodesIterator = overlay.getQep().getRT().getSite(failedNodeID).getInputsList().iterator();
+      while(redirectedNodesIterator.hasNext())
+      {
+        adapt.addRedirectedSite(redirectedNodesIterator.next().getID());
+      }
+      //rewire routing tree
+      rewireRoutingTree(failedNodeID, equivilentNodeID, currentRoutingTree);
+      new RTUtils(currentRoutingTree).exportAsDOTFile(localFolder.toString() + sep + "new RT");
+      new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay Before nodes ");
+      //rewire children
+      rewireOperators(clonedIOT, failedNodeID, equivilentNodeID, overlay.getQep().getIOT(), failedSite);
+      new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay after nodes");
+      overlay.updateClusters(failedNodeID, equivilentNodeID);
+    }
+    new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iot", "iot with eqiv nodes", true);
+    
+    new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotInputs", "iot with eqiv nodes", true, true);
+    
+    new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay");
+    try
+    {
+      IOT newIOT = clonedIOT;
+      newIOT.setID("new iot");
+      IOTUtils utils = new IOTUtils(newIOT, currentQEP.getCostParameters());
+      utils.disconnectExchanges();
+     // newIOT.setDAF(utils.convertToDAF());
+      utils.reconnectExchanges();
+      new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotAfterReconnect", "iot with eqiv nodes", true);
+      //new DAFUtils(newIOT.getDAF()).exportAsDotFile(localFolder.toString() + sep + "daf");
+      new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay after disconnect and reconnect");
+      
+      
+      if(currentQEP instanceof RobustSensorNetworkQueryPlan)
+      {
+        RobustSensorNetworkQueryPlan rQEP = (RobustSensorNetworkQueryPlan) currentQEP;
+        boolean allowDiscontinuousSensing = 
+          SNEEProperties.getBoolSetting(SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
+        UnreliableChannelAgendaReduced newAgenda = 
+          new UnreliableChannelAgendaReduced(overlay, currentQEP, network, allowDiscontinuousSensing);
+        new UnreliableChannelAgendaReducedUtils(newAgenda, clonedIOT, false, new ArrayList<String>())
+        .generateImage(outputFolder.toString(), "finished Agenda");
+        RobustSensorNetworkQueryPlan newRQEP = 
+          new RobustSensorNetworkQueryPlan(currentQEP, rQEP.getUnreliableAgenda().getActiveLogicalOverlay(), 
+                                           newAgenda);
+        adapt.setNewQep(newRQEP);
+        adapt.setFailedNodes(failedNodeIDs);
+        adapatation.add(adapt);
+        return adapatation;
+      }
+      else
+      {
+        //run new iot though when scheduler and locate changes
+        AgendaIOT  newAgendaIOT = doSNWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
+       // Agenda newAgenda = doOldSNWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getID(), currentQEP.getCostParameters());
+        //output new and old agendas
+        new LogicalOverlayStrategyUtils().outputAgendas(newAgendaIOT, currentQEP.getAgendaIOT(), 
+                                                        currentQEP.getIOT(), newIOT, localFolder);
+        IOT oldIOT = new IOTUtils().retrieveIOT(localFolder, oldid);
+        boolean success = assessQEPsAgendas(oldIOT, newIOT, overlay.getQep().getAgendaIOT(), newAgendaIOT, null, 
+                                          false, adapt, failedNodeIDs, currentRoutingTree, false,
+                                          this.currentQEP.getDLAF(), this.currentQEP.getID(), this.currentQEP.getCostParameters());
+        adapt.setFailedNodes(failedNodeIDs);
+        if(success)
+          adapatation.add(adapt);
+        return adapatation;
+      }
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      System.exit(0);
+    }
+    return adapatation;    
+  }
+
   @Override
   public void update(Adaptation finalChoice)
   {

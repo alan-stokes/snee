@@ -19,7 +19,7 @@ public class ChannelModelReduced implements Serializable
    * 
    */
   private static final long serialVersionUID = 7449374992445910226L;
-  private ArrayList<ChannelModelSite> channelModel = new ArrayList<ChannelModelSite>();
+  private ArrayList<ChannelModelReducedSite> channelModel = new ArrayList<ChannelModelReducedSite>();
   private LogicalOverlayNetworkHierarchy logicaloverlayNetwork;
   private UnreliableChannelAgenda agenda;
   private ArrayList<String> failedNodes;
@@ -71,123 +71,151 @@ public class ChannelModelReduced implements Serializable
     while(taskIterator.hasNext())
     {
       Task task = taskIterator.next();
+      //System.out.println(task.toString());
       if(task instanceof CommunicationTask )
       {
+        boolean runable = true;
         CommunicationTask cTask = (CommunicationTask) task;
-        if(cTask.getMode() == CommunicationTask.RECEIVE ||
-           cTask.getMode() == CommunicationTask.TRANSMIT)
+        if(failedNodes.contains(cTask.getSourceID()) || 
+           failedNodes.contains(cTask.getDestID()))
         {
-          int packetsToTransmit = cTask.getMaxPacektsTransmitted();
-          
-          if(!failedNodes.contains(cTask.getSourceID()) && 
-             !failedNodes.contains(cTask.getDestID()) &&
-              tranmissionTaskNeeded(cTask.getSourceID()))
-          {
-            for(int packetID = 0; packetID < packetsToTransmit; packetID++)
+          cTask.setRan(false);
+          runable = false;
+        }
+        
+        if(cTask.getMode() == CommunicationTask.RECEIVE && runable)
+        {
+          if(tranmissionTaskRan(cTask.getSourceID(), cTask.isRedundantTask()))
+           {
+            if(isSibling(cTask.getSourceID(), cTask.getDestID())) 
             {
-              tryTransmission(cTask.getDestID(), Integer.parseInt(cTask.getSourceID()), packetID);
+              int packetsToTransmit = cTask.getMaxPacektsTransmitted();
+              for(int packetID = 0; packetID < packetsToTransmit; packetID++)
+              {
+                tryRecievingSibling(cTask.getDestID(), Integer.parseInt(cTask.getSourceID()), packetID);
+              }
+              cTask.setRan(true);
             }
-            ChannelModelSite site = channelModel.get(Integer.parseInt(cTask.getSourceID()));
-            site.setNeedTransmit();
-            verifyAck(cTask.getDestID(), cTask.getSourceID());
+            else
+            {
+              int packetsToTransmit = cTask.getMaxPacektsTransmitted();
+               for(int packetID = 0; packetID < packetsToTransmit; packetID++)
+               {
+                 tryRecieving(cTask.getDestID(), Integer.parseInt(cTask.getSourceID()), packetID);
+               }
+               cTask.setRan(true);
+            }
+           }
+          else
+          {
+            cTask.setRan(false);
+          }
+        }
+          
+        else if(cTask.getMode() == CommunicationTask.TRANSMIT && runable)
+        {
+          ChannelModelReducedSite site = channelModel.get(Integer.parseInt(cTask.getSourceID())); 
+          if(site.receivedACK(Integer.parseInt(cTask.getOriginalDestNode().getID())) ||
+             heardHigherPriorityNodeTransmit(site, cTask.isRedundantTask()) ||
+             !site.recievedAllInputPackets())
+          {
+            cTask.setRan(false);
+          }
+          else
+          {
+            cTask.setRan(true);
+            site.transmittedPackets();
+            site.updateCycle();
+          }
+        }
+        
+        else if(cTask.getMode() == CommunicationTask.ACKRECEIVE && runable)
+        {
+          ChannelModelReducedSite site = channelModel.get(Integer.parseInt(cTask.getDestID())); 
+          ChannelModelReducedSite sourceSite = channelModel.get(Integer.parseInt(cTask.getSourceID())); 
+          if(!site.transmittedAckTo(cTask.getSourceID()))
+          {
+            cTask.setRan(false);
+          }
+          else
+          {
+            if(this.didPacketGetRecived(cTask.getDestID(), Integer.parseInt(cTask.getSourceID())))
+            {
+              sourceSite.receivedACK(site);
+            }
+            cTask.setRan(true);
+          }
+          
+        }
+        
+        else if(cTask.getMode() == CommunicationTask.ACKTRANSMIT && runable)
+        {
+          ChannelModelReducedSite site = channelModel.get(Integer.parseInt(cTask.getDestID())); 
+          if(site.needToTransmitAckTo(cTask.getOriginalDestNode().getID()))
+          {
+            cTask.setRan(true);
+            Iterator<String> nodesInChild = this.logicaloverlayNetwork.getActiveEquivilentNodes(
+                this.logicaloverlayNetwork.getClusterHeadFor(cTask.getOriginalDestNode().getID())).iterator();
+            while(nodesInChild.hasNext())
+            {
+              site.TransmitAckTo(nodesInChild.next());
+            }
+            nodesInChild = this.logicaloverlayNetwork.getActiveEquivilentNodes(
+                this.logicaloverlayNetwork.getClusterHeadFor(cTask.getDestID())).iterator();
+            while(nodesInChild.hasNext())
+            {
+              String node = nodesInChild.next();
+              if(!node.equals(cTask.getSourceID()))
+                site.TransmitAckTo(node);
+            }
+          }
+          else
+          {
+            cTask.setRan(false);
           }
         }
       }
     }
   }
-
-  /**
-   * checks if a node needs to transmit (within the model)
-   * @param sourceID
-   * @return
-   */
-  private boolean tranmissionTaskNeeded(String sourceID)
-  {
-    ChannelModelSite site = channelModel.get(Integer.parseInt(sourceID)); 
-    if(site == null)
-      return false;
-    return site.channelModelNeedToTransmit();
-  }
-
-  /**
-   * sorts out what acks have been recieved
-   * @param destID
-   * @param siteID
-   */
-  private void verifyAck(String destID, String siteID)
-  {    
-    //get all nodes to recieve acks
-    ArrayList<ChannelModelSite> inputSites = getListOfChannelSitesFromLogicaloverlay(siteID.toString(), false);
-    ChannelModelSite childClusterHead = channelModel.get(Integer.parseInt(logicaloverlayNetwork.getClusterHeadFor(siteID.toString())));
-    
-    //collect all output sites
-    ArrayList<ChannelModelSite> outputSites = getListOfChannelSitesFromLogicaloverlay(destID, true);
-        
-    //sort out acks
-    Iterator<ChannelModelSite> siteiterator = outputSites.iterator();
-    while(siteiterator.hasNext())
-    {
-      ChannelModelSite outputSite = siteiterator.next();
-      if(outputSite.needToTransmitAckTo(childClusterHead.toString()))
-      {
-        outputSite.channelModelSetToTransmitACK(true);
-        outputSite.incrementTransmittedAcks();
-        if(didPacketGetRecived(childClusterHead.toString(), Integer.parseInt(outputSite.toString())))
-        {
-          childClusterHead.receivedACK(outputSite);
-        }
-        Iterator<ChannelModelSite> childSiteIterator = inputSites.iterator();
-        while(childSiteIterator.hasNext())
-        {
-          ChannelModelSite childSite = childSiteIterator.next();
-          if(didPacketGetRecived(childSite.toString(), Integer.parseInt(outputSite.toString())))
-            childSite.receivedACK(outputSite);
-        }
-      }
-    }
-  }
-
   
-  /**
-   * gets the models sites for a given logical node
-   * @param siteID
-   * @param withClusterHead
-   * @return
-   */
-  private ArrayList<ChannelModelSite> getListOfChannelSitesFromLogicaloverlay(String siteID, boolean withClusterHead)
+  private boolean isSibling(String sourceID, String destID)
   {
-    ArrayList<ChannelModelSite> sites = new  ArrayList<ChannelModelSite>();
-    String clusterHeadID = logicaloverlayNetwork.getClusterHeadFor(siteID.toString());
-    if(withClusterHead)
-      sites.add(channelModel.get(Integer.parseInt(clusterHeadID)));
-    ArrayList<String> childEqNodes = logicaloverlayNetwork.getEquivilentNodes(clusterHeadID);
-    Iterator<String> inputEquivNodesStringID = childEqNodes.iterator();
-    while(inputEquivNodesStringID.hasNext())
-    {
-      String inputEquivNodeStringID = inputEquivNodesStringID.next();
-      sites.add(channelModel.get(Integer.parseInt(inputEquivNodeStringID)));
-    }
-    return sites;
+    ArrayList<String> equivNodes = 
+      this.logicaloverlayNetwork.getEquivilentNodes(this.logicaloverlayNetwork.getClusterHeadFor(sourceID));
+    if(equivNodes.contains(destID) || this.logicaloverlayNetwork.getClusterHeadFor(sourceID).equals(destID))
+      return true;
+    else
+      return false;
   }
 
-  /**
-   * executes a transmission task for the model
-   * @param destID
-   * @param siteID
-   * @param packetID
-   */
-  private void tryTransmission(String destID, Integer siteID, int packetID)
+  public boolean heardHigherPriorityNodeTransmit(ChannelModelReducedSite site, boolean redundant)
   {
-    //collect all output sites
-    ArrayList<ChannelModelSite> outputSites = getListOfChannelSitesFromLogicaloverlay(destID, true);
-    Iterator<ChannelModelSite> siteiterator = outputSites.iterator();
-    while(siteiterator.hasNext())
+    if(site.heardSiblings() == 0)
+      return false;
+    else
+      return true;
+  }
+
+  private boolean tranmissionTaskRan(String sourceID, boolean redundantTask)
+  {
+    return this.channelModel.get(Integer.parseInt(sourceID)).transmittedTo(redundantTask);
+  }
+
+  private void tryRecieving(String destID, Integer sourceID, int packetID)
+  {
+    ChannelModelReducedSite outputSite = this.channelModel.get(Integer.parseInt(destID));
+    if(didPacketGetRecived(destID, sourceID))
     {
-      ChannelModelSite outputSite = siteiterator.next();
-      if(didPacketGetRecived(destID, siteID))
-      {
-        outputSite.recivedInputPacket(siteID.toString(), packetID);
-      }
+      outputSite.recivedInputPacket(sourceID.toString(), packetID);
+    }
+  }
+  
+  private void tryRecievingSibling(String destID, Integer sourceID, int packetID)
+  {
+    ChannelModelReducedSite outputSite = this.channelModel.get(Integer.parseInt(destID));
+    if(didPacketGetRecived(destID, sourceID))
+    {
+      outputSite.recivedSiblingPacket(sourceID.toString(), packetID);
     }
   }
 
@@ -234,99 +262,21 @@ public class ChannelModelReduced implements Serializable
       }
       if(logicaloverlayNetwork.getQep().getRT().getRoot().getID().equals(clusterHeadID))
       {
-        ChannelModelSite site = new ChannelModelSite(expectedPackets, 0, siteID, logicaloverlayNetwork, 0);
+        ChannelModelReducedSite site = new ChannelModelReducedSite(expectedPackets, siteID, logicaloverlayNetwork, 0);
         channelModel.set(siteIDInt, site);
       }
       else
       {
-        Node output = logicaloverlayNetwork.getQep().getRT().getSite(clusterHeadID).getOutput(0);
-        int parents = logicaloverlayNetwork.getEquivilentNodes(output.getID()).size() + 1;
-        ChannelModelSite site;
+        ChannelModelReducedSite site;
         if(logicaloverlayNetwork.isClusterHead(siteID))
-          site = new ChannelModelSite(expectedPackets, parents, siteID, logicaloverlayNetwork, 0);
+          site = new ChannelModelReducedSite(expectedPackets, siteID, logicaloverlayNetwork, logicaloverlayNetwork.getPriority(siteID));
         else
         {
-          ArrayList<String> nodes = logicaloverlayNetwork.getEquivilentNodes(logicaloverlayNetwork.getClusterHeadFor(siteID));
-          int position = nodes.indexOf(siteID) + 1;
-          site = new ChannelModelSite(expectedPackets, parents, siteID, logicaloverlayNetwork, position);
+          site = new ChannelModelReducedSite(expectedPackets, siteID, logicaloverlayNetwork, logicaloverlayNetwork.getPriority(siteID));
         }
           
         channelModel.set(siteIDInt, site);
       }
     }
   }
-  
-  /**
-   * Used by the choice assessor to determine if a node needs to transmit its data
-   * @param siteID
-   * @return
-   */
-  public boolean needToTransmit(Integer siteID)
-  {
-    if(failedNodes.contains(siteID.toString()))
-      return false;
-    return channelModel.get(siteID).energyModelNeedToTransmit();
-  }
-  
-  /**Used by the choice assessor to determine if a node needs to listen to a node
-   * 
-   * @param childID
-   * @param siteID
-   * @return
-   */
-  public boolean needToListenTo(String childID, Integer siteID)
-  {
-    if(failedNodes.contains(siteID.toString()) || 
-       failedNodes.contains(childID) )
-      return false;
-    return channelModel.get(siteID).needToListenTo(childID);
-  }
-  
-  /**
-   * Used by the choice assessor to determine if a node needs to run its fragments
-   * @param siteID
-   * @return
-   */
-  public boolean needToRunFrags(int siteID)
-  {
-    return needToTransmit(siteID);
-  }
-  
-  /**
-   * Used by the choice assessor to determine if a node needs to transmit a ack
-   * @param siteID
-   * @param child
-   * @return
-   */
-  public boolean needToTransmitACK(Integer siteID, String child)
-  {
-    if(failedNodes.contains(siteID.toString())|| 
-       failedNodes.contains(child))
-      return false;
-    String clusterHead = this.logicaloverlayNetwork.getClusterHeadFor(child);
-    return channelModel.get(siteID).needToTransmitAckTo(clusterHead);
-  }
-
-  /**
-   * Used by the choice assessor to determine if a node needs to listen for a ack
-   * @param source
-   * @param child
-   * @return
-   */
-  public boolean recievedACK(Integer source, String child)
-  {
-    if(failedNodes.contains(source.toString())|| 
-       failedNodes.contains(child))
-      return false;
-    ChannelModelSite sourceSite = channelModel.get(source);
-    ChannelModelSite destSite = channelModel.get(Integer.parseInt(child));
-    if(sourceSite.getEnergyModeltransmittedAcks() <= destSite.getPosition())
-      return true;
-    else 
-      return false;
-    
-      
-    
-  }
-  
 }

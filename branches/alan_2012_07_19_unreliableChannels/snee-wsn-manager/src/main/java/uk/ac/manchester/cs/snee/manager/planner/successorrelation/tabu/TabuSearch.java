@@ -42,7 +42,6 @@ public class TabuSearch extends AutonomicManagerComponent
   private TABUSearchUtils Utils;
   private HashMap<String, RunTimeSite> initalSitesEnergy;
 	private int currentNumberOfIterationsWithoutImprovement = 0;
-	private SourceMetadataAbstract _metadata;
 	private MetadataManager _metaManager;
 	private File TABUOutputFolder = null;
 	

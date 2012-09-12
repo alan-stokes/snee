@@ -68,7 +68,6 @@ public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
      for (int i=0; i<siteTasks.size(); i++) 
      {
        Task t = siteTasks.get(i);
-       t.setRan(true);
        if (t instanceof SleepTask) 
        {
          continue;
@@ -77,9 +76,8 @@ public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
        cpuActiveTimeBms += t.getDuration();
        if (t instanceof FragmentTask) 
        {
-         if(!channelModel.needToRunFrags(Integer.parseInt(site.getID())))
+         if(!t.isRan())
          { 
-           t.setRan(false);
            cpuActiveTimeBms -= t.getDuration();
          }
          else
@@ -93,39 +91,25 @@ public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
        }
        else if(t instanceof InstanceFragmentTask)
        {
-          if(!channelModel.needToRunFrags(Integer.parseInt(site.getID())))
-          { 
-            t.setRan(false);
-            cpuActiveTimeBms -= t.getDuration();
-          }
-          else
-          {
-            InstanceFragmentTask ft = (InstanceFragmentTask)t;
-            InstanceFragment f = ft.getFragment();
-            if (f.containsOperatorType(SensornetAcquireOperator.class)) 
-              sensorEnergy += AvroraCostParameters.getSensorEnergyCost();
-            sumEnergy += sensorEnergy;
-          }
+         if(!t.isRan())
+         { 
+           cpuActiveTimeBms -= t.getDuration();
+         }
+         else
+         {
+           InstanceFragmentTask ft = (InstanceFragmentTask)t;
+           InstanceFragment f = ft.getFragment();
+           if (f.containsOperatorType(SensornetAcquireOperator.class)) 
+             sensorEnergy += AvroraCostParameters.getSensorEnergyCost();
+           sumEnergy += sensorEnergy;
+         }
        }
        else if (t instanceof CommunicationTask)
        {
          CommunicationTask ct = (CommunicationTask)t;
          
-         if((ct.getMode() == CommunicationTask.TRANSMIT &&
-             !channelModel.needToTransmit(Integer.parseInt(ct.getSourceID())))
-           || 
-             ((ct.getMode() == CommunicationTask.RECEIVE &&
-             !channelModel.needToListenTo(ct.getSourceID(), Integer.parseInt(ct.getDestID()))))
-           ||
-             (ct.getMode() == CommunicationTask.ACKTRANSMIT &&
-             !channelModel.needToTransmitACK(Integer.parseInt(ct.getSourceID()), ct.getDestID()))
-           || 
-             (ct.getMode() == CommunicationTask.ACKRECEIVE &&
-             !channelModel.recievedACK(Integer.parseInt(ct.getSourceID()), ct.getDestID())))
-         { 
-           t.setRan(false);
+         if(!t.isRan())
            cpuActiveTimeBms -= t.getDuration();
-         }
          else
          {
            sumEnergy += getRadioEnergy(ct);

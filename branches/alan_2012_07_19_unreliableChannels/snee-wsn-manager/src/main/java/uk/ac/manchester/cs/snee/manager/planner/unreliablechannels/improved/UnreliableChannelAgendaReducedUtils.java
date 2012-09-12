@@ -48,13 +48,17 @@ public class UnreliableChannelAgendaReducedUtils
   UnreliableChannelAgendaReduced agenda;
 
   private boolean useMilliSeconds;
+  
+  private ArrayList<String> failedNodes;
 
   public UnreliableChannelAgendaReducedUtils(final UnreliableChannelAgendaReduced agenda, IOT iot, 
-                                      final boolean useMilliSeconds) 
+                                      final boolean useMilliSeconds,
+                                      ArrayList<String> failedNodes) 
   {
     this.agenda = agenda;
     this.iot = iot;
     this.useMilliSeconds = useMilliSeconds;
+    this.failedNodes = failedNodes;
   }
 
   // computes the width of the schedule image
@@ -68,7 +72,7 @@ public class UnreliableChannelAgendaReducedUtils
       sitesIterator.next();
       sitesCount++;
     }
-    
+    sitesCount -= this.failedNodes.size();
     return (sitesCount + 2) * CELL_WIDTH;
   }
 
@@ -122,7 +126,7 @@ public class UnreliableChannelAgendaReducedUtils
       while (taskIter.hasNext()) 
       {
         final Task task = taskIter.next();
-
+        g2.drawString(new Long(task.getEndTime()).toString(), 20 + CELL_WIDTH, ypos + CELL_HEIGHT); 
         Long sTime = new Long(0);
         do 
         {
@@ -130,7 +134,9 @@ public class UnreliableChannelAgendaReducedUtils
           sTime = startTimeIter.next();}
           catch(Exception e)
           {
-            //System.out.println("");
+            System.out.println("error " + e.getMessage());
+            e.printStackTrace();
+            System.exit(0);
           }
           ypos += CELL_HEIGHT;
         } while (sTime.intValue() != task.getStartTime());
@@ -313,7 +319,7 @@ public class UnreliableChannelAgendaReducedUtils
       ypos += CELL_HEIGHT;
     }
 
-    xpos = 80;
+    xpos = xpos + (CELL_WIDTH * 2);
 
     final Iterator<Site> siteIter = this.iot.siteIterator(TraversalOrder.POST_ORDER);
     while (siteIter.hasNext()) 
@@ -324,8 +330,11 @@ public class UnreliableChannelAgendaReducedUtils
       while(clusterSitesIterator.hasNext())
       {
         String clusterNodeID = clusterSitesIterator.next();
-        site = (Site) this.agenda.getSiteByID(clusterNodeID);
-        xpos = outputSiteAgenda(site, xpos, ypos, g2, startTimeIter);
+        if(!this.failedNodes.contains(clusterNodeID))
+        {
+          site = (Site) this.agenda.getSiteByID(clusterNodeID);
+          xpos = outputSiteAgenda(site, xpos, ypos, g2, startTimeIter);
+        }
       }
     }
     g2.drawString(agenda.getDescendantsString(), 25, ypos + CELL_HEIGHT);
@@ -344,6 +353,8 @@ public class UnreliableChannelAgendaReducedUtils
     catch (final IOException e) 
     {
       logger.warn("Error encountered writing agenda image.");
+      System.out.println("Error encountered writing agenda image.");
+      System.exit(0);
     }
     
   }	
