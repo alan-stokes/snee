@@ -33,7 +33,6 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
   
   
   // cluster rep
-  private HashMapList<String, String> clusters = null; 
   private HashMapList<String, String> activeClusters = null; 
   private HashMap<String, Integer> activeClustersPriority = null; 
   private HashMap<String, Integer> activeClustersOriginalPriority = null; 
@@ -179,6 +178,11 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     }
   }
 
+  /**
+   * returns nodes within a cluster that are currently inactive
+   * @param clusterHeadID
+   * @return
+   */
   private ArrayList<String> getInactiveCluster(String clusterHeadID)
   {
     ArrayList<String> returable = new ArrayList<String>();
@@ -246,6 +250,9 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     return bestCandiate;
   }
 
+  /**
+   * adds all nodes to a cluster.
+   */
   public void addClusterNode(String primary, ArrayList<String> equivilentNodes)
   {
     this.clusters.addAll(primary, equivilentNodes);
@@ -262,6 +269,10 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     this.clusters.add(primary, equivilentNode);
   }
 
+  /**
+   * returns the set of traditonal cluster heads of this overlay (non active)
+   * WARNING. If a cluster has only the clusterhead, this method will return false.
+   */
   public Set<String> getKeySet()
   {
     return this.clusters.keySet();
@@ -278,6 +289,12 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     return cluster;
   }
   
+  
+  /**
+   * returns the set of active nodes within this cluster.
+   * @param clusterHead
+   * @return
+   */
   public ArrayList<String> getActiveEquivilentNodes(String key)
   {
     ArrayList<String> cluster = activeClusters.get(key);
@@ -300,6 +317,9 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     }
   }
   
+  /**
+   * returns a string repesnetation of this overlay
+   */
   @Override
   public String toString()
   {
@@ -380,8 +400,6 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
       candiates.remove(key);
     }
     
-   
-    
     Iterator<String> candiatesIterator = candiates.iterator();
     String bestCandiate = null;
     double bestCost = Double.MAX_VALUE;
@@ -409,11 +427,17 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     return bestCandiate;
   }
 
+  /**
+   * sets a QEP for this overlay
+   */
   public void setQep(SensorNetworkQueryPlan qep)
   {
     this.qep = qep;
   }
 
+  /**
+   * returns the QEP associated with this overlay
+   */
   public SensorNetworkQueryPlan getQep()
   {
     return qep;
@@ -507,9 +531,12 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     return array.iterator();
   }
 
+  /**
+   * overloaded method to determine if a node is in fact a cluster head node
+   */
   public boolean isClusterHead(String sourceID)
   {
-    return this.clusters.keySet().contains(sourceID);
+    return this.activeClusters.keySet().contains(sourceID);
   }
 
   /**
@@ -551,6 +578,12 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     return this.activeClustersPriority.get(NodeID);
   }
 
+  /**
+   * returns the acitve node of a cluster with the highest priority
+   * @param clusterHeadID
+   * @param lowestPrioirty
+   * @return
+   */
   public ArrayList<String> getNodesWithHigherPriority(String clusterHeadID, int lowestPrioirty)
   {
     ArrayList<String> returnableNodes = new ArrayList<String>();
@@ -564,7 +597,12 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     return returnableNodes;
   }
   
-  
+  /**
+   * returns the node of a cluster which has the lowest priority
+   * @param clusterHeadID
+   * @param lowestPrioirty
+   * @return
+   */
   public ArrayList<String> getNodesWithLowerPriority(String clusterHeadID, int lowestPrioirty)
   {
     ArrayList<String> returnableNodes = new ArrayList<String>();
@@ -578,6 +616,11 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     return returnableNodes;
   }
   
+  /**
+   * returns the active nodes of the cluster in the order of priority
+   * @param clusterHeadID
+   * @return
+   */
   public ArrayList<String> getActiveNodesInRankedOrder(String clusterHeadID)
   {
     ArrayList<String> returnableNodes = new ArrayList<String>();
@@ -624,6 +667,12 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     }
   }
 
+  
+  /**
+   * Updates all the cluster data structures given a node fialure and its replacement.
+   * @param failedNodeID
+   * @param replacementNodeID
+   */
   public void updateClusters(String failedNodeID, String replacementNodeID)
   {
     if(this.isActive(replacementNodeID))
@@ -635,13 +684,13 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
         cluster.remove(failedNodeID);
         this.activeClusters.remove(failedNodeID);
         this.activeClusters.addAll(replacementNodeID, cluster);
-        sortOutActivePriorities(failedNodeID, replacementNodeID);
+        sortOutPrioties(failedNodeID, replacementNodeID);
       }
       else
       {
         this.clusters.remove(this.getClusterHeadFor(failedNodeID), failedNodeID);
         this.activeClusters.remove(this.getClusterHeadFor(failedNodeID), failedNodeID);
-        sortOutActivePriorities(failedNodeID, replacementNodeID);
+        sortOutPrioties(failedNodeID, replacementNodeID);
       }
     }
     else
@@ -665,45 +714,41 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     }
   }
 
-  private void sortOutActivePriorities(String failedNodeID, String replacementNodeID)
+  /**
+   * resets the original cluster priotiries given a ndoe fialure.
+   * @param failedNodeID
+   * @param replacementNodeID
+   */
+  private void sortOutPrioties(String failedNodeID, String replacementNodeID)
   {
-    int newpriority = 0;
-    int failedPriority = this.activeClustersPriority.get(failedNodeID);
-    int activePrioirty = this.activeClustersPriority.get(replacementNodeID);
-    if(failedPriority < activePrioirty)
-      newpriority = failedPriority;
-    else
-      newpriority = activePrioirty;
+    ArrayList<String> clusteredNodes = this.getActiveEquivilentNodes(replacementNodeID);
+    //move the replacement to front of list
+    if(clusteredNodes.indexOf(replacementNodeID) == -1)
+      System.out.println();
+    clusteredNodes.remove(clusteredNodes.indexOf(replacementNodeID));
+    clusteredNodes.add(0, replacementNodeID);
     
-    int newOriginalpriority = 0;
-    failedPriority = this.activeClustersOriginalPriority.get(failedNodeID);
-    activePrioirty = this.activeClustersOriginalPriority.get(replacementNodeID);
-    if(failedPriority < activePrioirty)
-      newOriginalpriority = failedPriority;
-    else
-      newOriginalpriority = activePrioirty;
-    
-    this.activeClustersPriority.put(replacementNodeID, newpriority);
     this.activeClustersPriority.remove(failedNodeID);
-    this.activeClustersOriginalPriority.put(replacementNodeID, newOriginalpriority);
     this.activeClustersOriginalPriority.remove(failedNodeID);
-    //update other nodes
-    Iterator<String> otherNodes = 
-      this.getNodesWithHigherPriority(this.getClusterHeadFor(replacementNodeID), newpriority).iterator();
-    int counter = 1;
-    while(otherNodes.hasNext())
+    
+    //reset priorites so no gap between them, and new replacementNodeID has priority of 1.
+    Iterator<String> clusterNodeIterator = clusteredNodes.iterator();
+    int newPriority = 1;
+    while(clusterNodeIterator.hasNext())
     {
-      String node = otherNodes.next();
-      this.activeClustersPriority.put(node, newpriority + counter);
-      counter++;
+      String nodeID = clusterNodeIterator.next();
+      this.activeClustersPriority.put(nodeID, newPriority);
+      this.activeClustersOriginalPriority.put(nodeID, newPriority);
+      newPriority++;
     }
   }
 
-  private void sortOutPrioties(String failedNodeID, String replacementNodeID)
+  /**
+   * resets the priorities to the original ones.
+   */
+  public void resetPriorities()
   {
-    this.activeClustersPriority.put(replacementNodeID, this.activeClustersPriority.get(failedNodeID));
-    this.activeClustersPriority.remove(failedNodeID);
-    this.activeClustersOriginalPriority.put(replacementNodeID, this.activeClustersPriority.get(failedNodeID));
-    this.activeClustersOriginalPriority.remove(failedNodeID);
+    this.activeClustersPriority = new HashMap<String, Integer>();
+    this.activeClustersPriority.putAll(activeClustersOriginalPriority);
   }
 }

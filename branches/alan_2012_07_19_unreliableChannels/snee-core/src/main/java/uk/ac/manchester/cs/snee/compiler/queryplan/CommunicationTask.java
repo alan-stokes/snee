@@ -118,7 +118,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
       this.instanceExchangeComponents = null;
       this.maxPacketsEspectedToTransmit = maxPackets;
       this.beta = bufferingFactor;
-      this.endTime = startTime + (long) Math.ceil(costParams.getSendPacket() * maxPacketsEspectedToTransmit);
+      this.endTime = startTime + (long) Math.ceil(costParams.getSendPacket() * maxPacketsEspectedToTransmit) + getTimeCostOverhead(costParams);;
       this.mode = mode;
       this.originalDestNode = originalDestNode;
       generateID();
@@ -132,6 +132,8 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
       }
       if(this.mode == CommunicationTask.TRANSMIT)
       {
+        if(this.sourceNode == null || this.destNode == null)
+          System.out.println();
         this.id = "RX " + this.sourceNode.getID() + " to " + this.destNode.getID() + "(" + startTime + ")";
       }
       if(this.mode == CommunicationTask.ACKRECEIVE)

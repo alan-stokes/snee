@@ -370,6 +370,7 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
         updateSitesEnergyLevels(shortestLifetime, adapt, globalFailedNodes);
         overallShortestLifetime += (shortestLifetime * agendaLength);
         shortestLifetime =  Double.MAX_VALUE;
+        rQEP = (RobustSensorNetworkQueryPlan)  result.get(0).getNewQep();
       }
       else //can't adapt, get estimated lifetime and stop
       {

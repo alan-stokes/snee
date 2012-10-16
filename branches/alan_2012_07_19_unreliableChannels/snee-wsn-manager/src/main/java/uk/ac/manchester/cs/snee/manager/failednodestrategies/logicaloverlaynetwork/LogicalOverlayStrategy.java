@@ -582,6 +582,7 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
       rewireOperators(clonedIOT, failedNodeID, equivilentNodeID, overlay.getQep().getIOT(), failedSite);
       new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay after nodes");
       overlay.updateClusters(failedNodeID, equivilentNodeID);
+      cleanNodes(clonedIOT, failedNodeID);
     }
     new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iot", "iot with eqiv nodes", true);
     
@@ -611,7 +612,7 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
         new UnreliableChannelAgendaReducedUtils(newAgenda, clonedIOT, false, new ArrayList<String>())
         .generateImage(outputFolder.toString(), "finished Agenda");
         RobustSensorNetworkQueryPlan newRQEP = 
-          new RobustSensorNetworkQueryPlan(currentQEP, rQEP.getUnreliableAgenda().getActiveLogicalOverlay(), 
+          new RobustSensorNetworkQueryPlan(currentQEP, newAgenda.getActiveLogicalOverlay(), 
                                            newAgenda);
         adapt.setNewQep(newRQEP);
         adapt.setFailedNodes(failedNodeIDs);
@@ -642,6 +643,38 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
       System.exit(0);
     }
     return adapatation;    
+  }
+
+  
+  //helper method which removes failednode from other nodes outputs (due to unreliablechannel connecting)
+  private void cleanNodes(IOT clonedIOT, String failedNodeID)
+  {
+    Iterator<Site> siteIterator = clonedIOT.getAllSites().iterator();
+    while(siteIterator.hasNext())
+    {
+      Site site = siteIterator.next();
+      ArrayList<Node> outputs = new ArrayList<Node>();
+      outputs.addAll(site.getOutputsList());
+      int index = indexOfSameNodeID(outputs, failedNodeID);
+      if(index != -1)
+        site.removeOutput(outputs.get(index));
+    }
+    
+  }
+
+  private int indexOfSameNodeID(ArrayList<Node> outputs, String failedNodeID)
+  {
+    int counter = 0;
+    Iterator<Node> outputIterator = outputs.iterator();
+    while(outputIterator.hasNext())
+    {
+      Node output = outputIterator.next();
+      if(output.getID().equals(failedNodeID))
+        return counter;
+      else
+        counter++;
+    }
+    return -1;
   }
 
   @Override

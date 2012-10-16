@@ -32,7 +32,7 @@ public class LogicalOverlayNetwork implements Serializable
   
   
   // cluster rep
-  private HashMapList<String, String> clusters = null; 
+  protected HashMapList<String, String> clusters = null; 
   private SensorNetworkQueryPlan qep = null;
   private HashMap<String, RunTimeSite> finalRunningSites;
   private String id = "";

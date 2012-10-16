@@ -530,6 +530,8 @@ public class UnreliableChannelAgenda extends AgendaIOT
         while(taskIterator.hasNext())
         {
           Task task = taskIterator.next();
+          if(task instanceof InstanceFragmentTask)
+            System.out.println();
           CommunicationTask cTask = (CommunicationTask) task;
           if(cTask.getMode() == CommunicationTask.TRANSMIT || 
              cTask.getMode() == CommunicationTask.ACKTRANSMIT ) 

@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
@@ -73,13 +74,37 @@ public class UnreliableChannelAgendaReducedUtils
       sitesCount++;
     }
     sitesCount -= this.failedNodes.size();
-    return (sitesCount + 2) * CELL_WIDTH;
+    return (sitesCount + 1) * CELL_WIDTH;
   }
 
   // computes the height of the schedule image
   private int computeHeight() 
   {
-    return (this.agenda.getStartTimes().size() + 3) * CELL_HEIGHT;
+    Iterator<Long> timeIterator = this.agenda.getStartTimes().iterator();
+    int counter = 0;
+    while(timeIterator.hasNext())
+    {
+      Long time = timeIterator.next();
+      HashMap<Site, ArrayList<Task>> tasks = this.agenda.getTasks();
+      Iterator<Site> siteIterator = tasks.keySet().iterator();
+      int max =1;
+      while(siteIterator.hasNext())
+      {
+        Site site = siteIterator.next();
+        int siteCount = 0;
+        Iterator<Task> tasksOfSite = tasks.get(site).iterator();
+        while(tasksOfSite.hasNext())
+        {
+          Task t = tasksOfSite.next();
+          if(t.getStartTime() == time)
+            siteCount++;
+        }
+        if(siteCount > max)
+          max = siteCount;
+      }
+      counter += max;
+    }
+    return (counter + 3) * CELL_HEIGHT;
   }
 
   public void generateImage() 
@@ -107,9 +132,10 @@ public class UnreliableChannelAgendaReducedUtils
    * @param ypos
    * @param g2
    * @param startTimeIter
+   * @param spaces 
    */
   private int outputSiteAgenda(Site site, Integer xpos, int ypos, 
-                                Graphics2D g2, Iterator<Long> startTimeIter)
+                                Graphics2D g2, Iterator<Long> startTimeIter, HashMap<Long, Integer> spaces)
   {
     if (this.agenda.hasTasks(site)) 
     {
@@ -117,30 +143,42 @@ public class UnreliableChannelAgendaReducedUtils
       g2.setColor(Color.BLACK);
       g2.setFont(new Font("Arial", Font.BOLD, 12));
       g2.drawString("Node " + site.getID(), xpos + 15, ypos - 5);
-
-      startTimeIter = this.agenda.startTimeIterator();
-
       g2.setFont(new Font("Arial", Font.PLAIN, 12));
+      HashMap<Integer, Integer> timesUsedPosition = new HashMap<Integer, Integer>();
       
       final Iterator<Task> taskIter = this.agenda.taskIterator(site);
       while (taskIter.hasNext()) 
       {
         final Task task = taskIter.next();
-        g2.drawString(new Long(task.getEndTime()).toString(), 20 + CELL_WIDTH, ypos + CELL_HEIGHT); 
-        Long sTime = new Long(0);
-        do 
+        ypos = 20;
+        startTimeIter = this.agenda.startTimeIterator();
+        Long sTime = new Long(-1);
+        //try to locate new time stamp. (possible to have more than 1 task at the same time slot
+        // given the agenda now having redundant tranmssions and receiveings. 
+        //get to near neighbourhood
+        while (sTime.intValue() != task.getStartTime())
         {
-          try{
-          sTime = startTimeIter.next();}
-          catch(Exception e)
+          sTime = startTimeIter.next();
+          if(spaces.get(sTime) == 1)
+            ypos += CELL_HEIGHT;
+          if(spaces.get(sTime) > 1 && sTime.intValue() != task.getStartTime())
+            ypos += (spaces.get(sTime) * CELL_HEIGHT);
+        } 
+        
+        //get more precise for several tasks.
+        if(timesUsedPosition.get(ypos) == null)
+          timesUsedPosition.put(ypos, 1);
+        else
+        {
+          while(timesUsedPosition.get(ypos) != null)
           {
-            System.out.println("error " + e.getMessage());
-            e.printStackTrace();
-            System.exit(0);
+            ypos += CELL_HEIGHT;
           }
-          ypos += CELL_HEIGHT;
-        } while (sTime.intValue() != task.getStartTime());
-
+          timesUsedPosition.put(ypos, 1);
+        }
+          
+       
+        //set up task box
         if (task instanceof CommunicationTask) 
         {
           if(task.isRan())
@@ -292,6 +330,7 @@ public class UnreliableChannelAgendaReducedUtils
 
     final BufferedImage offImage = new BufferedImage(this.computeWidth(),
         this.computeHeight(), BufferedImage.TYPE_INT_RGB);
+
     final Graphics2D g2 = offImage.createGraphics();
 
     g2.setColor(Color.WHITE);
@@ -301,10 +340,33 @@ public class UnreliableChannelAgendaReducedUtils
     Integer ypos = 20;
 
     g2.setColor(Color.BLACK);
+    HashMap<Long, Integer> spaces = new HashMap<Long, Integer>();
+    
     Iterator<Long> startTimeIter = this.agenda.startTimeIterator();
+    int previousMax = 1;
     while (startTimeIter.hasNext())
     {
       final Long startTime = startTimeIter.next();
+      HashMap<Site, ArrayList<Task>> tasks = this.agenda.getTasks();
+      Iterator<Site> siteIterator = tasks.keySet().iterator();
+      int max =1;
+      while(siteIterator.hasNext())
+      {
+        Site site = siteIterator.next();
+        int siteCount = 0;
+        Iterator<Task> tasksOfSite = tasks.get(site).iterator();
+        while(tasksOfSite.hasNext())
+        {
+          Task t = tasksOfSite.next();
+          if(t.getStartTime() == startTime)
+            siteCount++;
+        }
+        if(siteCount > max)
+          max = siteCount;
+      }
+      spaces.put(startTime, max);
+      ypos += (CELL_HEIGHT * (previousMax - 1));
+      previousMax = max;
       g2.setFont(new Font("Arial", Font.BOLD, 12));
 
       if (this.useMilliSeconds) 
@@ -319,12 +381,17 @@ public class UnreliableChannelAgendaReducedUtils
       ypos += CELL_HEIGHT;
     }
 
-    xpos = xpos + (CELL_WIDTH * 2);
+    xpos = xpos + CELL_WIDTH ;
 
     final Iterator<Site> siteIter = this.iot.siteIterator(TraversalOrder.POST_ORDER);
     while (siteIter.hasNext()) 
     {
       Site site = siteIter.next();
+      if(site.getID().equals(this.iot.getRoot().getSite().getID()))
+      {
+        site = (Site) this.agenda.getSiteByID(site);
+        xpos = outputSiteAgenda(site, xpos, ypos, g2, startTimeIter, spaces);
+      }
       ArrayList<String> clusterSites = agenda.getActiveLogicalOverlay().getActiveEquivilentNodes(site.getID());
       Iterator<String> clusterSitesIterator = clusterSites.iterator();
       while(clusterSitesIterator.hasNext())
@@ -333,7 +400,7 @@ public class UnreliableChannelAgendaReducedUtils
         if(!this.failedNodes.contains(clusterNodeID))
         {
           site = (Site) this.agenda.getSiteByID(clusterNodeID);
-          xpos = outputSiteAgenda(site, xpos, ypos, g2, startTimeIter);
+          xpos = outputSiteAgenda(site, xpos, ypos, g2, startTimeIter, spaces);
         }
       }
     }
@@ -357,6 +424,6 @@ public class UnreliableChannelAgendaReducedUtils
       System.exit(0);
     }
     
-  }	
+  }
 
 }

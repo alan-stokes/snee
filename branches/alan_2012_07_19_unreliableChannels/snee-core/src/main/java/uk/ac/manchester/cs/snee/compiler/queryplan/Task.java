@@ -140,8 +140,5 @@ public abstract class Task implements Serializable {
       this.ran = ran;
     }
     
-    public String toString()
-    {
-      return this.id;
-    }
+  
 }

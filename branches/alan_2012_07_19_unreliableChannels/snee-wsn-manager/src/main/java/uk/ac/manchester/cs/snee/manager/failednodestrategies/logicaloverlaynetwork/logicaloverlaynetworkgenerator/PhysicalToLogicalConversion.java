@@ -82,15 +82,19 @@ public class PhysicalToLogicalConversion
         {
           String fragStringID = inExPa.getSourceFrag().getID();
           String fragid;
-          if(!fragStringID.contains("c"))
-          {
-            fragid = new Integer(inExPa.getSourceFrag().getID()) + "c" + inExPa.getSourceFrag().getSite().getID();
-          }
-          else
+          if(fragStringID.contains("c"))
           {
             fragid = inExPa.getSourceFrag().getID();
           }
+          else
+          {
+            fragid = fragStringID;
+          }
           InstanceFragment frag = qep.getIOT().getInstanceFragment(fragid);
+          if(frag == null || frag.getSite() == null)
+          {
+            System.out.println(fragid);
+          }
           if(frag.getSite().getID().equals(op.getSite().getID()))
           {
             qep.getIOT().removeEdge(frag.getRootOperator(), op);
@@ -111,6 +115,7 @@ public class PhysicalToLogicalConversion
    * @param qep
    * @param clusterHead
    * @param equilvientNode
+   * @param network 
    */
   private void transferSiteQEP(SensorNetworkQueryPlan qep, Node clusterHead,
                            Node equilvientNode)
@@ -170,7 +175,7 @@ public class PhysicalToLogicalConversion
         clonedPart.addOutput(outPart);
   
         clonedPart.setDestFrag(part.getDestFrag());
-        clonedPart.getSourceFrag().setSite(equilvientSite); 
+        clonedPart.getSourceFrag().setSite(network.getSite(clonedPart.getSourceFrag().getSite().getID())); 
         if(clonedPart.getPrevious() == null)
           rootOp = clonedPart.getSourceFrag().getRootOperator();
         else

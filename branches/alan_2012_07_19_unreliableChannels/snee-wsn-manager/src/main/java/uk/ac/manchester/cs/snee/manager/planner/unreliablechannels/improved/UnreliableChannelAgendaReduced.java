@@ -9,6 +9,7 @@ import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
@@ -17,6 +18,7 @@ import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragment;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragmentTask;
 import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
@@ -30,6 +32,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
 import org.apache.log4j.Logger;
+
 /**
  * Class responsible for recording the schedules of logical nodes in a sensor network 
  * given a logicalOverlayNetwork and unreliable channels.
@@ -63,7 +66,9 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
   {
     super(logicaloverlayNetwork, qep, network, allowDiscontinuousSensing, false);
     
-    numberOfRundundantCycles = Integer.parseInt(SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_REDUNDANTCYCLES));
+    numberOfRundundantCycles = 
+      Integer.parseInt(SNEEProperties.getSetting(
+          SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_REDUNDANTCYCLES));
     
     activeOverlay = new LogicalOverlayNetworkHierarchy(logicaloverlayNetwork.getClusters(), network, qep);
     this.logicaloverlayNetwork = null;
@@ -102,9 +107,12 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
   {
     super(logicaloverlayNetwork, qep, network, allowDiscontinuousSensing, false);
 
-    numberOfRundundantCycles = Integer.parseInt(SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_REDUNDANTCYCLES));
+    numberOfRundundantCycles = 
+      Integer.parseInt(SNEEProperties.getSetting(
+          SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_REDUNDANTCYCLES));
 
     activeOverlay = new LogicalOverlayNetworkHierarchy(logicaloverlayNetwork, network, qep);
+    activeOverlay.resetPriorities();
     this.logicaloverlayNetwork = null;
     logger.trace("Scheduling leaf fragments alpha=" + this.alpha + " bms beta=" + this.beta);
     scheduleLeafFragments(activeOverlay);
@@ -143,8 +151,11 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
     while(siteIterator.hasNext())
     {
       Site rtSite = siteIterator.next();
-      if(!rtSite.equals(root))
+      rtSite = this.iot.getSiteFromID(rtSite.getID());
+      if(!rtSite.getID().equals(root.getID()))
       {
+        if(rtSite.getOutputsList().size() == 0)
+          System.out.println();
         //deal with children links
         Site outputSite = (Site) rtSite.getOutput(0);
         Iterator<String> eqivNodesIdIterator = 
@@ -153,7 +164,8 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
         {
           String equivSiteID = eqivNodesIdIterator.next();
           Site equivSite = this.iot.getSiteFromID(equivSiteID);
-          equivSite.addOutput(outputSite);
+          if(!doesContainOutput(equivSite, outputSite))
+             equivSite.addOutput(outputSite);
         }
         //deal with equiv links
         eqivNodesIdIterator = 
@@ -162,19 +174,33 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
         {
           String equivSiteID = eqivNodesIdIterator.next();
           Site equivSite = this.iot.getSiteFromID(equivSiteID);
-          rtSite.addOutput(equivSite);
+          if(!doesContainOutput(rtSite, equivSite))
+            rtSite.addOutput(equivSite);
           Iterator<String> childEqivNodesIdIterator = 
             activeOverlay.getActiveEquivilentNodes(rtSite.getID()).iterator();
           while(childEqivNodesIdIterator.hasNext())
           {
             String childEquivSiteID = childEqivNodesIdIterator.next();
             Site childEquivSite = this.iot.getSiteFromID(childEquivSiteID);
-            childEquivSite.addOutput(equivSite);
+            if(!doesContainOutput(childEquivSite, equivSite))
+              childEquivSite.addOutput(equivSite);
           }
         }
       }
     }
     
+  }
+
+  private boolean doesContainOutput(Site rtSite, Site equivSite)
+  {
+    Iterator<Node> outputSites = rtSite.getOutputsList().iterator();
+    while(outputSites.hasNext())
+    {
+      Node node = outputSites.next();
+      if(node.getID().equals(equivSite.getID()))
+        return true;
+    }
+    return false;
   }
 
   /**
@@ -208,7 +234,8 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
       {
         final InstanceFragment frag = fragIter.next();
         //For each site the fragment is executing on 
-        final Site node = frag.getSite();
+        Site node = frag.getSite();
+        node = iot.getSiteFromID(node.getID());
         if(activeOverlay.isActive(node))
         {
           //schedule head site
@@ -288,7 +315,8 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
     while (siteIter.hasNext()) 
     {
       //start with the head site
-      final Site currentNode = siteIter.next();
+      Site currentNode = siteIter.next();
+      currentNode = iot.getSiteFromID(currentNode.getID());
       /*get the logical overlay to which this site is head of and time for each 
       node within the logical node*/
       ArrayList<String> physicalNodesForlogicalNode = 
@@ -400,7 +428,7 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
 
   
   /**
-   * handles extra transmissions which may 
+   * handles redundant transmissions which may occur if edge failure happens
    * @param destNodes
    * @param trueClusterHead
    * @param physicalNodesForlogicalNode
@@ -418,62 +446,59 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
   throws OptimizationException, SchemaMetadataException, TypeMappingException,
   AgendaException, SNEEException, SNEEConfigurationException
   {
-    
     Long startTimeForRedundantTransmission = this.getLength_bms(true);
-    Long timeToListenToAPacket = (long) Math.ceil(costParams.getSendPacket() * 1);
-    //sorts out the transmission of the cluster head
+    int tuplesToWaitFor = 
+      new Double(Math.ceil(new Long(getMaxTuplesTranmitted(daf, tuplesToSend)).doubleValue()/2.0)).intValue();
+    Long timeToListenToAPacket = (long) Math.ceil(costParams.getSendPacket() * tuplesToWaitFor);
+    
+    
+    //sorts out the redundant transmission of the cluster 
     Long overhead = new Long(0);
-    Long recieveTime = new Long(0);
-    Site currentClusterHead = null;
-    int currentPriority = 1;
-    while(currentPriority <= this.activeOverlay.getActiveNodesInRankedOrder(trueClusterHead.getID()).size())
+    Long originalFragmentTimeOverhead = new Long(0);
+    
+    int cycleSize = this.activeOverlay.getActiveEquivilentNodes(trueClusterHead.getID()).size();
+    for(int InternalCycle = 0; InternalCycle < cycleSize; InternalCycle++)
     {
-      Iterator<String> priorityOrderedNodes = 
-        this.activeOverlay.getActiveNodesInRankedOrder(trueClusterHead.getID()).iterator();
-      while(priorityOrderedNodes.hasNext())
+      Iterator<String> nodesWithinActiveLogicalNode = 
+        this.activeOverlay.getActiveEquivilentNodes(trueClusterHead.getID()).iterator();
+      boolean first = true;
+      
+      while(nodesWithinActiveLogicalNode.hasNext())
       {
-        String SourceNodeID = priorityOrderedNodes.next();
-        Site currentSourceNode = iot.getSiteFromID(SourceNodeID);
-        //if current cluster head store for the recives
-        if(this.activeOverlay.getPriority(SourceNodeID) == currentPriority)
+        String Nodeid = nodesWithinActiveLogicalNode.next();
+        Site currentClusterHead = iot.getSiteFromID(Nodeid);
+        
+        if(first)
         {
-          currentClusterHead = currentSourceNode;
-          //sort out transmission from this node
-         Long fragmentOverhead = this.scheduleSiteFragments(currentSourceNode);
-         //fix for the recieve 
-         if(currentPriority == 1)
-         {
-           recieveTime += fragmentOverhead;
-           overhead = overhead + fragmentOverhead;
-         }
-         else
-           overhead = overhead + fragmentOverhead + timeToListenToAPacket;
-         
-         Site furthestDestNode = iot.getSiteFromID(this.locateMostExpensiveSite(destNodes, currentClusterHead).getID());
-         CommunicationTask commTaskTx = 
-           new CommunicationTask(startTimeForRedundantTransmission + overhead, currentClusterHead, furthestDestNode,
-                                 CommunicationTask.TRANSMIT, tuplesToSend, this.alpha, this.beta, 
-                                 daf, costParams, true, iot.getSiteFromID(trueClusterHead.getOutput(0).getID()));
-         this.addTask(commTaskTx, currentClusterHead);
-          
-          //sort out receiving of siblings transmission
-          Iterator<String> higherPriorityNodes = 
-            this.activeOverlay.getNodesWithHigherPriority(
-                this.activeOverlay.getClusterHeadFor(currentClusterHead.getID()), 
-            this.activeOverlay.getPriority(SourceNodeID) + 1).iterator();
-          
-          while(higherPriorityNodes.hasNext())
-          {
-            Site node = this.iot.getSiteFromID(higherPriorityNodes.next());
-            CommunicationTask commTaskRx =  
-              new CommunicationTask(startTimeForRedundantTransmission + overhead, currentClusterHead, 
-                                    node, CommunicationTask.RECEIVE, new Long(1), 
-                                    costParams, true, currentSourceNode);
-            this.addTask(commTaskRx, node);
-          }
+          overhead += this.scheduleSiteFragments(currentClusterHead);
+          originalFragmentTimeOverhead = this.scheduleSiteFragments(currentClusterHead);
+          first = !first;
+        }
+        
+        Site furthestDestNode = iot.getSiteFromID(this.locateMostExpensiveSite(destNodes, currentClusterHead).getID());
+        CommunicationTask commTaskTx = 
+          new CommunicationTask(startTimeForRedundantTransmission + overhead, currentClusterHead, furthestDestNode,
+                                CommunicationTask.TRANSMIT, tuplesToSend, this.alpha, this.beta, 
+                                daf, costParams, true, iot.getSiteFromID(trueClusterHead.getOutput(0).getID()));
+        this.addTask(commTaskTx, currentClusterHead);
+        
+        ArrayList<String> nodeswithinTheCluster = new ArrayList<String>();
+        nodeswithinTheCluster.addAll(this.activeOverlay.getActiveEquivilentNodes(trueClusterHead.getID()));
+        nodeswithinTheCluster.remove(Nodeid);
+        Iterator<String> siblingNodes = nodeswithinTheCluster.iterator();
+        while(siblingNodes.hasNext())
+        {
+          String sibling = siblingNodes.next();
+          Site siblingSite = iot.getSiteFromID(sibling);
+          furthestDestNode = iot.getSiteFromID(this.locateMostExpensiveSite(destNodes, siblingSite).getID());
+          CommunicationTask commTaskRx = 
+            new CommunicationTask(startTimeForRedundantTransmission + overhead, siblingSite, furthestDestNode,
+                                  CommunicationTask.RECEIVE, this.alpha, this.beta, daf, tuplesToWaitFor, 
+                                  costParams, true, iot.getSiteFromID(trueClusterHead.getOutput(0).getID()));
+          this.addTask(commTaskRx, currentClusterHead);
         }
       }
-      currentPriority++;
+      overhead = overhead + timeToListenToAPacket;
     }
     Iterator<Site> destNodesIterator = destNodes.iterator();
     while(destNodesIterator.hasNext())
@@ -481,7 +506,7 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
       Site destNode = destNodesIterator.next();
       destNode = iot.getSiteFromID(destNode.getID());
       CommunicationTask commTaskRx = 
-        new CommunicationTask(startTimeForRedundantTransmission+ recieveTime, trueClusterHead, destNode,
+        new CommunicationTask(startTimeForRedundantTransmission + originalFragmentTimeOverhead, trueClusterHead, destNode,
                               CommunicationTask.RECEIVE, tuplesToSend, this.alpha, this.beta, 
                               daf, costParams, overhead, true, trueClusterHead);
       this.addTask(commTaskRx, destNode);
@@ -593,7 +618,7 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
   }
 
   /**
-   * handels a tranmission comm task
+   * handles a transmission task
    * @param tuplesToSend 
    * @param sourceNode 
    * @param destNodes 
@@ -616,7 +641,8 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
     if(redundant)
     {
       int priority = this.activeOverlay.getPriority(sourceNode.getID()) + 1;
-      Iterator<String> extraNodes = this.activeOverlay.getNodesWithHigherPriority(sourceNode.getID(), priority).iterator();
+      Iterator<String> extraNodes = 
+        this.activeOverlay.getNodesWithHigherPriority(sourceNode.getID(), priority).iterator();
       while(extraNodes.hasNext())
       {
         String nodeID = extraNodes.next();
@@ -699,7 +725,8 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
     final Iterator<Site> siteIter = this.iot.getRT().siteIterator(TraversalOrder.POST_ORDER);
     while (siteIter.hasNext()) 
     {
-      final Site site = siteIter.next();
+      Site site = siteIter.next();
+      site = this.iot.getSiteFromID(site.getID());
       this.assertConsistentStartTime(sleepStart, site);
       SleepTask t = new SleepTask(sleepStart, sleepEnd, site,
         lastInAgenda, costParams);
@@ -726,5 +753,22 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
   public LogicalOverlayNetworkHierarchy getActiveLogicalOverlay()
   {
     return this.activeOverlay;
+  }
+  
+  protected final long getMaxTuplesTranmitted(DAF daf, HashSet<InstanceExchangePart> exchangeComponents) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException 
+  {
+    long result = 0;
+    final Iterator<InstanceExchangePart> exchCompIter = exchangeComponents.iterator();
+    while (exchCompIter.hasNext()) 
+    {
+      final InstanceExchangePart exchComp = exchCompIter.next();
+      if ((   exchComp.getComponentType() == ExchangePartType.PRODUCER)
+          || (exchComp.getComponentType() == ExchangePartType.RELAY)) 
+      {
+        result += exchComp.getmaxPackets(daf, beta, costParams);
+      }
+    }
+    return result;
   }
 }
