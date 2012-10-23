@@ -2,9 +2,11 @@ package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
@@ -65,20 +67,21 @@ public class SuccessorRelation extends AutonomicManagerComponent
       {
         TABUFolder.mkdir();
       }
-      //search though space
-      search = new TabuSearch(manager, runningSites, _metadata, _metadataManager, TABUFolder);
-      SuccessorPath bestSuccessorRelation = search.findSuccessorsPath(initialPoint);
-      new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
       
-     writeSuccessorPathToFile(bestSuccessorRelation);
-      //SuccessorPath bestSuccessorRelation = readInSuccessor();
-      //new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
+      //search though space
+     search = new TabuSearch(manager, runningSites, _metadata, _metadataManager, TABUFolder);
+     SuccessorPath bestSuccessorRelation = search.findSuccessorsPath(initialPoint);
+    new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
+      
+    // writeSuccessorPathToFile(bestSuccessorRelation);
+    // SuccessorPath bestSuccessorRelation = readInSuccessor();
+     //new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
      
       //added code to see how well tuned the plan is without recomputing
-        //BufferedWriter out = new BufferedWriter(new FileWriter(new File(successorFolder.toString() + sep + "records")));
-        //SuccessorPath twiddleBestSuccessorRelation = TimeTwiddler.adjustTimesTest(bestSuccessorRelation, runningSites, false, search, out);      
-       //new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(twiddleBestSuccessorRelation.getSuccessorList(), "finalTwiddleSolution");
-        //out.close();
+      //  BufferedWriter out = new BufferedWriter(new FileWriter(new File(successorFolder.toString() + sep + "records")));
+     //  SuccessorPath twiddleBestSuccessorRelation = TimeTwiddler.adjustTimesTest(bestSuccessorRelation, runningSites, false, search, out);      
+     // new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(twiddleBestSuccessorRelation.getSuccessorList(), "finalTwiddleSolution");
+      //  out.close();
         //added code to see how well tuned successor is by adjusting and then running entire system
    //   SuccessorPath twiddleBestSuccessorRelation = TimeTwiddler.adjustTimesTest(bestSuccessorRelation, runningSites, true, search);      
      // new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(twiddleBestSuccessorRelation.getSuccessorList(), "finalTwiddleSolutionWithRecompute");

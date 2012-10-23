@@ -331,7 +331,7 @@ public class GeneticRouter extends AutonomicManagerComponent
             currentDNA.add(false);
         }   
       }
-      int agendaTime = randomNumberGenerator.nextInt(mapping.getMaxSegments());
+      int agendaTime = randomNumberGenerator.nextInt(qep.getLifetimeInAgendas());
       Genome newPop = new Genome(currentDNA, mapping, agendaTime);
       this.fitness.determineFitness(newPop, qep.getLifetimeInAgendas());
       population.add(newPop);
@@ -347,7 +347,7 @@ public class GeneticRouter extends AutonomicManagerComponent
         else
           currentDNA.add(false);
       }
-      int agendaTime = randomNumberGenerator.nextInt(mapping.getMaxSegments());
+      int agendaTime = randomNumberGenerator.nextInt(qep.getLifetimeInAgendas());
       Genome newPop = new Genome(currentDNA,  mapping, agendaTime);
       newPop = Genome.XorGenome(newPop, requiredSites);
       population.add(newPop);

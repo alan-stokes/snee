@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.manager;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
@@ -117,8 +118,10 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     setupRunningSites((SensorNetworkQueryPlan) qep);
     monitor.initilise(_metadata, qep, resultSet);
     boolean initiliseFrameworks = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS);
+    planner.updateStorageLocation(outputFolder);
     if(initiliseFrameworks)
       anyliser.initilise(qep, numberOfTreesToUse);
+    
     
     //if successor relation set to generate
     boolean successor = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR);
@@ -517,5 +520,21 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   {
     this.anyliser.updateFrameworks(finalChoice);
     
+  }
+
+  public ArrayList<Integer> locateNextNodeFailureAndTimeFromEnergyDepletion(
+      HashMap<String, RunTimeSite> runningSites2,
+      SensorNetworkQueryPlan currentQEP2) 
+      throws FileNotFoundException, IOException, OptimizationException, 
+      SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  {
+    return planner.findNextNodeFailureAndTimeFromEnergy(runningSites2, currentQEP2);
+  }
+  
+  public void assessChoice(Adaptation adaptation,   HashMap<String, RunTimeSite> runningSites2)
+  throws IOException, OptimizationException, SchemaMetadataException, 
+  TypeMappingException, CodeGenerationException
+  {
+    planner.assessChoices(adaptation, runningSites2);
   }
 }

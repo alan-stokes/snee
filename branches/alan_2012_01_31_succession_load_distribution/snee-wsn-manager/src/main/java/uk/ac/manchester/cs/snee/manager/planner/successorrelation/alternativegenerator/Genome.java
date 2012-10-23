@@ -13,6 +13,8 @@ public class Genome
    private final static int crossoverPercentage = 90;
    private final static int mutationPercentage = 2;
    private final static int timeMutationPercentage = 50;
+   private final static double mean = 0.0;
+   private final static double variance = 0.001;
    private double fitness;
    private static Random randomGeneGenerator = new Random(new Long(0));
   
@@ -70,25 +72,45 @@ public class Genome
        mutateTime(second, successorLifetime);
        
      int size = first.getSize();
-     double part1 = new Integer(size).doubleValue() / 100.00;
-     part1 = part1 * crossoverPercentage;
-     int positionToCrossOver = (int) part1;
-     //get sections of DNA
-     List<Boolean> firstSectionFirstChild = first.getSection(0, positionToCrossOver);
-     List<Boolean> firstSectionSecondChild = second.getSection(0, positionToCrossOver);
-     List<Boolean> secondSectionFirstChild = second.getSection(positionToCrossOver, size);
-     List<Boolean> secondSectionSecondChild = first.getSection(positionToCrossOver, size);
-     
-     //first child
      ArrayList<Boolean> firstChild = new ArrayList<Boolean>(size);
-     firstChild.addAll(firstSectionFirstChild);
-     firstChild.addAll(secondSectionFirstChild);
-     Genome firstChildGenome = new Genome(firstChild, first.getBitMapping(), first.getMappingValue());
-     //second child
      ArrayList<Boolean> secondChild = new ArrayList<Boolean>(size);
-     secondChild.addAll(firstSectionSecondChild);
-     secondChild.addAll(secondSectionSecondChild);
-     Genome secondChildGenome = new Genome(secondChild, second.getBitMapping(), second.getMappingValue());
+     firstChild.addAll(first.getDNA());
+     secondChild.addAll(second.getDNA());
+     
+     for(int firstChildIndex = 0; firstChildIndex < size; firstChildIndex++)
+     {
+       if(randomGeneGenerator.nextBoolean())
+       {
+         Boolean state = firstChild.get(firstChildIndex);
+         firstChild.set(firstChildIndex, secondChild.get(firstChildIndex));
+         secondChild.set(firstChildIndex, state);
+       }
+     }
+     
+     for(int secondChildIndex = 0; secondChildIndex < size; secondChildIndex++)
+     {
+       if(randomGeneGenerator.nextBoolean())
+       {
+         Boolean state = secondChild.get(secondChildIndex);
+         secondChild.set(secondChildIndex, firstChild.get(secondChildIndex));
+         firstChild.set(secondChildIndex, state);
+       }
+     }
+     
+     Genome secondChildGenome = null;
+     Genome firstChildGenome = null;
+     
+     if(randomGeneGenerator.nextBoolean())
+     {
+       secondChildGenome = new Genome(secondChild, first.getBitMapping(), first.getMappingValue());
+       firstChildGenome = new Genome(firstChild, second.getBitMapping(), second.getMappingValue());
+     }
+     else
+     {
+       secondChildGenome = new Genome(secondChild, second.getBitMapping(), second.getMappingValue());
+       firstChildGenome = new Genome(firstChild, first.getBitMapping(), first.getMappingValue());
+     }
+     
      //add to array, and return
      ArrayList<Genome> children = new ArrayList<Genome>();
      firstChildGenome = Genome.XorGenome(firstChildGenome, master);
@@ -138,11 +160,34 @@ public class Genome
    * mutation aspect for time
    * @param clean
    * @param successorLifetime
+   *//*
+  public static void mutateTime(Genome clean, int successorLifetime)
+  {
+    
+    
+    clean.setTimeMap(randomGeneGenerator.nextInt(clean.getBitMapping().getMaxSegments()));
+  }*/
+  
+  /**
+   * mutation aspect for time using gaussian scope
+   * @param clean
+   * @param successorLifetime
    */
   public static void mutateTime(Genome clean, int successorLifetime)
   {
-    clean.setTimeMap(randomGeneGenerator.nextInt(clean.getBitMapping().getMaxSegments()));
+    
+    
+    clean.setTimeMap(getGaussian(Genome.mean, successorLifetime));
   }
+  
+  private static int getGaussian(double mean, int variance)
+  {
+    Double time = new Double (-1);
+    while(time < 0 || time > variance)
+      time=  new Double(mean + new Random().nextGaussian() * variance);
+    return time.intValue();
+  }
+
   
   /**
    * sets the mapping value
@@ -240,7 +285,7 @@ public class Genome
    */
   public int getTimePeriod()
   {
-    return this.timingMapping.getTime(mappingValue);
+    return mappingValue;
   }
   
   /**
@@ -255,7 +300,7 @@ public class Genome
   /**
    * changes the mapping value of the genome
    */
-  public void setMappingValue(Integer genomeMappingValue)
+  public void setMappingValue(int genomeMappingValue)
   {
     this.mappingValue = genomeMappingValue; 
   }
@@ -298,7 +343,12 @@ public class Genome
       else
         form = form.concat("0 ");
     }
-    form = form.concat(new Integer(this.mappingValue).toString());
+    form = form.concat(new Long(this.mappingValue).toString());
     return form;
+  }
+  
+  public ArrayList<Boolean> getDNA()
+  {
+    return this.DNA;
   }
 }

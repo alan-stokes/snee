@@ -298,10 +298,11 @@ public class TabuSearch extends AutonomicManagerComponent
    * @throws CodeGenerationException 
    * @throws OptimizationException 
    * @throws IOException 
+   * @throws SNEEConfigurationException 
    */
   private int fitness(Successor successor, Successor currentPosition, int iteration) 
   throws SchemaMetadataException, TypeMappingException, IOException,
-  OptimizationException, CodeGenerationException
+  OptimizationException, CodeGenerationException, SNEEConfigurationException
   {
     Adaptation adapt = StrategyAbstract.generateAdaptationObject(currentPosition.getQep(), successor.getQep());
     File assessorFolder = new File(this.TABUOutputFolder.toString() + sep + "Successor");

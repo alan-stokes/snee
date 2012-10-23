@@ -20,6 +20,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.common.AdaptationUtils;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednode.FailedNodeStrategyLocal;
@@ -149,7 +150,11 @@ public class LogicalOverlayGenerator
     if(bestOverlayNetwork != null)
     {
       LogicalOverlayNetworkUtils utils = new LogicalOverlayNetworkUtils();
-      return  utils.retrieveOverlayFromFile(new File(localFolder + sep + "OTASection"), bestOverlayNetwork);
+      LogicalOverlayNetwork bestOverlay =  utils.retrieveOverlayFromFile(new File(localFolder + sep + "OTASection"), bestOverlayNetwork);
+      Double minLifetime = determineMinumalLifetime(bestOverlay, failedNodeStrategyLocal);
+      System.out.println("bestoverlay est lifetime is " + minLifetime);
+      
+      return bestOverlay;
     }
     else
       return null;
@@ -187,6 +192,7 @@ public class LogicalOverlayGenerator
     outputFolder.mkdir();
     Planner planner = new Planner(manager, _metadata, _metadataManager, runningSites, outputFolder);
     planner.assessOverlayCosts(outputFolder, overlayOTAProgramCost, currentOverlay, failedNodeStrategyLocal);
+    new AdaptationUtils(overlayOTAProgramCost,  _metadataManager.getCostParameters()).FileOutput(outputFolder);
     return overlayOTAProgramCost.getLifetimeEstimate();
   }
 

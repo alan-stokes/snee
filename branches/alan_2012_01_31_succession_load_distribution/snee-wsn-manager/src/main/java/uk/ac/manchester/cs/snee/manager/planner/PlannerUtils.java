@@ -124,6 +124,34 @@ public class PlannerUtils
       System.out.println("couldnt write the energy report");
     }
   }
+  
+  /**
+   * ouputs the energies left by the network once the qep has failed
+   * @param successor
+   */
+  public void networkEnergyReport(HashMap<String, RunTimeSite> runningSites, 
+                                  File successorFolder)
+  {
+    try 
+    {
+      final PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(successorFolder)));
+      Iterator<String> keys = runningSites.keySet().iterator();
+      while(keys.hasNext())
+      {
+        String key = keys.next();
+        RunTimeSite site = runningSites.get(key);
+        out.println("Node " + key + " has residual energy " + 
+                   " and had energy of " + site.getCurrentEnergy() + 
+                   " and qep Cost of " + site.getQepExecutionCost()) ; 
+      }
+      out.flush();
+      out.close();
+    }
+    catch(Exception e)
+    {
+      System.out.println("couldnt write the energy report");
+    }
+  }
 
   private void outputdotFile(ArrayList<Successor> successorRelation, File objectFolder) 
   throws SNEEConfigurationException, SchemaMetadataException

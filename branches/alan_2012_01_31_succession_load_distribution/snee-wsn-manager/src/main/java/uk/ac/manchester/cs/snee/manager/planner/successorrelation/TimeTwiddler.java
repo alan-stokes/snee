@@ -53,6 +53,9 @@ public class TimeTwiddler
   NumberFormatException, IOException, CodeGenerationException, SNEEConfigurationException, 
   SNEEException, WhenSchedulerException
   {
+    original.removeSuccessor(3);
+    
+    try{
     if(WithRecompute)
       System.out.println("starting twiddle time tests with recompution though genetics");
     else
@@ -60,7 +63,7 @@ public class TimeTwiddler
     cloner.dontClone(Logger.class);
     out = outWriter;
     SuccessorPath usableCopy = cloner.deepClone(original);
-    int numberofAgendasToJumpBetween = 1000;
+    int numberofAgendasToJumpBetween = 500;
     int overallLifetime = original.overallAgendaLifetime();
     bestFoundLifetime = overallLifetime;
     bestPath = original;
@@ -70,15 +73,19 @@ public class TimeTwiddler
     
     //iterate though successors adjusting times
     ArrayList<Successor> successors = usableCopy.getSuccessorList();
-    for(int successorIndex = 0; successorIndex < successors.size(); successorIndex ++)
-    {
-      testSuccessor(successors, successorIndex, numberofAgendasToJumpBetween, usableCopy,
+    testSuccessor(successors, 0, numberofAgendasToJumpBetween, usableCopy,
                     overallLifetime, WithRecompute, search);
-    }
     
     System.out.println("finished twiddle.");
     System.out.println("best successor time is " + bestFoundLifetime);
     return bestPath;
+    }
+    catch(Exception e)
+    {
+      System.out.println(e.getMessage());
+      e.printStackTrace();
+      return null;
+    }
   }
 
   private static void testSuccessor(ArrayList<Successor> successors, int successorIndex,
@@ -89,39 +96,7 @@ public class TimeTwiddler
   NumberFormatException, IOException, CodeGenerationException,
   SNEEConfigurationException, SNEEException, WhenSchedulerException
   {
-    Successor currentSuccessor = successors.get(successorIndex);
-    int currentSuccessorTimeSwitch = currentSuccessor.getAgendaCount();
-    int newSuccessorTimeSwitch =  currentSuccessorTimeSwitch;
-    while(newSuccessorTimeSwitch > 0)
-    {
-      newSuccessorTimeSwitch = newSuccessorTimeSwitch - numberofAgendasToJumpBetween;
-      usableCopy.adjustSuccessorSwitchTime(newSuccessorTimeSwitch, successorIndex, runningSites);
-      int newlifetime = usableCopy.overallAgendaLifetime();
-      if(newlifetime > bestFoundLifetime)
-      {
-        bestFoundLifetime = newlifetime;
-        bestPath = cloner.deepClone(usableCopy);
-      }
-      int finalPlanLifetime = 
-        usableCopy.getSuccessorList().get(usableCopy.successorLength()-1).calculateLifetime();
-      if(WithRecompute && finalPlanLifetime > 0)
-      {
-        SuccessorPath path = search.findSuccessorsPath(cloner.deepClone(usableCopy));
-        newlifetime = path.overallAgendaLifetime();
-        if(newlifetime > bestFoundLifetime)
-        {
-          bestFoundLifetime = newlifetime;
-          bestPath = cloner.deepClone(path);
-          System.out.println("new best plan has a lifetime of " + bestFoundLifetime);
-        }
-      }
-      writeSuccessorsTimes(usableCopy);
-      adjustTimesTestRecursive(successors, successorIndex+1, usableCopy, 
-                               numberofAgendasToJumpBetween, overallLifetime, WithRecompute, search);
-    
-    }
-    newSuccessorTimeSwitch = currentSuccessorTimeSwitch;
-    
+    int newSuccessorTimeSwitch = 0;
     while(newSuccessorTimeSwitch < overallLifetime)
     {
       newSuccessorTimeSwitch = newSuccessorTimeSwitch + numberofAgendasToJumpBetween;
@@ -161,10 +136,13 @@ public class TimeTwiddler
       while(successorIterator.hasNext())
       {
         Successor nextSuccessor = successorIterator.next();
-        output = output.concat("successor " + counter + " time " + nextSuccessor.getAgendaCount());
-        counter ++;
+        if(successorIterator.hasNext())
+        {
+          output = output.concat(nextSuccessor.getAgendaCount() + " ");
+          counter ++;
+        }
       }
-      output = output.concat(" lifetime " + usableCopy.overallAgendaLifetime());
+      output = output.concat(new Integer(usableCopy.overallAgendaLifetime()).toString());
       out.write(output + "\n");
       out.flush();
     }
@@ -181,9 +159,9 @@ public class TimeTwiddler
   NumberFormatException, IOException, CodeGenerationException, SNEEConfigurationException, 
   SNEEException, WhenSchedulerException
   {
-    for(int successorIndex = newSuccessorIndex; successorIndex < successors.size(); successorIndex ++)
+    if(newSuccessorIndex <= successors.size() -2)
     {
-      testSuccessor(successors, successorIndex, numberofAgendasToJumpBetween, usableCopy,
+      testSuccessor(successors, newSuccessorIndex, numberofAgendasToJumpBetween, usableCopy,
                     overallLifetime, WithRecompute, search);
     }
   }

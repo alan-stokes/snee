@@ -100,6 +100,7 @@ public class FailedNodeStrategyLocal extends FailedNodeStrategyAbstract
       logicalOverlay = new LogicalOverlayNetwork();
       logicalOverlay.setQep(currentQEP);
     }
+    
     //if no overlay is generated, then throw error
     if(logicalOverlay == null)
     {

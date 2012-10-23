@@ -1095,11 +1095,27 @@ public class AgendaIOT extends SNEEAlgebraicForm{
     long cpuActiveTimeBms = 0;
     
     double sensorEnergy = 0;
+    if(site != null)
+    {
+      Iterator<Site> keyIterator = this.tasks.keySet().iterator();
+      boolean found = false;
+      while(keyIterator.hasNext() && !found)
+      {
+        Site key = keyIterator.next();
+        if(key == null || site == null)
+          System.out.println("£");
+        if(key.getID().equals(site.getID()))
+        {
+          site = key;
+          found = true;
+        }
+      }
+    }
     ArrayList<Task> siteTasks = this.tasks.get(site);
-    //not within the QEP. so no cost
+    //not within the QEP. so idle cost
     if(siteTasks == null)
     {
-    	return 0;
+    	return getCPUEnergy(0);
     }
     for (int i=0; i<siteTasks.size(); i++) 
     {

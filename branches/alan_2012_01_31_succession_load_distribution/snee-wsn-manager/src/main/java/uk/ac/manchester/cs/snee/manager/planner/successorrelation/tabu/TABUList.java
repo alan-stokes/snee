@@ -202,7 +202,8 @@ public class TABUList
    */
   public boolean passesAspirationCriteria(Successor successor, Successor bestCurrentSuccessor)
   {
-    if(successor.getLifetimeInAgendas() > bestCurrentSuccessor.getLifetimeInAgendas())
+    Integer theshold = new Double(((bestCurrentSuccessor.getLifetimeInAgendas() / 100) * 105)).intValue();
+    if(successor.getLifetimeInAgendas() > theshold)
       return true;
     else
       return false;
@@ -255,8 +256,10 @@ public class TABUList
             DiverseTABUList = new HashSet<TABUSuccessor>();
           }
           Successor pathSuccessor = currentPath.getSuccessorList().get(position);
+          ArrayList<Integer> times = new ArrayList<Integer>();
+          times.add(pathSuccessor.getAgendaCount());
           DiverseTABUList.add(new TABUSuccessor(pathSuccessor.getQep(), pathSuccessor.getNewRunTimeSites(), 
-                                                new ArrayList<Integer>(pathSuccessor.getAgendaCount())));
+                                                times));
           TABUList.put(position, DiverseTABUList);
          
           currentPath.removeSuccessor(position);

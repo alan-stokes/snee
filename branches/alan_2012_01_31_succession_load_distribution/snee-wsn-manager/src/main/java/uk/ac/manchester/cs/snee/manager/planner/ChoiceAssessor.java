@@ -14,6 +14,7 @@ import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationUtils;
@@ -56,13 +57,22 @@ public class ChoiceAssessor implements Serializable
   private Boolean useModelForBinaries;
   
   public ChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager,
-                        File outputFolder)
+      File outputFolder) 
+  throws SNEEConfigurationException
   {
-    new ChoiceAssessor(_metadata, _metadataManager, outputFolder, false);
+    ChoiceAssessorInitisation(_metadata, _metadataManager, outputFolder, true);
   }
 
-  public ChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager, 
-                        File outputFolder, boolean useCostModelForBinaries)
+  public ChoiceAssessor(SourceMetadataAbstract _metadata, MetadataManager _metadataManager,
+        File outputFolder, boolean useCostModelForBinaries) 
+  throws SNEEConfigurationException
+  {
+    ChoiceAssessorInitisation(_metadata, _metadataManager, outputFolder, useCostModelForBinaries);
+  }
+
+  public void ChoiceAssessorInitisation(SourceMetadataAbstract _metadata, MetadataManager _metadataManager, 
+        File outputFolder, boolean useCostModelForBinaries) 
+  throws SNEEConfigurationException
   {
     this._metadataManager = _metadataManager;
     this.outputFolder = outputFolder;
@@ -72,6 +82,8 @@ public class ChoiceAssessor implements Serializable
     timeModelOverlay = new TimeModelOverlay(imageGenerator);
     energyModelOverlay = new EnergyModelOverlay(imageGenerator);
     useModelForBinaries = useCostModelForBinaries;
+    if(this._metadataManager == null || this.timeModel == null || this.timeModelOverlay == null)
+    throw new SNEEConfigurationException("one of the constructors values is null");
   }
 
   /**
@@ -430,5 +442,45 @@ public class ChoiceAssessor implements Serializable
       }
     }
     return shortestLifetime;
+  }
+
+  public ArrayList<Integer> locateNextNodeFailureFromEnergy(
+      HashMap<String, RunTimeSite> runningSites2, SensorNetworkQueryPlan qep)
+  throws FileNotFoundException, IOException, 
+  OptimizationException, SchemaMetadataException, 
+  TypeMappingException, SNEEConfigurationException
+  {
+    ArrayList<Integer> results = new ArrayList<Integer>();
+    Double shortestLifetime = Double.MAX_VALUE; //s
+    Integer shortestNodeid = null;
+    Iterator<Site> siteIter = 
+      qep.getRT().siteIterator(TraversalOrder.POST_ORDER);
+    while (siteIter.hasNext()) 
+    {
+      Site site = siteIter.next();
+      RunTimeSite rSite = runningSites2.get(site.getID());
+      double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
+      double siteEnergyCons =   qep.getAgendaIOT().getSiteEnergyConsumption(site); // J
+      runningSites2.get(site.getID()).setQepExecutionCost(siteEnergyCons);
+      double siteLifetime = (currentEnergySupply / siteEnergyCons);
+      
+      boolean useAcquires = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_SENSE);
+      //uncomment out sections to not take the root site into account
+      if (site!=  qep.getIOT().getRT().getRoot() &&
+          ((useAcquires) ||  (!useAcquires && !site.isSource()))) 
+      { 
+        if(shortestLifetime > siteLifetime)
+        {
+          if(!site.isDeadInSimulation())
+          {
+            shortestLifetime = siteLifetime;
+            shortestNodeid = Integer.parseInt(site.getID());
+          }
+        }
+      }
+    }
+    results.add(shortestLifetime.intValue());
+    results.add(shortestNodeid);
+    return results;
   }
 }

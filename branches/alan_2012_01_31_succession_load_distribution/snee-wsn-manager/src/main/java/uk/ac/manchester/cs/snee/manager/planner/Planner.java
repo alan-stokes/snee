@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.manager.planner;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,20 +45,24 @@ public class Planner extends AutonomicManagerComponent
   private File plannerFolder = null;
   private MetadataManager _metadataManager;
   
-  public Planner(AutonomicManagerImpl autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager)   
+  public Planner(AutonomicManagerImpl autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager)
+  throws SNEEConfigurationException   
   {
     manager = autonomicManager;
-    assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder);
     this._metadata = _metadata;
     this._metadataManager = _metadataManager;
+    assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder);
     runningSites = manager.getRunningSites();
   }
   
   public Planner(AutonomicManagerImpl autonomicManager, SourceMetadataAbstract _metadata, MetadataManager _metadataManager,
-                 HashMap<String, RunTimeSite> runningSites, File plannerFolder)   
+                 HashMap<String, RunTimeSite> runningSites, File plannerFolder)
+  throws SNEEConfigurationException   
   {
     manager = autonomicManager;
     this.plannerFolder = plannerFolder;
+    this._metadata = _metadata;
+    this._metadataManager = _metadataManager;
     assessor = new ChoiceAssessor(_metadata, _metadataManager, plannerFolder);
     this.runningSites = runningSites;
   }
@@ -323,6 +328,7 @@ public class Planner extends AutonomicManagerComponent
   SNEEException, SchemaMetadataException, OptimizationException, 
   WhenSchedulerException, TypeMappingException, IOException, CodeGenerationException
   {
+    new PlannerUtils(new ArrayList<Adaptation>(), manager, plannerFolder, null).networkEnergyReport(runningSites, new File(plannerFolder + sep + "report"));
     SuccessorRelation successorRelation = new SuccessorRelation(plannerFolder, runningSites, _metadataManager, _metadata, manager);
     successorRelation.executeSuccessorRelation(qep);
   }
@@ -400,6 +406,23 @@ public class Planner extends AutonomicManagerComponent
       }
     }
     
+  }
+  
+  public ArrayList<Integer> findNextNodeFailureAndTimeFromEnergy(HashMap<String, RunTimeSite> runningSites,
+                                                                 SensorNetworkQueryPlan qep)
+  throws FileNotFoundException, IOException, 
+  OptimizationException, SchemaMetadataException, 
+  TypeMappingException, SNEEConfigurationException
+  {
+    return assessor.locateNextNodeFailureFromEnergy(runningSites, qep);
+  }
+
+  public void assessChoices(Adaptation adaptation, HashMap<String, RunTimeSite> runningSites2)
+  throws IOException, OptimizationException, SchemaMetadataException, 
+  TypeMappingException, CodeGenerationException
+  {
+    assessor.updateStorageLocation(new File("output/blah"));
+    assessor.assessChoice(adaptation, runningSites2, false);
   }
   
 }

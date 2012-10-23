@@ -213,7 +213,9 @@ public class Successor implements Comparable<Successor>, Serializable
                                      HashMap<String, RunTimeSite> runningSites)
   throws OptimizationException, SchemaMetadataException, TypeMappingException
   {
-    this.newRunTimeSites = runningSites;
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    this.newRunTimeSites = cloner.deepClone(runningSites);
     this.updateSitesRunningCosts();
     this.subtractWaitingSiteEnergyCosts();
     return this.getCopyOfRunTimeSites();
