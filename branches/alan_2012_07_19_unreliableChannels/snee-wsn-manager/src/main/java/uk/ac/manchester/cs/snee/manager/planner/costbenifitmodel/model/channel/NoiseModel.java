@@ -24,6 +24,12 @@ public class NoiseModel
       return true;
     }
     else
-      return false;
+      return didPacketGetRecieved(sourceID, DestID);
+  }
+
+  private boolean didPacketGetRecieved(String sourceID, String destID)
+  {
+    // TODO Auto-generated method stub
+    return false;
   }
 }

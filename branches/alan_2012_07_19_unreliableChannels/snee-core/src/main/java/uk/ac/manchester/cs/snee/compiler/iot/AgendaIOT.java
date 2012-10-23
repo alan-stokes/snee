@@ -549,23 +549,32 @@ public class AgendaIOT extends SNEEAlgebraicForm
      * @param node		node in the sensor network
      * @return 			the time the node has completed all the tasks it has been allocated so far
      */
-    public final long getNextAvailableTime(final Site node, final boolean ignoreSleep) {
-	if (this.tasks.get(node) == null) {
+  public final long getNextAvailableTime(final Site node, final boolean ignoreSleep) 
+  {
+	  if (this.tasks.get(node) == null) 
+	  {
 	    return 0;
-	} else {
+	  }
+	  else 
+	  {
 	    //find the last task and return its end time
 	    final ArrayList<Task> taskList = this.tasks.get(node);
 	    int taskNum = taskList.size() - 1;
 	    Task last = taskList.get(taskNum);
-	    if (ignoreSleep) {
-		while (last.isSleepTask()) {
-		    taskNum = taskNum - 1;
-		    if (taskNum < 0) {
-			return 0;
-		    } else {
-			last = taskList.get(taskNum);
+	    if (ignoreSleep) 
+	    {
+		    while (last.isSleepTask()) 
+		    {
+		      taskNum = taskNum - 1;
+		      if (taskNum < 0) 
+		      {
+			      return 0;
+		      }
+		      else 
+		      {
+			      last = taskList.get(taskNum);
+		      }
 		    }
-		}
 	    }
 	    long nextAvailableTime = last.getEndTime();
 	    //			if (nextAvailableTime % 10 != 0) { //TODO: unhardcode this
@@ -573,16 +582,16 @@ public class AgendaIOT extends SNEEAlgebraicForm
 	    //			}
 
 	    return nextAvailableTime;
-	}
+	  }
 
-    }
+  }
 
     /**
      * @return if ignoreLastSleep is true, returns the time that the last task on all nodes ends.  
      * Otherwise returns the length of the agenda. 
      * 
      */
-    public final long getLength_bms(final boolean ignoreLastSleep) {
+    public long getLength_bms(final boolean ignoreLastSleep) {
 	long tmp = 0;
 
 	final Iterator<Site> nodeIter = this.tasks.keySet().iterator();

@@ -132,7 +132,7 @@ public class GeneticRouterFitness extends AutonomicManagerComponent
     //calcualte radio cost
     double radioRXAmp = AvroraCostParameters.getRadioReceiveAmpere();
     double duration = AgendaIOT.bmsToMs((packets * (long) Math.ceil(parameters.getSendPacket() * packets)) +
-                      CommunicationTask.getTimeCostOverhead(parameters)) / new Double(1000);
+                      CommunicationTask.getTimeCostOverhead(parameters, false, true)) / new Double(1000);
     double recievecost =  duration * radioRXAmp * AvroraCostParameters.VOLTAGE;
     //calculate flash cost
     double costPerByteWritten = AvroraCostParameters.VOLTAGE * AvroraCostParameters.FlashWRITECYCLES * 

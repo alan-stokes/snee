@@ -192,7 +192,7 @@ public class AdaptationEnergyModelOverlay extends AdaptationEnergyModel
     if(cluster.size() != 0)
       packets += packets * cluster.size();
     double duration = AgendaIOT.bmsToMs((packets * (long) Math.ceil(parameters.getSendPacket() * packets)) +
-                       CommunicationTask.getTimeCostOverhead(parameters)) / new Double(1000);
+                       CommunicationTask.getTimeCostOverhead(parameters, false, true)) / new Double(1000);
     return duration * cpuActiveAmp * AvroraCostParameters.VOLTAGE;
   }
 
@@ -218,7 +218,7 @@ public class AdaptationEnergyModelOverlay extends AdaptationEnergyModel
     double cost = 0.0;
     Long packets = this.calculateNumberOfPacketsForSiteQEP(adapt, child.getID());
     double duration = AgendaIOT.bmsToMs((packets * (long) Math.ceil(parameters.getSendPacket() * packets)) +
-        CommunicationTask.getTimeCostOverhead(parameters)) / new Double(1000);
+        CommunicationTask.getTimeCostOverhead(parameters, false, true)) / new Double(1000);
     Iterator<String> clusterIterator = current.getEquivilentNodes(child.getID()).iterator();
     while(clusterIterator.hasNext())
     {
@@ -299,7 +299,7 @@ public class AdaptationEnergyModelOverlay extends AdaptationEnergyModel
   {
     Long packets = this.calculateNumberOfPacketsForSiteQEP(adapt, site.getID());
     double duration = AgendaIOT.bmsToMs((packets * (long) Math.ceil(parameters.getSendPacket() * packets)) +
-        CommunicationTask.getTimeCostOverhead(parameters)) / new Double(1000);
+        CommunicationTask.getTimeCostOverhead(parameters, false, true)) / new Double(1000);
     Iterator<Site> pathIterator = adapt.getNewQep().getRT().getPath(site.getID(), currentSite.getID()).iterator();
     boolean notFound = true;
     Site nextSite = null;
@@ -405,7 +405,7 @@ public class AdaptationEnergyModelOverlay extends AdaptationEnergyModel
     double cpuActiveAmp = AvroraCostParameters.CPUACTIVEAMPERE;
     Long packets = this.calculateNumberOfPacketsForSiteQEP(adapt, site.getID());
     double duration = AgendaIOT.bmsToMs((packets * (long) Math.ceil(parameters.getSendPacket() * packets)) +
-                       CommunicationTask.getTimeCostOverhead(parameters)) / new Double(1000);
+                       CommunicationTask.getTimeCostOverhead(parameters, false, true)) / new Double(1000);
     return duration * cpuActiveAmp * AvroraCostParameters.VOLTAGE;
   }
 
@@ -428,7 +428,7 @@ public class AdaptationEnergyModelOverlay extends AdaptationEnergyModel
     double radioRXAmp = AvroraCostParameters.getRadioReceiveAmpere();
     Long packets = this.calculateNumberOfPacketsForSiteQEP(adapt, site.getID());
     double duration = AgendaIOT.bmsToMs((packets * (long) Math.ceil(parameters.getSendPacket() * packets)) +
-                       CommunicationTask.getTimeCostOverhead(parameters)) / new Double(1000);
+                       CommunicationTask.getTimeCostOverhead(parameters, false, true)) / new Double(1000);
     return duration * radioRXAmp * AvroraCostParameters.VOLTAGE;
   }
 

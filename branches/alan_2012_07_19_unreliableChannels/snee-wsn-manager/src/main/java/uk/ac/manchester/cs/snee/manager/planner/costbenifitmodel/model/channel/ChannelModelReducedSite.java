@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.LogicalOverlayNetworkHierarchy;
 
 public class ChannelModelReducedSite implements Serializable
@@ -17,6 +19,7 @@ public class ChannelModelReducedSite implements Serializable
   private int recievedAcks;
   private ArrayList<String> needToListenTo = new ArrayList<String>();
   private ArrayList<String> receivedAcksFrom = new ArrayList<String>();
+  private ArrayList<Task> tasks = new ArrayList<Task>();
   private ArrayList<String> transmittedAcksTo = new ArrayList<String>();
   private int  noOfTransmissions;
   private String siteID;
@@ -34,7 +37,8 @@ public class ChannelModelReducedSite implements Serializable
    * @param position
    */
   public ChannelModelReducedSite(HashMap<String, Integer> expectedPackets, String siteID,
-                                 LogicalOverlayNetworkHierarchy overlayNetwork, int position)
+                                 LogicalOverlayNetworkHierarchy overlayNetwork, int position,
+                                 ArrayList<Task> tasks)
   {
     Iterator<String> keys = expectedPackets.keySet().iterator();
     while(keys.hasNext())
@@ -51,6 +55,7 @@ public class ChannelModelReducedSite implements Serializable
     this.siteID = siteID;
     this.overlayNetwork = overlayNetwork;
     this.priority = position;
+    this.tasks.addAll(tasks);
   }
   
   /**
@@ -66,16 +71,6 @@ public class ChannelModelReducedSite implements Serializable
     arrivedPackets.put(source, packets);
     if(!needToListenTo.contains(source))
       needToListenTo.add(source);
-  }
-  
-  /**
-   * tracks what nodes this node has recieved acks from
-   * @param outputSite
-   */
-  public void receivedACK(ChannelModelReducedSite outputSite)
-  {
-    recievedAcks++;
-    this.receivedAcksFrom.add(outputSite.toString());
   }
   
   /**
@@ -95,11 +90,13 @@ public class ChannelModelReducedSite implements Serializable
       Boolean packetRecieved = packetIterator.next();
       if(!packetRecieved)
       {
-        Iterator<String> EquivNodes = this.overlayNetwork.getEquivilentNodes(child).iterator();
+        ArrayList<String> equivNodes = this.overlayNetwork.getEquivilentNodes(this.overlayNetwork.getClusterHeadFor(child));
+        equivNodes.add(this.overlayNetwork.getClusterHeadFor(child));
+        Iterator<String> equivNodesIterator = equivNodes.iterator();
         boolean found = false;
-        while(EquivNodes.hasNext())
+        while(equivNodesIterator.hasNext())
         {
-          String EquivNode = EquivNodes.next();
+          String EquivNode = equivNodesIterator.next();
           ArrayList<Boolean> equivPackets = arrivedPackets.get(EquivNode);
           if(equivPackets.get(counter))
             found = true;
@@ -109,7 +106,7 @@ public class ChannelModelReducedSite implements Serializable
       }
       counter++;
     }
-    if(this.transmittedAcksTo.contains(child))
+    if(this.transmittedAcksTo.contains(this.overlayNetwork.getClusterHeadFor(child)))
       return false;
     else
     {
@@ -185,7 +182,7 @@ public class ChannelModelReducedSite implements Serializable
 
   public void TransmitAckTo(String originalDestNode)
   {
-    this.transmittedAcksTo.add(originalDestNode);
+    this.transmittedAcksTo.add(this.overlayNetwork.getClusterHeadFor(originalDestNode));
   }
 
   public boolean transmittedTo(boolean redundantTask)
@@ -225,5 +222,35 @@ public class ChannelModelReducedSite implements Serializable
   public boolean transmittedAckTo(String sourceID)
   {
     return this.transmittedAcksTo.contains(sourceID);
+  }
+
+  public void receivedAckFrom(String commID)
+  {
+    this.receivedAcksFrom.add(commID);
+  }
+
+  public CommunicationTask getTask(long startTime, int mode)
+  {
+    Iterator<Task> taskIterator = this.tasks.iterator();
+    while(taskIterator.hasNext())
+    {
+      Task task = taskIterator.next();
+      if(task instanceof CommunicationTask)
+      {
+        CommunicationTask commTask = (CommunicationTask) task;
+        if(commTask.getMode() == mode && 
+           startTime == commTask.getStartTime())
+          return commTask;
+      }
+    }
+    return null;
+  } 
+
+  public boolean receivedACK()
+  {
+    if(this.receivedAcksFrom.size() == 1)
+      return true;
+    else 
+      return false;
   }
 }

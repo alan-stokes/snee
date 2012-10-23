@@ -87,7 +87,8 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
     private HashSet<InstanceExchangePart> instanceExchangeComponents;
     private int maxPacketsEspectedToTransmit;
     
-    
+    private String commTaskID = null;
+    private static int count = 1;
     /**
      * constructor for a comm task
      * @param startTime
@@ -108,7 +109,8 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
                              final Site destNode, final int mode, final long alpha, 
                              final long bufferingFactor, final DAF daf, int maxPackets,
                              CostParameters costParams, boolean redundant,
-                             Site originalDestNode) 
+                             Site originalDestNode, boolean lastCommTask,
+                             boolean hadPreivousCommTask) 
     throws OptimizationException, SchemaMetadataException, TypeMappingException 
     {
       super(startTime, costParams);
@@ -118,32 +120,10 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
       this.instanceExchangeComponents = null;
       this.maxPacketsEspectedToTransmit = maxPackets;
       this.beta = bufferingFactor;
-      this.endTime = startTime + (long) Math.ceil(costParams.getSendPacket() * maxPacketsEspectedToTransmit) + getTimeCostOverhead(costParams);;
+      this.endTime = startTime + this.getTimeCost(new Long(maxPackets), lastCommTask, hadPreivousCommTask);
       this.mode = mode;
       this.originalDestNode = originalDestNode;
       generateID();
-    }
-    
-    private void generateID()
-    {
-      if(this.mode == CommunicationTask.RECEIVE)
-      {
-        this.id = "TX " + this.sourceNode.getID() + " to " + this.destNode.getID() + "(" + startTime + ")";
-      }
-      if(this.mode == CommunicationTask.TRANSMIT)
-      {
-        if(this.sourceNode == null || this.destNode == null)
-          System.out.println();
-        this.id = "RX " + this.sourceNode.getID() + " to " + this.destNode.getID() + "(" + startTime + ")";
-      }
-      if(this.mode == CommunicationTask.ACKRECEIVE)
-      {
-        this.id = "ARX " + this.sourceNode.getID() + " to " + this.destNode.getID() + "(" + startTime + ")";
-      }
-      if(this.mode == CommunicationTask.ACKTRANSMIT)
-      {
-        this.id = "ATX " + this.sourceNode.getID() + " to " + this.destNode.getID() + "(" + startTime + ")";
-      }
     }
 
     /**
@@ -163,7 +143,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
 	                         final HashSet<InstanceExchangePart> tuplesToSend,
 	                         final long alpha, final long bufferingFactor, final DAF daf,  
 	                         CostParameters costParams, boolean redundant,
-	                         Site originalDestNode) 
+	                         Site originalDestNode ) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException 
   {
   	super(startTime, costParams);
@@ -171,7 +151,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
   	this.destNode = destNode;
   	this.instanceExchangeComponents = tuplesToSend;
   	this.beta = bufferingFactor;
-  	this.endTime = startTime + this.getTimeCost(daf);
+  	this.endTime = startTime + this.getTimeCost(daf, true, false);
   	this.mode = mode;
   	this.redundantTask = redundant;
   	this.originalDestNode = originalDestNode;
@@ -200,7 +180,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
     super(startTime, costParams);
     this.sourceNode = sourceNode;
     this.destNode = destNode;
-    this.endTime = startTime + this.getTimeCost(packets);
+    this.endTime = startTime + this.getTimeCost(packets, true, false);
     this.mode = mode;
     this.redundantTask = redundant;
     this.originalDestNode = originalDestNode;
@@ -237,43 +217,55 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
     this.originalDestNode = originalDestNode;
     generateID();
   }
-
-    /**
-     * constructor which adds a defined overhead t the duration of the communication task 
-     * (therefore keeping the radio turned on to encapsulate possible different sources)
-     * @param startTime
-     * @partrueam sourceNode
-     * @param destNode
-     * @param mode
-     * @param tuplesToSend
-     * @param alpha
-     * @param beta
-     * @param daf
-     * @param costParams
-     * @param overhead
-     * @param redundant
-     * @throws OptimizationException
-     * @throws SchemaMetadataException
-     * @throws TypeMappingException
-     */
-  public CommunicationTask(long startTime, Site sourceNode, Site destNode,
-                           int mode, HashSet<InstanceExchangePart> tuplesToSend, long alpha,
-                           long beta, DAF daf, CostParameters costParams, Long overhead,
-                           boolean redundant, Site originalDestNode)
-  throws OptimizationException, SchemaMetadataException, TypeMappingException
-  {
-    super(startTime, costParams);
-    this.sourceNode = sourceNode;
-    this.destNode = destNode;
-    this.instanceExchangeComponents = tuplesToSend;
-    this.beta = beta;
-    this.endTime = startTime + this.getTimeCost(daf) + overhead;
-    this.mode = mode;
-    this.redundantTask = redundant;
-    this.originalDestNode = originalDestNode;
-    generateID();
-  }
   
+    public CommunicationTask(long startTime, Site sourceNode, Site destNode,
+        int mode, HashSet<InstanceExchangePart> tuplesToSend, long alpha,
+        long beta, DAF daf, CostParameters costParams, boolean redundant,
+        Site originalDestNode, boolean lastCommTask, boolean hadPreivousCommTask) 
+    throws OptimizationException, SchemaMetadataException, TypeMappingException
+    {
+      super(startTime, costParams);
+      this.sourceNode = sourceNode;
+      this.destNode = destNode;
+      this.instanceExchangeComponents = tuplesToSend;
+      this.beta = beta;
+      this.endTime = startTime + this.getTimeCost(daf, lastCommTask, hadPreivousCommTask);
+      this.mode = mode;
+      this.redundantTask = redundant;
+      this.originalDestNode = originalDestNode;
+      generateID();
+    }
+    
+    
+    private void generateID()
+    {
+      if(this.mode == CommunicationTask.RECEIVE)
+      {
+        this.id = "TX " + this.sourceNode.getID() + " to " + this.destNode.getID() + "(" + startTime + ")";
+      }
+      if(this.mode == CommunicationTask.TRANSMIT)
+      {
+        if(this.sourceNode == null || this.destNode == null)
+          System.out.println();
+        this.id = "RX " + this.sourceNode.getID() + " to " + this.destNode.getID() + "(" + startTime + ")";
+      }
+      if(this.mode == CommunicationTask.ACKRECEIVE)
+      {
+        this.id = "ARX " + this.sourceNode.getID() + " to " + this.destNode.getID() + "(" + startTime + ")";
+      }
+      if(this.mode == CommunicationTask.ACKTRANSMIT)
+      {
+        this.id = "ATX " + this.sourceNode.getID() + " to " + this.destNode.getID() + "(" + startTime + ")";
+      }
+      this.commTaskID = this.id + "_" + count;
+      count++;
+    }
+    
+    public String getCommID()
+    {
+      return this.commTaskID;
+    }
+
     public final Site getSourceNode() {
 	return this.sourceNode;
     }
@@ -331,15 +323,24 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
      * Calculates the time overhead involved in a radio exchange.
      * 
      * Based on the time estimates provided in the OperatorsMetaData file.
+     * @param hadPreivousCommTask 
+     * @param lastCommTask 
      * 
      * @return time overhead of a radio message. 
      */
-    public static long getTimeCostOverhead(CostParameters costParams) {
-    	return (long) Math.ceil(costParams.getCallMethod()
-    			+ costParams.getSignalEvent()
-    			+ costParams.getTurnOnRadio()
-    			+ costParams.getRadioSyncWindow() * 2
-    			+ costParams.getTurnOffRadio());
+    public static long getTimeCostOverhead(CostParameters costParams,
+                                           boolean lastCommTask, 
+                                           boolean hadPreivousCommTask) 
+    {
+      
+      Long result = new Long(0);
+      if(hadPreivousCommTask)
+        result += getSyncTimeCostOverhead(costParams);
+      else
+        result += getRadioOnTimeCost(costParams);
+      if(lastCommTask)
+        result += getRadioOffOverhead(costParams);
+      return result;
     	}
         
 //    /**
@@ -364,12 +365,16 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
 //    
     /**
      * Returns the duration of this task.
+     * @param hadPreivousCommTask 
+     * @param lastCommTask 
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
      * @throws OptimizationException 
      */
-    @Override
-	protected final long getTimeCost(final DAF daf) throws OptimizationException, SchemaMetadataException, TypeMappingException {
+	protected final long getTimeCost(final DAF daf, boolean lastCommTask, 
+	                                 boolean hadPreivousCommTask) 
+	throws OptimizationException, SchemaMetadataException, TypeMappingException 
+	{
     	long result = 0;
 	
     	if(instanceExchangeComponents == null)
@@ -386,7 +391,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
       			this.maxPacketsEspectedToTransmit += exchComp.getmaxPackets(daf, beta, costParams);
       		}
       	}
-      	result += getTimeCostOverhead(costParams);
+      	result += getTimeCostOverhead(costParams, lastCommTask, hadPreivousCommTask);
     	}
     	else
     	{
@@ -402,7 +407,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
           this.maxPacketsEspectedToTransmit += exchComp.getmaxPackets(daf, beta, costParams);
         }
       }
-      result += getTimeCostOverhead(costParams);
+      result += getTimeCostOverhead(costParams, lastCommTask, hadPreivousCommTask);
     	}
 //IG: Might be best to have this check...
 //    	assert (result <= getTimeExpression(
@@ -419,20 +424,48 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
     
     /**
      * Returns the duration of this task (not daf related).
+     * @param lastCommTask 
+     * @param hadPreivousCommTask 
      * @throws TypeMappingException 
      * @throws SchemaMetadataException 
      * @throws OptimizationException 
      */
 
-  protected final long getTimeCost(final Long packets) 
+  protected final long getTimeCost(final Long packets, boolean lastCommTask,
+                                   boolean hadPreivousCommTask) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException 
   {
     long result = 0;
     result += (long) Math.ceil(costParams.getSendPacket() * packets);
-    result += getTimeCostOverhead(costParams);
+    if(hadPreivousCommTask)
+      result += getSyncTimeCostOverhead(costParams);
+    else
+      result += getRadioOnTimeCost(costParams);
+    if(lastCommTask)
+      result += getRadioOffOverhead(costParams);
     return result;
   }
     
+
+    public static long getRadioOffOverhead(CostParameters costParams)
+    {
+      return (long) Math.ceil(costParams.getTurnOffRadio());
+    }
+
+    private static long getRadioOnTimeCost(CostParameters costParams)
+    {
+      return (long) Math.ceil(costParams.getCallMethod()
+          + costParams.getSignalEvent()
+          + costParams.getTurnOnRadio()
+          + costParams.getRadioSyncWindow() * 2);
+    }
+    
+    private static long getSyncTimeCostOverhead(CostParameters costParams)
+    {
+      return (long) Math.ceil(costParams.getCallMethod()
+          + costParams.getSignalEvent()
+          + costParams.getRadioSyncWindow() * 2);
+    }
 
     /**
      * String representation.
@@ -478,4 +511,62 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
   {
     return this.originalDestNode;
   }
+
+  @Override
+  protected long getTimeCost(DAF daf)throws OptimizationException, SchemaMetadataException, TypeMappingException 
+  {
+    long result = 0;
+
+    if(instanceExchangeComponents == null)
+    {
+      final Iterator<ExchangePart> exchCompIter 
+        = this.exchangeComponents.iterator();
+      while (exchCompIter.hasNext()) {
+        final ExchangePart exchComp = exchCompIter.next();
+        if ((exchComp.getComponentType() 
+              == ExchangePartType.PRODUCER)
+            || (exchComp.getComponentType() 
+              == ExchangePartType.RELAY)) {
+          result += exchComp.getTimeCost(daf, beta, costParams);
+          this.maxPacketsEspectedToTransmit += exchComp.getmaxPackets(daf, beta, costParams);
+        }
+      }
+      result += getTimeCostOverhead(costParams);
+    }
+    else
+    {
+      final Iterator<InstanceExchangePart> exchCompIter 
+      = this.instanceExchangeComponents.iterator();
+    while (exchCompIter.hasNext()) {
+      final InstanceExchangePart exchComp = exchCompIter.next();
+      if ((exchComp.getComponentType() 
+            == ExchangePartType.PRODUCER)
+          || (exchComp.getComponentType() 
+            == ExchangePartType.RELAY)) {
+        result += exchComp.getTimeCost(daf, beta, costParams);
+        this.maxPacketsEspectedToTransmit += exchComp.getmaxPackets(daf, beta, costParams);
+      }
+    }
+    result += getTimeCostOverhead(costParams);
+    }
+//IG: Might be best to have this check...
+//    assert (result <= getTimeExpression(
+//        CardinalityType.PHYSICAL_MAX, daf, true)
+//        .evaluate(alpha, this.bufferingFactor));
+    return result;
+    
+    /*
+  BetaExpression expr = this.getTXTimeBetaExpression(qp);
+  return (long)expr.evaluate(bufferingFactor);    
+    */
+  }
+
+  private long getTimeCostOverhead(CostParameters costParams)
+  {
+    return (long) Math.ceil(costParams.getCallMethod()
+        + costParams.getSignalEvent()
+        + costParams.getTurnOnRadio()
+        + costParams.getRadioSyncWindow() * 2 +
+        costParams.getTurnOffRadio());
+  } 
 }

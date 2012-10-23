@@ -104,7 +104,7 @@ public class FragmentTask extends Task {
 		    * this.beta;
 	}
 	if (this.fragment.isDeliverFragment()) {
-		calcTime += CommunicationTask.getTimeCostOverhead(this.costParams);
+		calcTime += CommunicationTask.getTimeCostOverhead(this.costParams, false, true);
 	}
 //IG: Not sure if I should have removed this...
 //	assert (calcTime <= fragment.getTimeExpression(

@@ -74,7 +74,7 @@ public class UnreliableChannelAgendaReducedUtils
       sitesCount++;
     }
     sitesCount -= this.failedNodes.size();
-    return (sitesCount + 1) * CELL_WIDTH;
+    return (sitesCount + 2) * CELL_WIDTH;
   }
 
   // computes the height of the schedule image
@@ -182,17 +182,24 @@ public class UnreliableChannelAgendaReducedUtils
         if (task instanceof CommunicationTask) 
         {
           if(task.isRan())
+          {
             g2.setColor(Color.YELLOW);
-          else
+            g2.fill(new Rectangle(xpos, ypos - CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT));
             g2.setColor(Color.BLUE);
+            g2.draw(new Rectangle(xpos, ypos - CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT));
+            String output = task.toString();
+            g2.drawString(output, xpos + 12, ypos + 12 - CELL_HEIGHT);
+          }
         }
         else 
+        {
           g2.setColor(Color.WHITE);
-        g2.fill(new Rectangle(xpos, ypos - CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT));
-        g2.setColor(Color.BLUE);
-        g2.draw(new Rectangle(xpos, ypos - CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT));
-        String output = task.toString();
-        g2.drawString(output, xpos + 12, ypos + 12 - CELL_HEIGHT);
+          g2.fill(new Rectangle(xpos, ypos - CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT));
+          g2.setColor(Color.BLUE);
+          g2.draw(new Rectangle(xpos, ypos - CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT));
+          String output = task.toString();
+          g2.drawString(output, xpos + 12, ypos + 12 - CELL_HEIGHT);
+        }
 
       }
       xpos += CELL_WIDTH;

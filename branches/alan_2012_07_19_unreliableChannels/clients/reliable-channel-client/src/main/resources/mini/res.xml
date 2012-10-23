@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+
+<site-resources
+xmlns="http://snee.cs.manchester.ac.uk"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://snee.cs.manchester.ac.uk site-resources.xsd">
+
+
+<units>
+	<energy>JOULES</energy>
+	<memory>KILOBYTES</memory>
+</units>
+
+<sites>
+	<default>
+		<energy-stock>31320</energy-stock>
+		<ram>10</ram>
+		<flash-memory>48</flash-memory>
+	</default>
+	<site id="0"><sensorTypes>
+					<sensorType sensor="default"/>				
+		</sensorTypes>
+		<alternativeSites>1,2,3,4,5,6</alternativeSites>
+		
+	</site>
+	<site id="1"><sensorTypes>
+					<sensorType sensor="default"/>				
+		</sensorTypes>
+<alternativeSites>1,2,3,4,5,6</alternativeSites>		
+	</site>
+	<site id="2"><sensorTypes>
+					<sensorType sensor="default"/>				
+		</sensorTypes>
+<alternativeSites>1,2,3,4,5,6</alternativeSites>		
+	</site>
+	<site id="3"><sensorTypes>
+					<sensorType sensor="default"/>				
+		</sensorTypes>
+<alternativeSites>1,2,3,4,5,6</alternativeSites>		
+	</site>
+	<site id="4"><sensorTypes>
+					<sensorType sensor="default"/>				
+		</sensorTypes>
+<alternativeSites>1,2,3,4,5,6</alternativeSites>		
+	</site>
+	<site id="5"><sensorTypes>
+					<sensorType sensor="default"/>				
+		</sensorTypes>
+<alternativeSites>1,2,3,4,5,6</alternativeSites>		
+	</site>
+	<site id="6"><sensorTypes>
+					<sensorType sensor="default"/>				
+		</sensorTypes>
+<alternativeSites>1,2,3,4,5,6</alternativeSites>		
+	</site>
+	</sites>	
+	
+</site-resources>

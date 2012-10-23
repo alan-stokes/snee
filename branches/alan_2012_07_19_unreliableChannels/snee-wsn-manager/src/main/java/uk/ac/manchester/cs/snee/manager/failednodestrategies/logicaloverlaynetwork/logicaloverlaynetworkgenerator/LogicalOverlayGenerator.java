@@ -173,9 +173,10 @@ public class LogicalOverlayGenerator
     //reads in the best overlay from file (stored in a file for memory reasons
     if(bestOverlayNetwork != null)
     {
-      System.out.println(bestMinLifetime);
       LogicalOverlayNetworkUtils utils = new LogicalOverlayNetworkUtils();
-      return  utils.retrieveOverlayFromFile(new File(localFolder + sep + "OTASection"), bestOverlayNetwork);
+      LogicalOverlayNetwork best = utils.retrieveOverlayFromFile(new File(localFolder + sep + "OTASection"), bestOverlayNetwork);
+      System.out.println(bestMinLifetime / (best.getQep().getAgendaIOT().getDeliveryTime_ms() / 1000));
+      return best;
     }
     else
       return null;

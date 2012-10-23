@@ -358,7 +358,7 @@ public final class AvroraCostExpressions{
     //Assume that all exchanges with each partner 
     //will be grouped into single task.
     //Add overhead for all source/ destinations found except self.
-    result.add(CommunicationTask.getTimeCostOverhead(costParams) * (partners.size() - 1)); 
+    result.add(CommunicationTask.getTimeCostOverhead(costParams, false, true) * (partners.size() - 1)); 
                                  //does not include radio on/off
     result.add((partners.size() - 1) * 
         costParams.getTurnOnRadio());

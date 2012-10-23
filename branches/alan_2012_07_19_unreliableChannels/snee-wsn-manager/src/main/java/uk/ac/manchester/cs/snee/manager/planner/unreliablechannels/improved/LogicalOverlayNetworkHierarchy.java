@@ -280,6 +280,7 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
 
   /**
    * get nodes that are defined as Equivilent to key
+   * 
    * @param key
    * @return
    */
@@ -452,6 +453,7 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
   {
     ArrayList<String> candidates = clusters.get(head);
     candidates.remove(newHead);
+    candidates.remove(head);
     clusters.remove(head);
     clusters.set(newHead, candidates);
   }
@@ -675,6 +677,8 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
    */
   public void updateClusters(String failedNodeID, String replacementNodeID)
   {
+    removeDuplicates();
+    
     if(this.isActive(replacementNodeID))
     {
       if(this.isClusterHead(failedNodeID))
@@ -712,6 +716,25 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
         this.clusters.remove(this.getClusterHeadFor(failedNodeID), failedNodeID);
       }
     }
+  }
+
+  private void removeDuplicates()
+  {
+    HashMapList<String, String> newCluster = new HashMapList<String, String>();
+    Iterator<String> keySet = this.clusters.keySet().iterator();
+    while(keySet.hasNext())
+    {
+      String key = keySet.next();
+      Iterator<String> values = this.clusters.get(key).iterator();
+      while(values.hasNext())
+      {
+        String value = values.next();
+        
+        if(newCluster.get(key)!= null & !newCluster.get(key).contains(value))
+          newCluster.add(key, value);
+      }
+    }
+    this.clusters = newCluster;
   }
 
   /**

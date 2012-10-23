@@ -141,7 +141,17 @@ public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
    throws OptimizationException, SchemaMetadataException, 
    TypeMappingException 
    {
-     double taskDuration = AgendaIOT.bmsToMs(ct.getDuration())/1000.0;
+     int index = this.agenda.getStartTimes().indexOf(ct.getStartTime());
+     Task t = this.agenda.getTask(this.agenda.getStartTimes().get(index + 1), ct.getSite());
+     double taskDuration = 0.0;
+     
+     if(t == null)
+       taskDuration = AgendaIOT.bmsToMs(ct.getDuration() + 
+                                        CommunicationTask.getRadioOffOverhead(
+                                            this.agenda.getCostParameters()))/1000.0;
+     else
+       taskDuration = AgendaIOT.bmsToMs(ct.getDuration())/1000.0;
+     
      double voltage = AvroraCostParameters.VOLTAGE;
      
      double radioRXAmp = AvroraCostParameters.getRadioReceiveAmpere();

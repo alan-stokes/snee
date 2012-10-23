@@ -9,8 +9,8 @@ import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgenda;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.LogicalOverlayNetworkHierarchy;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.UnreliableChannelAgendaReduced;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
 public class ChannelModelReduced implements Serializable
@@ -21,7 +21,7 @@ public class ChannelModelReduced implements Serializable
   private static final long serialVersionUID = 7449374992445910226L;
   private ArrayList<ChannelModelReducedSite> channelModel = new ArrayList<ChannelModelReducedSite>();
   private LogicalOverlayNetworkHierarchy logicaloverlayNetwork;
-  private UnreliableChannelAgenda agenda;
+  private UnreliableChannelAgendaReduced agenda;
   private ArrayList<String> failedNodes;
   private NoiseModel noiseModel; 
   
@@ -34,8 +34,8 @@ public class ChannelModelReduced implements Serializable
    * @param failedNodes
    * @throws SNEEConfigurationException 
    */
-  public ChannelModelReduced (LogicalOverlayNetworkHierarchy logicaloverlayNetwork,  
-                       UnreliableChannelAgenda agenda, int networkSize,
+    public ChannelModelReduced (LogicalOverlayNetworkHierarchy logicaloverlayNetwork,  
+                       UnreliableChannelAgendaReduced agenda, int networkSize,
                        ArrayList<String> failedNodes)
   throws SNEEConfigurationException
   {
@@ -85,7 +85,7 @@ public class ChannelModelReduced implements Serializable
         
         if(cTask.getMode() == CommunicationTask.RECEIVE && runable)
         {
-          if(tranmissionTaskRan(cTask.getSourceID(), cTask.isRedundantTask()))
+          if(tranmissionTaskRan(cTask))
            {
             if(isSibling(cTask.getSourceID(), cTask.getDestID())) 
             {
@@ -114,60 +114,46 @@ public class ChannelModelReduced implements Serializable
           
         else if(cTask.getMode() == CommunicationTask.TRANSMIT && runable)
         {
-          ChannelModelReducedSite site = channelModel.get(Integer.parseInt(cTask.getSourceID())); 
-          if(site.receivedACK(Integer.parseInt(cTask.getOriginalDestNode().getID())) ||
-             heardHigherPriorityNodeTransmit(site, cTask.isRedundantTask()) ||
-             !site.recievedAllInputPackets())
+          ChannelModelReducedSite source = channelModel.get(Integer.parseInt(cTask.getSourceID()));
+          
+          if(source.receivedACK())
           {
             cTask.setRan(false);
           }
           else
           {
             cTask.setRan(true);
-            site.transmittedPackets();
-            site.updateCycle();
+            source.transmittedPackets();
+            source.updateCycle();
           }
         }
         
         else if(cTask.getMode() == CommunicationTask.ACKRECEIVE && runable)
         {
-          ChannelModelReducedSite site = channelModel.get(Integer.parseInt(cTask.getDestID())); 
           ChannelModelReducedSite sourceSite = channelModel.get(Integer.parseInt(cTask.getSourceID())); 
-          if(!site.transmittedAckTo(cTask.getSourceID()))
-          {
-            cTask.setRan(false);
-          }
-          else
-          {
-            if(this.didPacketGetRecived(cTask.getDestID(), Integer.parseInt(cTask.getSourceID())))
-            {
-              sourceSite.receivedACK(site);
-            }
-            cTask.setRan(true);
-          }
+          ChannelModelReducedSite destSite = channelModel.get(Integer.parseInt(cTask.getDestNode().getID()));
+          ChannelModelReducedSite newSite = channelModel.get(Integer.parseInt(cTask.getSiteID()));
           
+          
+          if(destSite.getTask(cTask.getStartTime(), CommunicationTask.ACKTRANSMIT).isRan())
+            if(!didPacketGetRecived(destSite.toString(), Integer.parseInt(sourceSite.toString())))
+              cTask.setRan(false);
+            else
+            {
+              cTask.setRan(true);
+              sourceSite.receivedAckFrom(cTask.getCommID());
+            }
+          else
+            cTask.setRan(false);
         }
         
         else if(cTask.getMode() == CommunicationTask.ACKTRANSMIT && runable)
         {
           ChannelModelReducedSite site = channelModel.get(Integer.parseInt(cTask.getDestID())); 
-          if(site.needToTransmitAckTo(cTask.getOriginalDestNode().getID()))
+          if(site.needToTransmitAckTo(cTask.getSourceID()))
           {
             cTask.setRan(true);
-            Iterator<String> nodesInChild = this.logicaloverlayNetwork.getActiveEquivilentNodes(
-                this.logicaloverlayNetwork.getClusterHeadFor(cTask.getOriginalDestNode().getID())).iterator();
-            while(nodesInChild.hasNext())
-            {
-              site.TransmitAckTo(nodesInChild.next());
-            }
-            nodesInChild = this.logicaloverlayNetwork.getActiveEquivilentNodes(
-                this.logicaloverlayNetwork.getClusterHeadFor(cTask.getDestID())).iterator();
-            while(nodesInChild.hasNext())
-            {
-              String node = nodesInChild.next();
-              if(!node.equals(cTask.getSourceID()))
-                site.TransmitAckTo(node);
-            }
+            site.TransmitAckTo(cTask.getSourceID());
           }
           else
           {
@@ -178,6 +164,12 @@ public class ChannelModelReduced implements Serializable
     }
   }
   
+  private boolean tranmissionTaskRan(CommunicationTask cTask)
+  {
+    ChannelModelReducedSite site = channelModel.get(Integer.parseInt(cTask.getSourceID())); 
+    return site.getTask(cTask.getStartTime(), CommunicationTask.TRANSMIT).isRan();
+  }
+
   private boolean isSibling(String sourceID, String destID)
   {
     ArrayList<String> equivNodes = 
@@ -194,11 +186,6 @@ public class ChannelModelReduced implements Serializable
       return false;
     else
       return true;
-  }
-
-  private boolean tranmissionTaskRan(String sourceID, boolean redundantTask)
-  {
-    return this.channelModel.get(Integer.parseInt(sourceID)).transmittedTo(redundantTask);
   }
 
   private void tryRecieving(String destID, Integer sourceID, int packetID)
@@ -262,17 +249,23 @@ public class ChannelModelReduced implements Serializable
       }
       if(logicaloverlayNetwork.getQep().getRT().getRoot().getID().equals(clusterHeadID))
       {
-        ChannelModelReducedSite site = new ChannelModelReducedSite(expectedPackets, siteID, logicaloverlayNetwork, 0);
+        ChannelModelReducedSite site = 
+          new ChannelModelReducedSite(expectedPackets, siteID, logicaloverlayNetwork, 0, 
+                                      agenda.getTasks().get(agenda.getSiteByID(siteID)));
         channelModel.set(siteIDInt, site);
       }
       else
       {
         ChannelModelReducedSite site;
         if(logicaloverlayNetwork.isClusterHead(siteID))
-          site = new ChannelModelReducedSite(expectedPackets, siteID, logicaloverlayNetwork, logicaloverlayNetwork.getPriority(siteID));
+          site = 
+            new ChannelModelReducedSite(expectedPackets, siteID, logicaloverlayNetwork, 
+                logicaloverlayNetwork.getPriority(siteID), agenda.getTasks().get(agenda.getSiteByID(siteID)));
         else
         {
-          site = new ChannelModelReducedSite(expectedPackets, siteID, logicaloverlayNetwork, logicaloverlayNetwork.getPriority(siteID));
+          site =
+            new ChannelModelReducedSite(expectedPackets, siteID, logicaloverlayNetwork, 
+                logicaloverlayNetwork.getPriority(siteID), agenda.getTasks().get(agenda.getSiteByID(siteID)));
         }
           
         channelModel.set(siteIDInt, site);

@@ -220,7 +220,7 @@ public class AdaptationEnergyModel extends Model
   {
     Long packets = this.calculateNumberOfPacketsForSiteQEP(adapt, site.getID());
     double duration = AgendaIOT.bmsToMs((packets * (long) Math.ceil(parameters.getSendPacket() * packets)) +
-        CommunicationTask.getTimeCostOverhead(parameters)) / new Double(1000);
+        CommunicationTask.getTimeCostOverhead(parameters, false, true)) / new Double(1000);
     Iterator<Site> pathIterator = adapt.getNewQep().getRT().getPath(site.getID(), currentSite.getID()).iterator();
     boolean notFound = true;
     Site nextSite = null;
@@ -325,7 +325,7 @@ public class AdaptationEnergyModel extends Model
     double cpuActiveAmp = AvroraCostParameters.CPUACTIVEAMPERE;
     Long packets = this.calculateNumberOfPacketsForSiteQEP(adapt, site.getID());
     double duration = AgendaIOT.bmsToMs((packets * (long) Math.ceil(parameters.getSendPacket() * packets)) +
-                       CommunicationTask.getTimeCostOverhead(parameters)) / new Double(1000);
+                       CommunicationTask.getTimeCostOverhead(parameters, false, true)) / new Double(1000);
     return duration * cpuActiveAmp * AvroraCostParameters.VOLTAGE;
   }
 
@@ -348,7 +348,7 @@ public class AdaptationEnergyModel extends Model
     double radioRXAmp = AvroraCostParameters.getRadioReceiveAmpere();
     Long packets = this.calculateNumberOfPacketsForSiteQEP(adapt, site.getID());
     double duration = AgendaIOT.bmsToMs((packets * (long) Math.ceil(parameters.getSendPacket() * packets)) +
-                       CommunicationTask.getTimeCostOverhead(parameters)) / new Double(1000);
+                       CommunicationTask.getTimeCostOverhead(parameters, false, true)) / new Double(1000);
     return duration * radioRXAmp * AvroraCostParameters.VOLTAGE;
   }
 

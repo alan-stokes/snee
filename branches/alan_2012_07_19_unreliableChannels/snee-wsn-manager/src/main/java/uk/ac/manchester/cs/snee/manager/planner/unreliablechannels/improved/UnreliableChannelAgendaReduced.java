@@ -25,7 +25,6 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgenda;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
@@ -42,7 +41,7 @@ import org.apache.log4j.Logger;
 
 
 
-public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
+public class UnreliableChannelAgendaReduced extends AgendaIOT
 {
   /**
    * serialVersionUID
@@ -56,6 +55,7 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
   
   private LogicalOverlayNetworkHierarchy activeOverlay;
   private int numberOfRundundantCycles =0;
+  private Topology network = null;
   
   public UnreliableChannelAgendaReduced(LogicalOverlayNetwork logicaloverlayNetwork,
                                  SensorNetworkQueryPlan qep, Topology network,
@@ -64,14 +64,18 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
          SchemaMetadataException, TypeMappingException, SNEEConfigurationException,
          SNEEException
   {
-    super(logicaloverlayNetwork, qep, network, allowDiscontinuousSensing, false);
-    
+    super(qep.getAcquisitionInterval_bms(), qep.getBufferingFactor(), qep.getIOT(),
+        qep.getCostParameters(), qep.getQueryName(), allowDiscontinuousSensing, false);
+
+    this.network = network;
+    this.costParams = qep.getCostParameters();
+    this.tasks.clear();
+
     numberOfRundundantCycles = 
       Integer.parseInt(SNEEProperties.getSetting(
           SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_REDUNDANTCYCLES));
     
     activeOverlay = new LogicalOverlayNetworkHierarchy(logicaloverlayNetwork.getClusters(), network, qep);
-    this.logicaloverlayNetwork = null;
     logger.trace("Scheduling leaf fragments alpha=" + this.alpha + " bms beta=" + this.beta);
     scheduleLeafFragments(activeOverlay);
     logger.trace("Scheduling the non-leaf fragments");
@@ -105,7 +109,12 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
          SchemaMetadataException, TypeMappingException, SNEEConfigurationException,
          SNEEException
   {
-    super(logicaloverlayNetwork, qep, network, allowDiscontinuousSensing, false);
+    super(qep.getAcquisitionInterval_bms(), qep.getBufferingFactor(), qep.getIOT(),
+        qep.getCostParameters(), qep.getQueryName(), allowDiscontinuousSensing, false);
+
+    this.network = network;
+    this.costParams = qep.getCostParameters();
+    this.tasks.clear();
 
     numberOfRundundantCycles = 
       Integer.parseInt(SNEEProperties.getSetting(
@@ -113,7 +122,6 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
 
     activeOverlay = new LogicalOverlayNetworkHierarchy(logicaloverlayNetwork, network, qep);
     activeOverlay.resetPriorities();
-    this.logicaloverlayNetwork = null;
     logger.trace("Scheduling leaf fragments alpha=" + this.alpha + " bms beta=" + this.beta);
     scheduleLeafFragments(activeOverlay);
     logger.trace("Scheduling the non-leaf fragments");
@@ -249,6 +257,27 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
         this.addSleepTask(sleepStart, sleepEnd, false);
       }
     }
+  }
+  
+  /**
+   * @return if ignoreLastSleep is true, returns the time that the last task on all nodes ends.  
+   * Otherwise returns the length of the agenda. 
+   * 
+   */
+  public final long getLength_bms(final boolean ignoreLastSleep) 
+  {
+    long tmp = 0;
+
+    final Iterator<Site> nodeIter = this.tasks.keySet().iterator();
+    while (nodeIter.hasNext()) 
+    {
+      final Site n = nodeIter.next();
+      if (this.getNextAvailableTime(n, ignoreLastSleep) > tmp) 
+      {
+        tmp = this.getNextAvailableTime(n, ignoreLastSleep);
+      }
+    }
+    return tmp; 
   }
   
   /**
@@ -414,10 +443,12 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
     
     Long startTime = handleTranmissions(sourceNode, tuplesToSend, false);
     handleRecieves(sourceNode, tuplesToSend, startTime, false);
-    handelAcks(destNodes, sourceNode, physicalNodesForlogicalNode, false);
+    handelAcks(sourceNode, physicalNodesForlogicalNode, false);
+    Site destNode = (Site) sourceNode.getOutput(0);
+    destNode = iot.getSiteFromID(destNode.getID());
     for(int cycle = 1; cycle <= numberOfRundundantCycles; cycle++)
     {
-      handelRedundantTransmissions(destNodes,  sourceNode,  physicalNodesForlogicalNode, tuplesToSend, cycle);
+      handelRedundantTransmissions(destNode,  sourceNode,  physicalNodesForlogicalNode, tuplesToSend, cycle);
       this.activeOverlay.updatePriority(sourceNode.getID());
     }
     logger.trace("Scheduled Communication task from node "
@@ -429,7 +460,7 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
   
   /**
    * handles redundant transmissions which may occur if edge failure happens
-   * @param destNodes
+   * @param destNode
    * @param trueClusterHead
    * @param physicalNodesForlogicalNode
    * @param cycle 
@@ -440,80 +471,58 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
    * @throws SNEEException 
    * @throws AgendaException 
    */
-  private void handelRedundantTransmissions(ArrayList<Site> destNodes, Site trueClusterHead, 
+  private void handelRedundantTransmissions(Site destNode, Site trueClusterHead, 
                                             ArrayList<String> physicalNodesForlogicalNode,
                                             HashSet<InstanceExchangePart> tuplesToSend, int cycle)
   throws OptimizationException, SchemaMetadataException, TypeMappingException,
   AgendaException, SNEEException, SNEEConfigurationException
   {
     Long startTimeForRedundantTransmission = this.getLength_bms(true);
-    int tuplesToWaitFor = 
-      new Double(Math.ceil(new Long(getMaxTuplesTranmitted(daf, tuplesToSend)).doubleValue()/2.0)).intValue();
-    Long timeToListenToAPacket = (long) Math.ceil(costParams.getSendPacket() * tuplesToWaitFor);
     
-    
-    //sorts out the redundant transmission of the cluster 
+    //sorts out the redundant transmission of the cluster priorityNode
     Long overhead = new Long(0);
-    Long originalFragmentTimeOverhead = new Long(0);
     
-    int cycleSize = this.activeOverlay.getActiveEquivilentNodes(trueClusterHead.getID()).size();
-    for(int InternalCycle = 0; InternalCycle < cycleSize; InternalCycle++)
+    Iterator<String> nodesInPriorityOrder = 
+      this.activeOverlay.getActiveNodesInRankedOrder(trueClusterHead.getID()).iterator();
+    ArrayList<String> nodesInActiveCluster = new ArrayList<String>();
+    nodesInActiveCluster.addAll(this.activeOverlay.getActiveEquivilentNodes(trueClusterHead.getID()));
+    
+    while(nodesInPriorityOrder.hasNext())
     {
-      Iterator<String> nodesWithinActiveLogicalNode = 
-        this.activeOverlay.getActiveEquivilentNodes(trueClusterHead.getID()).iterator();
-      boolean first = true;
-      
-      while(nodesWithinActiveLogicalNode.hasNext())
+      String nodeID = nodesInPriorityOrder.next();
+      Site priorityNode = iot.getSiteFromID(nodeID);
+      nodesInActiveCluster.remove(nodeID);
+      //sort out transmission **********************
+      CommunicationTask commTaskTx = 
+        new CommunicationTask(startTimeForRedundantTransmission, priorityNode, destNode,
+                              CommunicationTask.TRANSMIT, tuplesToSend, this.alpha, this.beta, 
+                              daf, costParams, true, iot.getSiteFromID(trueClusterHead.getOutput(0).getID()));
+      this.addTask(commTaskTx, priorityNode);
+      //sort out recieves for current cluster
+      Iterator<String> otherActiveNodes = nodesInActiveCluster.iterator();
+      while(otherActiveNodes.hasNext())
       {
-        String Nodeid = nodesWithinActiveLogicalNode.next();
-        Site currentClusterHead = iot.getSiteFromID(Nodeid);
-        
-        if(first)
-        {
-          overhead += this.scheduleSiteFragments(currentClusterHead);
-          originalFragmentTimeOverhead = this.scheduleSiteFragments(currentClusterHead);
-          first = !first;
-        }
-        
-        Site furthestDestNode = iot.getSiteFromID(this.locateMostExpensiveSite(destNodes, currentClusterHead).getID());
-        CommunicationTask commTaskTx = 
-          new CommunicationTask(startTimeForRedundantTransmission + overhead, currentClusterHead, furthestDestNode,
-                                CommunicationTask.TRANSMIT, tuplesToSend, this.alpha, this.beta, 
-                                daf, costParams, true, iot.getSiteFromID(trueClusterHead.getOutput(0).getID()));
-        this.addTask(commTaskTx, currentClusterHead);
-        
-        ArrayList<String> nodeswithinTheCluster = new ArrayList<String>();
-        nodeswithinTheCluster.addAll(this.activeOverlay.getActiveEquivilentNodes(trueClusterHead.getID()));
-        nodeswithinTheCluster.remove(Nodeid);
-        Iterator<String> siblingNodes = nodeswithinTheCluster.iterator();
-        while(siblingNodes.hasNext())
-        {
-          String sibling = siblingNodes.next();
-          Site siblingSite = iot.getSiteFromID(sibling);
-          furthestDestNode = iot.getSiteFromID(this.locateMostExpensiveSite(destNodes, siblingSite).getID());
-          CommunicationTask commTaskRx = 
-            new CommunicationTask(startTimeForRedundantTransmission + overhead, siblingSite, furthestDestNode,
-                                  CommunicationTask.RECEIVE, this.alpha, this.beta, daf, tuplesToWaitFor, 
-                                  costParams, true, iot.getSiteFromID(trueClusterHead.getOutput(0).getID()));
-          this.addTask(commTaskRx, currentClusterHead);
-        }
+        String activeNodeID = otherActiveNodes.next();
+        Site activeSite = iot.getSiteFromID(activeNodeID);
+        CommunicationTask commTaskRx = 
+          new CommunicationTask(startTimeForRedundantTransmission + overhead, priorityNode, destNode,
+                                CommunicationTask.RECEIVE,tuplesToSend, this.alpha, this.beta, daf,  
+                                costParams, true, iot.getSiteFromID(trueClusterHead.getOutput(0).getID()));
+        this.addTask(commTaskRx, activeSite);
       }
-      overhead = overhead + timeToListenToAPacket;
-    }
-    Iterator<Site> destNodesIterator = destNodes.iterator();
-    while(destNodesIterator.hasNext())
-    {
-      Site destNode = destNodesIterator.next();
-      destNode = iot.getSiteFromID(destNode.getID());
       CommunicationTask commTaskRx = 
-        new CommunicationTask(startTimeForRedundantTransmission + originalFragmentTimeOverhead, trueClusterHead, destNode,
-                              CommunicationTask.RECEIVE, tuplesToSend, this.alpha, this.beta, 
-                              daf, costParams, overhead, true, trueClusterHead);
+        new CommunicationTask(startTimeForRedundantTransmission + overhead, priorityNode, destNode,
+                              CommunicationTask.RECEIVE,tuplesToSend, this.alpha, this.beta, daf,  
+                              costParams, true, iot.getSiteFromID(trueClusterHead.getOutput(0).getID()));
       this.addTask(commTaskRx, destNode);
-    }
-    if(cycle != this.numberOfRundundantCycles)
-    {  //deal with acks for this set of tranmissions
-      handelAcks(destNodes, trueClusterHead, physicalNodesForlogicalNode, true); 
+      
+      
+      
+      if(nodesInActiveCluster.size() != 0)
+      {
+        handelAcks(priorityNode, nodesInActiveCluster, true); 
+        startTimeForRedundantTransmission = this.getLength_bms(true);
+      }
     }
   }
 
@@ -528,68 +537,50 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
    * @throws SchemaMetadataException
    * @throws TypeMappingException
    */
-  private Long handelAcks(ArrayList<Site> destNodes, Site sourceNode,
+  private Long handelAcks(Site sourceNode,
                           ArrayList<String> physicalNodesForlogicalNode,
                           boolean redundant) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException
   {
     //get source node (actually the dest ndoe of the original transmission)
     Site sourceSite = this.iot.getSiteFromID(sourceNode.getOutput(0).getID());
-    //convert array string to array site
-    //turns the child logical node into a list of destinations ites
-    ArrayList<Site> destSites = new ArrayList<Site>();
-    Iterator<String> physicalNodesForlogicalNodeIterator = physicalNodesForlogicalNode.iterator();
-    while(physicalNodesForlogicalNodeIterator.hasNext())
+    Long startTimeForAck = this.getLength_bms(true);
+    
+    //sort out child logical ndoe collection
+    ArrayList<Site> logicalNodeSites = new ArrayList<Site>();
+    Iterator<String> siblings = physicalNodesForlogicalNode.iterator();
+    while(siblings.hasNext())
     {
-      destSites.add(iot.getSiteFromID(physicalNodesForlogicalNodeIterator.next()));
+      String inputID = siblings.next();
+      Site inputSite = iot.getSiteFromID(inputID);
+      logicalNodeSites.add(inputSite);
     }
-      Site destSite = 
-        this.iot.getSiteFromID(this.locateMostExpensiveSite(destSites, sourceSite).getID());
-      Long startTimeForAck = this.getLength_bms(true);
-      ///destSite = source site, and sourceNode the dest Site. 
-      CommunicationTask commTaskAckT = 
-        new CommunicationTask(startTimeForAck, destSite , sourceSite, CommunicationTask.ACKTRANSMIT,
-                              this.alpha, this.beta, daf, 1, costParams, redundant, sourceNode);
-      this.addTask(commTaskAckT, sourceSite);
-      
-      
-      //sorts out the acks recieves for transmission
-      CommunicationTask commTaskAckR = null;
-      ArrayList<Site> logicalNodeSites = new ArrayList<Site>();
-      Iterator<String> siblings = physicalNodesForlogicalNode.iterator();
-      while(siblings.hasNext())
+    
+    sourceNode = this.locateMostExpensiveSite(logicalNodeSites, sourceSite);
+    
+    ///destSite = source site, and sourceNode the dest Site. 
+    CommunicationTask commTaskAckT = 
+      new CommunicationTask(startTimeForAck,  sourceNode, sourceSite, CommunicationTask.ACKTRANSMIT,
+                            this.alpha, this.beta, daf, 1, costParams, redundant, sourceSite, false, true);
+    this.addTask(commTaskAckT, sourceSite);
+    
+    
+    //sorts out the acks recieves for transmission
+    CommunicationTask commTaskAckR = null;
+    //handle child logical node
+    Iterator<Site> logicalNodeIterator = logicalNodeSites.iterator();
+    int lowestPrioirty = 1;
+    while(logicalNodeIterator.hasNext())
+    {
+      Site node = logicalNodeIterator.next();
+      if(this.activeOverlay.getPriority(node.getID()) >= lowestPrioirty)
       {
-        String inputID = siblings.next();
-        Site inputSite = iot.getSiteFromID(inputID);
-        logicalNodeSites.add(inputSite);
+        commTaskAckR = new CommunicationTask(startTimeForAck, node, sourceSite, 
+            CommunicationTask.ACKRECEIVE, this.alpha, this.beta, daf, 1, costParams, redundant,
+            sourceNode, false, true);
+        this.addTask(commTaskAckR, node);
       }
-      //handle child logical node
-      Iterator<Site> logicalNodeIterator = logicalNodeSites.iterator();
-      int lowestPrioirty = 1;
-      while(logicalNodeIterator.hasNext())
-      {
-        Site node = logicalNodeIterator.next();
-        if(this.activeOverlay.getPriority(node.getID()) >= lowestPrioirty)
-        {
-          commTaskAckR = new CommunicationTask(startTimeForAck, node,  sourceSite,
-              CommunicationTask.ACKRECEIVE, this.alpha, this.beta, daf, 1, costParams, redundant,
-              sourceNode);
-          this.addTask(commTaskAckR, node);
-        }
-      }
-      //handle current logical overlay
-      Iterator<Site> currentLogicalNodeEquivNodesIterator = destNodes.iterator();
-      while(currentLogicalNodeEquivNodesIterator.hasNext())
-      {
-        Site currentNode = currentLogicalNodeEquivNodesIterator.next();
-        if(this.activeOverlay.isActive(currentNode) && !this.activeOverlay.isClusterHead(currentNode.getID()))
-        {
-          Site cNode = iot.getSiteFromID(currentNode.getID());
-          commTaskAckR = new CommunicationTask(startTimeForAck, cNode, sourceSite,
-              CommunicationTask.ACKRECEIVE, this.alpha, this.beta, daf, 1, costParams, redundant, sourceNode);
-          this.addTask(commTaskAckR, cNode);
-        }
-      }
+    }
     return startTimeForAck;
   }
 
@@ -636,7 +627,7 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
     final long startTime = this.getLength_bms(true);
     final CommunicationTask commTaskTx = 
       new CommunicationTask(startTime, sourceNode, destNode,CommunicationTask.TRANSMIT,
-                            tuplesToSend, this.alpha, this.beta, daf, costParams, redundant, destNode);
+                            tuplesToSend, this.alpha, this.beta, daf, costParams, redundant, destNode, false, false);
     this.addTask(commTaskTx, sourceNode);
     if(redundant)
     {
@@ -649,7 +640,7 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
         Site node = this.iot.getSiteFromID(nodeID);
         final CommunicationTask commTaskRx = 
           new CommunicationTask(startTime, sourceNode, node, CommunicationTask.RECEIVE,
-                                this.alpha, this.beta, daf, 1, costParams, true, sourceNode);
+                                this.alpha, this.beta, daf, 1, costParams, true, sourceNode, false, false);
         this.addTask(commTaskRx, node);
       }
     }
@@ -735,6 +726,7 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
       node within the logical node*/
       ArrayList<String> physicalNodesForlogicalNode = 
         this.activeOverlay.getEquivilentNodes(site.getID());
+      physicalNodesForlogicalNode.remove(site.getID());
       Iterator<String> physicalNodesForlogicalNodeIterator = 
         physicalNodesForlogicalNode.iterator();
       while(physicalNodesForlogicalNodeIterator.hasNext())
@@ -771,4 +763,66 @@ public class UnreliableChannelAgendaReduced extends UnreliableChannelAgenda
     }
     return result;
   }
+  
+  public Iterator<Task> taskIteratorOrderedByTime()
+  {
+    ArrayList<Task> orderedTasks = new  ArrayList<Task>();
+    ArrayList<Long> startTimes = this.getStartTimes();
+    Collections.sort(startTimes);
+    Iterator<Long> siteTimeIterator = startTimes.iterator();
+    while(siteTimeIterator.hasNext())
+    {
+      Long startTime = siteTimeIterator.next();
+      Iterator<Task> taskIterator = this.taskIterator(startTime);
+      boolean comms = false;
+      //determine if the tasks in this start time are communication tasks
+      while(taskIterator.hasNext())
+      {
+        Task task = taskIterator.next();
+        if(task instanceof CommunicationTask)
+          comms = true;
+      }
+      //if tasks are comm tasks, then locate transmission task first.
+      if(comms)
+      {
+        //locate transmission
+        taskIterator = this.taskIterator(startTime);
+        while(taskIterator.hasNext())
+        {
+          Task task = taskIterator.next();
+          if(task instanceof InstanceFragmentTask)
+            System.out.println();
+          CommunicationTask cTask = (CommunicationTask) task;
+          if(cTask.getMode() == CommunicationTask.TRANSMIT ||
+             cTask.getMode() == CommunicationTask.ACKTRANSMIT )
+          {
+            orderedTasks.add(task);
+          }
+        }
+        //store all receives (no particular order)
+        taskIterator = this.taskIterator(startTime);
+        while(taskIterator.hasNext())
+        {
+          Task task = taskIterator.next();
+          CommunicationTask cTask = (CommunicationTask) task;
+          if(cTask.getMode() == CommunicationTask.ACKRECEIVE ||
+             cTask.getMode() == CommunicationTask.RECEIVE )
+          {
+            orderedTasks.add(task);
+          }
+        }
+      }
+      else //not comms, just add them in any order
+      {
+        taskIterator = this.taskIterator(startTime);
+        while(taskIterator.hasNext())
+        {
+          Task task = taskIterator.next();
+          orderedTasks.add(task);
+        }
+      }
+    }
+    return orderedTasks.iterator();
+  }
+
 }
