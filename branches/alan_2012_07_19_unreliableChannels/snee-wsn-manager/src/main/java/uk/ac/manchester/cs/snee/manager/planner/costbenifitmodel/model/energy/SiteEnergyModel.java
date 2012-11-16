@@ -48,8 +48,8 @@ public class SiteEnergyModel extends Model
    {
      double sumEnergy = 0;
      long cpuActiveTimeBms = 0;
-     
      double sensorEnergy = 0;
+     site =  this.agenda.getSiteByID(site.getID());
      ArrayList<Task> siteTasks = this.agenda.getTasks().get(site);
      //not within the QEP. so no cost
      if(siteTasks == null)

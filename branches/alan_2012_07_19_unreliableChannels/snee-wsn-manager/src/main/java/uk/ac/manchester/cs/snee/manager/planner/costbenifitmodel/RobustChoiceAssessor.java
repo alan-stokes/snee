@@ -320,7 +320,8 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
       .generateImage(outputFolder.toString(), "before" + (globalFailedNodes.size()) + " adaptations");
       
       SiteOverlayRobustEnergyModel siteModel = 
-        new SiteOverlayRobustEnergyModel(rQEP.getUnreliableAgenda(), current, networkSize, globalFailedNodes);
+        new SiteOverlayRobustEnergyModel(rQEP.getUnreliableAgenda(), current, networkSize, 
+                                         globalFailedNodes, network, this._metadataManager.getCostParameters());
       
       Iterator<Node> siteIter = this.network.siteIterator();
       

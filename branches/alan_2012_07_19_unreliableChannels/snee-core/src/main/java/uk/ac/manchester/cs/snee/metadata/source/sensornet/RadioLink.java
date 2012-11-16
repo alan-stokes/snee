@@ -63,6 +63,8 @@ public class RadioLink extends EdgeImplementation implements Edge {
      */
     private double latencyCost;
     
+    
+    private double distanceCost;
     /**
      * Constructor for radio link.
      * @param id The identifier for the edge in the graph
@@ -78,6 +80,17 @@ public class RadioLink extends EdgeImplementation implements Edge {
       this.setEnergyCost(clone.getEnergyCost());
       this.setLatencyCost(clone.getLatencyCost());
       this.setRadioLossCost(clone.getRadioLossCost());
+      this.setDistanceCost(clone.getDistanceCost());
+    }
+
+    public void setDistanceCost(Double distanceCost2)
+    {
+      this.distanceCost = distanceCost2;
+    }
+
+    public Double getDistanceCost()
+    {
+      return this.distanceCost;
     }
 
     /**

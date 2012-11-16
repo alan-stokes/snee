@@ -101,17 +101,21 @@ public class TopologyReader {
 				    node, "@energy"));
 			    final double latencyCost = Double.parseDouble(Utils.doXPathStrQuery(
 			    	node, "@time"));
+			    
+			    final double distance = latencyCost;
 		
 			    RadioLink link = sensornet.addRadioLink(
 			    		sourceID, destID, false, radioLossCost);
 			    link.setEnergyCost(energyCost * energyScalingFactor);
 			    link.setLatencyCost(latencyCost * timeScalingFactor);
+			    link.setDistanceCost(distance);
 			     
 			    if (bidirectional) {
 			    	link = sensornet.addRadioLink(
 			    			destID, sourceID, true, radioLossCost);
 				    link.setEnergyCost(energyCost * energyScalingFactor);
 				    link.setLatencyCost(latencyCost * timeScalingFactor);
+				    link.setDistanceCost(distance);
 			    }
 			}
     	} catch (Exception e) {

@@ -9,7 +9,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.LogicalOverlayNetworkHierarchy;
 
-public class ChannelModelReducedSite implements Serializable
+public class ChannelModelSite implements Serializable
 {
   /**
    * serilised id
@@ -36,7 +36,7 @@ public class ChannelModelReducedSite implements Serializable
    * @param overlayNetwork
    * @param position
    */
-  public ChannelModelReducedSite(HashMap<String, Integer> expectedPackets, String siteID,
+  public ChannelModelSite(HashMap<String, Integer> expectedPackets, String siteID,
                                  LogicalOverlayNetworkHierarchy overlayNetwork, int position,
                                  ArrayList<Task> tasks)
   {

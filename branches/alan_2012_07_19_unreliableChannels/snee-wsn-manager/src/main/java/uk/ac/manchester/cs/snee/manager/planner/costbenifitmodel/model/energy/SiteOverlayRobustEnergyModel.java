@@ -1,4 +1,6 @@
 package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -17,27 +19,29 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.FragmentTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RadioOnTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
-import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModelReduced;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModel;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.LogicalOverlayNetworkHierarchy;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.UnreliableChannelAgendaReduced;
+import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 
 
 public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
 { 
   
-   private ChannelModelReduced channelModel = null;
+   private ChannelModel channelModel = null;
    public SiteOverlayRobustEnergyModel(UnreliableChannelAgendaReduced agenda,
                                       LogicalOverlayNetworkHierarchy overlayNetwork,
-                                      int networkSize,
-                                      ArrayList<String> failedNodes)
-   throws SNEEConfigurationException
+                                      int networkSize, ArrayList<String> failedNodes,
+                                      Topology network, CostParameters costs)
+   throws SNEEConfigurationException, IOException
    {
      super(agenda, overlayNetwork);
-     channelModel = new ChannelModelReduced(overlayNetwork, agenda, networkSize, failedNodes);
+     channelModel = new ChannelModel(overlayNetwork, agenda, networkSize, failedNodes, network, costs);
    }
    
    /**

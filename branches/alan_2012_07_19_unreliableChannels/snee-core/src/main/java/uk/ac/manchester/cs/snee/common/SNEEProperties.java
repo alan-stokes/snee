@@ -311,7 +311,7 @@ public class SNEEProperties {
     }
     else if(propName.equals("wsn_manager.unreliable.channels.clean.radio"))
     {
-      setSetting(propName, "true");
+      setSetting(propName, "false");
       return getSetting(propName);
     }
     else if(propName.equals("wsn_manager.unreliable.channels.resilientlevel"))
@@ -324,6 +324,34 @@ public class SNEEProperties {
       setSetting(propName, "1");
       return getSetting(propName);
     }
+    else if(propName.equals("wsn_manager.unreliable.channels.noiseModel"))
+    {
+      setSetting(propName, "src/main/resources/noiseFiles/meyer-heavy.txt");
+      return  getSetting(propName);
+    }
+    else if(propName.equals("wsn_manager.unreliable.channels.transmissionPower"))
+    {
+      setSetting(propName, "-12");
+      return  getSetting(propName);
+    }
+    else if(propName.equals("wsn_manager.unreliable.channels.veriableTransmissionPower"))
+    {
+      setSetting(propName, "false");
+      return  getSetting(propName);
+    }
+    else if(propName.equals("wsn_manager.unreliable.channels.signalFrequency"))
+    {//in megahertz
+      setSetting(propName, "2400");
+      return  getSetting(propName);
+    }
+    else if(propName.equals("wsn_manager.unreliable.channels.pathLossExponent"))
+    {
+      setSetting(propName, "2");
+      return  getSetting(propName);
+    }
+    
+    
+    
     
     else return null;
   }

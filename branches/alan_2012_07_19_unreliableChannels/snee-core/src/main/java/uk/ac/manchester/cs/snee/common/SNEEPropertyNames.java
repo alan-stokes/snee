@@ -282,6 +282,32 @@ public final class SNEEPropertyNames {
   public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_REDUNDANTCYCLES = "wsn_manager.unreliable.channels.redundantcycles";
   
   
+  /**
+   * used by the unreliable channel agenda to determine which noise model to use
+   */
+  public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_NOISEMODEL = "wsn_manager.unreliable.channels.noiseModel";
+  
+  /**
+   * used by the unreliable channel agenda to determine signal strength
+   */
+  public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_TRANSMISSIONPOWER = "wsn_manager.unreliable.channels.transmissionPower";
+
+  /**
+   * used by the unreliable channel agenda to determine signal strength
+   */
+  public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_VERIABLEPOWER = "wsn_manager.unreliable.channels.veriableTransmissionPower";
+
+  /**
+   * used by the unreliable channel agenda to determine signal strength
+   */
+  public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_SIGNALFREQUENCY = "wsn_manager.unreliable.channels.signalFrequency";
+
+  /**
+   * used by the unreliable channel agenda to determine signal strength
+   */
+  public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_PATHLOSSEXPONENT = "wsn_manager.unreliable.channels.pathLossExponent";
+  
+  
 }
 
 
