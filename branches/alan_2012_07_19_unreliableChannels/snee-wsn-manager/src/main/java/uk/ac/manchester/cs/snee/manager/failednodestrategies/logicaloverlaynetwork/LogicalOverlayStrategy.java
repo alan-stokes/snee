@@ -36,10 +36,10 @@ import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwo
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetworkUtils;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.LogicalOverlayNetworkHierarchy;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.LogicalOverlayNetworkHierarchy;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.UnreliableChannelAgendaReduced;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.UnreliableChannelAgendaReducedUtils;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgenda;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgendaUtils;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -607,9 +607,9 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
         RobustSensorNetworkQueryPlan rQEP = (RobustSensorNetworkQueryPlan) currentQEP;
         boolean allowDiscontinuousSensing = 
           SNEEProperties.getBoolSetting(SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
-        UnreliableChannelAgendaReduced newAgenda = 
-          new UnreliableChannelAgendaReduced(overlay, currentQEP, network, allowDiscontinuousSensing);
-        new UnreliableChannelAgendaReducedUtils(newAgenda, clonedIOT, false, new ArrayList<String>())
+        UnreliableChannelAgenda newAgenda = 
+          new UnreliableChannelAgenda(overlay, currentQEP, network, allowDiscontinuousSensing);
+        new UnreliableChannelAgendaUtils(newAgenda, clonedIOT, false, new ArrayList<String>())
         .generateImage(outputFolder.toString(), "finished Agenda");
         RobustSensorNetworkQueryPlan newRQEP = 
           new RobustSensorNetworkQueryPlan(currentQEP, newAgenda.getActiveLogicalOverlay(), 

@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved;
+package uk.ac.manchester.cs.snee.manager.planner.unreliablechannels;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
 
 
 
-public class UnreliableChannelAgendaReduced extends AgendaIOT
+public class UnreliableChannelAgenda extends AgendaIOT
 {
   /**
    * serialVersionUID
@@ -51,13 +51,13 @@ public class UnreliableChannelAgendaReduced extends AgendaIOT
    * Logger for this class.
    */
   private final static Logger logger =
-    Logger.getLogger(UnreliableChannelAgendaReduced.class.getName());
+    Logger.getLogger(UnreliableChannelAgenda.class.getName());
   
   private LogicalOverlayNetworkHierarchy activeOverlay;
   private int numberOfRundundantCycles =0;
   private Topology network = null;
   
-  public UnreliableChannelAgendaReduced(LogicalOverlayNetwork logicaloverlayNetwork,
+  public UnreliableChannelAgenda(LogicalOverlayNetwork logicaloverlayNetwork,
                                  SensorNetworkQueryPlan qep, Topology network,
                                  boolean allowDiscontinuousSensing)
   throws AgendaException, AgendaLengthException, OptimizationException, 
@@ -84,7 +84,7 @@ public class UnreliableChannelAgendaReduced extends AgendaIOT
     logger.trace("Scheduled final sleep task");
     scheduleFinalSleepTask();
     
-    long length = this.getLength_bms(UnreliableChannelAgendaReduced.INCLUDE_SLEEP);
+    long length = this.getLength_bms(UnreliableChannelAgenda.INCLUDE_SLEEP);
     logger.trace("Agenda alpha=" + this.alpha + " beta=" + this.beta + 
                  " alpha*beta = " + this.alpha * this.beta + " length="+length);
     
@@ -102,7 +102,7 @@ public class UnreliableChannelAgendaReduced extends AgendaIOT
     }
   }
   
-  public UnreliableChannelAgendaReduced(LogicalOverlayNetworkHierarchy logicaloverlayNetwork,
+  public UnreliableChannelAgenda(LogicalOverlayNetworkHierarchy logicaloverlayNetwork,
                                         SensorNetworkQueryPlan qep, Topology network,
                                         boolean allowDiscontinuousSensing)
   throws AgendaException, AgendaLengthException, OptimizationException, 
@@ -130,7 +130,7 @@ public class UnreliableChannelAgendaReduced extends AgendaIOT
     logger.trace("Scheduled final sleep task");
     scheduleFinalSleepTask();
     
-    long length = this.getLength_bms(UnreliableChannelAgendaReduced.INCLUDE_SLEEP);
+    long length = this.getLength_bms(UnreliableChannelAgenda.INCLUDE_SLEEP);
     logger.trace("Agenda alpha=" + this.alpha + " beta=" + this.beta + 
     " alpha*beta = " + this.alpha * this.beta + " length="+length);
     

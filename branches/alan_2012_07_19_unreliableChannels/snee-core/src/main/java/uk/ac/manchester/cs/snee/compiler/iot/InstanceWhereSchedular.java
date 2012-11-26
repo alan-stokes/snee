@@ -30,6 +30,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyUtils;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperatorImpl;
 
@@ -313,6 +314,30 @@ public class InstanceWhereSchedular
     {
       InstanceFragment instance = InstanceFragmentIterator.next();  
       InstanceFragment parent = instance.getNextHigherFragment();
+      String extent = null;
+      if(instance.containsOperatorType(SensornetAcquireOperator.class))
+      {
+        String acqExtent = 
+          instance.getLowestOperator().getSensornetOperator().getLogicalOperator().
+                                                 getAttributes().get(1).toString();
+        extent = acqExtent;
+      }
+      if(instance.containsOperatorType(SensornetNestedLoopJoinOperator.class))
+      {
+        Iterator<InstanceExchangePart> exs = instance.getSite().getInstanceExchangeComponents().iterator();
+        while(exs.hasNext())
+        {
+          InstanceExchangePart ex = exs.next();
+          String tempExtent = "";
+          if(ex.getComponentType().equals(ExchangePartType.CONSUMER) &&
+              ex.getDestFragID().equals(instance.getFragID()))
+          {
+            String extIt = ex.getExtent();
+            tempExtent = tempExtent.concat(extIt);
+          }
+          extent = tempExtent;
+        }
+      }
       
       if(!(instance.getRootOperator().getSensornetOperator() instanceof SensornetDeliverOperator))
       {       
@@ -327,11 +352,12 @@ public class InstanceWhereSchedular
           {
             Site currentPathSite = routeIterator.next();
             InstanceExchangePart part = null;
+            
             if(currentPathSite.getID().equals(instance.getSite().getID()))
             {
               part = new InstanceExchangePart(instance, instance.getSite(), parent, parent.getSite(), 
                                               currentPathSite, ExchangePartType.PRODUCER, false, 
-                                              null, costs);
+                                              null, costs, extent);
               lastPart = part;
               instance.setParentExchange(part);
               iot.addOpInstToSite(part, currentPathSite);
@@ -342,7 +368,7 @@ public class InstanceWhereSchedular
               {
                 part = new InstanceExchangePart(instance, instance.getSite(), parent, parent.getSite(), 
                                                 currentPathSite, ExchangePartType.CONSUMER, false, 
-                                                lastPart, costs);
+                                                lastPart, costs, extent);
                 lastPart = part;
                 parent.addChildExchange(part);
                 iot.addOpInstToSite(part, currentPathSite);
@@ -352,7 +378,7 @@ public class InstanceWhereSchedular
               {
                 part = new InstanceExchangePart(instance, instance.getSite(), parent, parent.getSite(), 
                                                 currentPathSite, ExchangePartType.RELAY, false, 
-                                                lastPart, costs);
+                                                lastPart, costs, extent);
                 lastPart = part;
                 iot.addOpInstToSite(part, currentPathSite);
               }
@@ -365,11 +391,11 @@ public class InstanceWhereSchedular
           InstanceExchangePart part 
           = new InstanceExchangePart(instance, instance.getSite(), parent, parent.getSite(), 
                                      parent.getSite(), ExchangePartType.PRODUCER, false, 
-                                     null, costs);
+                                     null, costs, extent);
           InstanceExchangePart part2 
           = new InstanceExchangePart(instance, instance.getSite(), parent, parent.getSite(), 
                                      parent.getSite(), ExchangePartType.CONSUMER, false, 
-                                     part, costs);
+                                     part, costs, extent);
           instance.setParentExchange(part);
           parent.addChildExchange(part2);
           iot.addOpInstToSite(part, instance.getSite());

@@ -22,13 +22,14 @@ import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
-import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
+//import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.LogicalOverlayStrategy;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessor;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorUtils;
-import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.RobustChoiceAssessor;
+//import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.RobustChoiceAssessor;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModel;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.SuccessorRelationManager;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelManager;
@@ -400,7 +401,8 @@ public class Planner extends AutonomicManagerComponent
           Site dest = pathIterator.next();
           System.out.print(source + " -" + 
               wsnTopology.getLinkEnergyCost((Site)sourceNode, (Site)dest) +
-              "> " + dest + "(" + (wsnTopology.getLinkEnergyCost((Site)sourceNode, (Site)dest) - maxCost) + ")" + " -> ");
+              "> " + dest + "(" + 
+              (wsnTopology.getLinkEnergyCost((Site)sourceNode, (Site)dest) - maxCost) + ")" + " -> ");
           source  = dest;
           System.out.print("\n");
         }
@@ -426,10 +428,22 @@ public class Planner extends AutonomicManagerComponent
       unreliableChannelManager.generateEdgeRobustQEP(qep, manager.getWsnTopology());
     LogicalOverlayStrategy local = new LogicalOverlayStrategy(manager, _metadata, _metadataManager);
     local.initilise(rQEP, 1, rQEP.getLogicalOverlayNetwork());
-    Adaptation storage = new Adaptation(rQEP, rQEP, StrategyIDEnum.Unreliable, 0);
-    RobustChoiceAssessor assessor = new RobustChoiceAssessor(_metadata, _metadataManager, plannerFolder, this.manager.getWsnTopology());
-    assessor.assessOverlayChoice(storage, runningSites, rQEP.getLogicalOverlayNetwork(), local, manager.getWsnTopology().getMaxNodeID());
-    System.out.println("new robust lifetime = " + (storage.getLifetimeEstimate() / (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000)));
+  //  Adaptation storage = new Adaptation(rQEP, rQEP, StrategyIDEnum.Unreliable, 0);
+  //  RobustChoiceAssessor assessor = 
+    //  new RobustChoiceAssessor(_metadata, _metadataManager, 
+    //                           plannerFolder, this.manager.getWsnTopology());
+ //   ChannelModel channelModel = 
+  //    new ChannelModel(rQEP.getLogicalOverlayNetwork(), rQEP.getUnreliableAgenda(), 
+   //                    manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
+  //                     this._metadataManager.getCostParameters());
+    
+    manager.simulateRunOfRQEP(rQEP, qep);
+   // assessor.assessOverlayChoice(storage, runningSites, rQEP.getLogicalOverlayNetwork(), 
+         //                        local, channelModel);
+    
+   // System.out.println("new robust lifetime = " + 
+               //        (storage.getLifetimeEstimate() / 
+                        //   (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000)));
     return rQEP;
   }
   

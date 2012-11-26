@@ -386,7 +386,6 @@ public class CPMModel
       delta = new Long(startTime - NoiseModelConstants.NOISE_HISTORY -1).intValue();
     else
       delta = new Long(startTime - node.getLastTimeNoiseGenerated()).intValue();
-    delta = delta / 1000;
     // if at the same time point, use same noise value
     if(delta == 0)
       noise = node.getLastNoiseVal();
@@ -398,7 +397,6 @@ public class CPMModel
       {
         previousNoise = currentNoise;
         currentNoise = simNodeGen(node);
-        System.out.println(currentNoise);
         arrangeKey(node);
         ArrayList<Integer> key = node.getKey();
         key.set(NoiseModelConstants.NOISE_HISTORY -1, search_bin_num(currentNoise));

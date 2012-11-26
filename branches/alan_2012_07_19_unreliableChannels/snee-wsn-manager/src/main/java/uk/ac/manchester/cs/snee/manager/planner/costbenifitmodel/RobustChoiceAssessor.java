@@ -23,13 +23,14 @@ import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwo
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetworkUtils;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModel;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.AdaptationEnergyModel;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteEnergyModel;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteOverlayRobustEnergyModel;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.time.TimeModel;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.LogicalOverlayNetworkHierarchy;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.LogicalOverlayNetworkHierarchy;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.UnreliableChannelAgendaReducedUtils;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgendaUtils;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -265,7 +266,7 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
                                   HashMap<String, RunTimeSite> runningSites, 
                                   LogicalOverlayNetworkHierarchy current,
                                   LogicalOverlayStrategy failedNodeStrategyLocal,
-                                  int networkSize) 
+                                  ChannelModel channelModel) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException, IOException, CodeGenerationException, SNEEConfigurationException
   {
@@ -281,7 +282,7 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
     energyModelOverlay.initilise(imageGenerationFolder, _metadataManager, runningSites);
     adapt.setTimeCost(timeModelOverlay.calculateTimeCost(adapt, current));
     adapt.setEnergyCost(energyModelOverlay.calculateEnergyCost(adapt, current));
-    adapt.setLifetimeEstimate(this.calculateEstimatedLifetimeOverlay(adapt, current, failedNodeStrategyLocal, networkSize));
+    adapt.setLifetimeEstimate(this.calculateEstimatedLifetimeOverlay(adapt, current, failedNodeStrategyLocal, channelModel));
     adapt.setRuntimeCost(calculateEnergyQEPExecutionCost());
   }
   
@@ -300,7 +301,7 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
    * @throws FileNotFoundException 
    */
   private Double calculateEstimatedLifetimeOverlay(Adaptation adapt, LogicalOverlayNetworkHierarchy current,
-      LogicalOverlayStrategy failedNodeStrategyLocal, int networkSize)
+      LogicalOverlayStrategy failedNodeStrategyLocal, ChannelModel channelModel)
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException, SNEEConfigurationException, FileNotFoundException, IOException
   {
@@ -316,11 +317,11 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
     
     while(adapted)
     {
-      new UnreliableChannelAgendaReducedUtils(rQEP.getUnreliableAgenda(), rQEP.getLogicalOverlayNetwork().getQep().getIOT(), false, new ArrayList<String>())
+      new UnreliableChannelAgendaUtils(rQEP.getUnreliableAgenda(), rQEP.getLogicalOverlayNetwork().getQep().getIOT(), false, new ArrayList<String>())
       .generateImage(outputFolder.toString(), "before" + (globalFailedNodes.size()) + " adaptations");
       
       SiteOverlayRobustEnergyModel siteModel = 
-        new SiteOverlayRobustEnergyModel(rQEP.getUnreliableAgenda(), current, networkSize, 
+        new SiteOverlayRobustEnergyModel(rQEP.getUnreliableAgenda(), current, channelModel, 
                                          globalFailedNodes, network, this._metadataManager.getCostParameters());
       
       Iterator<Node> siteIter = this.network.siteIterator();
@@ -351,12 +352,12 @@ public class RobustChoiceAssessor extends ChoiceAssessor implements Serializable
           }
         }
       }
-      new UnreliableChannelAgendaReducedUtils(rQEP.getUnreliableAgenda(), rQEP.getLogicalOverlayNetwork().getQep().getIOT(), false, new ArrayList<String>())
+      new UnreliableChannelAgendaUtils(rQEP.getUnreliableAgenda(), rQEP.getLogicalOverlayNetwork().getQep().getIOT(), false, new ArrayList<String>())
       .generateImage(outputFolder.toString(), "before" + (globalFailedNodes.size() -1) + " failures");
       new ChoiceAssessorUtils(current, runningSites, adapt.getNewQep().getRT()).exportWithEnergies(
                       AssessmentFolder.toString() + sep + "Node" + failedSite , null);
       globalFailedNodes.add(failedSite);
-      new UnreliableChannelAgendaReducedUtils(rQEP.getUnreliableAgenda(), rQEP.getLogicalOverlayNetwork().getQep().getIOT(), false, new ArrayList<String>())
+      new UnreliableChannelAgendaUtils(rQEP.getUnreliableAgenda(), rQEP.getLogicalOverlayNetwork().getQep().getIOT(), false, new ArrayList<String>())
       .generateImage(outputFolder.toString(), "with" + (globalFailedNodes.size() -1) + " failures");
       //if can adapt, adapt and repeat
       if(failedNodeStrategyLocal.canAdapt(failedSite, current))

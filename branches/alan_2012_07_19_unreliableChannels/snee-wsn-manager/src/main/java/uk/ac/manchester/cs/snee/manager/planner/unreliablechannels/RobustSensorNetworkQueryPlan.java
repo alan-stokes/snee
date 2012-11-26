@@ -4,8 +4,6 @@ import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryPlanMetadata;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.LogicalOverlayNetworkHierarchy;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.UnreliableChannelAgendaReduced;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
@@ -25,7 +23,7 @@ public class RobustSensorNetworkQueryPlan extends SensorNetworkQueryPlan {
 	 */
 	private final static Logger logger = Logger.getLogger(RobustSensorNetworkQueryPlan.class.getName());
 	private LogicalOverlayNetworkHierarchy logicaloverlaynetwork;
-	private UnreliableChannelAgendaReduced overlayAgenda;
+	private UnreliableChannelAgenda overlayAgenda;
 
   /**
 	 * Constructor
@@ -35,7 +33,7 @@ public class RobustSensorNetworkQueryPlan extends SensorNetworkQueryPlan {
 	 */
 	public RobustSensorNetworkQueryPlan(SensorNetworkQueryPlan qep, 
 	                                    LogicalOverlayNetworkHierarchy logicaloverlaynetwork, 
-	                                    UnreliableChannelAgendaReduced overlayAgenda) 
+	                                    UnreliableChannelAgenda overlayAgenda) 
 	throws  SchemaMetadataException, TypeMappingException 
 	{
 		super(qep.getDLAF(), qep.getRT(), qep.getDAF(), qep.getIOT(), qep.getAgenda(), qep.getQueryName());
@@ -62,7 +60,7 @@ public class RobustSensorNetworkQueryPlan extends SensorNetworkQueryPlan {
 	/**
 	 * @return the agenda associated with the logical overlay
 	 */
-	public  UnreliableChannelAgendaReduced getUnreliableAgenda()
+	public  UnreliableChannelAgenda getUnreliableAgenda()
 	{
 	  return this.overlayAgenda;
 	}

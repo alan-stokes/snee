@@ -19,6 +19,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.logical.CardinalityType;
 import uk.ac.manchester.cs.snee.operators.logical.DeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 
 public class InstanceFragment implements Serializable
 {
@@ -266,7 +267,7 @@ public class InstanceFragment implements Serializable
   final Iterator<InstanceOperator> i = this.operators.iterator();
   while (i.hasNext()) {
       final InstanceOperator op = i.next();
-      if (c.isInstance(op)) {
+      if (c.isInstance(op.getSensornetOperator())) {
     return true;
       }
   }
@@ -524,6 +525,18 @@ return this.getChildFragments().size();
   public boolean isCloned()
   {
     return cloned;
+  }
+
+  public InstanceOperator getOperator(Class<SensornetAcquireOperator> opClass)
+  {
+    Iterator<InstanceOperator> opIterator = this.operators.iterator();
+    while(opIterator.hasNext())
+    {
+      InstanceOperator op = opIterator.next();
+      if(opClass.isInstance(op))
+        return op;  
+    }
+    return null;
   }
  
  

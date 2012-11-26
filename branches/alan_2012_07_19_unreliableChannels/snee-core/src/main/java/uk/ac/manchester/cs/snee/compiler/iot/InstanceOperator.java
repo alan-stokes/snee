@@ -26,6 +26,10 @@ public class InstanceOperator extends NodeImplementation implements Node
   private static int counter = 0;
   private float selectivity = 1;
   private InstanceFragment corraspondingFragment = null;
+  /**
+   * used to determine number of tuples from packets
+   */
+  private Integer lastPacketTupleCount = 0;
 
   public InstanceOperator()
   {
@@ -197,6 +201,21 @@ public class InstanceOperator extends NodeImplementation implements Node
   public InstanceFragment getCorraspondingFragment()
   {
     return corraspondingFragment;
+  }
+  
+  public void setLastPacketTupleCount(Integer lastPacketTupleCount)
+  {
+    this.lastPacketTupleCount = lastPacketTupleCount;
+  }
+
+  public Integer getLastPacketTupleCount()
+  {
+    return lastPacketTupleCount;
+  }
+
+  public String toString()
+  {
+    return this.id;
   }
  
 }

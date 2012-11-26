@@ -336,7 +336,7 @@ public class SNEEProperties {
     }
     else if(propName.equals("wsn_manager.unreliable.channels.veriableTransmissionPower"))
     {
-      setSetting(propName, "false");
+      setSetting(propName, "true");
       return  getSetting(propName);
     }
     else if(propName.equals("wsn_manager.unreliable.channels.signalFrequency"))
@@ -349,6 +349,12 @@ public class SNEEProperties {
       setSetting(propName, "2");
       return  getSetting(propName);
     }
+    else if(propName.equals("wsn_manager.unreliable.channels.simulationLength"))
+    {
+      setSetting(propName, "200");
+      return  getSetting(propName);
+    }
+    
     
     
     

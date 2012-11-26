@@ -7,10 +7,12 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 import uk.ac.manchester.cs.snee.compiler.costmodels.CostModel;
 import uk.ac.manchester.cs.snee.compiler.costmodels.CostModelDataStructure;
+import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.expressions.Attribute;
 
@@ -32,6 +34,13 @@ public class CardinalityEstimatedCostModel extends CostModel
     agenda = sqep.getAgendaIOT();
     routingTree = sqep.getRT();
     instanceDAF = sqep.getIOT(); 
+  }
+  
+  public CardinalityEstimatedCostModel(AgendaIOT agenda, RT routingTree,  IOT iot)
+  {
+    this.agenda = agenda;
+    this.routingTree = routingTree;
+    instanceDAF = iot; 
   }
   
   public float returnEpochResult() throws OptimizationException 
@@ -278,5 +287,175 @@ public class CardinalityEstimatedCostModel extends CostModel
         outputs.add(input);
     }
     return outputs;
+  }
+
+  @Override
+  protected CostModelDataStructure deliverModel(InstanceOperator operator,
+                                                ArrayList<Integer> inputs) 
+  throws OptimizationException
+  {
+    if(operator.isNodeDead())
+      return new CardinalityDataStructure(0);
+    return new CardinalityDataStructure(inputs.get(0).floatValue());
+  }
+
+  @Override
+  protected CostModelDataStructure exchangeCard(InstanceOperator operator,
+                                                ArrayList<Integer> inputs)
+  throws OptimizationException
+  {
+    if(operator.isNodeDead())
+      return new CardinalityDataStructure(0);
+    return new CardinalityDataStructure(inputs.get(0).floatValue());
+  }
+
+  @Override
+  protected CostModelDataStructure windowCard(InstanceOperator operator,
+                                              ArrayList<Integer> inputs)
+  throws OptimizationException
+  {
+    if(operator.isNodeDead())
+      return new CardinalityDataStructure(0);
+    
+    WindowOperator logicalOp = (WindowOperator) operator.getSensornetOperator().getLogicalOperator();
+    float to = logicalOp.getTo();
+    float from = logicalOp.getFrom();
+    float length = (to-from)+1;
+    float slide;
+    
+    if(logicalOp.getTimeScope())
+      slide = logicalOp.getTimeSlide();
+    else
+      slide = logicalOp.getRowSlide();
+       
+    CardinalityDataStructure input = new CardinalityDataStructure(inputs.get(0));
+      
+    float noWindows;
+    if(slide == 0)//now window, to stop infinity
+      noWindows = 1;
+    else
+      noWindows = length / slide;
+    
+    float winCard = input.getCard();
+    CardinalityDataStructure output = new CardinalityDataStructure(noWindows, winCard);
+    output.setExtentName(input.getExtentName());
+
+   //System.out.println(inputOperator.getID() + " inputCard= " + input);
+   //System.out.println(inputOperator.getID() + " outputCard= " + output);
+    return output;
+  }
+
+  @Override
+  protected CostModelDataStructure selectCard(InstanceOperator operator,
+                                              ArrayList<Integer> inputs) 
+  throws OptimizationException
+  {
+    if(operator.isNodeDead())
+      return new CardinalityDataStructure(0);
+    
+    CardinalityDataStructure input = new CardinalityDataStructure(inputs.get(0).floatValue());
+    CardinalityDataStructure output;
+    if(input.isStream())
+    {
+      output = new CardinalityDataStructure(input.getCardOfStream() * operator.selectivity());
+      //System.out.println(inputOperator.getID() + " inputCard= " + input);
+      //System.out.println(inputOperator.getID() + " outputCard= " + output);
+    }
+    else
+    {
+      float windowStreamCard = input.getCardOfStream();
+      float windowCard = input.getWindowCard() * operator.selectivity();
+      output = new CardinalityDataStructure(windowStreamCard, windowCard);
+      //System.out.println(inputOperator.getID() + " inputCard= " + input.getCard());
+      //System.out.println(inputOperator.getID() + " outputCard= " + output.getCard());  
+    }
+    return output;
+  }
+
+  @Override
+  protected CostModelDataStructure RStreamCard(InstanceOperator operator,
+                                               ArrayList<Integer> inputs) 
+  throws OptimizationException
+  {
+    if(operator.isNodeDead())
+      return new CardinalityDataStructure(0);
+    
+    CardinalityDataStructure input = new CardinalityDataStructure(inputs.get(0).floatValue());
+    CardinalityDataStructure output;
+    output = new CardinalityDataStructure(input.getCardOfStream() * input.getWindowCard());
+    output.setStream(true);
+    //System.out.println(inputOperator.getID() + " inputCard= " + input);
+    //System.out.println(inputOperator.getID() + " outputCard= " + output);
+    return output; 
+  }
+
+  @Override
+  protected CostModelDataStructure joinCard(InstanceOperator operator,
+                                            ArrayList<Integer> inputs) 
+  throws OptimizationException
+  {
+    if(operator.isNodeDead())
+      return new CardinalityDataStructure(0);
+    
+    //System.out.println("join newInput size is " + reducedInputs.size());
+    CardinalityDataStructure inputR = new CardinalityDataStructure(inputs.get(0));
+    CardinalityDataStructure inputL = new CardinalityDataStructure(inputs.get(1));
+  
+    float windowStreamCard;
+    float windowCard;
+    
+    if(inputL.isStream())
+    {
+      windowStreamCard = 1;
+      windowCard = inputL.getCardOfStream() * inputR.getCardOfStream() * operator.selectivity();
+     //System.out.println(inputOperator.getID() + " inputCardL= " + 1 + " Stream with Card "+ inputL.getCardOfStream());
+     //System.out.println(inputOperator.getID() + " inputCardR= " + 1 + " Stream with Card "+ inputL.getCardOfStream());
+    }
+    else
+    {
+      
+      windowStreamCard = inputL.getCardOfStream();
+      windowCard = inputL.getWindowCard() * inputR.getWindowCard() * operator.selectivity();
+      //System.out.println(inputOperator.getID() + " inputCardL= " + inputL.getCardOfStream() + " inputs each with "+ inputL.getWindowCard());
+      //System.out.println(inputOperator.getID() + " inputCardR= " + inputR.getCardOfStream() + " inputs each with "+ inputR.getWindowCard());
+    }
+    CardinalityDataStructure output = new CardinalityDataStructure(windowStreamCard, windowCard);
+    //System.out.println(inputOperator.getID() + " outputCard= " + output);
+    return output;
+  }
+
+  @Override
+  protected CostModelDataStructure aggerateCard(InstanceOperator operator,
+                                                ArrayList<Integer> inputs) 
+  throws OptimizationException
+  {
+    if(operator.isNodeDead())
+      return new CardinalityDataStructure(0);
+    
+    CardinalityDataStructure output = null;
+    //System.out.println("aggerate newinputs size is " + reducedInputs.size());
+    
+    output = new CardinalityDataStructure(inputs.get(0), 1);
+    ArrayList<CardinalityDataStructure> reducedInputs = reduceInputs(operator);
+    output.setExtentName(reducedInputs.get(0).getExtentName());
+    //System.out.println(inputOperator.getID() + " inputCard= " + reducedInputs.size());
+    //System.out.println(inputOperator.getID() + " outputCard= " + output);
+    return output;// TODO Auto-generated method stub
+  }
+
+  @Override
+  protected CostModelDataStructure acquireCard(InstanceOperator operator,
+                                               ArrayList<Integer> inputs) 
+  throws OptimizationException
+  {
+    if(operator.isNodeDead())
+      return new CardinalityDataStructure(0);
+    
+    float output = 1 * operator.selectivity();
+    CardinalityDataStructure out = new CardinalityDataStructure(output);
+    //System.out.println(inputOperator.getID() + " outputCard= " + output);
+    List<Attribute> attributes = operator.getSensornetOperator().getLogicalOperator().getAttributes();
+    out.setExtentName(attributes.get(1).toString());
+    return out;
   }
 }

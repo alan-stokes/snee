@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved;
+package uk.ac.manchester.cs.snee.manager.planner.unreliablechannels;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -31,13 +31,13 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 
-public class UnreliableChannelAgendaReducedUtils 
+public class UnreliableChannelAgendaUtils 
 {
 
   /**
    * Logger for this class.
    */
-  private static final Logger logger = Logger.getLogger(UnreliableChannelAgendaReducedUtils.class.getName());
+  private static final Logger logger = Logger.getLogger(UnreliableChannelAgendaUtils.class.getName());
 
 
   private static final int CELL_WIDTH = 100;
@@ -46,13 +46,13 @@ public class UnreliableChannelAgendaReducedUtils
 
   IOT iot;
 
-  UnreliableChannelAgendaReduced agenda;
+  UnreliableChannelAgenda agenda;
 
   private boolean useMilliSeconds;
   
   private ArrayList<String> failedNodes;
 
-  public UnreliableChannelAgendaReducedUtils(final UnreliableChannelAgendaReduced agenda, IOT iot, 
+  public UnreliableChannelAgendaUtils(final UnreliableChannelAgenda agenda, IOT iot, 
                                       final boolean useMilliSeconds,
                                       ArrayList<String> failedNodes) 
   {

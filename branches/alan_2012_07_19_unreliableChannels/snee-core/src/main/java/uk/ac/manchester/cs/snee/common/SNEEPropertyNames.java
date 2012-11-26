@@ -306,6 +306,11 @@ public final class SNEEPropertyNames {
    * used by the unreliable channel agenda to determine signal strength
    */
   public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_PATHLOSSEXPONENT = "wsn_manager.unreliable.channels.pathLossExponent";
+
+  /**
+   * used by the unreliable channel agenda to determine how many agenda cycles are needed to simulate running.
+   */
+  public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_SIMULATION_ITERATIONS = "wsn_manager.unreliable.channels.simulationLength";
   
   
 }

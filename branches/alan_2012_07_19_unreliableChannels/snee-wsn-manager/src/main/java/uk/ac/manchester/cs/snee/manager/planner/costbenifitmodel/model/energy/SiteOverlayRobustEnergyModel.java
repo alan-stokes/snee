@@ -1,5 +1,4 @@
 package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,8 +19,8 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RadioOnTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModel;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.LogicalOverlayNetworkHierarchy;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved.UnreliableChannelAgendaReduced;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.LogicalOverlayNetworkHierarchy;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgenda;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -34,14 +33,16 @@ public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
 { 
   
    private ChannelModel channelModel = null;
-   public SiteOverlayRobustEnergyModel(UnreliableChannelAgendaReduced agenda,
+   public SiteOverlayRobustEnergyModel(UnreliableChannelAgenda agenda,
                                       LogicalOverlayNetworkHierarchy overlayNetwork,
-                                      int networkSize, ArrayList<String> failedNodes,
+                                      ChannelModel channelModel, ArrayList<String> failedNodes,
                                       Topology network, CostParameters costs)
-   throws SNEEConfigurationException, IOException
+   throws SNEEConfigurationException, IOException,
+   OptimizationException, SchemaMetadataException, TypeMappingException
    {
      super(agenda, overlayNetwork);
-     channelModel = new ChannelModel(overlayNetwork, agenda, networkSize, failedNodes, network, costs);
+     this.channelModel = channelModel;
+     channelModel.runModel(failedNodes, agenda.getIOT());
    }
    
    /**

@@ -63,6 +63,14 @@ public class HashMapList<K,V> implements Serializable{
       opInstArray.add(value);     
     }
     }
+    
+    public void addWithDuplicates(K key, V value) {
+      if (!this.mapping.containsKey(key)) {
+        this.mapping.put(key, new ArrayList<V>());
+      }
+    ArrayList<V> opInstArray = this.mapping.get(key);
+      opInstArray.add(value);     
+    }
 
   public void set(K key, Collection<V> valueColl) {
     this.mapping.put(key, 

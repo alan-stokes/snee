@@ -42,7 +42,10 @@ import uk.ac.manchester.cs.snee.manager.monitor.Monitor;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModel;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteEnergyModel;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.metadata.CostParameters;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -118,6 +121,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     runningSites = new HashMap<String, RunTimeSite>();
     anyliser = new Anaylsiser(this, _metadata, _metadataManager);
     planner = new Planner(this, _metadata, _metadataManager);
+    executer.setUpFolders(outputFolder);
     setupRunningSites((SensorNetworkQueryPlan) qep);
     monitor.initilise(_metadata, qep, resultSet);
     boolean initiliseFrameworks = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS);
@@ -500,7 +504,8 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     output.mkdir();
     Model.setCompiledAlready(false);
     String choice = SNEEProperties.getSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE);
-    if(choice.equals(ChoiceAssessorPreferenceEnum.Local.toString()) || choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))
+    if(choice.equals(ChoiceAssessorPreferenceEnum.Local.toString()) || 
+       choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))
       planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false, anyliser.getOverlay());
     else
       planner.assessOTACosts(output, orgianlOTAProgramCost, runningSites, false, null);
@@ -532,5 +537,31 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   {
     this.anyliser.updateFrameworks(finalChoice);
     
+  }
+
+  /**
+   * interface between planner and executer for simulated runs of the unreliable channel system
+   * @param rQEP
+   * @param qep 
+   * @param channelModel
+   * @throws SNEEConfigurationException 
+   * @throws NumberFormatException 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
+   * @throws IOException 
+   */
+  public void simulateRunOfRQEP(RobustSensorNetworkQueryPlan rQEP,
+                                SensorNetworkQueryPlan qep) 
+  throws NumberFormatException, SNEEConfigurationException,
+  OptimizationException, SchemaMetadataException, TypeMappingException, IOException
+  {
+    this.executer.simulateRunOfQEPs(rQEP, qep);
+    this.executer.writeResultsToFile();
+  }
+  
+  public CostParameters getCostsParamters()
+  {
+    return this._metadataManager.getCostParameters();
   }
 }

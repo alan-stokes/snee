@@ -1,4 +1,4 @@
-package uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.improved;
+package uk.ac.manchester.cs.snee.manager.planner.unreliablechannels;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -111,6 +111,55 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     this.activeClusters = logicaloverlayNetwork.getActiveClusters();
     this.activeClustersPriority = logicaloverlayNetwork.getActiveClustersPriorities();
     this.activeClustersOriginalPriority = logicaloverlayNetwork.getActiveClustersOriginalPriority();
+  }
+  
+  /**
+   * mkae skele of a logicaloverlay netowrk for channel model testing of the original QEP
+   * @param logicaloverlayNetwork
+   * @param network
+   * @param qep
+   * @throws NumberFormatException
+   * @throws SNEEConfigurationException
+   */
+  public LogicalOverlayNetworkHierarchy(LogicalOverlayNetworkHierarchy logicaloverlayNetwork, 
+                                        SensorNetworkQueryPlan qep, Topology network)
+  throws NumberFormatException, SNEEConfigurationException
+  {
+    this.qep = qep;
+    clusters = new HashMapList<String, String>();
+    activeClusters = new HashMapList<String, String>();
+    this.activeClustersPriority = new HashMap<String, Integer>();
+    this.deployment = network;
+    Iterator<String> keys = logicaloverlayNetwork.getClusters().keySet().iterator();
+    while(keys.hasNext())
+    {
+      String key = keys.next();
+      this.addClusterNode(key, key);
+    }
+    id = "HierarchyBasedOverlay";
+    
+    //first discover the resilient level for the reliable channel.
+    resilientLevel = Integer.parseInt(
+    SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_RESILIENTLEVEL));
+    k = Integer.parseInt(
+    SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_LEVEL));
+    //check if possible to create cluster.
+    if(k < resilientLevel)
+    throw new SNEEConfigurationException("cannot support a resilient level above the minimal level defined as k");
+    if(resilientLevel <= 0)
+    resilientLevel = 1; 
+    keys = logicaloverlayNetwork.getClusters().keySet().iterator();
+    while(keys.hasNext())
+    {
+      String key = keys.next();
+      this.activeClusters.add(key, key);
+    }
+    keys = logicaloverlayNetwork.getClusters().keySet().iterator();
+    while(keys.hasNext())
+    {
+      String key = keys.next();
+      this.activeClustersPriority.put(key, 1);
+    }
   }
 
   private HashMap<String, Integer> getActiveClustersOriginalPriority()

@@ -1150,4 +1150,65 @@ public class AgendaIOT extends SNEEAlgebraicForm
     }
     return null;
   }
+  
+  public Iterator<Task> taskIteratorOrderedByTime()
+  {
+    ArrayList<Task> orderedTasks = new  ArrayList<Task>();
+    ArrayList<Long> startTimes = this.getStartTimes();
+    Collections.sort(startTimes);
+    Iterator<Long> siteTimeIterator = startTimes.iterator();
+    while(siteTimeIterator.hasNext())
+    {
+      Long startTime = siteTimeIterator.next();
+      Iterator<Task> taskIterator = this.taskIterator(startTime);
+      boolean comms = false;
+      //determine if the tasks in this start time are communication tasks
+      while(taskIterator.hasNext())
+      {
+        Task task = taskIterator.next();
+        if(task instanceof CommunicationTask)
+          comms = true;
+      }
+      //if tasks are comm tasks, then locate transmission task first.
+      if(comms)
+      {
+        //locate transmission
+        taskIterator = this.taskIterator(startTime);
+        while(taskIterator.hasNext())
+        {
+          Task task = taskIterator.next();
+          if(task instanceof InstanceFragmentTask)
+            System.out.println();
+          CommunicationTask cTask = (CommunicationTask) task;
+          if(cTask.getMode() == CommunicationTask.TRANSMIT ||
+             cTask.getMode() == CommunicationTask.ACKTRANSMIT )
+          {
+            orderedTasks.add(task);
+          }
+        }
+        //store all receives (no particular order)
+        taskIterator = this.taskIterator(startTime);
+        while(taskIterator.hasNext())
+        {
+          Task task = taskIterator.next();
+          CommunicationTask cTask = (CommunicationTask) task;
+          if(cTask.getMode() == CommunicationTask.ACKRECEIVE ||
+             cTask.getMode() == CommunicationTask.RECEIVE )
+          {
+            orderedTasks.add(task);
+          }
+        }
+      }
+      else //not comms, just add them in any order
+      {
+        taskIterator = this.taskIterator(startTime);
+        while(taskIterator.hasNext())
+        {
+          Task task = taskIterator.next();
+          orderedTasks.add(task);
+        }
+      }
+    }
+    return orderedTasks.iterator();
+  }
 }

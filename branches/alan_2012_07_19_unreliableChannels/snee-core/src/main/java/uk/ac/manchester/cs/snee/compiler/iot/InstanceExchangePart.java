@@ -33,6 +33,8 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.iot;
 
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
@@ -123,6 +125,15 @@ public class InstanceExchangePart extends InstanceOperator{
     private String previousId = null;
 
     /**
+     * used to encapsulate which extents are being used
+     */
+    private String extents = "";
+    /**
+     * used to determine number of tuples from packets
+     */
+    private Integer tuplesFromExtent = 0;
+    
+    /**
      * Constructor for exchange part.
      * @param sourceFrag
      * @param sourceSite
@@ -139,7 +150,8 @@ public class InstanceExchangePart extends InstanceOperator{
     public InstanceExchangePart(final InstanceFragment sourceFrag, final Site sourceSite,
 	    final InstanceFragment destFrag, final Site destSite,
 	    final Site currentSite, final ExchangePartType partType,
-	    final boolean isRemote, final InstanceExchangePart prev, CostParameters costs) throws SNEEException, SchemaMetadataException {
+	    final boolean isRemote, final InstanceExchangePart prev, CostParameters costs,
+	    String extents) throws SNEEException, SchemaMetadataException {
 
 		this.sourceFrag = sourceFrag;
 		this.sourceSite = sourceSite;
@@ -151,6 +163,7 @@ public class InstanceExchangePart extends InstanceOperator{
 		this.setInstanceOperator(new SensornetExchangeOperator(costs));
 		this.id = "F" + sourceFrag.getID() + "_S" + this.getSite().getID() + "_" + partType.toString().toLowerCase();
 	  this.previousId = this.id;
+	  this.extents = extents;
 		//link components in a path
 		this.prev = prev;
 		if (partType != ExchangePartType.PRODUCER) {
@@ -594,5 +607,25 @@ public class InstanceExchangePart extends InstanceOperator{
   throws OptimizationException, SchemaMetadataException, TypeMappingException
   {
     return this.packetsPerTask(daf, beta, costParams);
+  }
+  
+  public void setExtent(String extent)
+  {
+    this.extents = extent;
+  }
+  
+  public String getExtent()
+  {
+    return this.extents;
+  }
+  
+  public int getExtentTupleValue()
+  {
+    return this.tuplesFromExtent;
+  }
+  
+  public void setTupleValueForExtent(int tuples)
+  {
+    this.tuplesFromExtent = tuples;
   }
 }
