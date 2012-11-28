@@ -92,12 +92,16 @@ public class ChannelModel implements Serializable
    * runs though one iteration of agenda using the unreliable channel model 
    * to determine which tasks within the agenda are to be ran at runtime by using a 
    * noise model
+   * @param robustFolder 
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
+   * @throws SNEEConfigurationException 
+   * @throws NumberFormatException 
    */
   public void runModel(ArrayList<String> failedNodes, IOT IOT) 
-  throws OptimizationException, SchemaMetadataException, TypeMappingException
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException, NumberFormatException, SNEEConfigurationException
   {
     System.out.println("running iteration " + iteration);
     Iterator<Task> taskIterator = null;
@@ -124,13 +128,14 @@ public class ChannelModel implements Serializable
         {
           if(tranmissionTaskRan(cTask))
            {
-            if(isSibling(cTask.getSourceID(), cTask.getDestID())) 
+            if(isSibling(cTask.getSourceID(), cTask.getTrueDestSite().getID())) 
             {
               //int packetsToTransmit = cTask.getMaxPacektsTransmitted();
-              int packetsTransmitted = packetsSentByTranmissionTask(cTask, IOT);
-              for(int packetID = 0; packetID < packetsTransmitted; packetID++)
+              ArrayList<Integer> packetIDsTransmitted = packetsSentByTranmissionTask(cTask, IOT);
+              for(int index = 0; index < packetIDsTransmitted.size(); index++)
               {
-                tryRecievingSibling(cTask.getDestID(), Integer.parseInt(cTask.getSourceID()), 
+                Integer packetID = packetIDsTransmitted.get(index);
+                tryRecievingSibling(cTask.getTrueDestSite().getID(), Integer.parseInt(cTask.getSourceID()), 
                                     packetID, cTask.getStartTime());
               }
               cTask.setRan(true);
@@ -138,9 +143,10 @@ public class ChannelModel implements Serializable
             else
             {
             //  int packetsToTransmit = cTask.getMaxPacektsTransmitted();
-              int packetsTransmitted = packetsSentByTranmissionTask(cTask, IOT);
-               for(int packetID = 0; packetID < packetsTransmitted; packetID++)
+               ArrayList<Integer> packetIDsTransmitted = packetsSentByTranmissionTask(cTask, IOT);
+               for(int index = 0; index < packetIDsTransmitted.size(); index++)
                {
+                 Integer packetID = packetIDsTransmitted.get(index);
                  tryRecieving(cTask.getDestID(), Integer.parseInt(cTask.getSourceID()), packetID, 
                               cTask.getStartTime());
                }
@@ -226,18 +232,21 @@ public class ChannelModel implements Serializable
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    */
-  private int packetsSentByTranmissionTask(CommunicationTask cTask, IOT IOT)
+  private ArrayList<Integer> packetsSentByTranmissionTask(CommunicationTask cTask, IOT IOT)
   throws OptimizationException, SchemaMetadataException, TypeMappingException
   {
     ChannelModelSite site = channelModel.get(Integer.parseInt(cTask.getSourceID()));
-    return  site.transmittablePackets(IOT);
+    if(this.logicaloverlayNetwork.isClusterHead(cTask.getSourceID()))
+      return  site.transmittablePackets(IOT);
+    else
+      return site.transmittablePackets();
   }
   
-  public int packetsToBeSentByDeliveryTask(Site rootSite, IOT IOT)
+  public Integer packetsToBeSentByDeliveryTask(Site rootSite, IOT IOT)
   throws OptimizationException, SchemaMetadataException, TypeMappingException
   {
     ChannelModelSite site = channelModel.get(Integer.parseInt(rootSite.getID())); 
-    return site.transmittablePackets(IOT);
+    return site.transmittablePackets(IOT).size();
   }
   
   
@@ -281,8 +290,11 @@ public class ChannelModel implements Serializable
    * @param sourceID
    * @param packetID
    * @param startTime
+   * @throws SNEEConfigurationException 
+   * @throws NumberFormatException 
    */
   private void tryRecieving(String destID, Integer sourceID, int packetID, long startTime)
+  throws NumberFormatException, SNEEConfigurationException
   {
     ChannelModelSite outputSite = this.channelModel.get(Integer.parseInt(destID));
     if(agenda == null)
@@ -302,8 +314,11 @@ public class ChannelModel implements Serializable
    * @param sourceID
    * @param packetID
    * @param startTime
+   * @throws SNEEConfigurationException 
+   * @throws NumberFormatException 
    */
   private void tryRecievingSibling(String destID, Integer sourceID, int packetID, long startTime)
+  throws NumberFormatException, SNEEConfigurationException
   {
     ChannelModelSite outputSite = this.channelModel.get(Integer.parseInt(destID));
     if(agenda == null)
@@ -323,8 +338,11 @@ public class ChannelModel implements Serializable
    * @param timeOfTransmission 
    * @param siteID
    * @return
+   * @throws SNEEConfigurationException 
+   * @throws NumberFormatException 
    */
   private boolean didPacketGetRecived(String destID, Integer sourceID, long timeOfTransmission)
+  throws NumberFormatException, SNEEConfigurationException
   {
     return noiseModel.packetRecieved(sourceID.toString(), destID, timeOfTransmission);
   }
@@ -377,7 +395,7 @@ public class ChannelModel implements Serializable
         } 
       }
       if(logicaloverlayNetwork.getQep().getRT().getRoot().getID().equals(clusterHeadID))
-      {
+      {//root node with delivery operator, doesnt have a cluster, but needs a channel model site
         ChannelModelSite site = null;
         if(agenda == null)
           site = new ChannelModelSite(expectedPackets, siteID, logicaloverlayNetwork, 0, 
@@ -389,10 +407,10 @@ public class ChannelModel implements Serializable
                                       agenda.getBufferingFactor(), costs);
         channelModel.set(siteIDInt, site);
       }
-      else
+      else //not the root node
       {
         ChannelModelSite site;
-        if(logicaloverlayNetwork.isClusterHead(siteID))
+        if(logicaloverlayNetwork.isClusterHead(siteID))//your a cluster head
         {
           if(agenda == null)
             site = 
@@ -407,18 +425,46 @@ public class ChannelModel implements Serializable
                                  agenda.getTasks().get(agenda.getSiteByID(siteID)),
                                  agenda.getBufferingFactor(), costs);
         }
-        else
+        else //your a sibling in the logical overlay to the cluster head. 
         {
+          expectedPackets = new  HashMap<String, Integer>();
           if(agenda == null)
+          {
+            //siblings only receive packets from cluster head and other siblings
+            Site clusterHeadSite = this.agendaIOT.getSiteByID(clusterHeadID);
+            int packetsTransmittedByClusterHead = 
+              this.agendaIOT.getTransmissionTask(clusterHeadSite).getMaxPacektsTransmitted();
+            expectedPackets.put(clusterHeadID, packetsTransmittedByClusterHead);
+            Iterator<String> siblings = 
+              this.logicaloverlayNetwork.getActiveEquivilentNodes(clusterHeadID).iterator();
+            while(siblings.hasNext())
+            {
+              expectedPackets.put(siblings.next(), packetsTransmittedByClusterHead);
+            }
+            
             site = new ChannelModelSite(expectedPackets, siteID, logicaloverlayNetwork, 
                                        logicaloverlayNetwork.getPriority(siteID), 
                                        agendaIOT.getTasks().get(agendaIOT.getSiteByID(siteID)),
                                        agendaIOT.getBufferingFactor(), costs);
+          }
           else
+          {
+            //siblings only receive packets from cluster head and other siblings
+            Site clusterHeadSite = this.agenda.getSiteByID(clusterHeadID);
+            int packetsTransmittedByClusterHead = 
+              this.agenda.getTransmissionTask(clusterHeadSite).getMaxPacektsTransmitted();
+            expectedPackets.put(clusterHeadID, packetsTransmittedByClusterHead);
+            Iterator<String> siblings = 
+              this.logicaloverlayNetwork.getActiveEquivilentNodes(clusterHeadID).iterator();
+            while(siblings.hasNext())
+            {
+              expectedPackets.put(siblings.next(), packetsTransmittedByClusterHead);
+            }
             site = new ChannelModelSite(expectedPackets, siteID, logicaloverlayNetwork, 
                                         logicaloverlayNetwork.getPriority(siteID), 
                                         agenda.getTasks().get(agenda.getSiteByID(siteID)),
                                         agenda.getBufferingFactor(), costs);
+          }
         }
           
         channelModel.set(siteIDInt, site);
@@ -431,7 +477,7 @@ public class ChannelModel implements Serializable
   {
     Site iotSite = logicaloverlayNetwork.getQep().getIOT().getSiteFromID(rootSite.getID());
     InstanceOperator rootOp = logicaloverlayNetwork.getQep().getIOT().getRootOperatorOfSite(iotSite);
-    return ChannelModelSite.packetToTupleConversion(packets, rootOp, rootOp.getInstanceInput(0));
+    return ChannelModelSite.packetToTupleConversion(packets, rootOp, rootOp);
   }
 
   public void clearModel()
@@ -443,6 +489,16 @@ public class ChannelModel implements Serializable
       if(site != null)
         site.clearDataStoresForNewIteration();
     }
-    
+  }
+  
+  public void setPacketModel(boolean reliableChannelQEP)
+  {
+    Iterator<ChannelModelSite> modelSiteIterator = channelModel.iterator();
+    while(modelSiteIterator.hasNext())
+    {
+      ChannelModelSite site = modelSiteIterator.next();
+      if(site != null)
+        ChannelModelSite.setReliableChannelQEP(reliableChannelQEP);
+    }
   }
 }

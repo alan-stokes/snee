@@ -64,8 +64,11 @@ public class NoiseModel
    * @param sourceID
    * @param DestID
    * @return
+   * @throws SNEEConfigurationException 
+   * @throws NumberFormatException 
    */
   public boolean packetRecieved(String sourceID, String destID, Long startTime)
+  throws NumberFormatException, SNEEConfigurationException
   {
     if(useingClearChannels && relibaleChannels)
     {
@@ -80,8 +83,11 @@ public class NoiseModel
    * @param sourceID
    * @param destID
    * @return
+   * @throws SNEEConfigurationException 
+   * @throws NumberFormatException 
    */
   private boolean didPacketGetRecieved(String sourceID, String destID, Long startTime)
+  throws NumberFormatException, SNEEConfigurationException
   {
     
     /**
@@ -128,12 +134,17 @@ public class NoiseModel
    * @param sourceID
    * @param destID
    * @return
+   * @throws SNEEConfigurationException 
+   * @throws NumberFormatException 
    */
   private Double getRSSI(String sourceID, String destID)
+  throws NumberFormatException, SNEEConfigurationException
   {
     RadioLink link = 
       network.getRadioLink(network.getSite(sourceID), network.getSite(destID));
     Double distanceBetweenNodes = link.getDistanceCost();
+    double distanceFactor = Double.parseDouble(SNEEProperties.getSetting("distanceFactor"));
+    distanceBetweenNodes = distanceBetweenNodes * distanceFactor;
     /**rssi value is determined by RSSI = (PL(D0) + 10 n log (d / d0)
     // d = distance between transmitter and reciever.
      * d0 the reference distance (telosb mote 75m)

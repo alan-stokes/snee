@@ -194,7 +194,6 @@ public class RelibaleChannelClient extends SNEEClient
 	    recoverWriter.write(queryid + "\n");
 	    recoverWriter.flush();
 	    recoverWriter.close();
-	    
 	 }
 	 
 	private static void recursiveRun(Iterator<String> queryIterator, 

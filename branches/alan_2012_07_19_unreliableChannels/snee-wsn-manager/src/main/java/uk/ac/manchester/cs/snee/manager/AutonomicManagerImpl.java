@@ -557,7 +557,6 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   OptimizationException, SchemaMetadataException, TypeMappingException, IOException
   {
     this.executer.simulateRunOfQEPs(rQEP, qep);
-    this.executer.writeResultsToFile();
   }
   
   public CostParameters getCostsParamters()

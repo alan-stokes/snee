@@ -47,15 +47,36 @@ public class ChannelModelUtils
         this.routingTree.siteIterator(TraversalOrder.POST_ORDER);
       while (siteIter.hasNext()) 
       {
+        //cluster head
         final Site currentSite = siteIter.next();
+        out.println("subgraph cluster_s" + currentSite.getID() + " {");
+        out.println("style=\"rounded,dotted\"");
+        out.println("color=blue;");
+        
         out.print(currentSite.getID() + " [fontsize=20 ");
         if (currentSite.isSource()) 
         {
           out.print("shape = doublecircle ");
         }
-        out.print("label = \"" + currentSite.getID());
+        ChannelModelSite site = this.modelSites.get(Integer.parseInt(currentSite.getID()));
+        String format = site.packetRecievedStringBoolFormat();
+        out.print("label = \"" + currentSite.getID() + "\\n " + format);
+        out.println("\"];");
+        //rest of nodes in logical node
+        Iterator<String> eqNodesIterator = 
+          logicaloverlayNetwork.getActiveEquivilentNodes(currentSite.getID()).iterator();
+        while(eqNodesIterator.hasNext())
+        {
+          String eqNode = eqNodesIterator.next();
+          out.print(eqNode + " [fontsize=20 ");
+          site = this.modelSites.get(Integer.parseInt(eqNode));
+          format = site.packetRecievedStringBoolFormat();
+          out.print("label = \"" + eqNode + "\\n " + format);
+          out.println("\"];");
+        }
+        out.println("}");
       }
-      out.println("\"];");
+      
       //traverse the edges now
       siteIter = this.routingTree.siteIterator(TraversalOrder.POST_ORDER);
       while (siteIter.hasNext()) {

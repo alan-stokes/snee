@@ -496,7 +496,8 @@ public class UnreliableChannelAgenda extends AgendaIOT
       CommunicationTask commTaskTx = 
         new CommunicationTask(startTimeForRedundantTransmission, priorityNode, destNode,
                               CommunicationTask.TRANSMIT, tuplesToSend, this.alpha, this.beta, 
-                              daf, costParams, true, iot.getSiteFromID(trueClusterHead.getOutput(0).getID()));
+                              daf, costParams, true, iot.getSiteFromID(trueClusterHead.getOutput(0).getID()),
+                              iot.getSiteFromID(trueClusterHead.getOutput(0).getID()));
       this.addTask(commTaskTx, priorityNode);
       //sort out recieves for current cluster
       Iterator<String> otherActiveNodes = nodesInActiveCluster.iterator();
@@ -507,13 +508,15 @@ public class UnreliableChannelAgenda extends AgendaIOT
         CommunicationTask commTaskRx = 
           new CommunicationTask(startTimeForRedundantTransmission + overhead, priorityNode, destNode,
                                 CommunicationTask.RECEIVE,tuplesToSend, this.alpha, this.beta, daf,  
-                                costParams, true, iot.getSiteFromID(trueClusterHead.getOutput(0).getID()));
+                                costParams, true, iot.getSiteFromID(trueClusterHead.getOutput(0).getID()),
+                                activeSite);
         this.addTask(commTaskRx, activeSite);
       }
       CommunicationTask commTaskRx = 
         new CommunicationTask(startTimeForRedundantTransmission + overhead, priorityNode, destNode,
                               CommunicationTask.RECEIVE,tuplesToSend, this.alpha, this.beta, daf,  
-                              costParams, true, iot.getSiteFromID(trueClusterHead.getOutput(0).getID()));
+                              costParams, true, iot.getSiteFromID(trueClusterHead.getOutput(0).getID()),
+                              iot.getSiteFromID(trueClusterHead.getOutput(0).getID()));
       this.addTask(commTaskRx, destNode);
       
       
@@ -561,7 +564,8 @@ public class UnreliableChannelAgenda extends AgendaIOT
     ///destSite = source site, and sourceNode the dest Site. 
     CommunicationTask commTaskAckT = 
       new CommunicationTask(startTimeForAck,  sourceNode, sourceSite, CommunicationTask.ACKTRANSMIT,
-                            this.alpha, this.beta, daf, 1, costParams, redundant, sourceSite, false, true);
+                            this.alpha, this.beta, daf, 1, costParams, redundant, sourceSite,
+                            sourceSite, false, true);
     this.addTask(commTaskAckT, sourceSite);
     
     
@@ -577,7 +581,7 @@ public class UnreliableChannelAgenda extends AgendaIOT
       {
         commTaskAckR = new CommunicationTask(startTimeForAck, node, sourceSite, 
             CommunicationTask.ACKRECEIVE, this.alpha, this.beta, daf, 1, costParams, redundant,
-            sourceNode, false, true);
+            sourceNode, sourceNode, false, true);
         this.addTask(commTaskAckR, node);
       }
     }
@@ -603,7 +607,8 @@ public class UnreliableChannelAgenda extends AgendaIOT
     destNode = iot.getSiteFromID(destNode.getID());
       final CommunicationTask commTaskRx = 
         new CommunicationTask(startTime, sourceNode, destNode,CommunicationTask.RECEIVE,
-                              tuplesToSend, this.alpha, this.beta, daf, costParams, redundant, destNode);
+                              tuplesToSend, this.alpha, this.beta, daf, costParams, redundant, 
+                              destNode, destNode);
       this.addTask(commTaskRx, destNode);
       
   }
@@ -627,7 +632,8 @@ public class UnreliableChannelAgenda extends AgendaIOT
     final long startTime = this.getLength_bms(true);
     final CommunicationTask commTaskTx = 
       new CommunicationTask(startTime, sourceNode, destNode,CommunicationTask.TRANSMIT,
-                            tuplesToSend, this.alpha, this.beta, daf, costParams, redundant, destNode, false, false);
+                            tuplesToSend, this.alpha, this.beta, daf, costParams, 
+                            redundant, destNode, destNode, false, false);
     this.addTask(commTaskTx, sourceNode);
     if(redundant)
     {
@@ -640,7 +646,8 @@ public class UnreliableChannelAgenda extends AgendaIOT
         Site node = this.iot.getSiteFromID(nodeID);
         final CommunicationTask commTaskRx = 
           new CommunicationTask(startTime, sourceNode, node, CommunicationTask.RECEIVE,
-                                this.alpha, this.beta, daf, 1, costParams, true, sourceNode, false, false);
+                                this.alpha, this.beta, daf, 1, costParams, true, sourceNode,
+                                node, false, false);
         this.addTask(commTaskRx, node);
       }
     }

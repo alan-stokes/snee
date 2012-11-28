@@ -78,7 +78,11 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
 
     private boolean redundantTask = false;
     
+    /**
+     * used to figure what site is actally being used
+     */
     private Site originalDestNode = null;
+    private Site trueDestSite = null;
     
    // private long alpha;
 
@@ -109,7 +113,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
                              final Site destNode, final int mode, final long alpha, 
                              final long bufferingFactor, final DAF daf, int maxPackets,
                              CostParameters costParams, boolean redundant,
-                             Site originalDestNode, boolean lastCommTask,
+                             Site originalDestNode, Site trueDestID, boolean lastCommTask,
                              boolean hadPreivousCommTask) 
     throws OptimizationException, SchemaMetadataException, TypeMappingException 
     {
@@ -123,6 +127,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
       this.endTime = startTime + this.getTimeCost(new Long(maxPackets), lastCommTask, hadPreivousCommTask);
       this.mode = mode;
       this.originalDestNode = originalDestNode;
+      this.trueDestSite = trueDestID;
       generateID();
     }
 
@@ -143,7 +148,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
 	                         final HashSet<InstanceExchangePart> tuplesToSend,
 	                         final long alpha, final long bufferingFactor, final DAF daf,  
 	                         CostParameters costParams, boolean redundant,
-	                         Site originalDestNode ) 
+	                         Site originalDestNode, Site trueDestID ) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException 
   {
   	super(startTime, costParams);
@@ -155,6 +160,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
   	this.mode = mode;
   	this.redundantTask = redundant;
   	this.originalDestNode = originalDestNode;
+  	this.trueDestSite = trueDestID;
     generateID();
   }
     
@@ -174,7 +180,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
   public CommunicationTask(final long startTime, final Site sourceNode,
                            final Site destNode, final int mode, Long packets, 
                            CostParameters costParams, boolean redundant,
-                           Site originalDestNode) 
+                           Site originalDestNode, Site trueDestID ) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException 
   {
     super(startTime, costParams);
@@ -184,6 +190,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
     this.mode = mode;
     this.redundantTask = redundant;
     this.originalDestNode = originalDestNode;
+    this.trueDestSite = trueDestID;
     generateID();
   }
     
@@ -203,7 +210,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
                            final Site destNode, final HashSet<ExchangePart> tuplesToSend,
                            final int mode, final long alpha, final long bufferingFactor, 
                            final DAF daf,  CostParameters costParams, boolean redundant,
-                           Site originalDestNode) 
+                           Site originalDestNode, Site trueDestID) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException 
   {
     super(startTime, costParams);
@@ -215,13 +222,15 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
     this.mode = mode;
     this.redundantTask = redundant;
     this.originalDestNode = originalDestNode;
+    this.trueDestSite = trueDestID;
     generateID();
   }
   
     public CommunicationTask(long startTime, Site sourceNode, Site destNode,
         int mode, HashSet<InstanceExchangePart> tuplesToSend, long alpha,
         long beta, DAF daf, CostParameters costParams, boolean redundant,
-        Site originalDestNode, boolean lastCommTask, boolean hadPreivousCommTask) 
+        Site originalDestNode, Site trueDestID, boolean lastCommTask, 
+        boolean hadPreivousCommTask) 
     throws OptimizationException, SchemaMetadataException, TypeMappingException
     {
       super(startTime, costParams);
@@ -233,6 +242,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
       this.mode = mode;
       this.redundantTask = redundant;
       this.originalDestNode = originalDestNode;
+      this.trueDestSite = trueDestID;
       generateID();
     }
     
@@ -280,6 +290,16 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
 
     public final String getDestID() {
 	return this.destNode.getID();
+    }
+
+    public Site getTrueDestSite()
+    {
+      return trueDestSite;
+    }
+
+    public void setTrueDestSite(Site trueDestSite)
+    {
+      this.trueDestSite = trueDestSite;
     }
 
     public final int getMode() {

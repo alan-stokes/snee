@@ -503,10 +503,10 @@ public class Agenda extends SNEEAlgebraicForm{
 
 	final CommunicationTask commTaskTx = new CommunicationTask(startTime,
 		sourceNode, destNode, exchangeComponents,
-		CommunicationTask.TRANSMIT, this.alpha, this.beta, this.daf, costParams, false, destNode);
+		CommunicationTask.TRANSMIT, this.alpha, this.beta, this.daf, costParams, false, destNode, destNode);
 	final CommunicationTask commTaskRx = new CommunicationTask(startTime,
 		sourceNode, destNode, exchangeComponents,
-		CommunicationTask.RECEIVE, this.alpha, this.beta, this.daf, costParams, false, destNode);
+		CommunicationTask.RECEIVE, this.alpha, this.beta, this.daf, costParams, false, destNode, destNode);
 
 	this.addTask(commTaskTx, sourceNode);
 	this.addTask(commTaskRx, destNode);
@@ -1184,10 +1184,10 @@ public class Agenda extends SNEEAlgebraicForm{
 
     final CommunicationTask commTaskTx = new CommunicationTask(startTime,
     sourceNode, destNode, exchangeComponents,
-    CommunicationTask.TRANSMIT, this.alpha, this.beta, this.daf, costParams, false, destNode);
+    CommunicationTask.TRANSMIT, this.alpha, this.beta, this.daf, costParams, false, destNode, destNode);
     final CommunicationTask commTaskRx = new CommunicationTask(startTime,
     sourceNode, destNode, exchangeComponents,
-    CommunicationTask.RECEIVE, this.alpha, this.beta, this.daf, costParams, false, destNode);
+    CommunicationTask.RECEIVE, this.alpha, this.beta, this.daf, costParams, false, destNode, destNode);
   
     this.addTask(commTaskTx, sourceNode, childIndex);
     this.addTask(commTaskRx, destNode);

@@ -26,6 +26,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 
 public class ChannelModelSite implements Serializable
 {
@@ -33,7 +34,8 @@ public class ChannelModelSite implements Serializable
    * serilised id
    */
   private static final long serialVersionUID = 378104895960678188L;
-  private HashMap<String, ArrayList<Boolean>> arrivedPackets = new HashMap<String, ArrayList<Boolean>>();
+  private HashMap<String, ArrayList<Boolean>> arrivedPackets = 
+    new HashMap<String, ArrayList<Boolean>>();
   private HashMap<String, Integer> expectedPackets = null;
   private ArrayList<String> needToListenTo = new ArrayList<String>();
   private ArrayList<String> receivedAcksFrom = new ArrayList<String>();
@@ -59,8 +61,8 @@ public class ChannelModelSite implements Serializable
    * @param position
    */
   public ChannelModelSite(HashMap<String, Integer> expectedPackets, String siteID,
-                                 LogicalOverlayNetworkHierarchy overlayNetwork, int position,
-                                 ArrayList<Task> tasks, Long beta, CostParameters costs)
+                          LogicalOverlayNetworkHierarchy overlayNetwork, int position,
+                          ArrayList<Task> tasks, Long beta, CostParameters costs)
   {
     this.expectedPackets = expectedPackets;
     setupExpectedPackets();
@@ -73,6 +75,9 @@ public class ChannelModelSite implements Serializable
     this.tasks.addAll(tasks);
   }
   
+  /**
+   * helper method for packet setup
+   */
   private void setupExpectedPackets()
   {
     Iterator<String> keys = expectedPackets.keySet().iterator();
@@ -98,7 +103,9 @@ public class ChannelModelSite implements Serializable
   {
     ArrayList<Boolean> packets = arrivedPackets.get(source);
     arrivedPackets.remove(source);
-    packets.set(packetID, true);
+    if(packetID == 0)
+      System.out.println();
+    packets.set(packetID -1, true);
     arrivedPackets.put(source, packets);
     if(!needToListenTo.contains(source))
       needToListenTo.add(source);
@@ -121,7 +128,9 @@ public class ChannelModelSite implements Serializable
       Boolean packetRecieved = packetIterator.next();
       if(!packetRecieved)
       {
-        ArrayList<String> equivNodes = this.overlayNetwork.getEquivilentNodes(this.overlayNetwork.getClusterHeadFor(child));
+        ArrayList<String> equivNodes = 
+          this.overlayNetwork.getEquivilentNodes(
+              this.overlayNetwork.getClusterHeadFor(child));
         equivNodes.add(this.overlayNetwork.getClusterHeadFor(child));
         Iterator<String> equivNodesIterator = equivNodes.iterator();
         boolean found = false;
@@ -160,7 +169,8 @@ public class ChannelModelSite implements Serializable
         if(!packetRecieved)
         {
           Iterator<String> EquivNodes = 
-            this.overlayNetwork.getActiveNodesInRankedOrder(this.overlayNetwork.getClusterHeadFor(child)).iterator();
+            this.overlayNetwork.getActiveNodesInRankedOrder(
+                this.overlayNetwork.getClusterHeadFor(child)).iterator();
           boolean found = false;
           while(EquivNodes.hasNext())
           {
@@ -242,6 +252,12 @@ public class ChannelModelSite implements Serializable
 
   public void recivedSiblingPacket(String string, int packetID)
   {
+    ArrayList<Boolean> packetsFromSibling =  arrivedPackets.get(string);
+    if(packetID == 0)
+      System.out.println();
+    packetsFromSibling.set(packetID -1, true);
+    arrivedPackets.remove(string);
+    arrivedPackets.put(string, packetsFromSibling);
     siblingTransmissions++;
   }
   
@@ -260,6 +276,12 @@ public class ChannelModelSite implements Serializable
     this.receivedAcksFrom.add(commID);
   }
 
+  /**
+   * gets the comm task scheduled at the start time otherwise returns null
+   * @param startTime
+   * @param mode
+   * @return
+   */
   public CommunicationTask getTask(long startTime, int mode)
   {
     Iterator<Task> taskIterator = this.tasks.iterator();
@@ -277,6 +299,10 @@ public class ChannelModelSite implements Serializable
     return null;
   } 
 
+  /**
+   * checks if a node has received a ACK at all
+   * @return
+   */
   public boolean receivedACK()
   {
     if(this.receivedAcksFrom.size() == 1)
@@ -293,14 +319,14 @@ public class ChannelModelSite implements Serializable
    * @throws SchemaMetadataException 
    * @throws OptimizationException 
    */
-  public Integer transmittablePackets(IOT IOT) 
+  public ArrayList<Integer> transmittablePackets(IOT IOT) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException
   {
     Site site = IOT.getSiteFromID(siteID);
     ArrayList<InstanceOperator> operators = 
       IOT.getOpInstances(site, TraversalOrder.POST_ORDER, true);
     Iterator<InstanceOperator> operatorIterator = operators.iterator();
-    int transmittablePacketsCount = 0;
+    ArrayList<Integer> packetIds = new ArrayList<Integer>();
     int currentPacketCount = 0;
     int previousOpOutput = 0;
     String preivousOutputExtent = null;
@@ -311,22 +337,50 @@ public class ChannelModelSite implements Serializable
       InstanceOperator op = operatorIterator.next();
       if(op instanceof InstanceExchangePart)
       {
+        /*if a producer exchange operator convert tuples to packets and 
+         * determine how many have been lost.
+         */
         InstanceExchangePart exOp = (InstanceExchangePart) op;
         if(exOp.getComponentType().equals(ExchangePartType.PRODUCER) &&
-           !exOp.getNext().getSite().getID().equals(exOp.getSite().getID()))
+           !exOp.getNext().getSite().getID().equals(exOp.getSite().getID()) &&
+           !exOp.getSourceFrag().containsOperatorType(SensornetAcquireOperator.class))
         {
-          transmittablePacketsCount += tupleToPacketConversion(previousOpOutput, previousOp);
+          int maxTransmittablePacketCount = exOp.getmaxPackets(IOT.getDAF(), beta, costs);
+          int transmittablePacketsCount = tupleToPacketConversion(previousOpOutput, previousOp);
+          addToPacketCounts(maxTransmittablePacketCount, transmittablePacketsCount, 
+                            packetIds, currentPacketCount);
+          currentPacketCount += maxTransmittablePacketCount;
           exOp.setExtent(preivousOutputExtent);
           exOp.setTupleValueForExtent(previousOpOutput);
+          packets.clear();
         }
+        if(exOp.getComponentType().equals(ExchangePartType.PRODUCER) &&
+           !exOp.getNext().getSite().getID().equals(exOp.getSite().getID()) &&
+           exOp.getSourceFrag().containsOperatorType(SensornetAcquireOperator.class))
+        {
+          int maxTransmittablePacketCount = exOp.getmaxPackets(IOT.getDAF(), beta, costs);
+          for(int index = 1; index < maxTransmittablePacketCount; index ++)
+          {
+            packetIds.add(index + currentPacketCount);
+          }
+          currentPacketCount += maxTransmittablePacketCount;
+          exOp.setExtent(preivousOutputExtent);
+          exOp.setTupleValueForExtent(previousOpOutput);
+          packets.clear();
+        }
+        /*if the exchange is a relay, then the packets have been recieved by this site already, 
+        and need to be assessed*/
         if(exOp.getComponentType().equals(ExchangePartType.RELAY))
         {
           InstanceExchangePart preExOp = exOp.getPrevious();
-          Integer tupleCount = preExOp.getExtentTupleValue();
-          Integer packetCount = this.tupleToPacketConversion(tupleCount, preExOp);
-          transmittablePacketsCount += recievedPacketCount(IOT, currentPacketCount, packetCount);
-          currentPacketCount += exOp.getmaxPackets(IOT.getDAF(), beta, costs);
-          exOp.setTupleValueForExtent(ChannelModelSite.packetToTupleConversion(transmittablePacketsCount, exOp, preExOp));
+          //got max packets 
+          int maxTransmittablePacketCount = exOp.getmaxPackets(IOT.getDAF(), beta, costs);
+          int transmittablePacketsCount = recievedPacketCount(IOT, currentPacketCount, maxTransmittablePacketCount);
+          addToPacketCounts(maxTransmittablePacketCount, transmittablePacketsCount, 
+              packetIds, currentPacketCount);
+          currentPacketCount += maxTransmittablePacketCount;
+          exOp.setTupleValueForExtent(
+              ChannelModelSite.packetToTupleConversion(transmittablePacketsCount, exOp, preExOp));
         }
         if(exOp.getComponentType().equals(ExchangePartType.CONSUMER) &&
            previousOp == null )
@@ -334,14 +388,11 @@ public class ChannelModelSite implements Serializable
           Integer packetsOfSameExtent = packets.get(exOp.getExtent());
           if(packetsOfSameExtent == null)
             packetsOfSameExtent = 0;
-          InstanceExchangePart preExOp = exOp.getPrevious();
-          Integer tupleCount = preExOp.getExtentTupleValue();
-          Integer packetCount = this.tupleToPacketConversion(tupleCount, preExOp);
-          this.tupleToPacketConversion(tupleCount, exOp);
-          packetsOfSameExtent += recievedPacketCount(IOT, currentPacketCount, packetCount);
+          int maxTransmittablePacketCount = exOp.getmaxPackets(IOT.getDAF(), beta, costs);
+          int transmittablePacketsCount = recievedPacketCount(IOT, currentPacketCount, maxTransmittablePacketCount);
           packets.remove(exOp.getExtent());
-          packets.put(exOp.getExtent(), packetsOfSameExtent );
-          currentPacketCount += exOp.getmaxPackets(IOT.getDAF(), beta, costs);
+          packets.put(exOp.getExtent(), transmittablePacketsCount);
+          currentPacketCount += maxTransmittablePacketCount;
         }
         if(exOp.getComponentType().equals(ExchangePartType.CONSUMER) &&
             previousOp != null)
@@ -382,15 +433,50 @@ public class ChannelModelSite implements Serializable
           previousOpOutput = (int) outputCard.getCard();
           previousOp = op;
           preivousOutputExtent = packets.toString();
-          packets.clear();
-          int noPackets = this.tupleToPacketConversion(previousOpOutput, op);
-          transmittablePacketsCount += noPackets;
+          if(op.getSensornetOperator() instanceof SensornetDeliverOperator)
+          {
+            previousOpOutput = this.tupleToPacketConversion(previousOpOutput, op);
+            for(int index = 0; index < previousOpOutput; index++)
+              packetIds.add(0);
+          }
         } 
       }
     }
-    return transmittablePacketsCount;
+    return packetIds;
   }
 
+  /**
+   * updates packet Trackers for channel model
+   * @param maxTransmittablePacketCount
+   * @param transmittablePacketsCount
+   * @param packetIds
+   * @param currentPacketCount 
+   */
+  private void addToPacketCounts(int maxTransmittablePacketCount,
+                                 int transmittablePacketsCount, 
+                                 ArrayList<Integer> packetIds, 
+                                 int currentPacketCount)
+  {
+    ArrayList<Boolean> packetRecievedBoolFormat = packetRecievedBoolFormat();
+    int checkedPackets = 0;
+    for(int index = 1; index < maxTransmittablePacketCount; index ++)
+    {
+      if(checkedPackets <= transmittablePacketsCount && packetRecievedBoolFormat.get(index -1))
+      {
+        packetIds.add(index + currentPacketCount);
+        checkedPackets++;
+      }
+    }
+  }
+
+  /**
+   * converts a number of tuples into packets
+   * @param noTuples
+   * @param op
+   * @return
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   */
   private int tupleToPacketConversion(int noTuples, InstanceOperator op)
   throws SchemaMetadataException, TypeMappingException
   {
@@ -439,9 +525,19 @@ public class ChannelModelSite implements Serializable
     }
   }
 
+  /**
+   * converts a number of packets into a collection of tuples
+   * @param packets
+   * @param op
+   * @param preOp
+   * @return
+   * @throws SchemaMetadataException
+   * @throws TypeMappingException
+   */
   public static HashMap<String, Integer> packetToTupleConversion(
                                              HashMap<String, Integer> packets, 
-                                             InstanceOperator op, InstanceOperator preOp) 
+                                             InstanceOperator op, 
+                                             InstanceOperator preOp) 
   throws SchemaMetadataException, TypeMappingException
   {
     
@@ -457,13 +553,15 @@ public class ChannelModelSite implements Serializable
         if(op instanceof InstanceExchangePart)
         {
           InstanceExchangePart exOp = (InstanceExchangePart) op;
-          tupleSize = exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
+          tupleSize = 
+            exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
         }
         else
           tupleSize = op.getSensornetOperator().getPhysicalTupleSize();
         int maxMessagePayloadSize = costs.getMaxMessagePayloadSize();
         int payloadOverhead = costs.getPayloadOverhead() + 8;
-        int numTuplesPerMessage = (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
+        int numTuplesPerMessage = 
+          (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
         int tuplesForExchange = (noPackets -1) * numTuplesPerMessage;
         int lastPacketTupleCount = preOp.getLastPacketTupleCount();
         tuplesForExchange += lastPacketTupleCount;
@@ -475,13 +573,15 @@ public class ChannelModelSite implements Serializable
         if(op instanceof InstanceExchangePart)
         {
           InstanceExchangePart exOp = (InstanceExchangePart) op;
-          tupleSize = exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
+          tupleSize = 
+            exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
         }
         else
           tupleSize = op.getSensornetOperator().getPhysicalTupleSize();
         int maxMessagePayloadSize = costs.getMaxMessagePayloadSize();
         int payloadOverhead = costs.getPayloadOverhead();
-        int numTuplesPerMessage = (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
+        int numTuplesPerMessage = 
+          (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
         int tuplesForExchange = (noPackets -1) * numTuplesPerMessage;
         int lastPacketTupleCount = preOp.getLastPacketTupleCount();
         tuplesForExchange += lastPacketTupleCount;
@@ -510,13 +610,15 @@ public class ChannelModelSite implements Serializable
       if(op instanceof InstanceExchangePart)
       {
         InstanceExchangePart exOp = (InstanceExchangePart) op;
-        tupleSize = exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
+        tupleSize = 
+          exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
       }
       else
         tupleSize = op.getSensornetOperator().getPhysicalTupleSize();
       int maxMessagePayloadSize = costs.getMaxMessagePayloadSize();
       int payloadOverhead = costs.getPayloadOverhead() + 8;
-      int numTuplesPerMessage = (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
+      int numTuplesPerMessage = 
+        (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
       int tuplesForExchange = (noPackets -1) * numTuplesPerMessage;
       int lastPacketTupleCount = preOp.getLastPacketTupleCount();
       tuplesForExchange += lastPacketTupleCount;
@@ -528,13 +630,15 @@ public class ChannelModelSite implements Serializable
       if(op instanceof InstanceExchangePart)
       {
         InstanceExchangePart exOp = (InstanceExchangePart) op;
-        tupleSize = exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
+        tupleSize =
+          exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
       }
       else
         tupleSize = op.getSensornetOperator().getPhysicalTupleSize();
       int maxMessagePayloadSize = costs.getMaxMessagePayloadSize();
       int payloadOverhead = costs.getPayloadOverhead();
-      int numTuplesPerMessage = (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
+      int numTuplesPerMessage = 
+        (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
       int tuplesForExchange = (noPackets -1) * numTuplesPerMessage;
       int lastPacketTupleCount = preOp.getLastPacketTupleCount();
       tuplesForExchange += lastPacketTupleCount;
@@ -581,7 +685,8 @@ public class ChannelModelSite implements Serializable
           if(!packetRecieved)
           {
             Iterator<String> EquivNodes = 
-              this.overlayNetwork.getActiveNodesInRankedOrder(this.overlayNetwork.getClusterHeadFor(child)).iterator();
+              this.overlayNetwork.getActiveNodesInRankedOrder(
+                  this.overlayNetwork.getClusterHeadFor(child)).iterator();
             while(EquivNodes.hasNext())
             {
               String EquivNode = EquivNodes.next();
@@ -615,6 +720,97 @@ public class ChannelModelSite implements Serializable
   {
     ChannelModelSite.reliableChannelQEP = reliableChannelQEP;
   }
+  
+  /**
+   * allows the utils system to ask if a specfic packet was recieved
+   */
+  
+  public String packetRecievedStringBoolFormat()
+  {
+    String output = "";
+    //locate the child cluster heads
+    Set<String> clusterHeadIds = new HashSet<String>();
+    Iterator<String> inputPacketKeys = arrivedPackets.keySet().iterator();
+    while(inputPacketKeys.hasNext())
+    {
+      String child = inputPacketKeys.next();
+      clusterHeadIds.add(this.overlayNetwork.getClusterHeadFor(child));
+    }
+  
+    inputPacketKeys = clusterHeadIds.iterator();
+    while(inputPacketKeys.hasNext())
+    {
+      String child = inputPacketKeys.next();
+      ArrayList<Boolean> packets = arrivedPackets.get(child);
+      Iterator<Boolean> packetIterator = packets.iterator();
+      int counter = 0;
+      while(packetIterator.hasNext())
+      {
+        Boolean packetRecieved = packetIterator.next();
+        if(!packetRecieved)
+        {
+          Iterator<String> EquivNodes = 
+            this.overlayNetwork.getActiveNodesInRankedOrder(
+                this.overlayNetwork.getClusterHeadFor(child)).iterator();
+          while(EquivNodes.hasNext())
+          {
+            String EquivNode = EquivNodes.next();
+            ArrayList<Boolean> equivPackets = arrivedPackets.get(EquivNode);
+            if(equivPackets.get(counter))
+              packetRecieved = true;
+          }
+        }
+        if(packetRecieved)
+          output = output.concat("T,");
+        else
+          output = output.concat("F,");
+        counter++;
+      }
+    }
+    return output;
+  }
+  
+  public ArrayList<Boolean> packetRecievedBoolFormat()
+  {
+    ArrayList<Boolean> output = new ArrayList<Boolean>();
+    //locate the child cluster heads
+    Set<String> clusterHeadIds = new HashSet<String>();
+    Iterator<String> inputPacketKeys = arrivedPackets.keySet().iterator();
+    while(inputPacketKeys.hasNext())
+    {
+      String child = inputPacketKeys.next();
+      clusterHeadIds.add(this.overlayNetwork.getClusterHeadFor(child));
+    }
+  
+    inputPacketKeys = clusterHeadIds.iterator();
+    while(inputPacketKeys.hasNext())
+    {
+      String child = inputPacketKeys.next();
+      ArrayList<Boolean> packets = arrivedPackets.get(child);
+      Iterator<Boolean> packetIterator = packets.iterator();
+      int counter = 0;
+      while(packetIterator.hasNext())
+      {
+        Boolean packetRecieved = packetIterator.next();
+        if(!packetRecieved)
+        {
+          Iterator<String> EquivNodes = 
+            this.overlayNetwork.getActiveNodesInRankedOrder(
+                this.overlayNetwork.getClusterHeadFor(child)).iterator();
+          while(EquivNodes.hasNext())
+          {
+            String EquivNode = EquivNodes.next();
+            ArrayList<Boolean> equivPackets = arrivedPackets.get(EquivNode);
+            if(equivPackets.get(counter))
+              packetRecieved = true;
+          }
+        }
+        output.add(packetRecieved);
+        counter++;
+      }
+    }
+    return output;
+  }
 
   /**
    * clears stores so ready for new iteration
@@ -627,5 +823,39 @@ public class ChannelModelSite implements Serializable
     this.transmittedAcksTo.clear();
     this.siblingTransmissions = 0;
     setupExpectedPackets();
+  }
+
+  /**
+   * finds the packets from the clusterhead and other siblings and transmits them
+   * @return
+   */
+  public ArrayList<Integer> transmittablePackets()
+  {
+    ArrayList<Integer> packetIDs = new ArrayList<Integer>();
+    String key = this.overlayNetwork.getClusterHeadFor(siteID);
+    ArrayList<Boolean> packets = arrivedPackets.get(key);
+    Iterator<Boolean> packetIterator = packets.iterator();
+    int counter = 0;
+    while(packetIterator.hasNext())
+    {
+      Boolean packetRecieved = packetIterator.next();
+      if(!packetRecieved)
+      {
+        Iterator<String> EquivNodes = 
+          this.overlayNetwork.getActiveNodesInRankedOrder(
+              this.overlayNetwork.getClusterHeadFor(key)).iterator();
+        while(EquivNodes.hasNext())
+        {
+          String EquivNode = EquivNodes.next();
+          ArrayList<Boolean> equivPackets = arrivedPackets.get(EquivNode);
+          if(equivPackets.get(counter))
+            packetRecieved = true;
+        }
+      }
+      if(packetRecieved)
+        packetIDs.add(counter + 1);
+      counter++;
+    }
+    return packetIDs;
   }
 }

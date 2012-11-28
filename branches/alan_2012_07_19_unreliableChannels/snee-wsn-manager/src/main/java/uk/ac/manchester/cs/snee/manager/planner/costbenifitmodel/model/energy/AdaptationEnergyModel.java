@@ -545,8 +545,8 @@ public class AdaptationEnergyModel extends Model
         {
           Site source = sitesInPath.next();
           
-          CommunicationTask sourceTask = new CommunicationTask(new Long(0),  dest, source, CommunicationTask.TRANSMIT, new Long(1), parameters, false, dest);
-          CommunicationTask destTask = new CommunicationTask(new Long(0), dest, source, CommunicationTask.RECEIVE, new Long(1), parameters, false, dest);
+          CommunicationTask sourceTask = new CommunicationTask(new Long(0),  dest, source, CommunicationTask.TRANSMIT, new Long(1), parameters, false, dest, dest);
+          CommunicationTask destTask = new CommunicationTask(new Long(0), dest, source, CommunicationTask.RECEIVE, new Long(1), parameters, false, dest, dest) ;
           double sourceCost;
           double destCost;
           
