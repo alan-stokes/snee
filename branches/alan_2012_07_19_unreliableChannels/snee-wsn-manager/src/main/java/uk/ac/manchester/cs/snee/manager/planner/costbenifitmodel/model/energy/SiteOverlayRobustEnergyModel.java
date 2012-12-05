@@ -33,6 +33,7 @@ public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
 { 
   
    private ChannelModel channelModel = null;
+   
    public SiteOverlayRobustEnergyModel(UnreliableChannelAgenda agenda,
                                       LogicalOverlayNetworkHierarchy overlayNetwork,
                                       ChannelModel channelModel, ArrayList<String> failedNodes,
@@ -42,7 +43,7 @@ public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
    {
      super(agenda, overlayNetwork);
      this.channelModel = channelModel;
-     channelModel.runModel(failedNodes, agenda.getIOT());
+     this.channelModel.runModel(failedNodes, agenda.getIOT());
    }
    
    /**

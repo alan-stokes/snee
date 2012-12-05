@@ -166,14 +166,23 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
   private static boolean checkAgendas(AgendaIOT oldAgenda, AgendaIOT newAgenda, IOT newIOT, IOT oldIOT,
       ArrayList<String> failedNodes, Adaptation currentAdapatation, boolean timePinned)
   {
-    checkForTemporalChangedNodes(newAgenda, oldAgenda, newIOT, oldIOT, failedNodes, currentAdapatation);
-    if(timePinned)
-      if(currentAdapatation.getTemporalChangesSize() == 0)
-        return true;
+    try
+    {
+      checkForTemporalChangedNodes(newAgenda, oldAgenda, newIOT, oldIOT, failedNodes, currentAdapatation);
+      if(timePinned)
+        if(currentAdapatation.getTemporalChangesSize() == 0)
+          return true;
+        else
+          return false;
       else
-        return false;
-    else
-      return true;
+        return true;
+    }
+    catch(Exception e)
+    {
+      System.out.println(e.getLocalizedMessage());
+      e.printStackTrace();
+      return false;
+    }
   }
 
   /**

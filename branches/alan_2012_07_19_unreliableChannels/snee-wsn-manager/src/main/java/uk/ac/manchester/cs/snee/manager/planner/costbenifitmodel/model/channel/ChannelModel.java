@@ -182,7 +182,7 @@ public class ChannelModel implements Serializable
           
           if(destSite.getTask(cTask.getStartTime(), CommunicationTask.ACKTRANSMIT).isRan())
             if(!didPacketGetRecived(destSite.toString(), Integer.parseInt(sourceSite.toString()),
-                cTask.getStartTime()))
+                cTask.getStartTime(), 1))
               cTask.setRan(false);
             else
             {
@@ -302,7 +302,7 @@ public class ChannelModel implements Serializable
     else
       startTime = startTime +(iteration * agenda.getLength_bms(false));
     startTime = startTime + new Double(Math.ceil(costs.getSendPacket() * (packetID - 1))).longValue();
-    if(didPacketGetRecived(destID, sourceID, startTime))
+    if(didPacketGetRecived(destID, sourceID, startTime, packetID))
     {
       outputSite.recivedInputPacket(sourceID.toString(), packetID);
     }
@@ -326,7 +326,7 @@ public class ChannelModel implements Serializable
     else
       startTime = startTime +(iteration * agenda.getLength_bms(false));
     startTime = startTime + new Double(Math.ceil(costs.getSendPacket() * (packetID - 1))).longValue();
-    if(didPacketGetRecived(destID, sourceID, startTime))
+    if(didPacketGetRecived(destID, sourceID, startTime, packetID))
     {
       outputSite.recivedSiblingPacket(sourceID.toString(), packetID);
     }
@@ -341,10 +341,12 @@ public class ChannelModel implements Serializable
    * @throws SNEEConfigurationException 
    * @throws NumberFormatException 
    */
-  private boolean didPacketGetRecived(String destID, Integer sourceID, long timeOfTransmission)
+  private boolean didPacketGetRecived(String destID, Integer sourceID, long timeOfTransmission,
+                                      Integer packetID)
   throws NumberFormatException, SNEEConfigurationException
   {
-    return noiseModel.packetRecieved(sourceID.toString(), destID, timeOfTransmission);
+    return noiseModel.packetRecieved(sourceID.toString(), destID, timeOfTransmission,
+                                     channelModel.get(Integer.parseInt(destID)), packetID);
   }
 
   /**

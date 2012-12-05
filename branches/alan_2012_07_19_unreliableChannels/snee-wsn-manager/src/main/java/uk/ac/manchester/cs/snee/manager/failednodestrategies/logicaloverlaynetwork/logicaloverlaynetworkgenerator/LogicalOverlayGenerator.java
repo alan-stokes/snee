@@ -137,7 +137,7 @@ public class LogicalOverlayGenerator
    * @throws IOException 
    * @throws SNEEConfigurationException 
    * @throws ClassNotFoundException 
-   */
+   *//*
   private LogicalOverlayNetwork assessmentPhase(ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays,
                                                 LogicalOverlayStrategy failedNodeStrategyLocal,
                                                 final String qepID, RT qepRT) 
@@ -180,6 +180,19 @@ public class LogicalOverlayGenerator
     }
     else
       return null;
+  }*/
+  
+  private LogicalOverlayNetwork assessmentPhase(ArrayList<LogicalOverlayNetwork> setsOfLogicalOverlays,
+                                                LogicalOverlayStrategy failedNodeStrategyLocal,
+                                                final String qepID, RT qepRT) 
+  throws IOException, OptimizationException, SchemaMetadataException, 
+         TypeMappingException, CodeGenerationException, 
+         SNEEConfigurationException 
+  {
+    LogicalOverlayNetwork first = setsOfLogicalOverlays.get(0);
+    transferQEPsToCandiates(first, qepID);  
+    new LogicalOverlayGeneratorUtils().storeOverlayAsText(first, localFolder);
+    return first;
   }
 
   /**

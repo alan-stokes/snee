@@ -67,7 +67,8 @@ public class NoiseModel
    * @throws SNEEConfigurationException 
    * @throws NumberFormatException 
    */
-  public boolean packetRecieved(String sourceID, String destID, Long startTime)
+  public boolean packetRecieved(String sourceID, String destID, Long startTime,
+                                ChannelModelSite destSite, Integer packetID)
   throws NumberFormatException, SNEEConfigurationException
   {
     if(useingClearChannels && relibaleChannels)
@@ -75,7 +76,7 @@ public class NoiseModel
       return true;
     }
     else
-      return didPacketGetRecieved(sourceID, destID, startTime);
+      return didPacketGetRecieved(sourceID, destID, startTime, destSite, packetID);
   }
 
   /**
@@ -86,7 +87,8 @@ public class NoiseModel
    * @throws SNEEConfigurationException 
    * @throws NumberFormatException 
    */
-  private boolean didPacketGetRecieved(String sourceID, String destID, Long startTime)
+  private boolean didPacketGetRecieved(String sourceID, String destID, Long startTime,
+                                       ChannelModelSite destSite, Integer packetID)
   throws NumberFormatException, SNEEConfigurationException
   {
     
@@ -101,22 +103,28 @@ public class NoiseModel
     Double signalNoiseRatio = RSSI - noise;
     Double prr = (1-(0.5 * Math.pow(Math.exp(0 - (signalNoiseRatio / 2) * (1/0.64)), 8 * packetSize)));
     //prr from cpm model seems more realistic and less dubious than prr from trnasiotnal paper
-    Double prr2 = cpmPRRForm(signalNoiseRatio);
+ //   Double prr2 = cpmPRRForm(signalNoiseRatio);
     
     Random random = new Random(new Long(0));
     double randomDouble = random.nextDouble();
     if(randomDouble < (prr))
     {
+      destSite.addNoiseTrace(sourceID, packetID, 
+                             new NoiseDataStore(RSSI, noise, signalNoiseRatio, prr, true,
+                                                sourceID));
       return true;
     }
     else
     {
+      destSite.addNoiseTrace(sourceID, packetID, 
+                             new NoiseDataStore(RSSI, noise, signalNoiseRatio, prr, false,
+                                                sourceID));
       return false;
     }
   }
 
  
-
+/*
   private Double cpmPRRForm(Double signalNoiseRatio)
   {
     double x = signalNoiseRatio - 2.3851;
@@ -127,7 +135,7 @@ public class NoiseModel
     else if(prr <0)
       prr = -0.1;
     return prr;
-  }
+  }*/
 
   /**
    * returns the estimated signal strnegth though RSSI given 2 node ids.

@@ -41,7 +41,7 @@ public class SNEEClientUsingCCOStored extends SNEEClient
 		super(query, duration);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClientUsingCCOStored()");
-		controller.addServiceSource("CCO-Stored", serviceUrl, 
+		getController().addServiceSource("CCO-Stored", serviceUrl, 
 				SourceType.WSDAIR);
 //		Collection<String> extents = controller.getExtents();
 //		Iterator<String> it = extents.iterator();

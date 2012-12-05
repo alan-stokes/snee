@@ -29,7 +29,6 @@ import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessor;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorUtils;
 //import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.RobustChoiceAssessor;
-import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModel;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.SuccessorRelationManager;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelManager;

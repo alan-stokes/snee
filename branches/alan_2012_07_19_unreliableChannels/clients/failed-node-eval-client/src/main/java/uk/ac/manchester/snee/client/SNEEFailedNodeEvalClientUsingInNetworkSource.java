@@ -155,7 +155,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
         new  SNEEFailedNodeEvalClientUsingInNetworkSource(currentQuery, 
                            duration, queryParams, null, propertiesPath);
       //set queryid to correct id
-      SNEEController contol = (SNEEController) client.controller;
+      SNEEController contol = (SNEEController) client.getController();
       contol.setQueryID(queryid);
       //added to allow recovery from crash
       updateRecoveryFile();
@@ -211,9 +211,9 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     control.addQuery(_query, _queryParams, null, true, false, true);
-    controller.close();
+    getController().close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
   }
@@ -299,7 +299,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
     testNo = 1;
     Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
     siteIDs.clear();
-    SNEEController snee = (SNEEController) controller;
+    SNEEController snee = (SNEEController) getController();
     SourceMetadataAbstract metadata = snee.getMetaData().getSource(qep.getMetaData().getOutputAttributes().get(1).getExtentName());
     SensorNetworkSourceMetadata sensornetworkMetadata = (SensorNetworkSourceMetadata) metadata;
     int[] sources = sensornetworkMetadata.getSourceSites(qep.getDAF().getPAF());
@@ -393,7 +393,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
   TypeMappingException, IOException, CodeGenerationException,
   SNEEConfigurationException 
   {
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     control.resetQEP(qep);
   }
 
@@ -401,7 +401,7 @@ private void resetMetaData()
   throws SourceDoesNotExistException, SourceMetadataException,
   SNEEConfigurationException, SNCBException, TopologyReaderException
   {
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     control.resetMetaData(qep);
   }
 
@@ -418,13 +418,13 @@ private void resetMetaData()
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
     System.out.println("Failed nodes" + failedNodes.toString() );
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     control.giveAutonomicManagerQuery(_query);
     Model.setCompiledAlready(false);
     control.runSimulatedNodeFailure(failedNodes);
     //  List<ResultSet> results1 = resultStore.getResults();
     System.out.println("Stopping query " + queryid + ".");
-    controller.close();
+    getController().close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
   }

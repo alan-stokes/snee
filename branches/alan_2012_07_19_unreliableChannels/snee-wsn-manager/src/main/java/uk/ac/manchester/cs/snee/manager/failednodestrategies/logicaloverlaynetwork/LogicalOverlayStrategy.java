@@ -604,7 +604,6 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
       
       if(currentQEP instanceof RobustSensorNetworkQueryPlan)
       {
-        RobustSensorNetworkQueryPlan rQEP = (RobustSensorNetworkQueryPlan) currentQEP;
         boolean allowDiscontinuousSensing = 
           SNEEProperties.getBoolSetting(SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
         UnreliableChannelAgenda newAgenda = 

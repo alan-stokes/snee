@@ -43,8 +43,8 @@ public class RelibaleChannelClient extends SNEEClient
 	private static int queryid = 1;
 	protected static int testNo = 1;
 	private static int max = 120;
-  private static File testFolder =  new File("src/main/resources/mini");
-  private static File sneetestFolder =  new File("mini");
+  private static File testFolder =  new File("src/main/resources/testsSize30");
+  private static File sneetestFolder =  new File("testsSize30");
   @SuppressWarnings("unused")
   private static boolean inRecoveryMode = false;
 	
@@ -166,7 +166,7 @@ public class RelibaleChannelClient extends SNEEClient
 	       System.out.println("System already has test cases, will not re-execute process");
 	     }
 	 }
-	 
+	 /*
 	 private static void collectQueries(ArrayList<String> queries) throws IOException
 	 {
 	    //String filePath = Utils.validateFileLocation("tests/queries.txt");
@@ -182,7 +182,7 @@ public class RelibaleChannelClient extends SNEEClient
 	      else
 	        counter++;
 	    }  
-	 }
+	 }*/
 	 
 	 private static void updateRecoveryFile() throws IOException
 	 {
@@ -211,7 +211,7 @@ public class RelibaleChannelClient extends SNEEClient
       RelibaleChannelClient client = 
       new  RelibaleChannelClient(currentQuery, duration, queryParams, null, propertiesPath);
       //set queryid to correct id
-      SNEEController contol = (SNEEController) client.controller;
+      SNEEController contol = (SNEEController) client.getController();
       contol.setQueryID(queryid);
       //added to allow recovery from crash
       updateRecoveryFile();
@@ -248,7 +248,7 @@ public class RelibaleChannelClient extends SNEEClient
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_SIM_FAILED_NODES, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
@@ -256,7 +256,7 @@ public class RelibaleChannelClient extends SNEEClient
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS, "FALSE");
     
     control.addQuery(_query, _queryParams);
-    controller.close();
+    getController().close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
   }

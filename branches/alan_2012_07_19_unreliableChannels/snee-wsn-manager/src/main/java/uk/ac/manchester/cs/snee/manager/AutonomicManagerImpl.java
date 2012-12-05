@@ -42,7 +42,6 @@ import uk.ac.manchester.cs.snee.manager.monitor.Monitor;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
-import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModel;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteEnergyModel;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;

@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../schema/physical-schema.xsd ">
 
 	<sensor_network name="wsn1">
-		<topology>testsSize30/wsn_query1.xml</topology>
+		<topology>testsSize30/top1.xml</topology>
 		<site-resources>testsSize30/siteRes1.xml</site-resources>
 		<gateways>0</gateways>
 		<extents>

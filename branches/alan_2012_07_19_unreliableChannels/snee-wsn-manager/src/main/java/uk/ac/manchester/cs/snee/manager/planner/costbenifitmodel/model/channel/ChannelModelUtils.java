@@ -8,9 +8,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import uk.ac.manchester.cs.snee.common.graph.Edge;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragment;
+import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.LogicalOverlayNetworkHierarchy;
@@ -52,16 +50,32 @@ public class ChannelModelUtils
         out.println("subgraph cluster_s" + currentSite.getID() + " {");
         out.println("style=\"rounded,dotted\"");
         out.println("color=blue;");
-        
-        out.print(currentSite.getID() + " [fontsize=20 ");
-        if (currentSite.isSource()) 
+        if( this.routingTree.getRoot().getID().equals(currentSite.getID()))
         {
-          out.print("shape = doublecircle ");
+          String eqNode = currentSite.getID();
+          out.print(eqNode + " [fontsize=20 ");
+          ChannelModelSite site = this.modelSites.get(Integer.parseInt(eqNode));
+          HashMapList<String, NoiseDataStore> noiseValues = site.getNoiseExpValues();
+          Iterator<String> keyIterator = noiseValues.keySet().iterator();
+          String noiseOutput = "";
+          while(keyIterator.hasNext())
+          {
+            String key = keyIterator.next();
+            ArrayList<NoiseDataStore> noiseValuesForPacketID = noiseValues.get(key);
+            Iterator<NoiseDataStore> noiseIterator = noiseValuesForPacketID.iterator();
+            while(noiseIterator.hasNext())
+            {
+              NoiseDataStore noiseValue = noiseIterator.next(); 
+              noiseOutput = noiseOutput.concat(noiseValue.toString() + ", ");
+            }
+            noiseOutput = noiseOutput.concat("\\n\\n");
+          }
+          out.print("label = \"" + eqNode + "\\n ");
+          out.print(noiseOutput);
+          out.println("\"];");
         }
-        ChannelModelSite site = this.modelSites.get(Integer.parseInt(currentSite.getID()));
-        String format = site.packetRecievedStringBoolFormat();
-        out.print("label = \"" + currentSite.getID() + "\\n " + format);
-        out.println("\"];");
+        else
+        {
         //rest of nodes in logical node
         Iterator<String> eqNodesIterator = 
           logicaloverlayNetwork.getActiveEquivilentNodes(currentSite.getID()).iterator();
@@ -69,12 +83,29 @@ public class ChannelModelUtils
         {
           String eqNode = eqNodesIterator.next();
           out.print(eqNode + " [fontsize=20 ");
-          site = this.modelSites.get(Integer.parseInt(eqNode));
-          format = site.packetRecievedStringBoolFormat();
-          out.print("label = \"" + eqNode + "\\n " + format);
+          ChannelModelSite site = this.modelSites.get(Integer.parseInt(eqNode));
+          String format = site.packetRecievedStringBoolFormat();
+          HashMapList<String, NoiseDataStore> noiseValues = site.getNoiseExpValues();
+          Iterator<String> keyIterator = noiseValues.keySet().iterator();
+          String noiseOutput = "";
+          while(keyIterator.hasNext())
+          {
+            String key = keyIterator.next();
+            ArrayList<NoiseDataStore> noiseValuesForPacketID = noiseValues.get(key);
+            Iterator<NoiseDataStore> noiseIterator = noiseValuesForPacketID.iterator();
+            while(noiseIterator.hasNext())
+            {
+              NoiseDataStore noiseValue = noiseIterator.next(); 
+              noiseOutput = noiseOutput.concat(key + " " + noiseValue.toString() + ", ");
+            }
+            noiseOutput = noiseOutput.concat("\\n\\n");
+          }
+          out.print("label = \"" + eqNode + "\\n " + format + "\\n");
+          out.print(noiseOutput);
           out.println("\"];");
         }
         out.println("}");
+        }
       }
       
       //traverse the edges now

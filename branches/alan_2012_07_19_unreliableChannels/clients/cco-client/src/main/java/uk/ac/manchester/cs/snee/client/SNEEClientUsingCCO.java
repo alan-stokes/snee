@@ -37,7 +37,7 @@ public class SNEEClientUsingCCO extends SNEEClient {
 		super(query, duration);
 		if (logger.isDebugEnabled()) 
 			logger.debug("ENTER SNEEClientUsingCCO()");
-		controller.addServiceSource("CCO-WS", serviceUrl, 
+		getController().addServiceSource("CCO-WS", serviceUrl, 
 				SourceType.PULL_STREAM_SERVICE);
 //		displayExtentNames();
 //		displayAllExtents();

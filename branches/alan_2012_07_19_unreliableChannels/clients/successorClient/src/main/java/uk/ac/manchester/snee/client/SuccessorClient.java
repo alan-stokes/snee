@@ -218,7 +218,7 @@ public class SuccessorClient extends SNEEClient
       SuccessorClient client = 
       new  SuccessorClient(currentQuery, duration, queryParams, null, propertiesPath);
       //set queryid to correct id
-      SNEEController contol = (SNEEController) client.controller;
+      SNEEController contol = (SNEEController) client.getController();
       contol.setQueryID(queryid);
       //added to allow recovery from crash
       updateRecoveryFile();
@@ -253,7 +253,7 @@ public class SuccessorClient extends SNEEClient
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_SIM_FAILED_NODES, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
@@ -261,7 +261,7 @@ public class SuccessorClient extends SNEEClient
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS, "FALSE");
     
     control.addQuery(_query, _queryParams);
-    controller.close();
+    getController().close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
   }

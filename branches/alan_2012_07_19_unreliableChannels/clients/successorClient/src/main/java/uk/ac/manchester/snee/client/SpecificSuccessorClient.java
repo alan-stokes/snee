@@ -89,7 +89,7 @@ public class SpecificSuccessorClient extends SNEEClient
       SpecificSuccessorClient client = 
       new  SpecificSuccessorClient(currentQuery, duration, queryParams, null, propertiesPath);
       //set queryid to correct id
-      SNEEController contol = (SNEEController) client.controller;
+      SNEEController contol = (SNEEController) client.getController();
       contol.setQueryID(queryid);
       client.runCompilelation();
       System.out.println("Ran all tests on query " + (queryid));
@@ -118,7 +118,7 @@ public class SpecificSuccessorClient extends SNEEClient
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR, "TRUE");
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_SIM_FAILED_NODES, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
@@ -126,7 +126,7 @@ public class SpecificSuccessorClient extends SNEEClient
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS, "FALSE");
     
     control.addQuery(_query, _queryParams,1, true, false, true);
-    controller.close();
+    getController().close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
   } 

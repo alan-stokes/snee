@@ -65,9 +65,9 @@ public class SNEEClientMixed extends SNEEClient {
 			logger.debug("ENTER SNEEClientMixed()");
 
 		//XXX: Order of adding services is important!
-		controller.addServiceSource("CCO-WS", ccoWsUrl, 
+		getController().addServiceSource("CCO-WS", ccoWsUrl, 
 				SourceType.PULL_STREAM_SERVICE);
-		controller.addServiceSource("CCO-Stored", ccoStoredUrl, 
+		getController().addServiceSource("CCO-Stored", ccoStoredUrl, 
 				SourceType.WSDAIR);
 //		displayExtentNames();
 //		displayAllExtents();

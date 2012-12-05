@@ -382,6 +382,8 @@ public class ChoiceAssessor implements Serializable
         failedNodeIDs.add(failedSite);
         System.out.println("node " + failedSite);
         List<Adaptation> result = failedNodeStrategyLocal.adapt(failedNodeIDs, current);
+        if(result.size() == 0)
+          return overallShortestLifetime;
         failedNodeStrategyLocal.update(result.get(0), current);
         adapt.setNewQep(result.get(0).getNewQep());
         current.setQep(result.get(0).getNewQep());

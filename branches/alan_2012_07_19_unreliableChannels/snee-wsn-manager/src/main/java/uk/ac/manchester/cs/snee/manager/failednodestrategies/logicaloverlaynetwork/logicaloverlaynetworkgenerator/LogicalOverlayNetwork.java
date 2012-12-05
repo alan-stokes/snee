@@ -2,6 +2,7 @@ package uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetw
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +40,7 @@ public class LogicalOverlayNetwork implements Serializable
   private static Integer idCounter = 1;
   private TreeMap<String, String> logicalNodeIds = new TreeMap<String, String>();
   private String currentNextID ="A";
+  private String stringFormat = "";
   /**
    * constructor
    */
@@ -63,6 +65,7 @@ public class LogicalOverlayNetwork implements Serializable
         this.addClusterNode(key, eqNode);
       }
     }
+    generateStringFormat();
     id = "Overlay" + idCounter.toString();
     idCounter++;
   }
@@ -71,6 +74,7 @@ public class LogicalOverlayNetwork implements Serializable
   {
     this.clusters.addAll(primary, equivilentNodes);
     addNewID(primary);
+    generateStringFormat();
   }
   
   private void addNewID(String primary)
@@ -98,6 +102,7 @@ public class LogicalOverlayNetwork implements Serializable
   public void addClusterNode(String primary, String equivilentNode)
   {
     this.clusters.add(primary, equivilentNode);
+    generateStringFormat();
   }
 
   public Set<String> getKeySet()
@@ -125,6 +130,7 @@ public class LogicalOverlayNetwork implements Serializable
       String key = keyIterator.next();
       clusters.remove(key, removal);
     }
+    generateStringFormat();
   }
   
   @Override
@@ -240,6 +246,28 @@ public class LogicalOverlayNetwork implements Serializable
     candidates.remove(newHead);
     clusters.remove(head);
     clusters.set(newHead, candidates);
+    generateStringFormat();
+  }
+
+  private void generateStringFormat()
+  {
+    ArrayList<String> keys = new ArrayList<String>(this.clusters.keySet());
+    Collections.sort(keys);
+    Iterator<String> keyIterator = keys.iterator();
+    while(keyIterator.hasNext())
+    {
+      String key = keyIterator.next();
+      this.stringFormat = this.stringFormat.concat(key + "[");
+      ArrayList<String> cluster = this.clusters.get(key);
+      Collections.sort(cluster);
+      Iterator<String> clusterIt = cluster.iterator();
+      while(clusterIt.hasNext())
+      {
+        String node = clusterIt.next();
+        this.stringFormat = this.stringFormat.concat(node + ",");
+      }
+      this.stringFormat = this.stringFormat.concat("]");
+    }
   }
 
   /**
@@ -271,34 +299,14 @@ public class LogicalOverlayNetwork implements Serializable
   /**
    * Comparison helper method.
    */
-  @Override
-  public boolean equals(Object other)
+  public boolean equals(LogicalOverlayNetwork other)
   {
-    LogicalOverlayNetwork otherNetwork = (LogicalOverlayNetwork) other;
-    if(otherNetwork.getKeySet().size() == this.getKeySet().size())
-    {
-      Iterator<String> keyIterator = otherNetwork.getKeySet().iterator();
-      while(keyIterator.hasNext())
-      {
-        String key = keyIterator.next();
-        ArrayList<String> otherCandidates = otherNetwork.getEquivilentNodes(key);
-        ArrayList<String> candidates = this.getEquivilentNodes(key);
-        if(otherCandidates.size() == candidates.size())
-        {
-          Iterator<String> candidateIterator = otherCandidates.iterator();
-          while(candidateIterator.hasNext())
-          {
-            if(!candidates.contains(candidateIterator.next()))
-              return false;
-          }
-        }
-        else
-          return false;
-      }
-    }
-    else
-      return false;
-    return true;
+    return this.stringFormat.equals(other.getStringFormat());
+  }
+  
+  public String getStringFormat()
+  {
+    return this.stringFormat;
   }
   
   /**

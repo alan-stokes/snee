@@ -1,27 +1,13 @@
 package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
 
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-
-import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.util.HashMap;
 
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
-import uk.ac.manchester.cs.snee.manager.planner.PlannerUtils;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor.SuccessorPath;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.tabu.TabuSearch;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
@@ -100,7 +86,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
    * code to read in a successor to bypass running search if best path is already known
    * @return
    */
-  
+  /*
   private SuccessorPath readInSuccessor()
   {
     try
@@ -148,5 +134,5 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
     {
       System.out.println("cannot write successorpath to file");
     }
-  }
+  }*/
 }

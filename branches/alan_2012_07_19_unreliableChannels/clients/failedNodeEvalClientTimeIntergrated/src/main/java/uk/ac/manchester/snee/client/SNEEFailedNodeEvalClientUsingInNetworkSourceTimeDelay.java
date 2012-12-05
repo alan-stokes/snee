@@ -162,7 +162,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     client = new  SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay(currentQuery, 
                            duration, queryParams, null, propertiesPath);
     //set queryid to correct id
-    SNEEController contol = (SNEEController) client.controller;
+    SNEEController contol = (SNEEController) client.getController();
     contol.setQueryID(queryid);
     //added to allow recovery from crash
     utils.updateRecoveryFile(queryid);
@@ -328,7 +328,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   throws SchemaMetadataException, TypeMappingException, OptimizationException,
   IOException, SNEEConfigurationException, CodeGenerationException
   {
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     control.setupOverlay();
     
   }
@@ -389,7 +389,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   OptimizationException, SchemaMetadataException, TypeMappingException, 
   IOException, CodeGenerationException
   {
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     control.resetMetaData(qep);
     control.resetQEP(qep);
   }
@@ -441,9 +441,9 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     control.addQuery(_query, _queryParams, null, true, true, true);
-    controller.close();
+    getController().close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
   }
@@ -497,7 +497,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   	if(applicableConfulenceSites.size() != 0)
   	{
   		String deadNode = chooseNodes();
-  		controller.simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles);
+  		getController().simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles);
   		client.runForTests(deadNode, queryid, fails); 
   		utils.updateRecoveryFile(queryid);
       System.gc();
@@ -508,7 +508,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   	  System.out.println("were no avilable nodes to fail, will not run test");
   	}
   	System.out.println("Stopping current query");
-  	controller.close();
+  	getController().close();
   }
 
   /**
@@ -526,7 +526,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     RT routingTree = qep.getRT();
     Iterator<Site> siteIterator = routingTree.siteIterator(TraversalOrder.POST_ORDER);
     applicableConfulenceSites.clear();
-    SNEEController snee = (SNEEController) controller;
+    SNEEController snee = (SNEEController) getController();
     SourceMetadataAbstract metadata = snee.getMetaData().getSource(qep.getMetaData().getOutputAttributes().get(1).getExtentName());
     SensorNetworkSourceMetadata sensornetworkMetadata = (SensorNetworkSourceMetadata) metadata;
     int[] sources = sensornetworkMetadata.getSourceSites(qep.getDAF().getPAF());
@@ -612,7 +612,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
     System.out.println("Failed node [" + failedNode + "] ");
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     control.giveAutonomicManagerQuery(_query);
     boolean sucessful = runSimulatedNodeFailure(failedNode, control, fails);
     if(!sucessful)
@@ -660,7 +660,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   throws OptimizationException, SchemaMetadataException, TypeMappingException, 
   IOException, CodeGenerationException, SNEEConfigurationException
   {
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     control.resetQEP(qep);
   }
 
@@ -668,7 +668,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   throws SourceDoesNotExistException, SourceMetadataException, 
   SNEEConfigurationException, SNCBException, TopologyReaderException
   {
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     control.resetMetaData(qep);
   }
 

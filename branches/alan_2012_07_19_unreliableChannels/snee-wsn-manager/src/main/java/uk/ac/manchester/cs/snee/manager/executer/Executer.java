@@ -188,7 +188,7 @@ public class Executer extends AutonomicManagerComponent
   throws NumberFormatException, SNEEConfigurationException, OptimizationException,
   SchemaMetadataException, TypeMappingException, IOException
   {
-    for(double distanceFactor = 1; distanceFactor >= 0.2; distanceFactor-=0.2)
+    for(double distanceFactor = 0.2; distanceFactor <= 1; distanceFactor +=0.2)
     {
       SNEEProperties.setSetting("distanceFactor", new Double(distanceFactor).toString());
       File distanceFactorFolder = 
@@ -214,7 +214,35 @@ public class Executer extends AutonomicManagerComponent
       writeResultsToFile(distanceFactorFolder);
       cleardataStores();
     }
+    
+    //one last time for 0.1 format.
+    double distanceFactor = 0.1;
+    SNEEProperties.setSetting("distanceFactor", new Double(distanceFactor).toString());
+    File distanceFactorFolder = 
+      new File(this.executerOutputFolder.toString() + sep + distanceFactor);
+    distanceFactorFolder.mkdir();
+    File robustFolder = new File(distanceFactorFolder.toString() + sep + "robust");
+    robustFolder.mkdir();
+    ChannelModel channelModel = 
+      new ChannelModel(rQEP.getLogicalOverlayNetwork(), rQEP.getUnreliableAgenda(), 
+                       manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
+                       manager.getCostsParamters(), robustFolder);
+    simulateRunOfRQEP(rQEP, channelModel);
+    LogicalOverlayNetworkHierarchy skelOverlay = 
+      new LogicalOverlayNetworkHierarchy(rQEP.getLogicalOverlayNetwork(),
+                                         qep,  manager.getWsnTopology());
+    File staticFolder = new File(distanceFactorFolder.toString() + sep + "static");
+    staticFolder.mkdir();
+    channelModel = 
+      new ChannelModel(skelOverlay, qep.getAgendaIOT(), 
+                       manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
+                       manager.getCostsParamters(), staticFolder);
+    simulateRunOfQEP(qep, channelModel);
+    writeResultsToFile(distanceFactorFolder);
+    cleardataStores();
+    
   }
+  
 
   private void cleardataStores()
   {

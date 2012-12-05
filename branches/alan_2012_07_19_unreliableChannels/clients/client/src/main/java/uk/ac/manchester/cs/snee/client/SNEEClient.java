@@ -36,12 +36,15 @@ import uk.ac.manchester.cs.snee.metadata.schema.AttributeType;
 import uk.ac.manchester.cs.snee.metadata.schema.ExtentMetadata;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
+import uk.ac.manchester.cs.snee.metadata.source.SensorNetworkSourceMetadata;
+import uk.ac.manchester.cs.snee.metadata.source.SourceDoesNotExistException;
+import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public abstract class SNEEClient implements Observer {
 
 	protected static final Logger logger = Logger.getLogger(SNEEClient.class.getName());
-	protected SNEE controller;
+	private SNEE controller;
 	protected String _query;
 	protected double _duration;
 	protected String _queryParams;
@@ -108,7 +111,7 @@ public abstract class SNEEClient implements Observer {
 	}
 	
 	protected void displayExtentNames() {
-		Collection<String> extentNames = controller.getExtentNames();
+		Collection<String> extentNames = getController().getExtentNames();
 		Iterator<String> it = extentNames.iterator();
 		System.out.println("Extents:");
 		while (it.hasNext()) {
@@ -118,7 +121,7 @@ public abstract class SNEEClient implements Observer {
 	}
 	
 	protected void displayAllExtents() throws MetadataException {
-		Collection<String> extents = controller.getExtentNames();
+		Collection<String> extents = getController().getExtentNames();
 		Iterator<String> it = extents.iterator();
 		while (it.hasNext()) {
 			String extentName = it.next();
@@ -130,7 +133,7 @@ public abstract class SNEEClient implements Observer {
 	throws MetadataException 
 	{
 		ExtentMetadata extent = 
-			controller.getExtentDetails(extentName);
+			getController().getExtentDetails(extentName);
 		List<Attribute> attributes = extent.getAttributes();
 		System.out.println("Attributes for " + extentName + " [" + 
 				extent.getExtentType() + "]" + ":");
@@ -232,11 +235,11 @@ public abstract class SNEEClient implements Observer {
 
 		System.out.println("Query: " + this._query);
 
-		int queryId1 = controller.addQuery(_query, _queryParams);
+		int queryId1 = getController().addQuery(_query, _queryParams);
 
 		long startTime = System.currentTimeMillis();
 		ResultStoreImpl resultStore = 
-			(ResultStoreImpl) controller.getResultStore(queryId1);
+			(ResultStoreImpl) getController().getResultStore(queryId1);
 		resultStore.addObserver(this);
 
 		Runtime.getRuntime().addShutdownHook(new RunWhenShuttingDown(queryId1, 
@@ -282,7 +285,7 @@ public abstract class SNEEClient implements Observer {
 		
 		try 
 		{			
-			SNEEController sneeControl = (SNEEController) controller;
+			SNEEController sneeControl = (SNEEController) getController();
 			sneeControl.waitForQueryEnd();
 		} 
 		catch (InterruptedException e) 
@@ -310,13 +313,13 @@ public abstract class SNEEClient implements Observer {
     		System.out.println("Stopping query " + _queryId + ".");
     		try {
     			List<ResultSet> results1 = _resultStore.getResults();
-				controller.removeQuery(_queryId);
+				getController().removeQuery(_queryId);
 
 				//XXX: Sleep included to highlight evaluator not ending bug 
 				//Thread.currentThread().sleep((long) ((_duration/2) * 1000));
 				Thread.sleep(2000);
 				
-				controller.close();				
+				getController().close();				
 				if (displayResultsAtEnd)
 					printResults(results1, _queryId, null);
     		
@@ -334,20 +337,35 @@ public abstract class SNEEClient implements Observer {
     }
 	public SensorNetworkQueryPlan getQEP()
 	{
-	  SNEEController control = (SNEEController) controller;
+	  SNEEController control = (SNEEController) getController();
 	  return (SensorNetworkQueryPlan) control.getQEP();
 	}
 	
 	public void setDeadNodes(ArrayList<String> deadNodes)
   {
-	  SNEEController control = (SNEEController) controller;
+	  SNEEController control = (SNEEController) getController();
     control.setDeadNodes(deadNodes);
   }
   
   public void setDeadNodes(int noDeadNodes)
   {
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     control.setNoDeadNodes(noDeadNodes);
+  }
+
+  public SNEE getController()
+  {
+    return controller;
+  }
+  
+  public SensorNetworkSourceMetadata getMetadata() 
+  throws SourceDoesNotExistException
+  {
+    SNEEController control = (SNEEController) getController();
+    SensorNetworkQueryPlan qep =  getQEP();
+    SourceMetadataAbstract metadata = 
+      control.getMetaData().getSource(qep.getMetaData().getOutputAttributes().get(1).getExtentName());
+    return (SensorNetworkSourceMetadata) metadata;
   }
 	
 }

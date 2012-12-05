@@ -263,7 +263,7 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
-    SNEEController control = (SNEEController) controller;
+    SNEEController control = (SNEEController) getController();
     int queryId1 = control.addQuery(_query, _queryParams, queryid, false, true, true);
     
 
@@ -273,11 +273,11 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
     System.out.println("Running query for " + _duration + " seconds. Scheduled end time " + new Date(endTime));
 
     ResultStoreImpl resultStore = 
-      (ResultStoreImpl) controller.getResultStore(queryId1);
+      (ResultStoreImpl) getController().getResultStore(queryId1);
     resultStore.addObserver(this);
     
     try {     
-      control = (SNEEController) controller;
+      control = (SNEEController) getController();
       control.waitForQueryEnd();
     } catch (InterruptedException e) {
     }
@@ -289,8 +289,8 @@ public class SNEECostModelClientUsingInNetworkSource extends SNEEClient
     
   //  List<ResultSet> results1 = resultStore.getResults();
     System.out.println("Stopping query " + queryId1 + ".");
-    controller.removeQuery(queryId1);
-    controller.close();
+    getController().removeQuery(queryId1);
+    getController().close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
   }
