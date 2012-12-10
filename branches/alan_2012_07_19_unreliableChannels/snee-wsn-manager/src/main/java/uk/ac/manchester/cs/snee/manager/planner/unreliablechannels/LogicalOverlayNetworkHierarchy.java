@@ -565,12 +565,12 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
   public Iterator<String> siteIdIterator()
   {
     ArrayList<String> array = new ArrayList<String>();
-    Iterator<String> keyIterator = this.clusters.keySet().iterator();
+    Iterator<String> keyIterator = this.activeClusters.keySet().iterator();
     while(keyIterator.hasNext())
     {
       String key = keyIterator.next();
       array.add(key);
-      Iterator<String> candidates = this.clusters.get(key).iterator();
+      Iterator<String> candidates = this.activeClusters.get(key).iterator();
       while(candidates.hasNext())
       {
         String cand = candidates.next();
@@ -626,7 +626,10 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
    */
   public int getPriority(String NodeID)
   {
-    return this.activeClustersPriority.get(NodeID);
+    if(!this.activeClustersPriority.keySet().contains(NodeID))
+      return 0;
+    else
+      return this.activeClustersPriority.get(NodeID);
   }
 
   /**

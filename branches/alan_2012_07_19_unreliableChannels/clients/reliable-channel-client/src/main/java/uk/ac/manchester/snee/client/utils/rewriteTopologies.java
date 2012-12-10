@@ -71,7 +71,7 @@ public class rewriteTopologies
       collectQueries(queries);
       
       queryIterator = queries.iterator();
-      int newKLevel = 2;
+      int newKLevel = 3;
       
       //TODO remove to allow full run
       while(queryIterator.hasNext())

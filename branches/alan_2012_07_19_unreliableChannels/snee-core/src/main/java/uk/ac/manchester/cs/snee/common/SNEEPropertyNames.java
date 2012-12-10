@@ -277,7 +277,7 @@ public final class SNEEPropertyNames {
   public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_RESILIENTLEVEL = "wsn_manager.unreliable.channels.resilientlevel";
   
   /**
-   * used by the unreliable channel agenda to detemrine how many nodes are not to be used within the system
+   * used by the unreliable channel agenda to detemrine how many iterations of the reduendant channel communciation cycles
    */
   public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_REDUNDANTCYCLES = "wsn_manager.unreliable.channels.redundantcycles";
   
@@ -311,6 +311,11 @@ public final class SNEEPropertyNames {
    * used by the unreliable channel agenda to determine how many agenda cycles are needed to simulate running.
    */
   public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_SIMULATION_ITERATIONS = "wsn_manager.unreliable.channels.simulationLength";
+
+  /**
+   * used by the logicla voerlay network to bypass alt site tests
+   */
+  public static final String WSN_MANAGER_K_RESILENCE_DEFAULTALTS = "wsn_manager.bypass.default.alts";
   
   
 }

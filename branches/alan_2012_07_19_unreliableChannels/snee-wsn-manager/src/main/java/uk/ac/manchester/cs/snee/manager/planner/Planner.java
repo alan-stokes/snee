@@ -17,6 +17,7 @@ import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationCollection;
@@ -31,6 +32,7 @@ import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorU
 //import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.RobustChoiceAssessor;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.SuccessorRelationManager;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgendaUtils;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelManager;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -427,6 +429,8 @@ public class Planner extends AutonomicManagerComponent
       unreliableChannelManager.generateEdgeRobustQEP(qep, manager.getWsnTopology());
     LogicalOverlayStrategy local = new LogicalOverlayStrategy(manager, _metadata, _metadataManager);
     local.initilise(rQEP, 1, rQEP.getLogicalOverlayNetwork());
+    HashMap<Site, ArrayList<Task>> tasks = rQEP.getUnreliableAgenda().getTasks();
+    System.out.println(tasks.toString());
   //  Adaptation storage = new Adaptation(rQEP, rQEP, StrategyIDEnum.Unreliable, 0);
   //  RobustChoiceAssessor assessor = 
     //  new RobustChoiceAssessor(_metadata, _metadataManager, 

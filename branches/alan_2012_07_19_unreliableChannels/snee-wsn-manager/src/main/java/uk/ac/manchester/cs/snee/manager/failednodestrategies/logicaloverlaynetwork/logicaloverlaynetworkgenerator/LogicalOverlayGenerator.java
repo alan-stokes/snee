@@ -42,6 +42,7 @@ public class LogicalOverlayGenerator
   private Cloner cloner = null;
   private int k_resilence_level = 0;
   private boolean k_resilence_sense = false;
+  private boolean useDefaultAlts = false;
   private AutonomicManagerImpl manager;
   private File localFolder = null;
   private String sep = System.getProperty("file.separator"); 
@@ -64,6 +65,7 @@ public class LogicalOverlayGenerator
     cloner.dontClone(Logger.class);
     k_resilence_level = SNEEProperties.getIntSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_LEVEL);
     k_resilence_sense = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_SENSE);
+    useDefaultAlts = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_DEFAULTALTS);
   }
   
   public LogicalOverlayNetwork generateOverlay(SensorNetworkQueryPlan qep, 
@@ -515,7 +517,7 @@ public class LogicalOverlayGenerator
         while(secondNodeIterator.hasNext())
         {
           Node equilvientNode = secondNodeIterator.next();
-          if(LocalClusterSuperEquivalenceRelation.isEquivalent(clusterHead, equilvientNode, currentQEP, network, k_resilence_sense))
+          if(LocalClusterSuperEquivalenceRelation.isEquivalent(clusterHead, equilvientNode, currentQEP, network, k_resilence_sense, useDefaultAlts))
           {
             logicalOverlay.addClusterNode(clusterHead.getID(), equilvientNode.getID());
           }

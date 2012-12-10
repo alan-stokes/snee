@@ -354,11 +354,11 @@ public class SNEEProperties {
       setSetting(propName, "200");
       return  getSetting(propName);
     }
-    
-    
-    
-    
-    
+    else if(propName.equals("wsn_manager.bypass.default.alts"))
+    {
+      setSetting(propName, "true");
+      return getSetting(propName);
+    }
     else return null;
   }
 

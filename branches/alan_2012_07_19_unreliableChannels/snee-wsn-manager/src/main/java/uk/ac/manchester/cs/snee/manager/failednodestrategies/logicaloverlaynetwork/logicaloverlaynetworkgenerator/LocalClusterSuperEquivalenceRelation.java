@@ -41,7 +41,7 @@ public class LocalClusterSuperEquivalenceRelation implements Serializable
    * @throws SchemaMetadataException 
    */
   public static boolean isEquivalent(Node first, Node second, SensorNetworkQueryPlan qep, 
-                                     Topology network, boolean k_resilence_sense) 
+                                     Topology network, boolean k_resilence_sense, boolean useDefaultAlts) 
   throws 
   SchemaMetadataException, 
   TypeMappingException, 
@@ -85,8 +85,11 @@ public class LocalClusterSuperEquivalenceRelation implements Serializable
         if(!primarySensorTypes.contains(secondarySiteSensorTypesIterator.next()))
           return false;
       }
-      if(!primarySite.getAlterativeSites().contains(secondarySite.getID()))
-        return false;
+      if(!useDefaultAlts)
+      {
+        if(!primarySite.getAlterativeSites().contains(secondarySite.getID()))
+          return false;
+      }
     }
     if(primarySite.isSource() && !k_resilence_sense)
     {

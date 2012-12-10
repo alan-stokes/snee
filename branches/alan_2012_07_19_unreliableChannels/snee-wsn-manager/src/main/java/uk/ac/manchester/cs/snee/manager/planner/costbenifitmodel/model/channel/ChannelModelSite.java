@@ -131,7 +131,7 @@ public class ChannelModelSite implements Serializable
       if(!packetRecieved)
       {
         ArrayList<String> equivNodes = 
-          this.overlayNetwork.getEquivilentNodes(
+          this.overlayNetwork.getActiveEquivilentNodes(
               this.overlayNetwork.getClusterHeadFor(child));
         equivNodes.add(this.overlayNetwork.getClusterHeadFor(child));
         Iterator<String> equivNodesIterator = equivNodes.iterator();
@@ -140,6 +140,8 @@ public class ChannelModelSite implements Serializable
         {
           String EquivNode = equivNodesIterator.next();
           ArrayList<Boolean> equivPackets = arrivedPackets.get(EquivNode);
+          if(equivPackets == null)
+            System.out.println();
           if(equivPackets.get(counter))
             found = true;
         }

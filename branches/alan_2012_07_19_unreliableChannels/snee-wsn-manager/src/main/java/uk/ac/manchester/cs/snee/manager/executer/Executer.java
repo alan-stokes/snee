@@ -182,7 +182,7 @@ public class Executer extends AutonomicManagerComponent
     int tuples = channelModel.packetToTupleConversion(packets, rootSite);
     return tuples;
   }
-
+ 
   public void simulateRunOfQEPs(RobustSensorNetworkQueryPlan rQEP,
                                 SensorNetworkQueryPlan qep)
   throws NumberFormatException, SNEEConfigurationException, OptimizationException,
