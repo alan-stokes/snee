@@ -1,10 +1,16 @@
 package uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.compiler.costmodels.CostModel;
 import uk.ac.manchester.cs.snee.compiler.costmodels.CostModelDataStructure;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
@@ -426,21 +432,45 @@ public class CardinalityEstimatedCostModel extends CostModel
 
   @Override
   protected CostModelDataStructure aggerateCard(InstanceOperator operator,
-                                                ArrayList<Integer> inputs) 
+                                                ArrayList<Integer> inputs)
   throws OptimizationException
   {
     if(operator.isNodeDead())
       return new CardinalityDataStructure(0);
     
     CardinalityDataStructure output = null;
-    //System.out.println("aggerate newinputs size is " + reducedInputs.size());
     
-    output = new CardinalityDataStructure(inputs.get(0), 1);
+    int count = 0;
+    ArrayList<Node> operatorInputs = new ArrayList<Node>(operator.getInputsList());
+    Iterator<Node> operatorInputIterator = operatorInputs.iterator();
+    
+    while(operatorInputIterator.hasNext())
+    {
+      InstanceOperator preOp = (InstanceOperator)operatorInputIterator.next();
+      if(preOp.getSensornetOperator() instanceof SensornetExchangeOperator)
+      {
+        InstanceExchangePart preExOp = (InstanceExchangePart) preOp;
+        InstanceOperator sourceOperator = preExOp.getSourceFrag().getRootOperator();
+        if(sourceOperator.getSensornetOperator() instanceof SensornetAggrInitOperator ||
+           sourceOperator.getSensornetOperator() instanceof SensornetAggrMergeOperator ||
+           sourceOperator.getSensornetOperator() instanceof SensornetAcquireOperator)
+        {
+          count++;
+        }
+      }
+      else if(preOp.getSensornetOperator() instanceof SensornetAggrInitOperator ||
+              preOp.getSensornetOperator() instanceof SensornetAggrMergeOperator ||
+              preOp.getSensornetOperator() instanceof SensornetAcquireOperator)
+      {
+        count++;
+      }
+    }
+    int outputValue = inputs.get(0) / count;
+    
+    output = new CardinalityDataStructure(outputValue, 1);
     ArrayList<CardinalityDataStructure> reducedInputs = reduceInputs(operator);
     output.setExtentName(reducedInputs.get(0).getExtentName());
-    //System.out.println(inputOperator.getID() + " inputCard= " + reducedInputs.size());
-    //System.out.println(inputOperator.getID() + " outputCard= " + output);
-    return output;// TODO Auto-generated method stub
+    return output;
   }
 
   @Override

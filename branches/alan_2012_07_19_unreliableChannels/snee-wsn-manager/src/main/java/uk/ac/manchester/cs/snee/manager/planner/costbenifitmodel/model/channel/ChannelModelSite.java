@@ -430,15 +430,10 @@ public class ChannelModelSite implements Serializable
                                                               maxTransmittablePacketCount, 
                                                               exOp.getPrevious().getSite().getID());
           int tuplesRecieved = ChannelModelSite.packetToTupleConversion(transmittablePacketsCount, exOp, exOp.getPrevious());
-          
-          addToPacketCounts(maxTransmittablePacketCount, transmittablePacketsCount, 
-                            packetIds, cPacketCount, rPacketCount);
           tuples.remove(exOp.getExtent());
           tuples.put(exOp.getExtent(), tuplesRecieved + packetsOfSameExtent);
           currentUsedRecievedPacketCount.remove(preExOp.getSite().getID());
           currentUsedRecievedPacketCount.put(this.overlayNetwork.getClusterHeadFor(preExOp.getSite().getID()), rPacketCount + maxTransmittablePacketCount);
-          currentPacketCount.remove(exOp.getSite().getID());
-          currentPacketCount.put(this.overlayNetwork.getClusterHeadFor(exOp.getSite().getID()), cPacketCount + maxTransmittablePacketCount);
         }
         if(exOp.getComponentType().equals(ExchangePartType.CONSUMER) &&
            previousOp != null )
@@ -479,12 +474,13 @@ public class ChannelModelSite implements Serializable
           }
           else
           {
-            tuples.put(preivousOutputExtent, previousOpOutput);
+            opTuples.add(previousOpOutput);
           }
           CostModelDataStructure outputs = cardModel.model(op, opTuples);
           CardinalityDataStructure outputCard = (CardinalityDataStructure) outputs;
           previousOpOutput = (int) outputCard.getCard();
           previousOp = op;
+          tuples.put(preivousOutputExtent, previousOpOutput);
           preivousOutputExtent = tuples.toString();
         }
         //if delviery oeprator calc pacvkets transmitted for system to determine tuples.
