@@ -42,7 +42,7 @@ public class RelibaleChannelClient extends SNEEClient
   private static String sep = System.getProperty("file.separator");
 	private static int queryid = 1;
 	protected static int testNo = 1;
-	private static int max = 120;
+	private static int max = 90;
   private static File testFolder =  new File("src/main/resources/testsSize30");
   private static File sneetestFolder =  new File("testsSize30");
   @SuppressWarnings("unused")
@@ -82,14 +82,22 @@ public class RelibaleChannelClient extends SNEEClient
       runIxentsScripts();
       //holds all 30 queries produced by python script.
       ArrayList<String> queries = new ArrayList<String>();
-      //collectQueries(queries);
-      queries.add("SELECT RSTREAM anow.x as qx FROM A[NOW] anow ;");
+      collectQueries(queries);
       
       queryIterator = queries.iterator();
       
       //TODO remove to allow full run
       while(queryIterator.hasNext() && queryid <= max)
       {
+        // if up to aggreation queries, remove all aggres and jump to joins
+        if(queryid == 30)
+        {
+          while(queryIterator.hasNext() && queryid <= 60)
+          {
+            queryIterator.next();
+            queryid++;
+          }
+        }
         recursiveRun(queryIterator, duration, queryParams, true);
         removeBinaries(queryid);
       }
@@ -166,7 +174,7 @@ public class RelibaleChannelClient extends SNEEClient
 	       System.out.println("System already has test cases, will not re-execute process");
 	     }
 	 }
-	 /*
+	 
 	 private static void collectQueries(ArrayList<String> queries) throws IOException
 	 {
 	    //String filePath = Utils.validateFileLocation("tests/queries.txt");
@@ -182,7 +190,7 @@ public class RelibaleChannelClient extends SNEEClient
 	      else
 	        counter++;
 	    }  
-	 }*/
+	 }
 	 
 	 private static void updateRecoveryFile() throws IOException
 	 {
@@ -201,36 +209,43 @@ public class RelibaleChannelClient extends SNEEClient
                                    boolean allowDeathOfAcquires) 
   throws IOException 
   {
-    //get query & schemas
-    String currentQuery = queryIterator.next();
-    String propertiesPath = sneetestFolder.toString() + sep + "snee" + queryid + ".properties";
-    
-    System.out.println("Running Tests on query " + (queryid));
-    try
-    {
-      RelibaleChannelClient client = 
-      new  RelibaleChannelClient(currentQuery, duration, queryParams, null, propertiesPath);
-      //set queryid to correct id
-      SNEEController contol = (SNEEController) client.getController();
-      contol.setQueryID(queryid);
-      //added to allow recovery from crash
-      updateRecoveryFile();
-      client.runCompilelation();
-      System.out.println("Ran all tests on query " + (queryid));
-      System.exit(0);
-      queryid ++;
-    }
-    catch(Exception e)
-    {
-      System.out.println("something major failed");
-      e.printStackTrace();
-      queryid ++;
-      System.exit(0);
-      if(queryid <= max)
+	  for(int index = 2; index <= 4; index++)
+	  {
+      //get query & schemas
+      String currentQuery = queryIterator.next();
+      String propertiesPath = sneetestFolder.toString() + sep + "snee" + queryid + "." + index +".properties";
+      
+      System.out.println("Running Tests on query " + (queryid));
+      try
       {
-      recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires);
+        RelibaleChannelClient client = 
+        new  RelibaleChannelClient(currentQuery, duration, queryParams, null, propertiesPath);
+        //set queryid to correct id
+        SNEEController contol = (SNEEController) client.getController();
+        contol.setQueryID(queryid);
+        //added to allow recovery from crash
+        updateRecoveryFile();
+        client.runCompilelation();
+        System.out.println("Ran all tests on query " + queryid + "." + index);
+        queryid ++;
+        File oldOutputFolder = new File("output" + sep + "query" + queryid);
+        boolean success = oldOutputFolder.renameTo(new File("output" + sep + "query" + queryid + "." + index));
+        if(!success)
+          System.out.println("couldnt rename folder, data will have been lost");
+        else
+          System.out.println("renamed folder, data will have been saved");
       }
-    }
+      catch(Exception e)
+      {
+        System.out.println("something major failed on query "+ queryid + "." + index);
+        e.printStackTrace();
+        queryid ++;
+        if(queryid <= max)
+        {
+        recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires);
+        }
+      }
+	  }
   }
 	 
 	private void runCompilelation() 

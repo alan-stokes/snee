@@ -359,8 +359,6 @@ public class ChannelModel implements Serializable
     {
       String siteID = siteIDIterator.next();
       Integer siteIDInt = Integer.parseInt(siteID);
-      if(siteIDInt == 0)
-        System.out.println();
       String clusterHeadID = logicaloverlayNetwork.getClusterHeadFor(siteID);
       Iterator<Node> inputNodes = 
         logicaloverlayNetwork.getQep().getRT().getSite(clusterHeadID).getInputsList().iterator();

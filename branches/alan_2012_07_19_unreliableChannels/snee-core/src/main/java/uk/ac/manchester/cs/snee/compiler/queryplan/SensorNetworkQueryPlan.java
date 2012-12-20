@@ -220,6 +220,16 @@ public class SensorNetworkQueryPlan extends QueryExecutionPlanAbstract {
 	    this.qos = qos;
 	  }
 
+    public void nullMetaData()
+    {
+      this.metadata = null; 
+    }
+
+    public void setMetaData(QueryPlanMetadata data)
+    {
+      this.metadata = data;
+    }
+
 	
 //	
 //	protected SensorNetworkQueryPlan(DAF daf, Rt rt. Agenda agenda) {

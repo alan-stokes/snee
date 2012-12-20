@@ -326,7 +326,7 @@ public class SNEEProperties {
     }
     else if(propName.equals("wsn_manager.unreliable.channels.noiseModel"))
     {
-      setSetting(propName, "src/main/resources/noiseFiles/meyer-heavy.txt");
+      setSetting(propName, "meyer-heavy.txt");
       return  getSetting(propName);
     }
     else if(propName.equals("wsn_manager.unreliable.channels.transmissionPower"))
