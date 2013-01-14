@@ -562,4 +562,52 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   {
     return this._metadataManager.getCostParameters();
   }
+
+  @Override
+  public void initilise(SourceMetadataAbstract metadata,
+      QueryExecutionPlan qep, ResultStore resultSet, int queryid,
+      Long seed) throws SNEEException, SNEEConfigurationException,
+      SchemaMetadataException, TypeMappingException, OptimizationException,
+      IOException, CodeGenerationException, NumberFormatException,
+      WhenSchedulerException, AgendaException, AgendaLengthException
+  {
+    this.currentQEP = qep;
+    queryName = "query" + queryid;
+    setupOutputFolder();
+    this._metadata = metadata;
+    runningSites = new HashMap<String, RunTimeSite>();
+    anyliser = new Anaylsiser(this, _metadata, _metadataManager);
+    planner = new Planner(this, _metadata, _metadataManager);
+    executer.setUpFolders(outputFolder);
+    setupRunningSites((SensorNetworkQueryPlan) qep);
+    monitor.initilise(_metadata, qep, resultSet);
+    boolean initiliseFrameworks = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS);
+    if(initiliseFrameworks)
+      anyliser.initilise(qep, numberOfTreesToUse);
+    
+    //if successor relation set to generate
+    boolean successor = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR);
+    if(successor)
+    {
+      planner.updateStorageLocation(outputFolder);
+      planner.startSuccessorRelation((SensorNetworkQueryPlan) qep);
+    }
+    
+    //if unreliable channels set to generate
+    boolean unreliableChannels = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS);
+    if(unreliableChannels)
+    {
+      planner.updateStorageLocation(outputFolder);
+      planner.startUnreliableChannelStrategy((SensorNetworkQueryPlan) qep, seed);
+    } 
+    
+  }
+
+  public void simulateRunOfRQEP(RobustSensorNetworkQueryPlan rQEP,
+      SensorNetworkQueryPlan qep, Long seed) 
+  throws NumberFormatException, SNEEConfigurationException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException, IOException
+  {
+    this.executer.simulateRunOfQEPs(rQEP, qep, seed);
+  }
 }

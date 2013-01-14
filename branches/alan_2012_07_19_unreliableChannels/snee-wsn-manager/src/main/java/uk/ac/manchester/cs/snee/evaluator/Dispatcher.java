@@ -362,4 +362,20 @@ public class Dispatcher {
     
   }
 
+  public void initiliseAutonomicManager(int queryId, ResultStore resultSet,
+      QueryExecutionPlan queryPlan, Long seed)
+  throws SNEEException, MetadataException, 
+  EvaluatorException, SNEEConfigurationException, 
+  SchemaMetadataException, TypeMappingException, 
+  OptimizationException, IOException, CodeGenerationException,
+  NumberFormatException, WhenSchedulerException, AgendaException, 
+  AgendaLengthException 
+  {
+    SensorNetworkQueryPlan snQueryPlan = (SensorNetworkQueryPlan)queryPlan;
+    sncb = snQueryPlan.getSNCB();
+    SourceMetadataAbstract metadata = _metadata.getSource(snQueryPlan.getMetaData().getOutputAttributes().get(1).getExtentName());
+    _autonomicManager.initilise(metadata, queryPlan, resultSet, queryId, seed);
+    
+  }
+
 }

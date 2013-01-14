@@ -22,6 +22,7 @@ public class NoiseModel
   private Double signalFrequencyInMegaHerze;
   private Topology network;
   private CPMModel cpmModel;
+  private Long seed = new Long(0);
 
   //values used within the RSSI forumla
   private static double pathLossExponent;
@@ -57,6 +58,36 @@ public class NoiseModel
     cpmModel = new CPMModel(network);
   }
 
+  public NoiseModel(Topology network, CostParameters costs, Long seed)
+  throws SNEEConfigurationException, IOException
+  {
+    this.costs = costs;
+    this.network = network;
+    this.seed = seed;
+    useingClearChannels = 
+      SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_CLEANRADIO);
+    relibaleChannels = 
+       SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS);
+    veriablePower = 
+      SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_VERIABLEPOWER);
+    signalFrequencyInMegaHerze =
+      Double.parseDouble(SNEEProperties.getSetting(
+          SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_SIGNALFREQUENCY));
+    pathLossExponent = 
+      Double.parseDouble(SNEEProperties.getSetting(
+          SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_PATHLOSSEXPONENT));
+    if(!veriablePower)
+      transmissionPower = 
+        Double.parseDouble(SNEEProperties.getSetting(
+            SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_TRANSMISSIONPOWER));
+    else
+    {
+      //TODO impliment some sort of arbitary transmission power. 
+    }
+    prepareErfc(100,100);
+    cpmModel = new CPMModel(network, seed);
+  }
+  
   /**
    * entrance to the noise model for channel model.
    * Uses the noise model to determine if a packet has been recieved by 
@@ -105,7 +136,7 @@ public class NoiseModel
     //prr from cpm model seems more realistic and less dubious than prr from trnasiotnal paper
  //   Double prr2 = cpmPRRForm(signalNoiseRatio);
     
-    Random random = new Random(new Long(0));
+    Random random = new Random(seed);
     double randomDouble = random.nextDouble();
     if(randomDouble < (prr))
     {
@@ -172,7 +203,7 @@ public class NoiseModel
         NoiseModelConstants.C_LIGHT) * NoiseModelConstants.d0 * signalFrequencyInMegaHerze), 2));
     
     //quassian random variable for path loss forumla.
-    Random random = new Random(new Long(0));
+    Random random = new Random(seed);
     Double quassianRandomVariable = random.nextGaussian();
     quassianRandomVariable = quassianRandomVariable * NoiseModelConstants.RSSI_DISTANCE_DEPENDENT_MEAN;
     /**

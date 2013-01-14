@@ -449,5 +449,38 @@ public class Planner extends AutonomicManagerComponent
                         //   (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000)));
     return rQEP;
   }
+
+  public RobustSensorNetworkQueryPlan startUnreliableChannelStrategy(SensorNetworkQueryPlan qep,
+                                                                     Long seed)
+  throws SchemaMetadataException, TypeMappingException, OptimizationException, 
+  IOException, SNEEConfigurationException, CodeGenerationException, 
+  AgendaException, AgendaLengthException, SNEEException
+  {
+    UnreliableChannelManager unreliableChannelManager = 
+      new UnreliableChannelManager(manager, _metadata, _metadataManager, this.plannerFolder);
+    RobustSensorNetworkQueryPlan rQEP = 
+      unreliableChannelManager.generateEdgeRobustQEP(qep, manager.getWsnTopology());
+    LogicalOverlayStrategy local = new LogicalOverlayStrategy(manager, _metadata, _metadataManager);
+    local.initilise(rQEP, 1, rQEP.getLogicalOverlayNetwork());
+    HashMap<Site, ArrayList<Task>> tasks = rQEP.getUnreliableAgenda().getTasks();
+    System.out.println(tasks.toString());
+  //  Adaptation storage = new Adaptation(rQEP, rQEP, StrategyIDEnum.Unreliable, 0);
+  //  RobustChoiceAssessor assessor = 
+    //  new RobustChoiceAssessor(_metadata, _metadataManager, 
+    //                           plannerFolder, this.manager.getWsnTopology());
+ //   ChannelModel channelModel = 
+  //    new ChannelModel(rQEP.getLogicalOverlayNetwork(), rQEP.getUnreliableAgenda(), 
+   //                    manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
+  //                     this._metadataManager.getCostParameters());
+    
+    manager.simulateRunOfRQEP(rQEP, qep, seed);
+   // assessor.assessOverlayChoice(storage, runningSites, rQEP.getLogicalOverlayNetwork(), 
+         //                        local, channelModel);
+    
+   // System.out.println("new robust lifetime = " + 
+               //        (storage.getLifetimeEstimate() / 
+                        //   (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000)));
+    return rQEP;
+  }
   
 }

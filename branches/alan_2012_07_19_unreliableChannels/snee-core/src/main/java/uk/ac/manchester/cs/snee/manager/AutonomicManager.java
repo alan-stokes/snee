@@ -116,4 +116,11 @@ public interface AutonomicManager
   throws SchemaMetadataException, TypeMappingException, OptimizationException, 
   IOException, SNEEConfigurationException, CodeGenerationException;
 
+  public abstract void initilise(SourceMetadataAbstract metadata, QueryExecutionPlan queryPlan, 
+                                 ResultStore resultSet, int queryId, Long seed)
+  throws SNEEException, SNEEConfigurationException, 
+  SchemaMetadataException, TypeMappingException, 
+  OptimizationException, IOException, CodeGenerationException,
+  NumberFormatException, WhenSchedulerException, AgendaException,
+  AgendaLengthException;
 }

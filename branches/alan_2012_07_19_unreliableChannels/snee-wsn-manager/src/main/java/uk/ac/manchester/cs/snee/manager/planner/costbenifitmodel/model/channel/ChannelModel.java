@@ -76,6 +76,20 @@ public class ChannelModel implements Serializable
   }
     
 
+  public ChannelModel(LogicalOverlayNetworkHierarchy logicaloverlayNetwork,
+      AgendaIOT agenda, int networkSize, Topology network,
+      CostParameters costs, File executorFolder, Long seed)
+  throws SNEEConfigurationException, IOException
+  {
+    this.agendaIOT = agenda;
+    this.executorFolder = executorFolder;
+    this.costs = costs;
+    this.logicaloverlayNetwork = logicaloverlayNetwork;
+    setupEmptyArray(networkSize + 1);
+    createChannelSites();
+    noiseModel = new NoiseModel(network, costs, seed);
+    
+  }
   /**
    * creates an empry array of nulls for correct placement of channel sites.
    * @param networkSize

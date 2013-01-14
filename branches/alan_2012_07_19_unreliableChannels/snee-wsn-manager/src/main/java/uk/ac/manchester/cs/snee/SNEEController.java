@@ -746,4 +746,81 @@ public class SNEEController implements SNEE {
     _dispatcher.setupOverlay();
     
   }
+
+  public int addQuery(String _query, String _queryParams, Long seed)
+  throws SNEECompilerException, NumberFormatException, SNEEException, 
+  MetadataException, EvaluatorException, SNEEConfigurationException, 
+  SchemaMetadataException, TypeMappingException, OptimizationException, 
+  IOException, CodeGenerationException, WhenSchedulerException, AgendaException, 
+  AgendaLengthException
+  {
+    starting = true;
+    dspatching = true;
+    if (logger.isDebugEnabled()) {
+      logger.debug("ENTER addQuery() with " + _query);
+    }
+    if (_query == null || _query.trim().equals("")) {
+      logger.warn("Null or empty query passed in");
+      throw new SNEECompilerException("Null or empty query passed in.");
+    }
+    int queryId = getNextQueryId();
+    if (logger.isInfoEnabled()) 
+      logger.info("Assigned ID " + queryId + " to query\n\t" + _query);
+    if (logger.isInfoEnabled()) 
+      logger.info("Reading query " + queryId + " parameters\n");
+    QueryParameters queryParams = null;
+    if (_queryParams != null) {
+      try {
+        queryParams = new QueryParameters(queryId, _queryParams);
+      } catch (Exception e) {
+        logger.warn("Error obtaining query parameters: " + e);
+        throw new SNEECompilerException(e.getLocalizedMessage());
+      }
+    }
+    if (logger.isInfoEnabled()) 
+      logger.info("Compiling query " + queryId + "\n");
+    compileQuery(queryId, _query, queryParams);
+    if (logger.isInfoEnabled())
+      logger.info("Successfully compiled query " + queryId);  
+    dispatchQuery(queryId, _query, queryParams, true, seed);
+    if (logger.isInfoEnabled())
+      logger.info("Successfully started evaluation of query " + queryId);
+
+    if (logger.isDebugEnabled()) {
+        logger.debug("RETURN addQuery() with query id " + queryId);
+      }
+    return queryId;
+    
+  }
+
+  private int dispatchQuery(int queryId, String _query,
+      QueryParameters queryParams, boolean b, Long seed)
+  throws SNEEException, MetadataException, EvaluatorException,
+  SNEEConfigurationException, SchemaMetadataException, 
+  TypeMappingException, OptimizationException, IOException, 
+  CodeGenerationException, NumberFormatException, WhenSchedulerException, 
+  AgendaException, AgendaLengthException
+  {
+    if (logger.isTraceEnabled()) {
+      logger.trace("ENTER dispatchQuery() with " + queryId +
+          " " + _query);
+    }
+    QueryExecutionPlan queryPlan = _queryPlans.get(queryId);
+    ResultStore resultSet = createStreamResultSet(_query, queryPlan);
+    Model.setCompiledAlready(false);
+    _dispatcher.initiliseAutonomicManager(queryId, resultSet, queryPlan, seed);
+    _dispatcher.giveAutonomicManagerQuery(_query);
+    _dispatcher.giveAutonomicManagerQueryParams(queryParams);
+    if(starting)
+    {
+      _dispatcher.startQuery(queryId, resultSet, queryPlan);
+      _queryResults.put(queryId, resultSet);
+    }
+    
+    if (logger.isTraceEnabled()) {
+      logger.trace("RETURN dispatchQuery() with queryId " + queryId);
+    }
+    return queryId;
+    
+  }
 }

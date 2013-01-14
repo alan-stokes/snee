@@ -11,6 +11,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
+import com.rits.cloning.Cloner;
+
 import uk.ac.manchester.cs.snee.EvaluatorException;
 import uk.ac.manchester.cs.snee.MetadataException;
 import uk.ac.manchester.cs.snee.SNEECompilerException;
@@ -71,12 +75,10 @@ public class rewriteTopologies
       collectQueries(queries);
       
       queryIterator = queries.iterator();
-      int newKLevel = 3;
-      
       //TODO remove to allow full run
       while(queryIterator.hasNext())
       {
-        rewrite(queryIterator, duration, queryParams, true, newKLevel);
+        rewrite(queryIterator, duration, queryParams, true);
         queryid++;
       }
     }
@@ -117,20 +119,24 @@ public class rewriteTopologies
    * @throws NumberFormatException 
    */
   private static boolean rewrite(Iterator<String> queryIterator, Long duration,
-      String queryParams, boolean b, int newKLevel)
+      String queryParams, boolean b)
   {
     try
     {
       String currentQuery = queryIterator.next();
       String propertiesPath = sneetestFolder.toString() + sep + "snee" + queryid + ".properties";
       System.out.println("rewriting topology for query " + (queryid));
-      RelibaleChannelClient snee = new RelibaleChannelClient(currentQuery, duration, queryParams, null, propertiesPath);
-      SNEEController contol = (SNEEController) snee.getController();
-      contol.setQueryID(queryid);
-      runCompilelation(contol, queryParams, currentQuery);
-      SensorNetworkQueryPlan qep = snee.getQEP();
-      rewriteTopology(qep, newKLevel, snee);
+      for(int newKLevel = 2; newKLevel <= 5; newKLevel++)
+      {
+        RelibaleChannelClient snee = new RelibaleChannelClient(currentQuery, duration, queryParams, null, propertiesPath);
+        SNEEController contol = (SNEEController) snee.getController();
+        contol.setQueryID(queryid);
+        runCompilelation(contol, queryParams, currentQuery);
+        SensorNetworkQueryPlan qep = snee.getQEP();
+        rewriteTopology(qep, newKLevel, snee);
+      }
       return true;
+      
     }
     catch(Exception e)
     {
@@ -150,7 +156,10 @@ public class rewriteTopologies
                                       RelibaleChannelClient snee ) 
   throws SourceDoesNotExistException, IOException
   {
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
     RT rt = qep.getRT();
+    RT cloned = cloner.deepClone(rt);
     int maxID = rt.getMaxSiteID();
     int counter = 1;
     LogicalOverlayNetwork overlay = new LogicalOverlayNetwork();
@@ -211,7 +220,8 @@ public class rewriteTopologies
     }
     
     //generated all nodes, need to generate topology file
-    BufferedWriter out = new BufferedWriter(new FileWriter(new File("output" + sep + "query" + queryid + sep + "top" + queryid + ".xml")));
+    BufferedWriter out = new BufferedWriter(new FileWriter(
+        new File("output" + sep + "query" + queryid + sep + "top" + queryid + "." + newKLevel +".xml")));
     
     out.write("<?xml version=\"1.0\"?> \n \n <network-topology \n xmlns=\"http://snee.cs.manchester.ac.uk\""+ 
         "\n xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n xsi:schemaLocation=\"http://snee.cs.manchester.ac.uk network-topology.xsd\">" +
@@ -219,6 +229,7 @@ public class rewriteTopologies
         "</units> \n\n  <radio-links> \n");
     
     Iterator<String> keys = sites.keySet().iterator();
+    ArrayList<String> doneEdges = new ArrayList<String>();
     while(keys.hasNext())
     {
       Site site = sites.get(keys.next());
@@ -227,64 +238,131 @@ public class rewriteTopologies
       while(inputIterator.hasNext())
       {
         Node input = inputIterator.next();
+        
+        if((input.getID().equals("2") && site.getID().equals("36")) ||
+            site.getID().equals("2") && input.getID().equals("36"))
+          System.out.println();
         RadioLink link = network.getRadioLink(site, (Site)input);
         if(link != null)
         {
-          out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                    input + "\" bidirectional=\"true\" energy=\"" + link.getEnergyCost() + 
-                    "\" time=\"" + link.getDistanceCost() + "\" radio-loss=\"0\"/> \n");
-          if(!overlay.getEquivilentNodes(site.getID()).contains(input.getID()))
-            linkBetweenClusters = link;
+          if(cloned.getRadioLink(site, (Site)input) != null)
+          {
+            out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                      input + "\" bidirectional=\"true\" energy=\"" + link.getEnergyCost() + 
+                      "\" time=\"" + link.getDistanceCost() + "\" radio-loss=\"0\"/> \n");
+            if(!overlay.getEquivilentNodes(site.getID()).contains(input.getID()))
+              linkBetweenClusters = link;
+          }
+          else
+          {
+            Double energyCost = link.getEnergyCost() * 3;
+            out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                input + "\" bidirectional=\"true\" energy=\"" + energyCost + 
+                "\" time=\"" + link.getDistanceCost() + "\" radio-loss=\"0\"/> \n");
+           if(!overlay.getEquivilentNodes(site.getID()).contains(input.getID()))
+             linkBetweenClusters = link;
+          }
         }
         else
         {
           if(!overlay.getEquivilentNodes(site.getID()).contains(input.getID()))
           {
+            Double energyCost = linkBetweenClusters.getEnergyCost() * 3;
+            if(energyCost > 254)
+              energyCost = new Double(254);
             //internal cluster link.
             out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                input + "\" bidirectional=\"true\" energy=\"" + (linkBetweenClusters.getEnergyCost())  + 
+                input + "\" bidirectional=\"true\" energy=\"" + energyCost + 
                 "\" time=\"" + linkBetweenClusters.getDistanceCost() / 10 + "\" radio-loss=\"0\"/> \n");
           }
           else
           {
-          //internal cluster link.
-            out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+          //external cluster link.
+            if(cloned.getRadioLink(site, (Site)input) != null)
+            {
+              out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
                 input + "\" bidirectional=\"true\" energy=\"" + linkBetweenClusters.getEnergyCost() + 
-                "\" time=\"" + linkBetweenClusters.getDistanceCost()  + "\" radio-loss=\"0\"/> \n");
+                "\" time=\"" + linkBetweenClusters.getDistanceCost() /2 + "\" radio-loss=\"0\"/> \n");
+            }
+            else
+            {
+              Double energyCost = linkBetweenClusters.getEnergyCost() * 3;
+              if(energyCost > 254)
+                energyCost = new Double(254);
+              out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                  input + "\" bidirectional=\"true\" energy=\"" + energyCost  + 
+                  "\" time=\"" + linkBetweenClusters.getDistanceCost()  + "\" radio-loss=\"0\"/> \n");
+            }
           }
         }
+        doneEdges.add(site.getID() + "-" + input.getID());
       }
       
       Iterator<Node> outputIterator = site.getOutputsList().iterator();
       while(outputIterator.hasNext())
       {
         Node output = outputIterator.next();
+        if((output.getID().equals("2") && site.getID().equals("36")) ||
+            site.getID().equals("2") && output.getID().equals("36"))
+          System.out.println();
         RadioLink link = network.getRadioLink(site, (Site)output);
         if(link != null)
         {
-          out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                    output + "\" bidirectional=\"true\" energy=\"" + link.getEnergyCost() + 
-                    "\" time=\"" + link.getDistanceCost() + "\" radio-loss=\"0\"/> \n");
-          if(!overlay.getEquivilentNodes(site.getID()).contains(output.getID()))
-            linkBetweenClusters = link;
+          if(cloned.getRadioLink(site, (Site)output) != null)
+          {
+            out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                      output + "\" bidirectional=\"true\" energy=\"" + link.getEnergyCost() + 
+                      "\" time=\"" + link.getDistanceCost() + "\" radio-loss=\"0\"/> \n");
+            if(!overlay.getEquivilentNodes(site.getID()).contains(output.getID()))
+              linkBetweenClusters = link;
+          }
+          else
+          {
+            Double energyCost = link.getEnergyCost() * 3;
+            if(energyCost > 254)
+              energyCost = new Double(254);
+            
+            out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                output + "\" bidirectional=\"true\" energy=\"" +energyCost  + 
+                "\" time=\"" + link.getDistanceCost() + "\" radio-loss=\"0\"/> \n");
+            if(!overlay.getEquivilentNodes(site.getID()).contains(output.getID()))
+              linkBetweenClusters = link;
+          }
         }
         else
         {
           if(!overlay.getEquivilentNodes(site.getID()).contains(output.getID()))
           {
             //internal cluster link.
+            Double energyCost = linkBetweenClusters.getEnergyCost() * 3;
+            if(energyCost > 254)
+              energyCost = new Double(254);
             out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                output + "\" bidirectional=\"true\" energy=\"" + (linkBetweenClusters.getEnergyCost())  + 
+                output + "\" bidirectional=\"true\" energy=\"" + energyCost + 
                 "\" time=\"" + linkBetweenClusters.getDistanceCost() / 10 + "\" radio-loss=\"0\"/> \n");
           }
           else
           {
-          //internal cluster link.
-            out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                output + "\" bidirectional=\"true\" energy=\"" + linkBetweenClusters.getEnergyCost() + 
-                "\" time=\"" + linkBetweenClusters.getDistanceCost()  + "\" radio-loss=\"0\"/> \n");
+          //external cluster link.
+            if(cloned.getRadioLink(site, (Site)output) != null)
+            {
+              out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                  output + "\" bidirectional=\"true\" energy=\"" + linkBetweenClusters.getEnergyCost() + 
+                  "\" time=\"" + linkBetweenClusters.getDistanceCost()  + "\" radio-loss=\"0\"/> \n");
+            }
+            else
+            {
+              Double energyCost = linkBetweenClusters.getEnergyCost() * 3;
+              if(energyCost > 254)
+                energyCost = new Double(254);
+              
+              out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                  output + "\" bidirectional=\"true\" energy=\"" + energyCost + 
+                  "\" time=\"" + linkBetweenClusters.getDistanceCost()  + "\" radio-loss=\"0\"/> \n");
+            }
           }
         }
+        doneEdges.add(site.getID() + "-" + output.getID());
       }
     }
     out.write("\n\n </radio-links> \n \n </network-topology> \n");

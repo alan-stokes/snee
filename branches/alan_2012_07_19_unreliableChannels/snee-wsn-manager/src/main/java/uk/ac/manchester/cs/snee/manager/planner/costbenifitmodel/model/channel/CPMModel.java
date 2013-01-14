@@ -20,7 +20,7 @@ public class CPMModel
 {
   private Topology network;
   private int frequencyKeyNum = 0;
-  private static Random random = new Random(new Long(0));
+  private static Random random;
   //Containers for noise model stuff
   private ArrayList<Integer> experimentalNoiseMeasurements = new ArrayList<Integer>();
   private HashMap<String, NoiseModelSite> noiseModelSites = new HashMap<String, NoiseModelSite>();;
@@ -35,8 +35,20 @@ public class CPMModel
     makeNoiseModelNodes();
     addGlobalNoiseTrace();
     setUpCPMModel();
+    random = new Random(new Long(0));
   }
   
+  public CPMModel(Topology network, Long seed)
+  throws SNEEConfigurationException, IOException
+  {
+    this.network = network;
+    readinNoiseMeasurements();
+    makeNoiseModelNodes();
+    addGlobalNoiseTrace();
+    setUpCPMModel();
+    random = new Random(seed);
+  }
+
   private void addGlobalNoiseTrace()
   {
     Iterator<Integer> experimentalNoiseIterator = this.experimentalNoiseMeasurements.iterator();
