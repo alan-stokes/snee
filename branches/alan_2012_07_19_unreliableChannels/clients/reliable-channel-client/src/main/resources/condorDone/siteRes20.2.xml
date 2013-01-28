@@ -1,0 +1,340 @@
+<?xml version="1.0"?> 
+<site-resources
+xmlns="http://snee.cs.manchester.ac.uk"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://snee.cs.manchester.ac.uk site-resources.xsd">
+
+<units> 
+  <energy>JOULES</energy>
+  <memory>KILOBYTES</memory>
+  </units>
+ <sites>
+ <default>
+    <energy-stock>31320</energy-stock>
+    <ram>10</ram>
+   <flash-memory>48</flash-memory>
+  </default> 
+
+
+
+ <site id="0"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites></alternativeSites>
+</site>
+
+
+
+ <site id="13"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>33,34</alternativeSites>
+</site>
+
+
+
+ <site id="33"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>33,34,13</alternativeSites>
+</site>
+
+
+
+ <site id="34"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>33,34,13</alternativeSites>
+</site>
+
+
+
+ <site id="14"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>15,16</alternativeSites>
+</site>
+
+
+
+ <site id="15"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>15,16,14</alternativeSites>
+</site>
+
+
+
+ <site id="16"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>15,16,14</alternativeSites>
+</site>
+
+
+
+ <site id="12"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>23,24</alternativeSites>
+</site>
+
+
+
+ <site id="23"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>23,24,12</alternativeSites>
+</site>
+
+
+
+ <site id="24"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>23,24,12</alternativeSites>
+</site>
+
+
+
+ <site id="3"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>21,22</alternativeSites>
+</site>
+
+
+
+ <site id="21"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>21,22,3</alternativeSites>
+</site>
+
+
+
+ <site id="22"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>21,22,3</alternativeSites>
+</site>
+
+
+
+ <site id="2"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>37,38</alternativeSites>
+</site>
+
+
+
+ <site id="37"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>37,38,2</alternativeSites>
+</site>
+
+
+
+ <site id="38"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>37,38,2</alternativeSites>
+</site>
+
+
+
+ <site id="10"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>29,30</alternativeSites>
+</site>
+
+
+
+ <site id="29"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>29,30,10</alternativeSites>
+</site>
+
+
+
+ <site id="30"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>29,30,10</alternativeSites>
+</site>
+
+
+
+ <site id="0"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>39,40</alternativeSites>
+</site>
+
+
+
+ <site id="39"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>39,40,0</alternativeSites>
+</site>
+
+
+
+ <site id="40"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>39,40,0</alternativeSites>
+</site>
+
+
+
+ <site id="7"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>19,20</alternativeSites>
+</site>
+
+
+
+ <site id="19"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>19,20,7</alternativeSites>
+</site>
+
+
+
+ <site id="20"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>19,20,7</alternativeSites>
+</site>
+
+
+
+ <site id="6"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>27,28</alternativeSites>
+</site>
+
+
+
+ <site id="27"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>27,28,6</alternativeSites>
+</site>
+
+
+
+ <site id="28"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>27,28,6</alternativeSites>
+</site>
+
+
+
+ <site id="5"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>25,26</alternativeSites>
+</site>
+
+
+
+ <site id="25"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>25,26,5</alternativeSites>
+</site>
+
+
+
+ <site id="26"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>25,26,5</alternativeSites>
+</site>
+
+
+
+ <site id="4"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>17,18</alternativeSites>
+</site>
+
+
+
+ <site id="17"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>17,18,4</alternativeSites>
+</site>
+
+
+
+ <site id="18"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>17,18,4</alternativeSites>
+</site>
+
+
+
+ <site id="9"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>35,36</alternativeSites>
+</site>
+
+
+
+ <site id="35"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>35,36,9</alternativeSites>
+</site>
+
+
+
+ <site id="36"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>35,36,9</alternativeSites>
+</site>
+
+
+
+ <site id="8"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>31,32</alternativeSites>
+</site>
+
+
+
+ <site id="31"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>31,32,8</alternativeSites>
+</site>
+
+
+
+ <site id="32"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>31,32,8</alternativeSites>
+</site>
+
+</sites> 
+
+</site-resources>

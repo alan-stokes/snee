@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<wsdl:definitions name="SubscriptionManager"
+	targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push"
+	xmlns:sdsPush="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push"
+	xmlns:sds="http://www.semsorgrid4env.eu/namespace/2009/10/SDS"
+	xmlns:wsn="http://docs.oasis-open.org/wsn/bw-2"
+	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<!-- ##################### IMPORTS #########################  -->
+	<wsdl:import namespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push"
+               location="push_stream_porttypes.wsdl"/>		
+	
+    <wsdl:import namespace="http://docs.oasis-open.org/wsn/bw-2"
+    			location="wsrf/notification/bw-2.wsdl"/>
+
+	<!-- ################### END OF IMPORTS ####################### -->		
+		
+	  	<wsdl:binding name="SubscriptionManagerSOAP" type="wsn:SubscriptionManager">
+    	<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+		<wsdl:operation name="Renew">
+			<soap:operation soapAction="http://docs.oasis-open.org/wsn/bw-2/SubscriptionManager/RenewRequest"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="UnacceptableTerminationTimeFault">
+				<soap:fault name="UnacceptableTerminationTimeFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ResourceUnknownFault">
+				<soap:fault name="ResourceUnknownFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		
+		<wsdl:operation name="Unsubscribe">
+			<soap:operation soapAction="http://docs.oasis-open.org/wsn/bw-2/SubscriptionManager/UnsubscribeRequest"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="UnableToDestroySubscriptionFault">
+				<soap:fault name="UnableToDestroySubscriptionFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ResourceUnknownFault">
+				<soap:fault name="ResourceUnknownFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>    
+    </wsdl:binding>
+		
+</wsdl:definitions>
+	

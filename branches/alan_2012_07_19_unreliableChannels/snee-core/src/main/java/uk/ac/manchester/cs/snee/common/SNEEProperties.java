@@ -326,7 +326,7 @@ public class SNEEProperties {
     }
     else if(propName.equals("wsn_manager.unreliable.channels.noiseModel"))
     {
-      setSetting(propName, "meyer-heavy.txt");
+      setSetting(propName, "src/main/resources/condorchecks/meyer-heavy.txt");
       return  getSetting(propName);
     }
     else if(propName.equals("wsn_manager.unreliable.channels.transmissionPower"))
@@ -356,7 +356,7 @@ public class SNEEProperties {
     }
     else if(propName.equals("wsn_manager.bypass.default.alts"))
     {
-      setSetting(propName, "true");
+      setSetting(propName, "false");
       return getSetting(propName);
     }
     else return null;

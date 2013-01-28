@@ -38,69 +38,72 @@ import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
 public class RelibaleChannelClient extends SNEEClient 
 {
-	
+  
   private static String sep = System.getProperty("file.separator");
-	private static int queryid = 1;
-	protected static int testNo = 1;
-	private static int max = 90;
-  private static File testFolder =  new File("src/main/resources/testsSize30");
-  private static File sneetestFolder =  new File("testsSize30");
+  private static int queryid =2;
+  protected static int testNo = 1;
+  protected static int  kResil = 2;
+  private static int max = 90;
+  private static File testFolder =  new File("src/main/resources/condorchecks");
+  private static File sneetestFolder =  new File("condorchecks");
+ // private static File testFolder =  new File("src/main/resources/testsSize30");
+  //private static File sneetestFolder =  new File("testsSize30");
   @SuppressWarnings("unused")
   private static boolean inRecoveryMode = false;
-	
-	//private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;
+  
+  //private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;
 
-	public RelibaleChannelClient(String query, 
-			double duration, String queryParams, String csvFile, String sneeProps) 
-	throws SNEEException, IOException, SNEEConfigurationException 
-	{
-		super(query, duration, queryParams, csvFile, sneeProps);
-	}
+  public RelibaleChannelClient(String query, 
+      double duration, String queryParams, String csvFile, String sneeProps) 
+  throws SNEEException, IOException, SNEEConfigurationException 
+  {
+    super(query, duration, queryParams, csvFile, sneeProps);
+  }
 
-	/**
-	 * The main entry point for the client.
-	 * @param args
-	 * @throws IOException
-	 * @throws InterruptedException 
-	 */
-	public static void main(String[] args) 
-	{
-		//This method represents the web server wrapper
-		// Configure logging
-	//	PropertyConfigurator.configure(
-			//	SuccessorClient.class.
-			//	getClassLoader().getResource("etc/common/log4j.properties"));
-		
-		
-	  Long duration = Long.valueOf("120");
+  /**
+   * The main entry point for the client.
+   * @param args
+   * @throws IOException
+   * @throws InterruptedException 
+   */
+  public static void main(String[] args) 
+  {
+    //This method represents the web server wrapper
+    // Configure logging
+  //  PropertyConfigurator.configure(
+      //  SuccessorClient.class.
+      //  getClassLoader().getResource("etc/common/log4j.properties"));
+    
+    
+    Long duration = Long.valueOf("120");
     String queryParams = "etc/query-parameters.xml";
-    Iterator<String> queryIterator;
+ //   Iterator<String> queryIterator;
     
     try
     {
-      checkRecoveryFile();
-      runIxentsScripts();
+    //  checkRecoveryFile();
+    //  runIxentsScripts();
       //holds all 30 queries produced by python script.
-      ArrayList<String> queries = new ArrayList<String>();
-      collectQueries(queries);
+  //    ArrayList<String> queries = new ArrayList<String>();
+      //collectQueries(queries);
       
-      queryIterator = queries.iterator();
+     // queryIterator = queries.iterator();
       
       //TODO remove to allow full run
-      while(queryIterator.hasNext() && queryid <= max)
-      {
+    //  while(queryIterator.hasNext() && queryid <= max)
+   //   {
         // if up to aggreation queries, remove all aggres and jump to joins
-        if(queryid == 30)
-        {
-          while(queryIterator.hasNext() && queryid <= 60)
-          {
-            queryIterator.next();
-            queryid++;
-          }
-        }
-        recursiveRun(queryIterator, duration, queryParams, true);
+      //  if(queryid == 30)
+      //  {
+      //    while(queryIterator.hasNext() && queryid <= 60)
+        //  {
+           // queryIterator.next();
+         //   queryid++;
+        //  }
+      //  }
+        recursiveRun(null, duration, queryParams, true);
         removeBinaries(queryid);
-      }
+      //}
     }
     catch (Exception e)
     {
@@ -109,112 +112,118 @@ public class RelibaleChannelClient extends SNEEClient
       logger.fatal(e);
       e.printStackTrace();
     }
-	}
-	
-	 private static void checkRecoveryFile() throws IOException
-	 {
-	    //added to allow recovery from crash
-	    File folder = new File("recovery"); 
-	    String path = folder.getAbsolutePath();
-	    File recoveryFile = new File(path + "/recovery.tex");
-	    if(recoveryFile.exists())
-	    {
-	      BufferedReader recoveryTest = new BufferedReader(new FileReader(recoveryFile));
-	      String recoveryQueryIdLine = recoveryTest.readLine();
-	      String recoverQueryTestLine = recoveryTest.readLine();
-	      System.out.println("recovery text located with query test value = " +  recoveryQueryIdLine + " and has test no = " + recoverQueryTestLine);
-	      queryid = Integer.parseInt(recoveryQueryIdLine);
-	      inRecoveryMode = true;
-	      if(queryid == 0)
-	      {
-	        deleteAllFilesInResultsFolder(folder);
-	        recoveryFile.createNewFile();
-	        inRecoveryMode = false;
-	      }
-	    }
-	    else
-	    {
-	      System.out.println("create file recovery.tex with 2 lines each containing the number 0");
-	      folder.mkdir();    
-	    }
-	 }
-	 
-	 private static void deleteAllFilesInResultsFolder(File folder)
-	 {
-	    File [] filesInFolder = folder.listFiles();
-	    for(int fileIndex = 0; fileIndex < filesInFolder.length; fileIndex++)
-	    {
-	      filesInFolder[fileIndex].delete();
-	    }
-	 }
-	 
-	 private static void runIxentsScripts() throws IOException
-	 {
-	    
-	     //run Ixent's modified script to produce random test cases. 
-	     //if tests exist, do not redo
-	     File pythonFolder = new File("src/main/resources/python/");
-	     String pythonPath = pythonFolder.getAbsolutePath();
-	     if(!testFolder.exists())
-	       testFolder.mkdir();
-	     
-	     if(testFolder.list().length  == 1 || testFolder.list().length  == 0)
-	     {
-	       String testPath = testFolder.getAbsolutePath();
-	       System.out.println(testPath);
-	       String [] params = {"generateScenariosNatural.py", testPath};
-	       Map<String,String> enviro = new HashMap<String, String>();
-	       System.out.println("running Ixent's scripts for 30 random queries");
-	       Utils.runExternalProgram("python", params, enviro, pythonPath);
-	       System.out.println("have ran Ixent's scripts for 30 random queries");
-	       
-	     }
-	     else
-	     {
-	       System.out.println("System already has test cases, will not re-execute process");
-	     }
-	 }
-	 
-	 private static void collectQueries(ArrayList<String> queries) throws IOException
-	 {
-	    //String filePath = Utils.validateFileLocation("tests/queries.txt");
-	    File queriesFile = new File(testFolder.toString() + sep + "queries.txt");
-	    String filePath = queriesFile.getAbsolutePath();
-	    BufferedReader queryReader = new BufferedReader(new FileReader(filePath));
-	    String line = "";
-	    int counter = 0;
-	    while((line = queryReader.readLine()) != null)
-	    {
-	      if(counter >= queryid)
-	        queries.add(line);
-	      else
-	        counter++;
-	    }  
-	 }
-	 
-	 private static void updateRecoveryFile() throws IOException
-	 {
-	    File folder = new File("recovery"); 
-	    String path = folder.getAbsolutePath();
-	    //added to allow recovery from crash
-	    BufferedWriter recoverWriter = new BufferedWriter(new FileWriter(new File(path + "/recovery.tex")));
-	    
-	    recoverWriter.write(queryid + "\n");
-	    recoverWriter.flush();
-	    recoverWriter.close();
-	 }
-	 
-	private static void recursiveRun(Iterator<String> queryIterator, 
+  }
+  
+   private static void checkRecoveryFile() throws IOException
+   {
+      //added to allow recovery from crash
+      File folder = new File("recovery"); 
+      String path = folder.getAbsolutePath();
+      File recoveryFile = new File(path + "/recovery.tex");
+      if(recoveryFile.exists())
+      {
+        BufferedReader recoveryTest = new BufferedReader(new FileReader(recoveryFile));
+        String recoveryQueryIdLine = recoveryTest.readLine();
+        String recoverQueryTestLine = recoveryTest.readLine();
+        System.out.println("recovery text located with query test value = " +  recoveryQueryIdLine + " and has test no = " + recoverQueryTestLine);
+        queryid = Integer.parseInt(recoveryQueryIdLine);
+        inRecoveryMode = true;
+        if(queryid == 0)
+        {
+          deleteAllFilesInResultsFolder(folder);
+          recoveryFile.createNewFile();
+          inRecoveryMode = false;
+        }
+      }
+      else
+      {
+        System.out.println("create file recovery.tex with 2 lines each containing the number 0");
+        folder.mkdir();    
+      }
+   }
+   
+   private static void deleteAllFilesInResultsFolder(File folder)
+   {
+      File [] filesInFolder = folder.listFiles();
+      for(int fileIndex = 0; fileIndex < filesInFolder.length; fileIndex++)
+      {
+        filesInFolder[fileIndex].delete();
+      }
+   }
+   
+   private static void runIxentsScripts() throws IOException
+   {
+      
+       //run Ixent's modified script to produce random test cases. 
+       //if tests exist, do not redo
+       File pythonFolder = new File("src/main/resources/python/");
+       String pythonPath = pythonFolder.getAbsolutePath();
+       if(!testFolder.exists())
+         testFolder.mkdir();
+       
+       if(testFolder.list().length  == 1 || testFolder.list().length  == 0)
+       {
+         String testPath = testFolder.getAbsolutePath();
+         System.out.println(testPath);
+         String [] params = {"generateScenariosNatural.py", testPath};
+         Map<String,String> enviro = new HashMap<String, String>();
+         System.out.println("running Ixent's scripts for 30 random queries");
+         Utils.runExternalProgram("python", params, enviro, pythonPath);
+         System.out.println("have ran Ixent's scripts for 30 random queries");
+         
+       }
+       else
+       {
+         System.out.println("System already has test cases, will not re-execute process");
+       }
+   }
+   
+   private static void collectQueries(ArrayList<String> queries) throws IOException
+   {
+      //String filePath = Utils.validateFileLocation("tests/queries.txt");
+      File queriesFile = new File(testFolder.toString() + sep + "queries.txt");
+      String filePath = queriesFile.getAbsolutePath();
+      BufferedReader queryReader = new BufferedReader(new FileReader(filePath));
+      String line = "";
+      int counter = 0;
+      while((line = queryReader.readLine()) != null)
+      {
+        if(counter >= queryid)
+          queries.add(line);
+        else
+          counter++;
+      }  
+   }
+   
+   private static void updateRecoveryFile() throws IOException
+   {
+      File folder = new File("recovery"); 
+      String path = folder.getAbsolutePath();
+      //added to allow recovery from crash
+      BufferedWriter recoverWriter = new BufferedWriter(new FileWriter(new File(path + "/recovery.tex")));
+      
+      recoverWriter.write(queryid + "\n");
+      recoverWriter.flush();
+      recoverWriter.close();
+   }
+   
+  private static void recursiveRun(Iterator<String> queryIterator, 
                                    Long duration, String queryParams, 
                                    boolean allowDeathOfAcquires) 
   throws IOException 
   {
-	  for(int index = 2; index <= 4; index++)
-	  {
+   // for(int index = 2; index <= 4; index++)
+  //  {
       //get query & schemas
-      String currentQuery = queryIterator.next();
-      String propertiesPath = sneetestFolder.toString() + sep + "snee" + queryid + "." + index +".properties";
-      
+     // String currentQuery = queryIterator.next();
+     // String currentQuery = "SELECT RSTREAM AVG(anow.x) as qx FROM A[NOW] anow ;";
+   String currentQuery = "SELECT RSTREAM anow.x as qx FROM A[NOW] anow ;";
+  // String currentQuery = "SELECT RSTREAM anow.x as qx FROM A[NOW] anow,(SELECT bnow.x as sq1x FROM B[NOW] bnow, C[NOW] cnow WHERE bnow.x=cnow.x) sq1 WHERE anow.x=sq1.sq1x;";
+ //  String currentQuery = "SELECT RSTREAM sq1.sq1x as qx FROM (SELECT anow.x as sq1x FROM A[NOW] anow, B[NOW] bnow WHERE anow.x=bnow.x) sq1, (SELECT cnow.x as sq2x FROM C[NOW] cnow, D[NOW] dnow WHERE cnow.x=dnow.x) sq2 WHERE sq1.sq1x=sq2.sq2x;";
+   
+   String propertiesPath = sneetestFolder.toString() + sep +"snee" + queryid + "." + kResil +".properties";
+  //  String propertiesPath = sneetestFolder.toString() + sep + "snee" + queryid +".properties";
+    
       System.out.println("Running Tests on query " + (queryid));
       try
       {
@@ -226,10 +235,10 @@ public class RelibaleChannelClient extends SNEEClient
         //added to allow recovery from crash
         updateRecoveryFile();
         client.runCompilelation();
-        System.out.println("Ran all tests on query " + queryid + "." + index);
+        System.out.println("Ran all tests on query " + queryid + "." /*+ index*/);
         queryid ++;
         File oldOutputFolder = new File("output" + sep + "query" + queryid);
-        boolean success = oldOutputFolder.renameTo(new File("output" + sep + "query" + queryid + "." + index));
+        boolean success = oldOutputFolder.renameTo(new File("output" + sep + "query" + queryid + "." /* + index*/));
         if(!success)
           System.out.println("couldnt rename folder, data will have been lost");
         else
@@ -237,18 +246,18 @@ public class RelibaleChannelClient extends SNEEClient
       }
       catch(Exception e)
       {
-        System.out.println("something major failed on query "+ queryid + "." + index);
+        System.out.println("something major failed on query "+ queryid + "." /*+ index*/);
         e.printStackTrace();
-        queryid ++;
-        if(queryid <= max)
-        {
-        recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires);
-        }
+       // queryid ++;
+       // if(queryid <= max)
+      //  {
+      //  recursiveRun(queryIterator, duration, queryParams, allowDeathOfAcquires);
+      //  }
       }
-	  }
+   // }
   }
-	 
-	private void runCompilelation() 
+   
+  private void runCompilelation() 
   throws 
   SNEECompilerException, MalformedURLException, 
   EvaluatorException, SNEEException, MetadataException, 
@@ -275,51 +284,51 @@ public class RelibaleChannelClient extends SNEEClient
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
   }
-	
-	 public static void removeBinaries(int queryid) throws SNEEConfigurationException
-	  {
-	   String outputDir = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR);
-	    File file = new File(outputDir + sep + "query" + queryid);
-	    if(file.isDirectory())
-	    {
-	      String [] fileList = file.list();
-	      for(int fileIndex = 0; fileIndex < fileList.length; fileIndex++)
-	      {
-	        removeBinaries(file.getAbsolutePath() + sep + fileList[fileIndex]);
-	      }
-	    }
-	    
-	    
-	  }
-	  
-	  private static void removeBinaries(String filePath)
-	  {
-	    File file = new File(filePath);
-	    if(file.isDirectory())
-	    {
-	      String [] fileList = file.list();
-	      for(int fileIndex = 0; fileIndex < fileList.length; fileIndex++)
-	      {
-	        if(fileList[fileIndex].equals("avrora_micaz_t2"))
-	        {
-	          File binaryFile = new File(file.getAbsolutePath() + sep + fileList[fileIndex]);
-	          RelibaleChannelClient.deleteFileContents(binaryFile);
-	        }
-	        else
-	        {
-	          removeBinaries(file.getAbsolutePath() + sep + fileList[fileIndex]);
-	        }
-	      }
-	    }
-	  }
-	  
-	  
-	  /**
-	   * cleaning method
-	   * @param firstOutputFolder
-	   */
-	public static void deleteFileContents(File firstOutputFolder)
-	{
+  
+   public static void removeBinaries(int queryid) throws SNEEConfigurationException
+    {
+     String outputDir = SNEEProperties.getSetting(SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR);
+      File file = new File(outputDir + sep + "query" + queryid);
+      if(file.isDirectory())
+      {
+        String [] fileList = file.list();
+        for(int fileIndex = 0; fileIndex < fileList.length; fileIndex++)
+        {
+          removeBinaries(file.getAbsolutePath() + sep + fileList[fileIndex]);
+        }
+      }
+      
+      
+    }
+    
+    private static void removeBinaries(String filePath)
+    {
+      File file = new File(filePath);
+      if(file.isDirectory())
+      {
+        String [] fileList = file.list();
+        for(int fileIndex = 0; fileIndex < fileList.length; fileIndex++)
+        {
+          if(fileList[fileIndex].equals("avrora_micaz_t2"))
+          {
+            File binaryFile = new File(file.getAbsolutePath() + sep + fileList[fileIndex]);
+            RelibaleChannelClient.deleteFileContents(binaryFile);
+          }
+          else
+          {
+            removeBinaries(file.getAbsolutePath() + sep + fileList[fileIndex]);
+          }
+        }
+      }
+    }
+    
+    
+    /**
+     * cleaning method
+     * @param firstOutputFolder
+     */
+  public static void deleteFileContents(File firstOutputFolder)
+  {
     if(firstOutputFolder.exists())
     {
       File[] contents = firstOutputFolder.listFiles();
@@ -338,5 +347,5 @@ public class RelibaleChannelClient extends SNEEClient
           delete.delete();
       }
     } 
-  }	  
+  }   
 }

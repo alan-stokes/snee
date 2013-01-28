@@ -214,6 +214,13 @@ public class CardinalityEstimatedCostModel extends CostModel
       return new CardinalityDataStructure(0);
     
     ArrayList<CardinalityDataStructure> reducedInputs = reduceInputs(inputOperator);
+    
+    if(reducedInputs.size() < 2)
+    {
+      CardinalityDataStructure output = 
+        new CardinalityDataStructure(0, 0);
+      return output;
+    }
     //System.out.println("join newInput size is " + reducedInputs.size());
     CardinalityDataStructure inputR = reducedInputs.get(0);
     CardinalityDataStructure inputL = reducedInputs.get(1);

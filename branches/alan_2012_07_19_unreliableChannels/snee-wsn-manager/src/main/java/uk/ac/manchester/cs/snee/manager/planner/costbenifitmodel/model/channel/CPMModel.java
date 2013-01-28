@@ -333,6 +333,7 @@ public class CPMModel
   throws SNEEConfigurationException, IOException
   {  
      String filePath = SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_NOISEMODEL);
+     
      BufferedReader in = new BufferedReader(new FileReader(new File(filePath)));
      String line = null;
      while((line = in.readLine()) != null)
@@ -398,6 +399,8 @@ public class CPMModel
       delta = new Long(startTime - NoiseModelConstants.NOISE_HISTORY -1).intValue();
     else
       delta = new Long(startTime - node.getLastTimeNoiseGenerated()).intValue();
+    
+    delta = delta / 1000;
     // if at the same time point, use same noise value
     if(delta == 0)
       noise = node.getLastNoiseVal();

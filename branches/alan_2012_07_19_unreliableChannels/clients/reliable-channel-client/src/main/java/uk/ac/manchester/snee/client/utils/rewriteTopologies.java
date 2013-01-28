@@ -76,6 +76,12 @@ public class rewriteTopologies
       
       queryIterator = queries.iterator();
       //TODO remove to allow full run
+      for(int index = 1; index < 62; index++)
+      {
+        queryIterator.next();  
+        queryid++;
+      }
+      
       while(queryIterator.hasNext())
       {
         rewrite(queryIterator, duration, queryParams, true);
@@ -140,6 +146,7 @@ public class rewriteTopologies
     }
     catch(Exception e)
     {
+      e.printStackTrace();
       return false;
     }
   }
@@ -247,18 +254,28 @@ public class rewriteTopologies
         {
           if(cloned.getRadioLink(site, (Site)input) != null)
           {
-            out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                      input + "\" bidirectional=\"true\" energy=\"" + link.getEnergyCost() + 
-                      "\" time=\"" + link.getDistanceCost() + "\" radio-loss=\"0\"/> \n");
+            if(!doneEdges.contains(new String(site.getID() + ":" + input.getID())))
+            {
+              out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                        input + "\" bidirectional=\"true\" energy=\"" + link.getEnergyCost() + 
+                        "\" time=\"" + link.getDistanceCost() + "\" radio-loss=\"0\"/> \n");
+              doneEdges.add(site.getID() + ":" + input.getID());
+              doneEdges.add(input.getID() + ":" + site.getID());
+            }
             if(!overlay.getEquivilentNodes(site.getID()).contains(input.getID()))
               linkBetweenClusters = link;
           }
           else
           {
-            Double energyCost = link.getEnergyCost() * 3;
-            out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                input + "\" bidirectional=\"true\" energy=\"" + energyCost + 
-                "\" time=\"" + link.getDistanceCost() + "\" radio-loss=\"0\"/> \n");
+            if(!doneEdges.contains(new String(site.getID() + ":" + input.getID())))
+            {
+              Double energyCost = link.getEnergyCost() * 6;
+              out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                  input + "\" bidirectional=\"true\" energy=\"" + energyCost + 
+                  "\" time=\"" + link.getDistanceCost() + "\" radio-loss=\"0\"/> \n");
+              doneEdges.add(site.getID() + ":" + input.getID());
+              doneEdges.add(input.getID() + ":" + site.getID());
+            }
            if(!overlay.getEquivilentNodes(site.getID()).contains(input.getID()))
              linkBetweenClusters = link;
           }
@@ -267,35 +284,54 @@ public class rewriteTopologies
         {
           if(!overlay.getEquivilentNodes(site.getID()).contains(input.getID()))
           {
-            Double energyCost = linkBetweenClusters.getEnergyCost() * 3;
+            Double energyCost = linkBetweenClusters.getEnergyCost() * 6;
             if(energyCost > 254)
               energyCost = new Double(254);
-            //internal cluster link.
-            out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                input + "\" bidirectional=\"true\" energy=\"" + energyCost + 
-                "\" time=\"" + linkBetweenClusters.getDistanceCost() / 10 + "\" radio-loss=\"0\"/> \n");
+            if(!doneEdges.contains(new String(site.getID() + ":" + input.getID())))
+            {
+              //internal cluster link.
+              out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                  input + "\" bidirectional=\"true\" energy=\"" + energyCost + 
+                  "\" time=\"" + linkBetweenClusters.getDistanceCost() / 10 + "\" radio-loss=\"0\"/> \n");
+              doneEdges.add(site.getID() + ":" + input.getID());
+              doneEdges.add(input.getID() + ":" + site.getID());
+            }
           }
           else
           {
           //external cluster link.
             if(cloned.getRadioLink(site, (Site)input) != null)
             {
-              out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                input + "\" bidirectional=\"true\" energy=\"" + linkBetweenClusters.getEnergyCost() + 
-                "\" time=\"" + linkBetweenClusters.getDistanceCost() /2 + "\" radio-loss=\"0\"/> \n");
+              if(!doneEdges.contains(new String(site.getID() + ":" + input.getID())))
+              {
+                out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                  input + "\" bidirectional=\"true\" energy=\"" + linkBetweenClusters.getEnergyCost() + 
+                  "\" time=\"" + linkBetweenClusters.getDistanceCost() /2 + "\" radio-loss=\"0\"/> \n");
+                doneEdges.add(site.getID() + ":" + input.getID());
+                doneEdges.add(input.getID() + ":" + site.getID());
+              }
             }
             else
             {
-              Double energyCost = linkBetweenClusters.getEnergyCost() * 3;
-              if(energyCost > 254)
-                energyCost = new Double(254);
-              out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                  input + "\" bidirectional=\"true\" energy=\"" + energyCost  + 
-                  "\" time=\"" + linkBetweenClusters.getDistanceCost()  + "\" radio-loss=\"0\"/> \n");
+              if(!doneEdges.contains(new String(site.getID() + ":" + input.getID())))
+              {
+                Double energyCost = linkBetweenClusters.getEnergyCost() * 6;
+                if(energyCost > 254)
+                  energyCost = new Double(254);
+                out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                    input + "\" bidirectional=\"true\" energy=\"" + energyCost  + 
+                    "\" time=\"" + linkBetweenClusters.getDistanceCost()  + "\" radio-loss=\"0\"/> \n");
+                doneEdges.add(site.getID() + ":" + input.getID());
+                doneEdges.add(input.getID() + ":" + site.getID());
+              }
             }
           }
         }
-        doneEdges.add(site.getID() + "-" + input.getID());
+        if(!doneEdges.contains(new String(site.getID() + ":" + input.getID())))
+        {
+          doneEdges.add(site.getID() + ":" + input.getID());
+          doneEdges.add(input.getID() + ":" + site.getID());
+        }
       }
       
       Iterator<Node> outputIterator = site.getOutputsList().iterator();
@@ -310,21 +346,31 @@ public class rewriteTopologies
         {
           if(cloned.getRadioLink(site, (Site)output) != null)
           {
-            out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                      output + "\" bidirectional=\"true\" energy=\"" + link.getEnergyCost() + 
-                      "\" time=\"" + link.getDistanceCost() + "\" radio-loss=\"0\"/> \n");
+            if(!doneEdges.contains(new String(site.getID() + ":" + output.getID())))
+            {
+              out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                        output + "\" bidirectional=\"true\" energy=\"" + link.getEnergyCost() + 
+                        "\" time=\"" + link.getDistanceCost() + "\" radio-loss=\"0\"/> \n");
+              doneEdges.add(site.getID() + ":" + output.getID());
+              doneEdges.add(output.getID() + ":" + site.getID());
+            }
             if(!overlay.getEquivilentNodes(site.getID()).contains(output.getID()))
               linkBetweenClusters = link;
           }
           else
           {
-            Double energyCost = link.getEnergyCost() * 3;
+            Double energyCost = link.getEnergyCost() * 6;
             if(energyCost > 254)
               energyCost = new Double(254);
+            if(!doneEdges.contains(new String(site.getID() + ":" + output.getID())))
+            {
+              out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                  output + "\" bidirectional=\"true\" energy=\"" +energyCost  + 
+                  "\" time=\"" + link.getDistanceCost() + "\" radio-loss=\"0\"/> \n");
+              doneEdges.add(site.getID() + ":" + output.getID());
+              doneEdges.add(output.getID() + ":" + site.getID());
+            }
             
-            out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                output + "\" bidirectional=\"true\" energy=\"" +energyCost  + 
-                "\" time=\"" + link.getDistanceCost() + "\" radio-loss=\"0\"/> \n");
             if(!overlay.getEquivilentNodes(site.getID()).contains(output.getID()))
               linkBetweenClusters = link;
           }
@@ -334,35 +380,53 @@ public class rewriteTopologies
           if(!overlay.getEquivilentNodes(site.getID()).contains(output.getID()))
           {
             //internal cluster link.
-            Double energyCost = linkBetweenClusters.getEnergyCost() * 3;
+            Double energyCost = linkBetweenClusters.getEnergyCost() * 6;
             if(energyCost > 254)
               energyCost = new Double(254);
-            out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                output + "\" bidirectional=\"true\" energy=\"" + energyCost + 
-                "\" time=\"" + linkBetweenClusters.getDistanceCost() / 10 + "\" radio-loss=\"0\"/> \n");
+            if(!doneEdges.contains(new String(site.getID() + ":" + output.getID())))
+            {
+              out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                  output + "\" bidirectional=\"true\" energy=\"" + energyCost + 
+                  "\" time=\"" + linkBetweenClusters.getDistanceCost() / 10 + "\" radio-loss=\"0\"/> \n");
+              doneEdges.add(site.getID() + ":" + output.getID());
+              doneEdges.add(output.getID() + ":" + site.getID());
+            }
           }
           else
           {
           //external cluster link.
             if(cloned.getRadioLink(site, (Site)output) != null)
             {
-              out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                  output + "\" bidirectional=\"true\" energy=\"" + linkBetweenClusters.getEnergyCost() + 
-                  "\" time=\"" + linkBetweenClusters.getDistanceCost()  + "\" radio-loss=\"0\"/> \n");
+              if(!doneEdges.contains(new String(site.getID() + ":" + output.getID())))
+              {
+                out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                    output + "\" bidirectional=\"true\" energy=\"" + linkBetweenClusters.getEnergyCost() + 
+                    "\" time=\"" + linkBetweenClusters.getDistanceCost()  + "\" radio-loss=\"0\"/> \n");
+                doneEdges.add(site.getID() + ":" + output.getID());
+                doneEdges.add(output.getID() + ":" + site.getID());
+            }
             }
             else
             {
-              Double energyCost = linkBetweenClusters.getEnergyCost() * 3;
+              Double energyCost = linkBetweenClusters.getEnergyCost() * 6;
               if(energyCost > 254)
                 energyCost = new Double(254);
-              
-              out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
-                  output + "\" bidirectional=\"true\" energy=\"" + energyCost + 
-                  "\" time=\"" + linkBetweenClusters.getDistanceCost()  + "\" radio-loss=\"0\"/> \n");
+              if(!doneEdges.contains(new String(site.getID() + ":" + output.getID())))
+              {
+                out.write("<radio-link source=\"" + site.getID() + "\" dest=\"" +
+                    output + "\" bidirectional=\"true\" energy=\"" + energyCost + 
+                    "\" time=\"" + linkBetweenClusters.getDistanceCost()  + "\" radio-loss=\"0\"/> \n");
+                doneEdges.add(site.getID() + ":" + output.getID());
+                doneEdges.add(output.getID() + ":" + site.getID());
+              } 
             }
           }
         }
-        doneEdges.add(site.getID() + "-" + output.getID());
+        if(!doneEdges.contains(new String(site.getID() + ":" + output.getID())))
+        {
+          doneEdges.add(site.getID() + ":" + output.getID());
+          doneEdges.add(output.getID() + ":" + site.getID());
+        }
       }
     }
     out.write("\n\n </radio-links> \n \n </network-topology> \n");

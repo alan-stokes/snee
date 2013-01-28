@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema 
+	targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:wsdai="http://www.ggf.org/namespaces/2005/12/WS-DAI" 
+	xmlns:sdsQuery="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Query"
+	xmlns:sds="http://www.semsorgrid4env.eu/namespace/2009/10/SDS">
+	
+	<xsd:import schemaLocation="wsdai/wsdai_core_types.xsd" 
+		namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI" />
+	
+	<xsd:import schemaLocation="streaming_service_types.xsd"
+		namespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS"/>
+
+	<!-- General types -->
+
+
+	<!-- Stream Expression -->
+	<xsd:complexType name="StreamQueryExpressionType">
+		<xsd:complexContent>
+			<xsd:extension base="wsdai:ExpressionType">
+				<xsd:sequence>
+					<xsd:element name="Expression" type="xsd:string" />
+					<xsd:element name="QueryDuration" type="sds:AbsoluteOrRelativeTimeType" />
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:element name="StreamQueryExpression" type="sdsQuery:StreamQueryExpressionType"/>
+
+	<!-- Stream Properties document -->
+
+
+	<xsd:complexType name="StreamingQueryPropertyDocumentType">
+		<xsd:complexContent>
+			<xsd:extension base="sds:StreamPropertyDocumentType">
+				<xsd:sequence>
+					<!-- Not a required element, since not all services will expose the query
+						interface. However, it SHOULD be included when there is a query interface -->
+					<xsd:element name="MaximumDirectQueryDuration" type="xsd:duration"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:element name="StreamingQueryPropertyDocument" 
+    	substitutionGroup="wsdai:PropertyDocument" 
+    	type="sdsQuery:StreamingQueryPropertyDocumentType"/>
+
+</xsd:schema>

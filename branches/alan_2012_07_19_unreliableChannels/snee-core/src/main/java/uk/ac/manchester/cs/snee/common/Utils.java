@@ -92,8 +92,8 @@ public class Utils {
 			logger.trace("Absolute file location failed, testing relative path");
 			//Absolute file location failed, check relative path
 			URL fileUrl = Utils.class.getClassLoader().getResource(filename);
-			System.out.println(fileUrl);
-			try{System.out.println(fileUrl.toURI());}catch(Exception e){}
+		//	System.out.println(fileUrl);
+		//	try{System.out.println(fileUrl.toURI());}catch(Exception e){}
 			try {
 				file = new File(fileUrl.toURI());
 			} catch (Exception e) {

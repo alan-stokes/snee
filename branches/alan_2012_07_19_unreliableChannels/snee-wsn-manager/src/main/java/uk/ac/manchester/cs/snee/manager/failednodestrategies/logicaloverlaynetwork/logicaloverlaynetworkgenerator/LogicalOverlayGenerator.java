@@ -360,22 +360,29 @@ public class LogicalOverlayGenerator
                                  ArrayList<String> canditateNodes,
                                  LogicalOverlayNetwork currentOverlay)
   {
-    if(position == canditateNodes.size())
+    //if theres only enough ndoes for 1 permutation, then dont bother cycling.
+    if(canditateNodes.size() == k_resilence_level)
     {
-      ArrayList<String> clonedCombination = cloner.deepClone(combination);
-      if(clonedCombination.size() >= k_resilence_level)
-        combinations.add(clonedCombination);
+      combinations.add(cloner.deepClone(canditateNodes));
     }
     else
     {
-      combination.add(canditateNodes.get(position));
-      createPermutation(combinations, combination, position+ 1, 
-                        canditateNodes, currentOverlay);
-      combination.remove(combination.size()-1);
-      createPermutation(combinations, combination, position+ 1, 
-                        canditateNodes, currentOverlay);
+      if(position == canditateNodes.size())
+      {
+        ArrayList<String> clonedCombination = cloner.deepClone(combination);
+        if(clonedCombination.size() >= k_resilence_level)
+          combinations.add(clonedCombination);
+      }
+      else
+      {
+        combination.add(canditateNodes.get(position));
+        createPermutation(combinations, combination, position+ 1, 
+                          canditateNodes, currentOverlay);
+        combination.remove(combination.size()-1);
+        createPermutation(combinations, combination, position+ 1, 
+                          canditateNodes, currentOverlay);
+      }
     }
-    
   }
   
   private boolean checkCurrentOverlay(LogicalOverlayNetwork currentOverlay,
