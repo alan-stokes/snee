@@ -13,6 +13,7 @@
 		<cxf.version>2.2.8</cxf.version>
 	</properties>
 	<modules>
+		<module>repository</module>
 		<module>snee-api</module>
 		<module>data-source</module>
 		<module>snee-core</module>
@@ -62,19 +63,7 @@
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.15</version>
-			<type>jar</type>
-			<scope>compile</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>jmxri</artifactId>
-					<groupId>com.sun.jmx</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jmxtools</artifactId>
-					<groupId>com.sun.jdmk</groupId>
-				</exclusion>
-			</exclusions>
+			<version>1.2.12</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -119,12 +108,10 @@
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>
-
 	<repositories>
 		<repository>
-			<id>ssg4env.internal</id>
-			<name>Archiva Managed Internal Repository</name>
-			<url>http://ssg4env.techideas.net:8180/archiva/repository/internal</url>
+			<id>my-local-repo</id>
+			<url>file://${project.basedir}/repository/src/main/resources/lib/</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
@@ -134,7 +121,8 @@
 		</repository>
 	</repositories>
 
-	<distributionManagement>
+<!-- 
+  	<distributionManagement>
 		<repository>
 			<id>ssg4env.internal</id>
 			<name>SSG4Env Internal Repository</name>
@@ -146,5 +134,5 @@
 			<url>http://ssg4env.techideas.net:8180/archiva/repository/internal</url>
 		</snapshotRepository>
 	</distributionManagement>
-
+ -->
 </project>
