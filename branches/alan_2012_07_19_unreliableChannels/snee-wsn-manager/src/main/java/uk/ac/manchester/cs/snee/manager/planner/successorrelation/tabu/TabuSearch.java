@@ -226,7 +226,7 @@ public class TabuSearch extends AutonomicManagerComponent
     Utils.writeNoSuccessor(iteration);
     if(currentNumberOfIterationsWithoutImprovement >= allowance(currentPath.successorLength()))
     {
-      if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
+      if(currentPath.overallSuccessorPathLifetime() > bestPath.overallSuccessorPathLifetime())
       {
         bestPath.updateList(currentPath.getSuccessorList());
       }
@@ -261,7 +261,7 @@ public class TabuSearch extends AutonomicManagerComponent
       currentPath.add(bestNeighbourHoodSuccessor);
       TABUList.addAllPathIntoTABUList(currentPath, currentPath.successorLength() -1, this.InitialSuccessor);
       
-      if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
+      if(currentPath.overallSuccessorPathLifetime() > bestPath.overallSuccessorPathLifetime())
         bestPath.updateList(currentPath.getSuccessorList());
       currentNumberOfIterationsWithoutImprovement = 0;
     }
@@ -272,7 +272,7 @@ public class TabuSearch extends AutonomicManagerComponent
       currentNumberOfIterationsWithoutImprovement++;
       if(currentNumberOfIterationsWithoutImprovement >= allowance(currentPath.successorLength()))
       {
-        if(currentPath.overallAgendaLifetime() > bestPath.overallAgendaLifetime())
+        if(currentPath.overallSuccessorPathLifetime() > bestPath.overallSuccessorPathLifetime())
         {
           bestPath.updateList(currentPath.getSuccessorList());
         }

@@ -400,7 +400,15 @@ public class CPMModel
     else
       delta = new Long(startTime - node.getLastTimeNoiseGenerated()).intValue();
     
-    delta = delta / 1000;
+    //little bit of code to reduce processing time
+    // should be approx 1-2k
+    if(delta > 2000)
+    {
+    	int temp = delta /1000;
+    	int addedBit = delta % 1000;
+    	delta = (delta / temp) + addedBit; 		
+    }
+    
     // if at the same time point, use same noise value
     if(delta == 0)
       noise = node.getLastNoiseVal();

@@ -27,7 +27,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderExceptio
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
-public class CondorReliableChannelClient extends SNEEClient 
+public class CondorSuccessorClient extends SNEEClient 
 {
   
   private static int queryid = 1;
@@ -37,7 +37,7 @@ public class CondorReliableChannelClient extends SNEEClient
   
   //private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;
 
-  public CondorReliableChannelClient(String query, 
+  public CondorSuccessorClient(String query, 
       double duration, String queryParams, String csvFile, String sneeProps) 
   throws SNEEException, IOException, SNEEConfigurationException 
   {
@@ -91,8 +91,8 @@ public class CondorReliableChannelClient extends SNEEClient
     try
     {
       System.out.println("initisling client");
-      CondorReliableChannelClient client = 
-      new  CondorReliableChannelClient(currentQuery, duration, queryParams, null, propertiesPath);
+      CondorSuccessorClient client = 
+      new  CondorSuccessorClient(currentQuery, duration, queryParams, null, propertiesPath);
       //set queryid to correct id
       System.out.println("getting controller");
       SNEEController contol = (SNEEController) client.getController();

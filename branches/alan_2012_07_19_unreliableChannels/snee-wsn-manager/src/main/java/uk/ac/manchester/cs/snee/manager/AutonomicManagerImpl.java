@@ -74,6 +74,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   //data structures needed for manager
   private QueryExecutionPlan currentQEP;
   private MetadataManager _metadataManager;
+
   private SourceMetadataAbstract _metadata;
   private QoSExpectations queryQoS;
   
@@ -565,11 +566,12 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
 
   @Override
   public void initilise(SourceMetadataAbstract metadata,
-      QueryExecutionPlan qep, ResultStore resultSet, int queryid,
-      Long seed) throws SNEEException, SNEEConfigurationException,
-      SchemaMetadataException, TypeMappingException, OptimizationException,
-      IOException, CodeGenerationException, NumberFormatException,
-      WhenSchedulerException, AgendaException, AgendaLengthException
+  		                QueryExecutionPlan qep, ResultStore resultSet, int queryid,
+  		                Long seed, double distanceConverter) 
+  throws SNEEException,SNEEConfigurationException, SchemaMetadataException,
+  		 TypeMappingException, OptimizationException, IOException,
+  		 CodeGenerationException, NumberFormatException, WhenSchedulerException,
+  		 AgendaException, AgendaLengthException 
   {
     this.currentQEP = qep;
     queryName = "query" + queryid;
@@ -598,16 +600,44 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     if(unreliableChannels)
     {
       planner.updateStorageLocation(outputFolder);
-      planner.startUnreliableChannelStrategy((SensorNetworkQueryPlan) qep, seed);
+      planner.startUnreliableChannelStrategy((SensorNetworkQueryPlan) qep, seed, distanceConverter);
     } 
     
   }
+  
+  public MetadataManager get_metadataManager()
+  {
+    return _metadataManager;
+  }
 
   public void simulateRunOfRQEP(RobustSensorNetworkQueryPlan rQEP,
-      SensorNetworkQueryPlan qep, Long seed) 
+      SensorNetworkQueryPlan qep, Long seed, Double distanceConverter) 
   throws NumberFormatException, SNEEConfigurationException, OptimizationException, 
   SchemaMetadataException, TypeMappingException, IOException
   {
-    this.executer.simulateRunOfQEPs(rQEP, qep, seed);
+    this.executer.simulateRunOfQEPs(rQEP, qep, seed, distanceConverter);
+  }
+
+  /**
+   * 
+   * @param rQEP
+   * @param qep
+   * @param seed
+   * @param distanceConverter
+   * @throws IOException 
+   * @throws TypeMappingException 
+   * @throws SchemaMetadataException 
+   * @throws OptimizationException 
+   * @throws SNEEConfigurationException 
+   * @throws NumberFormatException 
+   * @throws CodeGenerationException 
+   */
+  public void calculateLifetimeDifferenceFromDeployments(RobustSensorNetworkQueryPlan rQEP, 
+                                                         SensorNetworkQueryPlan qep, Long seed,
+                                                         Double distanceConverter) 
+  throws NumberFormatException, SNEEConfigurationException, OptimizationException, 
+  SchemaMetadataException, TypeMappingException, IOException, CodeGenerationException
+  {
+    this.executer.calculateLifetimeDifferenceFromDeployments(rQEP, qep, seed, distanceConverter);
   }
 }

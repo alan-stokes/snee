@@ -547,7 +547,7 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
     return adapatation; 
   }
 
-  private List<Adaptation> executeHierarchyAdaptation(ArrayList<String> failedNodeIDs,
+  public List<Adaptation> executeHierarchyAdaptation(ArrayList<String> failedNodeIDs,
                                                       LogicalOverlayNetworkHierarchy overlay)
   throws FileNotFoundException, IOException, OptimizationException, SchemaMetadataException
   {

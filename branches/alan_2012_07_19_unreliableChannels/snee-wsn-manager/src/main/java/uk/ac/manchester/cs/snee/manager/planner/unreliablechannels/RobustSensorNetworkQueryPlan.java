@@ -64,4 +64,13 @@ public class RobustSensorNetworkQueryPlan extends SensorNetworkQueryPlan {
 	{
 	  return this.overlayAgenda;
 	}
+	
+	 /**
+   * @return changes the unrelaibale failure agenda
+   */
+  public  void setUnreliableAgenda(UnreliableChannelAgenda agenda)
+  {
+   this.overlayAgenda = agenda;
+  }
+  
 }

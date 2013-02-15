@@ -117,7 +117,7 @@ public interface AutonomicManager
   IOException, SNEEConfigurationException, CodeGenerationException;
 
   public abstract void initilise(SourceMetadataAbstract metadata, QueryExecutionPlan queryPlan, 
-                                 ResultStore resultSet, int queryId, Long seed)
+                                 ResultStore resultSet, int queryId, Long seed, double distanceConverter)
   throws SNEEException, SNEEConfigurationException, 
   SchemaMetadataException, TypeMappingException, 
   OptimizationException, IOException, CodeGenerationException,

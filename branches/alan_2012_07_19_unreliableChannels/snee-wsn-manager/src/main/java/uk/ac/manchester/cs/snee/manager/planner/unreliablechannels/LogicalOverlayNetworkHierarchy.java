@@ -9,13 +9,21 @@ import java.util.Set;
 
 import com.rits.cloning.Cloner;
 
+import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
+import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
+import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
+import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.LogicalOverlayStrategy;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.logicaloverlaynetworkgenerator.LogicalOverlayNetwork;
+import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
+import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 
@@ -160,6 +168,47 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
       String key = keys.next();
       this.activeClustersPriority.put(key, 1);
     }
+  }
+
+  public LogicalOverlayNetworkHierarchy(LogicalOverlayNetwork logicalOverlay,
+      SensorNetworkQueryPlan qep, Topology wsnTopology) 
+  throws NumberFormatException, SNEEConfigurationException
+  {
+    this.qep = qep;
+    clusters = new HashMapList<String, String>();
+    activeClusters = new HashMapList<String, String>();
+    this.activeClustersPriority = new HashMap<String, Integer>();
+    this.deployment = wsnTopology;
+    Iterator<String> keys = logicalOverlay.getClusters().keySet().iterator();
+    while(keys.hasNext())
+    {
+      String key = keys.next();
+      this.addClusterNode(key, key);
+    }
+    id = "HierarchyBasedOverlay";
+    
+    //first discover the resilient level for the reliable channel.
+    resilientLevel = Integer.parseInt(
+    SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_RESILIENTLEVEL));
+    k = Integer.parseInt(
+    SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_LEVEL));
+    //check if possible to create cluster.
+    if(k < resilientLevel)
+    throw new SNEEConfigurationException("cannot support a resilient level above the minimal level defined as k");
+    if(resilientLevel <= 0)
+    resilientLevel = 1; 
+    keys = logicalOverlay.getClusters().keySet().iterator();
+    while(keys.hasNext())
+    {
+      String key = keys.next();
+      this.activeClusters.add(key, key);
+    }
+    keys = logicalOverlay.getClusters().keySet().iterator();
+    while(keys.hasNext())
+    {
+      String key = keys.next();
+      this.activeClustersPriority.put(key, 1);
+    } // TODO Auto-generated constructor stub
   }
 
   private HashMap<String, Integer> getActiveClustersOriginalPriority()
@@ -768,6 +817,7 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
         this.clusters.remove(this.getClusterHeadFor(failedNodeID), failedNodeID);
       }
     }
+    removeDuplicates();
   }
 
   private void removeDuplicates()
@@ -826,4 +876,47 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     this.activeClustersPriority = new HashMap<String, Integer>();
     this.activeClustersPriority.putAll(activeClustersOriginalPriority);
   }
+
+  public void removeClonedData() 
+  {
+	removeClones(this.activeClusters);
+	removeClones(this.clusters);
+  }
+  
+  private void removeClones(HashMapList<String, String> clusterToClean)
+  {
+	  HashMapList<String, String> newCluster = new HashMapList<String, String>();
+	  Iterator<String> keySet = clusterToClean.keySet().iterator();
+	  while(keySet.hasNext())
+	  {
+	    String key = keySet.next();
+	    Iterator<String> values = clusterToClean.get(key).iterator();
+	    while(values.hasNext())
+	    {
+	      String value = values.next();
+	      
+	      if(newCluster.get(key)!= null & !newCluster.get(key).contains(value))
+	        newCluster.add(key, value);
+	    }
+	  }
+	  clusterToClean = newCluster;
+  }
+
+  public boolean canAdapt(String failedSite, RobustSensorNetworkQueryPlan rQEP)
+  {
+    if(failedSite == null)
+      return false;
+    else
+      return isThereACluster(failedSite, rQEP.getLogicalOverlayNetwork());
+  }
+
+  private boolean isThereACluster(String failedSite,
+                                  LogicalOverlayNetworkHierarchy logicalOverlayNetwork)
+  {
+    if(logicalOverlayNetwork.getEquivilentNodes(failedSite).size() != 0)
+      return true;
+    else
+      return false;
+  }
+  
 }

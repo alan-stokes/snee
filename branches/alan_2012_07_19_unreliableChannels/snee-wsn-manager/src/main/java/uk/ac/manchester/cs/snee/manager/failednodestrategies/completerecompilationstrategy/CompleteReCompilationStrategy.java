@@ -3,6 +3,7 @@ package uk.ac.manchester.cs.snee.manager.failednodestrategies.completerecompilat
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import uk.ac.manchester.cs.snee.MetadataException;
@@ -164,6 +165,100 @@ public class CompleteReCompilationStrategy extends FailedNodeStrategyAbstract
       adaptation.add(adapt);
 		return adaptation;
 	}
+	
+	
+	
+	 /**
+   * removes failed nodes from the network and then calls upon distributed section of compiler.
+   * @throws SNEECompilerException 
+   * @throws RouterException 
+   */
+  public List<Adaptation> adapt(ArrayList<String> failedNodes, Topology deployment,
+                                SensorNetworkQueryPlan QEP)
+  throws 
+  OptimizationException, UnsupportedAttributeTypeException,
+  SchemaMetadataException,SourceMetadataException,
+  TypeMappingException,AgendaException, 
+  SNEEException,SNEEConfigurationException, 
+  MalformedURLException,TopologyReaderException,
+  MetadataException, SNEEDataSourceException,
+  CostParametersException, SNCBException, NumberFormatException, SNEECompilerException 
+  
+  {
+    this.currentQEP = QEP;
+    System.out.println("Running Failed Node FrameWork Global");
+    globalFile = new File(outputFolder.toString() + sep + "global Stragety");
+    globalFile.mkdir();
+    List<Adaptation> adaptation = new ArrayList<Adaptation>();
+    Adaptation adapt = new Adaptation(currentQEP, StrategyIDEnum.FailedNodeGlobal, 1);
+    SensorNetworkSourceMetadata sm = (SensorNetworkSourceMetadata) _metadata;
+    network = deployment;
+    
+    //remove node from deployment
+    Iterator<String> failedNodeIterator = failedNodes.iterator();
+    while(failedNodeIterator.hasNext())
+    {
+      String failedNode = failedNodeIterator.next();
+      deployment.removeNodeAndAssociatedEdges(failedNode);
+    }
+    
+    makeNetworkFile();
+    //remove exchanges from PAF
+    PAF paf = cloner.deepClone(currentQEP.getIOT().getPAF());
+    paf.updateMetadataConnection(sm);
+    paf = this.removeExchangesFromPAF(paf);
+    //shove though distributed section of compiler
+    //routing
+    Router router = new Router();
+    RT routingTree;
+    //if no route generated, then return empty adapatation.
+    try
+    {
+      routingTree = router.doRouting(paf, currentQEP.getQueryName(), network, _metadata);
+    }
+    catch (RouterException e1)
+    {
+      return adaptation;
+    }
+    //where
+    InstanceWhereSchedular instanceWhere = 
+      new InstanceWhereSchedular(paf, routingTree, currentQEP.getCostParameters(), 
+                                 globalFile.toString());
+    IOT newIOT = instanceWhere.getIOT();
+    //when
+    boolean useNetworkController = SNEEProperties.getBoolSetting(
+        SNEEPropertyNames.SNCB_INCLUDE_COMMAND_SERVER);
+    boolean allowDiscontinuousSensing = SNEEProperties.getBoolSetting(
+        SNEEPropertyNames.ALLOW_DISCONTINUOUS_SENSING);
+    
+    AgendaIOT newAgendaIOT;
+    Agenda newAgenda;
+    WhenScheduler whenSched = new WhenScheduler(allowDiscontinuousSensing, 
+                                                _metadataManager.getCostParameters(), 
+                                                useNetworkController);
+    try
+    {
+      newAgendaIOT = whenSched.doWhenScheduling(newIOT, currentQEP.getQos(), currentQEP.getQueryName(), currentQEP.getCostParameters());
+      newAgenda = whenSched.doWhenScheduling(newIOT.getDAF(), currentQEP.getQos(), currentQEP.getQueryName());
+      new AgendaIOTUtils(newAgendaIOT, newIOT, false).exportAsLatex(globalFile.toString() + sep + "newAgenda");
+      new AgendaIOTUtils(newAgendaIOT, newIOT, false).generateImage(globalFile.toString());
+    }
+    catch (WhenSchedulerException e)
+    {
+      throw new SNEECompilerException(e);
+    }
+    
+    boolean success = assessQEPsAgendas(this.currentQEP.getIOT(), newIOT, this.currentQEP.getAgendaIOT(),
+                                        newAgendaIOT, newAgenda, false, adapt, failedNodes, routingTree, true, 
+                                        this.currentQEP.getDLAF(), this.currentQEP.getID(), this.currentQEP.getCostParameters());
+    adapt.setFailedNodes(failedNodes);
+    
+    if(success)
+      adaptation.add(adapt);
+    return adaptation;
+  }
+	
+	
 
   private void makeNetworkFile() 
   throws SchemaMetadataException

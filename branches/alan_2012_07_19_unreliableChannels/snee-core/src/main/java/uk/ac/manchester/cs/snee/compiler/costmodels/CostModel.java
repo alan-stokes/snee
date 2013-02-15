@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.compiler.costmodels;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CardinalityDataStructure;
@@ -104,7 +105,8 @@ public abstract class CostModel
   protected abstract CostModelDataStructure acquireCard(InstanceOperator operator)
   throws OptimizationException;
   
-  public CostModelDataStructure model(InstanceOperator operator, ArrayList<Integer> inputs) 
+  public CostModelDataStructure model(InstanceOperator operator, ArrayList<Integer> inputs,
+		                              HashMap<String, Integer> tuples, Long beta) 
   throws OptimizationException
   {
     //System.out.println("within operator " + operator.getID());
@@ -134,12 +136,12 @@ public abstract class CostModel
     }
     else if(operator.getSensornetOperator() instanceof SensornetNestedLoopJoinOperator)
     {
-      return joinCard(operator, inputs);
+      return joinCard(operator, inputs, tuples, beta);
     }
     else if(operator.getSensornetOperator() instanceof SensornetProjectOperator)
     {
       InstanceOperator op = (InstanceOperator)(operator.getInstanceInput(0));
-      return model(op, inputs);
+      return model(op, inputs, tuples, beta);
     }
     else if(operator.getSensornetOperator() instanceof SensornetRStreamOperator)
     {
@@ -175,7 +177,8 @@ public abstract class CostModel
   throws OptimizationException;
   protected abstract CostModelDataStructure RStreamCard(InstanceOperator operator, ArrayList<Integer> inputs)
   throws OptimizationException;
-  protected abstract CostModelDataStructure joinCard(InstanceOperator operator, ArrayList<Integer> inputs)
+  protected abstract CostModelDataStructure joinCard(InstanceOperator operator, ArrayList<Integer> inputs, 
+                                                     HashMap<String, Integer> tuples, long beta)
   throws OptimizationException;
   protected abstract CostModelDataStructure aggerateCard(InstanceOperator operator, ArrayList<Integer> inputs)
   throws OptimizationException;

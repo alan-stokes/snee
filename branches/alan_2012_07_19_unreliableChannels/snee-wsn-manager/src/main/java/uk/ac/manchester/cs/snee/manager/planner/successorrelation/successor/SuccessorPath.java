@@ -27,7 +27,7 @@ public class SuccessorPath implements Serializable
     this.listOfSuccessors.addAll(listOfSuccessors);
   }
   
-  public int overallAgendaLifetime()
+  public int overallSuccessorPathLifetime()
   {
     Iterator<Successor> successorIterator = listOfSuccessors.iterator();
     int agendaCount = 0;

@@ -359,6 +359,21 @@ public class SNEEProperties {
       setSetting(propName, "false");
       return getSetting(propName);
     }
+    else if(propName.equals("wsn_manager.executor.edge.tuples"))
+    {
+      setSetting(propName, "false");
+      return getSetting(propName);
+    }
+    else if(propName.equals("wsn_manager.executor.edge.lifetime"))
+    {
+      setSetting(propName, "true");
+      return getSetting(propName);
+    }
+    else if(propName.equals("wsn_manager.setup_strategies"))
+    {
+      setSetting(propName, "true");
+      return getSetting(propName);
+    }
     else return null;
   }
 

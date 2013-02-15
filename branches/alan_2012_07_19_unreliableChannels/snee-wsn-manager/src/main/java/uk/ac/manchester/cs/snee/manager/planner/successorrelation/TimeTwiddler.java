@@ -61,7 +61,7 @@ public class TimeTwiddler
     out = outWriter;
     SuccessorPath usableCopy = cloner.deepClone(original);
     int numberofAgendasToJumpBetween = 1000;
-    int overallLifetime = original.overallAgendaLifetime();
+    int overallLifetime = original.overallSuccessorPathLifetime();
     bestFoundLifetime = overallLifetime;
     bestPath = original;
     runningSites = originalRunningSites;
@@ -96,7 +96,7 @@ public class TimeTwiddler
     {
       newSuccessorTimeSwitch = newSuccessorTimeSwitch - numberofAgendasToJumpBetween;
       usableCopy.adjustSuccessorSwitchTime(newSuccessorTimeSwitch, successorIndex, runningSites);
-      int newlifetime = usableCopy.overallAgendaLifetime();
+      int newlifetime = usableCopy.overallSuccessorPathLifetime();
       if(newlifetime > bestFoundLifetime)
       {
         bestFoundLifetime = newlifetime;
@@ -107,7 +107,7 @@ public class TimeTwiddler
       if(WithRecompute && finalPlanLifetime > 0)
       {
         SuccessorPath path = search.findSuccessorsPath(cloner.deepClone(usableCopy));
-        newlifetime = path.overallAgendaLifetime();
+        newlifetime = path.overallSuccessorPathLifetime();
         if(newlifetime > bestFoundLifetime)
         {
           bestFoundLifetime = newlifetime;
@@ -126,7 +126,7 @@ public class TimeTwiddler
     {
       newSuccessorTimeSwitch = newSuccessorTimeSwitch + numberofAgendasToJumpBetween;
       usableCopy.adjustSuccessorSwitchTime(newSuccessorTimeSwitch, successorIndex, runningSites);
-      int newlifetime = usableCopy.overallAgendaLifetime();
+      int newlifetime = usableCopy.overallSuccessorPathLifetime();
       if(newlifetime > bestFoundLifetime)
       {
         bestFoundLifetime = newlifetime;
@@ -137,7 +137,7 @@ public class TimeTwiddler
       if(WithRecompute && finalPlanLifetime > 0)
       {
         SuccessorPath path = search.findSuccessorsPath(cloner.deepClone(usableCopy));
-        newlifetime = path.overallAgendaLifetime();
+        newlifetime = path.overallSuccessorPathLifetime();
         if(newlifetime > bestFoundLifetime)
         {
           bestFoundLifetime = newlifetime;
@@ -156,7 +156,7 @@ public class TimeTwiddler
     Iterator<Successor> successorIterator = usableCopy.getSuccessorList().iterator();
     String output = "";
     int counter = 0;
-    if(usableCopy.overallAgendaLifetime() > 0)
+    if(usableCopy.overallSuccessorPathLifetime() > 0)
     {
       while(successorIterator.hasNext())
       {
@@ -164,7 +164,7 @@ public class TimeTwiddler
         output = output.concat("successor " + counter + " time " + nextSuccessor.getAgendaCount());
         counter ++;
       }
-      output = output.concat(" lifetime " + usableCopy.overallAgendaLifetime());
+      output = output.concat(" lifetime " + usableCopy.overallSuccessorPathLifetime());
       out.write(output + "\n");
       out.flush();
     }

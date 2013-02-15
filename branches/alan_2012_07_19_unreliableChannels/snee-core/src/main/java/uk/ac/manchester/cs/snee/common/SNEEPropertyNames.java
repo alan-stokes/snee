@@ -317,6 +317,17 @@ public final class SNEEPropertyNames {
    */
   public static final String WSN_MANAGER_K_RESILENCE_DEFAULTALTS = "wsn_manager.bypass.default.alts";
   
+  /**
+   * used by the anayliser to see if there should be strateies inititlised
+   */
+  public static final String WSN_MANAGER_INITILISE_STRATEGIES = "wsn_manager.setup_strategies";
+  
+  
+  /**
+   * used by executor to decide if they need to run for tuples or lifetime
+   */
+  public static final String WSN_MANAGER_EXECUTOR_EDGE_TUPLES = "wsn_manager.executor.edge.tuples";
+  public static final String WSN_MANAGER_EXECUTOR_EDGE_LIFE = "wsn_manager.executor.edge.lifetime";
   
 }
 

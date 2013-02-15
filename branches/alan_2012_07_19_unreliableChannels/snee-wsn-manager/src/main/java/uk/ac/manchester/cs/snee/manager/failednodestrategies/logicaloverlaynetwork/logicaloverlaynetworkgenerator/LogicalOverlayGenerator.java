@@ -20,12 +20,14 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
+/*
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
-import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.LogicalOverlayStrategy;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
-import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
+*/
+import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.LogicalOverlayStrategy;
+//import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -208,7 +210,7 @@ public class LogicalOverlayGenerator
    * @throws OptimizationException 
    * @throws IOException 
    * @throws SNEEConfigurationException 
-   */
+   *//*
   private Double determineMinumalLifetime(LogicalOverlayNetwork currentOverlay,
                                           LogicalOverlayStrategy failedNodeStrategyLocal) 
   throws IOException, OptimizationException, SchemaMetadataException, 
@@ -230,7 +232,7 @@ public class LogicalOverlayGenerator
     Planner planner = new Planner(manager, _metadata, _metadataManager, runningSites, outputFolder);
     planner.assessOverlayCosts(outputFolder, overlayOTAProgramCost, currentOverlay, failedNodeStrategyLocal);
     return overlayOTAProgramCost.getLifetimeEstimate();
-  }
+  }*/
 
   /**
    * checks the level of resilience in each cluster, returns false if any one of them meets specified levels

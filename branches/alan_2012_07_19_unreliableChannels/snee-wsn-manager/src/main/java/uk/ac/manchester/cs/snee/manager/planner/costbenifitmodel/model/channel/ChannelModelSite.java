@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.CostModelDataStructure;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
@@ -28,6 +29,8 @@ import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
 
 public class ChannelModelSite implements Serializable
 {
@@ -350,7 +353,7 @@ public class ChannelModelSite implements Serializable
            !exOp.getNext().getSite().getID().equals(exOp.getSite().getID()))
         {
           int maxTransmittablePacketCount = exOp.getmaxPackets(IOT.getDAF(), beta, costs);
-          int transmittablePacketsCount = tupleToPacketConversion(previousOpOutput, previousOp);
+          int transmittablePacketsCount = tupleToPacketConversion(previousOpOutput, previousOp, exOp);
           Integer cPacketCount = currentPacketCount.get(exOp.getSite().getID());
           if(cPacketCount == null)
           {
@@ -407,8 +410,9 @@ public class ChannelModelSite implements Serializable
           currentUsedRecievedPacketCount.put(this.overlayNetwork.getClusterHeadFor(preExOp.getSite().getID()), rPacketCount + maxTransmittablePacketCount);
           currentPacketCount.remove(exOp.getSite().getID());
           currentPacketCount.put(this.overlayNetwork.getClusterHeadFor(exOp.getSite().getID()), cPacketCount + maxTransmittablePacketCount);
-          exOp.setTupleValueForExtent(
-              ChannelModelSite.packetToTupleConversion(transmittablePacketsCount, exOp, preExOp));
+          int noOfTuples = ChannelModelSite.packetToTupleConversion(transmittablePacketsCount, exOp, preExOp);
+          exOp.setTupleValueForExtent(noOfTuples);
+          this.tupleToPacketConversion(noOfTuples,preExOp, exOp);
         }
         if(exOp.getComponentType().equals(ExchangePartType.CONSUMER) &&
            previousOp == null )
@@ -430,6 +434,9 @@ public class ChannelModelSite implements Serializable
                                                               maxTransmittablePacketCount, 
                                                               exOp.getPrevious().getSite().getID());
           int tuplesRecieved = ChannelModelSite.packetToTupleConversion(transmittablePacketsCount, exOp, exOp.getPrevious());
+          this.tupleToPacketConversion(tuplesRecieved,  exOp.getPrevious(), exOp);
+          if(exOp.getExtent() == null)
+        	  exOp.setExtent(exOp.getPrevious().getExtent());
           tuples.remove(exOp.getExtent());
           tuples.put(exOp.getExtent(), tuplesRecieved + packetsOfSameExtent);
           currentUsedRecievedPacketCount.remove(preExOp.getSite().getID());
@@ -464,26 +471,60 @@ public class ChannelModelSite implements Serializable
           ArrayList<Integer> opTuples = new ArrayList<Integer>();
           if(previousOp == null)
           {
-            HashMap<String, Integer> extentTuples = packetToTupleConversion(tuples, op, op.getInstanceInput(0));
-            Iterator<String> packetIterator = extentTuples.keySet().iterator();
+            Iterator<String> packetIterator = tuples.keySet().iterator();
             while(packetIterator.hasNext())
             {
               String key = packetIterator.next();
-              opTuples.add(extentTuples.get(key));
+              opTuples.add(tuples.get(key));
             }
           }
           else
           {
             opTuples.add(previousOpOutput);
           }
-          CostModelDataStructure outputs = cardModel.model(op, opTuples);
+          CostModelDataStructure outputs = cardModel.model(op, opTuples, tuples, beta);
           CardinalityDataStructure outputCard = (CardinalityDataStructure) outputs;
           previousOpOutput = (int) outputCard.getCard();
           previousOp = op;
+          InstanceOperator preOp = (InstanceOperator) op.getInput(0);
+          if(preOp.getSensornetOperator() instanceof SensornetExchangeOperator)
+          {
+            InstanceExchangePart exOp = (InstanceExchangePart) preOp;
+            preivousOutputExtent = exOp.getExtent();
+          }
+          
+          if(op.getSensornetOperator() instanceof SensornetNestedLoopJoinOperator)
+          {
+            String extent = "";
+            ArrayList<String> doneExtents = new ArrayList<String>();
+            Iterator<Node> inputIterator = op.getInputsList().iterator();
+            while(inputIterator.hasNext())
+            {
+              InstanceOperator cOp = (InstanceOperator) inputIterator.next();
+              String currentExtent = null;
+              if(cOp instanceof InstanceExchangePart)
+              {
+                InstanceExchangePart cOpex = (InstanceExchangePart) cOp;
+                currentExtent = cOpex.getExtent();
+              }
+              else
+                currentExtent = cOp.getExtent();
+              if(!doneExtents.contains(currentExtent))
+              {
+                extent = extent.concat(currentExtent);
+                doneExtents.add(currentExtent);
+                tuples.remove(currentExtent);
+              }
+            }
+            op.setExtent(extent);
+          }
+          else
+            op.setExtent(preOp.getExtent());
+          tuples.remove(preivousOutputExtent);
           tuples.put(preivousOutputExtent, previousOpOutput);
-          preivousOutputExtent = tuples.toString();
-        }
+          this.tupleToPacketConversion(previousOpOutput, preOp, op);
         //if delviery oeprator calc pacvkets transmitted for system to determine tuples.
+        }
         if(op.getSensornetOperator() instanceof SensornetDeliverOperator)
         {
           ArrayList<Integer> opTuples = new ArrayList<Integer>();
@@ -491,12 +532,12 @@ public class ChannelModelSite implements Serializable
           while(packetIterator.hasNext())
           {
             String key = packetIterator.next();
-            opTuples.add(tuples.get(key));
+              opTuples.add(tuples.get(key));
           }
-          CostModelDataStructure outputs = cardModel.model(op, opTuples);
+          CostModelDataStructure outputs = cardModel.model(op, opTuples, tuples, beta);
           CardinalityDataStructure outputCard = (CardinalityDataStructure) outputs;
           previousOpOutput = (int) outputCard.getCard();
-          previousOpOutput = this.tupleToPacketConversion(previousOpOutput, op);
+          previousOpOutput = this.tupleToPacketConversion(previousOpOutput, op, op);
           packetIds.clear();
           for(int index = 0; index < previousOpOutput; index++)
             packetIds.add(0);
@@ -552,11 +593,12 @@ public class ChannelModelSite implements Serializable
    * converts a number of tuples into packets
    * @param noTuples
    * @param op
+ * @param exOp2 
    * @return
    * @throws SchemaMetadataException
    * @throws TypeMappingException
    */
-  private int tupleToPacketConversion(int noTuples, InstanceOperator op)
+  private int tupleToPacketConversion(int noTuples, InstanceOperator op, InstanceOperator mainOp)
   throws SchemaMetadataException, TypeMappingException
   {
     if(ChannelModelSite.reliableChannelQEP)
@@ -575,9 +617,15 @@ public class ChannelModelSite implements Serializable
       int pacekts = noTuples / numTuplesPerMessage;
       
       if(noTuples %  numTuplesPerMessage == 0)
+      {
         op.setLastPacketTupleCount(numTuplesPerMessage);
+        mainOp.setLastPacketTupleCount(numTuplesPerMessage);
+      }
       else
+      {
         op.setLastPacketTupleCount(noTuples %  numTuplesPerMessage);
+        mainOp.setLastPacketTupleCount(noTuples %  numTuplesPerMessage);
+      }
       return pacekts;
     }
     else
@@ -597,9 +645,15 @@ public class ChannelModelSite implements Serializable
       Double packetsD = Math.ceil(frac);
       int pacekts = packetsD.intValue();
       if(noTuples %  numTuplesPerMessage == 0)
+      {
         op.setLastPacketTupleCount(numTuplesPerMessage);
+        mainOp.setLastPacketTupleCount(numTuplesPerMessage);
+      }
       else
+      {
         op.setLastPacketTupleCount(noTuples %  numTuplesPerMessage);
+        mainOp.setLastPacketTupleCount(noTuples %  numTuplesPerMessage);
+      }
       return pacekts;
     }
   }
@@ -698,10 +752,25 @@ public class ChannelModelSite implements Serializable
       int payloadOverhead = costs.getPayloadOverhead() + 8;
       int numTuplesPerMessage = 
         (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
-      int tuplesForExchange = (noPackets -1) * numTuplesPerMessage;
-      int lastPacketTupleCount = preOp.getLastPacketTupleCount();
-      tuplesForExchange += lastPacketTupleCount;
-      return tuplesForExchange;
+      if(noPackets == 0)
+      {
+    	  return 0;
+      }
+      else
+      {
+    	  if(preOp.getLastPacketTupleCount() == 0)
+    	  {
+    		  int tuplesForExchange = (noPackets) * numTuplesPerMessage;
+              return tuplesForExchange;
+    	  }
+    	  else
+    	  {
+            int tuplesForExchange = (noPackets -1) * numTuplesPerMessage;
+            int lastPacketTupleCount = preOp.getLastPacketTupleCount();
+            tuplesForExchange += lastPacketTupleCount;
+            return tuplesForExchange;
+    	  }
+      }
     }
     else
     {
@@ -716,12 +785,36 @@ public class ChannelModelSite implements Serializable
         tupleSize = op.getSensornetOperator().getPhysicalTupleSize();
       int maxMessagePayloadSize = costs.getMaxMessagePayloadSize();
       int payloadOverhead = costs.getPayloadOverhead();
+      System.out.println(tupleSize);
+      System.out.println(maxMessagePayloadSize);
+      System.out.println(payloadOverhead);
+      System.out.println(op.toString());
+      System.out.println(preOp.toString());
       int numTuplesPerMessage = 
         (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
-      int tuplesForExchange = (noPackets) * numTuplesPerMessage;
-      int lastPacketTupleCount = preOp.getLastPacketTupleCount();
-        tuplesForExchange -= lastPacketTupleCount;
-      return tuplesForExchange;
+      if(noPackets == 0)
+      {
+    	  return 0;
+      }
+      else
+      {
+        Integer lastPacketTupleCount = null;
+        if(preOp == null || preOp.getLastPacketTupleCount() == null)
+          lastPacketTupleCount = op.getLastPacketTupleCount();
+        else
+          lastPacketTupleCount = preOp.getLastPacketTupleCount();
+    	  if(lastPacketTupleCount == 0)
+    	  {
+    		  int tuplesForExchange = (noPackets) * numTuplesPerMessage;
+              return tuplesForExchange;
+    	  }
+    	  else
+    	  {
+            int tuplesForExchange = (noPackets -1) * numTuplesPerMessage;
+            tuplesForExchange += lastPacketTupleCount;
+            return tuplesForExchange;
+    	  }
+      }
     }
   } 
 
@@ -901,6 +994,8 @@ public class ChannelModelSite implements Serializable
     ArrayList<Integer> packetIDs = new ArrayList<Integer>();
     String key = this.overlayNetwork.getClusterHeadFor(siteID);
     ArrayList<Boolean> packets = arrivedPackets.get(key);
+    if(packets == null)
+      System.out.println();
     Iterator<Boolean> packetIterator = packets.iterator();
     int counter = 0;
     while(packetIterator.hasNext())

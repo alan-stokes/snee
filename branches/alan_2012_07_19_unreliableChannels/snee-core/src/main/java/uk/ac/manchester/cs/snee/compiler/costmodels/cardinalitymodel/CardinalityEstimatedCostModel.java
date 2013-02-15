@@ -1,6 +1,7 @@
 package uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -237,9 +238,16 @@ public class CardinalityEstimatedCostModel extends CostModel
     }
     else
     {
-    	
-      windowStreamCard = inputL.getCardOfStream();
-      windowCard = inputL.getWindowCard() * inputR.getWindowCard() * inputOperator.selectivity();
+      if(inputR.isStream())
+      {
+    	  windowStreamCard = 1;
+    	  windowCard = inputL.getWindowCard() * inputR.getCardOfStream() * inputOperator.selectivity();
+      }
+      else
+      {
+        windowStreamCard = inputL.getCardOfStream();
+        windowCard = inputL.getWindowCard() * inputR.getWindowCard() * inputOperator.selectivity();
+      }
       //System.out.println(inputOperator.getID() + " inputCardL= " + inputL.getCardOfStream() + " inputs each with "+ inputL.getWindowCard());
       //System.out.println(inputOperator.getID() + " inputCardR= " + inputR.getCardOfStream() + " inputs each with "+ inputR.getWindowCard());
     }
@@ -403,41 +411,6 @@ public class CardinalityEstimatedCostModel extends CostModel
   }
 
   @Override
-  protected CostModelDataStructure joinCard(InstanceOperator operator,
-                                            ArrayList<Integer> inputs) 
-  throws OptimizationException
-  {
-    if(operator.isNodeDead())
-      return new CardinalityDataStructure(0);
-    
-    //System.out.println("join newInput size is " + reducedInputs.size());
-    CardinalityDataStructure inputR = new CardinalityDataStructure(inputs.get(0));
-    CardinalityDataStructure inputL = new CardinalityDataStructure(inputs.get(1));
-  
-    float windowStreamCard;
-    float windowCard;
-    
-    if(inputL.isStream())
-    {
-      windowStreamCard = 1;
-      windowCard = inputL.getCardOfStream() * inputR.getCardOfStream() * operator.selectivity();
-     //System.out.println(inputOperator.getID() + " inputCardL= " + 1 + " Stream with Card "+ inputL.getCardOfStream());
-     //System.out.println(inputOperator.getID() + " inputCardR= " + 1 + " Stream with Card "+ inputL.getCardOfStream());
-    }
-    else
-    {
-      
-      windowStreamCard = inputL.getCardOfStream();
-      windowCard = inputL.getWindowCard() * inputR.getWindowCard() * operator.selectivity();
-      //System.out.println(inputOperator.getID() + " inputCardL= " + inputL.getCardOfStream() + " inputs each with "+ inputL.getWindowCard());
-      //System.out.println(inputOperator.getID() + " inputCardR= " + inputR.getCardOfStream() + " inputs each with "+ inputR.getWindowCard());
-    }
-    CardinalityDataStructure output = new CardinalityDataStructure(windowStreamCard, windowCard);
-    //System.out.println(inputOperator.getID() + " outputCard= " + output);
-    return output;
-  }
-
-  @Override
   protected CostModelDataStructure aggerateCard(InstanceOperator operator,
                                                 ArrayList<Integer> inputs)
   throws OptimizationException
@@ -494,5 +467,49 @@ public class CardinalityEstimatedCostModel extends CostModel
     List<Attribute> attributes = operator.getSensornetOperator().getLogicalOperator().getAttributes();
     out.setExtentName(attributes.get(1).toString());
     return out;
+  }
+  
+  @Override
+  protected CostModelDataStructure joinCard(InstanceOperator operator,
+                                            ArrayList<Integer> inputs, 
+                                            HashMap<String, Integer> tuples, long beta)
+      throws OptimizationException
+  {
+
+    List<Node> inputOperators = operator.getInputsList();
+    ArrayList<String> extents = new ArrayList<String>();
+    
+    Iterator<Node> inputIterator = inputOperators.iterator();
+    while(inputIterator.hasNext())
+    {
+      InstanceOperator op = (InstanceOperator) inputIterator.next();
+      if(op.getSensornetOperator() instanceof SensornetExchangeOperator)
+      {
+        InstanceExchangePart ex = (InstanceExchangePart) op;
+        String extent = ex.getExtent();
+        if(extent == null || extent.equals(""))
+          extent = ex.getSourceFrag().getRootOperator().getExtent();
+        if(!extents.contains(extent))
+          extents.add(extent);
+      }
+    }
+    
+    Iterator<String> inputExtents = extents.iterator();
+    ArrayList<Integer> inputTuples = new ArrayList<Integer>();
+    while(inputExtents.hasNext())
+    {
+      inputTuples.add(tuples.get(inputExtents.next()));
+    }
+      
+    CardinalityDataStructure inputR = new CardinalityDataStructure(inputTuples.get(0));
+    CardinalityDataStructure inputL = new CardinalityDataStructure(inputTuples.get(1));
+	  float windowCard;
+	    
+    windowCard = (inputL.getCardOfStream() * inputR.getCardOfStream() * operator.selectivity()) / beta;
+    
+	  
+    CardinalityDataStructure output = new CardinalityDataStructure(windowCard, 1);
+    //System.out.println(inputOperator.getID() + " outputCard= " + output);
+    return output;
   }
 }

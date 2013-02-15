@@ -747,7 +747,7 @@ public class SNEEController implements SNEE {
     
   }
 
-  public int addQuery(String _query, String _queryParams, Long seed)
+  public int addQuery(String _query, String _queryParams, Long seed, double distanceConverter)
   throws SNEECompilerException, NumberFormatException, SNEEException, 
   MetadataException, EvaluatorException, SNEEConfigurationException, 
   SchemaMetadataException, TypeMappingException, OptimizationException, 
@@ -782,7 +782,7 @@ public class SNEEController implements SNEE {
     compileQuery(queryId, _query, queryParams);
     if (logger.isInfoEnabled())
       logger.info("Successfully compiled query " + queryId);  
-    dispatchQuery(queryId, _query, queryParams, true, seed);
+    dispatchQuery(queryId, _query, queryParams, true, seed, distanceConverter);
     if (logger.isInfoEnabled())
       logger.info("Successfully started evaluation of query " + queryId);
 
@@ -794,7 +794,7 @@ public class SNEEController implements SNEE {
   }
 
   private int dispatchQuery(int queryId, String _query,
-      QueryParameters queryParams, boolean b, Long seed)
+      QueryParameters queryParams, boolean b, Long seed, double distanceConverter)
   throws SNEEException, MetadataException, EvaluatorException,
   SNEEConfigurationException, SchemaMetadataException, 
   TypeMappingException, OptimizationException, IOException, 
@@ -808,7 +808,7 @@ public class SNEEController implements SNEE {
     QueryExecutionPlan queryPlan = _queryPlans.get(queryId);
     ResultStore resultSet = createStreamResultSet(_query, queryPlan);
     Model.setCompiledAlready(false);
-    _dispatcher.initiliseAutonomicManager(queryId, resultSet, queryPlan, seed);
+    _dispatcher.initiliseAutonomicManager(queryId, resultSet, queryPlan, seed, distanceConverter);
     _dispatcher.giveAutonomicManagerQuery(_query);
     _dispatcher.giveAutonomicManagerQueryParams(queryParams);
     if(starting)

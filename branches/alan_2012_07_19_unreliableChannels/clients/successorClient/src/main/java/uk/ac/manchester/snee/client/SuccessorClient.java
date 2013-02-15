@@ -43,8 +43,8 @@ public class SuccessorClient extends SNEEClient
 	private static int queryid = 3;
 	protected static int testNo = 3;
 	private static int max = 120;
-  private static File testFolder =  new File("src/main/resources/testsSize30");
-  private static File sneetestFolder =  new File("testsSize30");
+  private static File testFolder =  new File("src/main/resources/testsNatural");
+  private static File sneetestFolder =  new File("testsNatural");
   @SuppressWarnings("unused")
   private static boolean inRecoveryMode = false;
 	
@@ -254,11 +254,6 @@ public class SuccessorClient extends SNEEClient
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
     SNEEController control = (SNEEController) getController();
-    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR, "FALSE");
-    SNEEProperties.setSetting(SNEEPropertyNames.RUN_SIM_FAILED_NODES, "FALSE");
-    SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
-    SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
-    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS, "FALSE");
     
     control.addQuery(_query, _queryParams);
     getController().close();

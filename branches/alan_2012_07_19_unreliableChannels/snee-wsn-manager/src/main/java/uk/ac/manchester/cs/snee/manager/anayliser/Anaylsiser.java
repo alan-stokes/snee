@@ -76,48 +76,52 @@ public class Anaylsiser extends AutonomicManagerComponent
   private void SetupFailedNodeFrameWorks(MetadataManager _metadataManager) 
   throws SNEEConfigurationException
   {
-    String prop = SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_STRATEGIES);
-    if(prop.equals(FailedNodeStrategyEnum.FailedNodeLocal.toString()))
+    boolean createStratgies = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_STRATEGIES);
+    if(createStratgies)
     {
-      CompleteReCompilationStrategy failedNodeFrameworkGlobal = 
-        new CompleteReCompilationStrategy(manager, _metadata, _metadataManager);
-      LogicalOverlayStrategy failedNodeFrameworkLocal = 
-        new LogicalOverlayStrategy(manager, _metadata, _metadataManager);
-      frameworks.add(failedNodeFrameworkGlobal);
-      frameworks.add(failedNodeFrameworkLocal);
-      
-    }
-    if(prop.equals(FailedNodeStrategyEnum.FailedNodePartial.toString()))
-    {
-      CompleteReCompilationStrategy failedNodeFrameworkGlobal = 
-        new CompleteReCompilationStrategy(manager, _metadata, _metadataManager);
-      LocalRepairStrategy failedNodeFrameworkSpaceAndTimePinned = 
-        new LocalRepairStrategy(manager, _metadata, true, true);
-      //FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
-       // new FailedNodeStrategyPartial(manager, _metadata, true, false);
-      frameworks.add(failedNodeFrameworkGlobal);
-      frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
-    }
-    if(prop.equals(FailedNodeStrategyEnum.FailedNodeGlobal.toString()))
-    {
-      CompleteReCompilationStrategy failedNodeFrameworkGlobal = 
-        new CompleteReCompilationStrategy(manager, _metadata, _metadataManager);
-      frameworks.add(failedNodeFrameworkGlobal);
-    }
-    if(prop.equals(FailedNodeStrategyEnum.All.toString()))
-    { 
-      LocalRepairStrategy failedNodeFrameworkSpaceAndTimePinned = 
-        new LocalRepairStrategy(manager, _metadata, true, true);
-      //FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
-      //  new FailedNodeStrategyPartial(manager, _metadata, true, false);
-      LogicalOverlayStrategy failedNodeFrameworkLocal = 
-        new LogicalOverlayStrategy(manager, _metadata, _metadataManager);
-      CompleteReCompilationStrategy failedNodeFrameworkGlobal = 
-        new CompleteReCompilationStrategy(manager, _metadata, _metadataManager);
-      frameworks.add(failedNodeFrameworkLocal);
-      frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
-      //frameworks.add(failedNodeFrameworkSpacePinned);
-      frameworks.add(failedNodeFrameworkGlobal);     
+      String prop = SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_STRATEGIES);
+      if(prop.equals(FailedNodeStrategyEnum.FailedNodeLocal.toString()))
+      {
+        CompleteReCompilationStrategy failedNodeFrameworkGlobal = 
+          new CompleteReCompilationStrategy(manager, _metadata, _metadataManager);
+        LogicalOverlayStrategy failedNodeFrameworkLocal = 
+          new LogicalOverlayStrategy(manager, _metadata, _metadataManager);
+        frameworks.add(failedNodeFrameworkGlobal);
+        frameworks.add(failedNodeFrameworkLocal);
+        
+      }
+      if(prop.equals(FailedNodeStrategyEnum.FailedNodePartial.toString()))
+      {
+        CompleteReCompilationStrategy failedNodeFrameworkGlobal = 
+          new CompleteReCompilationStrategy(manager, _metadata, _metadataManager);
+        LocalRepairStrategy failedNodeFrameworkSpaceAndTimePinned = 
+          new LocalRepairStrategy(manager, _metadata, true, true);
+        //FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
+         // new FailedNodeStrategyPartial(manager, _metadata, true, false);
+        frameworks.add(failedNodeFrameworkGlobal);
+        frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
+      }
+      if(prop.equals(FailedNodeStrategyEnum.FailedNodeGlobal.toString()))
+      {
+        CompleteReCompilationStrategy failedNodeFrameworkGlobal = 
+          new CompleteReCompilationStrategy(manager, _metadata, _metadataManager);
+        frameworks.add(failedNodeFrameworkGlobal);
+      }
+      if(prop.equals(FailedNodeStrategyEnum.All.toString()))
+      { 
+        LocalRepairStrategy failedNodeFrameworkSpaceAndTimePinned = 
+          new LocalRepairStrategy(manager, _metadata, true, true);
+        //FailedNodeStrategyPartial failedNodeFrameworkSpacePinned = 
+        //  new FailedNodeStrategyPartial(manager, _metadata, true, false);
+        LogicalOverlayStrategy failedNodeFrameworkLocal = 
+          new LogicalOverlayStrategy(manager, _metadata, _metadataManager);
+        CompleteReCompilationStrategy failedNodeFrameworkGlobal = 
+          new CompleteReCompilationStrategy(manager, _metadata, _metadataManager);
+        frameworks.add(failedNodeFrameworkLocal);
+        frameworks.add(failedNodeFrameworkSpaceAndTimePinned);
+        //frameworks.add(failedNodeFrameworkSpacePinned);
+        frameworks.add(failedNodeFrameworkGlobal);     
+      }
     }
     
   }

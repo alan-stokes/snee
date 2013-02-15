@@ -32,7 +32,7 @@ import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorU
 //import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.RobustChoiceAssessor;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.SuccessorRelationManager;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
-import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgendaUtils;
+//import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgendaUtils;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelManager;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -451,7 +451,7 @@ public class Planner extends AutonomicManagerComponent
   }
 
   public RobustSensorNetworkQueryPlan startUnreliableChannelStrategy(SensorNetworkQueryPlan qep,
-                                                                     Long seed)
+                                                                     Long seed, Double distanceConverter)
   throws SchemaMetadataException, TypeMappingException, OptimizationException, 
   IOException, SNEEConfigurationException, CodeGenerationException, 
   AgendaException, AgendaLengthException, SNEEException
@@ -473,10 +473,14 @@ public class Planner extends AutonomicManagerComponent
    //                    manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
   //                     this._metadataManager.getCostParameters());
     
-    manager.simulateRunOfRQEP(rQEP, qep, seed);
+    boolean runTupleSim = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_EXECUTOR_EDGE_TUPLES);  
+    if(runTupleSim)
+      manager.simulateRunOfRQEP(rQEP, qep, seed, distanceConverter);
    // assessor.assessOverlayChoice(storage, runningSites, rQEP.getLogicalOverlayNetwork(), 
          //                        local, channelModel);
-    
+    boolean runLifeSim = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_EXECUTOR_EDGE_LIFE);
+    if(runLifeSim)
+      manager.calculateLifetimeDifferenceFromDeployments(rQEP, qep, seed, distanceConverter);
    // System.out.println("new robust lifetime = " + 
                //        (storage.getLifetimeEstimate() / 
                         //   (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000)));

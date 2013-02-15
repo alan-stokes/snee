@@ -5,16 +5,30 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
+import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
+import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AlphaBetaExpression;
+import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostExpressions;
+import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostParameters;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragment;
+import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragmentTask;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
+import uk.ac.manchester.cs.snee.compiler.queryplan.FragmentTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.RadioOnTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
+import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.LogicalOverlayNetworkHierarchy;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgenda;
 import uk.ac.manchester.cs.snee.metadata.CostParameters;
@@ -22,6 +36,8 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 
 public class ChannelModel implements Serializable
 {
@@ -113,7 +129,7 @@ public class ChannelModel implements Serializable
    * @throws SNEEConfigurationException 
    * @throws NumberFormatException 
    */
-  public void runModel(ArrayList<String> failedNodes, IOT IOT) 
+  public HashMapList<String, RunTimeSite> runModel(ArrayList<String> failedNodes, IOT IOT) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException, NumberFormatException, SNEEConfigurationException
   {
@@ -222,11 +238,168 @@ public class ChannelModel implements Serializable
         }
       }
     }
-    ChannelModelUtils modelUtils = new ChannelModelUtils(channelModel, logicaloverlayNetwork);
-    modelUtils.plotPacketRates(iteration, executorFolder);
+  //  ChannelModelUtils modelUtils = new ChannelModelUtils(channelModel, logicaloverlayNetwork);
+    //modelUtils.plotPacketRates(iteration, executorFolder);
     iteration++;
+    Set<Site> sites = IOT.getAllSites();
+    Iterator<Site> siteIterator = sites.iterator();
+    HashMapList<String, RunTimeSite> siteEnergyLevels = new  HashMapList<String, RunTimeSite>();
+    while(siteIterator.hasNext())
+    {
+      Site site = siteIterator.next();
+      double qepCost = this.calculateQepEnergyCost(site, IOT);
+      RunTimeSite rSite = new RunTimeSite(0.0, site.getID(), qepCost);
+      siteEnergyLevels.add(site.getID(), rSite);
+    }
+    return siteEnergyLevels;
   }
   
+  /**
+   * method that allows to determine QEPCost of a site given the edge failure model and 
+   * therefore what tasks were acutally ran
+   * @param site
+   * @param iOT
+   * @param agendaIOT2
+   * @param agenda2
+   * @return
+   */
+  private double calculateQepEnergyCost(Site site, IOT iOT)
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException, SNEEConfigurationException
+  {
+    double sumEnergy = 0;
+    long cpuActiveTimeBms = 0;
+    double sensorEnergy = 0;
+    ArrayList<Task> siteTasks = null;
+    if(this.agenda != null)
+    {
+      site =  this.agenda.getSiteByID(site.getID());
+      siteTasks = this.agenda.getTasks().get(site);
+    }
+    else
+    {
+      site = this.agendaIOT.getSiteByID(site.getID());
+      siteTasks = this.agendaIOT.getTasks().get(site);
+    }
+    
+    //not within the QEP. so no cost
+    if(siteTasks == null)
+    {
+      return 0;
+    }
+    for (int i=0; i<siteTasks.size(); i++) 
+    {
+      Task t = siteTasks.get(i);
+      if (t instanceof SleepTask) 
+      {
+        continue;
+      }
+      
+      cpuActiveTimeBms += t.getDuration();
+      if (t instanceof FragmentTask) {
+        FragmentTask ft = (FragmentTask)t;
+        Fragment f = ft.getFragment();
+        if (f.containsOperatorType(SensornetAcquireOperator.class)) {
+          sensorEnergy += AvroraCostParameters.getSensorEnergyCost();
+        }
+        sumEnergy += sensorEnergy;
+      }
+      else if(t instanceof InstanceFragmentTask)
+      {
+        InstanceFragmentTask ft = (InstanceFragmentTask)t;
+        InstanceFragment f = ft.getFragment();
+        if (f.containsOperatorType(SensornetAcquireOperator.class)) {
+          sensorEnergy += AvroraCostParameters.getSensorEnergyCost();
+        }
+        sumEnergy += sensorEnergy;
+      }
+      else if (t instanceof CommunicationTask && t.isRan()) {
+        CommunicationTask ct = (CommunicationTask)t;
+        sumEnergy += getRadioEnergy(ct);
+        
+      } else if (t instanceof RadioOnTask && t.isRan()) {
+        double taskDuration = AgendaIOT.bmsToMs(t.getDuration())/1000.0;
+        double radioRXAmp = AvroraCostParameters.getRadioReceiveAmpere(); 
+        double voltage = AvroraCostParameters.VOLTAGE;
+        double taskEnergy = taskDuration * radioRXAmp * voltage;        
+        sumEnergy += taskEnergy;
+      }
+    }
+    sumEnergy += getCPUEnergy(cpuActiveTimeBms);
+    return sumEnergy;
+  }
+  
+  private double getRadioEnergy(CommunicationTask ct)
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException 
+  {
+    double taskDuration = AgendaIOT.bmsToMs(ct.getDuration())/1000.0;
+    double voltage = AvroraCostParameters.VOLTAGE;
+    
+    double radioRXAmp = AvroraCostParameters.getRadioReceiveAmpere();
+    if (ct.getMode()==CommunicationTask.RECEIVE) {
+       
+      double taskEnergy = taskDuration*radioRXAmp*voltage; 
+      return taskEnergy;
+    }
+    Site sender = ct.getSourceNode();
+    Site receiver = (Site)sender.getOutput(0);
+    int txPower = 0;
+    if(agenda != null)
+      txPower = (int)agenda.getIOT().getRT().getRadioLink(sender, receiver).getEnergyCost();
+    else
+      txPower = (int)agendaIOT.getIOT().getRT().getRadioLink(sender, receiver).getEnergyCost();
+    double radioTXAmp = AvroraCostParameters.getTXAmpere(txPower);
+    
+    Integer noPackets = 0;
+    if(agenda != null)
+      noPackets = 
+      this.channelModel.get(Integer.parseInt(ct.getSite().getID())).transmittablePackets(agenda.getIOT()).size();
+    else
+      noPackets = 
+        this.channelModel.get(Integer.parseInt(ct.getSite().getID())).transmittablePackets(agendaIOT.getIOT()).size();
+    
+    AlphaBetaExpression txTimeExpr = 
+      AlphaBetaExpression.multiplyBy( new AlphaBetaExpression(noPackets),
+                                      AvroraCostParameters.PACKETTRANSMIT);
+    double txTime = 0;
+    if(agenda != null)
+      txTime = (txTimeExpr.evaluate(agenda.getAcquisitionInterval_bms(), 
+                                    agenda.getBufferingFactor()))/1000.0;
+    else
+      txTime = (txTimeExpr.evaluate(agendaIOT.getAcquisitionInterval_bms(), 
+          agendaIOT.getBufferingFactor()))/1000.0;
+    double rxTime = taskDuration-txTime;
+    assert(rxTime>=0);
+    
+    double txEnergy = txTime*radioTXAmp*voltage; 
+    double rxEnergy = rxTime*radioRXAmp*voltage; 
+    return (txEnergy+rxEnergy); 
+  }
+  /**
+   * calcualtes the cpu energy cost.
+   * @param cpuActiveTimeBms
+   * @return
+   */
+  private double getCPUEnergy(long cpuActiveTimeBms)
+  {
+    double agendaLength = 0;
+    if(agenda != null)
+      agendaLength = AgendaIOT.bmsToMs(agenda.getLength_bms(false))/1000.0; //bms to ms to s
+    else
+      agendaLength = AgendaIOT.bmsToMs(agendaIOT.getLength_bms(false))/1000.0; //bms to ms to s
+    double cpuActiveTime = AgendaIOT.bmsToMs(cpuActiveTimeBms)/1000.0; //bms to ms to s
+    double cpuSleepTime = agendaLength - cpuActiveTime; // s
+    double voltage = AvroraCostParameters.VOLTAGE;
+    double activeCurrent = AvroraCostParameters.CPUACTIVEAMPERE;
+    double sleepCurrent = AvroraCostParameters.CPUPOWERSAVEAMPERE;
+    //double sleepCurrent =  AvroraCostParameters.CPUIDLEAMPERE;
+    
+    double cpuActiveEnergy = cpuActiveTime * activeCurrent * voltage; //J
+    double cpuSleepEnergy = cpuSleepTime * sleepCurrent * voltage; //J
+    //return cpuActiveEnergy;
+    return cpuActiveEnergy + cpuSleepEnergy;
+  }
   /**
    * checks if a the transmission task thats linked to this recieve task (CTask) has ran
    * @param cTask
@@ -492,8 +665,17 @@ public class ChannelModel implements Serializable
   throws SchemaMetadataException, TypeMappingException
   {
     Site iotSite = logicaloverlayNetwork.getQep().getIOT().getSiteFromID(rootSite.getID());
-    InstanceOperator rootOp = logicaloverlayNetwork.getQep().getIOT().getRootOperatorOfSite(iotSite);
-    return ChannelModelSite.packetToTupleConversion(packets, rootOp, rootOp);
+    ArrayList<InstanceOperator> operators = logicaloverlayNetwork.getQep().getIOT().getOpInstances(iotSite);
+    Iterator<InstanceOperator> opIterator = operators.iterator();
+    InstanceOperator rootOp = null;
+    while(opIterator.hasNext())
+    {
+      InstanceOperator opToCheck = opIterator.next();
+      if(opToCheck.getSensornetOperator() instanceof SensornetDeliverOperator)
+    	  rootOp = opToCheck;
+    }
+    InstanceOperator preOp = (InstanceOperator) rootOp.getInput(0);
+    return ChannelModelSite.packetToTupleConversion(packets, rootOp, preOp);
   }
 
   public void clearModel()

@@ -29,7 +29,8 @@ public class InstanceOperator extends NodeImplementation implements Node
   /**
    * used to determine number of tuples from packets
    */
-  private Integer lastPacketTupleCount = 0;
+  private Integer lastPacketTupleCount = null;
+  private String extent = null;
 
   public InstanceOperator()
   {
@@ -216,6 +217,16 @@ public class InstanceOperator extends NodeImplementation implements Node
   public String toString()
   {
     return this.id;
+  }
+
+  public void setExtent(String extent)
+  {
+    this.extent = extent;
+  }
+
+  public String getExtent()
+  {
+    return extent;
   }
  
 }

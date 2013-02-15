@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -50,12 +51,13 @@ public class CondorScriptGenerator
       out = new BufferedWriter(new FileWriter(new File(condorFile.toString() + sep + "submit.txt")));
       BufferedReader queryReader = new BufferedReader(new FileReader(queriesFile.getAbsolutePath()));
       readInQueries(queries, queryReader);
+      DecimalFormat df = new DecimalFormat("#.#");
       //normal blurb
       out.write("universe = vanilla\nexecutable = start.sh \nwhen_to_transfer_output = ON_EXIT \n" +
                 "Should_Transfer_Files = YES\ntransfer_input_files = ../SNEE.jar \n" +
                 "rank = JavaFlops \nRequirements = (JavaVersion>=\"1.6\" && OpSys == "+
-                "\"LINUX\" && Arch == \"X86_64\") \nRequest_Disk = 10000000 \n"+
-                "request_memory = 1000 \n#Output = output$(Process).txt \n" +
+                "\"LINUX\") \nRequest_Disk = 5000000 \n"+
+                "request_memory = 2500 \n#Output = output$(Process).txt \n" +
                 "#Error = error$(Process).txt \nlog = log.txt \nOutput = out.txt \n"+
                 "Error = err.txt \nnotification = error \n \n");
       Iterator<Long> seedIterator = seeds.iterator();
@@ -71,13 +73,16 @@ public class CondorScriptGenerator
           {
             for(int index = startKCounter; index <= endKCoutner; index++)
             {
-              out.write("Arguments = " + query + " " + "snee" + queryID + "." + index + ".properties" +
-                        " " + queryID + " " + seed + "\ninitialdir   = query" + queryID + "." + index + 
-                        "." + seed + "\nqueue \n \n");
-              //make folder for the output to be stored in.
-              File outputFolder = new File(condorFile.toString() + sep + "query" + queryID + "." + 
-                                           index + "." + seed);
-              outputFolder.mkdir();
+              for(double distance = 1; distance > 0.2; distance -=0.2 )
+              {
+	            out.write("Arguments = " + query + " " + "snee" + queryID + "." + index + ".properties" +
+	                      " " + queryID + " " + seed + " " + df.format(distance) + "\ninitialdir   = query" + queryID + "." + index + 
+	                      "." + seed + "." + df.format(distance) + "\nqueue \n \n");
+	            //make folder for the output to be stored in.
+	            File outputFolder = new File(condorFile.toString() + sep + "query" + queryID + "." + 
+	                                         index + "." + seed + "." + df.format(distance));
+	            outputFolder.mkdir();
+              }
             }
             queryID++;
           }
@@ -87,13 +92,16 @@ public class CondorScriptGenerator
             {
               for(int index = startKCounter; index <= endKCoutner; index++)
               {
-                out.write("Arguments = " + query + " " + "snee" + queryID + "." + index + ".properties" +
-                          " " + queryID + " " + seed + "\ninitialdir   = query" + queryID + "." + index + 
-                          "." + seed + "\nqueue \n \n");
-                //make folder for the output to be stored in.
-                File outputFolder = new File(condorFile.toString() + sep + "query" + queryID + "." + 
-                                             index + "." + seed);
-                outputFolder.mkdir();
+            	for(double distance = 1; distance > 0.2; distance -=0.2 )
+                {
+	              out.write("Arguments = " + query + " " + "snee" + queryID + "." + index + ".properties" +
+	                        " " + queryID + " " + seed +  " " + df.format(distance) + " \ninitialdir   = query" + queryID + "." + index + 
+	                        "." + seed + "." + df.format(distance) + "\nqueue \n \n");
+	              //make folder for the output to be stored in.
+	              File outputFolder = new File(condorFile.toString() + sep + "query" + queryID + "." + 
+	                                           index + "." + seed + "." + df.format(distance));
+	              outputFolder.mkdir();
+                }
               }
             }
             queryID++;
@@ -107,10 +115,11 @@ public class CondorScriptGenerator
       out = new BufferedWriter(new FileWriter(new File(condorFile.toString() + sep + "start.sh")));
       out.write("#!/bin/bash \necho $1 \necho $2 \n" +
       		"echo $3 \necho $4 \nunzip SNEE.jar -d extracted"+
+      		"\n rm -f SNEE.jar" +  
       		"\ncd extracted \n" +
           "java uk/ac/manchester/snee/client/CondorReliableChannelClient $1 $2 $3 $4 \n" +
           "for d in *; do if test -d \"$d\"; then tar czf \"$d\".tgz \"$d\"; fi; done" +
-          "\nmv *.tgz .. \n exit 0");
+          "\nmv output.tgz .. \n exit 0");
       out.flush();
       out.close();
       
