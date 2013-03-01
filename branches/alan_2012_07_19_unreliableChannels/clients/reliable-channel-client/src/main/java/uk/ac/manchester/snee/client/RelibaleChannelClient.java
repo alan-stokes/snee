@@ -279,7 +279,7 @@ public class RelibaleChannelClient extends SNEEClient
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS, "FALSE");
     
-    control.addQuery(_query, _queryParams, new Long(0), new Double(0.0));
+    control.addQuery(_query, _queryParams, new Long(0), new Double(1.0));
     getController().close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
