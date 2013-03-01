@@ -15,7 +15,7 @@
 				<sites>5,13</sites>
 			</extent>
 			<extent name="C">
-				<sites>13,8,9</sites>
+				<sites>13,8</sites>
 			</extent>
 		</extents> 
 	</sensor_network> 

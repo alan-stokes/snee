@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -14,11 +13,10 @@ import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AlphaBetaExpression;
-import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostExpressions;
 import uk.ac.manchester.cs.snee.compiler.costmodels.avroracosts.AvroraCostParameters;
+import uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel.CollectionOfPackets;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
 import uk.ac.manchester.cs.snee.compiler.iot.IOT;
-import uk.ac.manchester.cs.snee.compiler.iot.InstanceExchangePart;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragment;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragmentTask;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
@@ -28,6 +26,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.FragmentTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RadioOnTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
+import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.LogicalOverlayNetworkHierarchy;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.UnreliableChannelAgenda;
@@ -74,7 +73,7 @@ public class ChannelModel implements Serializable
     this.costs = costs;
     this.logicaloverlayNetwork = logicaloverlayNetwork;
     setupEmptyArray(networkSize + 1);
-    createChannelSites();
+    createChannelSites(false);
     noiseModel = new NoiseModel(network, costs);
   }
   public ChannelModel (LogicalOverlayNetworkHierarchy logicaloverlayNetwork,  
@@ -87,14 +86,14 @@ public class ChannelModel implements Serializable
     this.costs = costs;
     this.logicaloverlayNetwork = logicaloverlayNetwork;
     setupEmptyArray(networkSize + 1);
-    createChannelSites();
+    createChannelSites(false);
     noiseModel = new NoiseModel(network, costs);
   }
     
 
   public ChannelModel(LogicalOverlayNetworkHierarchy logicaloverlayNetwork,
       AgendaIOT agenda, int networkSize, Topology network,
-      CostParameters costs, File executorFolder, Long seed)
+      CostParameters costs, File executorFolder, Long seed, boolean packetID)
   throws SNEEConfigurationException, IOException
   {
     this.agendaIOT = agenda;
@@ -102,7 +101,7 @@ public class ChannelModel implements Serializable
     this.costs = costs;
     this.logicaloverlayNetwork = logicaloverlayNetwork;
     setupEmptyArray(networkSize + 1);
-    createChannelSites();
+    createChannelSites(packetID);
     noiseModel = new NoiseModel(network, costs, seed);
     
   }
@@ -354,10 +353,10 @@ public class ChannelModel implements Serializable
     Integer noPackets = 0;
     if(agenda != null)
       noPackets = 
-      this.channelModel.get(Integer.parseInt(ct.getSite().getID())).transmittablePackets(agenda.getIOT()).size();
+      this.channelModel.get(Integer.parseInt(ct.getSite().getID())).getPacketIds().size();
     else
       noPackets = 
-        this.channelModel.get(Integer.parseInt(ct.getSite().getID())).transmittablePackets(agendaIOT.getIOT()).size();
+        this.channelModel.get(Integer.parseInt(ct.getSite().getID())).getPacketIds().size();
     
     AlphaBetaExpression txTimeExpr = 
       AlphaBetaExpression.multiplyBy( new AlphaBetaExpression(noPackets),
@@ -433,6 +432,7 @@ public class ChannelModel implements Serializable
   throws OptimizationException, SchemaMetadataException, TypeMappingException
   {
     ChannelModelSite site = channelModel.get(Integer.parseInt(rootSite.getID())); 
+    CollectionOfPackets col = site.getTransmitableWindows();
     return site.transmittablePackets(IOT).size();
   }
   
@@ -538,8 +538,9 @@ public class ChannelModel implements Serializable
 
   /**
    * helper method for the constructor, creates the models sites with correct parents etc.
+   * @param packetID 
    */
-  private void createChannelSites()
+  private void createChannelSites(boolean packetID)
   {
     Iterator<String> siteIDIterator = logicaloverlayNetwork.siteIdIterator();
     while(siteIDIterator.hasNext())
@@ -589,11 +590,11 @@ public class ChannelModel implements Serializable
         if(agenda == null)
           site = new ChannelModelSite(expectedPackets, siteID, logicaloverlayNetwork, 0, 
                                       agendaIOT.getTasks().get(agendaIOT.getSiteByID(siteID)),
-                                      agendaIOT.getBufferingFactor(), costs);
+                                      agendaIOT.getBufferingFactor(), costs, this, packetID);
         else
           site = new ChannelModelSite(expectedPackets, siteID, logicaloverlayNetwork, 0, 
                                       agenda.getTasks().get(agenda.getSiteByID(siteID)),
-                                      agenda.getBufferingFactor(), costs);
+                                      agenda.getBufferingFactor(), costs, this, packetID);
         channelModel.set(siteIDInt, site);
       }
       else //not the root node
@@ -606,13 +607,13 @@ public class ChannelModel implements Serializable
               new ChannelModelSite(expectedPackets, siteID, logicaloverlayNetwork, 
                                    logicaloverlayNetwork.getPriority(siteID), 
                                    agendaIOT.getTasks().get(agendaIOT.getSiteByID(siteID)),
-                                   agendaIOT.getBufferingFactor(), costs);
+                                   agendaIOT.getBufferingFactor(), costs, this, packetID);
           else
           site = 
             new ChannelModelSite(expectedPackets, siteID, logicaloverlayNetwork, 
                                  logicaloverlayNetwork.getPriority(siteID), 
                                  agenda.getTasks().get(agenda.getSiteByID(siteID)),
-                                 agenda.getBufferingFactor(), costs);
+                                 agenda.getBufferingFactor(), costs, this, packetID);
         }
         else //your a sibling in the logical overlay to the cluster head. 
         {
@@ -634,7 +635,7 @@ public class ChannelModel implements Serializable
             site = new ChannelModelSite(expectedPackets, siteID, logicaloverlayNetwork, 
                                        logicaloverlayNetwork.getPriority(siteID), 
                                        agendaIOT.getTasks().get(agendaIOT.getSiteByID(siteID)),
-                                       agendaIOT.getBufferingFactor(), costs);
+                                       agendaIOT.getBufferingFactor(), costs, this, packetID);
           }
           else
           {
@@ -652,7 +653,7 @@ public class ChannelModel implements Serializable
             site = new ChannelModelSite(expectedPackets, siteID, logicaloverlayNetwork, 
                                         logicaloverlayNetwork.getPriority(siteID), 
                                         agenda.getTasks().get(agenda.getSiteByID(siteID)),
-                                        agenda.getBufferingFactor(), costs);
+                                        agenda.getBufferingFactor(), costs, this, packetID);
           }
         }
           
@@ -674,8 +675,8 @@ public class ChannelModel implements Serializable
       if(opToCheck.getSensornetOperator() instanceof SensornetDeliverOperator)
     	  rootOp = opToCheck;
     }
-    InstanceOperator preOp = (InstanceOperator) rootOp.getInput(0);
-    return ChannelModelSite.packetToTupleConversion(packets, rootOp, preOp);
+    ChannelModelSite site = channelModel.get(Integer.parseInt(rootSite.getID()));
+    return CollectionOfPackets.determineNoTuplesFromWindows(site.getTransmitableWindows().getWindowsOfExtent(rootOp.getExtent()));
   }
 
   public void clearModel()
@@ -698,5 +699,23 @@ public class ChannelModel implements Serializable
       if(site != null)
         ChannelModelSite.setReliableChannelQEP(reliableChannelQEP);
     }
+  }
+  
+  public ArrayList<ChannelModelSite> getChannelModel()
+  {
+    return channelModel;
+  }
+  
+  public int determineAggregationTupleContribtuion(IOT iot) 
+  throws NumberFormatException, SchemaMetadataException, TypeMappingException
+  {
+    ChannelModelSite.resetAggreData();
+    Iterator<Site> siteIterator = iot.getRT().siteIterator(TraversalOrder.POST_ORDER);
+    while(siteIterator.hasNext())
+    {
+      Site site = siteIterator.next();
+      this.channelModel.get(Integer.parseInt(site.getID())).determineAggregationContribution(site.getID());
+    }
+    return ChannelModelSite.getTuplesParticipatingInAggregation();
   }
 }

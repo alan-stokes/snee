@@ -1,7 +1,9 @@
 package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
 
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -161,6 +163,13 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
     int noNodefails = 1;
     boolean globalFailed = false;
     boolean successorFailed = false;
+    ArrayList<Integer> globalLifetimes = new ArrayList<Integer>();
+    ArrayList<Integer> successorLifetimes = new ArrayList<Integer>();
+    for(int index =0; index <=8; index++)
+    {
+      globalLifetimes.add(null);
+      successorLifetimes.add(null);
+    }
     while(noNodefails <= 8 && !globalFailed)
     {
       //collects the global QEP;
@@ -172,8 +181,10 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
       HashMap<String, RunTimeSite> GlobalRunningSites = manager.getCopyOfRunningSites();
       //do globals node failure lifetime
       boolean successful = doGlobalAdaptations(timeOfNodeFailure, globalFailedNodes, GlobalRunningSites, 
-                                               golbalQEP, noNodefails);
-      globalFailed = successful;
+                                               golbalQEP, noNodefails, globalLifetimes);
+      globalFailed = !successful;
+      if(!globalFailed)
+        noNodefails++;
     }
     noNodefails = 1;
     while(noNodefails <= 8 && !successorFailed)
@@ -185,14 +196,41 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
       HashMap<String, RunTimeSite> SuccessorRunningSites = manager.getCopyOfRunningSites();
       //do successor node failure lifetime
       boolean successful = doSucessorAdaptations(timeOfNodeFailure, globalFailedNodes, SuccessorRunningSites, 
-                                                 successorRelation, noNodefails); 
-      successorFailed = successful;
+                                                 successorRelation, noNodefails, successorLifetimes); 
+      successorFailed = !successful;
+      if(!successorFailed)
+        noNodefails++;
     }
+    outputData(globalLifetimes, successorLifetimes,bestSuccessorRelation);
     
   }
   
   
   
+  private void outputData(ArrayList<Integer> globalLifetimes,
+                          ArrayList<Integer> successorLifetimes, SuccessorPath bestSuccessorRelation                          ) 
+  throws IOException
+  {
+     BufferedWriter out = new BufferedWriter(new FileWriter(new File(successorFolder.toString() + sep + "results")));
+     Long agendaLength = bestSuccessorRelation.getSuccessorList().get(0).getQep().getAgendaIOT().getLength_bms(false);
+     for(int index = 0; index<= 8; index++)
+     {
+       Integer successorLifetime = successorLifetimes.get(index);
+       Integer globalLifetime =  globalLifetimes.get(index);
+       if(successorLifetime == null)
+         successorLifetime = 0;
+       if(globalLifetime == null)
+         globalLifetime = 0;
+       globalLifetime = new Double(Math.floor(globalLifetime / agendaLength.intValue())).intValue();
+       successorLifetime = new Double(Math.floor(successorLifetime / agendaLength.intValue())).intValue();
+       
+       out.write(index + " " + globalLifetime + " " + successorLifetime + " \n");
+     }
+     out.flush();
+     out.close();
+    
+  }
+
   /**
    * executes the successor relation for unpredictable node failure.
    * @param timeOfNodeFailure
@@ -200,6 +238,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
    * @param successorRunningSites
    * @param bestSuccessorRelation
    * @param noNodefails
+   * @param successorLifetimes 
    * @param currentAgendaCycle
    * @return
    * @throws OptimizationException
@@ -223,7 +262,8 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
    */
   private boolean doSucessorAdaptations(double timeOfNodeFailure, ArrayList<String> globalFailedNodes,
                                      HashMap<String, RunTimeSite> successorRunningSites,
-                                     SuccessorPath bestSuccessorRelation, int noNodefails)
+                                     SuccessorPath bestSuccessorRelation, int noNodefails,
+                                     ArrayList<Integer> successorLifetimes)
   throws OptimizationException, SchemaMetadataException, TypeMappingException, 
          SNEEConfigurationException, NumberFormatException, UnsupportedAttributeTypeException, 
          SourceMetadataException, AgendaException, 
@@ -284,6 +324,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
         currentAgendaCycle += this.failedNode.getLifetime();
       }
     }
+    successorLifetimes.add(noNodefails -1, bestSuccessorRelation.overallSuccessorPathLifetime());
     return failed;
   }
 
@@ -312,6 +353,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
    * @param globalRunningSites
    * @param golbalQEP
    * @param noNodefails
+   * @param globalLifetimes 
    * @return
    * @throws OptimizationException
    * @throws SchemaMetadataException
@@ -332,7 +374,8 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
    */
   private boolean doGlobalAdaptations(double timeOfNodeFailure, ArrayList<String> globalFailedNodes,
                                    HashMap<String, RunTimeSite> globalRunningSites,
-                                   SensorNetworkQueryPlan golbalQEP, int noNodefails) 
+                                   SensorNetworkQueryPlan golbalQEP, int noNodefails,
+                                   ArrayList<Integer> globalLifetimes) 
   throws OptimizationException, SchemaMetadataException, 
          TypeMappingException, SNEEConfigurationException,
          NumberFormatException, MalformedURLException, 
@@ -378,7 +421,9 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
         currentAgendaCycle += this.failedNode.getLifetime();
       }
     }
-    return failed;
+    FailedNodeData failedNode = firstNodeToFailFromEnergyDepletion(golbalQEP, globalRunningSites);
+    globalLifetimes.set(noNodefails -1, new Double(failedNode.getLifetime() + currentAgendaCycle).intValue());
+    return !failed;
   }
 
   /**
@@ -404,7 +449,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
         if(operator.getSensornetOperator() instanceof SensornetAcquireOperator)
           acquire = true;
       }
-      if(!acquire)
+      if(!acquire && !QEP.getRT().getRoot().getID().equals(siteID.toString()))
         collection.add(siteID.toString());
     }
     return collection.get(random.nextInt(collection.size() -1));
@@ -607,7 +652,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
     while(successors.hasNext())
     {
       Successor currentSuccessor = successors.next();
-      if(currentSuccessor.getPreviousAgendaCount() + currentAgendaCycleCount >  shortestLifetime)
+      if(currentSuccessor.getPreviousAgendaCount() + currentAgendaCycleCount <  shortestLifetime)
         scopedSuccessors.add(currentSuccessor);
     }
     return scopedSuccessors;

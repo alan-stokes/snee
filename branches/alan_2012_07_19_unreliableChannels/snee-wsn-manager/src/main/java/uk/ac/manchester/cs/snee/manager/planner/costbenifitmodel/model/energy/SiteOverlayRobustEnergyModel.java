@@ -182,7 +182,7 @@ public class SiteOverlayRobustEnergyModel extends SiteOverlayEnergyModel
      }
      else
      {
-       txTimeExpr = AlphaBetaExpression.multiplyBy(costExpressions.getPacketsSent(exchComps, true),
+       txTimeExpr = AlphaBetaExpression.multiplyBy(costExpressions.getPacketsSent(exchComps, true, ct.isChannel()),
                                                    AvroraCostParameters.PACKETTRANSMIT);
      }
      double txTime = (txTimeExpr.evaluate(agenda.getAcquisitionInterval_bms(), 

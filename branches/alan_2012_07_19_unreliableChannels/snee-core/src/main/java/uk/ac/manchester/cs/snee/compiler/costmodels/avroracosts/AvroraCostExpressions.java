@@ -105,25 +105,25 @@ public final class AvroraCostExpressions{
    * @throws SchemaMetadataException 
    */
   public AlphaBetaExpression getSiteEnergyExpression(final Site site,
-      final boolean round, HashMap<String, AlphaBetaExpression> debug) 
+      final boolean round, HashMap<String, AlphaBetaExpression> debug, boolean channel) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException 
   {
     
     AlphaBetaExpression energyCost = getCPUEnergyExpression(site, round, debug);
     AlphaBetaExpression sensorCost = getSensorEnergyExpression(site, round, debug);
-    AlphaBetaExpression radioCost = getRadioEnergyExpression(site, round, debug);
+    AlphaBetaExpression radioCost = getRadioEnergyExpression(site, round, debug, channel);
     
     return AlphaBetaExpression.add(energyCost, 
         AlphaBetaExpression.add(sensorCost, radioCost));
   }
   
   public AlphaBetaExpression getSiteEnergyExpression(final Site site,
-      final boolean round) 
+      final boolean round, boolean channel) 
   throws OptimizationException, SchemaMetadataException,
   TypeMappingException 
   {
-    return getSiteEnergyExpression(site, round, null);
+    return getSiteEnergyExpression(site, round, null, channel);
   }
   
   /** 
@@ -224,7 +224,8 @@ public final class AvroraCostExpressions{
    * @throws OptimizationException 
    */
   private AlphaBetaExpression getRadioEnergyExpression(
-      final Site site, final boolean round, HashMap<String,AlphaBetaExpression> debug) 
+      final Site site, final boolean round, HashMap<String,AlphaBetaExpression> debug,
+      boolean channel) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException 
   {
@@ -235,9 +236,9 @@ public final class AvroraCostExpressions{
     double rxPower = AvroraCostParameters.RADIORECEIVEAMPERE 
     * AvroraCostParameters.VOLTAGE;
     
-    AlphaBetaExpression txTime = getRadioTransmitDuration(site, round);
+    AlphaBetaExpression txTime = getRadioTransmitDuration(site, round, channel);
     AlphaBetaExpression txEnergy = AlphaBetaExpression.multiplyBy(txTime,txPower);
-    AlphaBetaExpression rxTime = getRadioReceiveDuration(site, round);
+    AlphaBetaExpression rxTime = getRadioReceiveDuration(site, round, channel);
     AlphaBetaExpression rxEnergy = AlphaBetaExpression.multiplyBy(rxTime, rxPower);
 
     if (debug!=null) {
@@ -517,7 +518,7 @@ public final class AvroraCostExpressions{
    * @throws OptimizationException 
    */
   public AlphaBetaExpression getPacketsSent(HashSet<InstanceExchangePart> exchComps, 
-      final boolean round) 
+                                            final boolean round, boolean channel) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException 
   { 
@@ -533,7 +534,7 @@ public final class AvroraCostExpressions{
               == ExchangePartType.RELAY)) {
           //TODO determine which is more accurate Packets or bytes.
           AlphaBetaExpression packets = new AlphaBetaExpression(
-            exchangeComponent.packetsPerTask(daf, agenda.getBufferingFactor(), costParams));
+            exchangeComponent.packetsPerTask(daf, agenda.getBufferingFactor(), costParams, channel));
             //.packetsPerTask(
             //  CardinalityType.MAX, daf, round);
           expression.add(packets);
@@ -566,12 +567,12 @@ public final class AvroraCostExpressions{
    * @throws OptimizationException 
    */
   private AlphaBetaExpression getRadioTransmitDuration(final Site site, 
-      final boolean round) 
+      final boolean round, boolean channel) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException 
   {
     HashSet<InstanceExchangePart> exchComps = site.getInstanceExchangeComponents(); 
-    return AlphaBetaExpression.multiplyBy(this.getPacketsSent(exchComps, round),
+    return AlphaBetaExpression.multiplyBy(this.getPacketsSent(exchComps, round, channel),
         AvroraCostParameters.PACKETTRANSMIT);
   }
 
@@ -612,12 +613,12 @@ public final class AvroraCostExpressions{
    * @throws OptimizationException 
    */
   private AlphaBetaExpression getRadioReceiveDuration(final Site site, 
-      final boolean round) 
+      final boolean round, boolean channel) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException 
   {
     return AlphaBetaExpression.subtract(getRadioOnDuration(site, round),
-        getRadioTransmitDuration(site, round));
+        getRadioTransmitDuration(site, round, channel));
   }
 
   /** 
@@ -717,13 +718,13 @@ public final class AvroraCostExpressions{
    * Displays the cost expression for debugging and reporting.
    * @throws SNEEConfigurationException 
    */
-  public void display() 
+  public void display(boolean channel) 
   throws SNEEConfigurationException 
   {
     String latexFilename = SNEEProperties.getSetting(
         SNEEPropertyNames.GENERAL_OUTPUT_ROOT_DIR) 
       + daf.getQueryName() + "-cost-expressions.tex";
-    exportToLatex(latexFilename);
+    exportToLatex(latexFilename, channel);
   }
 
   /** 
@@ -752,7 +753,7 @@ public final class AvroraCostExpressions{
   /** Exports an overview of the Cost Expressions used to Latex. 
    * @param fname Full Name of the file to write the latex to. 
    */
-    public void exportToLatex(final String fname) {
+    public void exportToLatex(final String fname, boolean channel) {
       try {
         String beginTable = "\\begin{tabular}{p{5cm}p{5cm}}";
         final PrintWriter out = new PrintWriter(new BufferedWriter(
@@ -768,7 +769,7 @@ public final class AvroraCostExpressions{
         while (sites.hasNext()) {
           Site site = sites.next();
               out.print("Total Energy for Site "+site.getID()+": &"); 
-            out.println("$" + this.getSiteEnergyExpression(site, true)
+            out.println("$" + this.getSiteEnergyExpression(site, true, channel)
                 .toDecimalLatexString() + "$ joules\\\\");
         }
             out.println("\\hline");
@@ -825,7 +826,7 @@ public final class AvroraCostExpressions{
               out.println("\\hline");
               out.print("Packets Sent: &$");
               HashSet<InstanceExchangePart> exchComps = site.getInstanceExchangeComponents();
-            out.println(this.getPacketsSent(exchComps, true)
+            out.println(this.getPacketsSent(exchComps, true, channel)
                 .toLatexString() + "$\\\\");
                 out.println("\\hline");
             
@@ -835,7 +836,7 @@ public final class AvroraCostExpressions{
                 out.println("\\hline");
                 
               displayBreakDown(out, "Transmit Duration", 
-                  this.getRadioTransmitDuration(site, true),
+                  this.getRadioTransmitDuration(site, true, channel),
                     AvroraCostParameters.getTXAmpere(txLevel));
 
             out.print("Radio On Duration: &$"); 
@@ -843,7 +844,7 @@ public final class AvroraCostExpressions{
                 .toLatexString() + "$\\\\");
 
               displayBreakDown(out, "Receive Save Duration", 
-                  this.getRadioReceiveDuration(site, true),
+                  this.getRadioReceiveDuration(site, true, channel),
                     AvroraCostParameters.RADIORECEIVEAMPERE);
 
               displayBreakDown(out, "Power down Duration", 
@@ -851,7 +852,7 @@ public final class AvroraCostExpressions{
                     AvroraCostParameters.RADIOPOWERDOWNAMPERE);
 
               out.print("Radio Energy Expression: &"); 
-            out.println("$" + this.getRadioEnergyExpression(site, true, null)
+            out.println("$" + this.getRadioEnergyExpression(site, true, null, channel)
                 .toDecimalLatexString() + "$ joules\\\\");
             out.println("\\hline");
             out.println("\\hline");
@@ -879,7 +880,7 @@ public final class AvroraCostExpressions{
               out.println(beginTable);
               out.println("\\hline");           
               out.print("Total Energy Expression: &"); 
-            out.println("$" + this.getSiteEnergyExpression(site, true)
+            out.println("$" + this.getSiteEnergyExpression(site, true, channel)
                 .toDecimalLatexString() + "$ joules\\\\");       
               out.println("\\hline");           
               out.println("\\hline");           

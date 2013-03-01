@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="sdsPull" 
+	targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Pull" 
+	xmlns:wsdai="http://www.ggf.org/namespaces/2005/12/WS-DAI" 
+	xmlns:sds="http://www.semsorgrid4env.eu/namespace/2009/10/SDS" 
+	xmlns:sdsPull="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Pull"
+	xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+<!-- WSDL IMPORTS ###################################################### -->
+
+	<wsdl:import location="wsdai/wsdai_core_porttypes.wsdl"
+		namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI" />
+
+<!-- WSDL TYPES ######################################################## -->
+	
+	<wsdl:types>
+		<xsd:schema elementFormDefault="qualified"
+			targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Pull">
+
+			<xsd:import namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI"
+				schemaLocation="wsdai/wsdai_core_types.xsd" />
+
+			<xsd:import schemaLocation="streaming_service_types.xsd" 
+				namespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS"/>
+				
+			<xsd:include schemaLocation="pull_stream_types.xsd"/>
+
+		<xsd:element name="Position" type="sds:TimeOrSequenceNumberType"/>
+		
+		<xsd:element name="Count" type="sds:DurationOrTuplesType"/>
+
+		<xsd:element name="MaximumTuples" type="xsd:int"/>
+
+      	<!-- ################### -->
+      	<!-- ### Fault Types ### -->
+	  	<!-- ################### -->
+	  	
+		<xsd:complexType name="InvalidPositionFaultType"/>
+		<xsd:element name="InvalidPositionFault" type="sdsPull:InvalidPositionFaultType"/>
+
+		<xsd:complexType name="InvalidCountFaultType"/>
+		<xsd:element name="InvalidCountFault" type="sdsPull:InvalidCountFaultType"/>
+	  	
+		<xsd:complexType name="MaximumTuplesExceededFaultType"/>
+		<xsd:element name="MaximumTuplesExceededFault" type="sdsPull:MaximumTuplesExceededFaultType"/>
+	
+		<!-- ################################### -->
+		<!-- ### GetStreamItem Message Types ### -->
+		<!-- ################################### -->
+	
+		<xsd:element name="GetStreamItemRequest">
+			<xsd:complexType>
+				<xsd:complexContent>
+					<xsd:extension base="wsdai:RequestType">
+						<xsd:sequence>
+							<xsd:element ref="sdsPull:Position" minOccurs="0" maxOccurs="1"/>
+							<xsd:element ref="sdsPull:Count" minOccurs="0" maxOccurs="1"/>
+							<xsd:element ref="sdsPull:MaximumTuples" minOccurs="0" maxOccurs="1"/>
+						</xsd:sequence>
+					</xsd:extension>
+				</xsd:complexContent>
+			</xsd:complexType>
+		</xsd:element>
+	
+		<!-- ######################################### -->
+		<!-- ### GetStreamNewestItem Message Types ### -->
+		<!-- ######################################### -->
+	
+		<xsd:element name="GetStreamNewestItemRequest">
+			<xsd:complexType>
+				<xsd:complexContent>
+					<xsd:extension base="wsdai:RequestType">
+						<xsd:sequence>
+							<xsd:element ref="sdsPull:Count" minOccurs="0" maxOccurs="1"/>
+							<xsd:element ref="sdsPull:MaximumTuples" minOccurs="0" maxOccurs="1"/>
+						</xsd:sequence>
+					</xsd:extension>
+				</xsd:complexContent>
+			</xsd:complexType>
+		</xsd:element>
+	      
+		</xsd:schema>
+	</wsdl:types>
+	
+	<!-- WSDL MESSAGES ################################################# -->
+	
+	<!-- ###################### -->
+	<!-- ### Fault Messages ### -->
+	<!-- ###################### -->
+	
+	<wsdl:message name="InvalidPositionFault">
+    	<wsdl:part name="InvalidPositionFault" element="sdsPull:InvalidPositionFault"/>
+  	</wsdl:message>
+  	
+	<wsdl:message name="InvalidCountFault">
+    	<wsdl:part name="InvalidCountFault" element="sdsPull:InvalidCountFault"/>
+  	</wsdl:message>
+
+  	<wsdl:message name="MaximumTuplesExceededFault">
+  		<wsdl:part name="MaximumTuplesExceededFault" element="sdsPull:MaximumTuplesExceededFault"/>
+  	</wsdl:message>
+	
+	<!-- ############################## -->
+	<!-- ### GetStreamItem Messages ### -->
+	<!-- ############################## -->
+
+	<wsdl:message name="GetStreamItemRequest">
+    	<wsdl:part element="sdsPull:GetStreamItemRequest" name="GetStreamItemRequest"/>
+  	</wsdl:message>
+
+  	<wsdl:message name="GetStreamItemResponse">
+    	<wsdl:part element="wsdai:GenericQueryResponse"
+    		name="GetStreamItemResponse" />
+  	</wsdl:message>
+	
+	<!-- #################################### -->
+	<!-- ### GetStreamNewestItem Messages ### -->
+	<!-- #################################### -->
+
+	<wsdl:message name="GetStreamNewestItemRequest">
+    	<wsdl:part element="sdsPull:GetStreamNewestItemRequest" name="GetStreamNewestItemRequest"/>
+  	</wsdl:message>
+
+  	<wsdl:message name="GetStreamNewestItemResponse">
+    	<wsdl:part element="wsdai:GenericQueryResponse"
+    		name="GetStreamNewestItemResponse" />
+  	</wsdl:message>
+
+
+  <!-- WSDL PORT TYPES ############################################### -->
+
+	<wsdl:portType name="PullStreamInterface">
+
+		<!-- Core Resource List Operations  -->
+		<wsdl:operation name="GetResourceList">
+			<wsdl:input name="GetResourceListRequest" message="wsdai:GetResourceListRequest"/>
+			<wsdl:output name="GetResourceListResponse" message="wsdai:GetResourceListResponse"/>
+			<wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+			<wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="Resolve">
+			<wsdl:input message="wsdai:ResolveRequest"/>
+			<wsdl:output message="wsdai:ResolveResponse"/>
+			<wsdl:fault name="InvalidResourceNameFault" message="wsdai:InvalidResourceNameFault"/>
+			<wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+			<wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+		</wsdl:operation>
+		
+		<!-- Core Data Access Operations -->
+		<wsdl:operation name="GetDataResourcePropertyDocument">
+			<wsdl:input name="GetDataResourcePropertyDocumentRequest" message="wsdai:GetDataResourcePropertyDocumentRequest"/>
+			<wsdl:output name="GetDataResourcePropertyDocumentResponse" message="wsdai:GetDataResourcePropertyDocumentResponse"/>
+			<wsdl:fault name="InvalidResourceNameFault" message="wsdai:InvalidResourceNameFault"/>
+			<wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+			<wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+			<wsdl:fault name="DataResourceUnavailableFault" message="wsdai:DataResourceUnavailableFault"/>
+		</wsdl:operation>
+		<wsdl:operation name="DestroyDataResource">
+			<wsdl:input message="wsdai:DestroyDataResourceRequest"/>
+			<wsdl:output message="wsdai:DestroyDataResourceResponse"/>
+			<wsdl:fault name="InvalidResourceNameFault" message="wsdai:InvalidResourceNameFault"/>
+			<wsdl:fault name="DataResourceUnavailableFault" message="wsdai:DataResourceUnavailableFault"/>
+			<wsdl:fault name="NotAuthorizedFault" message="wsdai:NotAuthorizedFault"/>
+			<wsdl:fault name="ServiceBusyFault" message="wsdai:ServiceBusyFault"/>
+		</wsdl:operation>
+	
+		<!-- Pull Stream Service Operations -->
+		<wsdl:operation name="GetStreamItem">
+			<wsdl:input message="sdsPull:GetStreamItemRequest" />
+			<wsdl:output message="wsdai:GenericQueryResponse" />
+			<wsdl:fault message="wsdai:InvalidResourceNameFault" name="InvalidResourceNameFault" />
+			<wsdl:fault message="wsdai:DataResourceUnavailableFault" name="DataResourceUnavailableFault" />
+			<wsdl:fault message="wsdai:InvalidDatasetFormatFault" name="InvalidDatasetFormatFault"/>
+			<wsdl:fault message="wsdai:NotAuthorizedFault" name="NotAuthorizedFault" />
+			<wsdl:fault message="sdsPull:InvalidPositionFault" name="InvalidPositionFault"/>
+			<wsdl:fault message="sdsPull:InvalidCountFault" name="InvalidCountFault"/>
+			<wsdl:fault message="sdsPull:MaximumTuplesExceededFault" name="MaximumTuplesExceededFault"/>
+			<wsdl:fault message="wsdai:ServiceBusyFault" name="ServiceBusyFault" />
+		</wsdl:operation>
+		
+		<wsdl:operation name="GetStreamNewestItem">
+			<wsdl:input message="sdsPull:GetStreamNewestItemRequest" />
+			<wsdl:output message="wsdai:GenericQueryResponse" />
+			<wsdl:fault message="wsdai:InvalidResourceNameFault" name="InvalidResourceNameFault" />
+			<wsdl:fault message="wsdai:DataResourceUnavailableFault" name="DataResourceUnavailableFault" />
+			<wsdl:fault message="wsdai:InvalidDatasetFormatFault" name="InvalidDatasetFormatFault"/>
+			<wsdl:fault message="wsdai:NotAuthorizedFault" name="NotAuthorizedFault" />
+			<wsdl:fault message="sdsPull:InvalidCountFault" name="InvalidCountFault"/>
+			<wsdl:fault message="sdsPull:MaximumTuplesExceededFault" name="MaximumTuplesExceededFault"/>
+			<wsdl:fault message="wsdai:ServiceBusyFault" name="ServiceBusyFault" />
+		</wsdl:operation>
+	</wsdl:portType>
+</wsdl:definitions>

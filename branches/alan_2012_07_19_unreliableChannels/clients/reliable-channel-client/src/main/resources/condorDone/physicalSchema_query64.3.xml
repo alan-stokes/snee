@@ -15,10 +15,10 @@
 				<sites>0,7,10</sites>
 			</extent>
 			<extent name="C">
-				<sites>10,5,8</sites>
+				<sites>10,5</sites>
 			</extent>
 			<extent name="D">
-				<sites>8,1,9</sites>
+				<sites>1,9</sites>
 			</extent>
 		</extents> 
 	</sensor_network> 

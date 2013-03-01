@@ -62,6 +62,8 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
     //The site which is receiving data
     private Site destNode = null;
 
+    private boolean channel = false;
+    
     //The exchange components involved
     private HashSet<ExchangePart> exchangeComponents;
 
@@ -114,7 +116,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
                              final long bufferingFactor, final DAF daf, int maxPackets,
                              CostParameters costParams, boolean redundant,
                              Site originalDestNode, Site trueDestID, boolean lastCommTask,
-                             boolean hadPreivousCommTask) 
+                             boolean hadPreivousCommTask, boolean channel) 
     throws OptimizationException, SchemaMetadataException, TypeMappingException 
     {
       super(startTime, costParams);
@@ -129,6 +131,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
       this.originalDestNode = originalDestNode;
       this.trueDestSite = trueDestID;
       generateID();
+      this.channel = channel;
     }
 
     /**
@@ -148,7 +151,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
 	                         final HashSet<InstanceExchangePart> tuplesToSend,
 	                         final long alpha, final long bufferingFactor, final DAF daf,  
 	                         CostParameters costParams, boolean redundant,
-	                         Site originalDestNode, Site trueDestID ) 
+	                         Site originalDestNode, Site trueDestID , boolean channel) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException 
   {
   	super(startTime, costParams);
@@ -156,7 +159,8 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
   	this.destNode = destNode;
   	this.instanceExchangeComponents = tuplesToSend;
   	this.beta = bufferingFactor;
-  	this.endTime = startTime + this.getTimeCost(daf, true, false);
+  	this.channel = channel;
+  	this.endTime = startTime + this.getTimeCost(daf, true, false, channel);
   	this.mode = mode;
   	this.redundantTask = redundant;
   	this.originalDestNode = originalDestNode;
@@ -230,7 +234,7 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
         int mode, HashSet<InstanceExchangePart> tuplesToSend, long alpha,
         long beta, DAF daf, CostParameters costParams, boolean redundant,
         Site originalDestNode, Site trueDestID, boolean lastCommTask, 
-        boolean hadPreivousCommTask) 
+        boolean hadPreivousCommTask, boolean channel) 
     throws OptimizationException, SchemaMetadataException, TypeMappingException
     {
       super(startTime, costParams);
@@ -238,7 +242,8 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
       this.destNode = destNode;
       this.instanceExchangeComponents = tuplesToSend;
       this.beta = beta;
-      this.endTime = startTime + this.getTimeCost(daf, lastCommTask, hadPreivousCommTask);
+      this.channel = channel;
+      this.endTime = startTime + this.getTimeCost(daf, lastCommTask, hadPreivousCommTask, channel);
       this.mode = mode;
       this.redundantTask = redundant;
       this.originalDestNode = originalDestNode;
@@ -247,6 +252,11 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
     }
     
     
+    public boolean isChannel()
+    {
+      return channel;
+    }
+
     private void generateID()
     {
       if(this.mode == CommunicationTask.RECEIVE)
@@ -392,7 +402,8 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
      * @throws OptimizationException 
      */
 	protected final long getTimeCost(final DAF daf, boolean lastCommTask, 
-	                                 boolean hadPreivousCommTask) 
+	                                 boolean hadPreivousCommTask,
+	                                 boolean channel) 
 	throws OptimizationException, SchemaMetadataException, TypeMappingException 
 	{
     	long result = 0;
@@ -423,8 +434,8 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
               == ExchangePartType.PRODUCER)
             || (exchComp.getComponentType() 
               == ExchangePartType.RELAY)) {
-          result += exchComp.getTimeCost(daf, beta, costParams);
-          this.maxPacketsEspectedToTransmit += exchComp.getmaxPackets(daf, beta, costParams);
+          result += exchComp.getTimeCost(daf, beta, costParams, channel);
+          this.maxPacketsEspectedToTransmit += exchComp.getmaxPackets(daf, beta, costParams, channel);
         }
       }
       result += getTimeCostOverhead(costParams, lastCommTask, hadPreivousCommTask);
@@ -533,7 +544,8 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
   }
 
   @Override
-  protected long getTimeCost(DAF daf)throws OptimizationException, SchemaMetadataException, TypeMappingException 
+  protected long getTimeCost(DAF daf)
+  throws OptimizationException, SchemaMetadataException, TypeMappingException 
   {
     long result = 0;
 
@@ -563,8 +575,8 @@ public class CommunicationTask extends Task implements Comparable<CommunicationT
             == ExchangePartType.PRODUCER)
           || (exchComp.getComponentType() 
             == ExchangePartType.RELAY)) {
-        result += exchComp.getTimeCost(daf, beta, costParams);
-        this.maxPacketsEspectedToTransmit += exchComp.getmaxPackets(daf, beta, costParams);
+        result += exchComp.getTimeCost(daf, beta, costParams, channel);
+        this.maxPacketsEspectedToTransmit += exchComp.getmaxPackets(daf, beta, costParams, channel);
       }
     }
     result += getTimeCostOverhead(costParams);

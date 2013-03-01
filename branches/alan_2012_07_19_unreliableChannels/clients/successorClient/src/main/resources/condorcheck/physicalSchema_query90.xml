@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<source xmlns="http://snee.cs.man.ac.uk/namespace/physical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../schema/physical-schema.xsd ">
+
+	<sensor_network name="wsn1">
+		<topology>wsn_query90.xml</topology>
+		<site-resources>siteRes90.xml</site-resources>
+		<gateways>0</gateways>
+		<extents>
+			<extent name="A">
+				<sites>24,14</sites>
+			</extent>
+			<extent name="B">
+				<sites>14,7,40</sites>
+			</extent>
+			<extent name="C">
+				<sites>40,12,9</sites>
+			</extent>
+			<extent name="D">
+				<sites>9,6,11</sites>
+			</extent>
+			<extent name="E">
+				<sites>11,38</sites>
+			</extent>
+		</extents> 
+	</sensor_network> 
+</source>

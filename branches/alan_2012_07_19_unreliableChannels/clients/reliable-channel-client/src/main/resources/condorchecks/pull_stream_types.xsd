@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema 
+	targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Pull" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:wsdai="http://www.ggf.org/namespaces/2005/12/WS-DAI" 
+	xmlns:sds="http://www.semsorgrid4env.eu/namespace/2009/10/SDS"
+	xmlns:sdsPull="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Pull">
+	
+	<xsd:import schemaLocation="wsdai/wsdai_core_types.xsd" 
+		namespace="http://www.ggf.org/namespaces/2005/12/WS-DAI" />
+
+	<xsd:import schemaLocation="streaming_service_types.xsd"
+		namespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS"/>
+	
+	<!-- General types -->
+
+	<xsd:element name="MaximumHistoryDuration" type="xsd:duration"/>
+	
+	<xsd:element name="MaximumHistoryTuples" type="xsd:int"/>
+
+	<xsd:complexType name="StreamHistoryType">
+		<xsd:sequence>
+			<xsd:element ref="sdsPull:MaximumHistoryDuration" minOccurs="0" maxOccurs="1"/>
+			<xsd:element ref="sdsPull:MaximumHistoryTuples" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="StreamHistory" type="sdsPull:StreamHistoryType"/>
+	
+	<xsd:element name="SequenceNumber" type="xsd:int"/>
+
+	<!-- Property Document -->
+    <xsd:complexType name="PullStreamPropertyDocumentType">
+    	<xsd:complexContent>
+    		<xsd:extension base="sds:StreamPropertyDocumentType">
+    			<xsd:sequence>
+    				<xsd:element ref="sdsPull:StreamHistory" />
+    			</xsd:sequence>
+    		</xsd:extension>
+    	</xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="PullStreamPropertyDocument" 
+    	substitutionGroup="wsdai:PropertyDocument" 
+    	type="sdsPull:PullStreamPropertyDocumentType"/>
+
+</xsd:schema>

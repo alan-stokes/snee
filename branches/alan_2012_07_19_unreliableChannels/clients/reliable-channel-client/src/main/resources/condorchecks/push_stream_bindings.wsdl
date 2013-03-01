@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<wsdl:definitions name="StreamingDataService" 
+    targetNamespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push"
+    xmlns:sdsPush="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push"
+    xmlns:sds="http://www.semsorgrid4env.eu/namespace/2009/10/SDS"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+    xmlns:wsdai="http://www.ggf.org/namespaces/2005/12/WS-DAI"
+    xmlns:wsn="http://docs.oasis-open.org/wsn/bw-2"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+>
+
+	<!-- ##################### IMPORTS #########################  -->
+	<wsdl:import namespace="http://www.semsorgrid4env.eu/namespace/2009/10/SDS/Push"
+               location="push_stream_porttypes.wsdl"/>			
+
+	<!-- ################### END OF IMPORTS ####################### -->		
+
+	<wsdl:binding name="PushStreamBinding" type="sdsPush:PushStreamInterface">
+    	<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    	<!-- Core Resource List Binding -->
+		<wsdl:operation name="GetResourceList">
+			<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Push/GetDataResourceList"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="Resolve">
+			<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Push/Resolve"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="InvalidResourceNameFault">
+				<soap:fault name="InvalidResourceNameFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+    	
+    	<!-- Core Data Access Binding -->
+		<wsdl:operation name="GetDataResourcePropertyDocument">
+			<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Push/GetDataResourcePropertyDocument"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="InvalidResourceNameFault">
+				<soap:fault name="InvalidResourceNameFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="DataResourceUnavailableFault">
+				<soap:fault name="DataResourceUnavailableFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		<wsdl:operation name="DestroyDataResource">
+			<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Push/DestroyDataResource"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="InvalidResourceNameFault">
+				<soap:fault name="InvalidResourceNameFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NotAuthorizedFault">
+				<soap:fault name="NotAuthorizedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="ServiceBusyFault">
+				<soap:fault name="ServiceBusyFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="DataResourceUnavailableFault">
+				<soap:fault name="DataResourceUnavailableFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+
+    	<wsdl:operation name="Subscribe">   	
+      		<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Push/SubscribeRequest"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="ResourceUnknownFault">
+				<soap:fault name="ResourceUnknownFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidFilterFault">
+				<soap:fault name="InvalidFilterFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="TopicExpressionDialectUnknownFault"> 
+				<soap:fault name="TopicExpressionDialectUnknownFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidTopicExpressionFault">
+				<soap:fault name="InvalidTopicExpressionFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="TopicNotSupportedFault">
+				<soap:fault name="TopicNotSupportedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidProducerPropertiesExpressionFault">
+				<soap:fault name="InvalidProducerPropertiesExpressionFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidMessageContentExpressionFault">
+				<soap:fault name="InvalidMessageContentExpressionFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="UnacceptableInitialTerminationTimeFault">
+				<soap:fault name="UnacceptableInitialTerminationTimeFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="UnrecognizedPolicyRequestFault">
+				<soap:fault name="UnrecognizedPolicyRequestFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="UnsupportedPolicyRequestFault">
+				<soap:fault name="UnsupportedPolicyRequestFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NotifyMessageNotSupportedFault">
+				<soap:fault name="NotifyMessageNotSupportedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="SubscribeCreationFailedFault">
+				<soap:fault name="SubscribeCreationFailedFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+		
+		<wsdl:operation name="GetCurrentMessage">   	
+      		<soap:operation soapAction="http://www.semsorgrid4env.eu/namespaces/2009/10/SDS/Push/GetCurrentMessageRequest"/>
+			<wsdl:input>
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output>
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="ResourceUnknownFault">
+				<soap:fault name="ResourceUnknownFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="TopicExpressionDialectUnknownFault"> 
+				<soap:fault name="TopicExpressionDialectUnknownFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="InvalidTopicExpressionFault">
+				<soap:fault name="InvalidTopicExpressionFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="TopicNotSupportedFault">
+				<soap:fault name="TopicNotSupportedFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="NoCurrentMessageOnTopicFault">
+				<soap:fault name="NoCurrentMessageOnTopicFault" use="literal"/>
+			</wsdl:fault>
+			<wsdl:fault name="MultipleTopicsSpecifiedFault">
+				<soap:fault name="MultipleTopicsSpecifiedFault" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+    	
+  	</wsdl:binding>
+  	  
+</wsdl:definitions>

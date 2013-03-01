@@ -216,7 +216,7 @@ public class CompleteReCompilationStrategy extends FailedNodeStrategyAbstract
     {
       routingTree = router.doRouting(paf, currentQEP.getQueryName(), network, _metadata);
     }
-    catch (RouterException e1)
+    catch (Exception e1)
     {
       return adaptation;
     }

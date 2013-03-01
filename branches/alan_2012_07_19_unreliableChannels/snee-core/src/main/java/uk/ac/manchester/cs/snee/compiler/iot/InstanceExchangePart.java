@@ -33,8 +33,6 @@
 \****************************************************************************/
 package uk.ac.manchester.cs.snee.compiler.iot;
 
-import java.util.ArrayList;
-
 import org.apache.log4j.Logger;
 
 import uk.ac.manchester.cs.snee.SNEEException;
@@ -133,6 +131,7 @@ public class InstanceExchangePart extends InstanceOperator{
      */
     private Integer tuplesFromExtent = 0;
     
+    
     /**
      * Constructor for exchange part.
      * @param sourceFrag
@@ -195,11 +194,13 @@ public class InstanceExchangePart extends InstanceOperator{
   }
 
 	public static int computeTuplesPerMessage(final int tupleSize, 
-    CostParameters costParams) throws OptimizationException {
+    CostParameters costParams, boolean channelQEP) throws OptimizationException {
     	Logger logger = Logger.getLogger(InstanceExchangePart.class.getName());
     	
     	int maxMessagePayloadSize = costParams.getMaxMessagePayloadSize();
     	int payloadOverhead = costParams.getPayloadOverhead();
+    	if(channelQEP)
+    	  payloadOverhead += costParams.getPacketIDOverhead();
     	logger.trace("maxMessagePayloadSize="+maxMessagePayloadSize);
     	logger.trace("payloadOverhead="+payloadOverhead);
     	logger.trace("tupleSize="+tupleSize);
@@ -417,14 +418,16 @@ public class InstanceExchangePart extends InstanceOperator{
      * @throws SchemaMetadataException 
      */
     public final int packetsPerTask(final DAF daf, 
-    final long bufferingFactor, CostParameters costParams) 
+                                    final long bufferingFactor, 
+                                    CostParameters costParams,
+                                    boolean channel) 
     throws OptimizationException, SchemaMetadataException, TypeMappingException {
     	InstanceOperator root = sourceFrag.getRootOperator();
     	final long tuples
     		= root.getCardinality(CardinalityType.MAX, sourceSite, daf) 
     		* bufferingFactor;
 		final int tupleSize = root.getSensornetOperator().getPhysicalTupleSize();
-		final int tuplesPerPacket = computeTuplesPerMessage(tupleSize, costParams);
+		final int tuplesPerPacket = computeTuplesPerMessage(tupleSize, costParams, channel);
 		return (int) Math.ceil(tuples / ((float) tuplesPerPacket));
     }
 
@@ -472,8 +475,9 @@ public class InstanceExchangePart extends InstanceOperator{
  * @throws OptimizationException 
      */
     public final long getTimeCost(final DAF daf, final long bufferingFactor, 
-    		CostParameters costParams) throws OptimizationException, SchemaMetadataException, TypeMappingException {
- 		final int packets = packetsPerTask (daf, bufferingFactor, costParams);
+    		                          CostParameters costParams, boolean channel) 
+    throws OptimizationException, SchemaMetadataException, TypeMappingException {
+ 		final int packets = packetsPerTask (daf, bufferingFactor, costParams, channel);
 		//CB: Copy time for producer moved to fragment.
 		//CB: For relay and consumer I am assuming copy is done between receiving packets 
 		//copyTime = tuples * OperatorMetaData.getCopyTuple();
@@ -603,10 +607,10 @@ public class InstanceExchangePart extends InstanceOperator{
     }
   }
 
-  public int getmaxPackets(DAF daf, long beta, CostParameters costParams)
+  public int getmaxPackets(DAF daf, long beta, CostParameters costParams, boolean channel)
   throws OptimizationException, SchemaMetadataException, TypeMappingException
   {
-    return this.packetsPerTask(daf, beta, costParams);
+    return this.packetsPerTask(daf, beta, costParams, channel);
   }
   
   public void setExtent(String extent)

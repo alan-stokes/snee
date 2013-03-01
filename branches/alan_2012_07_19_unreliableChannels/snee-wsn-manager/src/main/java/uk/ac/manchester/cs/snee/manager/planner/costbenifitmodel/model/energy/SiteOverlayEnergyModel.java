@@ -162,7 +162,7 @@ public class SiteOverlayEnergyModel extends SiteEnergyModel
      AvroraCostExpressions  costExpressions = 
        new AvroraCostExpressions(agenda.getIOT().getDAF(), agenda.getCostParameters(), agenda);
      AlphaBetaExpression txTimeExpr = AlphaBetaExpression.multiplyBy(
-         costExpressions.getPacketsSent(exchComps, true),
+         costExpressions.getPacketsSent(exchComps, true, ct.isChannel()),
          AvroraCostParameters.PACKETTRANSMIT);
      double txTime = (txTimeExpr.evaluate(agenda.getAcquisitionInterval_bms(), 
                                           agenda.getBufferingFactor()))/1000.0;

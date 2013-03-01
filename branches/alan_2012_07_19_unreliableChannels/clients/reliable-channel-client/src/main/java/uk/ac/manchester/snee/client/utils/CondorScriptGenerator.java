@@ -36,7 +36,7 @@ public class CondorScriptGenerator
     seeds.add(new Long(35));
     seeds.add(new Long(40));
     seeds.add(new Long(45));
-    validIds.addAll(Arrays.asList(1,2,3,4,5,6,30,31,32,33,34,36,60,62,64,67,68,69,70));
+    validIds.addAll(Arrays.asList(30,31,32,33,34,36));
     
     File condorFile = new File("condor");
     if(!condorFile.exists())
@@ -54,10 +54,10 @@ public class CondorScriptGenerator
       DecimalFormat df = new DecimalFormat("#.#");
       //normal blurb
       out.write("universe = vanilla\nexecutable = start.sh \nwhen_to_transfer_output = ON_EXIT \n" +
-                "Should_Transfer_Files = YES\ntransfer_input_files = ../SNEE.jar \n" +
-                "rank = JavaFlops \nRequirements = (JavaVersion>=\"1.6\" && OpSys == "+
-                "\"LINUX\") \nRequest_Disk = 5000000 \n"+
-                "request_memory = 2500 \n#Output = output$(Process).txt \n" +
+                "Should_Transfer_Files = YES\ntransfer_input_files = ../SNEE.jar,../jre.tar.gz \n" +
+                 "Requirements = (OpSys == "+
+                "\"LINUX\") \nRequest_Disk = 3000000 \n"+
+                "request_memory = 2048 \n#Output = output$(Process).txt \n" +
                 "#Error = error$(Process).txt \nlog = log.txt \nOutput = out.txt \n"+
                 "Error = err.txt \nnotification = error \n \n");
       Iterator<Long> seedIterator = seeds.iterator();
@@ -117,7 +117,7 @@ public class CondorScriptGenerator
       		"echo $3 \necho $4 \nunzip SNEE.jar -d extracted"+
       		"\n rm -f SNEE.jar" +  
       		"\ncd extracted \n" +
-          "java uk/ac/manchester/snee/client/CondorReliableChannelClient $1 $2 $3 $4 \n" +
+          "jre1.6.0_27/bin/java uk/ac/manchester/snee/client/CondorReliableChannelClient $1 $2 $3 $4 $5\n" +
           "for d in *; do if test -d \"$d\"; then tar czf \"$d\".tgz \"$d\"; fi; done" +
           "\nmv output.tgz .. \n exit 0");
       out.flush();

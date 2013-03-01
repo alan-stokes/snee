@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<source xmlns="http://snee.cs.man.ac.uk/namespace/physical-schema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../schema/physical-schema.xsd ">
+
+	<sensor_network name="wsn1">
+		<topology>condorchecks/top33.5.xml</topology>
+		<site-resources>condorchecks/siteRes33.5.xml</site-resources>
+		<gateways>0</gateways>
+		<extents>
+			<extent name="A">
+				<sites>13,3,0,6,10,8,14,7,5</sites>
+			</extent>
+		</extents> 
+	</sensor_network> 
+</source>

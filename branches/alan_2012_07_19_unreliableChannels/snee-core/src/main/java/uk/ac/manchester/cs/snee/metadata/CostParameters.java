@@ -105,6 +105,8 @@ public class CostParameters implements Serializable {
 	
 	/** Constant for length of per tuple overhead String. */ 
 	private int deliverOverhead = 10;
+	
+	private int packetIDOverhead = 8;
 
 	/** Maximum String length to represent an attribute. */
 	private int attributeStringLength = 5;
@@ -305,6 +307,16 @@ public class CostParameters implements Serializable {
   public float getWriteToFlash()
   {
     return writeToFlash;
+  }
+
+  public void setPacketIDOverhead(int packetIDOverhead)
+  {
+    this.packetIDOverhead = packetIDOverhead;
+  }
+
+  public int getPacketIDOverhead()
+  {
+    return packetIDOverhead;
   }
 
 

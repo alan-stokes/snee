@@ -1035,4 +1035,54 @@ public class IOT extends SNEEAlgebraicForm
     }
     return null;
   }
+
+
+  public ArrayList<InstanceOperator> getOpInstancesInSpecialOrder(Site site)
+  {
+    if(this.getOpInstances(site, TraversalOrder.PRE_ORDER, true).size() == 0)
+      return this.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
+    InstanceOperator root = this.getOpInstances(site, TraversalOrder.PRE_ORDER, true).get(0); 
+    final ArrayList<InstanceOperator> operatorList = new ArrayList<InstanceOperator>();
+    this.doTransvesalIteratorSpeical(root, site, operatorList);
+    return operatorList;
+  }
+
+
+  private void doTransvesalIteratorSpeical(InstanceOperator instanceOperator, Site site,
+                                           ArrayList<InstanceOperator> operatorList)
+  {
+    ArrayList<InstanceOperator> nonInportantOperators = new ArrayList<InstanceOperator>();
+    ArrayList<InstanceOperator> inportantOperators = new ArrayList<InstanceOperator>();
+    String currentSiteID = instanceOperator.getSite().getID();
+    String lookingSiteID = site.getID();
+    if (currentSiteID.equals(lookingSiteID)) 
+    {
+      for (int n = 0; n < instanceOperator.getInDegree(); n++) 
+      {
+        InstanceOperator inOp = (InstanceOperator)instanceOperator.getInput(n);
+        if(inOp instanceof InstanceExchangePart)
+        {
+          InstanceExchangePart exOp = (InstanceExchangePart) inOp;
+          if(exOp.getSourceFrag().getSite().getID().equals(currentSiteID))
+          {
+            this.doTransvesalIteratorSpeical(inOp, site, operatorList);
+          }
+          else
+            nonInportantOperators.add(inOp);
+        }
+        else
+        {
+          this.doTransvesalIteratorSpeical(inOp, site, operatorList);
+        }
+      }
+      
+      for (int n = 0; n < nonInportantOperators.size(); n++) 
+      {
+        this.doTransvesalIteratorSpeical((InstanceOperator)nonInportantOperators.get(n), 
+                                          site, operatorList);
+        
+      }
+      operatorList.add(instanceOperator);
+    }
+  }
 }

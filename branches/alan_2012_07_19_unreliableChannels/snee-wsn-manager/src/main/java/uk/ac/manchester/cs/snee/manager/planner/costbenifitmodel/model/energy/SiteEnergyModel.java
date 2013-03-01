@@ -49,12 +49,15 @@ public class SiteEnergyModel extends Model
      double sumEnergy = 0;
      long cpuActiveTimeBms = 0;
      double sensorEnergy = 0;
+     if(site == null)
+       return getCPUEnergy(0);
+     
      site =  this.agenda.getSiteByID(site.getID());
      ArrayList<Task> siteTasks = this.agenda.getTasks().get(site);
      //not within the QEP. so no cost
      if(siteTasks == null)
      {
-       return 0;
+       return getCPUEnergy(0);
      }
      for (int i=0; i<siteTasks.size(); i++) 
      {
@@ -129,7 +132,7 @@ public class SiteEnergyModel extends Model
      AvroraCostExpressions  costExpressions = 
        new AvroraCostExpressions(agenda.getIOT().getDAF(), agenda.getCostParameters(), agenda);
      AlphaBetaExpression txTimeExpr = AlphaBetaExpression.multiplyBy(
-         costExpressions.getPacketsSent(exchComps, true),
+         costExpressions.getPacketsSent(exchComps, true, ct.isChannel()),
          AvroraCostParameters.PACKETTRANSMIT);
      double txTime = (txTimeExpr.evaluate(agenda.getAcquisitionInterval_bms(), 
                                           agenda.getBufferingFactor()))/1000.0;

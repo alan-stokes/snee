@@ -25,6 +25,8 @@ import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.LogicalOverlayStrategy;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModel;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModelSite;
+import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModelUtils;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.LogicalOverlayNetworkHierarchy;
 import uk.ac.manchester.cs.snee.manager.planner.unreliablechannels.RobustSensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -43,13 +45,15 @@ public class Executer extends AutonomicManagerComponent
   private HashMapList<Executer.type, Integer> tuplesReturnedFromEachTypeOfQEP = 
     new HashMapList<Executer.type, Integer>();
   private File executerOutputFolder = null;
-  private enum type{MAX, RQEP, QEP};
+  private enum type{MAX, RQEP, QEP, AGG};
   private HashMap<String, RunTimeSite> runningSites;
   private Topology network;
+  private int aggreTuples = 0;
   
   public Executer(AutonomicManagerImpl autonomicManager)
   {
     manager = autonomicManager;
+    runningSites = manager.getCopyOfRunningSites();
   }
 
   public void adapt(Adaptation finalChoice)
@@ -76,12 +80,14 @@ public class Executer extends AutonomicManagerComponent
     ArrayList<Integer> max = tuplesReturnedFromEachTypeOfQEP.get(type.MAX);
     ArrayList<Integer> rQEP = tuplesReturnedFromEachTypeOfQEP.get(type.RQEP);
     ArrayList<Integer> QEP = tuplesReturnedFromEachTypeOfQEP.get(type.QEP);
+    ArrayList<Integer> AGG = tuplesReturnedFromEachTypeOfQEP.get(type.AGG);
     /*assumption is that all lists have the same number of elements (should be true, due 
     to them being ran the same number of times.
     */
     Iterator<Integer> maxIterator = max.iterator();
     Iterator<Integer> rQEPIterator = rQEP.iterator();
     Iterator<Integer> QEPIterator = QEP.iterator();
+    Iterator<Integer> AGGIterator = AGG.iterator();
     int counter = 1;
     
     while(maxIterator.hasNext())
@@ -89,9 +95,15 @@ public class Executer extends AutonomicManagerComponent
       Integer maxValue = maxIterator.next();
       Integer rQEPValue = rQEPIterator.next();
       Integer QEPValue = QEPIterator.next();
-      out.write(counter + " " + maxValue + " " + QEPValue + " " + rQEPValue + "\n");
+      Integer AGGValue = AGGIterator.next();
+      out.write(counter + " " + maxValue + " " + QEPValue + " " + rQEPValue + " " + AGGValue + "\n");
       counter++;
     }
+    out.flush();
+    out.close();
+    outFile = new File(distanceFactorFolder.toString() + sep + "AggtupleOutput");
+    out = new BufferedWriter(new FileWriter(outFile));
+    out.write(aggreTuples);
     out.flush();
     out.close();
   }
@@ -135,9 +147,13 @@ public class Executer extends AutonomicManagerComponent
         sitesEnergyValues.addAll(key, iterationSitesEnergyValues.get(key));
       }
       Integer tuplesReturned = determineTupleDeliveryRate(channelModel, rQEP);
+      aggreTuples = channelModel.determineAggregationTupleContribtuion(rQEP.getIOT());
       Integer maxTuplesReturnable = (int) model.returnAgendaExecutionResult();
       tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.RQEP, tuplesReturned);
       tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.MAX, maxTuplesReturnable);
+      tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.AGG, aggreTuples);
+     // ChannelModelUtils utils = new ChannelModelUtils(channelModel.getChannelModel(), rQEP.getLogicalOverlayNetwork());
+     // utils.plotPacketRates(iteration, executerOutputFolder);
       channelModel.clearModel();
       rQEP.getLogicalOverlayNetwork().removeClonedData();
     }
@@ -185,7 +201,7 @@ public class Executer extends AutonomicManagerComponent
         SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_SIMULATION_ITERATIONS));
     numberOfIterations = 50;
     channelModel.setPacketModel(false); 
-    HashMapList<String, RunTimeSite> sitesEnergyValues = new HashMapList<String, RunTimeSite>();
+    HashMapList<String, RunTimeSite> sitesEnergyValues  = new HashMapList<String, RunTimeSite>();
     for(int iteration = 0; iteration < numberOfIterations; iteration ++)
     {
       HashMapList<String, RunTimeSite> iterationSitesEnergyValues = 
@@ -238,7 +254,7 @@ public class Executer extends AutonomicManagerComponent
   
   /**
    * determines the number of tuples returned by the deliery operator from a cycle of the agenda.
-   * used on a Robust Sensor network query plan
+   * used on a Sensor network query plan
    */
   private int determineTupleDeliveryRate(ChannelModel channelModel,
                                           SensorNetworkQueryPlan QEP)
@@ -329,6 +345,7 @@ public class Executer extends AutonomicManagerComponent
   throws NumberFormatException, SNEEConfigurationException, OptimizationException,
   SchemaMetadataException, TypeMappingException, IOException
   {
+      this.runningSites = manager.getCopyOfRunningSites();
       SNEEProperties.setSetting("distanceFactor", new Double(distanceFactor).toString());
       File distanceFactorFolder = 
         new File(this.executerOutputFolder.toString() + sep + distanceFactor);
@@ -338,7 +355,7 @@ public class Executer extends AutonomicManagerComponent
       ChannelModel channelModel = 
         new ChannelModel(rQEP.getLogicalOverlayNetwork(), rQEP.getUnreliableAgenda(), 
                          manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
-                         manager.getCostsParamters(), robustFolder, seed);
+                         manager.getCostsParamters(), robustFolder, seed, true);
       simulateRunOfRQEP(rQEP, channelModel);
       LogicalOverlayNetworkHierarchy skelOverlay = 
         new LogicalOverlayNetworkHierarchy(rQEP.getLogicalOverlayNetwork(),
@@ -348,7 +365,7 @@ public class Executer extends AutonomicManagerComponent
       channelModel = 
         new ChannelModel(skelOverlay, qep.getAgendaIOT(), 
                          manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
-                         manager.getCostsParamters(), staticFolder, seed);
+                         manager.getCostsParamters(), staticFolder, seed, false);
       simulateRunOfQEP(qep, channelModel);
       writeResultsToFile(distanceFactorFolder);
       cleardataStores();
@@ -415,7 +432,7 @@ public class Executer extends AutonomicManagerComponent
       ChannelModel channelModel = 
         new ChannelModel(skelOverlay, qep.getAgendaIOT(), 
                          manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
-                         manager.getCostsParamters(), robustFolder, seed);
+                         manager.getCostsParamters(), robustFolder, seed, false);
       ArrayList<RunTimeSite> qepCostAveragesQeps = simulateRunOfQEP(QEP, channelModel);
       Iterator<RunTimeSite> newQEPCostIterator = qepCostAveragesQeps.iterator();
       while(newQEPCostIterator.hasNext())
@@ -504,7 +521,7 @@ public class Executer extends AutonomicManagerComponent
       ChannelModel channelModel = 
         new ChannelModel(rQEP.getLogicalOverlayNetwork(), rQEP.getUnreliableAgenda(), 
                          manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
-                         manager.getCostsParamters(), robustFolder, seed);
+                         manager.getCostsParamters(), robustFolder, seed, true);
       ArrayList<RunTimeSite> qepCostAveragesResilentQeps = simulateRunOfRQEP(rQEP, channelModel);
       //correct energy model values
       Iterator<RunTimeSite> newQEPCostIterator = qepCostAveragesResilentQeps.iterator();

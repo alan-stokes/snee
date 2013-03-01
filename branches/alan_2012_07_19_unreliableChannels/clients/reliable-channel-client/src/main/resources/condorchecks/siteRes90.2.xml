@@ -1,0 +1,148 @@
+<?xml version="1.0"?> 
+<site-resources
+xmlns="http://snee.cs.manchester.ac.uk"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://snee.cs.manchester.ac.uk site-resources.xsd">
+
+<units> 
+  <energy>JOULES</energy>
+  <memory>KILOBYTES</memory>
+  </units>
+ <sites>
+ <default>
+    <energy-stock>31320</energy-stock>
+    <ram>10</ram>
+   <flash-memory>48</flash-memory>
+  </default> 
+
+
+
+ <site id="0"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites></alternativeSites>
+</site>
+
+
+
+ <site id="3"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>16,17</alternativeSites>
+</site>
+
+
+
+ <site id="16"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>16,17,3</alternativeSites>
+</site>
+
+
+
+ <site id="17"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>16,17,3</alternativeSites>
+</site>
+
+
+
+ <site id="1"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>12,13</alternativeSites>
+</site>
+
+
+
+ <site id="12"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>12,13,1</alternativeSites>
+</site>
+
+
+
+ <site id="13"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>12,13,1</alternativeSites>
+</site>
+
+
+
+ <site id="0"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>18,19</alternativeSites>
+</site>
+
+
+
+ <site id="18"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>18,19,0</alternativeSites>
+</site>
+
+
+
+ <site id="19"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>18,19,0</alternativeSites>
+</site>
+
+
+
+ <site id="4"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>10,11</alternativeSites>
+</site>
+
+
+
+ <site id="10"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>10,11,4</alternativeSites>
+</site>
+
+
+
+ <site id="11"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>10,11,4</alternativeSites>
+</site>
+
+
+
+ <site id="9"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>14,15</alternativeSites>
+</site>
+
+
+
+ <site id="14"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>14,15,9</alternativeSites>
+</site>
+
+
+
+ <site id="15"><sensorTypes>
+    <sensorType sensor="default"/>
+    </sensorTypes>
+<alternativeSites>14,15,9</alternativeSites>
+</site>
+
+</sites> 
+
+</site-resources>

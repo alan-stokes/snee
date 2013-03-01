@@ -1,7 +1,6 @@
 package uk.ac.manchester.cs.snee.compiler.costmodels.cardinalitymodel;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -9,9 +8,16 @@ import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.operators.logical.WindowOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrEvalOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrInitOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAggrMergeOperator;
-import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetNestedLoopJoinOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetProjectOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetRStreamOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSelectOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetSingleStepAggregationOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetWindowOperator;
 import uk.ac.manchester.cs.snee.compiler.costmodels.CostModel;
 import uk.ac.manchester.cs.snee.compiler.costmodels.CostModelDataStructure;
 import uk.ac.manchester.cs.snee.compiler.iot.AgendaIOT;
@@ -27,6 +33,7 @@ public class CardinalityEstimatedCostModel extends CostModel
 {
   private IOT instanceDAF;
   private float epochResult;
+ 
   
   public CardinalityEstimatedCostModel(QueryExecutionPlan qep)
   {
@@ -310,33 +317,43 @@ public class CardinalityEstimatedCostModel extends CostModel
     return outputs;
   }
 
-  @Override
-  protected CostModelDataStructure deliverModel(InstanceOperator operator,
-                                                ArrayList<Integer> inputs) 
+  
+  protected CardinalityDataStructureChannel deliverModel(InstanceOperator operator,
+                                                         CollectionOfPackets inputs) 
   throws OptimizationException
   {
     if(operator.isNodeDead())
-      return new CardinalityDataStructure(0);
-    return new CardinalityDataStructure(inputs.get(0).floatValue());
+      return new CardinalityDataStructureChannel(new ArrayList<Window>());
+    String extent = operator.getExtent();
+    ArrayList<Window> outputWindows = new ArrayList<Window>();
+    Iterator<Window> inputWindows =inputs.getWindowsOfExtent(extent).iterator();
+    while(inputWindows.hasNext())
+    {
+      Window input = inputWindows.next();
+      outputWindows.add(new Window(input.getTuples(), input.getWindowID()));   
+    }
+    
+    return new CardinalityDataStructureChannel(outputWindows);
   }
 
-  @Override
-  protected CostModelDataStructure exchangeCard(InstanceOperator operator,
-                                                ArrayList<Integer> inputs)
+  
+  protected CardinalityDataStructureChannel exchangeCard(InstanceOperator operator,
+                                                         CollectionOfPackets inputs)
   throws OptimizationException
   {
     if(operator.isNodeDead())
-      return new CardinalityDataStructure(0);
-    return new CardinalityDataStructure(inputs.get(0).floatValue());
+      return new CardinalityDataStructureChannel(new ArrayList<Window>());
+    String extent = operator.getExtent();
+    return new CardinalityDataStructureChannel(inputs.getWindowsOfExtent(extent));
   }
 
-  @Override
-  protected CostModelDataStructure windowCard(InstanceOperator operator,
-                                              ArrayList<Integer> inputs)
+  
+  protected CardinalityDataStructureChannel windowCard(InstanceOperator operator,
+                                                       CollectionOfPackets inputs)
   throws OptimizationException
   {
     if(operator.isNodeDead())
-      return new CardinalityDataStructure(0);
+      return new CardinalityDataStructureChannel(new ArrayList<Window>());
     
     WindowOperator logicalOp = (WindowOperator) operator.getSensornetOperator().getLogicalOperator();
     float to = logicalOp.getTo();
@@ -349,167 +366,199 @@ public class CardinalityEstimatedCostModel extends CostModel
     else
       slide = logicalOp.getRowSlide();
        
-    CardinalityDataStructure input = new CardinalityDataStructure(inputs.get(0));
-      
-    float noWindows;
-    if(slide == 0)//now window, to stop infinity
-      noWindows = 1;
-    else
-      noWindows = length / slide;
-    
-    float winCard = input.getCard();
-    CardinalityDataStructure output = new CardinalityDataStructure(noWindows, winCard);
-    output.setExtentName(input.getExtentName());
-
-   //System.out.println(inputOperator.getID() + " inputCard= " + input);
-   //System.out.println(inputOperator.getID() + " outputCard= " + output);
-    return output;
-  }
-
-  @Override
-  protected CostModelDataStructure selectCard(InstanceOperator operator,
-                                              ArrayList<Integer> inputs) 
-  throws OptimizationException
-  {
-    if(operator.isNodeDead())
-      return new CardinalityDataStructure(0);
-    
-    CardinalityDataStructure input = new CardinalityDataStructure(inputs.get(0).floatValue());
-    CardinalityDataStructure output;
-    if(input.isStream())
+    String extent = logicalOp.getAttributes().get(1).toString();   
+    if(slide >= length)
     {
-      output = new CardinalityDataStructure(input.getCardOfStream() * operator.selectivity());
-      //System.out.println(inputOperator.getID() + " inputCard= " + input);
-      //System.out.println(inputOperator.getID() + " outputCard= " + output);
+      //tuples are parittioned
+      CardinalityDataStructureChannel output = 
+        new CardinalityDataStructureChannel(  inputs.getWindowsOfExtent(extent));
+      return output;
     }
     else
     {
-      float windowStreamCard = input.getCardOfStream();
-      float windowCard = input.getWindowCard() * operator.selectivity();
-      output = new CardinalityDataStructure(windowStreamCard, windowCard);
-      //System.out.println(inputOperator.getID() + " inputCard= " + input.getCard());
-      //System.out.println(inputOperator.getID() + " outputCard= " + output.getCard());  
+      return null;
     }
-    return output;
   }
 
-  @Override
-  protected CostModelDataStructure RStreamCard(InstanceOperator operator,
-                                               ArrayList<Integer> inputs) 
+  
+  protected CardinalityDataStructureChannel selectCard(InstanceOperator operator,
+                                                       CollectionOfPackets inputs) 
   throws OptimizationException
   {
     if(operator.isNodeDead())
-      return new CardinalityDataStructure(0);
+      return new CardinalityDataStructureChannel(new ArrayList<Window>());
+    String extent = operator.getSensornetOperator().getAttributes().get(1).toString();
+    ArrayList<Window> inputWindows = inputs.getWindowsOfExtent(extent);
+    ArrayList<Window> outputWindows = new ArrayList<Window>();
     
-    CardinalityDataStructure input = new CardinalityDataStructure(inputs.get(0).floatValue());
-    CardinalityDataStructure output;
-    output = new CardinalityDataStructure(input.getCardOfStream() * input.getWindowCard());
-    output.setStream(true);
-    //System.out.println(inputOperator.getID() + " inputCard= " + input);
-    //System.out.println(inputOperator.getID() + " outputCard= " + output);
-    return output; 
-  }
-
-  @Override
-  protected CostModelDataStructure aggerateCard(InstanceOperator operator,
-                                                ArrayList<Integer> inputs)
-  throws OptimizationException
-  {
-    if(operator.isNodeDead())
-      return new CardinalityDataStructure(0);
-    
-    CardinalityDataStructure output = null;
-    
-    int count = 0;
-    ArrayList<Node> operatorInputs = new ArrayList<Node>(operator.getInputsList());
-    Iterator<Node> operatorInputIterator = operatorInputs.iterator();
-    
-    while(operatorInputIterator.hasNext())
+    for(int index = 0; index < inputWindows.size(); index++)
     {
-      InstanceOperator preOp = (InstanceOperator)operatorInputIterator.next();
-      if(preOp.getSensornetOperator() instanceof SensornetExchangeOperator)
-      {
-        InstanceExchangePart preExOp = (InstanceExchangePart) preOp;
-        InstanceOperator sourceOperator = preExOp.getSourceFrag().getRootOperator();
-        if(sourceOperator.getSensornetOperator() instanceof SensornetAggrInitOperator ||
-           sourceOperator.getSensornetOperator() instanceof SensornetAggrMergeOperator ||
-           sourceOperator.getSensornetOperator() instanceof SensornetAcquireOperator)
-        {
-          count++;
-        }
-      }
-      else if(preOp.getSensornetOperator() instanceof SensornetAggrInitOperator ||
-              preOp.getSensornetOperator() instanceof SensornetAggrMergeOperator ||
-              preOp.getSensornetOperator() instanceof SensornetAcquireOperator)
-      {
-        count++;
-      }
+      int windowCard = Math.round(inputWindows.get(index).getTuples() * operator.selectivity());
+      outputWindows.add(new Window(windowCard,inputWindows.get(index).getWindowID()));
     }
-    int outputValue = inputs.get(0) / count;
-    
-    output = new CardinalityDataStructure(outputValue, 1);
-    ArrayList<CardinalityDataStructure> reducedInputs = reduceInputs(operator);
-    output.setExtentName(reducedInputs.get(0).getExtentName());
+    CardinalityDataStructureChannel output = new CardinalityDataStructureChannel(outputWindows);
     return output;
   }
 
-  @Override
-  protected CostModelDataStructure acquireCard(InstanceOperator operator,
-                                               ArrayList<Integer> inputs) 
+
+  protected CardinalityDataStructureChannel RStreamCard(InstanceOperator operator,
+                                                        CollectionOfPackets inputs) 
   throws OptimizationException
   {
     if(operator.isNodeDead())
-      return new CardinalityDataStructure(0);
+      return new CardinalityDataStructureChannel(new ArrayList<Window>());
+    String extent = operator.getExtent();
+    return new CardinalityDataStructureChannel(inputs.getWindowsOfExtent(extent));
+  }
+
+  
+  protected CardinalityDataStructureChannel aggerateCard(InstanceOperator operator,
+                                                       CollectionOfPackets inputs,
+                                                       long beta)
+  throws OptimizationException
+  {
+    if(operator.isNodeDead())
+      return new CardinalityDataStructureChannel(new ArrayList<Window>());
     
-    float output = 1 * operator.selectivity();
-    CardinalityDataStructure out = new CardinalityDataStructure(output);
+    String extent = operator.getExtent();
+    ArrayList<Window> extentWindows = inputs.getWindowsOfExtent(extent);
+    ArrayList<Window> outputWindows = new ArrayList<Window>();
+    
+    for(int index =1; index <= beta; index++ )
+    {
+      Window window = inputs.getWindow(index, extentWindows);
+      if(window.getTuples() > 0)
+        outputWindows.add(new Window(1,index));
+      else
+        outputWindows.add(new Window(0,index));
+    }
+    
+    CardinalityDataStructureChannel output = new CardinalityDataStructureChannel(outputWindows);
+    return output;
+  }
+
+ 
+  protected CardinalityDataStructureChannel acquireCard(InstanceOperator operator,
+                                               CollectionOfPackets inputs) 
+  throws OptimizationException
+  {
+    if(operator.isNodeDead())
+      return new CardinalityDataStructureChannel(new ArrayList<Window>());
+    
+    int output = new Double(1 * operator.selectivity()).intValue();
+    ArrayList<Window> windows = new ArrayList<Window>();
+    windows.add(new Window(1,output));
+    CardinalityDataStructureChannel out = new CardinalityDataStructureChannel(windows);
     //System.out.println(inputOperator.getID() + " outputCard= " + output);
-    List<Attribute> attributes = operator.getSensornetOperator().getLogicalOperator().getAttributes();
-    out.setExtentName(attributes.get(1).toString());
     return out;
   }
   
-  @Override
-  protected CostModelDataStructure joinCard(InstanceOperator operator,
-                                            ArrayList<Integer> inputs, 
-                                            HashMap<String, Integer> tuples, long beta)
+ 
+  protected CardinalityDataStructureChannel joinCard(InstanceOperator operator,
+                                                     CollectionOfPackets inputs, 
+                                                     long beta)
       throws OptimizationException
   {
-
-    List<Node> inputOperators = operator.getInputsList();
-    ArrayList<String> extents = new ArrayList<String>();
-    
-    Iterator<Node> inputIterator = inputOperators.iterator();
+    ArrayList<String> doneExtents = new ArrayList<String>();
+    Iterator<Node> inputIterator = operator.getInputsList().iterator();
     while(inputIterator.hasNext())
     {
-      InstanceOperator op = (InstanceOperator) inputIterator.next();
-      if(op.getSensornetOperator() instanceof SensornetExchangeOperator)
+      InstanceOperator cOp = (InstanceOperator) inputIterator.next();
+      String currentExtent = null;
+      if(cOp instanceof InstanceExchangePart)
       {
-        InstanceExchangePart ex = (InstanceExchangePart) op;
-        String extent = ex.getExtent();
-        if(extent == null || extent.equals(""))
-          extent = ex.getSourceFrag().getRootOperator().getExtent();
-        if(!extents.contains(extent))
-          extents.add(extent);
+        InstanceExchangePart cOpex = (InstanceExchangePart) cOp;
+        currentExtent = cOpex.getExtent();
+      }
+      else
+        currentExtent = cOp.getExtent();
+      if(!doneExtents.contains(currentExtent))
+      {
+        doneExtents.add(currentExtent);
       }
     }
     
-    Iterator<String> inputExtents = extents.iterator();
-    ArrayList<Integer> inputTuples = new ArrayList<Integer>();
-    while(inputExtents.hasNext())
-    {
-      inputTuples.add(tuples.get(inputExtents.next()));
-    }
-      
-    CardinalityDataStructure inputR = new CardinalityDataStructure(inputTuples.get(0));
-    CardinalityDataStructure inputL = new CardinalityDataStructure(inputTuples.get(1));
-	  float windowCard;
-	    
-    windowCard = (inputL.getCardOfStream() * inputR.getCardOfStream() * operator.selectivity()) / beta;
+    String extent1 = doneExtents.get(0);
+    String extent2 = doneExtents.get(1);
     
-	  
-    CardinalityDataStructure output = new CardinalityDataStructure(windowCard, 1);
-    //System.out.println(inputOperator.getID() + " outputCard= " + output);
-    return output;
+    ArrayList<Window> windowsOfExtent1 = inputs.getWindowsOfExtent(extent1);
+    ArrayList<Window> windowsOfExtent2 = inputs.getWindowsOfExtent(extent2);
+
+    if(windowsOfExtent1 == null || windowsOfExtent2 == null)
+      return  new CardinalityDataStructureChannel(new ArrayList<Window>());
+    
+    
+    ArrayList<Window> output = new ArrayList<Window>();
+    
+    for(int index =0; index <= beta; index++)
+    {
+      Window extent1Window = inputs.getWindow(index, windowsOfExtent1);
+      Window extent2Window = inputs.getWindow(index, windowsOfExtent2);
+      int tuples = Math.round(extent1Window.getTuples() * extent2Window.getTuples() * operator.selectivity());
+      output.add(new Window(tuples, index));
+    }
+    return  new CardinalityDataStructureChannel(output);
+  }
+
+  public CardinalityDataStructureChannel  model(InstanceOperator operator,
+                                               CollectionOfPackets inputs, long beta)
+  throws OptimizationException
+  {
+  //System.out.println("within operator " + operator.getID());
+    if(operator.getSensornetOperator() instanceof SensornetAcquireOperator)
+    {
+      return acquireCard(operator, inputs);
+    }
+    else if(operator.getSensornetOperator() instanceof SensornetSingleStepAggregationOperator)
+    {
+      return aggerateCard(operator, inputs, beta);
+    }
+    else if(operator.getSensornetOperator() instanceof SensornetAggrEvalOperator)
+    {
+      return aggerateCard(operator, inputs, beta);
+    }
+    else if(operator.getSensornetOperator() instanceof SensornetAggrInitOperator)
+    {
+      return aggerateCard(operator, inputs, beta);
+    }
+    else if(operator.getSensornetOperator() instanceof SensornetAggrMergeOperator)
+    {
+      return aggerateCard(operator, inputs, beta);
+    }
+    else if(operator.getSensornetOperator() instanceof SensornetDeliverOperator)
+    {
+      return deliverModel(operator, inputs);
+    }
+    else if(operator.getSensornetOperator() instanceof SensornetNestedLoopJoinOperator)
+    {
+      return joinCard(operator, inputs, beta);
+    }
+    else if(operator.getSensornetOperator() instanceof SensornetProjectOperator)
+    {
+      InstanceOperator op = (InstanceOperator)(operator.getInstanceInput(0));
+      return model(op, inputs,  beta);
+    }
+    else if(operator.getSensornetOperator() instanceof SensornetRStreamOperator)
+    {
+      return RStreamCard(operator, inputs);
+    }
+    else if(operator.getSensornetOperator() instanceof SensornetSelectOperator)
+    {
+      return selectCard(operator, inputs);
+    }
+    else if(operator.getSensornetOperator() instanceof SensornetWindowOperator)
+    {
+      return windowCard(operator, inputs);
+    }
+    else if(operator instanceof InstanceExchangePart)
+    {
+      return exchangeCard(operator, inputs);
+    }
+    else
+    {
+      String msg = "Unsupported operator " + operator.getSensornetOperator().getOperatorName();
+      System.out.println("UNKNOWN OPORATEOR " + msg);
+      return new CardinalityDataStructureChannel(new ArrayList<Window>());
+    }
   }
 }
