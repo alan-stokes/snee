@@ -233,7 +233,7 @@ public class RelibaleChannelClient extends SNEEClient
         SNEEController contol = (SNEEController) client.getController();
         contol.setQueryID(queryid);
         //added to allow recovery from crash
-        updateRecoveryFile();
+        //updateRecoveryFile();
         client.runCompilelation();
         System.out.println("Ran all tests on query " + queryid + "." /*+ index*/);
         queryid ++;

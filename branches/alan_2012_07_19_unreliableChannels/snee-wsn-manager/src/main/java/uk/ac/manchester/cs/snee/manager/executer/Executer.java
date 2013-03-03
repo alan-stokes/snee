@@ -45,7 +45,7 @@ public class Executer extends AutonomicManagerComponent
   private HashMapList<Executer.type, Integer> tuplesReturnedFromEachTypeOfQEP = 
     new HashMapList<Executer.type, Integer>();
   private File executerOutputFolder = null;
-  private enum type{MAX, RQEP, QEP, AGG};
+  private enum type{MAX, RQEP, QEP, AGGR, AGGO};
   private HashMap<String, RunTimeSite> runningSites;
   private Topology network;
   private int aggreTuples = 0;
@@ -80,14 +80,16 @@ public class Executer extends AutonomicManagerComponent
     ArrayList<Integer> max = tuplesReturnedFromEachTypeOfQEP.get(type.MAX);
     ArrayList<Integer> rQEP = tuplesReturnedFromEachTypeOfQEP.get(type.RQEP);
     ArrayList<Integer> QEP = tuplesReturnedFromEachTypeOfQEP.get(type.QEP);
-    ArrayList<Integer> AGG = tuplesReturnedFromEachTypeOfQEP.get(type.AGG);
+    ArrayList<Integer> AGGR = tuplesReturnedFromEachTypeOfQEP.get(type.AGGR);
+    ArrayList<Integer> AGGO = tuplesReturnedFromEachTypeOfQEP.get(type.AGGO);
     /*assumption is that all lists have the same number of elements (should be true, due 
     to them being ran the same number of times.
     */
     Iterator<Integer> maxIterator = max.iterator();
     Iterator<Integer> rQEPIterator = rQEP.iterator();
     Iterator<Integer> QEPIterator = QEP.iterator();
-    Iterator<Integer> AGGIterator = AGG.iterator();
+    Iterator<Integer> AGGRIterator = AGGR.iterator();
+    Iterator<Integer> AGGOIterator = AGGO.iterator();
     int counter = 1;
     
     while(maxIterator.hasNext())
@@ -95,15 +97,11 @@ public class Executer extends AutonomicManagerComponent
       Integer maxValue = maxIterator.next();
       Integer rQEPValue = rQEPIterator.next();
       Integer QEPValue = QEPIterator.next();
-      Integer AGGValue = AGGIterator.next();
-      out.write(counter + " " + maxValue + " " + QEPValue + " " + rQEPValue + " " + AGGValue + "\n");
+      Integer AGGRValue = AGGRIterator.next();
+      Integer AGGOValue = AGGOIterator.next();
+      out.write(counter + " " + maxValue + " " + QEPValue + " " + rQEPValue + " " + AGGRValue + " " + AGGOValue + "\n");
       counter++;
     }
-    out.flush();
-    out.close();
-    outFile = new File(distanceFactorFolder.toString() + sep + "AggtupleOutput");
-    out = new BufferedWriter(new FileWriter(outFile));
-    out.write(aggreTuples);
     out.flush();
     out.close();
   }
@@ -151,7 +149,7 @@ public class Executer extends AutonomicManagerComponent
       Integer maxTuplesReturnable = (int) model.returnAgendaExecutionResult();
       tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.RQEP, tuplesReturned);
       tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.MAX, maxTuplesReturnable);
-      tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.AGG, aggreTuples);
+      tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.AGGR, aggreTuples);
      // ChannelModelUtils utils = new ChannelModelUtils(channelModel.getChannelModel(), rQEP.getLogicalOverlayNetwork());
      // utils.plotPacketRates(iteration, executerOutputFolder);
       channelModel.clearModel();
@@ -213,7 +211,9 @@ public class Executer extends AutonomicManagerComponent
         sitesEnergyValues.addAll(key, iterationSitesEnergyValues.get(key));
       }
       Integer tuplesReturned = determineTupleDeliveryRate(channelModel, QEP);
+      aggreTuples = channelModel.determineAggregationTupleContribtuion(QEP.getIOT());
       tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.QEP, tuplesReturned);
+      tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.AGGO, aggreTuples);
       channelModel.clearModel();
     }
     

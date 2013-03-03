@@ -628,6 +628,7 @@ public class ChannelModelSite implements Serializable
         
         while(inputSites.hasNext())
         {
+          tupleRatio = findPacketTotupleRatio(op);
           Site inputSite = (Site) inputSites.next();
           boolean found = false;
           boolean acqOperatorFound = false;
@@ -658,7 +659,7 @@ public class ChannelModelSite implements Serializable
                   acqOperatorFound = true;
               }
             }
-            while(trueInputSite.getInputsList().size() < 2 && !found);
+            while(trueInputSite.getInputsList().size() < 2 && !found && trueInputSite.getInputsList().size() > 0);
           }
           
           String inputNodeID = inputSite.getID();
@@ -672,9 +673,14 @@ public class ChannelModelSite implements Serializable
             while(receivedPacketIterator.hasNext())
             {
               Boolean recieved = receivedPacketIterator.next();
-              for(int index = 0; index < tupleRatio; index++)
+              int oldtupleRatio = tupleRatio;
+              if(counter == receivedPackets.size() -1)
               {
-                currentSitesTracker.addWithDuplicates(((counter * tupleRatio) + index), recieved);
+            	tupleRatio = op.getLastPacketTupleCount();
+              }
+              for(int index = 1; index <= tupleRatio; index++)
+              {
+                currentSitesTracker.addWithDuplicates(((counter * oldtupleRatio ) + index), recieved);
               }
               counter++;
             }
@@ -794,15 +800,19 @@ public class ChannelModelSite implements Serializable
   throws SchemaMetadataException, TypeMappingException
   {
     int tupleSize = 0;
-    if(op instanceof InstanceExchangePart)
+    
+    while(!(op instanceof InstanceExchangePart))
     {
-      InstanceExchangePart exOp = (InstanceExchangePart) op;
-      tupleSize = exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
+      op = (InstanceOperator) op.getInput(0);
     }
-    else
-      tupleSize = op.getSensornetOperator().getPhysicalTupleSize();
+    InstanceExchangePart exOp = (InstanceExchangePart) op;
+    tupleSize = exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
     int maxMessagePayloadSize = costs.getMaxMessagePayloadSize();
-    int payloadOverhead = costs.getPayloadOverhead() + 8;
+    int payloadOverhead =0;
+    if(this.usePacketIDs)
+      payloadOverhead = costs.getPayloadOverhead() + costs.getPacketIDOverhead();
+    else
+      payloadOverhead = costs.getPayloadOverhead();
     return (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
   }
 
