@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Set;
+
+import org.apache.cxf.common.util.SortedArraySet;
 
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
@@ -77,8 +80,10 @@ public class ChannelModelUtils
         else
         {
         //rest of nodes in logical node
-        Iterator<String> eqNodesIterator = 
-          logicaloverlayNetwork.getActiveEquivilentNodes(currentSite.getID()).iterator();
+        Set<String> eq = new SortedArraySet<String>();
+        eq.addAll(logicaloverlayNetwork.getActiveEquivilentNodes(currentSite.getID()));
+        Iterator<String> eqNodesIterator = eq.iterator();
+          
         while(eqNodesIterator.hasNext())
         {
           String eqNode = eqNodesIterator.next();

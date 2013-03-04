@@ -414,8 +414,8 @@ public class ChannelModelSite implements Serializable
               exOp.setExtent(exOp.getPrevious().getExtent());
             ArrayList<Window> windows = 
                             packetToTupleConversion(transmittablePacketsCount, exOp, exOp.getPrevious(),
-            currentUsedRecievedPacketCount);
-            tuples.updateCollection(preExOp, windows);
+                                                    currentUsedRecievedPacketCount);
+            tuples.updateCollection(exOp, windows);
             int outputPackets = this.tupleToPacketConversion(tuples, preExOp, exOp, cPacketCount);
             addToPacketCounts(outputPackets, cPacketCount, isleaf, packetIds);
             currentPacketCount.remove(exOp.getSite().getID());
@@ -861,6 +861,8 @@ public class ChannelModelSite implements Serializable
       int maxMessagePayloadSize = costs.getMaxMessagePayloadSize();
       int payloadOverhead = costs.getPayloadOverhead();
       int numTuplesPerMessage = (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
+      if(numTuplesPerMessage == 0)
+    	  numTuplesPerMessage++;
       int totalTuples = tuples.determineNoTuplesFromWindows(op);
       int pacekts = (totalTuples / numTuplesPerMessage);
       
@@ -894,6 +896,8 @@ public class ChannelModelSite implements Serializable
       else
         payloadOverhead = costs.getPayloadOverhead();
       int numTuplesPerMessage = (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
+      if(numTuplesPerMessage == 0)
+    	  numTuplesPerMessage++;
       int totalTuples = tuples.determineNoTuplesFromWindows(op);
       Double frac = new Double(totalTuples) / new Double(numTuplesPerMessage);
       Double packetsD = Math.ceil(frac);
