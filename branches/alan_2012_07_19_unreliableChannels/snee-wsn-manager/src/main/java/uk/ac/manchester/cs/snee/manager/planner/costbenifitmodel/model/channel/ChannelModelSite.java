@@ -125,8 +125,6 @@ public class ChannelModelSite implements Serializable
   {
     ArrayList<Boolean> packets = arrivedPackets.get(source);
     arrivedPackets.remove(source);
-    if(packetID == 0 || packetID > packets.size() )
-      System.out.println();
     packets.set(packetID -1, true);
     arrivedPackets.put(source, packets);
     if(!needToListenTo.contains(source))
@@ -158,8 +156,6 @@ public class ChannelModelSite implements Serializable
         {
           String EquivNode = equivNodesIterator.next();
           ArrayList<Boolean> equivPackets = arrivedPackets.get(EquivNode);
-          if(equivPackets == null)
-            System.out.println();
           if(equivPackets.get(counter))
             found = true;
         }
@@ -275,8 +271,6 @@ public class ChannelModelSite implements Serializable
   public void recivedSiblingPacket(String string, int packetID)
   {
     ArrayList<Boolean> packetsFromSibling =  arrivedPackets.get(string);
-    if(packetID == 0)
-      System.out.println();
     packetsFromSibling.set(packetID -1, true);
     arrivedPackets.remove(string);
     arrivedPackets.put(string, packetsFromSibling);
@@ -379,20 +373,22 @@ public class ChannelModelSite implements Serializable
               rPacketCount = 0; 
             }
             boolean isleaf = exOp.getSourceFrag().containsOperatorType(SensornetAcquireOperator.class);
-            int outputPackets = this.tupleToPacketConversion(tuples, previousOp, exOp);
+            int outputPackets = this.tupleToPacketConversion(tuples, previousOp, exOp, cPacketCount);
             addToPacketCounts(outputPackets, cPacketCount, isleaf, packetIds);
             
             currentPacketCount.remove(exOp.getSite().getID());
             currentPacketCount.put(this.overlayNetwork.getClusterHeadFor(exOp.getSite().getID()), cPacketCount + outputPackets);
             exOp.setExtent(preivousOutputExtent);
             exOp.setTupleValueForExtent(previousOpOutput);
-            this.transmitableWindows.updateCollection(preivousOutputExtent, tuples.getWindowsOfExtent(preivousOutputExtent));
+            this.transmitableWindows.updateCollection(exOp, tuples.getWindowsOfExtent(exOp, exOp.getExtent()));
             
           }
           if(exOp.getComponentType().equals(ExchangePartType.PRODUCER) &&
              exOp.getNext().getSite().getID().equals(exOp.getSite().getID()))
           {
             exOp.setExtent(exOp.getSourceFrag().getRootOperator().getExtent());
+            ArrayList<Window> preOpWindows = tuples.getWindowsOfExtent(previousOp);
+            tuples.updateCollection(exOp, preOpWindows);
           }
           /*if the exchange is a relay, then the packets have been recieved by this site already, 
           and need to be assessed*/
@@ -419,8 +415,8 @@ public class ChannelModelSite implements Serializable
             ArrayList<Window> windows = 
                             packetToTupleConversion(transmittablePacketsCount, exOp, exOp.getPrevious(),
             currentUsedRecievedPacketCount);
-            tuples.updateCollection(exOp.getExtent(), windows);
-            int outputPackets = this.tupleToPacketConversion(tuples, preExOp, exOp);
+            tuples.updateCollection(preExOp, windows);
+            int outputPackets = this.tupleToPacketConversion(tuples, preExOp, exOp, cPacketCount);
             addToPacketCounts(outputPackets, cPacketCount, isleaf, packetIds);
             currentPacketCount.remove(exOp.getSite().getID());
             currentPacketCount.put(this.overlayNetwork.getClusterHeadFor(exOp.getSite().getID()), cPacketCount + outputPackets);
@@ -429,8 +425,9 @@ public class ChannelModelSite implements Serializable
             currentUsedRecievedPacketCount.put(this.overlayNetwork.getClusterHeadFor(preExOp.getSite().getID()), rPacketCount + outputPackets);
             int noOfTuples = CollectionOfPackets.determineNoTuplesFromWindows(outputWindows);
             exOp.setTupleValueForExtent(noOfTuples);
-            this.tupleToPacketConversion(tuples, preExOp, exOp);
-            this.transmitableWindows.updateCollection(preivousOutputExtent, tuples.getWindowsOfExtent(preivousOutputExtent));
+            this.tupleToPacketConversion(tuples, preExOp, exOp, cPacketCount);
+            this.transmitableWindows.removeExtent(exOp);
+            this.transmitableWindows.updateCollection(exOp, tuples.getWindowsOfExtent(exOp, exOp.getExtent()));
             
           }
           if(exOp.getComponentType().equals(ExchangePartType.CONSUMER) &&
@@ -454,8 +451,8 @@ public class ChannelModelSite implements Serializable
             ArrayList<Window> windows = 
               packetToTupleConversion(transmittablePacketsCount, exOp, exOp.getPrevious(),
                                       currentUsedRecievedPacketCount);
-            tuples.updateCollection(exOp.getExtent(), windows);
-            this.tupleToPacketConversion(tuples, exOp.getPrevious(), exOp);
+            tuples.updateCollection(exOp, windows);
+            this.tupleToPacketConversion(tuples, exOp.getPrevious(), exOp, cPacketCount);
             currentUsedRecievedPacketCount.remove(preExOp.getSite().getID());
             currentUsedRecievedPacketCount.put(
                 this.overlayNetwork.getClusterHeadFor(
@@ -464,8 +461,10 @@ public class ChannelModelSite implements Serializable
           if(exOp.getComponentType().equals(ExchangePartType.CONSUMER) &&
              previousOp != null )
          {
+            ArrayList<Window> preOpWindows = tuples.getWindowsOfExtent(previousOp);
             previousOp = null;
             exOp.setExtent(exOp.getPrevious().getExtent());
+            tuples.updateCollection(exOp, preOpWindows);
          }
         }
         else // is some sort of in-network query operator
@@ -477,7 +476,7 @@ public class ChannelModelSite implements Serializable
             preivousOutputExtent = attributes.get(1).toString();
             previousOp = op;
             op.setExtent(preivousOutputExtent);
-            tuples.updateCollection(preivousOutputExtent, tuples.createAcquirePacket(beta));
+            tuples.updateCollection(op, tuples.createAcquirePacket(beta));
           }
           // if some operator then place though cardinality model
           if(!(op.getSensornetOperator() instanceof SensornetAcquireOperator) &&
@@ -499,9 +498,9 @@ public class ChannelModelSite implements Serializable
               extent = preOp.getExtent();
             }
             CardinalityDataStructureChannel outputs = cardModel.model(op, tuples, beta);
-            tuples.removeExtent(preivousOutputExtent);
-            tuples.updateCollection(extent, outputs.getWindows());
-            this.tupleToPacketConversion(tuples, preOp, op);
+            tuples.removeExtent(op);
+            tuples.updateCollection(op, outputs.getWindows());
+            this.tupleToPacketConversion(tuples, preOp, op, 0);
           }
           //if delivery operator calculate packets transmitted for system to determine tuples.
           if(op.getSensornetOperator() instanceof SensornetDeliverOperator)
@@ -518,12 +517,12 @@ public class ChannelModelSite implements Serializable
             }
             CardinalityDataStructureChannel outputs = cardModel.model(op, tuples, beta);
             ArrayList<Window> outputWindows = outputs.getWindows();
-            tuples.removeExtent(op.getExtent());
-            tuples.updateCollection(op.getExtent(), outputWindows);
-            previousOpOutput = this.tupleToPacketConversion(tuples, op, op);
+            tuples.removeExtent(op);
+            tuples.updateCollection(op, outputWindows);
+            previousOpOutput = this.tupleToPacketConversion(tuples, op, op, 0);
             for(int index = 0; index < previousOpOutput; index++)
               packetIds.add(index);
-            this.transmitableWindows.updateCollection(op.getExtent(), tuples.getWindowsOfExtent(op.getExtent()));
+            this.transmitableWindows.updateCollection(op, tuples.getWindowsOfExtent(op, op.getExtent()));
           }
         }
       }
@@ -561,7 +560,7 @@ public class ChannelModelSite implements Serializable
       if(!doneExtents.contains(currentExtent))
       {
         doneExtents.add(currentExtent);
-        tuples.removeExtent(currentExtent);
+        tuples.removeExtent(cOp);
       }
     }
     return doneExtents;
@@ -837,35 +836,33 @@ public class ChannelModelSite implements Serializable
    * converts a number of tuples into packets
    * @param tuples
    * @param op
+   * @param cPacketCount 
  * @param exOp2 
    * @return
    * @throws SchemaMetadataException
    * @throws TypeMappingException
    */
   private int tupleToPacketConversion(CollectionOfPackets tuples, 
-                                      InstanceOperator op, InstanceOperator mainOp)
+                                      InstanceOperator op, InstanceOperator mainOp, Integer cPacketCount)
   throws SchemaMetadataException, TypeMappingException
   {
     int tupleSize = 0;
-    String extent = null;
     if(ChannelModelSite.reliableChannelQEP)
     {
       if(op instanceof InstanceExchangePart)
       {
         InstanceExchangePart exOp = (InstanceExchangePart) op;
         tupleSize = exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
-        extent = exOp.getExtent();
       }
       else
       {
         tupleSize = op.getSensornetOperator().getPhysicalTupleSize();
-        extent = op.getExtent();
       }
       int maxMessagePayloadSize = costs.getMaxMessagePayloadSize();
       int payloadOverhead = costs.getPayloadOverhead();
       int numTuplesPerMessage = (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
-      int totalTuples = tuples.determineNoTuplesFromWindows(extent);
-      int pacekts = totalTuples / numTuplesPerMessage;
+      int totalTuples = tuples.determineNoTuplesFromWindows(op);
+      int pacekts = (totalTuples / numTuplesPerMessage);
       
       if(totalTuples %  numTuplesPerMessage == 0)
       {
@@ -885,12 +882,10 @@ public class ChannelModelSite implements Serializable
       {
         InstanceExchangePart exOp = (InstanceExchangePart) op;
         tupleSize = exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
-        extent = exOp.getExtent();
       }
       else
       {
         tupleSize = op.getSensornetOperator().getPhysicalTupleSize();
-        extent = op.getExtent();
       }
       int maxMessagePayloadSize = costs.getMaxMessagePayloadSize();
       int payloadOverhead = 0;
@@ -899,7 +894,7 @@ public class ChannelModelSite implements Serializable
       else
         payloadOverhead = costs.getPayloadOverhead();
       int numTuplesPerMessage = (int) Math.floor(maxMessagePayloadSize - payloadOverhead) / (tupleSize);
-      int totalTuples = tuples.determineNoTuplesFromWindows(extent);
+      int totalTuples = tuples.determineNoTuplesFromWindows(op);
       Double frac = new Double(totalTuples) / new Double(numTuplesPerMessage);
       Double packetsD = Math.ceil(frac);
       int pacekts = packetsD.intValue();
@@ -1000,7 +995,7 @@ public class ChannelModelSite implements Serializable
     CollectionOfPackets completeRecievedWindows = new CollectionOfPackets();
     if(noPackets == 0)
     {
-      return completeRecievedWindows.getWindowsOfExtent(op.getExtent());
+      return completeRecievedWindows.getWindowsOfExtent(op, op.getExtent());
     }
     else
     {
@@ -1040,12 +1035,12 @@ public class ChannelModelSite implements Serializable
           if(receivedPacketBoolIterator.next())
           {
             Iterator<Window> receivedWindows = 
-              inputWindows.returnWindowsForTuples(tupleCount, numTuplesPerMessage,op.getExtent()).iterator();
+              inputWindows.returnWindowsForTuples(tupleCount, numTuplesPerMessage,op).iterator();
             while(receivedWindows.hasNext())
             {
               ArrayList<Window> update = new ArrayList<Window>();
               update.add(receivedWindows.next());
-              completeRecievedWindows.updateCollection(op.getExtent(), update);
+              completeRecievedWindows.updateCollection(op, update);
             }
           }
           else
@@ -1054,7 +1049,7 @@ public class ChannelModelSite implements Serializable
           }
           countedPacket++;
         }
-        return completeRecievedWindows.getWindowsOfExtent(op.getExtent());
+        return completeRecievedWindows.getWindowsOfExtent(op, op.getExtent());
       }
       else
       {     
@@ -1092,7 +1087,10 @@ public class ChannelModelSite implements Serializable
          usedUpPackets = usedPackets.get(preOp.getSite().getID());
         int removeCoutner = 0;
         while(removeCoutner < usedUpPackets)
+        {
           receivedPacketBoolIterator.next();
+          removeCoutner++;
+        }
         int countedPacket = 0;
         int tupleCount = 0;
         while(receivedPacketBoolIterator.hasNext() && countedPacket < noPackets)
@@ -1100,18 +1098,18 @@ public class ChannelModelSite implements Serializable
           if(receivedPacketBoolIterator.next())
           {
             Iterator<Window> receivedWindows = 
-              inputWindows.returnWindowsForTuples(tupleCount, numTuplesPerMessage, extent).iterator();
+              inputWindows.returnWindowsForTuples(tupleCount, numTuplesPerMessage, preOp).iterator();
             while(receivedWindows.hasNext())
             {
               ArrayList<Window> update = new ArrayList<Window>();
               update.add(receivedWindows.next());
-              completeRecievedWindows.updateCollection(extent, update);
+              completeRecievedWindows.updateCollection(op, update);
             }
           }
           tupleCount += numTuplesPerMessage;
           countedPacket++;
         }
-        return completeRecievedWindows.getWindowsOfExtent(extent); 
+        return completeRecievedWindows.getWindowsOfExtent(op); 
       }
     }
   } 
@@ -1294,8 +1292,6 @@ public class ChannelModelSite implements Serializable
     ArrayList<Integer> packetIDs = new ArrayList<Integer>();
     String key = this.overlayNetwork.getClusterHeadFor(siteID);
     ArrayList<Boolean> packets = arrivedPackets.get(key);
-    if(packets == null)
-      System.out.println();
     Iterator<Boolean> packetIterator = packets.iterator();
     int counter = 0;
     while(packetIterator.hasNext())

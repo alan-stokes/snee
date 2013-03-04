@@ -676,7 +676,7 @@ public class ChannelModel implements Serializable
     	  rootOp = opToCheck;
     }
     ChannelModelSite site = channelModel.get(Integer.parseInt(rootSite.getID()));
-    return CollectionOfPackets.determineNoTuplesFromWindows(site.getTransmitableWindows().getWindowsOfExtent(rootOp.getExtent()));
+    return CollectionOfPackets.determineNoTuplesFromWindows(site.getTransmitableWindows().getWindowsOfExtent(rootOp));
   }
 
   public void clearModel()

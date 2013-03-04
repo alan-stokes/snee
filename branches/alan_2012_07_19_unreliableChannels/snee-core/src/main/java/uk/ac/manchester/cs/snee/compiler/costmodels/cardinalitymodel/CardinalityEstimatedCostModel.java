@@ -326,7 +326,8 @@ public class CardinalityEstimatedCostModel extends CostModel
       return new CardinalityDataStructureChannel(new ArrayList<Window>());
     String extent = operator.getExtent();
     ArrayList<Window> outputWindows = new ArrayList<Window>();
-    Iterator<Window> inputWindows =inputs.getWindowsOfExtent(extent).iterator();
+    
+    Iterator<Window> inputWindows =inputs.getWindowsOfExtent(operator, extent).iterator();
     while(inputWindows.hasNext())
     {
       Window input = inputWindows.next();
@@ -344,7 +345,7 @@ public class CardinalityEstimatedCostModel extends CostModel
     if(operator.isNodeDead())
       return new CardinalityDataStructureChannel(new ArrayList<Window>());
     String extent = operator.getExtent();
-    return new CardinalityDataStructureChannel(inputs.getWindowsOfExtent(extent));
+    return new CardinalityDataStructureChannel(inputs.getWindowsOfExtent(operator, extent));
   }
 
   
@@ -371,7 +372,7 @@ public class CardinalityEstimatedCostModel extends CostModel
     {
       //tuples are parittioned
       CardinalityDataStructureChannel output = 
-        new CardinalityDataStructureChannel(  inputs.getWindowsOfExtent(extent));
+        new CardinalityDataStructureChannel(  inputs.getWindowsOfExtent(operator, extent));
       return output;
     }
     else
@@ -388,7 +389,7 @@ public class CardinalityEstimatedCostModel extends CostModel
     if(operator.isNodeDead())
       return new CardinalityDataStructureChannel(new ArrayList<Window>());
     String extent = operator.getSensornetOperator().getAttributes().get(1).toString();
-    ArrayList<Window> inputWindows = inputs.getWindowsOfExtent(extent);
+    ArrayList<Window> inputWindows = inputs.getWindowsOfExtent(operator, extent);
     ArrayList<Window> outputWindows = new ArrayList<Window>();
     
     for(int index = 0; index < inputWindows.size(); index++)
@@ -408,7 +409,7 @@ public class CardinalityEstimatedCostModel extends CostModel
     if(operator.isNodeDead())
       return new CardinalityDataStructureChannel(new ArrayList<Window>());
     String extent = operator.getExtent();
-    return new CardinalityDataStructureChannel(inputs.getWindowsOfExtent(extent));
+    return new CardinalityDataStructureChannel(inputs.getWindowsOfExtent(operator, extent));
   }
 
   
@@ -421,7 +422,7 @@ public class CardinalityEstimatedCostModel extends CostModel
       return new CardinalityDataStructureChannel(new ArrayList<Window>());
     
     String extent = operator.getExtent();
-    ArrayList<Window> extentWindows = inputs.getWindowsOfExtent(extent);
+    ArrayList<Window> extentWindows = inputs.getWindowsOfExtent(operator, extent);
     ArrayList<Window> outputWindows = new ArrayList<Window>();
     
     for(int index =1; index <= beta; index++ )
@@ -481,8 +482,8 @@ public class CardinalityEstimatedCostModel extends CostModel
     String extent1 = doneExtents.get(0);
     String extent2 = doneExtents.get(1);
     
-    ArrayList<Window> windowsOfExtent1 = inputs.getWindowsOfExtent(extent1);
-    ArrayList<Window> windowsOfExtent2 = inputs.getWindowsOfExtent(extent2);
+    ArrayList<Window> windowsOfExtent1 = inputs.getWindowsOfExtent(operator, extent1);
+    ArrayList<Window> windowsOfExtent2 = inputs.getWindowsOfExtent(operator, extent2);
 
     if(windowsOfExtent1 == null || windowsOfExtent2 == null)
       return  new CardinalityDataStructureChannel(new ArrayList<Window>());

@@ -18,6 +18,7 @@ import uk.ac.manchester.cs.snee.common.graph.Tree;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 import uk.ac.manchester.cs.snee.compiler.queryplan.DAF;
+import uk.ac.manchester.cs.snee.compiler.queryplan.ExchangePartType;
 import uk.ac.manchester.cs.snee.compiler.queryplan.PAF;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RT;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SNEEAlgebraicForm;
@@ -25,6 +26,7 @@ import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetAcquireOperator;
+import uk.ac.manchester.cs.snee.operators.sensornet.SensornetDeliverOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetExchangeOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperator;
 import uk.ac.manchester.cs.snee.operators.sensornet.SensornetOperatorImpl;
@@ -1041,9 +1043,29 @@ public class IOT extends SNEEAlgebraicForm
   {
     if(this.getOpInstances(site, TraversalOrder.PRE_ORDER, true).size() == 0)
       return this.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
-    InstanceOperator root = this.getOpInstances(site, TraversalOrder.PRE_ORDER, true).get(0); 
+    ArrayList<InstanceOperator> siteOperatorList =this.getOpInstances(site, TraversalOrder.PRE_ORDER, true); 
+    Iterator<InstanceOperator> operatorIterator = siteOperatorList.iterator();
     final ArrayList<InstanceOperator> operatorList = new ArrayList<InstanceOperator>();
-    this.doTransvesalIteratorSpeical(root, site, operatorList);
+    while(operatorIterator.hasNext())
+    {
+      boolean rootOp = false;
+      InstanceOperator op = operatorIterator.next();
+      if(op instanceof InstanceExchangePart)
+      {
+        InstanceExchangePart exOp = (InstanceExchangePart) op;
+        if(exOp.getComponentType().equals(ExchangePartType.PRODUCER) &&
+           !exOp.getNext().getSite().getID().equals(exOp.getSite().getID()))
+          rootOp = true;
+        if(exOp.getComponentType().equals(ExchangePartType.RELAY))
+          rootOp = true;
+      }
+      if(op.getSensornetOperator() instanceof SensornetDeliverOperator)
+        rootOp = true;
+      if(rootOp)
+      {
+        this.doTransvesalIteratorSpeical(op, site, operatorList);
+      }
+    }
     return operatorList;
   }
 
@@ -1052,7 +1074,6 @@ public class IOT extends SNEEAlgebraicForm
                                            ArrayList<InstanceOperator> operatorList)
   {
     ArrayList<InstanceOperator> nonInportantOperators = new ArrayList<InstanceOperator>();
-    ArrayList<InstanceOperator> inportantOperators = new ArrayList<InstanceOperator>();
     String currentSiteID = instanceOperator.getSite().getID();
     String lookingSiteID = site.getID();
     if (currentSiteID.equals(lookingSiteID)) 
