@@ -415,7 +415,7 @@ public class ChannelModelSite implements Serializable
             ArrayList<Window> windows = 
                             packetToTupleConversion(transmittablePacketsCount, exOp, exOp.getPrevious(),
                                                     currentUsedRecievedPacketCount);
-            tuples.updateCollection(exOp, windows);
+            tuples.updateCollection(preExOp, windows);
             int outputPackets = this.tupleToPacketConversion(tuples, preExOp, exOp, cPacketCount);
             addToPacketCounts(outputPackets, cPacketCount, isleaf, packetIds);
             currentPacketCount.remove(exOp.getSite().getID());
@@ -426,7 +426,7 @@ public class ChannelModelSite implements Serializable
             int noOfTuples = CollectionOfPackets.determineNoTuplesFromWindows(outputWindows);
             exOp.setTupleValueForExtent(noOfTuples);
             this.tupleToPacketConversion(tuples, preExOp, exOp, cPacketCount);
-            this.transmitableWindows.removeExtent(exOp);
+            tuples.updateCollection(exOp, outputWindows);
             this.transmitableWindows.updateCollection(exOp, tuples.getWindowsOfExtent(exOp, exOp.getExtent()));
             
           }
@@ -452,6 +452,7 @@ public class ChannelModelSite implements Serializable
               packetToTupleConversion(transmittablePacketsCount, exOp, exOp.getPrevious(),
                                       currentUsedRecievedPacketCount);
             tuples.updateCollection(exOp, windows);
+            tuples.updateCollection(exOp.getPrevious(), windows);
             this.tupleToPacketConversion(tuples, exOp.getPrevious(), exOp, cPacketCount);
             currentUsedRecievedPacketCount.remove(preExOp.getSite().getID());
             currentUsedRecievedPacketCount.put(
@@ -498,7 +499,6 @@ public class ChannelModelSite implements Serializable
               extent = preOp.getExtent();
             }
             CardinalityDataStructureChannel outputs = cardModel.model(op, tuples, beta);
-            tuples.removeExtent(op);
             tuples.updateCollection(op, outputs.getWindows());
             this.tupleToPacketConversion(tuples, preOp, op, 0);
           }
@@ -517,7 +517,6 @@ public class ChannelModelSite implements Serializable
             }
             CardinalityDataStructureChannel outputs = cardModel.model(op, tuples, beta);
             ArrayList<Window> outputWindows = outputs.getWindows();
-            tuples.removeExtent(op);
             tuples.updateCollection(op, outputWindows);
             previousOpOutput = this.tupleToPacketConversion(tuples, op, op, 0);
             for(int index = 0; index < previousOpOutput; index++)
@@ -560,7 +559,6 @@ public class ChannelModelSite implements Serializable
       if(!doneExtents.contains(currentExtent))
       {
         doneExtents.add(currentExtent);
-        tuples.removeExtent(cOp);
       }
     }
     return doneExtents;
@@ -999,7 +997,13 @@ public class ChannelModelSite implements Serializable
     CollectionOfPackets completeRecievedWindows = new CollectionOfPackets();
     if(noPackets == 0)
     {
-      return completeRecievedWindows.getWindowsOfExtent(op, op.getExtent());
+      ArrayList<Window> windows = new ArrayList<Window>();
+      for(int index =1; index <=beta; index++)
+      {
+        Window newWindow = new Window(0, index);
+        windows.add(newWindow);
+      }
+      return windows;
     }
     else
     {
@@ -1057,18 +1061,15 @@ public class ChannelModelSite implements Serializable
       }
       else
       {     
-        String extent;
         if(op instanceof InstanceExchangePart)
         {
           InstanceExchangePart exOp = (InstanceExchangePart) op;
           tupleSize = 
             exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
-          extent = exOp.getExtent();
         }
         else
         {
           tupleSize = op.getSensornetOperator().getPhysicalTupleSize();
-          extent = op.getExtent();
         }
       
         int maxMessagePayloadSize = costs.getMaxMessagePayloadSize();
@@ -1109,11 +1110,22 @@ public class ChannelModelSite implements Serializable
               update.add(receivedWindows.next());
               completeRecievedWindows.updateCollection(op, update);
             }
+            countedPacket++;
           }
           tupleCount += numTuplesPerMessage;
-          countedPacket++;
         }
-        return completeRecievedWindows.getWindowsOfExtent(op); 
+        ArrayList<Window> output =  completeRecievedWindows.getWindowsOfExtent(op); 
+        if(output.size() == 0)
+        {
+          ArrayList<Window> windows = new ArrayList<Window>();
+          for(int index =1; index <=beta; index++)
+          {
+            Window newWindow = new Window(0, index);
+            windows.add(newWindow);
+          }
+          return windows;
+        }
+        return output; 
       }
     }
   } 
@@ -1168,6 +1180,8 @@ public class ChannelModelSite implements Serializable
       counter++;
       packetRecieved = false;
     }
+    if(packetsRecieved == 0)
+      System.out.println();
     return packetsRecieved;
   }
 

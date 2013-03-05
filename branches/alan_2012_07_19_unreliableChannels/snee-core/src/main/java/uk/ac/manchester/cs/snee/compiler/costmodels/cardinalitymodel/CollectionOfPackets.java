@@ -23,18 +23,18 @@ public class CollectionOfPackets
   {
   }
   
-  public void updateCollection(InstanceOperator extent, final ArrayList<Window> cWindows)
+  public void updateCollection(InstanceOperator operator, final ArrayList<Window> cWindows)
   {
-    ArrayList<Window> extentWindows = this.windows.get(extent);
+    ArrayList<Window> extentWindows = this.windows.get(operator);
     Iterator<Window> newWindows = cWindows.iterator();
     while(newWindows.hasNext())
     {
       Window newWindow = newWindows.next();
       Window oldWindow = getWindow(newWindow.getWindowID(), extentWindows);
       Window addedWindow = new Window(oldWindow.getTuples() + newWindow.getTuples(), newWindow.getWindowID());
-      if(this.windows.keySet().contains(extent))
-        this.windows.remove(extent, oldWindow);
-      this.windows.add(extent, addedWindow);
+      if(this.windows.keySet().contains(operator))
+        this.windows.remove(operator, oldWindow);
+      this.windows.add(operator, addedWindow);
     }
   }
   
@@ -98,11 +98,6 @@ public class CollectionOfPackets
     }
     return new Window(0,index);
   }
-  
-  public void removeExtent(InstanceOperator extentName)
-  {
-    this.windows.remove(extentName);
-  }
 
   public static int determineNoTuplesFromWindows(ArrayList<Window> outputWindows)
   {
@@ -141,6 +136,8 @@ public class CollectionOfPackets
     int tuplesCounted = 0;
     ArrayList<Window> doneWindows = new ArrayList<Window>();
     ArrayList<Window> windows = this.windows.get(extent);
+    if(windows.size() == 0)
+      System.out.println();
     Iterator<Window> windowIterator = windows.iterator();
     boolean done = false;
     while(windowIterator.hasNext() && !done)

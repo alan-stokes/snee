@@ -388,7 +388,7 @@ public class CardinalityEstimatedCostModel extends CostModel
   {
     if(operator.isNodeDead())
       return new CardinalityDataStructureChannel(new ArrayList<Window>());
-    String extent = operator.getSensornetOperator().getAttributes().get(1).toString();
+    String extent = operator.getExtent();
     ArrayList<Window> inputWindows = inputs.getWindowsOfExtent(operator, extent);
     ArrayList<Window> outputWindows = new ArrayList<Window>();
     
@@ -491,7 +491,7 @@ public class CardinalityEstimatedCostModel extends CostModel
     
     ArrayList<Window> output = new ArrayList<Window>();
     
-    for(int index =0; index <= beta; index++)
+    for(int index =1; index <= beta; index++)
     {
       Window extent1Window = inputs.getWindow(index, windowsOfExtent1);
       Window extent2Window = inputs.getWindow(index, windowsOfExtent2);
@@ -536,8 +536,7 @@ public class CardinalityEstimatedCostModel extends CostModel
     }
     else if(operator.getSensornetOperator() instanceof SensornetProjectOperator)
     {
-      InstanceOperator op = (InstanceOperator)(operator.getInstanceInput(0));
-      return model(op, inputs,  beta);
+      return project(operator, inputs,  beta);
     }
     else if(operator.getSensornetOperator() instanceof SensornetRStreamOperator)
     {
@@ -561,5 +560,23 @@ public class CardinalityEstimatedCostModel extends CostModel
       System.out.println("UNKNOWN OPORATEOR " + msg);
       return new CardinalityDataStructureChannel(new ArrayList<Window>());
     }
+  }
+
+  private CardinalityDataStructureChannel project(InstanceOperator operator,
+                                                  CollectionOfPackets inputs, long beta)
+  {
+    if(operator.isNodeDead())
+      return new CardinalityDataStructureChannel(new ArrayList<Window>());
+    String extent = operator.getExtent();
+    ArrayList<Window> inputWindows = inputs.getWindowsOfExtent(operator, extent);
+    ArrayList<Window> outputWindows = new ArrayList<Window>();
+    
+    for(int index = 0; index < inputWindows.size(); index++)
+    {
+      int windowCard = inputWindows.get(index).getTuples();
+      outputWindows.add(new Window(windowCard,inputWindows.get(index).getWindowID()));
+    }
+    CardinalityDataStructureChannel output = new CardinalityDataStructureChannel(outputWindows);
+    return output;
   }
 }
