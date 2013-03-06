@@ -592,7 +592,7 @@ public class ChannelModelSite implements Serializable
       ChannelModelSite.aggregationTupleTracker.get(op.getSite().getID());
     if(currentSitesTracker == null)
       currentSitesTracker = new HashMapList<Integer, Boolean>();
-    HashMap<String, ArrayList<Boolean>> reducedArrivedpackets = reduceArrivedPackets(op.getSite());
+    HashMap<String, ArrayList<Boolean>> reducedArrivedpackets = reduceArrivedPackets(op.getSite(), this.arrivedPackets);
     InstanceOperator firstInput = (InstanceOperator) op.getInput(0);
     if(op.getSensornetOperator() instanceof SensornetAggrEvalOperator &&
        firstInput.getSensornetOperator() instanceof SensornetAggrMergeOperator)
@@ -696,10 +696,14 @@ public class ChannelModelSite implements Serializable
                 Integer key = keys.next();
                 ArrayList<Boolean> bools = inputSitesTracker.get(key);
                 Iterator<Boolean> boolIterator = bools.iterator();
+                ArrayList<Boolean> receivedPackets = reducedArrivedpackets.get(inputSite.getID());
+                Iterator<Boolean> receivedPacketIterator = receivedPackets.iterator();
                 while(boolIterator.hasNext())
                 {
                   Boolean bool = boolIterator.next();
-                  currentSitesTracker.addWithDuplicates(key, bool);
+                  Boolean recieved = receivedPacketIterator.next();
+                  if(recieved)
+                    currentSitesTracker.addWithDuplicates(key, bool);
                 }
               }
             }
@@ -713,10 +717,14 @@ public class ChannelModelSite implements Serializable
                 Integer key = keys.next();
                 ArrayList<Boolean> bools = inputSitesTracker.get(key);
                 Iterator<Boolean> boolIterator = bools.iterator();
+                ArrayList<Boolean> receivedPackets = reducedArrivedpackets.get(inputSite.getID());
+                Iterator<Boolean> receivedPacketIterator = receivedPackets.iterator();
                 while(boolIterator.hasNext())
                 {
                   Boolean bool = boolIterator.next();
-                  currentSitesTracker.addWithDuplicates(key, bool);
+                  Boolean recieved = receivedPacketIterator.next();
+                  if(recieved)
+                    currentSitesTracker.addWithDuplicates(key, bool);
                 }
               }
             }
@@ -725,26 +733,14 @@ public class ChannelModelSite implements Serializable
         ChannelModelSite.aggregationTupleTracker.put(op.getSite().getID(), currentSitesTracker);
       }
     }
-    
-    if(op.getSensornetOperator() instanceof SensornetAggrEvalOperator)
-    {
-      int count = 0;
-      Iterator<Integer> keys = currentSitesTracker.keySet().iterator();
-      while(keys.hasNext())
-      {
-        Integer key = keys.next();
-        Iterator<Boolean> values = currentSitesTracker.get(key).iterator();
-        while(values.hasNext())
-        {
-          if(values.next())
-            count++;
-        }
-      }
-      ChannelModelSite.tuplesParticipatingInAggregation = count;
-    }
   }
   
-  private HashMap<String, ArrayList<Boolean>> reduceArrivedPackets(Site site)
+  private HashMap<String, ArrayList<Boolean>> getArrivedPackets()
+  {
+    return this.arrivedPackets;
+  }
+
+  private HashMap<String, ArrayList<Boolean>> reduceArrivedPackets(Site site, HashMap<String, ArrayList<Boolean>> arrivedPackets)
   {
     HashMap<String, ArrayList<Boolean>> reducedArrivePackets = new HashMap<String, ArrayList<Boolean>>();
     ArrayList<Node> inputs = new ArrayList<Node>(site.getInputsList());
@@ -1366,7 +1362,81 @@ public class ChannelModelSite implements Serializable
       {
         checkAggregationTupleTracker(op);
       }
+      if(op.getSensornetOperator() instanceof SensornetDeliverOperator)
+         finishTracking(op);
     }
+  }
+
+  private void finishTracking(InstanceOperator op)
+  {
+    HashMapList<Integer, Boolean> currentSitesTracker = 
+      ChannelModelSite.aggregationTupleTracker.get(op.getSite().getID());
+    if(currentSitesTracker == null)
+      currentSitesTracker = new HashMapList<Integer, Boolean>();
+    ArrayList<InstanceOperator> operators = 
+      overlayNetwork.getQep().getIOT().getOpInstances(op.getSite(), TraversalOrder.POST_ORDER, true);
+    boolean evalLocatedOnsameSite = false;
+    Iterator<InstanceOperator> operatorIterator = operators.iterator();
+    while(operatorIterator.hasNext())
+    {
+      if(operatorIterator.next().getSensornetOperator() instanceof SensornetAggrEvalOperator)
+        evalLocatedOnsameSite = true;
+    }
+    int count = 0;
+    if(evalLocatedOnsameSite)
+    {
+      Iterator<Integer> keys = currentSitesTracker.keySet().iterator();
+      while(keys.hasNext())
+      {
+        Integer key = keys.next();
+        Iterator<Boolean> values = currentSitesTracker.get(key).iterator();
+        while(values.hasNext())
+        {
+          if(values.next())
+            count++;
+        }
+      }
+    }
+    else
+    {
+      HashMap<String, ArrayList<Boolean>> reducedArrivedpackets = reduceArrivedPackets(op.getSite(), this.arrivedPackets);
+      Iterator<Node> inputSites = op.getSite().getInputsList().iterator();
+      while(inputSites.hasNext())
+      {
+        Site inputSite = (Site) inputSites.next();
+        HashMapList<Integer, Boolean> inputSitesTracker = 
+          ChannelModelSite.aggregationTupleTracker.get(inputSite.getID());
+        Iterator<Integer> keys = inputSitesTracker.keySet().iterator();
+        while(keys.hasNext())
+        {
+          Integer key = keys.next();
+          ArrayList<Boolean> bools = inputSitesTracker.get(key);
+          Iterator<Boolean> boolIterator = bools.iterator();
+          ArrayList<Boolean> receivedPackets = reducedArrivedpackets.get(inputSite.getID());
+          Iterator<Boolean> receivedPacketIterator = receivedPackets.iterator();
+          while(boolIterator.hasNext())
+          {
+            Boolean bool = boolIterator.next();
+            Boolean recieved = receivedPacketIterator.next();
+            if(recieved)
+              currentSitesTracker.addWithDuplicates(key, bool);
+          }
+        }
+      }
+      Iterator<Integer> keys = currentSitesTracker.keySet().iterator();
+      while(keys.hasNext())
+      {
+        Integer key = keys.next();
+        Iterator<Boolean> values = currentSitesTracker.get(key).iterator();
+        while(values.hasNext())
+        {
+          if(values.next())
+            count++;
+        }
+      }
+    }
+    
+    ChannelModelSite.tuplesParticipatingInAggregation = count;
   }
 
   public static void resetAggreData()

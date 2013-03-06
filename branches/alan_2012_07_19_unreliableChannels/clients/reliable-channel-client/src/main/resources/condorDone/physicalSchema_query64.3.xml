@@ -18,7 +18,7 @@
 				<sites>10,5</sites>
 			</extent>
 			<extent name="D">
-				<sites>1,9</sites>
+				<sites>9</sites>
 			</extent>
 		</extents> 
 	</sensor_network> 

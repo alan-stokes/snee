@@ -150,8 +150,8 @@ public class Executer extends AutonomicManagerComponent
       tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.RQEP, tuplesReturned);
       tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.MAX, maxTuplesReturnable);
       tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.AGGR, aggreTuples);
-      ChannelModelUtils utils = new ChannelModelUtils(channelModel.getChannelModel(), rQEP.getLogicalOverlayNetwork());
-      utils.plotPacketRates(iteration, executerOutputFolder);
+     // ChannelModelUtils utils = new ChannelModelUtils(channelModel.getChannelModel(), rQEP.getLogicalOverlayNetwork());
+      //utils.plotPacketRates(iteration, executerOutputFolder);
       channelModel.clearModel();
       rQEP.getLogicalOverlayNetwork().removeClonedData();
     }

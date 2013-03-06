@@ -40,7 +40,7 @@ public class RelibaleChannelClient extends SNEEClient
 {
   
   private static String sep = System.getProperty("file.separator");
-  private static int queryid =1;
+  private static int queryid =30;
   protected static int testNo = 1;
   protected static int  kResil = 2;
   private static int max = 90;
@@ -216,8 +216,8 @@ public class RelibaleChannelClient extends SNEEClient
   //  {
       //get query & schemas
      // String currentQuery = queryIterator.next();
-   //  String currentQuery = "SELECT RSTREAM AVG(anow.x) as qx FROM A[NOW] anow ;";
-   String currentQuery = "SELECT RSTREAM anow.x as qx FROM A[NOW] anow ;";
+    String currentQuery = "SELECT RSTREAM AVG(anow.x) as qx FROM A[NOW] anow ;";
+  // String currentQuery = "SELECT RSTREAM anow.x as qx FROM A[NOW] anow ;";
   // String currentQuery = "SELECT RSTREAM anow.x as qx FROM A[NOW] anow,(SELECT bnow.x as sq1x FROM B[NOW] bnow, C[NOW] cnow WHERE bnow.x=cnow.x) sq1 WHERE anow.x=sq1.sq1x;";
  //  String currentQuery = "SELECT RSTREAM sq1.sq1x as qx FROM (SELECT anow.x as sq1x FROM A[NOW] anow, B[NOW] bnow WHERE anow.x=bnow.x) sq1, (SELECT cnow.x as sq2x FROM C[NOW] cnow, D[NOW] dnow WHERE cnow.x=dnow.x) sq2 WHERE sq1.sq1x=sq2.sq2x;";
    
