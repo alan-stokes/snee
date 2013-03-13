@@ -46,6 +46,7 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.Path;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.RadioLink;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyUtils;
 
 /**
  * Class to represent a Routing Tree, data structure used to determine the 
@@ -300,7 +301,13 @@ public class RT extends SNEEAlgebraicForm {
   public RadioLink getRadioLink(Site sender, Site receiver)
   {
     if(network.getRadioLink(sender, receiver) == null)
-      return network.getRadioLink(receiver, sender);
+      if(network.getRadioLink(receiver, sender) == null)
+      {
+        System.out.println();
+        return null;
+      }
+      else
+        return network.getRadioLink(receiver, sender);
     else
       return network.getRadioLink(sender, receiver);
   }
@@ -377,5 +384,10 @@ public class RT extends SNEEAlgebraicForm {
       counter += getNoSitesBelow(input);
     }
     return counter;
+  }
+
+  public void setNetwork(Topology wsnTopology)
+  {
+    this.network = wsnTopology;
   }
 }

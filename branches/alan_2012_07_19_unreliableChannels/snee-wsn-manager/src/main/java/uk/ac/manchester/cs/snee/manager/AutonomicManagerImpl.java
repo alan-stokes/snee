@@ -205,7 +205,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
    * cleaning method
    * @param firstOutputFolder
    */
-  public void deleteFileContents(File firstOutputFolder)
+  public static void deleteFileContents(File firstOutputFolder)
   {
     if(firstOutputFolder.exists())
     {

@@ -78,7 +78,7 @@ public class SuccessorClient extends SNEEClient
     
     try
     {
-      checkRecoveryFile();
+     // checkRecoveryFile();
       runIxentsScripts();
       //holds all 30 queries produced by python script.
       ArrayList<String> queries = new ArrayList<String>();

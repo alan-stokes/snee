@@ -150,7 +150,7 @@ public class Executer extends AutonomicManagerComponent
       tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.RQEP, tuplesReturned);
       tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.MAX, maxTuplesReturnable);
       tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.AGGR, aggreTuples);
-     // ChannelModelUtils utils = new ChannelModelUtils(channelModel.getChannelModel(), rQEP.getLogicalOverlayNetwork());
+   //   ChannelModelUtils utils = new ChannelModelUtils(channelModel.getChannelModel(), rQEP.getLogicalOverlayNetwork());
       //utils.plotPacketRates(iteration, executerOutputFolder);
       channelModel.clearModel();
       rQEP.getLogicalOverlayNetwork().removeClonedData();
@@ -183,6 +183,7 @@ public class Executer extends AutonomicManagerComponent
    * for a Sensor network query plan
    * @param rQEP
    * @param channelModel
+   * @param skelOverlay 
    * @return 
    * @throws NumberFormatException
    * @throws SNEEConfigurationException
@@ -191,7 +192,7 @@ public class Executer extends AutonomicManagerComponent
    * @throws OptimizationException 
    */
   public ArrayList<RunTimeSite> simulateRunOfQEP(SensorNetworkQueryPlan QEP, 
-                                ChannelModel channelModel)
+                                ChannelModel channelModel, LogicalOverlayNetworkHierarchy skelOverlay)
   throws NumberFormatException, SNEEConfigurationException,
   OptimizationException, SchemaMetadataException, TypeMappingException
   {
@@ -214,6 +215,8 @@ public class Executer extends AutonomicManagerComponent
       aggreTuples = channelModel.determineAggregationTupleContribtuion(QEP.getIOT());
       tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.QEP, tuplesReturned);
       tuplesReturnedFromEachTypeOfQEP.addWithDuplicates(type.AGGO, aggreTuples);
+ //     ChannelModelUtils utils = new ChannelModelUtils(channelModel.getChannelModel(), skelOverlay);
+  //    utils.plotPacketRates(iteration, executerOutputFolder);
       channelModel.clearModel();
     }
     
@@ -293,7 +296,7 @@ public class Executer extends AutonomicManagerComponent
         new ChannelModel(skelOverlay, qep.getAgendaIOT(), 
                          manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
                          manager.getCostsParamters(), staticFolder);
-      simulateRunOfQEP(qep, channelModel);
+      simulateRunOfQEP(qep, channelModel, skelOverlay);
       writeResultsToFile(distanceFactorFolder);
       cleardataStores();
     }
@@ -320,7 +323,7 @@ public class Executer extends AutonomicManagerComponent
       new ChannelModel(skelOverlay, qep.getAgendaIOT(), 
                        manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
                        manager.getCostsParamters(), staticFolder);
-    simulateRunOfQEP(qep, channelModel);
+    simulateRunOfQEP(qep, channelModel, skelOverlay);
     writeResultsToFile(distanceFactorFolder);
     cleardataStores();
     
@@ -366,7 +369,7 @@ public class Executer extends AutonomicManagerComponent
         new ChannelModel(skelOverlay, qep.getAgendaIOT(), 
                          manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
                          manager.getCostsParamters(), staticFolder, seed, false);
-      simulateRunOfQEP(qep, channelModel);
+      simulateRunOfQEP(qep, channelModel, skelOverlay);
       writeResultsToFile(distanceFactorFolder);
       cleardataStores();
   }
@@ -433,7 +436,7 @@ public class Executer extends AutonomicManagerComponent
         new ChannelModel(skelOverlay, qep.getAgendaIOT(), 
                          manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
                          manager.getCostsParamters(), robustFolder, seed, false);
-      ArrayList<RunTimeSite> qepCostAveragesQeps = simulateRunOfQEP(QEP, channelModel);
+      ArrayList<RunTimeSite> qepCostAveragesQeps = simulateRunOfQEP(QEP, channelModel, skelOverlay);
       Iterator<RunTimeSite> newQEPCostIterator = qepCostAveragesQeps.iterator();
       while(newQEPCostIterator.hasNext())
       {

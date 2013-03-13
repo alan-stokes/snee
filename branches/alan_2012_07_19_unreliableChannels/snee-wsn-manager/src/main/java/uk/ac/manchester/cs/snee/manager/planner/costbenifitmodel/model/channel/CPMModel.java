@@ -71,14 +71,28 @@ public class CPMModel
   private void setUpCPMModel()
   {
     Iterator<String> nodeKeyIterator = this.network.getAllNodes().keySet().iterator();
+    ArrayList<String> nodeIds = new ArrayList<String>();
+    for(int index =0; index <= this.network.getMaxNodeID(); index++)
+    {
+      nodeIds.add(null);
+    }
+    while(nodeKeyIterator.hasNext())
+    {
+      String id = nodeKeyIterator.next();
+      nodeIds.set(Integer.parseInt(id), id);
+    }
+    nodeKeyIterator = nodeIds.iterator();
     //add nodes and experimental noise
     while(nodeKeyIterator.hasNext())
     {
       String nodeKey = nodeKeyIterator.next();
-      System.out.println("setting up for node " + nodeKey);
-      NoiseModelSite noiseNode =  noiseModelSites.get(nodeKey);
-      createNoiseModel(noiseNode);
-      resetNode(noiseNode);
+      if(nodeKey != null)
+      {
+        System.out.println("setting up for node " + nodeKey);
+        NoiseModelSite noiseNode =  noiseModelSites.get(nodeKey);
+        createNoiseModel(noiseNode);
+        resetNode(noiseNode);
+      }
     }  
   }
 
@@ -103,13 +117,27 @@ public class CPMModel
   private void makeNoiseModelNodes()
   {
     Iterator<String> nodeKeyIterator = this.network.getAllNodes().keySet().iterator();
+    ArrayList<String> nodeIds = new ArrayList<String>();
+    for(int index =0; index <= this.network.getMaxNodeID(); index++)
+    {
+      nodeIds.add(null);
+    }
+    while(nodeKeyIterator.hasNext())
+    {
+      String id = nodeKeyIterator.next();
+      nodeIds.set(Integer.parseInt(id), id);
+    }
+    nodeKeyIterator = nodeIds.iterator();
     //add nodes and experimental noise
     while(nodeKeyIterator.hasNext())
     {
       String nodeKey = nodeKeyIterator.next();
-      Node node = this.network.getAllNodes().get(nodeKey);
-      NoiseModelSite noiseNode = new NoiseModelSite();
-      noiseModelSites.put(node.getID(), noiseNode);
+      if(nodeKey != null)
+      {
+        Node node = this.network.getAllNodes().get(nodeKey);
+        NoiseModelSite noiseNode = new NoiseModelSite();
+        noiseModelSites.put(node.getID(), noiseNode);
+      }
     }
   }
   
@@ -528,10 +556,7 @@ public class CPMModel
       return false;
     else
     {
-      if(compare != newIndex)
-        return false;
-      else
-        return true;
+      return true;
     }
   }
 

@@ -29,6 +29,7 @@ import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
 import uk.ac.manchester.cs.snee.metadata.source.sensornet.Site;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public class TabuSearch extends AutonomicManagerComponent
@@ -51,23 +52,39 @@ public class TabuSearch extends AutonomicManagerComponent
    * @param runningSites
    * @throws IOException 
    */
-  public TabuSearch(AutonomicManagerImpl autonomicManager, 
+  public TabuSearch(Topology top, 
                     HashMap<String, RunTimeSite> runningSites, 
                     SourceMetadataAbstract _metadata,
                     MetadataManager _metaManager, File outputFolder) 
   throws IOException
   {
-    this.manager = autonomicManager;
+    this.manager = null;
 	  this.initalSitesEnergy = runningSites;
 	  this._metadata = _metadata;
 	  this._metaManager = _metaManager; 
 	  this.TABUOutputFolder = outputFolder;
 	  this.Utils = new TABUSearchUtils(TABUOutputFolder.toString());
 	  this.TABUList = new TABUList();
-	  this.generator = new NeighbourhoodGenerator(TABUList, autonomicManager, _metaManager,
+	  this.generator = new NeighbourhoodGenerator(TABUList, top, _metaManager,
 	                                              runningSites,_metadata, outputFolder);
   }
   
+  public TabuSearch(Topology top,HashMap<String, RunTimeSite> runningSites,
+                    SourceMetadataAbstract _metadata, MetadataManager _metadataManager,
+                    File outputFolder, ArrayList<String> failedNodes) 
+  throws IOException
+  {
+    this.manager = null;
+    this.initalSitesEnergy = runningSites;
+    this._metadata = _metadata;
+    this._metaManager = _metadataManager; 
+    this.TABUOutputFolder = outputFolder;
+    this.Utils = new TABUSearchUtils(TABUOutputFolder.toString());
+    this.TABUList = new TABUList();
+    this.generator = new NeighbourhoodGenerator(TABUList, top, _metaManager,
+                                                runningSites,_metadata, outputFolder, failedNodes);
+  }
+
   /**
    * searches the search space looking for the best path from initial to final plan
    * @param initialPoint
@@ -308,7 +325,7 @@ public class TabuSearch extends AutonomicManagerComponent
     File assessorFolder = new File(this.TABUOutputFolder.toString() + sep + "Successor");
     if(assessorFolder.exists())
     {
-      manager.deleteFileContents(assessorFolder);
+      AutonomicManagerImpl.deleteFileContents(assessorFolder);
       assessorFolder.mkdir();
     }
     else
@@ -320,7 +337,9 @@ public class TabuSearch extends AutonomicManagerComponent
     System.out.println("assessing successor " + successor.toString());
     try
     {
-      assessAdaptation.assessChoice(adapt, successor.getTheRunTimeSites(), false);
+      boolean returned = assessAdaptation.assessChoice(adapt, successor.getTheRunTimeSites(), false);
+      if(!returned)
+        return 0;
       successor.substractAdaptationCostOffRunTimeSites(adapt);
       return successor.getLifetimeInAgendas();
     }

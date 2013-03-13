@@ -16,6 +16,7 @@ import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public class NeighbourhoodGenerator
@@ -25,16 +26,25 @@ public class NeighbourhoodGenerator
   private AlternativeGenerator neighbourhoodGenerator;
   
   
-  public NeighbourhoodGenerator(TABUList tabuList, AutonomicManagerImpl autonomicManager, 
+  public NeighbourhoodGenerator(TABUList tabuList, Topology top, 
                                 MetadataManager _metaManager, 
                                 HashMap<String, RunTimeSite> runningSites,
                                 SourceMetadataAbstract _metadata, File outputFolder)
   {
     this.tabuList = tabuList;
     neighbourhoodGenerator = 
-      new AlternativeGenerator(outputFolder, _metadata, autonomicManager, _metaManager);
+      new AlternativeGenerator(outputFolder, _metadata, top, _metaManager);
   }
   
+  public NeighbourhoodGenerator(TABUList tabuList,  Topology top, MetadataManager _metaManager,
+                                HashMap<String, RunTimeSite> runningSites, SourceMetadataAbstract _metadata, 
+                                File outputFolder, ArrayList<String> failedNodes)
+  {
+    this.tabuList = tabuList;
+    neighbourhoodGenerator = 
+      new AlternativeGenerator(outputFolder, _metadata, top, _metaManager, failedNodes);
+  }
+
   /**
    * generates the neighbourhood to be assessed. 
    * Uses aspiration plus to reduce size of candidates in the neighbourhood.

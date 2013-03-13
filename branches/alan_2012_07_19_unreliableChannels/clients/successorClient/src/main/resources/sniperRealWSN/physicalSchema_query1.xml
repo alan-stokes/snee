@@ -4,8 +4,8 @@
 	xsi:schemaLocation="http://snee.cs.man.ac.uk/namespace/physical-schema ../schema/physical-schema.xsd ">
 
 	<sensor_network name="wsn1">
-		<topology>sniperRealWSN/topology.xml</topology>
-		<site-resources>sniperRealWSN/res.xml</site-resources>
+		<topology>topology.xml</topology>
+		<site-resources>res.xml</site-resources>
 		<gateways>0</gateways>
 		<extents>
 			<extent name="DetectorA">

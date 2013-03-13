@@ -7,6 +7,8 @@ public class Seed
   private ArrayList<String> tuples = new ArrayList<String>();
   private ArrayList<Double> oAverage = new ArrayList<Double>();
   private ArrayList<Double> aAverage = new ArrayList<Double>();
+  private ArrayList<Double> oAAverage = new ArrayList<Double>();
+  private ArrayList<Double> aAAverage = new ArrayList<Double>();
   private Integer max = null;
   
   public Seed()
@@ -52,6 +54,26 @@ public class Seed
   public Integer getMax()
   {
     return max;
+  }
+
+  public void setoAAverage(ArrayList<Double> oAAverage)
+  {
+    this.oAAverage = oAAverage;
+  }
+
+  public ArrayList<Double> getoAAverage()
+  {
+    return oAAverage;
+  }
+
+  public void setaAAverage(ArrayList<Double> aAAverage)
+  {
+    this.aAAverage = aAAverage;
+  }
+
+  public ArrayList<Double> getaAAverage()
+  {
+    return aAAverage;
   }
   
   

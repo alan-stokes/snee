@@ -14,13 +14,13 @@ public class CondorScriptGenerator
 {
   private static String sep = System.getProperty("file.separator");
   private static BufferedWriter out; 
-  private static File queriesFile = new File("src/main/resources/testsSize30" + sep + "queries.txt");
+  private static File queriesFile = new File("src/main/resources/condorDone" + sep + "queries.txt");
   private static ArrayList<Integer> validIds = new ArrayList<Integer>();
   private static boolean checkIDs = true;
   
   public static void main(String[] args)
   {
-    validIds.addAll(Arrays.asList(60,62,64,67,68));
+    validIds.addAll(Arrays.asList(2,3,4,5,7,30,31,32,33,34,35,60,61,64,65,67));
     
     File condorFile = new File("condor");
     if(!condorFile.exists())
@@ -56,7 +56,6 @@ public class CondorScriptGenerator
           //make folder for the output to be stored in.
           File outputFolder = new File(condorFile.toString() + sep + "query" + queryID);
           outputFolder.mkdir();
-          queryID++;
         }
         else
         {
@@ -68,9 +67,9 @@ public class CondorScriptGenerator
             //make folder for the output to be stored in.
             File outputFolder = new File(condorFile.toString() + sep + "query" + queryID);
             outputFolder.mkdir();
-            queryID++;
           }
         }
+        queryID++;
       }
       out.flush();
       out.close();

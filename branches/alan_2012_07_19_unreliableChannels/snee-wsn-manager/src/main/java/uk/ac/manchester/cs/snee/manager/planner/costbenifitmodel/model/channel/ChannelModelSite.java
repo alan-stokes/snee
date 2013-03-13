@@ -1406,36 +1406,40 @@ public class ChannelModelSite implements Serializable
         Site inputSite = (Site) inputSites.next();
         HashMapList<Integer, Boolean> inputSitesTracker = 
           ChannelModelSite.aggregationTupleTracker.get(inputSite.getID());
-        Iterator<Integer> keys = inputSitesTracker.keySet().iterator();
+        if(inputSitesTracker == null)
+          ChannelModelSite.tuplesParticipatingInAggregation = 0;
+        else
+        {
+          Iterator<Integer> keys = inputSitesTracker.keySet().iterator();
+          while(keys.hasNext())
+          {
+            Integer key = keys.next();
+            ArrayList<Boolean> bools = inputSitesTracker.get(key);
+            Iterator<Boolean> boolIterator = bools.iterator();
+            ArrayList<Boolean> receivedPackets = reducedArrivedpackets.get(inputSite.getID());
+            Iterator<Boolean> receivedPacketIterator = receivedPackets.iterator();
+            while(boolIterator.hasNext())
+            {
+              Boolean bool = boolIterator.next();
+              Boolean recieved = receivedPacketIterator.next();
+              if(recieved)
+                currentSitesTracker.addWithDuplicates(key, bool);
+            }
+          }
+        }
+        Iterator<Integer> keys = currentSitesTracker.keySet().iterator();
         while(keys.hasNext())
         {
           Integer key = keys.next();
-          ArrayList<Boolean> bools = inputSitesTracker.get(key);
-          Iterator<Boolean> boolIterator = bools.iterator();
-          ArrayList<Boolean> receivedPackets = reducedArrivedpackets.get(inputSite.getID());
-          Iterator<Boolean> receivedPacketIterator = receivedPackets.iterator();
-          while(boolIterator.hasNext())
+          Iterator<Boolean> values = currentSitesTracker.get(key).iterator();
+          while(values.hasNext())
           {
-            Boolean bool = boolIterator.next();
-            Boolean recieved = receivedPacketIterator.next();
-            if(recieved)
-              currentSitesTracker.addWithDuplicates(key, bool);
+            if(values.next())
+              count++;
           }
         }
       }
-      Iterator<Integer> keys = currentSitesTracker.keySet().iterator();
-      while(keys.hasNext())
-      {
-        Integer key = keys.next();
-        Iterator<Boolean> values = currentSitesTracker.get(key).iterator();
-        while(values.hasNext())
-        {
-          if(values.next())
-            count++;
-        }
-      }
     }
-    
     ChannelModelSite.tuplesParticipatingInAggregation = count;
   }
 

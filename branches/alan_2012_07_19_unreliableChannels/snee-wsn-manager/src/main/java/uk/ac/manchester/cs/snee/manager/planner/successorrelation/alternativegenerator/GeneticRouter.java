@@ -37,7 +37,7 @@ public class GeneticRouter extends AutonomicManagerComponent
   private GeneticRouterFitness fitness;
   private TABUList tabuList;
   private int position;
-  private int consecutiveTimesWithoutNewSolutions = 0;
+  private int consecutiveTimesWithoutNewSolutions = 5;
   private static final int AllowedNumberOfIterationsWithoutNewSolution = 4;
   private GenomeTimeBitMap mapping = null;
   
@@ -116,6 +116,7 @@ public class GeneticRouter extends AutonomicManagerComponent
     while(eliteIterator.hasNext())
     {
       Phenome elite = eliteIterator.next();
+      elite.getSuccessor().getQep().getRT().setNetwork(network);
       eliteSolutions.add(elite.getSuccessor());
     }
   }

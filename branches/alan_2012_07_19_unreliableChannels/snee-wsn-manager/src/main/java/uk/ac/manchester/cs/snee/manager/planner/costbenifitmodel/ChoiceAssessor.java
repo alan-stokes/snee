@@ -231,7 +231,7 @@ public class ChoiceAssessor implements Serializable
    * @throws TypeMappingException
    * @throws CodeGenerationException
    */
-  public void assessChoice(Adaptation orginal, HashMap<String, RunTimeSite> runningSites, boolean reset)
+  public boolean assessChoice(Adaptation orginal, HashMap<String, RunTimeSite> runningSites, boolean reset)
   throws 
   IOException, OptimizationException, 
   SchemaMetadataException, TypeMappingException, 
@@ -271,9 +271,11 @@ public class ChoiceAssessor implements Serializable
       System.out.println("reset");
       resetRunningSitesAdaptCost(); 
     }
+    return true;
     }catch(Exception e)
     {
       e.printStackTrace();
+      return false;
     }
   }
 

@@ -98,7 +98,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
         TABUFolder.mkdir();
       }
       //search though space
-      search = new TabuSearch(manager, runningSites, _metadata, _metadataManager, TABUFolder);
+      search = new TabuSearch(manager.getWsnTopology(), runningSites, _metadata, _metadataManager, TABUFolder);
       SuccessorPath bestSuccessorRelation = search.findSuccessorsPath(initialPoint);
       new SuccessorRelationManagerUtils(this.manager, successorFolder).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
       
@@ -212,7 +212,6 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
   throws IOException
   {
      BufferedWriter out = new BufferedWriter(new FileWriter(new File(successorFolder.toString() + sep + "results")));
-     Long agendaLength = bestSuccessorRelation.getSuccessorList().get(0).getQep().getAgendaIOT().getLength_bms(false);
      for(int index = 0; index<= 8; index++)
      {
        Integer successorLifetime = successorLifetimes.get(index);
@@ -221,10 +220,10 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
          successorLifetime = 0;
        if(globalLifetime == null)
          globalLifetime = 0;
-       globalLifetime = new Double(Math.floor(globalLifetime / agendaLength.intValue())).intValue();
-       successorLifetime = new Double(Math.floor(successorLifetime / agendaLength.intValue())).intValue();
+       globalLifetime = new Double(Math.floor(globalLifetime)).intValue();
+       successorLifetime = new Double(Math.floor(successorLifetime)).intValue();
        
-       out.write(index + " " + globalLifetime + " " + successorLifetime + " \n");
+       out.write(index+1 + " " + globalLifetime + " " + successorLifetime + " \n");
      }
      out.flush();
      out.close();
@@ -277,6 +276,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
     boolean failed = false;
     while(currentNodeFailure <= noNodefails && !failed)
     {
+      System.out.println("doing successor relation for node failure " + currentNodeFailure + " out of "+ noNodefails);
       timeOfNodeFailure = (timeOfNodeFailure * currentNodeFailure) - currentAgendaCycle;
       
       SuccessorLifetimeEnum result = updateSitesEnergyLevelsForSuccessor(timeOfNodeFailure,
@@ -299,7 +299,8 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
         else
         {
           SensorNetworkQueryPlan seed = adaptations.get(0).getNewQep();
-          TabuSearch search=  new TabuSearch(manager, runningSites, _metadata, _metadataManager, successorFolder);
+          TabuSearch search=  new TabuSearch(manager.getWsnTopology(), runningSites, _metadata, 
+                                             _metadataManager, successorFolder, failedNodes);
           bestSuccessorRelation = search.findSuccessorsPath(seed);
         }
         currentNodeFailure++;
@@ -318,14 +319,15 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
         else
         {
           SensorNetworkQueryPlan seed = adaptations.get(0).getNewQep();
-          TabuSearch search=  new TabuSearch(manager, runningSites, _metadata, _metadataManager, successorFolder);
+          seed.getRT().setNetwork(cloner.deepClone(deployment));
+          TabuSearch search=  new TabuSearch(cloner.deepClone(deployment), runningSites, _metadata, _metadataManager, successorFolder);
           bestSuccessorRelation = search.findSuccessorsPath(seed);
         }
         currentAgendaCycle += this.failedNode.getLifetime();
       }
     }
     successorLifetimes.add(noNodefails -1, bestSuccessorRelation.overallSuccessorPathLifetime());
-    return failed;
+    return !failed;
   }
 
   /**
@@ -421,9 +423,41 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
         currentAgendaCycle += this.failedNode.getLifetime();
       }
     }
-    FailedNodeData failedNode = firstNodeToFailFromEnergyDepletion(golbalQEP, globalRunningSites);
-    globalLifetimes.set(noNodefails -1, new Double(failedNode.getLifetime() + currentAgendaCycle).intValue());
+    Double lifetime = calculateLifetime(golbalQEP, globalRunningSites, globalFailedNodes, currentRunDeployment);
+    globalLifetimes.set(noNodefails -1, new Double(new Double(lifetime + currentAgendaCycle) / 
+                       (Agenda.bmsToMs(golbalQEP.getAgendaIOT().getLength_bms(false)) / 1000)).intValue());
     return !failed;
+  }
+
+  private Double calculateLifetime(SensorNetworkQueryPlan golbalQEP,
+                                   HashMap<String, RunTimeSite> globalRunningSites,
+                                   ArrayList<String> globalFailedNodes, Topology currentRunDeployment)
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException,
+         NumberFormatException, MalformedURLException, UnsupportedAttributeTypeException, 
+         SourceMetadataException, AgendaException, SNEEException, TopologyReaderException, 
+         MetadataException, SNEEDataSourceException, CostParametersException, SNCBException, 
+         SNEECompilerException
+  {
+    boolean failed = false;
+    double lifetime = 0;
+    do
+    {
+      FailedNodeData failedNode = firstNodeToFailFromEnergyDepletion(golbalQEP, globalRunningSites);
+      lifetime += failedNode.getLifetime();
+      this.updateSitesEnergyLevelsForGlobal(failedNode.getLifetime(), globalFailedNodes, globalRunningSites, golbalQEP);
+      ArrayList<String> failedNodes = new ArrayList<String>();
+      failedNodes.add(failedNode.getNode().getID());
+      failedNodes.addAll(globalFailedNodes);
+      List<Adaptation> adaptations = this.globalAdaptationStrategy.adapt(failedNodes, currentRunDeployment, golbalQEP);
+      if(adaptations.size() == 0)
+        failed = true;
+      else
+      {
+        golbalQEP = adaptations.get(0).getNewQep();
+        this.updateRunningSites(golbalQEP, globalRunningSites);
+      }
+    }while(!failed);
+    return lifetime;
   }
 
   /**
@@ -597,7 +631,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
       double agendaLength = Agenda.bmsToMs(QEP.getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
       double siteLifetime = (currentEnergySupply / siteEnergyCons) * agendaLength;
       //uncomment out sections to not take the root site into account
-      if (site!=QEP.getIOT().getRT().getRoot()) 
+      if (!site.getID().equals(QEP.getIOT().getRT().getRoot().getID())) 
       { 
         if(shortestLifetime > siteLifetime)
         {
@@ -625,6 +659,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
   throws OptimizationException, SchemaMetadataException, TypeMappingException,
   SNEEConfigurationException
   {
+    qep.getAgendaIOT().getIOT().getRT().setNetwork(getWsnTopology());
     SiteEnergyModel siteModel = new SiteEnergyModel(qep.getAgendaIOT());
     Iterator<Node> siteIter = this.deployment.siteIterator();
     while (siteIter.hasNext()) 
@@ -652,7 +687,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
     while(successors.hasNext())
     {
       Successor currentSuccessor = successors.next();
-      if(currentSuccessor.getPreviousAgendaCount() + currentAgendaCycleCount <  shortestLifetime)
+      if(currentSuccessor.getPreviousAgendaCount() <  shortestLifetime)
         scopedSuccessors.add(currentSuccessor);
     }
     return scopedSuccessors;

@@ -3,6 +3,10 @@ package uk.ac.manchester.cs.snee.manager.planner.successorrelation.alternativege
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.logging.Logger;
+
+import com.rits.cloning.Cloner;
 
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
@@ -19,6 +23,7 @@ import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
 import uk.ac.manchester.cs.snee.metadata.source.SourceMetadataAbstract;
+import uk.ac.manchester.cs.snee.metadata.source.sensornet.Topology;
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 
 public class AlternativeGenerator extends AutonomicManagerComponent
@@ -29,6 +34,8 @@ public class AlternativeGenerator extends AutonomicManagerComponent
   private File outputFolder;
   private SourceMetadataAbstract _metadata;
   private MetadataManager _metaManager;
+  private ArrayList<String> failedNodes = new ArrayList<String>();
+  private Topology top;
   /**
    * constructor
    * @param successor
@@ -37,14 +44,27 @@ public class AlternativeGenerator extends AutonomicManagerComponent
    * @param _metaManager 
    */
   public AlternativeGenerator(File outputFolder, SourceMetadataAbstract _metadata, 
-                              AutonomicManagerImpl manager, MetadataManager _metaManager)
+                              Topology top, MetadataManager _metaManager)
   {
-	  this.manager = manager;
+	  this.manager = null;
 	  this.outputFolder = outputFolder;
 	  this._metadata = _metadata;
 	  this._metaManager = _metaManager;
+	  this.top = top;
   }
   
+  public AlternativeGenerator(File outputFolder, SourceMetadataAbstract _metadata, 
+                              Topology top,
+                              MetadataManager _metaManager, ArrayList<String> failedNodes)
+  {
+    this.manager = null;
+    this.outputFolder = outputFolder;
+    this._metadata = _metadata;
+    this._metaManager = _metaManager;
+    this.failedNodes = failedNodes;
+    this.top = top;
+  }
+
   /**
    * generates a set of alternative qeps by using different decisions from the snee stack. 
    * @param aspirationPlusBounds 
@@ -80,8 +100,9 @@ public class AlternativeGenerator extends AutonomicManagerComponent
   private ArrayList<RT> HuristicRouter(PAF paf) 
   throws NumberFormatException, SNEEConfigurationException
   {
+    Topology top = reduceTopology();
     CandiateRouter metaRouter = 
-      new CandiateRouter(this.manager.getWsnTopology(), outputFolder, 
+      new CandiateRouter(top, outputFolder, 
                          this.successor.getQep().getDAF().getPAF(), this._metadata);
     return metaRouter.generateAlternativeRoutingTrees(this.successor.getQep().getQueryName());
   }
@@ -91,9 +112,25 @@ public class AlternativeGenerator extends AutonomicManagerComponent
   throws IOException, SchemaMetadataException, TypeMappingException, OptimizationException, 
   CodeGenerationException
   {
+    Topology top = reduceTopology();
+    
     GeneticRouter geneticRouter = 
-      new GeneticRouter(_metadata,this.manager.getWsnTopology(), this.successor.getQep().getIOT().getPAF(), 
+      new GeneticRouter(_metadata,top, this.successor.getQep().getIOT().getPAF(), 
                         outputFolder, tabuList, position);
     return geneticRouter.generateAlternativeRoutes(candidateRoutes, this.successor, _metaManager);  
+  }
+
+  private Topology reduceTopology()
+  {
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    Topology toplogy = cloner.deepClone(top);
+    Iterator<String> faieldNodeIterator = this.failedNodes.iterator();
+    while(faieldNodeIterator.hasNext())
+    {
+      String failedNodeId = faieldNodeIterator.next();
+      toplogy.removeNodeAndAssociatedEdges(failedNodeId);
+    }
+    return toplogy;
   }
 } 

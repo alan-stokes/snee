@@ -2,7 +2,7 @@ package uk.ac.manchester.cs.snee.manager.planner.successorrelation.tabu;
 
 public class StoppingCriteria
 {
-  private static final int numberOfIterationsTillStop = 2;
+  private static final int numberOfIterationsTillStop = 200;
   private static final int numberOfIterationsTillStopAtInitial = 5;
   private static int currentMaxNeighbourhoodsize = 0;
   

@@ -14,7 +14,7 @@ public class CondorAddtionsForTestLocally
   
   public static void main(String[] args)
   {
-    File folder = new File("src/main/resources/condorDone");
+    File folder = new File("src/main/resources/testsNatural");
     File[] files = folder.listFiles();
     File outFolder = new File("src/main/resources/condorchecks");
     outFolder.mkdir();
