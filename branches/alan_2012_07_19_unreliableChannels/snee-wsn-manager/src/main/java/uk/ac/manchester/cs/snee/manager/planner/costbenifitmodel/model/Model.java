@@ -74,7 +74,7 @@ public class Model
   private Long calculatePacketsFromModel(Adaptation adapt,
       String reprogrammedSite)
   {
-    return (long) 0;
+    return (long) 1200;
   }
 
   

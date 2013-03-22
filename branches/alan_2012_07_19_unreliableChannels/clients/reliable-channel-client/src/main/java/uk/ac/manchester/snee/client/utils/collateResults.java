@@ -22,7 +22,7 @@ public class collateResults
   {
     try
     {
-      File root = new File("/local/BigSubmit");
+      File root = new File("/local/BigSubmit/BigSubmit2/");
       HashMap<String, Query> data = new HashMap<String, Query>();
       File[] listedFiles = root.listFiles();
       int max = listedFiles.length;
@@ -112,6 +112,8 @@ public class collateResults
     while(queryKeys.hasNext())
     {
       String queryKey = queryKeys.next();
+      if(queryKey.equals("query68"))
+        System.out.println();
       File queryOutput = new File(output.toString() + sep + queryKey);
       HashMap<String, Distance> distances = averagedData.get(queryKey).getData();
       Iterator<String> distanceKeys = distances.keySet().iterator();
@@ -243,9 +245,17 @@ public class collateResults
     while(oiterator.hasNext())
     {
       Double o = oiterator.next();
+      if(o == null)
+        o = 0.0;
       Double a = aiterator.next();
+      if(a == null)
+        a = 0.0;
       Double oA = oCiterator.next();
+      if(oA == null)
+        oA = 0.0;
       Double aA = aCiterator.next();
+      if(aA == null)
+        aA = 0.0;
       DecimalFormat format = new DecimalFormat("#.##");
       outTop.write(index + " " + format.format(o) + " " + format.format(a) +  " " + format.format(oA) +
                    " " + format.format(aA) + "\n");

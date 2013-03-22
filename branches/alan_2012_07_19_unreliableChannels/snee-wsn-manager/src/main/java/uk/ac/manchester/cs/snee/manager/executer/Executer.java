@@ -383,7 +383,6 @@ public class Executer extends AutonomicManagerComponent
     SNEEProperties.setSetting("distanceFactor", new Double(distanceConverter).toString());
     File distanceFactorFolder = 
       new File(this.executerOutputFolder.toString() + sep + distanceConverter);
-    distanceFactorFolder.mkdir();
     File robustFolder = new File(distanceFactorFolder.toString() + sep + "lifetimeEstimate");
     robustFolder.mkdir();
     
@@ -516,6 +515,7 @@ public class Executer extends AutonomicManagerComponent
   throws SNEEConfigurationException, IOException, NumberFormatException,
   OptimizationException, SchemaMetadataException, TypeMappingException
   {
+    this.network = this.manager.getWsnTopology();
     boolean alive = true;
     ArrayList<String> globalFailedNodes = new ArrayList<String>();
     double overallRQEPShortestLifetime = 0;
@@ -535,8 +535,11 @@ public class Executer extends AutonomicManagerComponent
         oldQEPCostContainer.setQepExecutionCost(newQEPCostContainer.getQepExecutionCost());
       }
       
-      
-      double agendaLength = Agenda.bmsToMs(rQEP.getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
+      Double agendaLength = null;
+      if(rQEP.getAgendaIOT() != null)
+        agendaLength = Agenda.bmsToMs(rQEP.getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
+      else
+        agendaLength = Agenda.bmsToMs(rQEP.getAgenda().getLength_bms(false))/new Double(1000); // ms to s
       
       //locate weakest node
       Iterator<Node> siteIter = this.network.siteIterator();
@@ -576,6 +579,10 @@ public class Executer extends AutonomicManagerComponent
         failedNodeIDs.add(failedSite);
         LogicalOverlayStrategy logicalOverlayGenerator = 
           new LogicalOverlayStrategy(this.manager, this._metadata, this.manager.get_metadataManager());  
+        logicalOverlayGenerator.setDeployment(this.network);
+        logicalOverlayGenerator.setQEP(rQEP);
+        rQEP.getLogicalOverlayNetwork().setDeployment(this.network);
+        logicalOverlayGenerator.setCurrentQEP(rQEP);
         List<Adaptation> result = 
           logicalOverlayGenerator.executeHierarchyAdaptation(failedNodeIDs, rQEP.getLogicalOverlayNetwork());
         if(result.size() == 0)

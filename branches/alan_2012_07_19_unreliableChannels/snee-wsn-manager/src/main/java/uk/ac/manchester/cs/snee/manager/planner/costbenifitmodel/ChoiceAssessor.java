@@ -238,37 +238,23 @@ public class ChoiceAssessor implements Serializable
   CodeGenerationException
   {
     try{
-      System.out.println("creating folders");
     AssessmentFolder = new File(outputFolder.toString() + sep + "assessment");
     AssessmentFolder.mkdir();
     imageGenerationFolder = new File(AssessmentFolder.toString() + sep + "Adaptations");
     imageGenerationFolder.mkdir();
     timeModel = new TimeModel(imageGenerator);
     energyModel = new AdaptationEnergyModel(imageGenerator);
-    System.out.println("updating sites");
     this.runningSites = runningSites;
-    System.out.println("reset sites");
     resetRunningSitesAdaptCost();
-    System.out.println("adapt = original");
     Adaptation adapt = orginal;
-    System.out.println("tmodel initilise");
-    if(timeModel == null)
-      System.out.println();
     timeModel.initilise(imageGenerationFolder, _metadataManager, true);
-    System.out.println("emnodel initilise");
     energyModel.initilise(imageGenerationFolder, _metadataManager, runningSites, true);
-    System.out.println("set time");
     adapt.setTimeCost(timeModel.calculateTimeCost(adapt));
-    System.out.println("set energy");
     adapt.setEnergyCost(energyModel.calculateEnergyCost(adapt));
-    System.out.println("set lifetime");
     adapt.setLifetimeEstimate(this.calculateEstimatedLifetime(adapt));
-    System.out.println("set runtime");
     adapt.setRuntimeCost(calculateEnergyQEPExecutionCost());
-    System.out.println("if reset");
     if(reset)
     {
-      System.out.println("reset");
       resetRunningSitesAdaptCost(); 
     }
     return true;

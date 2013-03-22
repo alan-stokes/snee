@@ -865,8 +865,13 @@ public class IOT extends SNEEAlgebraicForm
   public ArrayList<Node> getInputSites(Site failedSite)
   {
     Node failedNode = this.rt.getSite(failedSite.getID());
-    ArrayList<Node> inputSites = new ArrayList<Node>(failedNode.getInputsList());
-    return inputSites;
+    if(failedNode == null)
+      return new ArrayList<Node>();
+    else
+    {
+      ArrayList<Node> inputSites = new ArrayList<Node>(failedNode.getInputsList());
+      return inputSites;
+    }
   }
 
 

@@ -563,6 +563,7 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
     {
       String failedNodeID = failedNodeIDsIterator.next();
       Site failedSite = cloner.deepClone(overlay.getQep().getRT().getSite(failedNodeID));
+      
       String equivilentNodeID = 
         retrieveNewClusterHead(failedNodeID,
                                currentRoutingTree.getSite(failedNodeID).getInputsList(),
@@ -736,6 +737,16 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
   {
     if(this.logicalOverlay != null)
       this.logicalOverlay.setQep(currentQEP);
+  }
+
+  public void setDeployment(Topology deployment)
+  {
+    this.network = deployment;
+  }
+  
+  public void setCurrentQEP(SensorNetworkQueryPlan  currentQEP)
+  {
+    this.currentQEP = currentQEP;
   }
 
 }

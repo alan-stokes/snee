@@ -326,6 +326,11 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
         currentAgendaCycle += this.failedNode.getLifetime();
       }
     }
+    BufferedWriter out = new BufferedWriter(new FileWriter(new File(successorFolder.toString() + sep + "successorResult"), true));
+    out.write(" successor strategy for " +noNodefails + " failures generated a lifetime of " +  
+                       bestSuccessorRelation.overallSuccessorPathLifetime());
+    System.out.println(" successor strategy for " +noNodefails + " failures generated a lifetime of " +  
+                       bestSuccessorRelation.overallSuccessorPathLifetime() );
     successorLifetimes.add(noNodefails -1, bestSuccessorRelation.overallSuccessorPathLifetime());
     return !failed;
   }
@@ -362,7 +367,6 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
    * @throws TypeMappingException
    * @throws SNEEConfigurationException
    * @throws NumberFormatException
-   * @throws MalformedURLException
    * @throws UnsupportedAttributeTypeException
    * @throws SourceMetadataException
    * @throws AgendaException
@@ -373,6 +377,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
    * @throws CostParametersException
    * @throws SNCBException
    * @throws SNEECompilerException
+   * @throws IOException 
    */
   private boolean doGlobalAdaptations(double timeOfNodeFailure, ArrayList<String> globalFailedNodes,
                                    HashMap<String, RunTimeSite> globalRunningSites,
@@ -380,11 +385,10 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
                                    ArrayList<Integer> globalLifetimes) 
   throws OptimizationException, SchemaMetadataException, 
          TypeMappingException, SNEEConfigurationException,
-         NumberFormatException, MalformedURLException, 
-         UnsupportedAttributeTypeException, SourceMetadataException, 
+         NumberFormatException, UnsupportedAttributeTypeException, SourceMetadataException, 
          AgendaException, SNEEException, TopologyReaderException, 
          MetadataException, SNEEDataSourceException, CostParametersException, 
-         SNCBException, SNEECompilerException
+         SNCBException, SNEECompilerException, IOException
   {
     int currentNodeFailure = 1;
     Topology currentRunDeployment = cloner.deepClone(this.deployment);
@@ -424,6 +428,13 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
       }
     }
     Double lifetime = calculateLifetime(golbalQEP, globalRunningSites, globalFailedNodes, currentRunDeployment);
+    System.out.println(" global strategy for " +noNodefails + " failures generated a lifetime of " +  
+        new Double(new Double(lifetime + currentAgendaCycle) / 
+            (Agenda.bmsToMs(golbalQEP.getAgendaIOT().getLength_bms(false)) / 1000)).intValue());
+    BufferedWriter out = new BufferedWriter(new FileWriter(new File(successorFolder.toString() + sep + "globalResult"), true));
+    out.write(" global strategy for " +noNodefails + " failures generated a lifetime of " +  
+        new Double(new Double(lifetime + currentAgendaCycle) / 
+            (Agenda.bmsToMs(golbalQEP.getAgendaIOT().getLength_bms(false)) / 1000)).intValue());
     globalLifetimes.set(noNodefails -1, new Double(new Double(lifetime + currentAgendaCycle) / 
                        (Agenda.bmsToMs(golbalQEP.getAgendaIOT().getLength_bms(false)) / 1000)).intValue());
     return !failed;

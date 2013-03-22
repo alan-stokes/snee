@@ -31,8 +31,8 @@ public class SpecificSuccessorClient extends SNEEClient
 {
   
   private static String sep = System.getProperty("file.separator");
-  private static int queryid = 3;
-  protected static int testNo = 3;
+  private static int queryid = 4;
+  protected static int testNo = 4;
   private static File sneetestFolder =  new File("testsNatural");
   
   //private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;

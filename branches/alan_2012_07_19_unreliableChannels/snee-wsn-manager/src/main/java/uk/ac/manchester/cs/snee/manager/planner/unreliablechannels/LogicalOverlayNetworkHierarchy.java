@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import com.rits.cloning.Cloner;
 
@@ -397,6 +398,14 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
   public ArrayList<String> getActiveEquivilentNodes(String key)
   {
     ArrayList<String> cluster = activeClusters.get(key);
+    Set<String> setCluster = new TreeSet<String>();
+    setCluster.addAll(cluster);
+    cluster.clear();
+    Iterator<String> iterator = setCluster.iterator();
+    while(iterator.hasNext())
+    {
+      cluster.add(iterator.next());
+    }
     return cluster;
   }
   
@@ -490,15 +499,15 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
     while(clusterSetIterator.hasNext())
     {
       String candidate = clusterSetIterator.next();
-      if(!activeSet.contains(candidate))
-        candiates.add(candidate);
+      candiates.add(candidate);
     }
+    candiates = this.cleanCollection(candiates);
     if(candiates.size() == 0)
     {
       candiates = this.getActiveEquivilentNodes(key);
       candiates.remove(key);
     }
-    
+    candiates.remove(key);
     Iterator<String> candiatesIterator = candiates.iterator();
     String bestCandiate = null;
     double bestCost = Double.MAX_VALUE;
@@ -883,6 +892,20 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
 	removeClones(this.clusters);
   }
   
+  private ArrayList<String> cleanCollection(ArrayList<String> dirty)
+  {
+    ArrayList<String> cleaned = new ArrayList<String>();
+    Iterator<String> values = dirty.iterator();
+    while(values.hasNext()) 
+    {
+      String value = values.next();
+      
+      if(!cleaned.contains(value))
+        cleaned.add(value);
+    }
+    return cleaned;
+  }
+  
   private void removeClones(HashMapList<String, String> clusterToClean)
   {
 	  HashMapList<String, String> newCluster = new HashMapList<String, String>();
@@ -917,6 +940,11 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
       return true;
     else
       return false;
+  }
+
+  public void setDeployment(Topology network)
+  {
+    this.deployment = network;
   }
   
 }

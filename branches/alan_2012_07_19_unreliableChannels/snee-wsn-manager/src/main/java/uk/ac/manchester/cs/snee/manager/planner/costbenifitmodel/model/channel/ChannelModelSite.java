@@ -139,6 +139,8 @@ public class ChannelModelSite implements Serializable
   public boolean needToTransmitAckTo(String child)
   {
     ArrayList<Boolean> packets = arrivedPackets.get(child);
+    if(packets == null)
+      System.out.println();
     Iterator<Boolean> packetIterator = packets.iterator();
     int counter = 0;
     while(packetIterator.hasNext())
@@ -698,12 +700,16 @@ public class ChannelModelSite implements Serializable
                 Iterator<Boolean> boolIterator = bools.iterator();
                 ArrayList<Boolean> receivedPackets = reducedArrivedpackets.get(inputSite.getID());
                 Iterator<Boolean> receivedPacketIterator = receivedPackets.iterator();
-                while(boolIterator.hasNext())
+                while(receivedPacketIterator.hasNext())
                 {
-                  Boolean bool = boolIterator.next();
                   Boolean recieved = receivedPacketIterator.next();
                   if(recieved)
-                    currentSitesTracker.addWithDuplicates(key, bool);
+                  {
+                    while(boolIterator.hasNext())
+                    {
+                      currentSitesTracker.addWithDuplicates(key, boolIterator.next());
+                    }
+                  }
                 }
               }
             }
@@ -719,12 +725,16 @@ public class ChannelModelSite implements Serializable
                 Iterator<Boolean> boolIterator = bools.iterator();
                 ArrayList<Boolean> receivedPackets = reducedArrivedpackets.get(inputSite.getID());
                 Iterator<Boolean> receivedPacketIterator = receivedPackets.iterator();
-                while(boolIterator.hasNext())
+                while(receivedPacketIterator.hasNext())
                 {
-                  Boolean bool = boolIterator.next();
                   Boolean recieved = receivedPacketIterator.next();
                   if(recieved)
-                    currentSitesTracker.addWithDuplicates(key, bool);
+                  {
+                    while(boolIterator.hasNext())
+                    {
+                      currentSitesTracker.addWithDuplicates(key, boolIterator.next());
+                    }
+                  }
                 }
               }
             }
@@ -1418,12 +1428,16 @@ public class ChannelModelSite implements Serializable
             Iterator<Boolean> boolIterator = bools.iterator();
             ArrayList<Boolean> receivedPackets = reducedArrivedpackets.get(inputSite.getID());
             Iterator<Boolean> receivedPacketIterator = receivedPackets.iterator();
-            while(boolIterator.hasNext())
+            while(receivedPacketIterator.hasNext())
             {
-              Boolean bool = boolIterator.next();
               Boolean recieved = receivedPacketIterator.next();
               if(recieved)
-                currentSitesTracker.addWithDuplicates(key, bool);
+              {
+                while(boolIterator.hasNext())
+                {
+                  currentSitesTracker.addWithDuplicates(key, boolIterator.next());
+                }
+              }
             }
           }
         }

@@ -148,7 +148,10 @@ public class CardinalityEstimatedCostModel extends CostModel
     else//hit new frag
     {
       InstanceExchangePart producer = ((InstanceExchangePart)inputOperator);
-      input = (CardinalityDataStructure) model( (InstanceOperator) producer.getInstanceInput(0));
+      if(producer.getSourceFrag().getRootOperator().getInDegree() == 0)
+        input = (CardinalityDataStructure) model( (InstanceOperator)producer.getSourceFrag().getRootOperator());
+      else
+        input = (CardinalityDataStructure) model( (InstanceOperator) producer.getSourceFrag().getRootOperator().getInstanceInput(0));
     } 
     
     //System.out.println(inputOperator.getID() + " inputCard= " + input);

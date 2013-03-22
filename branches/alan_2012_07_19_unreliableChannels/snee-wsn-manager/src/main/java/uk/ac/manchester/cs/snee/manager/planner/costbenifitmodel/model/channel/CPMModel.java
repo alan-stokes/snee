@@ -1,8 +1,10 @@
 package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -457,6 +459,18 @@ public class CPMModel
       node.setLastNoiseVal(noise);
     }
     node.setLastTimeNoiseGenerated(startTime.intValue());
+    /*
+    try
+    {
+      BufferedWriter out = new BufferedWriter(new FileWriter(new File(sourceID + "noiseValues"), true));
+      out.write(noise + "\n");
+      out.flush();
+      out.close();
+    }
+    catch(Exception e)
+    {
+      return noise;
+    }*/
     return noise;
   }
   
