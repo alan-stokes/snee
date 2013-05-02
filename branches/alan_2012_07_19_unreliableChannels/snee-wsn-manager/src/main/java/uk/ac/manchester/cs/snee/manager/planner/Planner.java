@@ -483,12 +483,17 @@ public class Planner extends AutonomicManagerComponent
    // assessor.assessOverlayChoice(storage, runningSites, rQEP.getLogicalOverlayNetwork(), 
          //                        local, channelModel);
     boolean runLifeSim = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_EXECUTOR_EDGE_LIFE);
-    runLifeSim = true;
+    runLifeSim = false;
     if(runLifeSim)
-      manager.calculateLifetimeDifferenceFromDeployments(rQEP, qep, seed, distanceConverter);
-   // System.out.println("new robust lifetime = " + 
-               //        (storage.getLifetimeEstimate() / 
-                        //   (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000)));
+    {
+      Storage storage = manager.calculateLifetimeDifferenceFromDeployments(rQEP, qep, seed, distanceConverter);
+    System.out.println("new robust lifetime = " + 
+                       (storage.getRobustLifetime() / 
+                          (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000)));
+    System.out.println("new robust lifetime = " + 
+        (storage.getNaiveLifetime() / 
+           (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000)));
+    }
     return rQEP;
   }
   

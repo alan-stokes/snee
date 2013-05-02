@@ -346,7 +346,7 @@ public class SNEEProperties {
     }
     else if(propName.equals("wsn_manager.unreliable.channels.pathLossExponent"))
     {
-      setSetting(propName, "2");
+      setSetting(propName, "3");
       return  getSetting(propName);
     }
     else if(propName.equals("wsn_manager.unreliable.channels.simulationLength"))

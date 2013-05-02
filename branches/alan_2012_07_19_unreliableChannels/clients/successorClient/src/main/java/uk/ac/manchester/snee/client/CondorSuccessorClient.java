@@ -62,12 +62,13 @@ public class CondorSuccessorClient extends SNEEClient
       query = query.replace("_", " ");
       String propertiesPath = args[1];
       queryid = Integer.parseInt(args[2]);
+      int nodeFailureCount = Integer.parseInt(args[3]);
       //File output = new File("output");
       //output.mkdir();
       //File result = new File(output.toString() + "/" + "ran" + query + queryid);
       //result.mkdir();
      // System.out.println("made folder output and " + output.toString() + "/" + "ran" + query + queryid);
-      recursiveRun(query, duration, queryParams, true, propertiesPath) ;
+      recursiveRun(query, duration, queryParams, true, propertiesPath, nodeFailureCount) ;
     }
     catch (Exception e)
     {
@@ -80,7 +81,8 @@ public class CondorSuccessorClient extends SNEEClient
    
   private static void recursiveRun(String currentQuery, 
                                    Long duration, String queryParams, 
-                                   boolean allowDeathOfAcquires, String propertiesPath) 
+                                   boolean allowDeathOfAcquires, String propertiesPath,
+                                   int nodeFailureCount) 
   throws IOException 
   {
     System.out.println("Running Tests on query " + (queryid));
@@ -95,7 +97,7 @@ public class CondorSuccessorClient extends SNEEClient
       System.out.println("setting queryid");
       contol.setQueryID(queryid);
       System.out.println("running compilation");
-      client.runCompilelation();
+      client.runCompilelation(nodeFailureCount);
       System.out.println("Ran all tests on query " + queryid);
       queryid ++;
     }
@@ -108,7 +110,7 @@ public class CondorSuccessorClient extends SNEEClient
     }
   }
 
-  private void runCompilelation() 
+  private void runCompilelation(Integer nodeFailureCount) 
   throws 
   SNEECompilerException, MalformedURLException, 
   EvaluatorException, SNEEException, MetadataException, 
@@ -130,6 +132,7 @@ public class CondorSuccessorClient extends SNEEClient
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS, "FALSE");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR_NODE_FAILURES, nodeFailureCount.toString());
     
     control.addQuery(_query, _queryParams);
     getController().close();

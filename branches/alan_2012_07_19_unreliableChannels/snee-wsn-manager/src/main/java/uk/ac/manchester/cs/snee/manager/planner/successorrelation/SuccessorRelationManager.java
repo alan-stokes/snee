@@ -1,10 +1,15 @@
 package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
 
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +25,8 @@ import uk.ac.manchester.cs.snee.SNEECompilerException;
 import uk.ac.manchester.cs.snee.SNEEDataSourceException;
 import uk.ac.manchester.cs.snee.SNEEException;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
+import uk.ac.manchester.cs.snee.common.SNEEProperties;
+import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
@@ -101,10 +108,13 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
       search = new TabuSearch(manager.getWsnTopology(), runningSites, _metadata, _metadataManager, TABUFolder);
       SuccessorPath bestSuccessorRelation = search.findSuccessorsPath(initialPoint);
       new SuccessorRelationManagerUtils(this.manager, successorFolder).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
+      AdaptationMonitor.
+      outputAdaptationDataBetweenSuccessors(bestSuccessorRelation, _metadata, 
+                                            _metadataManager, successorFolder, 
+                                            deployment, runningSites, manager.getCostsParamters());
+     // testAdaptiveLifetime(bestSuccessorRelation);
       
-      testAdaptiveLifetime(bestSuccessorRelation);
-      
-    // writeSuccessorPathToFile(bestSuccessorRelation);
+     writeSuccessorPathToFile(bestSuccessorRelation);
     // SuccessorPath bestSuccessorRelation = readInSuccessor();
       //new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
      
@@ -160,59 +170,49 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
     this.globalAdaptationStrategy = 
       new CompleteReCompilationStrategy(this.manager, this._metadata, this._metadataManager);
     int overallSuccessorPathLifetime = bestSuccessorRelation.overallSuccessorPathLifetime();
-    int noNodefails = 1;
+    int noNodefails = SNEEProperties.getIntSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR_NODE_FAILURES);
     boolean globalFailed = false;
     boolean successorFailed = false;
     ArrayList<Integer> globalLifetimes = new ArrayList<Integer>();
     ArrayList<Integer> successorLifetimes = new ArrayList<Integer>();
-    for(int index =0; index <=8; index++)
+    for(int index =0; index <=noNodefails; index++)
     {
       globalLifetimes.add(null);
       successorLifetimes.add(null);
     }
-    while(noNodefails <= 8 && !globalFailed)
-    {
-      //collects the global QEP;
-      SensorNetworkQueryPlan golbalQEP = bestSuccessorRelation.getSuccessorList().get(0).getQep();
-      golbalQEP = cloner.deepClone(golbalQEP);
-      //determines the time period for the unpredictable node failure
-      double timeOfNodeFailure = overallSuccessorPathLifetime / (noNodefails + 1);
-      ArrayList<String> globalFailedNodes = new ArrayList<String>();
-      HashMap<String, RunTimeSite> GlobalRunningSites = manager.getCopyOfRunningSites();
-      //do globals node failure lifetime
-      boolean successful = doGlobalAdaptations(timeOfNodeFailure, globalFailedNodes, GlobalRunningSites, 
-                                               golbalQEP, noNodefails, globalLifetimes);
-      globalFailed = !successful;
-      if(!globalFailed)
-        noNodefails++;
-    }
-    noNodefails = 1;
-    while(noNodefails <= 8 && !successorFailed)
-    {
-      SuccessorPath successorRelation = cloner.deepClone(bestSuccessorRelation);
-      //determines the time period for the unpredictable node failure
-      double timeOfNodeFailure = overallSuccessorPathLifetime / (noNodefails + 1);
-      ArrayList<String> globalFailedNodes = new ArrayList<String>();
-      HashMap<String, RunTimeSite> SuccessorRunningSites = manager.getCopyOfRunningSites();
-      //do successor node failure lifetime
-      boolean successful = doSucessorAdaptations(timeOfNodeFailure, globalFailedNodes, SuccessorRunningSites, 
-                                                 successorRelation, noNodefails, successorLifetimes); 
-      successorFailed = !successful;
-      if(!successorFailed)
-        noNodefails++;
-    }
-    outputData(globalLifetimes, successorLifetimes,bestSuccessorRelation);
+    //collects the global QEP;
+    SensorNetworkQueryPlan golbalQEP = bestSuccessorRelation.getSuccessorList().get(0).getQep();
+    golbalQEP = cloner.deepClone(golbalQEP);
+    //determines the time period for the unpredictable node failure
+    double timeOfNodeFailure = overallSuccessorPathLifetime / (noNodefails + 1);
+    ArrayList<String> globalFailedNodes = new ArrayList<String>();
+    HashMap<String, RunTimeSite> GlobalRunningSites = manager.getCopyOfRunningSites();
+    //do globals node failure lifetime
+    boolean successful = doGlobalAdaptations(timeOfNodeFailure, globalFailedNodes, GlobalRunningSites, 
+                                             golbalQEP, noNodefails, globalLifetimes);
+    globalFailed = !successful;
+    SuccessorPath successorRelation = cloner.deepClone(bestSuccessorRelation);
+    //determines the time period for the unpredictable node failure
+    timeOfNodeFailure = overallSuccessorPathLifetime / (noNodefails + 1);
+    globalFailedNodes = new ArrayList<String>();
+    HashMap<String, RunTimeSite> SuccessorRunningSites = manager.getCopyOfRunningSites();
+    //do successor node failure lifetime
+    successful = doSucessorAdaptations(timeOfNodeFailure, globalFailedNodes, SuccessorRunningSites, 
+                                               successorRelation, noNodefails, successorLifetimes); 
+    successorFailed = !successful;
+    outputData(globalLifetimes, successorLifetimes,bestSuccessorRelation, noNodefails);
     
   }
   
   
   
   private void outputData(ArrayList<Integer> globalLifetimes,
-                          ArrayList<Integer> successorLifetimes, SuccessorPath bestSuccessorRelation                          ) 
+                          ArrayList<Integer> successorLifetimes, SuccessorPath bestSuccessorRelation,    
+                          int nodeFailures) 
   throws IOException
   {
      BufferedWriter out = new BufferedWriter(new FileWriter(new File(successorFolder.toString() + sep + "results")));
-     for(int index = 0; index<= 8; index++)
+     for(int index = 0; index< nodeFailures; index++)
      {
        Integer successorLifetime = successorLifetimes.get(index);
        Integer globalLifetime =  globalLifetimes.get(index);
@@ -743,7 +743,7 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
       return null;
     }
   }
-
+*/
   private void writeSuccessorPathToFile(SuccessorPath bestSuccessorRelation)
   {
     try
@@ -758,5 +758,5 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
     {
       System.out.println("cannot write successorpath to file");
     }
-  }*/
+  }
 }

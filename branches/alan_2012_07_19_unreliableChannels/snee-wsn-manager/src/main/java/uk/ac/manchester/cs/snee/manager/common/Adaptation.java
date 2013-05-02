@@ -49,27 +49,6 @@ public class Adaptation implements Serializable
     this.setId(id);
     this.numberID = numberID;
   }
-  
-  /**
-   * constructor
-   * @param oldQep
-   * @param id
-   * @param numberID
-   * 
-   */
-  public Adaptation(SensorNetworkQueryPlan oldQep, SensorNetworkQueryPlan newQep, 
-                    StrategyIDEnum id, int numberID)
-  {
-    reprogrammingSites = new ArrayList<String>();
-    redirectedionSites = new ArrayList<String>();
-    temporalSites = new ArrayList<TemporalAdjustment>();
-    deactivationSites = new ArrayList<String>();
-    activateSites = new ArrayList<String>();
-    this.setOldQep(oldQep);
-    this.setNewQep(newQep);
-    this.setId(id);
-    this.numberID = numberID;
-  }
 
   /**
    * returns an arraylist of all sites which are affected by the temporal adjustments. 

@@ -140,6 +140,31 @@ public class AdaptationUtils
       new RTUtils(adapt.getOldQep().getRT()).exportAsDotFile(adaptFolder.toString() + sep + "oldRT");
     }
   }
+
+  public void FileOutput(File outputFolder, int coutner) throws IOException
+  {
+    File adaptFolder = new File(outputFolder.toString() + sep + "Adaptations");
+    adaptFolder.mkdir();
+    File outputFile = new File(adaptFolder.toString() + sep + "adaptList" + coutner);
+    BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+    if(adapt != null)
+    {
+      writer.write(adapt.toString() + "\n");
+    }
+    else
+    {
+      Iterator<Adaptation> adaptIterator = adaptList.iterator();
+      while(adaptIterator.hasNext())
+      {
+        Adaptation cAdapt = adaptIterator.next();
+        if(cAdapt != null)
+          writer.write(cAdapt.toString() + "\n");
+      }
+    }
+    writer.flush();
+    writer.close();
+    
+  }
   
   
 }

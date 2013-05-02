@@ -405,8 +405,20 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
         if(opInst.getOutput(0) instanceof InstanceExchangePart)
         {
           InstanceExchangePart exOpInst = (InstanceExchangePart) opInst.getOutput(0);
+          
           exOpInst.removeInput(opInst);
           exOpInst.setPrev(null);
+          Iterator<InstanceExchangePart> eqivExchangeIterator = 
+            equivilentSite.getInstanceExchangeComponents().iterator();
+         while(eqivExchangeIterator.hasNext())
+         {
+           InstanceExchangePart eqPart = eqivExchangeIterator.next();
+           if(exOpInst.getID().equals(eqPart.getNext().getID()))
+           {
+             exOpInst.setPreviousExchange(eqPart);
+             exOpInst.addInput(eqPart);
+           }
+         }
         }
       }
     }

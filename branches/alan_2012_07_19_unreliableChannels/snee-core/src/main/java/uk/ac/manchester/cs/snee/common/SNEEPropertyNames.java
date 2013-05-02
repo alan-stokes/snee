@@ -328,6 +328,8 @@ public final class SNEEPropertyNames {
    */
   public static final String WSN_MANAGER_EXECUTOR_EDGE_TUPLES = "wsn_manager.executor.edge.tuples";
   public static final String WSN_MANAGER_EXECUTOR_EDGE_LIFE = "wsn_manager.executor.edge.lifetime";
+
+  public static final String WSN_MANAGER_SUCCESSOR_NODE_FAILURES = "wsn_manager.successor_nodeFailureCount";
   
 }
 

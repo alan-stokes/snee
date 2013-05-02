@@ -40,6 +40,7 @@ import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.executer.Executer;
 import uk.ac.manchester.cs.snee.manager.monitor.Monitor;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
+import uk.ac.manchester.cs.snee.manager.planner.Storage;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.ChoiceAssessorPreferenceEnum;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteEnergyModel;
@@ -605,6 +606,11 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     
   }
   
+  public SourceMetadataAbstract get_metadata()
+  {
+    return _metadata;
+  }
+
   public MetadataManager get_metadataManager()
   {
     return _metadataManager;
@@ -632,12 +638,12 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
    * @throws NumberFormatException 
    * @throws CodeGenerationException 
    */
-  public void calculateLifetimeDifferenceFromDeployments(RobustSensorNetworkQueryPlan rQEP, 
+  public Storage calculateLifetimeDifferenceFromDeployments(RobustSensorNetworkQueryPlan rQEP, 
                                                          SensorNetworkQueryPlan qep, Long seed,
                                                          Double distanceConverter) 
   throws NumberFormatException, SNEEConfigurationException, OptimizationException, 
   SchemaMetadataException, TypeMappingException, IOException, CodeGenerationException
   {
-    this.executer.calculateLifetimeDifferenceFromDeployments(rQEP, qep, seed, distanceConverter);
+    return this.executer.calculateLifetimeDifferenceFromDeployments(rQEP, qep, seed, distanceConverter);
   }
 }

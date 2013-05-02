@@ -44,33 +44,61 @@ public class CondorScriptGenerator
                 "#Error = error$(Process).txt \nlog = log.txt \nOutput = out.txt \n"+
                 "Error = err.txt \nnotification = error \n \n");
       int queryID = 1;
+      int maxNodefailure = 8;
       Iterator<String> queryIterator = queries.iterator();
       while(queryIterator.hasNext())
       {
         String query = queryIterator.next();
-        if(!checkIDs)
+        for(int nodeFailureCount = 1; nodeFailureCount <= maxNodefailure; nodeFailureCount++)
         {
-          out.write("Arguments = " + query + " " + "snee" + queryID + ".properties" +
-                    " " + queryID + " " + "\ninitialdir   = query" + queryID +
-                    "\nqueue \n \n");
-          //make folder for the output to be stored in.
-          File outputFolder = new File(condorFile.toString() + sep + "query" + queryID);
-          outputFolder.mkdir();
-        }
-        else
-        {
-          if(validIds.contains(queryID))
+          if(!checkIDs)
           {
             out.write("Arguments = " + query + " " + "snee" + queryID + ".properties" +
-                " " + queryID + " " + "\ninitialdir   = query" + queryID +
-                "\nqueue \n \n");
+                      " " + queryID + " "+ nodeFailureCount + " " +
+                      "\ninitialdir   = query" + queryID + "." + nodeFailureCount +
+                      "\nqueue \n \n");
             //make folder for the output to be stored in.
-            File outputFolder = new File(condorFile.toString() + sep + "query" + queryID);
+            File outputFolder = new File(condorFile.toString() + sep + "query" + queryID + "." + nodeFailureCount);
             outputFolder.mkdir();
+          }
+          else
+          {
+            if(validIds.contains(queryID))
+            {
+              out.write("Arguments = " + query + " " + "snee" + queryID + ".properties" +
+                  " " + queryID + " " + nodeFailureCount + " " + "\ninitialdir   = query" + queryID +
+                  "." + nodeFailureCount + "\nqueue \n \n");
+              //make folder for the output to be stored in.
+              File outputFolder = new File(condorFile.toString() + sep + "query" + queryID + "." + nodeFailureCount);
+              outputFolder.mkdir();
+            }
           }
         }
         queryID++;
       }
+      
+      ArrayList<String> sniperqueries = new ArrayList<String>();
+      sniperqueries.add("SELECT_RSTREAM_anow.x_as_qx_FROM_DetectorA[NOW]_anow_;");
+      sniperqueries.add("SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_DetectorA[NOW]_anow_;");
+      sniperqueries.add("SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x;");
+      queryIterator = sniperqueries.iterator();
+      queryID = 1;
+      while(queryIterator.hasNext())
+      {
+        String query = queryIterator.next();
+        for(int nodeFailureCount = 1; nodeFailureCount <= maxNodefailure; nodeFailureCount++)
+        {
+          out.write("Arguments = " + query + " " + "sneeSnipe.properties" +
+              " " + queryID + " "+ nodeFailureCount + " " +
+              "\ninitialdir   = snipe" + queryID + "." + nodeFailureCount +
+              "\nqueue \n \n");
+          //make folder for the output to be stored in.
+          File outputFolder = new File(condorFile.toString() + sep + "snipe" + queryID + "." + nodeFailureCount);
+          outputFolder.mkdir();
+        }
+        queryID++;
+      }
+      
       out.flush();
       out.close();
       

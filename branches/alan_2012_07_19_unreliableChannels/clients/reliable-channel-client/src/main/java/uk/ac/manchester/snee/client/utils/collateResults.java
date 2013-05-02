@@ -22,7 +22,7 @@ public class collateResults
   {
     try
     {
-      File root = new File("/local/BigSubmit/BigSubmit2/");
+      File root = new File("/local/ChannelJoin/");
       HashMap<String, Query> data = new HashMap<String, Query>();
       File[] listedFiles = root.listFiles();
       int max = listedFiles.length;
@@ -77,7 +77,7 @@ public class collateResults
   {
     HashMap<String, Query> averagedData = new HashMap<String, Query>();
     File distanceOutput = null;
-    File output = new File("/local/BigSubmit/output");
+    File output = new File("/local/output");
     output.mkdir();
     Iterator<String> queryKeys = data.keySet().iterator();
     while(queryKeys.hasNext())
@@ -112,8 +112,6 @@ public class collateResults
     while(queryKeys.hasNext())
     {
       String queryKey = queryKeys.next();
-      if(queryKey.equals("query68"))
-        System.out.println();
       File queryOutput = new File(output.toString() + sep + queryKey);
       HashMap<String, Distance> distances = averagedData.get(queryKey).getData();
       Iterator<String> distanceKeys = distances.keySet().iterator();

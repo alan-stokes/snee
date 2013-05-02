@@ -24,6 +24,7 @@ import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.LogicalOverlayStrategy;
+import uk.ac.manchester.cs.snee.manager.planner.Storage;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModel;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModelSite;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel.ChannelModelUtils;
@@ -54,6 +55,7 @@ public class Executer extends AutonomicManagerComponent
   {
     manager = autonomicManager;
     runningSites = manager.getCopyOfRunningSites();
+    this._metadata = manager.get_metadata();
   }
 
   public void adapt(Adaptation finalChoice)
@@ -374,12 +376,13 @@ public class Executer extends AutonomicManagerComponent
       cleardataStores();
   }
 
-  public void calculateLifetimeDifferenceFromDeployments(RobustSensorNetworkQueryPlan rQEP, 
+  public Storage calculateLifetimeDifferenceFromDeployments(RobustSensorNetworkQueryPlan rQEP, 
                                                          SensorNetworkQueryPlan qep, Long seed,
                                                          Double distanceConverter)
   throws NumberFormatException, SNEEConfigurationException, OptimizationException,
   SchemaMetadataException, TypeMappingException, IOException, CodeGenerationException
   {
+    this._metadata = this.manager.get_metadata();
     SNEEProperties.setSetting("distanceFactor", new Double(distanceConverter).toString());
     File distanceFactorFolder = 
       new File(this.executerOutputFolder.toString() + sep + distanceConverter);
@@ -393,9 +396,12 @@ public class Executer extends AutonomicManagerComponent
     String queryid = manager.getQueryID();
     DecimalFormat format = new DecimalFormat("#.##");
     BufferedWriter out = new BufferedWriter(new FileWriter(new File(robustFolder.toString() + sep + "lifetimes")));
-    out.write(queryid + " " + format.format(overallQEPShortestLifetime) + " " + format.format(overallRQEPShortestLifetime));
+    double overallQEPShortestLifetimeA = overallQEPShortestLifetime / (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000);
+    double overallRQEPShortestLifetimeA = overallRQEPShortestLifetime / (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000);
+    out.write(queryid + " " + format.format(overallQEPShortestLifetimeA) + " " + format.format(overallRQEPShortestLifetimeA));
     out.flush();
     out.close();
+    return new Storage(overallRQEPShortestLifetime, overallQEPShortestLifetime);
   }
 
   
@@ -420,6 +426,7 @@ public class Executer extends AutonomicManagerComponent
   IOException, SNEEConfigurationException, CodeGenerationException
   {
     boolean alive = true;
+    network = manager.getWsnTopology();
     ArrayList<String> globalFailedNodes = new ArrayList<String>();
     double overallQEPShortestLifetime = 0;
     LogicalOverlayStrategy logicalOverlayGenerator = new LogicalOverlayStrategy(this.manager, this._metadata,
@@ -430,9 +437,9 @@ public class Executer extends AutonomicManagerComponent
     {
       LogicalOverlayNetworkHierarchy skelOverlay = 
         new LogicalOverlayNetworkHierarchy(logicalOverlayGenerator.getLogicalOverlay(),
-                                           qep,  manager.getWsnTopology());
+                                           QEP,  manager.getWsnTopology());
       ChannelModel channelModel = 
-        new ChannelModel(skelOverlay, qep.getAgendaIOT(), 
+        new ChannelModel(skelOverlay, QEP.getAgendaIOT(), 
                          manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
                          manager.getCostsParamters(), robustFolder, seed, false);
       ArrayList<RunTimeSite> qepCostAveragesQeps = simulateRunOfQEP(QEP, channelModel, skelOverlay);
@@ -443,7 +450,11 @@ public class Executer extends AutonomicManagerComponent
         RunTimeSite oldQEPCostContainer = this.runningSites.get(newQEPCostContainer.toString());
         oldQEPCostContainer.setQepExecutionCost(newQEPCostContainer.getQepExecutionCost());
       }
-      double agendaLength = Agenda.bmsToMs(rQEP.getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
+      double agendaLength = 0.0;
+      if(QEP.getAgendaIOT() == null)
+        agendaLength = Agenda.bmsToMs(QEP.getAgenda().getLength_bms(false))/new Double(1000); // ms to s
+      else
+        agendaLength = Agenda.bmsToMs(QEP.getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
       
       //locate weakest node
       Iterator<Node> siteIter = this.network.siteIterator();
@@ -486,8 +497,11 @@ public class Executer extends AutonomicManagerComponent
         List<Adaptation> result = logicalOverlayGenerator.adapt(failedNodeIDs, logicalOverlayGenerator.getLogicalOverlay());
         if(result.size() == 0)
           alive = false;
-        QEP = result.get(0).getNewQep();
-        shortestLifetime =  Double.MAX_VALUE;
+        else
+        {
+          QEP = result.get(0).getNewQep();
+          shortestLifetime =  Double.MAX_VALUE;
+        }
       }
       else
       {
@@ -516,6 +530,7 @@ public class Executer extends AutonomicManagerComponent
   OptimizationException, SchemaMetadataException, TypeMappingException
   {
     this.network = this.manager.getWsnTopology();
+    this.runningSites = this.manager.getCopyOfRunningSites();
     boolean alive = true;
     ArrayList<String> globalFailedNodes = new ArrayList<String>();
     double overallRQEPShortestLifetime = 0;

@@ -124,9 +124,12 @@ public class ChannelModelSite implements Serializable
   public void recivedInputPacket(String source, int packetID)
   {
     ArrayList<Boolean> packets = arrivedPackets.get(source);
-    arrivedPackets.remove(source);
-    packets.set(packetID -1, true);
-    arrivedPackets.put(source, packets);
+    if(packetID -1 < packets.size())
+    {
+      arrivedPackets.remove(source);
+      packets.set(packetID -1, true);
+      arrivedPackets.put(source, packets);
+    }
     if(!needToListenTo.contains(source))
       needToListenTo.add(source);
   }
@@ -140,7 +143,7 @@ public class ChannelModelSite implements Serializable
   {
     ArrayList<Boolean> packets = arrivedPackets.get(child);
     if(packets == null)
-      System.out.println();
+      return false;
     Iterator<Boolean> packetIterator = packets.iterator();
     int counter = 0;
     while(packetIterator.hasNext())
@@ -273,10 +276,13 @@ public class ChannelModelSite implements Serializable
   public void recivedSiblingPacket(String string, int packetID)
   {
     ArrayList<Boolean> packetsFromSibling =  arrivedPackets.get(string);
-    packetsFromSibling.set(packetID -1, true);
-    arrivedPackets.remove(string);
-    arrivedPackets.put(string, packetsFromSibling);
-    siblingTransmissions++;
+    if(packetID < packetsFromSibling.size())
+    {
+      packetsFromSibling.set(packetID -1, true);
+      arrivedPackets.remove(string);
+      arrivedPackets.put(string, packetsFromSibling);
+      siblingTransmissions++;
+    }
   }
   
   public int heardSiblings()
@@ -436,6 +442,9 @@ public class ChannelModelSite implements Serializable
              previousOp == null )
           {
             int maxTransmittablePacketCount = exOp.getmaxPackets(IOT.getDAF(), beta, costs, !reliableChannelQEP);
+            if(currentPacketCount == null || exOp == null || exOp.getPrevious() == null ||
+               exOp.getPrevious().getSite() == null || exOp.getPrevious().getSite().getID() == null)
+              System.out.println();
             Integer cPacketCount = currentPacketCount.get(exOp.getPrevious().getSite().getID());
             if(cPacketCount == null)
               cPacketCount = 0;
@@ -478,6 +487,8 @@ public class ChannelModelSite implements Serializable
             List<Attribute> attributes = op.getSensornetOperator().getLogicalOperator().getAttributes();
             preivousOutputExtent = attributes.get(1).toString();
             previousOp = op;
+            if(preivousOutputExtent == null)
+              System.out.println();
             op.setExtent(preivousOutputExtent);
             tuples.updateCollection(op, tuples.createAcquirePacket(beta));
           }
@@ -1097,7 +1108,7 @@ public class ChannelModelSite implements Serializable
         else
          usedUpPackets = usedPackets.get(preOp.getSite().getID());
         int removeCoutner = 0;
-        while(removeCoutner < usedUpPackets)
+        while(removeCoutner < usedUpPackets &&  receivedPacketBoolIterator.hasNext())
         {
           receivedPacketBoolIterator.next();
           removeCoutner++;
@@ -1150,6 +1161,8 @@ public class ChannelModelSite implements Serializable
   
     int packetsRecieved = 0;
     ArrayList<Boolean> packets = arrivedPackets.get(child);
+    if(packets == null)
+      return 0;
     int index = 0;
     int firstPoint = startingPoint;
     int packetsSent = 0;

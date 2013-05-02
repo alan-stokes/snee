@@ -232,6 +232,13 @@ public class CardinalityEstimatedCostModel extends CostModel
         new CardinalityDataStructure(0, 0);
       return output;
     }
+    
+    if(!sucessfulReads(reducedInputs))
+    {
+      CardinalityDataStructure output = 
+        new CardinalityDataStructure(0, 0);
+      return output;
+    }
     //System.out.println("join newInput size is " + reducedInputs.size());
     CardinalityDataStructure inputR = reducedInputs.get(0);
     CardinalityDataStructure inputL = reducedInputs.get(1);
@@ -266,6 +273,20 @@ public class CardinalityEstimatedCostModel extends CostModel
     return output;
   }
   
+  private boolean sucessfulReads(ArrayList<CardinalityDataStructure> reducedInputs)
+  {
+    try
+    {
+      CardinalityDataStructure inputR = reducedInputs.get(0);
+      CardinalityDataStructure inputL = reducedInputs.get(1);
+      return true;
+    }
+    catch(Exception e)
+    {
+      return false;
+    }
+  }
+
   protected CostModelDataStructure deliverModel(InstanceOperator inputOperator)
   throws OptimizationException
   {
@@ -328,6 +349,11 @@ public class CardinalityEstimatedCostModel extends CostModel
     if(operator.isNodeDead())
       return new CardinalityDataStructureChannel(new ArrayList<Window>());
     String extent = operator.getExtent();
+    if(extent == null)
+    {
+      InstanceOperator op = (InstanceOperator) operator.getInput(0);
+      extent=  op.getExtent();
+    }
     ArrayList<Window> outputWindows = new ArrayList<Window>();
     
     Iterator<Window> inputWindows =inputs.getWindowsOfExtent(operator, extent).iterator();
@@ -481,6 +507,8 @@ public class CardinalityEstimatedCostModel extends CostModel
         doneExtents.add(currentExtent);
       }
     }
+    
+    
     
     String extent1 = doneExtents.get(0);
     String extent2 = doneExtents.get(1);

@@ -71,7 +71,11 @@ public class CollectionOfPackets
       {
         opExtent = op.getExtent();
       }
-      if(extent.equals(opExtent))
+      if(opExtent == null )
+        this.updateCollection(operator,this.windows.get(op), allInputWindows);
+      if(extent == null )
+        this.updateCollection(operator,this.windows.get(op), allInputWindows);
+      else if(extent.equals(opExtent))
         this.updateCollection(operator,this.windows.get(op), allInputWindows);
     }
     return allInputWindows.get(operator);
