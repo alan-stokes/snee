@@ -92,6 +92,7 @@ public class ChannelModelSite implements Serializable
     this.priority = position;
     this.beta = beta;
     ChannelModelSite.costs = costs;
+    if(tasks != null)
     this.tasks.addAll(tasks);
     this.model = model;
     usePacketIDs = packetID;
@@ -161,7 +162,9 @@ public class ChannelModelSite implements Serializable
         {
           String EquivNode = equivNodesIterator.next();
           ArrayList<Boolean> equivPackets = arrivedPackets.get(EquivNode);
-          if(equivPackets.get(counter))
+          if(equivPackets.size() <= counter)
+            found = false;
+          else if(equivPackets.get(counter))
             found = true;
         }
         if(!found)
@@ -346,10 +349,12 @@ public class ChannelModelSite implements Serializable
   public ArrayList<Integer> transmittablePackets(IOT IOT) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException
   {
-    if(!ranAlready)
-    {
-      ranAlready = true;
       Site site = IOT.getSiteFromID(siteID);
+      this.packetIds.clear();
+      this.transmitableWindows.clear();
+      
+      if(siteID.equals("1"))
+        System.out.println();
       ArrayList<InstanceOperator> operators = IOT.getOpInstancesInSpecialOrder(site);
       Iterator<InstanceOperator> operatorIterator = operators.iterator();
       HashMap<String, Integer> currentPacketCount = new HashMap<String, Integer>();
@@ -380,7 +385,7 @@ public class ChannelModelSite implements Serializable
             {
               rPacketCount = 0; 
             }
-            boolean isleaf = exOp.getSourceFrag().containsOperatorType(SensornetAcquireOperator.class);
+            boolean isleaf = exOp.getSourceFrag().isLeaf();
             int outputPackets = this.tupleToPacketConversion(tuples, previousOp, exOp, cPacketCount);
             addToPacketCounts(outputPackets, cPacketCount, isleaf, packetIds);
             
@@ -538,7 +543,6 @@ public class ChannelModelSite implements Serializable
           }
         }
       }
-    }
     return packetIds;
   }
 
@@ -684,9 +688,11 @@ public class ChannelModelSite implements Serializable
             {
               Boolean recieved = receivedPacketIterator.next();
               int oldtupleRatio = tupleRatio;
+              if(op == null || op.getLastPacketTupleCount() == null)
+                System.out.println();
               if(counter == receivedPackets.size() -1)
               {
-            	tupleRatio = op.getLastPacketTupleCount();
+               	tupleRatio = op.getLastPacketTupleCount();
               }
               for(int index = 1; index <= tupleRatio; index++)
               {
@@ -788,7 +794,7 @@ public class ChannelModelSite implements Serializable
           {
             String EquivNode = EquivNodes.next();
             ArrayList<Boolean> equivPackets = arrivedPackets.get(EquivNode);
-            if(equivPackets.get(counter))
+            if(equivPackets.size() > counter && equivPackets.get(counter))
             {
               reducedPackets.add(true);
               updated = true;
@@ -814,13 +820,23 @@ public class ChannelModelSite implements Serializable
   throws SchemaMetadataException, TypeMappingException
   {
     int tupleSize = 0;
-    
-    while(!(op instanceof InstanceExchangePart))
+    boolean foundAcquire = false;
+    while(!(op instanceof InstanceExchangePart) && !foundAcquire)
     {
-      op = (InstanceOperator) op.getInput(0);
+      if(op.getSensornetOperator() instanceof SensornetAcquireOperator)
+        foundAcquire = true;
+      else
+        op = (InstanceOperator) op.getInput(0);
     }
-    InstanceExchangePart exOp = (InstanceExchangePart) op;
-    tupleSize = exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
+    
+    
+    if(foundAcquire)
+      tupleSize = op.getSensornetOperator().getPhysicalTupleSize();
+    else
+    {
+      InstanceExchangePart exOp = (InstanceExchangePart) op;
+      tupleSize = exOp.getSourceFrag().getRootOperator().getSensornetOperator().getPhysicalTupleSize();
+    }
     int maxMessagePayloadSize = costs.getMaxMessagePayloadSize();
     int payloadOverhead =0;
     if(this.usePacketIDs)
@@ -902,6 +918,8 @@ public class ChannelModelSite implements Serializable
       }
       else
       {
+        if(op ==null || op.getSensornetOperator() == null)
+          System.out.println();
         tupleSize = op.getSensornetOperator().getPhysicalTupleSize();
       }
       int maxMessagePayloadSize = costs.getMaxMessagePayloadSize();
@@ -1182,7 +1200,9 @@ public class ChannelModelSite implements Serializable
           {
             String EquivNode = EquivNodes.next();
             ArrayList<Boolean> equivPackets = arrivedPackets.get(EquivNode);
-            if(equivPackets.get(counter))
+            if(equivPackets.size() <= counter)
+              packetRecieved = false;
+            else if(equivPackets.get(counter))
               packetRecieved = true;
           }
         }
@@ -1199,8 +1219,6 @@ public class ChannelModelSite implements Serializable
       counter++;
       packetRecieved = false;
     }
-    if(packetsRecieved == 0)
-      System.out.println();
     return packetsRecieved;
   }
 
@@ -1293,7 +1311,9 @@ public class ChannelModelSite implements Serializable
           {
             String EquivNode = EquivNodes.next();
             ArrayList<Boolean> equivPackets = arrivedPackets.get(EquivNode);
-            if(equivPackets.get(counter))
+            if(equivPackets.size() <= counter)
+              packetRecieved = false;
+            else if(equivPackets.get(counter))
               packetRecieved = true;
           }
         }
@@ -1329,6 +1349,8 @@ public class ChannelModelSite implements Serializable
     ArrayList<Integer> packetIDs = new ArrayList<Integer>();
     String key = this.overlayNetwork.getClusterHeadFor(siteID);
     ArrayList<Boolean> packets = arrivedPackets.get(key);
+    if(packets == null)
+      System.out.println();
     Iterator<Boolean> packetIterator = packets.iterator();
     int counter = 0;
     while(packetIterator.hasNext())
@@ -1374,6 +1396,8 @@ public class ChannelModelSite implements Serializable
   throws SchemaMetadataException, TypeMappingException
   {
     Site site = overlayNetwork.getQep().getIOT().getSiteFromID(siteId);
+    if(site == null)
+      System.out.println();
     ArrayList<InstanceOperator> operators = 
       overlayNetwork.getQep().getIOT().getOpInstances(site, TraversalOrder.POST_ORDER, true);
     Iterator<InstanceOperator> operatorIterator = operators.iterator();

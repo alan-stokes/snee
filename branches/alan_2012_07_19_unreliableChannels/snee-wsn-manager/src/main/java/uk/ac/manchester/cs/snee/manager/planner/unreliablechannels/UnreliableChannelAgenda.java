@@ -163,7 +163,16 @@ public class UnreliableChannelAgenda extends AgendaIOT
       if(!rtSite.getID().equals(root.getID()))
       {
         if(rtSite.getOutputsList().size() == 0)
+        {
+          Iterator<Node> routingTreeIterator = this.iot.getRT().getSiteTree().getNodes().iterator();
+          while(routingTreeIterator.hasNext())
+          {
+            Node rtNode = routingTreeIterator.next();
+            if(rtNode.getInputsList().contains(rtSite))
+              rtSite.addOutput(rtNode);
+          }
           System.out.println();
+        }
         //deal with children links
         Site outputSite = (Site) rtSite.getOutput(0);
         Iterator<String> eqivNodesIdIterator = 

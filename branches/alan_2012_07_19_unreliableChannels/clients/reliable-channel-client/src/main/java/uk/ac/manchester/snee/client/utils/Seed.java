@@ -1,6 +1,7 @@
 package uk.ac.manchester.snee.client.utils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class Seed
 {
@@ -74,6 +75,13 @@ public class Seed
   public ArrayList<Double> getaAAverage()
   {
     return aAAverage;
+  }
+  
+  public String toString()
+  {
+    String output = tuples.toString();
+    output = output.concat("|"+this.getaAverage()+"|"+this.getoAverage()+"|"+this.aAAverage+"|"+this.oAAverage);
+    return output;
   }
   
   

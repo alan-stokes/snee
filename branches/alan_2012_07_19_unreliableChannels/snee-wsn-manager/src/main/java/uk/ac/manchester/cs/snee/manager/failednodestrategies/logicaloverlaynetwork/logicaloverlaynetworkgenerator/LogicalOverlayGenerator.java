@@ -26,7 +26,11 @@ import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.planner.Planner;
 */
+import uk.ac.manchester.cs.snee.manager.common.Adaptation;
+import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
+import uk.ac.manchester.cs.snee.manager.common.StrategyIDEnum;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.logicaloverlaynetwork.LogicalOverlayStrategy;
+import uk.ac.manchester.cs.snee.manager.planner.Planner;
 //import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.Model;
 import uk.ac.manchester.cs.snee.metadata.MetadataManager;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
@@ -196,6 +200,8 @@ public class LogicalOverlayGenerator
     LogicalOverlayNetwork first = setsOfLogicalOverlays.get(0);
     transferQEPsToCandiates(first, qepID);  
     new LogicalOverlayGeneratorUtils().storeOverlayAsText(first, localFolder);
+   // Double lifetime = determineMinumalLifetime(first, failedNodeStrategyLocal);
+   // System.out.println((lifetime / 1024)  );
     return first;
   }
 
@@ -210,7 +216,7 @@ public class LogicalOverlayGenerator
    * @throws OptimizationException 
    * @throws IOException 
    * @throws SNEEConfigurationException 
-   *//*
+   */
   private Double determineMinumalLifetime(LogicalOverlayNetwork currentOverlay,
                                           LogicalOverlayStrategy failedNodeStrategyLocal) 
   throws IOException, OptimizationException, SchemaMetadataException, 
@@ -232,7 +238,7 @@ public class LogicalOverlayGenerator
     Planner planner = new Planner(manager, _metadata, _metadataManager, runningSites, outputFolder);
     planner.assessOverlayCosts(outputFolder, overlayOTAProgramCost, currentOverlay, failedNodeStrategyLocal);
     return overlayOTAProgramCost.getLifetimeEstimate();
-  }*/
+  }
 
   /**
    * checks the level of resilience in each cluster, returns false if any one of them meets specified levels

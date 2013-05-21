@@ -831,7 +831,7 @@ public class AgendaIOT extends SNEEAlgebraicForm
       if (currentNode.getOutputs().length > 0) 
       {
     		final HashSet<InstanceExchangePart> tuplesToSend = new HashSet<InstanceExchangePart>();
-    		final Iterator<InstanceExchangePart> exchCompIter = iot.getExchangeOperatorsThoughInputs(currentNode).iterator();
+    		final Iterator<InstanceExchangePart> exchCompIter = iot.getExchangeOperatorsThoughSiteMapping(currentNode).iterator();
     		//TODO fix to use instance exchange parts.
     		while (exchCompIter.hasNext()) 
     		{
@@ -979,6 +979,8 @@ public class AgendaIOT extends SNEEAlgebraicForm
   public CommunicationTask getCommunicationTaskBetween(Node child, Node parent)
   {
     final Iterator<Task> taskIter = this.taskIterator((Site)child);
+    if(taskIter  == null)
+      return null;
     while(taskIter.hasNext())
     {
       Task task = taskIter.next();

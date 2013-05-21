@@ -242,6 +242,9 @@ public class LogicalOverlayNetwork implements Serializable
    */
   public void updateCluster(String head, String newHead)
   {
+    if(head.equals("27"))
+      System.out.println();
+      
     ArrayList<String> candidates = clusters.get(head);
     candidates.remove(newHead);
     clusters.remove(head);

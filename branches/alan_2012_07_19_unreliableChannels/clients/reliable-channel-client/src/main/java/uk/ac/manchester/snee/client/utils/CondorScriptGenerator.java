@@ -36,7 +36,8 @@ public class CondorScriptGenerator
     seeds.add(new Long(35));
     seeds.add(new Long(40));
     seeds.add(new Long(45));
-    validIds.addAll(Arrays.asList(1,2,3,4,5,6,30,31,32,33,34,36,60,62,64,67,68));
+    validIds.addAll(Arrays.asList(1,2,3,4,5,6));
+       // ,30,31,32,33,34,36,60,62,64,67,68));
     
     File condorFile = new File("condor");
     if(!condorFile.exists())

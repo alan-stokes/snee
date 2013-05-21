@@ -1,6 +1,7 @@
 package uk.ac.manchester.snee.client.utils;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class Query
 {
@@ -21,6 +22,16 @@ public class Query
     return data;
   }
   
-  
+  public String toString()
+  {
+    String output = "";
+    Iterator<String> keys = data.keySet().iterator();
+    while(keys.hasNext())
+    {
+      String key = keys.next();
+      output = output.concat(data.get(key).toString() + ":");
+    }
+    return output;
+  }
   
 }

@@ -308,8 +308,15 @@ public abstract class StrategyAbstract extends AutonomicManagerComponent impleme
       //needs to distinguqise between sink and other nodes
       if(!failedSite.getID().equals(oldAgenda.getIOT().getRT().getRoot().getID()))
       {
-        failedSite = oldAgenda.getTransmissionTask(failedSite).getDestNode();
-        commTimeOld = oldAgenda.getCommunicationTaskBetween(failedSite, parent);
+        try
+        {
+          failedSite = oldAgenda.getTransmissionTask(failedSite).getDestNode();
+          commTimeOld = oldAgenda.getCommunicationTaskBetween(failedSite, parent);
+        }
+        catch(Exception e)
+        {
+          return false;
+        }
       }
       else
       {

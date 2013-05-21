@@ -13,7 +13,7 @@ import java.util.Iterator;
 
 import uk.ac.manchester.cs.snee.compiler.costmodels.HashMapList;
 
-public class collateResults
+public class CollateResultsForTuples
 {
   
   private static String sep = System.getProperty("file.separator");

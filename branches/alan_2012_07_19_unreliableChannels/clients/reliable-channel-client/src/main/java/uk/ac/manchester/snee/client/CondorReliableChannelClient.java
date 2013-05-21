@@ -134,6 +134,8 @@ public class CondorReliableChannelClient extends SNEEClient
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_NOISEMODEL, "TTX4-DemoNoiseTrace.txt");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_RESILIENTLEVEL, "2");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_K_ACTIVE_LEVEL, "2");
     
     control.addQuery(_query, _queryParams, seed, distanceConverter);
     getController().close();

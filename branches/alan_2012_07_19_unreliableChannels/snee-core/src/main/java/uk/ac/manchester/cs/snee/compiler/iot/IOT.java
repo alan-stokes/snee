@@ -182,7 +182,7 @@ public class IOT extends SNEEAlgebraicForm
    */
   public ArrayList<InstanceOperator> getOpInstances(Site site) 
   {
-    return this.siteToOpInstMap.get(site);
+    return siteToOpInstMap.get(site);
   }
   
   
@@ -1046,9 +1046,14 @@ public class IOT extends SNEEAlgebraicForm
 
   public ArrayList<InstanceOperator> getOpInstancesInSpecialOrder(Site site)
   {
+    ArrayList<InstanceOperator> siteOperatorList;
+    
     if(this.getOpInstances(site, TraversalOrder.PRE_ORDER, true).size() == 0)
-      return this.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
-    ArrayList<InstanceOperator> siteOperatorList =this.getOpInstances(site, TraversalOrder.PRE_ORDER, true); 
+      siteOperatorList = this.getOpInstances(site);
+    else
+      siteOperatorList = this.getOpInstances(site, TraversalOrder.PRE_ORDER, true);
+    if(siteOperatorList.size() == 0)
+      return siteOperatorList;
     Iterator<InstanceOperator> operatorIterator = siteOperatorList.iterator();
     final ArrayList<InstanceOperator> operatorList = new ArrayList<InstanceOperator>();
     while(operatorIterator.hasNext())
@@ -1089,7 +1094,7 @@ public class IOT extends SNEEAlgebraicForm
         if(inOp instanceof InstanceExchangePart)
         {
           InstanceExchangePart exOp = (InstanceExchangePart) inOp;
-          if(exOp.getSourceFrag().getSite().getID().equals(currentSiteID))
+          if(exOp.getSite().getID().equals(currentSiteID))
           {
             this.doTransvesalIteratorSpeical(inOp, site, operatorList);
           }
@@ -1108,7 +1113,8 @@ public class IOT extends SNEEAlgebraicForm
                                           site, operatorList);
         
       }
-      operatorList.add(instanceOperator);
+      if(!operatorList.contains(instanceOperator))
+        operatorList.add(instanceOperator);
     }
   }
 }

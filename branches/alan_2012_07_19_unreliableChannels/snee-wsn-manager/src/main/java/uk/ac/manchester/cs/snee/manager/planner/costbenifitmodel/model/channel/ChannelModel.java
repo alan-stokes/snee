@@ -20,10 +20,12 @@ import uk.ac.manchester.cs.snee.compiler.iot.IOT;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragment;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceFragmentTask;
 import uk.ac.manchester.cs.snee.compiler.iot.InstanceOperator;
+import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
 import uk.ac.manchester.cs.snee.compiler.queryplan.CommunicationTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Fragment;
 import uk.ac.manchester.cs.snee.compiler.queryplan.FragmentTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.RadioOnTask;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SleepTask;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
@@ -93,16 +95,20 @@ public class ChannelModel implements Serializable
 
   public ChannelModel(LogicalOverlayNetworkHierarchy logicaloverlayNetwork,
       AgendaIOT agenda, int networkSize, Topology network,
-      CostParameters costs, File executorFolder, Long seed, boolean packetID)
+      CostParameters costs, File executorFolder, Long seed, boolean packetID,
+      NoiseModel noiseModel)
   throws SNEEConfigurationException, IOException
   {
-    this.agendaIOT = agenda;
+    if(agenda instanceof UnreliableChannelAgenda)
+      this.agenda = (UnreliableChannelAgenda) agenda;
+    else
+      this.agendaIOT = agenda;
     this.executorFolder = executorFolder;
     this.costs = costs;
     this.logicaloverlayNetwork = logicaloverlayNetwork;
     setupEmptyArray(networkSize + 1);
     createChannelSites(packetID);
-    noiseModel = new NoiseModel(network, costs, seed);
+    this.noiseModel = noiseModel;
     
   }
   /**
@@ -191,7 +197,8 @@ public class ChannelModel implements Serializable
         else if(cTask.getMode() == CommunicationTask.TRANSMIT && runable)
         {
           ChannelModelSite source = channelModel.get(Integer.parseInt(cTask.getSourceID()));
-          
+          if(source == null)
+            System.out.println();
           if(source.receivedACK())
           {
             cTask.setRan(false);
@@ -225,6 +232,8 @@ public class ChannelModel implements Serializable
         else if(cTask.getMode() == CommunicationTask.ACKTRANSMIT && runable)
         {
           ChannelModelSite site = channelModel.get(Integer.parseInt(cTask.getDestID())); 
+          if(site == null || cTask == null)
+            System.out.println();
           if(site.needToTransmitAckTo(cTask.getSourceID()))
           {
             cTask.setRan(true);
@@ -281,10 +290,10 @@ public class ChannelModel implements Serializable
       siteTasks = this.agendaIOT.getTasks().get(site);
     }
     
-    //not within the QEP. so no cost
+    //not within the QEP. so idle  cost
     if(siteTasks == null)
     {
-      return 0;
+      return getCPUEnergy(new Long(0));
     }
     for (int i=0; i<siteTasks.size(); i++) 
     {
@@ -548,6 +557,8 @@ public class ChannelModel implements Serializable
       String siteID = siteIDIterator.next();
       Integer siteIDInt = Integer.parseInt(siteID);
       String clusterHeadID = logicaloverlayNetwork.getClusterHeadFor(siteID);
+      if(logicaloverlayNetwork.getQep().getRT().getSite(clusterHeadID) == null)
+        System.out.println();
       Iterator<Node> inputNodes = 
         logicaloverlayNetwork.getQep().getRT().getSite(clusterHeadID).getInputsList().iterator();
       HashMap<String, Integer> expectedPackets = new  HashMap<String, Integer>();
@@ -564,13 +575,19 @@ public class ChannelModel implements Serializable
           task = agendaIOT.getTransmissionTask(agendaInput);
         else 
           task = agenda.getTransmissionTask(agendaInput);
-        int packetsToRecieve = task.getMaxPacektsTransmitted();
+        int packetsToRecieve;
+        if(task == null) //simple agenda, so sibligns dont have tasks
+          packetsToRecieve = 0;
+        else
+          packetsToRecieve = task.getMaxPacektsTransmitted();
         expectedPackets.put(input.getID(), packetsToRecieve);
         Iterator<String> equivNodes =
           logicaloverlayNetwork.getActiveEquivilentNodes(input.getID()).iterator();
         while(equivNodes.hasNext())
         {
           String equivNode = equivNodes.next();
+          if(equivNode.equals("14"))
+            System.out.println();
           Node agendaEquivInput = null;
           if(agenda == null)
             agendaEquivInput = agendaIOT.getSiteByID(equivNode);
@@ -580,10 +597,18 @@ public class ChannelModel implements Serializable
             task = agendaIOT.getTransmissionTask(agendaEquivInput);
           else
             task = agenda.getTransmissionTask(agendaEquivInput);
-          packetsToRecieve = task.getMaxPacektsTransmitted();
+          if(task == null)
+          {
+            packetsToRecieve = 0;
+          }
+          else
+          {
+            packetsToRecieve = task.getMaxPacektsTransmitted();
+          }
           expectedPackets.put(equivNode, packetsToRecieve);
         } 
       }
+      
       if(logicaloverlayNetwork.getQep().getRT().getRoot().getID().equals(clusterHeadID))
       {//root node with delivery operator, doesnt have a cluster, but needs a channel model site
         ChannelModelSite site = null;
@@ -618,20 +643,9 @@ public class ChannelModel implements Serializable
         else //your a sibling in the logical overlay to the cluster head. 
         {
           expectedPackets = new  HashMap<String, Integer>();
-          if(agenda == null)
+          if(agenda == null)// your in a simple agenda, and so sibling dont do anything
           {
-            //siblings only receive packets from cluster head and other siblings
-            Site clusterHeadSite = this.agendaIOT.getSiteByID(clusterHeadID);
-            int packetsTransmittedByClusterHead = 
-              this.agendaIOT.getTransmissionTask(clusterHeadSite).getMaxPacektsTransmitted();
-            expectedPackets.put(clusterHeadID, packetsTransmittedByClusterHead);
-            Iterator<String> siblings = 
-              this.logicaloverlayNetwork.getActiveEquivilentNodes(clusterHeadID).iterator();
-            while(siblings.hasNext())
-            {
-              expectedPackets.put(siblings.next(), packetsTransmittedByClusterHead);
-            }
-            
+            //siblings only receive packets from cluster head and other siblings 
             site = new ChannelModelSite(expectedPackets, siteID, logicaloverlayNetwork, 
                                        logicaloverlayNetwork.getPriority(siteID), 
                                        agendaIOT.getTasks().get(agendaIOT.getSiteByID(siteID)),
@@ -714,8 +728,31 @@ public class ChannelModel implements Serializable
     while(siteIterator.hasNext())
     {
       Site site = siteIterator.next();
+      if(site == null || site.getID() == null)
+        System.out.println();
+      if(this.channelModel.get(Integer.parseInt(site.getID())) == null)
+        System.out.println();
       this.channelModel.get(Integer.parseInt(site.getID())).determineAggregationContribution(site.getID());
     }
     return ChannelModelSite.getTuplesParticipatingInAggregation();
+  }
+  public void setQEP(SensorNetworkQueryPlan qEP)
+  {
+    this.logicaloverlayNetwork.setQep(qEP);
+    
+  }
+  public void setLogicalOverlayNetwork(
+      LogicalOverlayNetworkHierarchy logicalOverlayNetwork)
+  {
+    this.logicaloverlayNetwork = logicalOverlayNetwork;
+    
+  }
+  public void setAgendaIOT(UnreliableChannelAgenda agendaIOT)
+  {
+    this.agenda =agendaIOT; 
+  }
+  public void setAgendaIOT(AgendaIOT agenda)
+  {
+    this.agendaIOT = agenda; 
   }
 }

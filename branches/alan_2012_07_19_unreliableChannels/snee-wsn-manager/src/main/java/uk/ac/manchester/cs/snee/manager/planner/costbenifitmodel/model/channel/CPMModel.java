@@ -369,10 +369,27 @@ public class CPMModel
      while((line = in.readLine()) != null)
      {
        if(successfulConvert(line));
-         experimentalNoiseMeasurements.add(Integer.parseInt(line));
+         boolean success = tryToReadValue(line, experimentalNoiseMeasurements);
      }
   }
   
+  private boolean tryToReadValue(String line,
+      ArrayList<Integer> experimentalNoiseMeasurements2)
+  {
+    try
+    {
+      experimentalNoiseMeasurements.add(Integer.parseInt(line));
+      return true;
+    }
+    catch(Exception e)
+    {
+      Double noiseVal = Double.parseDouble(line);
+      experimentalNoiseMeasurements.add(noiseVal.intValue());
+      return true;
+    }
+    
+  }
+
   /**
    * checks if the text can be converted into a double
    * @param line
