@@ -600,6 +600,7 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
         new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay after nodes");
         overlay.updateClusters(failedNodeID, equivilentNodeID);
         cleanNodes(clonedIOT, failedNodeID);
+        clonedIOT.updateSiteMapping(equivilentNodeID);
       }
       else
       {
@@ -611,6 +612,7 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
         if(equivilentNodeID != null)
         {
           overlay.updateClusters(failedNodeID, equivilentNodeID);
+          clonedIOT.updateSiteMapping(equivilentNodeID);
         }
         else
         {
@@ -628,10 +630,10 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
     {
       IOT newIOT = clonedIOT;
       newIOT.setID("new iot");
-      IOTUtils utils = new IOTUtils(newIOT, currentQEP.getCostParameters());
-      utils.disconnectExchanges();
+     // IOTUtils utils = new IOTUtils(newIOT, currentQEP.getCostParameters());
+      //utils.disconnectExchanges();
      // newIOT.setDAF(utils.convertToDAF());
-      utils.reconnectExchanges();
+     // utils.reconnectExchanges();
       new IOTUtils(clonedIOT, overlay.getQep().getCostParameters()).exportAsDotFileWithFrags(localFolder.toString() + sep + "iotAfterReconnect", "iot with eqiv nodes", true);
       //new DAFUtils(newIOT.getDAF()).exportAsDotFile(localFolder.toString() + sep + "daf");
       new LogicalOverlayNetworkUtils().exportAsADotFile(clonedIOT, overlay, localFolder.toString() + sep + "iot with overlay after disconnect and reconnect");
@@ -679,7 +681,6 @@ public class LogicalOverlayStrategy extends FailedNodeStrategyAbstract
     return adapatation;    
   }
 
-  
   //helper method which removes failednode from other nodes outputs (due to unreliablechannel connecting)
   private void cleanNodes(IOT clonedIOT, String failedNodeID)
   {

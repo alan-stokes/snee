@@ -332,6 +332,8 @@ public final class SNEEPropertyNames {
   public static final String WSN_MANAGER_SUCCESSOR_NODE_FAILURES = "wsn_manager.successor_nodeFailureCount";
 
   public static final String WSN_MANAGER_K_ACTIVE_LEVEL = "wsn_manager.executor.edge.activeLevel";
+
+  public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_TEST_LOGICAL_EDGES = "wsn_manager.executor.edge.logical.Edges";
   
 }
 

@@ -12,7 +12,7 @@ public class NoiseHash
   private ArrayList<Integer> elements = new ArrayList<Integer>();
   private boolean flag = false;
   private ArrayList<Double> dist = new ArrayList<Double>(NoiseModelConstants.NOISE_NUM_VALUES);
-  
+  private boolean combined = false;
   /**
    * constructor
    */
@@ -106,15 +106,31 @@ public class NoiseHash
 
   public void addElement(Integer noiseValue)
   {
+    try{
     if(this.numElements == this.size)
     {
-      for(int index = 0; index < size; index++)
+      for(int index = 0; index < 10; index++)
       {
         elements.add(0);
       }
-      size = size *2;
+      size = size + 10;
     }
     elements.set(numElements, noiseValue);
     numElements++;
+    }
+    catch(Exception e)
+    {
+      System.out.println(numElements);
+    }
+  }
+
+  public void setCombined(boolean combined)
+  {
+    this.combined = combined;
+  }
+
+  public boolean isCombined()
+  {
+    return combined;
   }
 }

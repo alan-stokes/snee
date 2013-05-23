@@ -602,6 +602,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     {
       planner.updateStorageLocation(outputFolder);
       planner.startUnreliableChannelStrategy((SensorNetworkQueryPlan) qep, seed, distanceConverter);
+      System.exit(0);
     } 
     
   }

@@ -207,7 +207,11 @@ public class CPMModel
       doHashStuff(noiseNode, localHash);
     else if(localHash != null && globalHash != null)
     {
-      combineHashes(localHash, globalHash);
+      if(!localHash.isCombined())
+      {
+        combineHashes(localHash, globalHash);
+        localHash.setCombined(true);
+      }
       doHashStuff(noiseNode, localHash);
     }
     else if(localHash == null && globalHash == null)
@@ -224,6 +228,7 @@ public class CPMModel
   private void combineHashes(NoiseHash localHash, NoiseHash globalHash)
   {
     Iterator<Integer> elementIterator = globalHash.getElements().iterator();
+    System.out.println(globalHash.getNumElements());
     while(elementIterator.hasNext())
     {
       Integer element = elementIterator.next();
@@ -561,8 +566,12 @@ public class CPMModel
     
     if(stag)
     {
-      newIndex = random.nextInt(NoiseModelConstants.NOISE_BIN_SIZE);
-      noise = this.search_noise_from_bin_value(newIndex);
+      newIndex = random.nextInt(node.getNoiseTable().keySet().size());
+      ArrayList<String> keys = new ArrayList<String>();
+      keys.addAll(node.getNoiseTable().keySet());
+      int element = node.getNoiseTable().get(keys.get(newIndex)).getElements().get(0);
+      int binValue = this.search_bin_num(element);
+      noise = this.search_noise_from_bin_value(binValue);
     }
     else
     {

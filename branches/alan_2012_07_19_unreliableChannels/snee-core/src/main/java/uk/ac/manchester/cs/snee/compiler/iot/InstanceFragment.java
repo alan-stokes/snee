@@ -539,5 +539,9 @@ return this.getChildFragments().size();
     return null;
   }
  
+  public String toString()
+  {
+    return fragID + "-" + this.site.getID();
+  }
  
 }

@@ -555,6 +555,8 @@ public class ChannelModel implements Serializable
     while(siteIDIterator.hasNext())
     {
       String siteID = siteIDIterator.next();
+      if(siteID.equals("50"))
+        System.out.println();
       Integer siteIDInt = Integer.parseInt(siteID);
       String clusterHeadID = logicaloverlayNetwork.getClusterHeadFor(siteID);
       if(logicaloverlayNetwork.getQep().getRT().getSite(clusterHeadID) == null)
@@ -655,6 +657,8 @@ public class ChannelModel implements Serializable
           {
             //siblings only receive packets from cluster head and other siblings
             Site clusterHeadSite = this.agenda.getSiteByID(clusterHeadID);
+            if(this.agenda.getTransmissionTask(clusterHeadSite) == null)
+              System.out.println();
             int packetsTransmittedByClusterHead = 
               this.agenda.getTransmissionTask(clusterHeadSite).getMaxPacektsTransmitted();
             expectedPackets.put(clusterHeadID, packetsTransmittedByClusterHead);

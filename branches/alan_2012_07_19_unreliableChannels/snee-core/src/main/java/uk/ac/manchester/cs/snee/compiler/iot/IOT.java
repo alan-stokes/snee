@@ -1117,4 +1117,26 @@ public class IOT extends SNEEAlgebraicForm
         operatorList.add(instanceOperator);
     }
   }
+
+
+  public void updateSiteMapping(String equivilentNodeID)
+  {
+    Iterator<InstanceFragment> fragIterator = this.fragments.iterator();
+    Site site = this.getSiteFromID(equivilentNodeID);
+    while(fragIterator.hasNext())
+    {
+      InstanceFragment frag = fragIterator.next();
+      if(frag.getSite().getID().equals(equivilentNodeID))
+      {
+        Iterator<InstanceOperator> fragOps = frag.operators.iterator();
+        while(fragOps.hasNext())
+        {
+          InstanceOperator op = fragOps.next();
+          this.siteToOpInstMap.addWithDuplicates(site, op);
+        }
+        this.siteToOpInstMap.addWithDuplicates(site,frag.getParentExchangeOperator());
+      }
+    }
+    
+  }
 }

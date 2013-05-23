@@ -398,24 +398,41 @@ public class Executer extends AutonomicManagerComponent
     
     Cloner cloner = new Cloner();
     cloner.dontClone(Logger.class);
-    
     RobustSensorNetworkQueryPlan ClonedrQEP = cloner.deepClone(rQEP);
-    this.runningSites = manager.getCopyOfRunningSites();
-    double overallQEPShortestLifetime =   calculateOverallQEPShortestLifetime(qep, robustFolder, seed, rQEP);
-    this.runningSites = manager.getCopyOfRunningSites();
-    this.network = manager.getWsnTopology();
-    double overallRQEPShortestLifetime =  calculateOverallRQEPShortestLifetime(ClonedrQEP, robustFolder, seed);
+    double overallShortestLifetime = 0.0;
+    boolean runLogicalEdges = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_TEST_LOGICAL_EDGES);
+    if(runLogicalEdges)
+    {
+      this.runningSites = manager.getCopyOfRunningSites();
+      overallShortestLifetime =   calculateOverallQEPShortestLifetime(qep, robustFolder, seed, rQEP);
+    }
+    else
+    {
+      this.runningSites = manager.getCopyOfRunningSites();
+      this.network = manager.getWsnTopology();
+      overallShortestLifetime =  calculateOverallRQEPShortestLifetime(ClonedrQEP, robustFolder, seed);
+    }
     
     String queryid = manager.getQueryID();
     DecimalFormat format = new DecimalFormat("#.##");
-    double overallQEPShortestLifetimeA = overallQEPShortestLifetime / (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000);
-    double overallRQEPShortestLifetimeA = overallRQEPShortestLifetime / (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000);
-    System.out.println(queryid + " " + format.format(overallQEPShortestLifetimeA) + " " + format.format(overallRQEPShortestLifetimeA));
+    
+    double overallShortestLifetimeA = overallShortestLifetime / (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000);
+    if(runLogicalEdges)
+      System.out.println(queryid + " " + "L" + " " + format.format(overallShortestLifetimeA));
+    else
+      System.out.println(queryid + " " + "N" + " " + format.format(overallShortestLifetimeA));
+    
     BufferedWriter out = new BufferedWriter(new FileWriter(new File(this.executerOutputFolder.toString() + sep + "lifetimes")));
-     out.write(queryid + " " + format.format(overallQEPShortestLifetimeA) + " " + format.format(overallRQEPShortestLifetimeA));
+    if(runLogicalEdges)
+      out.write(queryid + " " + "L" + " "+ format.format(overallShortestLifetimeA));
+    else
+      out.write(queryid + " " + "N" + " "+ format.format(overallShortestLifetimeA));
     out.flush();
     out.close();
-    return new Storage(overallRQEPShortestLifetime, overallQEPShortestLifetime);
+    if(runLogicalEdges)
+      return new Storage(overallShortestLifetime, 0.0);
+    else
+      return new Storage(0.0, overallShortestLifetime);
   }
 
   
@@ -440,6 +457,7 @@ public class Executer extends AutonomicManagerComponent
   IOException, SNEEConfigurationException, CodeGenerationException
   {
     boolean alive = true;
+    boolean first = true;
     network = manager.getWsnTopology();
     ArrayList<String> globalFailedNodes = new ArrayList<String>();
     double overallQEPShortestLifetime = 0;
@@ -499,6 +517,12 @@ public class Executer extends AutonomicManagerComponent
             }
           }
         }
+      }
+      
+      if(first)
+      {
+        System.out.println("static lifetime = " + shortestLifetime);
+        first = false;
       }
       
       //update runtimeSites energy levels
@@ -610,6 +634,8 @@ public class Executer extends AutonomicManagerComponent
       overallRQEPShortestLifetime += (shortestLifetime * agendaLength);
       globalFailedNodes.add(failedSite);
       System.out.println("node " + failedSite);
+      if(failedSite.equals("52"))
+        System.out.println();
       if(rQEP.getLogicalOverlayNetwork().canAdapt(failedSite, rQEP))
       {
         System.out.println("adapting");

@@ -125,6 +125,8 @@ public class ChannelModelSite implements Serializable
   public void recivedInputPacket(String source, int packetID)
   {
     ArrayList<Boolean> packets = arrivedPackets.get(source);
+    if(packets == null)
+      System.out.println();
     if(packetID -1 < packets.size())
     {
       arrivedPackets.remove(source);
@@ -599,17 +601,18 @@ public class ChannelModelSite implements Serializable
    * have been lost to create said aggregation result. 
    * If the agg operator is a eval op, it prints it to a file within the output folder for future stores.
    * @param op
+   * @param iot 
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    */
-  private void checkAggregationTupleTracker(InstanceOperator op) 
+  private void checkAggregationTupleTracker(InstanceOperator op, IOT iot) 
   throws SchemaMetadataException, TypeMappingException
   {
     HashMapList<Integer, Boolean> currentSitesTracker = 
       ChannelModelSite.aggregationTupleTracker.get(op.getSite().getID());
     if(currentSitesTracker == null)
       currentSitesTracker = new HashMapList<Integer, Boolean>();
-    HashMap<String, ArrayList<Boolean>> reducedArrivedpackets = reduceArrivedPackets(op.getSite(), this.arrivedPackets);
+    HashMap<String, ArrayList<Boolean>> reducedArrivedpackets = reduceArrivedPackets(iot.getSiteFromID(op.getSite().getID()), this.arrivedPackets);
     InstanceOperator firstInput = (InstanceOperator) op.getInput(0);
     if(op.getSensornetOperator() instanceof SensornetAggrEvalOperator &&
        firstInput.getSensornetOperator() instanceof SensornetAggrMergeOperator)
@@ -660,8 +663,10 @@ public class ChannelModelSite implements Serializable
           Site trueInputSite = inputSite;
           if(!found)
           {
-            do
+            while(trueInputSite.getInputsList().size() < 2 && !found && trueInputSite.getInputsList().size() > 0)
             {
+              if(trueInputSite.getInputsList().size() == 0)
+                System.out.println();
               trueInputSite = (Site) trueInputSite.getInputsList().get(0);
               siteOps = this.overlayNetwork.getQep().getIOT().getOpInstances(trueInputSite).iterator();
               while(siteOps.hasNext() && !found)
@@ -673,7 +678,6 @@ public class ChannelModelSite implements Serializable
                   acqOperatorFound = true;
               }
             }
-            while(trueInputSite.getInputsList().size() < 2 && !found && trueInputSite.getInputsList().size() > 0);
           }
           
           String inputNodeID = inputSite.getID();
@@ -688,11 +692,13 @@ public class ChannelModelSite implements Serializable
             {
               Boolean recieved = receivedPacketIterator.next();
               int oldtupleRatio = tupleRatio;
-              if(op == null || op.getLastPacketTupleCount() == null)
-                System.out.println();
+               
               if(counter == receivedPackets.size() -1)
               {
-               	tupleRatio = op.getLastPacketTupleCount();
+                if(op.getLastPacketTupleCount() == null)
+                  tupleRatio = 0;
+                else
+               	  tupleRatio = op.getLastPacketTupleCount();
               }
               for(int index = 1; index <= tupleRatio; index++)
               {
@@ -709,22 +715,25 @@ public class ChannelModelSite implements Serializable
             {
               HashMapList<Integer, Boolean> inputSitesTracker = 
                 ChannelModelSite.aggregationTupleTracker.get(inputSite.getID());
-              Iterator<Integer> keys = inputSitesTracker.keySet().iterator();
-              while(keys.hasNext())
+              if(inputSitesTracker != null)
               {
-                Integer key = keys.next();
-                ArrayList<Boolean> bools = inputSitesTracker.get(key);
-                Iterator<Boolean> boolIterator = bools.iterator();
-                ArrayList<Boolean> receivedPackets = reducedArrivedpackets.get(inputSite.getID());
-                Iterator<Boolean> receivedPacketIterator = receivedPackets.iterator();
-                while(receivedPacketIterator.hasNext())
+                Iterator<Integer> keys = inputSitesTracker.keySet().iterator();
+                while(keys.hasNext())
                 {
-                  Boolean recieved = receivedPacketIterator.next();
-                  if(recieved)
+                  Integer key = keys.next();
+                  ArrayList<Boolean> bools = inputSitesTracker.get(key);
+                  Iterator<Boolean> boolIterator = bools.iterator();
+                  ArrayList<Boolean> receivedPackets = reducedArrivedpackets.get(inputSite.getID());
+                  Iterator<Boolean> receivedPacketIterator = receivedPackets.iterator();
+                  while(receivedPacketIterator.hasNext())
                   {
-                    while(boolIterator.hasNext())
+                    Boolean recieved = receivedPacketIterator.next();
+                    if(recieved)
                     {
-                      currentSitesTracker.addWithDuplicates(key, boolIterator.next());
+                      while(boolIterator.hasNext())
+                      {
+                        currentSitesTracker.addWithDuplicates(key, boolIterator.next());
+                      }
                     }
                   }
                 }
@@ -734,22 +743,27 @@ public class ChannelModelSite implements Serializable
             {
               HashMapList<Integer, Boolean> inputSitesTracker = 
               ChannelModelSite.aggregationTupleTracker.get(trueInputSite.getID());
-              Iterator<Integer> keys = inputSitesTracker.keySet().iterator();
-              while(keys.hasNext())
+              if(inputSitesTracker != null)
               {
-                Integer key = keys.next();
-                ArrayList<Boolean> bools = inputSitesTracker.get(key);
-                Iterator<Boolean> boolIterator = bools.iterator();
-                ArrayList<Boolean> receivedPackets = reducedArrivedpackets.get(inputSite.getID());
-                Iterator<Boolean> receivedPacketIterator = receivedPackets.iterator();
-                while(receivedPacketIterator.hasNext())
+                Iterator<Integer> keys = inputSitesTracker.keySet().iterator();
+                while(keys.hasNext())
                 {
-                  Boolean recieved = receivedPacketIterator.next();
-                  if(recieved)
+                  Integer key = keys.next();
+                  ArrayList<Boolean> bools = inputSitesTracker.get(key);
+                  Iterator<Boolean> boolIterator = bools.iterator();
+                  ArrayList<Boolean> receivedPackets = reducedArrivedpackets.get(inputSite.getID());
+                  if(receivedPackets == null)
+                    System.out.println();
+                  Iterator<Boolean> receivedPacketIterator = receivedPackets.iterator();
+                  while(receivedPacketIterator.hasNext())
                   {
-                    while(boolIterator.hasNext())
+                    Boolean recieved = receivedPacketIterator.next();
+                    if(recieved)
                     {
-                      currentSitesTracker.addWithDuplicates(key, boolIterator.next());
+                      while(boolIterator.hasNext())
+                      {
+                        currentSitesTracker.addWithDuplicates(key, boolIterator.next());
+                      }
                     }
                   }
                 }
@@ -778,40 +792,43 @@ public class ChannelModelSite implements Serializable
       String child = inputPacketKeys.next().getID();
       ArrayList<Boolean> packets = arrivedPackets.get(child);
       ArrayList<Boolean> reducedPackets = new ArrayList<Boolean>();
-      Iterator<Boolean> packetIterator = packets.iterator();
-      int counter = 0;
-      while(packetIterator.hasNext())
+      if(packets != null)
       {
-        Boolean packetRecieved = packetIterator.next();
-        if(!packetRecieved)
+        Iterator<Boolean> packetIterator = packets.iterator();
+        int counter = 0;
+        while(packetIterator.hasNext())
         {
-          Iterator<String> EquivNodes = 
-            this.overlayNetwork.getActiveNodesInRankedOrder(
-                this.overlayNetwork.getClusterHeadFor(child)).iterator();
-          boolean found = false;
-          boolean updated = false;
-          while(EquivNodes.hasNext() && !updated)
+          Boolean packetRecieved = packetIterator.next();
+          if(!packetRecieved)
           {
-            String EquivNode = EquivNodes.next();
-            ArrayList<Boolean> equivPackets = arrivedPackets.get(EquivNode);
-            if(equivPackets.size() > counter && equivPackets.get(counter))
+            Iterator<String> EquivNodes = 
+              this.overlayNetwork.getActiveNodesInRankedOrder(
+                  this.overlayNetwork.getClusterHeadFor(child)).iterator();
+            boolean found = false;
+            boolean updated = false;
+            while(EquivNodes.hasNext() && !updated)
             {
-              reducedPackets.add(true);
-              updated = true;
+              String EquivNode = EquivNodes.next();
+              ArrayList<Boolean> equivPackets = arrivedPackets.get(EquivNode);
+              if(equivPackets.size() > counter && equivPackets.get(counter))
+              {
+                reducedPackets.add(true);
+                updated = true;
+              }
+            }
+            if(!found)
+            {
+              reducedPackets.add(false);
             }
           }
-          if(!found)
+          else
           {
-            reducedPackets.add(false);
+            reducedPackets.add(true);
           }
+          counter++;
         }
-        else
-        {
-          reducedPackets.add(true);
-        }
-        counter++;
+        reducedArrivePackets.put(child, reducedPackets);
       }
-      reducedArrivePackets.put(child, reducedPackets);
     }
     return reducedArrivePackets;
   }
@@ -1407,7 +1424,7 @@ public class ChannelModelSite implements Serializable
       if(op.getSensornetOperator() instanceof SensornetAggrMergeOperator ||
          op.getSensornetOperator()  instanceof SensornetAggrEvalOperator)
       {
-        checkAggregationTupleTracker(op);
+        checkAggregationTupleTracker(op, overlayNetwork.getQep().getIOT());
       }
       if(op.getSensornetOperator() instanceof SensornetDeliverOperator)
          finishTracking(op);
