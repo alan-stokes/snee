@@ -355,8 +355,6 @@ public class ChannelModelSite implements Serializable
       this.packetIds.clear();
       this.transmitableWindows.clear();
       
-      if(siteID.equals("1"))
-        System.out.println();
       ArrayList<InstanceOperator> operators = IOT.getOpInstancesInSpecialOrder(site);
       Iterator<InstanceOperator> operatorIterator = operators.iterator();
       HashMap<String, Integer> currentPacketCount = new HashMap<String, Integer>();

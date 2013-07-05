@@ -36,8 +36,9 @@ public class NoiseDataStore
     if(prr < -1)
       prr = -1;
     
-    return "SID=" + sourceID + " RSSI=" + df.format(RSSI) + " Noise=" + noiseValue + " SNR=" +  
-    df.format(signalNoiseRatio) + " prr=" +  df.format(prr) + " r=" + result;
+    return "SID=" + sourceID + " r=" + result;
+    //return "SID=" + sourceID + " RSSI=" + df.format(RSSI) + " Noise=" + noiseValue + " SNR=" +  
+    //df.format(signalNoiseRatio) + " prr=" +  df.format(prr) + " r=" + result;
     
     
   }

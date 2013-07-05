@@ -10,6 +10,7 @@ public class Seed
   private ArrayList<Double> aAverage = new ArrayList<Double>();
   private ArrayList<Double> oAAverage = new ArrayList<Double>();
   private ArrayList<Double> aAAverage = new ArrayList<Double>();
+  private ArrayList<Double> sAverage = new ArrayList<Double>();
   private Integer max = null;
   
   public Seed()
@@ -82,6 +83,16 @@ public class Seed
     String output = tuples.toString();
     output = output.concat("|"+this.getaAverage()+"|"+this.getoAverage()+"|"+this.aAAverage+"|"+this.oAAverage);
     return output;
+  }
+
+  public void setsAverage(ArrayList<Double> sAverage)
+  {
+    this.sAverage = sAverage;
+  }
+
+  public ArrayList<Double> getsAverage()
+  {
+    return sAverage;
   }
   
   

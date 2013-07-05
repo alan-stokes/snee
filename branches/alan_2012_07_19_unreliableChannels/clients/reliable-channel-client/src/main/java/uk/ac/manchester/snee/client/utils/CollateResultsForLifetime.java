@@ -19,12 +19,25 @@ public class CollateResultsForLifetime
 {
   
   private static String sep = System.getProperty("file.separator");
+  private static File output = new File("/mnt/usb/1st1/condorRecent/collatedVersion/EdgeLifetimeDemoExponent1.6/");
+  private static File root = new File("/mnt/usb/1st1/condorRecent/EdgeLifetimeDemoExponent1.6/");
+  private static File rootroot = new File("/mnt/usb/1st1/condorRecent/");
   
   public static void main(String [] args)
   {
     try
     {
-      File root = new File("/mnt/usb/1st1/EdgeLifetime/");
+      File[] listedFiles1 = rootroot.listFiles();
+      int max1 = listedFiles1.length;
+      for(int counter1 = 0; counter1 < max1; counter1++)
+      {
+        File folder1 = listedFiles1[counter1];
+        if(folder1.isDirectory() && !folder1.getName().equals("collatedVersion"))
+        {
+          root = new File(folder1.toString());
+          output = new File("/mnt/usb/1st1/condorRecent/collatedVersion/" + folder1.getName());
+    try
+    {
       HashMap<String, Query> data = new HashMap<String, Query>();
       File[] listedFiles = root.listFiles();
       int max = listedFiles.length;
@@ -42,11 +55,14 @@ public class CollateResultsForLifetime
           String[] bits = fileName.split("\\.");
           File outputTuplesFile = null;
           outputTuplesFile = new File(folder.toString() + sep + "out.txt");
-          BufferedReader in = new BufferedReader(new FileReader(outputTuplesFile));
-          ArrayList<String> tuples = locateCorrectArrayList(data, bits);
-          System.out.println("reading in file for "+  bits[0]);
-          readInData(in, tuples);
-          in.close();
+          if(outputTuplesFile.exists())
+          {
+            BufferedReader in = new BufferedReader(new FileReader(outputTuplesFile));
+            ArrayList<String> tuples = locateCorrectArrayList(data, bits);
+            System.out.println("reading in file for "+  bits[0]);
+            readInData(in, tuples);
+            in.close();
+          }
         }
       }
       
@@ -59,13 +75,18 @@ public class CollateResultsForLifetime
       e.printStackTrace();
     }
   }
+  }
+    }
+  catch(Exception f)
+  {
+  }
+  }
 
   private static void outputData(  HashMap<String, Query> data)
   throws IOException
   {
     HashMap<String, Query> averagedData = new HashMap<String, Query>();
     File distanceOutput = null;
-    File output = new File("/local/output");
     output.mkdir();
     Iterator<String> queryKeysIterator = data.keySet().iterator();
     while(queryKeysIterator.hasNext())
@@ -139,9 +160,9 @@ public class CollateResultsForLifetime
           Klevel k = kLevels.get(kKey);
           Seed kAvergaeTuples = k.getData().get(kKey);
           DecimalFormat format = new DecimalFormat("#.##");
-          if(kAvergaeTuples.getaAverage().get(0) != 0)
+        //  if(kAvergaeTuples.getaAverage().get(0) != 0)
             out.write(queryKey + " " + kKey + " " + format.format(kAvergaeTuples.getaAverage().get(0)) + " " + 
-                      format.format(kAvergaeTuples.getoAverage().get(0)) + "\n");
+                      format.format(kAvergaeTuples.getoAverage().get(0)) + " " +  format.format(kAvergaeTuples.getsAverage().get(0))+ "\n");
         }
         out.flush();
         out.close();
@@ -168,6 +189,7 @@ public class CollateResultsForLifetime
       ArrayList<String> tuples = seeds.get(seedKey).getTuples();
       allTuples.addWithDuplicates("o", Double.parseDouble(tuples.get(0)));
       allTuples.addWithDuplicates("a", Double.parseDouble(tuples.get(1)));
+      allTuples.addWithDuplicates("s", Double.parseDouble(tuples.get(2)));
     }
     
     outputAveragedTuples(allTuples, maxValues, kLevel, averagedK, kKey);
@@ -176,7 +198,6 @@ public class CollateResultsForLifetime
   private static void outputAveragedKLevel(HashMap<String, Klevel> ks, File outputFolder) 
   throws IOException
   {
-    BufferedWriter outTop = new BufferedWriter(new FileWriter(outputFolder.toString() + sep + "percentages"));
     Iterator<String> kKeys = ks.keySet().iterator();
     while(kKeys.hasNext())
     {
@@ -187,7 +208,7 @@ public class CollateResultsForLifetime
       Seed kAvergaeTuples = k.getData().get(kKey);
       DecimalFormat format = new DecimalFormat("#.##");
       out.write(kKey + " " + format.format(kAvergaeTuples.getaAverage().get(0)) + " " + 
-          format.format(kAvergaeTuples.getoAverage().get(0)) + "\n");
+          format.format(kAvergaeTuples.getoAverage().get(0)) + " " + format.format(kAvergaeTuples.getsAverage().get(0)) + "\n");
       out.flush();
       out.close();
     }
@@ -201,6 +222,7 @@ public class CollateResultsForLifetime
     Iterator<String> keys = allTuples.keySet().iterator();
     ArrayList<Double> oAveragedTuples = new ArrayList<Double>(50);
     ArrayList<Double> aAveragedTuples = new ArrayList<Double>(50);
+    ArrayList<Double> sAveragedTuples = new ArrayList<Double>(50);
     
     while(keys.hasNext())
     {
@@ -225,10 +247,18 @@ public class CollateResultsForLifetime
         aAveragedTuples.add(average);
       // aSDTuples.set(index,  SD);
       }
+      else if(key.equals("s"))
+      {
+        sAveragedTuples.add(average);
+      // aSDTuples.set(index,  SD);
+      }
+      
+      
     }
     Seed average = new Seed();
     average.setaAverage(aAveragedTuples);
     average.setoAverage(oAveragedTuples);
+    average.setsAverage(sAveragedTuples);
     average.setMax(maxValues);
     k.getData().put(kKey, average);
     
@@ -236,6 +266,7 @@ public class CollateResultsForLifetime
     BufferedWriter out = new BufferedWriter(new FileWriter(kLevelOutput.toString() + sep + "avergaedTuples"));
     Iterator<Double> adata = aAveragedTuples.iterator();
     Iterator<Double> odata = oAveragedTuples.iterator();
+    Iterator<Double> sdata = sAveragedTuples.iterator();
     adata.next();
     odata.next();
     int counter = 1;
@@ -244,7 +275,8 @@ public class CollateResultsForLifetime
     {
       Double a = adata.next();
       Double o = odata.next();
-      out.write(counter + " " + maxValues + " " + format.format(o) + " " + format.format(a) + "\n");
+      Double s = sdata.next();
+      out.write(counter + " " + maxValues + " " + format.format(o) + " " + format.format(a) + format.format(s) + "\n");
     }
     out.flush();
     out.close();
@@ -256,18 +288,27 @@ public class CollateResultsForLifetime
   throws IOException
   {
     String line = null;
+    tuples.add("0.0");
+    tuples.add("0.0");
+    tuples.add("0.0");
     while((line = in.readLine()) != null)
     {
       if(line.contains("new robust"))
       {
         String [] results = line.split(" = ");
-        tuples.add(results[1]);
+        tuples.set(1, results[1]);
       }
-    }
-    if(tuples.size() == 0)
-    {
-      tuples.add("0.0");
-      tuples.add("0.0");
+      if(line.contains("new lifetime"))
+      {
+        String [] results = line.split(" = ");
+        tuples.set(0, results[1]);
+      }
+      if(line.contains("static lifetime"))
+      {
+        String [] results = line.split(" = ");
+        tuples.set(2, results[1]);
+      }
+      
     }
   }
 

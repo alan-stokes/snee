@@ -17,12 +17,13 @@ public class CollateResultsForTuples
 {
   
   private static String sep = System.getProperty("file.separator");
+  private static File root = new File("/mnt/usb/1st1/condor_edge_Tuples_Casinoex3/");
+  private static File output = new File("/mnt/usb/1st1/condor_edge_Tuples_Casinoex3Results/");
   
   public static void main(String [] args)
   {
     try
     {
-      File root = new File("/local/ChannelJoin/");
       HashMap<String, Query> data = new HashMap<String, Query>();
       File[] listedFiles = root.listFiles();
       int max = listedFiles.length;
@@ -77,7 +78,6 @@ public class CollateResultsForTuples
   {
     HashMap<String, Query> averagedData = new HashMap<String, Query>();
     File distanceOutput = null;
-    File output = new File("/local/output");
     output.mkdir();
     Iterator<String> queryKeys = data.keySet().iterator();
     while(queryKeys.hasNext())
@@ -269,15 +269,15 @@ public class CollateResultsForTuples
   throws IOException
   {
     Iterator<String> keys = allTuples.keySet().iterator();
-    ArrayList<Double> oAveragedTuples = new ArrayList<Double>(50);
-    ArrayList<Double> aAveragedTuples = new ArrayList<Double>(50);
-    ArrayList<Double> oSDTuples = new ArrayList<Double>(50);
-    ArrayList<Double> aSDTuples = new ArrayList<Double>(50);
-    ArrayList<Double> aAGConTuples = new ArrayList<Double>(50);
-    ArrayList<Double> oAGConTuples = new ArrayList<Double>(50);
-    ArrayList<Double> oAggSDTuples = new ArrayList<Double>(50);
-    ArrayList<Double> aAggSDTuples = new ArrayList<Double>(50);
-    for(int index = 0; index <= 50; index++)
+    ArrayList<Double> oAveragedTuples = new ArrayList<Double>(200);
+    ArrayList<Double> aAveragedTuples = new ArrayList<Double>(200);
+    ArrayList<Double> oSDTuples = new ArrayList<Double>(200);
+    ArrayList<Double> aSDTuples = new ArrayList<Double>(200);
+    ArrayList<Double> aAGConTuples = new ArrayList<Double>(200);
+    ArrayList<Double> oAGConTuples = new ArrayList<Double>(200);
+    ArrayList<Double> oAggSDTuples = new ArrayList<Double>(200);
+    ArrayList<Double> aAggSDTuples = new ArrayList<Double>(200);
+    for(int index = 0; index <= 200; index++)
     {
       oAveragedTuples.add(null);
       aAveragedTuples.add(null);
@@ -347,6 +347,7 @@ public class CollateResultsForTuples
       Double a = adata.next();
       Double o = odata.next();
       out.write(counter + " " + maxValues + " " + format.format(o) + " " + format.format(a) + "\n");
+      counter++;
     }
     out.flush();
     out.close();
@@ -398,6 +399,7 @@ public class CollateResultsForTuples
       Double a = adata.next();
       Double o = odata.next();
       out.write(counter + " " + maxValues + " " + format.format(o) + " " + format.format(a) + "\n");
+      counter++;
     }
     aAverageSD = 0.0;
     oAverageSD = 0.0;
@@ -435,6 +437,7 @@ public class CollateResultsForTuples
       Double a = adata.next();
       Double o = odata.next();
       out.write(counter + " " + maxValues + " " + format.format(o) + " " + format.format(a) + "\n");
+      counter++;
     }
     out.flush();
     out.close();

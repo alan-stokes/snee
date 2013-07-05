@@ -40,9 +40,9 @@ public class RelibaleChannelClient extends SNEEClient
 {
   
   private static String sep = System.getProperty("file.separator");
-  private static int queryid =1;
+  private static int queryid =30;
   protected static int testNo = 1;
-  protected static int  kResil = 4;
+  protected static int  kResil = 2;
   private static int max = 90;
   private static File testFolder =  new File("src/main/resources/condorchecks");
   private static File sneetestFolder =  new File("condorchecks");
@@ -216,9 +216,9 @@ public class RelibaleChannelClient extends SNEEClient
   //  {
       //get query & schemas
      // String currentQuery = queryIterator.next();
-  // String currentQuery = "SELECT RSTREAM AVG(anow.x) as qx FROM A[NOW] anow ;";
+   String currentQuery = "SELECT RSTREAM AVG(anow.x) as qx FROM A[NOW] anow ;";
   //  String currentQuery = "SELECT RSTREAM anow.x as qx FROM A[NOW] anow, B[NOW] bnow WHERE anow.x=bnow.x;";
-        String currentQuery = "SELECT RSTREAM anow.x as qx FROM A[NOW] anow ;";
+     //   String currentQuery = "SELECT RSTREAM anow.x as qx FROM A[NOW] anow ;";
   // String currentQuery = "SELECT RSTREAM anow.x as qx FROM A[NOW] anow,(SELECT bnow.x as sq1x FROM B[NOW] bnow, C[NOW] cnow WHERE bnow.x=cnow.x) sq1 WHERE anow.x=sq1.sq1x;";
  //  String currentQuery = "SELECT RSTREAM sq1.sq1x as qx FROM (SELECT anow.x as sq1x FROM A[NOW] anow, B[NOW] bnow WHERE anow.x=bnow.x) sq1, (SELECT cnow.x as sq2x FROM C[NOW] cnow, D[NOW] dnow WHERE cnow.x=dnow.x) sq2 WHERE sq1.sq1x=sq2.sq2x;";
    
@@ -279,11 +279,22 @@ public class RelibaleChannelClient extends SNEEClient
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS, "FALSE");
-    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_K_ACTIVE_LEVEL, "2");
-    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_RESILIENTLEVEL, "2");
+    String k = SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_LEVEL);
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_K_ACTIVE_LEVEL, k);
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_SIMULATION_ITERATIONS, "20");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_PATHLOSSEXPONENT, "3");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_RESILIENTLEVEL, k);
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_TEST_LOGICAL_EDGES, "FALSE");
-    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_NOISEMODEL, "src/main/resources/condorchecks/casino-lab.txt");
-    
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_NOISEMODEL, "src/main/resources/condorchecks/meyer-heavy.txt");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_EXECUTOR_EDGE_TUPLES, "TRUE");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_EXECUTOR_EDGE_LIFE, "FALSE");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_RESILIENTLEVEL, k);
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR, "FALSE");
+    SNEEProperties.setSetting(SNEEPropertyNames.RUN_SIM_FAILED_NODES, "FALSE");
+    SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE"); 
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS, "FALSE");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_EXECUTOR_EDGE_TUPLES, "FALSE");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_EXECUTOR_EDGE_LIFE, "TRUE");
     
     control.addQuery(_query, _queryParams, new Long(0), new Double(1.0));
     getController().close();

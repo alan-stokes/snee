@@ -66,7 +66,7 @@ public class TimeTwiddler
     bestPath = original;
     runningSites = originalRunningSites;
     //clear agenda count of last successor (being not correct)
-    usableCopy.getSuccessorList().get(usableCopy.successorLength() -1).setAgendaCount(0);
+    usableCopy.getSuccessorList().get(usableCopy.successorLength()).setAgendaCount(0);
     
     //iterate though successors adjusting times
     ArrayList<Successor> successors = usableCopy.getSuccessorList();
@@ -103,7 +103,7 @@ public class TimeTwiddler
         bestPath = cloner.deepClone(usableCopy);
       }
       int finalPlanLifetime = 
-        usableCopy.getSuccessorList().get(usableCopy.successorLength()-1).calculateLifetime();
+        usableCopy.getSuccessorList().get(usableCopy.successorLength()).calculateLifetime();
       if(WithRecompute && finalPlanLifetime > 0)
       {
         SuccessorPath path = search.findSuccessorsPath(cloner.deepClone(usableCopy));
@@ -133,7 +133,7 @@ public class TimeTwiddler
         bestPath = cloner.deepClone(usableCopy);
       }
       int finalPlanLifetime = 
-        usableCopy.getSuccessorList().get(usableCopy.successorLength()-1).calculateLifetime();
+        usableCopy.getSuccessorList().get(usableCopy.successorLength()).calculateLifetime();
       if(WithRecompute && finalPlanLifetime > 0)
       {
         SuccessorPath path = search.findSuccessorsPath(cloner.deepClone(usableCopy));

@@ -334,6 +334,12 @@ public final class SNEEPropertyNames {
   public static final String WSN_MANAGER_K_ACTIVE_LEVEL = "wsn_manager.executor.edge.activeLevel";
 
   public static final String WSN_MANAGER_UNRELIABLE_CHANNELS_TEST_LOGICAL_EDGES = "wsn_manager.executor.edge.logical.Edges";
+
+  public static final String WSN_MANAGER_EDGE_LIFETIME_UNPREDICTABLEFAILURES = "wsn_manager.executor.edge.unpredictable.failures";
+  
+  public static final String WSN_MANAGER_EDGE_LIFETIME_UNPREDICTABLEFAILURES_NO = "wsn_manager.executor.edge.unpredictable.failures.no";
+
+  public static final String WSN_MANAGER_EDGE_EXPECTEDLIFETIME = "wsn_manager.executor.edge.expected.lifetime";
   
 }
 

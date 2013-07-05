@@ -1,12 +1,17 @@
 package uk.ac.manchester.cs.snee.manager.planner.successorrelation;
 
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -39,6 +44,7 @@ import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AutonomicManagerComponent;
 import uk.ac.manchester.cs.snee.manager.common.RunTimeSite;
 import uk.ac.manchester.cs.snee.manager.failednodestrategies.completerecompilationstrategy.CompleteReCompilationStrategy;
+import uk.ac.manchester.cs.snee.manager.planner.PlannerUtils;
 import uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.energy.SiteEnergyModel;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor.Successor;
 import uk.ac.manchester.cs.snee.manager.planner.successorrelation.successor.SuccessorPath;
@@ -107,22 +113,24 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
       //search though space
       search = new TabuSearch(manager.getWsnTopology(), runningSites, _metadata, _metadataManager, TABUFolder);
       SuccessorPath bestSuccessorRelation = search.findSuccessorsPath(initialPoint);
-      new SuccessorRelationManagerUtils(this.manager, successorFolder).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
-      AdaptationMonitor.
-      outputAdaptationDataBetweenSuccessors(bestSuccessorRelation, _metadata, 
-                                            _metadataManager, successorFolder, 
-                                            deployment, runningSites, manager.getCostsParamters());
+      System.out.println("overall lifetime is " + bestSuccessorRelation.overallSuccessorPathLifetime());
+      // new SuccessorRelationManagerUtils(this.manager, successorFolder).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
+      //AdaptationMonitor.
+      //outputAdaptationDataBetweenSuccessors(bestSuccessorRelation, _metadata, 
+             //                               _metadataManager, successorFolder, 
+              //                              deployment, runningSites, manager.getCostsParamters());
      // testAdaptiveLifetime(bestSuccessorRelation);
       
-     writeSuccessorPathToFile(bestSuccessorRelation);
-    // SuccessorPath bestSuccessorRelation = readInSuccessor();
+    // writeSuccessorPathToFile(bestSuccessorRelation);
+  //   SuccessorPath bestSuccessorRelation = readInSuccessor();
       //new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(bestSuccessorRelation.getSuccessorList(), "finalSolution");
      
       //added code to see how well tuned the plan is without recomputing
-      //  BufferedWriter out = new BufferedWriter(new FileWriter(new File(successorFolder.toString() + sep + "records")));
-      //  SuccessorPath twiddleBestSuccessorRelation = TimeTwiddler.adjustTimesTest(bestSuccessorRelation, runningSites, false, search, out);      
+        BufferedWriter out = new BufferedWriter(new FileWriter(new File(successorFolder.toString() + sep + "records")));
+        SuccessorPath twiddleBestSuccessorRelation = TimeTwiddler.adjustTimesTest(bestSuccessorRelation, runningSites, false, search, out);      
      //  new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(twiddleBestSuccessorRelation.getSuccessorList(), "finalTwiddleSolution");
-        //out.close();
+        out.close();
+        System.exit(0);
         //added code to see how well tuned successor is by adjusting and then running entire system
    //   SuccessorPath twiddleBestSuccessorRelation = TimeTwiddler.adjustTimesTest(bestSuccessorRelation, runningSites, true, search);      
      // new PlannerUtils(successorFolder, this.manager).writeSuccessorToFile(twiddleBestSuccessorRelation.getSuccessorList(), "finalTwiddleSolutionWithRecompute");
@@ -716,11 +724,11 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
     try
     {
       //use buffering
-      File f = new File("s/s" );
+      File f = new File("/local/successorResults/successorOutputNewTimeSystem/qos1/query2/AutonomicManData/Planner/successorRelation/successorFile" );
       System.out.println(f.getAbsolutePath());
       if(f.exists())
       {
-      InputStream file = new FileInputStream("/local/SNEEUnreliableChannels/SNEE/clients/successorClient/successorFile");
+      InputStream file = new FileInputStream("/local/successorResults/successorOutputNewTimeSystem/qos1/query2/AutonomicManData/Planner/successorRelation/successorFile");
       InputStream buffer = new BufferedInputStream( file );
       ObjectInput input = new ObjectInputStream ( buffer );
       //deserialize the List
@@ -742,8 +750,8 @@ public class SuccessorRelationManager extends AutonomicManagerComponent
       System.out.println("read in successor failed" + e.getMessage());
       return null;
     }
-  }
-*/
+  }*/
+
   private void writeSuccessorPathToFile(SuccessorPath bestSuccessorRelation)
   {
     try

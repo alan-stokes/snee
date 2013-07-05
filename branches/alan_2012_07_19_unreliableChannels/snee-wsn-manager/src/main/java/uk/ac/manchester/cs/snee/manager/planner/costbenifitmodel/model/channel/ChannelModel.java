@@ -247,7 +247,7 @@ public class ChannelModel implements Serializable
       }
     }
   //  ChannelModelUtils modelUtils = new ChannelModelUtils(channelModel, logicaloverlayNetwork);
-    //modelUtils.plotPacketRates(iteration, executorFolder);
+   // modelUtils.plotPacketRates(iteration, executorFolder);
     iteration++;
     Set<Site> sites = IOT.getAllSites();
     Iterator<Site> siteIterator = sites.iterator();
@@ -259,6 +259,7 @@ public class ChannelModel implements Serializable
       RunTimeSite rSite = new RunTimeSite(0.0, site.getID(), qepCost);
       siteEnergyLevels.add(site.getID(), rSite);
     }
+    
     return siteEnergyLevels;
   }
   
@@ -555,8 +556,6 @@ public class ChannelModel implements Serializable
     while(siteIDIterator.hasNext())
     {
       String siteID = siteIDIterator.next();
-      if(siteID.equals("50"))
-        System.out.println();
       Integer siteIDInt = Integer.parseInt(siteID);
       String clusterHeadID = logicaloverlayNetwork.getClusterHeadFor(siteID);
       if(logicaloverlayNetwork.getQep().getRT().getSite(clusterHeadID) == null)

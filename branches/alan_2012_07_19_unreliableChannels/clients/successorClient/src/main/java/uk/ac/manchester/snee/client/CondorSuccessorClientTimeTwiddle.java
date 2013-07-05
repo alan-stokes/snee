@@ -1,6 +1,5 @@
 package uk.ac.manchester.snee.client;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
@@ -14,10 +13,10 @@ import uk.ac.manchester.cs.snee.client.SNEEClient;
 import uk.ac.manchester.cs.snee.common.SNEEConfigurationException;
 import uk.ac.manchester.cs.snee.common.SNEEProperties;
 import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
+import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
-import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.metadata.CostParametersException;
 import uk.ac.manchester.cs.snee.metadata.schema.SchemaMetadataException;
 import uk.ac.manchester.cs.snee.metadata.schema.TypeMappingException;
@@ -27,17 +26,17 @@ import uk.ac.manchester.cs.snee.metadata.source.sensornet.TopologyReaderExceptio
 import uk.ac.manchester.cs.snee.sncb.CodeGenerationException;
 import uk.ac.manchester.cs.snee.sncb.SNCBException;
 
-public class SpecificSuccessorClient extends SNEEClient 
+public class CondorSuccessorClientTimeTwiddle extends SNEEClient 
 {
   
-  private static String sep = System.getProperty("file.separator");
   private static int queryid = 1;
-  protected static int testNo = 4;
-  private static File sneetestFolder =  new File("testsNatural");
+  protected static int testNo = 1;
+  @SuppressWarnings("unused")
+  private static boolean inRecoveryMode = false;
   
   //private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;
 
-  public SpecificSuccessorClient(String query, 
+  public CondorSuccessorClientTimeTwiddle(String query, 
       double duration, String queryParams, String csvFile, String sneeProps) 
   throws SNEEException, IOException, SNEEConfigurationException 
   {
@@ -45,25 +44,30 @@ public class SpecificSuccessorClient extends SNEEClient
   }
 
   /**
-   * The main entry point for the SNEE successor client.
+   * The main entry point for the condor client.
+   * All input files are given by the args and the snee.properities handed to args.
    * @param args
    * @throws IOException
    * @throws InterruptedException 
    */
   public static void main(String[] args) 
-  {
-    //This method represents the web server wrapper
-    // Configure logging
-  //  PropertyConfigurator.configure(
-      //  SuccessorClient.class.
-      //  getClassLoader().getResource("etc/common/log4j.properties"));
-    
-    
-    Long duration = Long.valueOf("120");
-    String queryParams = "etc/query-parameters.xml";
+  { 
     try
     {
-      recursiveRun(duration, queryParams, false);
+      
+      Long duration = Long.valueOf("120");
+      String queryParams = "query-parameters.xml";
+      
+      String query = args[0];
+      query = query.replace("_", " ");
+      String propertiesPath = args[1];
+      queryid = Integer.parseInt(args[2]);
+      //File output = new File("output");
+      //output.mkdir();
+      //File result = new File(output.toString() + "/" + "ran" + query + queryid);
+      //result.mkdir();
+     // System.out.println("made folder output and " + output.toString() + "/" + "ran" + query + queryid);
+      recursiveRun(query, duration, queryParams, true, propertiesPath) ;
     }
     catch (Exception e)
     {
@@ -74,35 +78,36 @@ public class SpecificSuccessorClient extends SNEEClient
     }
   }
    
-  private static void recursiveRun(Long duration, String queryParams, 
-                                   boolean allowDeathOfAcquires) 
+  private static void recursiveRun(String currentQuery, 
+                                   Long duration, String queryParams, 
+                                   boolean allowDeathOfAcquires, String propertiesPath) 
   throws IOException 
   {
-    //get query & schemas
-   // String currentQuery = "SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x;";
-    String currentQuery = "SELECT RSTREAM anow.x as qx FROM A[NOW] anow ;";
-    String propertiesPath = sneetestFolder.toString() + sep + "snee6.properties";
-    
     System.out.println("Running Tests on query " + (queryid));
     try
     {
-      SpecificSuccessorClient client = 
-      new  SpecificSuccessorClient(currentQuery, duration, queryParams, null, propertiesPath);
+      System.out.println("initisling client");
+      CondorSuccessorClientTimeTwiddle client = 
+      new  CondorSuccessorClientTimeTwiddle(currentQuery, duration, queryParams, null, propertiesPath);
       //set queryid to correct id
+      System.out.println("getting controller");
       SNEEController contol = (SNEEController) client.getController();
+      System.out.println("setting queryid");
       contol.setQueryID(queryid);
+      System.out.println("running compilation");
       client.runCompilelation();
-      System.out.println("Ran all tests on query " + (queryid));
+      System.out.println("Ran all tests on query " + queryid);
       queryid ++;
     }
     catch(Exception e)
     {
-      System.out.println("something major failed");
+      System.out.println("something major failed on query "+ queryid);
       e.printStackTrace();
-      queryid ++;
+      System.out.println(e.getMessage());
+      System.exit(0);
     }
   }
-   
+
   private void runCompilelation() 
   throws 
   SNEECompilerException, MalformedURLException, 
@@ -125,9 +130,9 @@ public class SpecificSuccessorClient extends SNEEClient
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS, "FALSE");
     
-    control.addQuery(_query, _queryParams,1, true, false, true);
+    control.addQuery(_query, _queryParams);
     getController().close();
     if (logger.isDebugEnabled())
       logger.debug("RETURN");
-  } 
+  }  
 }

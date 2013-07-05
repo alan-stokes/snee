@@ -64,13 +64,18 @@ public class CondorReliableChannelClient extends SNEEClient
       String propertiesPath = args[1];
       queryid = Integer.parseInt(args[2]);
       long seed = Long.parseLong(args[3]);
+      //long seed =0;
       double distanceConverter = Double.parseDouble(args[4]);
+      int noFailures =0;
+      Long lifetime = new Long(0);
+     // long lifetime = Long.parseLong(args[5]);
+      //int noFailures = Integer.parseInt(args[3]);
       //File output = new File("output");
       //output.mkdir();
       //File result = new File(output.toString() + "/" + "ran" + query + queryid);
       //result.mkdir();
      // System.out.println("made folder output and " + output.toString() + "/" + "ran" + query + queryid);
-      recursiveRun(query, duration, queryParams, true, propertiesPath, seed, distanceConverter) ;
+      recursiveRun(query, duration, queryParams, true, propertiesPath, seed, distanceConverter, lifetime, noFailures) ;
     }
     catch (Exception e)
     {
@@ -84,7 +89,8 @@ public class CondorReliableChannelClient extends SNEEClient
   private static void recursiveRun(String currentQuery, 
                                    Long duration, String queryParams, 
                                    boolean allowDeathOfAcquires, String propertiesPath,
-                                   Long seed, double distanceConverter) 
+                                   Long seed, double distanceConverter,
+                                   Long lifetime, int noFailures) 
   throws IOException 
   {
     System.out.println("Running Tests on query " + (queryid));
@@ -99,7 +105,7 @@ public class CondorReliableChannelClient extends SNEEClient
       System.out.println("setting queryid");
       contol.setQueryID(queryid);
       System.out.println("running compilation");
-      client.runCompilelation(seed, distanceConverter);
+      client.runCompilelation(seed, distanceConverter, lifetime, noFailures);
       System.out.println("Ran all tests on query " + queryid);
       queryid ++;
     }
@@ -112,7 +118,7 @@ public class CondorReliableChannelClient extends SNEEClient
     }
   }
 
-  private void runCompilelation(Long seed, double distanceConverter) 
+  private void runCompilelation(Long seed, double distanceConverter, Long lifetime, int noFailures) 
   throws 
   SNEECompilerException, MalformedURLException, 
   EvaluatorException, SNEEException, MetadataException, 
@@ -128,14 +134,25 @@ public class CondorReliableChannelClient extends SNEEClient
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
     SNEEController control = (SNEEController) getController();
+    
+    
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_SIM_FAILED_NODES, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
-    SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
+    SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE"); 
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS, "FALSE");
-    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_NOISEMODEL, "TTX4-DemoNoiseTrace.txt");
-    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_RESILIENTLEVEL, "2");
-    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_K_ACTIVE_LEVEL, "2");
+    String k = SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_LEVEL);
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_K_ACTIVE_LEVEL, k);
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_RESILIENTLEVEL, k);
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_NOISEMODEL, "meyer-heavy.txt");
+   // SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_NOISEMODEL, "casino-lab.txt");
+   // SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_NOISEMODEL, "TTX4-DemoNoiseTrace.txt");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_PATHLOSSEXPONENT, "1.6");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_TEST_LOGICAL_EDGES, "FALSE");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_EXECUTOR_EDGE_TUPLES, "TRUE");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_EXECUTOR_EDGE_LIFE, "FALSE");
+   // SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_EDGE_EXPECTEDLIFETIME, lifetime.toString());
+    //SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_EDGE_LIFETIME_UNPREDICTABLEFAILURES_NO, new Integer(noFailures).toString());
     
     control.addQuery(_query, _queryParams, seed, distanceConverter);
     getController().close();

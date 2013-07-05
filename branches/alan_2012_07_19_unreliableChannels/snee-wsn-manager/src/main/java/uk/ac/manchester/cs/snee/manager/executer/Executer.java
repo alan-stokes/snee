@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 
@@ -139,7 +140,6 @@ public class Executer extends AutonomicManagerComponent
       new CardinalityEstimatedCostModel(rQEP.getUnreliableAgenda(), rQEP.getRT(), rQEP.getIOT());
     model.runModel();
     // fixed iterations
-    numberOfIterations = 5;
     HashMapList<String, RunTimeSite> sitesEnergyValues = new HashMapList<String, RunTimeSite>();
     //cycle though iterations
     for(int iteration = 0; iteration < numberOfIterations; iteration ++)
@@ -206,7 +206,6 @@ public class Executer extends AutonomicManagerComponent
   {
     Integer numberOfIterations = Integer.parseInt(SNEEProperties.getSetting(
         SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_SIMULATION_ITERATIONS));
-    numberOfIterations = 5;
     channelModel.setPacketModel(false); 
     HashMapList<String, RunTimeSite> sitesEnergyValues  = new HashMapList<String, RunTimeSite>();
     for(int iteration = 0; iteration < numberOfIterations; iteration ++)
@@ -357,6 +356,7 @@ public class Executer extends AutonomicManagerComponent
   SchemaMetadataException, TypeMappingException, IOException
   {
       this.runningSites = manager.getCopyOfRunningSites();
+      network = manager.getWsnTopology();
       SNEEProperties.setSetting("distanceFactor", new Double(distanceFactor).toString());
       File distanceFactorFolder = 
         new File(this.executerOutputFolder.toString() + sep + distanceFactor);
@@ -677,5 +677,303 @@ public class Executer extends AutonomicManagerComponent
         rSite.removeDefinedCost(rSite.getQepExecutionCost() * shortestLifetime);
       }
     }
+  }
+
+  public Storage calculateUnpredictableLifetimeDifferenceFromDeployments(
+      RobustSensorNetworkQueryPlan rQEP, SensorNetworkQueryPlan qep, Long seed,
+      Double distanceConverter) 
+  throws SNEEConfigurationException, OptimizationException, SchemaMetadataException,
+  TypeMappingException, IOException, CodeGenerationException
+  {
+    this._metadata = this.manager.get_metadata();
+    SNEEProperties.setSetting("distanceFactor", new Double(distanceConverter).toString());
+    File distanceFactorFolder = 
+      new File(this.executerOutputFolder.toString() + sep + distanceConverter);
+    File robustFolder = new File(distanceFactorFolder.toString() + sep + "lifetimeEstimate");
+    robustFolder.mkdir();
+    
+    Cloner cloner = new Cloner();
+    cloner.dontClone(Logger.class);
+    RobustSensorNetworkQueryPlan ClonedrQEP = cloner.deepClone(rQEP);
+    double overallShortestLifetime = 0.0;
+    boolean runLogicalEdges = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_TEST_LOGICAL_EDGES);
+    if(runLogicalEdges)
+    {
+      this.runningSites = manager.getCopyOfRunningSites();
+      overallShortestLifetime =   calculateUnpredictableOverallQEPShortestLifetime(qep, robustFolder, seed, rQEP);
+    }
+    else
+    {
+      this.runningSites = manager.getCopyOfRunningSites();
+      this.network = manager.getWsnTopology();
+      overallShortestLifetime =  calculateUnpredictableOverallRQEPShortestLifetime(ClonedrQEP, robustFolder, seed);
+    }
+    
+    String queryid = manager.getQueryID();
+    DecimalFormat format = new DecimalFormat("#.##");
+    
+    double overallShortestLifetimeA = overallShortestLifetime / (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000);
+    if(runLogicalEdges)
+      System.out.println(queryid + " " + "L" + " " + format.format(overallShortestLifetimeA));
+    else
+      System.out.println(queryid + " " + "N" + " " + format.format(overallShortestLifetimeA));
+    
+    BufferedWriter out = new BufferedWriter(new FileWriter(new File(this.executerOutputFolder.toString() + sep + "lifetimes")));
+    if(runLogicalEdges)
+      out.write(queryid + " " + "L" + " "+ format.format(overallShortestLifetimeA));
+    else
+      out.write(queryid + " " + "N" + " "+ format.format(overallShortestLifetimeA));
+    out.flush();
+    out.close();
+    if(runLogicalEdges)
+      return new Storage(overallShortestLifetime, 0.0);
+    else
+      return new Storage(0.0, overallShortestLifetime);
+    
+  }
+
+  private double calculateUnpredictableOverallRQEPShortestLifetime(
+                                  RobustSensorNetworkQueryPlan rQEP, 
+                                  File robustFolder, Long seed)
+  throws SchemaMetadataException, TypeMappingException, OptimizationException,
+  IOException, SNEEConfigurationException, CodeGenerationException
+  {
+    this.network = this.manager.getWsnTopology();
+    this.runningSites = this.manager.getCopyOfRunningSites();
+    boolean alive = true;
+    Random random = new Random(new Long(0));
+    ArrayList<String> globalFailedNodes = new ArrayList<String>();
+    double overallRQEPShortestLifetime = 0;
+    NoiseModel Nmodel = new NoiseModel(network, manager.getCostsParamters(), seed);
+    
+    int numberofunpredictableFailures = 0;
+    int expectedNumberOfUnexpectedFailures = 
+      SNEEProperties.getIntSetting(SNEEPropertyNames.WSN_MANAGER_EDGE_LIFETIME_UNPREDICTABLEFAILURES_NO);
+    Long expectedlifetime = 
+      (long) SNEEProperties.getIntSetting(SNEEPropertyNames.WSN_MANAGER_EDGE_EXPECTEDLIFETIME);
+    int timeTillUnexpectedFailure = new Double(expectedlifetime / expectedNumberOfUnexpectedFailures).intValue();
+    
+    while(alive)
+    {
+      ChannelModel channelModel = 
+        new ChannelModel(rQEP.getLogicalOverlayNetwork(), rQEP.getUnreliableAgenda(), 
+                         manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
+                         manager.getCostsParamters(), robustFolder, seed, true, Nmodel);
+      ArrayList<RunTimeSite> qepCostAveragesResilentQeps = simulateRunOfRQEP(rQEP, channelModel);
+      //correct energy model values
+      Iterator<RunTimeSite> newQEPCostIterator = qepCostAveragesResilentQeps.iterator();
+      while(newQEPCostIterator.hasNext())
+      {
+        RunTimeSite newQEPCostContainer = newQEPCostIterator.next();
+        RunTimeSite oldQEPCostContainer = this.runningSites.get(newQEPCostContainer.toString());
+        oldQEPCostContainer.setQepExecutionCost(newQEPCostContainer.getQepExecutionCost());
+      }
+      
+      Double agendaLength = null;
+      if(rQEP.getAgendaIOT() != null)
+        agendaLength = Agenda.bmsToMs(rQEP.getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
+      else
+        agendaLength = Agenda.bmsToMs(rQEP.getAgenda().getLength_bms(false))/new Double(1000); // ms to s
+      
+      //locate weakest node
+      Iterator<Node> siteIter = this.network.siteIterator();
+      String failedSite = null;
+      double shortestLifetime = Double.MAX_VALUE; 
+      while (siteIter.hasNext()) 
+      {
+        Node site = siteIter.next();
+        RunTimeSite rSite = runningSites.get(site.getID());
+        double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
+        double siteLifetime = (currentEnergySupply / runningSites.get(site.getID()).getQepExecutionCost());
+        boolean useAcquires = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_SENSE);
+        //uncomment out sections to not take the root site into account
+        if (!site.getID().equals(rQEP.getIOT().getRT().getRoot().getID()) &&
+           ((useAcquires) ||  (!useAcquires && !((Site) site).isSource())) &&
+           !globalFailedNodes.contains(site.getID())) 
+        { 
+          if(shortestLifetime > siteLifetime)
+          {
+            if(!((Site) site).isDeadInSimulation())
+            {
+              shortestLifetime = siteLifetime;
+              failedSite = site.getID();
+            }
+          }
+        }
+      }
+      
+      // got expected first node failure, need to find out if its above or below unexpected failure
+      if(shortestLifetime > timeTillUnexpectedFailure * (numberofunpredictableFailures+1) &&
+          numberofunpredictableFailures < expectedNumberOfUnexpectedFailures)
+      {
+        ArrayList<String> allNodes = new ArrayList<String>();
+        allNodes.addAll(rQEP.getLogicalOverlayNetwork().getAllActiveNodesInOverlayNetwork());
+        allNodes.remove(rQEP.getRT().getRoot().getID());
+        int randomIndex = random.nextInt(allNodes.size());
+        failedSite = allNodes.get(randomIndex);
+        shortestLifetime = timeTillUnexpectedFailure * (numberofunpredictableFailures+1);
+        numberofunpredictableFailures++;
+      }
+      
+      //update runtimeSites energy levels
+      updateSitesEnergyLevels(shortestLifetime, globalFailedNodes);
+      overallRQEPShortestLifetime += (shortestLifetime * agendaLength);
+      globalFailedNodes.add(failedSite);
+      System.out.println("node " + failedSite);
+      if(failedSite.equals("52"))
+        System.out.println();
+      if(rQEP.getLogicalOverlayNetwork().canAdapt(failedSite, rQEP))
+      {
+        System.out.println("adapting");
+        ArrayList<String> failedNodeIDs = new ArrayList<String>();
+        failedNodeIDs.add(failedSite);
+        LogicalOverlayStrategy logicalOverlayGenerator = 
+          new LogicalOverlayStrategy(this.manager, this._metadata, this.manager.get_metadataManager());  
+        logicalOverlayGenerator.setDeployment(this.network);
+        logicalOverlayGenerator.setQEP(rQEP);
+        rQEP.getLogicalOverlayNetwork().setDeployment(this.network);
+        logicalOverlayGenerator.setCurrentQEP(rQEP);
+        List<Adaptation> result = 
+          logicalOverlayGenerator.executeHierarchyAdaptation(failedNodeIDs, rQEP.getLogicalOverlayNetwork());
+        if(result.size() == 0)
+          alive = false;
+        rQEP = (RobustSensorNetworkQueryPlan) result.get(0).getNewQep();
+        shortestLifetime =  Double.MAX_VALUE;
+      }
+      else
+      {
+        System.out.println("not adapting");
+        alive = false;
+      }
+    }
+    return overallRQEPShortestLifetime;
+  }
+
+  private double calculateUnpredictableOverallQEPShortestLifetime(
+      SensorNetworkQueryPlan QEP, File robustFolder, Long seed,
+      RobustSensorNetworkQueryPlan rQEP)
+  throws SchemaMetadataException, TypeMappingException, OptimizationException,
+  IOException, SNEEConfigurationException, CodeGenerationException
+  {
+    boolean alive = true;
+    boolean first = true;
+    Random random = new Random(new Long(0));
+    network = manager.getWsnTopology();
+    ArrayList<String> globalFailedNodes = new ArrayList<String>();
+    double overallQEPShortestLifetime = 0;
+    LogicalOverlayStrategy logicalOverlayGenerator = new LogicalOverlayStrategy(this.manager, this._metadata,
+                                                                                this.manager.get_metadataManager());
+    logicalOverlayGenerator.initilise(QEP, 1);
+    LogicalOverlayNetworkHierarchy skelOverlay = 
+      new LogicalOverlayNetworkHierarchy(logicalOverlayGenerator.getLogicalOverlay(),
+                                         QEP,  manager.getWsnTopology());
+    LogicalOverlayNetwork tempOverlay = logicalOverlayGenerator.getLogicalOverlay();
+    NoiseModel nModel = new NoiseModel(network, manager.getCostsParamters(), seed);
+    int numberofunpredictableFailures = 0;
+    int expectedNumberOfUnexpectedFailures = 
+      SNEEProperties.getIntSetting(SNEEPropertyNames.WSN_MANAGER_EDGE_LIFETIME_UNPREDICTABLEFAILURES_NO);
+    Long expectedlifetime = 
+      (long) SNEEProperties.getIntSetting(SNEEPropertyNames.WSN_MANAGER_EDGE_EXPECTEDLIFETIME);
+    int timeTillUnexpectedFailure = new Double(expectedlifetime / expectedNumberOfUnexpectedFailures).intValue();
+    
+    while(alive)
+    {
+       skelOverlay = 
+        new LogicalOverlayNetworkHierarchy(tempOverlay,
+                                           QEP,  manager.getWsnTopology());
+       ChannelModel channelModel = 
+         new ChannelModel(skelOverlay, QEP.getAgendaIOT(), 
+                          manager.getWsnTopology().getMaxNodeID(), manager.getWsnTopology(),
+                          manager.getCostsParamters(), robustFolder, seed, false, nModel);
+      ArrayList<RunTimeSite> qepCostAveragesQeps = simulateRunOfQEP(QEP, channelModel, skelOverlay);
+      Iterator<RunTimeSite> newQEPCostIterator = qepCostAveragesQeps.iterator();
+      while(newQEPCostIterator.hasNext())
+      {
+        RunTimeSite newQEPCostContainer = newQEPCostIterator.next();
+        RunTimeSite oldQEPCostContainer = this.runningSites.get(newQEPCostContainer.toString());
+        oldQEPCostContainer.setQepExecutionCost(newQEPCostContainer.getQepExecutionCost());
+      }
+      double agendaLength = 0.0;
+      if(QEP.getAgendaIOT() == null)
+        agendaLength = Agenda.bmsToMs(QEP.getAgenda().getLength_bms(false))/new Double(1000); // ms to s
+      else
+        agendaLength = Agenda.bmsToMs(QEP.getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
+      
+      //locate weakest node
+      Iterator<Node> siteIter = this.network.siteIterator();
+      String failedSite = null;
+      double shortestLifetime = Double.MAX_VALUE; 
+      while (siteIter.hasNext()) 
+      {
+        Node site = siteIter.next();
+        RunTimeSite rSite = runningSites.get(site.getID());
+        double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
+        double siteLifetime = (currentEnergySupply / runningSites.get(site.getID()).getQepExecutionCost());
+        boolean useAcquires = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_SENSE);
+        //uncomment out sections to not take the root site into account
+        if (!site.getID().equals(rQEP.getIOT().getRT().getRoot().getID()) &&
+           ((useAcquires) ||  (!useAcquires && !((Site) site).isSource())) &&
+           !globalFailedNodes.contains(site.getID())) 
+        { 
+          if(shortestLifetime > siteLifetime)
+          {
+            if(!((Site) site).isDeadInSimulation())
+            {
+              shortestLifetime = siteLifetime;
+              failedSite = site.getID();
+            }
+          }
+        }
+      }
+      
+      // got expected first node failure, need to find out if its above or below unexpected failure
+      if(shortestLifetime > timeTillUnexpectedFailure * (numberofunpredictableFailures+1) &&
+          numberofunpredictableFailures < expectedNumberOfUnexpectedFailures)
+      {
+        ArrayList<Node> allNodes = new ArrayList<Node>();
+        allNodes.addAll(QEP.getRT().getSiteTree().getNodes());
+        allNodes.remove(QEP.getRT().getRoot());
+        int randomIndex = random.nextInt(allNodes.size());
+        failedSite = allNodes.get(randomIndex).getID();
+        shortestLifetime = timeTillUnexpectedFailure * (numberofunpredictableFailures+1);
+        numberofunpredictableFailures++;
+      }
+      
+      
+      if(first)
+      {
+        System.out.println("static lifetime = " + shortestLifetime);
+        first = false;
+      }
+      
+      //update runtimeSites energy levels
+      updateSitesEnergyLevels(shortestLifetime, globalFailedNodes);
+      overallQEPShortestLifetime += (shortestLifetime * agendaLength);
+      globalFailedNodes.add(failedSite);
+      
+      
+      if(logicalOverlayGenerator.canAdapt(failedSite, logicalOverlayGenerator.getLogicalOverlay()))
+      {
+        ArrayList<String> failedNodeIDs = new ArrayList<String>();
+        failedNodeIDs.add(failedSite);
+        System.out.println("node " + failedSite);
+        List<Adaptation> result = logicalOverlayGenerator.adapt(failedNodeIDs, logicalOverlayGenerator.getLogicalOverlay());
+        if(result.size() == 0)
+          alive = false;
+        else
+        {
+          QEP = result.get(0).getNewQep();
+          logicalOverlayGenerator.getLogicalOverlay().setQep(QEP);
+          logicalOverlayGenerator.update(result.get(0));
+          tempOverlay = logicalOverlayGenerator.getLogicalOverlay();
+          shortestLifetime =  Double.MAX_VALUE;
+        }
+      }
+      else
+      {
+        alive = false;
+      }
+    }
+    return overallQEPShortestLifetime;
   }
 }

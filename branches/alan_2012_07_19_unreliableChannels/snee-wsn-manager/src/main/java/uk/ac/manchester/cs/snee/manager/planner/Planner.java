@@ -474,7 +474,7 @@ public class Planner extends AutonomicManagerComponent
   //                     this._metadataManager.getCostParameters());
     
     boolean runTupleSim = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_EXECUTOR_EDGE_TUPLES);  
-    if(runTupleSim)
+    if(true)
     {
       manager.simulateRunOfRQEP(rQEP, qep, seed, distanceConverter);
       
@@ -482,7 +482,7 @@ public class Planner extends AutonomicManagerComponent
    // assessor.assessOverlayChoice(storage, runningSites, rQEP.getLogicalOverlayNetwork(), 
          //                        local, channelModel);
     boolean runLifeSim = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_EXECUTOR_EDGE_LIFE);
-    if(runLifeSim)
+    if(false)
     {
       Storage storage = manager.calculateLifetimeDifferenceFromDeployments(rQEP, qep, seed, distanceConverter);
     System.out.println("new robust lifetime = " + 

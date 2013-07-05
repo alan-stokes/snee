@@ -645,6 +645,10 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   throws NumberFormatException, SNEEConfigurationException, OptimizationException, 
   SchemaMetadataException, TypeMappingException, IOException, CodeGenerationException
   {
-    return this.executer.calculateLifetimeDifferenceFromDeployments(rQEP, qep, seed, distanceConverter);
+    boolean areUnpredictable = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_EDGE_LIFETIME_UNPREDICTABLEFAILURES);
+    if(true)
+      return this.executer.calculateUnpredictableLifetimeDifferenceFromDeployments(rQEP, qep, seed, distanceConverter);
+    else
+      return this.executer.calculateLifetimeDifferenceFromDeployments(rQEP, qep, seed, distanceConverter);
   }
 }

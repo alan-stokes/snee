@@ -288,11 +288,22 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
         {
           String bestID = locateCheapestNode(equivNodes, clusterHeadID);
           equivNodes.remove(bestID);
-          activeClusters.add(clusterHeadID, bestID);
-          activeClustersPriority.put(bestID, priority);
-          activeClustersOriginalPriority.put(bestID, priority);
-          priority++;
-          leftOverResilience--;
+          if(bestID == null)
+          {
+            System.out.println("wrong input paramter for k_active level. reducing to " + (Integer.parseInt(
+            SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_K_ACTIVE_LEVEL)) -1) + " to sort out errors");
+            SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_K_ACTIVE_LEVEL, new Integer(Integer.parseInt(
+            SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_K_ACTIVE_LEVEL)) -1).toString());
+            leftOverResilience--;
+          }
+          else
+          {
+            activeClusters.add(clusterHeadID, bestID);
+            activeClustersPriority.put(bestID, priority);
+            activeClustersOriginalPriority.put(bestID, priority);
+            priority++;
+            leftOverResilience--;
+          }
         }
       }
     }
@@ -425,6 +436,8 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
   {
     ArrayList<String> cluster = activeClusters.get(key);
     Set<String> setCluster = new TreeSet<String>();
+    if(cluster == null)
+      System.out.println();
     setCluster.addAll(cluster);
     cluster.clear();
     Iterator<String> iterator = setCluster.iterator();
@@ -981,6 +994,21 @@ public class LogicalOverlayNetworkHierarchy extends LogicalOverlayNetwork implem
   public void setDeployment(Topology network)
   {
     this.deployment = network;
+  }
+  
+  public ArrayList<String> getAllActiveNodesInOverlayNetwork()
+  {
+    ArrayList<String> returnedArray = new ArrayList<String>();
+    Iterator<String> keySetIterator = this.getActiveClusters().keySet().iterator();
+    while(keySetIterator.hasNext())
+    {
+      String key = keySetIterator.next();
+      ArrayList<String> nodesInCluster = this.getActiveClusters().get(key);
+      returnedArray.addAll(nodesInCluster);
+      if(!returnedArray.contains(key))
+        returnedArray.add(key);
+    }
+    return returnedArray;
   }
   
 }
