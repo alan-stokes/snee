@@ -527,10 +527,10 @@ public class AdaptationEnergyModel extends Model
   {
     SiteEnergyModel siteModel = new SiteEnergyModel(adapt.getNewQep().getAgendaIOT());
     RT routingTree;
-    if(!deactivedNodes)
+  //  if(!deactivedNodes)
       routingTree = adapt.getNewQep().getRT();
-    else
-      routingTree= adapt.getOldQep().getRT();
+   // else
+    //  routingTree= adapt.getOldQep().getRT();
     CostParameters parameters = _metadataManager.getCostParameters();
     Site sink = routingTree.getRoot();
     while(redirectedSiteIterator.hasNext())

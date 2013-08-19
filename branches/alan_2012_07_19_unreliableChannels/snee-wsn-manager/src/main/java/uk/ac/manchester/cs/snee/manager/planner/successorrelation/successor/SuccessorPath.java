@@ -31,14 +31,24 @@ public class SuccessorPath implements Serializable
   {
     Iterator<Successor> successorIterator = listOfSuccessors.iterator();
     int agendaCount = 0;
+    int counter = 0;
     while(successorIterator.hasNext())
     {
       Successor successor = successorIterator.next();
-      if(successor.getAgendaCount() >= 0)
-        agendaCount += successor.getAgendaCount();
       if(!successorIterator.hasNext())
-        if(successor.getBasicLifetimeInAgendas() >= 0)
+      {
+        if(successor.getBasicLifetimeInAgendas() >= 0 )
+        {
           agendaCount += successor.getBasicLifetimeInAgendas();
+        }
+      }
+      else
+      {
+        if(successor.getAgendaCount() >= 0 && 
+           successor.getBasicLifetimeInAgendas() > listOfSuccessors.get(counter+1).getAgendaCount())
+          agendaCount += listOfSuccessors.get(counter+1).getAgendaCount();
+      }
+      counter++;
     }
     return agendaCount;
   }

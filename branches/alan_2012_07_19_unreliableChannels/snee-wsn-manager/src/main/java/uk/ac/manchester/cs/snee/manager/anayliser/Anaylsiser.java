@@ -69,6 +69,7 @@ public class Anaylsiser extends AutonomicManagerComponent
   throws SNEEConfigurationException
   {
     manager = autonomicManager;
+    this._metadata = _metadata;
     frameworks = new ArrayList<StrategyAbstract>();
     SetupFailedNodeFrameWorks(_metadataManager);
   }
@@ -150,7 +151,8 @@ public class Anaylsiser extends AutonomicManagerComponent
 	  while(frameworkIterator.hasNext())
 	  {
 	    StrategyAbstract currentFrameWork = frameworkIterator.next();
-	    currentFrameWork.initilise(qep, noOfTrees);
+	    if(!(currentFrameWork instanceof LogicalOverlayStrategy))
+	      currentFrameWork.initilise(qep, noOfTrees);
 	  } 
   }
    
@@ -304,6 +306,8 @@ public class Anaylsiser extends AutonomicManagerComponent
   	while(frameworkIterator.hasNext() && feasiable)
   	{
   	  StrategyAbstract framework = frameworkIterator.next();
+  	  if(!(framework instanceof LogicalOverlayStrategy))
+  	  {
   	  if((framework instanceof CompleteReCompilationStrategy 
   	      && (choice.equals(ChoiceAssessorPreferenceEnum.Global.toString()) || choice.equals(ChoiceAssessorPreferenceEnum.Best.toString()))) 
   	   || (framework instanceof LocalRepairStrategy 
@@ -317,6 +321,7 @@ public class Anaylsiser extends AutonomicManagerComponent
   	    feasiable = false;
   	  adapatations.addAll(frameworkOutput);
   	  }
+  	}
   	}
     return adapatations;
   }
@@ -349,6 +354,7 @@ public class Anaylsiser extends AutonomicManagerComponent
     while(frameworkIterator.hasNext())
     {
       StrategyAbstract framework = frameworkIterator.next();
+      if(!(framework instanceof LogicalOverlayStrategy))
       framework.update(finalChoice);
     }
   }

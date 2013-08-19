@@ -221,13 +221,13 @@ public class FailedNodeTimeClientUtils
     if(which == PlotterEnum.GLOBAL && global != null)
     {
       Double overallLifetime = new Double(global.getLifetimeEstimate().doubleValue() + currentLifetime);
-      System.out.println(df.format( overallLifetime / 1000));
+      System.out.println(df.format( overallLifetime));
       plot.addGlobalLifetime(global.getLifetimeEstimate() + currentLifetime, fails);
     }
     else if(which == PlotterEnum.PARTIAL && partial != null)
     {
       Double overallLifetime = new Double(partial.getLifetimeEstimate().doubleValue() + currentLifetime);
-      System.out.println(df.format(overallLifetime / 1000));
+      System.out.println(df.format(overallLifetime ));
       plot.addPartialLifetime(partial.getLifetimeEstimate() + currentLifetime, fails);
     }
     else if(which == PlotterEnum.LOCAL & local != null)

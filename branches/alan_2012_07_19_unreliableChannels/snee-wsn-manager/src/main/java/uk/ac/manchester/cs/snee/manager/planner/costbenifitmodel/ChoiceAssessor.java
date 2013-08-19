@@ -197,7 +197,7 @@ public class ChoiceAssessor implements Serializable
       runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
       adapt.putSiteEnergyCost(site.getID(), siteEnergyCons);
       double agendaLength = Agenda.bmsToMs(adapt.getNewQep().getAgendaIOT().getLength_bms(false))/new Double(1000); // ms to s
-      double siteLifetime = (currentEnergySupply / siteEnergyCons) * agendaLength;
+      double siteLifetime = (currentEnergySupply / siteEnergyCons);
       //uncomment out sections to not take the root site into account
       if (site!=adapt.getNewQep().getIOT().getRT().getRoot()) 
       { 
@@ -211,6 +211,7 @@ public class ChoiceAssessor implements Serializable
         }
       }
     }
+    
     return shortestLifetime;
   }
 

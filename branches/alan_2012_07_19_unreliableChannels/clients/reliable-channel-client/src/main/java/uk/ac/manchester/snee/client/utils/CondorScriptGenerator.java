@@ -26,17 +26,18 @@ public class CondorScriptGenerator
   {
     
     //possible ids are 1,2,3,4,5,6,30,31,32,33,34,36,60,62,64,67,68
-    seeds.add(new Long(0));
-    seeds.add(new Long(1));
-    seeds.add(new Long(10));
-    seeds.add(new Long(15));
-    seeds.add(new Long(20));
-    seeds.add(new Long(25));
-    seeds.add(new Long(30));
-    seeds.add(new Long(35));
-    seeds.add(new Long(40));
-    seeds.add(new Long(45));
-    validIds.addAll(Arrays.asList(1,2,3,4,5,6));
+  //  seeds.add(new Long(0));
+   // seeds.add(new Long(1));
+   // seeds.add(new Long(10));
+   // seeds.add(new Long(15));
+   // seeds.add(new Long(20));
+   // seeds.add(new Long(25));
+   // seeds.add(new Long(30));
+   // seeds.add(new Long(35));
+   // seeds.add(new Long(40));
+   // seeds.add(new Long(45));
+    //validIds.addAll(Arrays.asList(1,2,3,4,5,6));
+    validIds.addAll(Arrays.asList(1,2,3,4,5,30,31,32,33,34,35,60,62,64,67,68));
        // ,30,31,32,33,34,36,60,62,64,67,68));
     
     File condorFile = new File("condor");
@@ -61,10 +62,10 @@ public class CondorScriptGenerator
                 "request_memory = 2048 \n#Output = output$(Process).txt \n" +
                 "#Error = error$(Process).txt \nlog = log.txt \nOutput = out.txt \n"+
                 "Error = err.txt \nnotification = error \n \n");
-      Iterator<Long> seedIterator = seeds.iterator();
-      while(seedIterator.hasNext())
-      {
-        Long seed = seedIterator.next();
+     // Iterator<Long> seedIterator = seeds.iterator();
+     // while(seedIterator.hasNext())
+     // {
+      //  Long seed = seedIterator.next();
         int queryID = 1;
         Iterator<String> queryIterator = queries.iterator();
         while(queryIterator.hasNext())
@@ -72,43 +73,41 @@ public class CondorScriptGenerator
           String query = queryIterator.next();
           if(!checkIDs)
           {
-            for(int index = startKCounter; index <= endKCoutner; index++)
-            {
-              for(double distance = 1; distance > 0.2; distance -=0.2 )
-              {
-	            out.write("Arguments = " + query + " " + "snee" + queryID + "." + index + ".properties" +
-	                      " " + queryID + " " + seed + " " + df.format(distance) + "\ninitialdir   = query" + queryID + "." + index + 
-	                      "." + seed + "." + df.format(distance) + "\nqueue \n \n");
+         //   for(int index = startKCounter; index <= endKCoutner; index++)
+          //  {
+            //  for(double distance = 1; distance > 0.2; distance -=0.2 )
+             // {
+	            out.write("Arguments = " + query + " " + "snee" + queryID + ".properties" +
+	                       "\nqueue \n \n");
 	            //make folder for the output to be stored in.
-	            File outputFolder = new File(condorFile.toString() + sep + "query" + queryID + "." + 
-	                                         index + "." + seed + "." + df.format(distance));
+	            File outputFolder = new File(condorFile.toString() + sep + "query" + queryID + "." 
+	                                         );
 	            outputFolder.mkdir();
-              }
-            }
+            //  }
+           // }
             queryID++;
           }
           else
           {
             if(validIds.contains(queryID))
             {
-              for(int index = startKCounter; index <= endKCoutner; index++)
-              {
-            	for(double distance = 1; distance > 0.2; distance -=0.2 )
-                {
-	              out.write("Arguments = " + query + " " + "snee" + queryID + "." + index + ".properties" +
-	                        " " + queryID + " " + seed +  " " + df.format(distance) + " \ninitialdir   = query" + queryID + "." + index + 
-	                        "." + seed + "." + df.format(distance) + "\nqueue \n \n");
+             // for(int index = startKCounter; index <= endKCoutner; index++)
+             // {
+            	//for(double distance = 1; distance > 0.2; distance -=0.2 )
+              //  {
+	              out.write("Arguments = " + query + " " + "snee" + queryID +".properties" + 
+	                  "\ninitialdir   = query" + queryID + "\nqueue \n \n");
 	              //make folder for the output to be stored in.
-	              File outputFolder = new File(condorFile.toString() + sep + "query" + queryID + "." + 
-	                                           index + "." + seed + "." + df.format(distance));
+	              File outputFolder = new File(condorFile.toString() + sep + "query" + queryID 
+	                                         );
 	              outputFolder.mkdir();
-                }
-              }
+              //  }
+             // }
             }
             queryID++;
           }
         }
-      }
+     // }
       out.flush();
       out.close();
       

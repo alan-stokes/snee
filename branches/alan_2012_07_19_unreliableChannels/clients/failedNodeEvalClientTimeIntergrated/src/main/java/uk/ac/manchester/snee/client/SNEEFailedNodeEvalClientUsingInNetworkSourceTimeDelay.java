@@ -59,7 +59,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	  Logger.getLogger(SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay.class.getName());
 	@SuppressWarnings("unused")
   private String sneeProperties;
-	private static int queryid = 1;
+	private static int queryid = 13;
 	protected static int testNo = 1;
 	private static String dictonary = "testsSize30";
 	
@@ -117,7 +117,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	    
 	  //  while(queryIterator.hasNext())
 	   // {
-	      recursiveRun(queryIterator, duration, queryParams, true, failedOutput);
+	      recursiveRun(queryIterator, duration, queryParams, false, failedOutput);
 	      calculated = false;
      // }
 	    failedOutput.write("\\end{document}");
@@ -181,24 +181,24 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     {
       if(position == 0)
       {
-        //runGlobalTests(currentQuery, allowDeathOfAcquires);
+        runGlobalTests(currentQuery, allowDeathOfAcquires);
         runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
       }
       else if(position == 1)
       {
-        //runPartialTests(currentQuery, allowDeathOfAcquires);
+        runPartialTests(currentQuery, allowDeathOfAcquires);
         runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
       }
-      else if(position == 2)
-      {
-        runOverlayTests(currentQuery, allowDeathOfAcquires);
-        runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
-      }
-      else if(position == 3)
-      {
+     // else if(position == 2)
+    //  {
+     //   runOverlayTests(currentQuery, allowDeathOfAcquires);
+     //   runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
+    //  }
+    //  else if(position == 3)
+    //  {
        // runBestTests(currentQuery, allowDeathOfAcquires);
-        runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
-      }    
+     //   runSeveralTests(position + 1, currentQuery, allowDeathOfAcquires);
+     // }    
     }
     catch(Exception e)
     {
@@ -244,7 +244,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         testNo++;
       }
       currentlyFailedNodes.clear();
-      double currentLifetime = numberOfExectutionCycles * originalQEP.getAgendaIOT().getLength_bms(false) * currentNumberOfFailures ;
+      double currentLifetime = numberOfExectutionCycles * currentNumberOfFailures ;
       utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.PARTIAL, fails);
       utils.plotTopology(testNo -1);
       client.resetDataSources(originalQEP);
@@ -278,7 +278,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
         testNo++;
       }
       currentlyFailedNodes.clear();
-      double currentLifetime = numberOfExectutionCycles * (originalQEP.getAgendaIOT().getLength_bms(false) / 1024) * currentNumberOfFailures;
+      double currentLifetime = numberOfExectutionCycles * currentNumberOfFailures;
       utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.GLOBAL, fails);
       utils.plotTopology(testNo -1);
       client.resetDataSources(originalQEP);
@@ -407,9 +407,9 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
       originalQEP = client.getQEP();
       calculated = true;
     }
-    double timeBetweenFailures =  originalLifetime / (currentNumberOfFailures + 1); //s
-    Long agendaLength = originalQEP.getAgendaIOT().getLength_bms(false) / 1024; // s
-    numberOfExectutionCycles = (int) (timeBetweenFailures/agendaLength);
+    numberOfExectutionCycles =  new Double(originalLifetime / new Integer(currentNumberOfFailures + 1).doubleValue()).intValue(); //s
+   // Long agendaLength = originalQEP.getAgendaIOT().getLength_bms(false) / 1024; // s
+   // numberOfExectutionCycles = (int) (timeBetweenFailures/agendaLength);
   }
 
   /**
@@ -552,6 +552,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
           applicableConfulenceSites.add(site.getID());
       }
     }
+    /*
     if(applicableConfulenceSites.size() == 0)
     {
       siteIterator = qep.getRT().siteIterator(TraversalOrder.POST_ORDER);
@@ -563,7 +564,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
           applicableConfulenceSites.add(site.getID());
         }
       }
-    } 
+    }*/ 
   }
 
   private boolean isSource(Site currentSite, int[] sources)

@@ -17,8 +17,8 @@ public class CollateResultsForTuples
 {
   
   private static String sep = System.getProperty("file.separator");
-  private static File root = new File("/mnt/usb/1st1/condor_edge_Tuples_Casinoex3/");
-  private static File output = new File("/mnt/usb/1st1/condor_edge_Tuples_Casinoex3Results/");
+  private static File root = new File("/mnt/usb/1st1/2_join/2_join_heavy_3");
+  private static File output = new File("/mnt/usb/1st1/2_join/2_join_heavy_3Results");
   
   public static void main(String [] args)
   {

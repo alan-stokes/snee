@@ -139,6 +139,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
     
     //if unreliable channels set to generate
     boolean unreliableChannels = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS);
+    unreliableChannels = false;
     if(unreliableChannels)
     {
       planner.updateStorageLocation(outputFolder);

@@ -37,7 +37,7 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk query-parameters.xsd">
 		<delivery-time>
 			<units>SECONDS</units>
 			<constraint>
-				<equals>30000</equals>
+				<equals>600</equals>
 			</constraint>
 			<weighting>2</weighting>
 		</delivery-time>

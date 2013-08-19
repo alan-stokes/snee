@@ -74,7 +74,8 @@ public class UnreliableChannelAgenda extends AgendaIOT
     this.tasks.clear();
 
     numberOfRundundantCycles = 
-      Integer.parseInt(SNEEProperties.getSetting(
+      Integer.parseInt(SNEEProperties
+          .getSetting(
           SNEEPropertyNames.WSN_MANAGER_UNRELIABLE_CHANNELS_REDUNDANTCYCLES));
     
     activeOverlay = new LogicalOverlayNetworkHierarchy(logicaloverlayNetwork.getClusters(), network, qep);

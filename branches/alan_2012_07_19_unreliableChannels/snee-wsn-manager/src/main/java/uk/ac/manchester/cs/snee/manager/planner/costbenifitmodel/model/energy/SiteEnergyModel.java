@@ -231,8 +231,15 @@ public class SiteEnergyModel extends Model
      }
      Site sender = ct.getSourceNode();
      Site receiver = (Site)sender.getOutput(0);
-     int txPower = (int)agenda.getIOT().getRT().getRadioLink(sender, receiver).getEnergyCost();
-     double radioTXAmp = AvroraCostParameters.getTXAmpere(txPower);
+     int txPower = 0;
+     double radioTXAmp = 0.0;
+     try{
+     txPower = (int)agenda.getIOT().getRT().getRadioLink(sender, receiver).getEnergyCost();
+     radioTXAmp = AvroraCostParameters.getTXAmpere(txPower);
+     }catch(Exception e)
+     {
+       System.out.println();
+     }
      
      AvroraCostExpressions  costExpressions = 
        new AvroraCostExpressions(agenda.getIOT().getDAF(), agenda.getCostParameters(), agenda);

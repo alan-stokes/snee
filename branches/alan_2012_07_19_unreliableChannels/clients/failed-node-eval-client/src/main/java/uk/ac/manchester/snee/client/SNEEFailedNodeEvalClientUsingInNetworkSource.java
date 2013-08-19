@@ -59,12 +59,12 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
   private String sneeProperties;
 	private static boolean inRecoveryMode = false;
 	private static int queryid = 1;
-	protected static int testNo = 1;
+	protected static int testNo = 2;
 	private static SensorNetworkQueryPlan qep;
 	private static ClientUtils utils = new ClientUtils();
-	private static int max = 120;
-	private static File testFolder =  new File("src/main/resources/testsNatural");
-	private static File sneetestFolder =  new File("testsNatural");
+	private static int max = 5;
+	private static File testFolder =  new File("src/main/resources/testsSize30");
+	private static File sneetestFolder =  new File("testsSize30");
 	
 	public SNEEFailedNodeEvalClientUsingInNetworkSource(String query, 
 			double duration, String queryParams, String csvFile, String sneeProperties) 
@@ -211,6 +211,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
     if (logger.isDebugEnabled()) 
       logger.debug("ENTER");
     System.out.println("Query: " + _query);
+    
     SNEEController control = (SNEEController) getController();
     control.addQuery(_query, _queryParams, null, true, false, true);
     getController().close();

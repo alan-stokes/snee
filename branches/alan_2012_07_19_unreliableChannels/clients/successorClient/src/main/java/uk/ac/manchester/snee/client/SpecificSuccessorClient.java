@@ -31,9 +31,9 @@ public class SpecificSuccessorClient extends SNEEClient
 {
   
   private static String sep = System.getProperty("file.separator");
-  private static int queryid = 1;
+  private static int queryid = 2;
   protected static int testNo = 4;
-  private static File sneetestFolder =  new File("testsNatural");
+  private static File sneetestFolder =  new File("testsSize30");
   
   //private static uk.ac.manchester.cs.snee.data.generator.ConstantRatePushStreamGenerator _myDataSource;
 
@@ -81,7 +81,7 @@ public class SpecificSuccessorClient extends SNEEClient
     //get query & schemas
    // String currentQuery = "SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x;";
     String currentQuery = "SELECT RSTREAM anow.x as qx FROM A[NOW] anow ;";
-    String propertiesPath = sneetestFolder.toString() + sep + "snee6.properties";
+    String propertiesPath = sneetestFolder.toString() + sep + "snee2.properties";
     
     System.out.println("Running Tests on query " + (queryid));
     try
@@ -124,6 +124,7 @@ public class SpecificSuccessorClient extends SNEEClient
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.RUN_AVRORA_SIMULATOR, "FALSE");
     SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_INITILISE_FRAMEWORKS, "FALSE");
+    SNEEProperties.setSetting(SNEEPropertyNames.WSN_MANAGER_SUCCESSOR_NODE_FAILURES, "2");
     
     control.addQuery(_query, _queryParams,1, true, false, true);
     getController().close();

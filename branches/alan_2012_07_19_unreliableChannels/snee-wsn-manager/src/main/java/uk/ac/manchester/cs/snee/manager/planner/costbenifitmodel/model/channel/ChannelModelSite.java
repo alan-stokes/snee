@@ -1,5 +1,9 @@
 package uk.ac.manchester.cs.snee.manager.planner.costbenifitmodel.model.channel;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +46,7 @@ public class ChannelModelSite implements Serializable
   /**
    * serilised id
    */
+  private String sep = System.getProperty("file.separator");
   private static final long serialVersionUID = 378104895960678188L;
   private HashMap<String, ArrayList<Boolean>> arrivedPackets = 
     new HashMap<String, ArrayList<Boolean>>();
@@ -85,6 +90,8 @@ public class ChannelModelSite implements Serializable
                           ChannelModel model, boolean packetID)
   {
     this.expectedPackets = expectedPackets;
+    if(this.siteID == "6")
+      System.out.println();
     setupExpectedPackets();
     this.siteID = siteID;
     this.overlayNetwork = overlayNetwork;
@@ -603,11 +610,13 @@ public class ChannelModelSite implements Serializable
    * @throws TypeMappingException 
    * @throws SchemaMetadataException 
    */
-  private void checkAggregationTupleTracker(InstanceOperator op, IOT iot) 
+  private void checkAggregationTupleTracker(InstanceOperator op, IOT iot,
+                                            File outputFile) 
   throws SchemaMetadataException, TypeMappingException
   {
     HashMapList<Integer, Boolean> currentSitesTracker = 
       ChannelModelSite.aggregationTupleTracker.get(op.getSite().getID());
+    HashMapList<Integer, Boolean> currentSitestotalTracker = new HashMapList<Integer, Boolean>();
     if(currentSitesTracker == null)
       currentSitesTracker = new HashMapList<Integer, Boolean>();
     HashMap<String, ArrayList<Boolean>> reducedArrivedpackets = reduceArrivedPackets(iot.getSiteFromID(op.getSite().getID()), this.arrivedPackets);
@@ -631,6 +640,7 @@ public class ChannelModelSite implements Serializable
         {
           Integer key = keys.next();
           currentSitesTracker.addWithDuplicates(key, true);
+          currentSitestotalTracker.addWithDuplicates(key, true);
         }
       }
     }
@@ -701,6 +711,7 @@ public class ChannelModelSite implements Serializable
               for(int index = 1; index <= tupleRatio; index++)
               {
                 currentSitesTracker.addWithDuplicates(((counter * oldtupleRatio ) + index), recieved);
+                currentSitestotalTracker.addWithDuplicates(((counter * oldtupleRatio ) + index), recieved);
               }
               counter++;
             }
@@ -722,16 +733,29 @@ public class ChannelModelSite implements Serializable
                   ArrayList<Boolean> bools = inputSitesTracker.get(key);
                   Iterator<Boolean> boolIterator = bools.iterator();
                   ArrayList<Boolean> receivedPackets = reducedArrivedpackets.get(inputSite.getID());
-                  Iterator<Boolean> receivedPacketIterator = receivedPackets.iterator();
-                  while(receivedPacketIterator.hasNext())
+                  Integer size = inputSitesTracker.keySet().size();
+                  Integer newsize = receivedPackets.size();
+                  Double tupleRatio4 = size.doubleValue() / newsize.doubleValue();
+                  tupleRatio4 = Math.ceil(tupleRatio4);
+                  Integer tupleRatio2 = tupleRatio4.intValue();
+                  Double position = new Double(key.doubleValue() / tupleRatio2.doubleValue());
+                  position = Math.ceil(position);
+                  int packetPoistion = position.intValue();
+                  Boolean recieved = receivedPackets.get(packetPoistion -1);
+                  if(recieved)
                   {
-                    Boolean recieved = receivedPacketIterator.next();
-                    if(recieved)
+                    while(boolIterator.hasNext())
                     {
-                      while(boolIterator.hasNext())
-                      {
-                        currentSitesTracker.addWithDuplicates(key, boolIterator.next());
-                      }
+                      boolean next = boolIterator.next();
+                      currentSitesTracker.addWithDuplicates(key, next);
+                      currentSitestotalTracker.addWithDuplicates(key, next);
+                    }
+                  }
+                  else
+                  {
+                    while(boolIterator.hasNext())
+                    {
+                      currentSitestotalTracker.addWithDuplicates(key, boolIterator.next());
                     }
                   }
                 }
@@ -750,18 +774,30 @@ public class ChannelModelSite implements Serializable
                   ArrayList<Boolean> bools = inputSitesTracker.get(key);
                   Iterator<Boolean> boolIterator = bools.iterator();
                   ArrayList<Boolean> receivedPackets = reducedArrivedpackets.get(inputSite.getID());
-                  if(receivedPackets == null)
-                    System.out.println();
-                  Iterator<Boolean> receivedPacketIterator = receivedPackets.iterator();
-                  while(receivedPacketIterator.hasNext())
+                  Integer size = inputSitesTracker.keySet().size();
+                  Integer newsize = receivedPackets.size();
+                  Double tupleRatio4 = size.doubleValue() / newsize.doubleValue();
+                  tupleRatio4 = Math.ceil(tupleRatio4);
+                  Integer tupleRatio2 = tupleRatio4.intValue();
+                  Double position = new Double(key.doubleValue() / tupleRatio2.doubleValue());
+                  position = Math.ceil(position);
+                  int packetPoistion = position.intValue();
+                  Boolean recieved = receivedPackets.get(packetPoistion -1);
+                  if(recieved)
                   {
-                    Boolean recieved = receivedPacketIterator.next();
-                    if(recieved)
+                    while(boolIterator.hasNext())
                     {
-                      while(boolIterator.hasNext())
-                      {
-                        currentSitesTracker.addWithDuplicates(key, boolIterator.next());
-                      }
+                      boolean next = boolIterator.next();
+                      currentSitesTracker.addWithDuplicates(key, next);
+                      currentSitestotalTracker.addWithDuplicates(key, next);
+                    }
+                  }
+                  else
+                  {
+                    while(boolIterator.hasNext())
+                    {
+                      boolean next = boolIterator.next();
+                      currentSitestotalTracker.addWithDuplicates(key, next);
                     }
                   }
                 }
@@ -772,8 +808,55 @@ public class ChannelModelSite implements Serializable
         ChannelModelSite.aggregationTupleTracker.put(op.getSite().getID(), currentSitesTracker);
       }
     }
+    outputSiteCountToFile(op,currentSitesTracker, currentSitestotalTracker, outputFile);
   }
   
+  private void outputSiteCountToFile(InstanceOperator op, 
+                                     HashMapList<Integer, Boolean> currentSitesTracker,
+                                     HashMapList<Integer, Boolean> currentSitestotalTracker, File outputFolder)
+  {
+    Integer count =0;
+    Integer totalcount = 0;
+    Iterator<Integer> keySetIterator = currentSitesTracker.keySet().iterator();
+    while(keySetIterator.hasNext())
+    {
+      Integer key = keySetIterator.next();
+      Iterator<Boolean> resultIterator = currentSitesTracker.get(key).iterator();
+      while(resultIterator.hasNext())
+      {
+        if(resultIterator.next())
+          count++;
+      }
+    }
+    keySetIterator = currentSitestotalTracker.keySet().iterator();
+    while(keySetIterator.hasNext())
+    {
+      Integer key = keySetIterator.next();
+      Iterator<Boolean> resultIterator = currentSitestotalTracker.get(key).iterator();
+      while(resultIterator.hasNext())
+      {
+        resultIterator.next();
+          totalcount++;
+      }
+    }
+    
+    Integer total = 100;
+    double percentage = (total.doubleValue() / totalcount.doubleValue())*count.doubleValue();
+    
+    
+    try
+    {
+      BufferedWriter out = new BufferedWriter(new FileWriter(new File(outputFolder.toString() + sep + "perNodeTupleContibution"), true));
+      out.write(op.getSite().getID() + " : " + count + " : " + totalcount + " : " + percentage + "\n");
+      out.flush();
+      out.close();
+    }
+    catch(IOException e)
+    {
+      System.out.println("failed to write appended value to per node tuple contribution file");
+    }
+  }
+
   private HashMap<String, ArrayList<Boolean>> getArrivedPackets()
   {
     return this.arrivedPackets;
@@ -812,6 +895,7 @@ public class ChannelModelSite implements Serializable
               {
                 reducedPackets.add(true);
                 updated = true;
+                found = true;
               }
             }
             if(!found)
@@ -1407,32 +1491,40 @@ public class ChannelModelSite implements Serializable
     return tuplesParticipatingInAggregation;
   }
 
-  public void determineAggregationContribution(String siteId)
+  public void determineAggregationContribution(String siteId, File outputFolder)
   throws SchemaMetadataException, TypeMappingException
   {
     Site site = overlayNetwork.getQep().getIOT().getSiteFromID(siteId);
-    if(site == null)
-      System.out.println();
     ArrayList<InstanceOperator> operators = 
       overlayNetwork.getQep().getIOT().getOpInstances(site, TraversalOrder.POST_ORDER, true);
     Iterator<InstanceOperator> operatorIterator = operators.iterator();
+    boolean done = false;
     while(operatorIterator.hasNext())
     {
       InstanceOperator op = operatorIterator.next();
       if(op.getSensornetOperator() instanceof SensornetAggrMergeOperator ||
-         op.getSensornetOperator()  instanceof SensornetAggrEvalOperator)
+         op.getSensornetOperator()  instanceof SensornetAggrEvalOperator & !done)
       {
-        checkAggregationTupleTracker(op, overlayNetwork.getQep().getIOT());
+        checkAggregationTupleTracker(op, overlayNetwork.getQep().getIOT(), outputFolder);
+        done = true;
+      }else if(op.getSensornetOperator() instanceof SensornetDeliverOperator & !done)
+      {
+         finishTracking(op, outputFolder);
+         done = true;
       }
-      if(op.getSensornetOperator() instanceof SensornetDeliverOperator)
-         finishTracking(op);
+      else if (!operatorIterator.hasNext() & !done)
+      {
+        checkAggregationTupleTracker(op, overlayNetwork.getQep().getIOT(), outputFolder);
+      }
+        
     }
   }
 
-  private void finishTracking(InstanceOperator op)
+  private void finishTracking(InstanceOperator op, File outputFile)
   {
     HashMapList<Integer, Boolean> currentSitesTracker = 
       ChannelModelSite.aggregationTupleTracker.get(op.getSite().getID());
+    HashMapList<Integer, Boolean> currentSitestotalTracker = new HashMapList<Integer, Boolean>();
     if(currentSitesTracker == null)
       currentSitesTracker = new HashMapList<Integer, Boolean>();
     ArrayList<InstanceOperator> operators = 
@@ -1501,12 +1593,15 @@ public class ChannelModelSite implements Serializable
           while(values.hasNext())
           {
             if(values.next())
+            {
               count++;
+            }
           }
         }
       }
     }
     ChannelModelSite.tuplesParticipatingInAggregation = count;
+    outputSiteCountToFile(op,currentSitesTracker, currentSitestotalTracker, outputFile);
   }
 
   public static void resetAggreData()

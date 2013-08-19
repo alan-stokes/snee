@@ -1,0 +1,623 @@
+universe = vanilla
+executable = start.sh 
+when_to_transfer_output = ON_EXIT 
+Should_Transfer_Files = YES
+transfer_input_files = ../SNEE.jar,../jre.tar.gz 
+Requirements = (OpSys == "LINUX") 
+Request_Disk = 3000000 
+request_memory = 2048 
+#Output = output$(Process).txt 
+#Error = error$(Process).txt 
+log = log.txt 
+Output = out.txt 
+Error = err.txt 
+notification = error 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee2.properties 2 1 
+initialdir   = query2.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee2.properties 2 2 
+initialdir   = query2.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee2.properties 2 3 
+initialdir   = query2.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee2.properties 2 4 
+initialdir   = query2.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee2.properties 2 5 
+initialdir   = query2.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee2.properties 2 6 
+initialdir   = query2.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee2.properties 2 7 
+initialdir   = query2.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee2.properties 2 8 
+initialdir   = query2.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee3.properties 3 1 
+initialdir   = query3.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee3.properties 3 2 
+initialdir   = query3.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee3.properties 3 3 
+initialdir   = query3.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee3.properties 3 4 
+initialdir   = query3.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee3.properties 3 5 
+initialdir   = query3.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee3.properties 3 6 
+initialdir   = query3.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee3.properties 3 7 
+initialdir   = query3.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee3.properties 3 8 
+initialdir   = query3.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee4.properties 4 1 
+initialdir   = query4.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee4.properties 4 2 
+initialdir   = query4.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee4.properties 4 3 
+initialdir   = query4.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee4.properties 4 4 
+initialdir   = query4.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee4.properties 4 5 
+initialdir   = query4.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee4.properties 4 6 
+initialdir   = query4.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee4.properties 4 7 
+initialdir   = query4.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee4.properties 4 8 
+initialdir   = query4.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee5.properties 5 1 
+initialdir   = query5.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee5.properties 5 2 
+initialdir   = query5.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee5.properties 5 3 
+initialdir   = query5.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee5.properties 5 4 
+initialdir   = query5.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee5.properties 5 5 
+initialdir   = query5.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee5.properties 5 6 
+initialdir   = query5.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee5.properties 5 7 
+initialdir   = query5.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee5.properties 5 8 
+initialdir   = query5.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee7.properties 7 1 
+initialdir   = query7.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee7.properties 7 2 
+initialdir   = query7.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee7.properties 7 3 
+initialdir   = query7.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee7.properties 7 4 
+initialdir   = query7.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee7.properties 7 5 
+initialdir   = query7.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee7.properties 7 6 
+initialdir   = query7.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee7.properties 7 7 
+initialdir   = query7.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow_; snee7.properties 7 8 
+initialdir   = query7.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee30.properties 30 1 
+initialdir   = query30.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee30.properties 30 2 
+initialdir   = query30.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee30.properties 30 3 
+initialdir   = query30.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee30.properties 30 4 
+initialdir   = query30.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee30.properties 30 5 
+initialdir   = query30.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee30.properties 30 6 
+initialdir   = query30.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee30.properties 30 7 
+initialdir   = query30.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee30.properties 30 8 
+initialdir   = query30.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee31.properties 31 1 
+initialdir   = query31.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee31.properties 31 2 
+initialdir   = query31.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee31.properties 31 3 
+initialdir   = query31.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee31.properties 31 4 
+initialdir   = query31.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee31.properties 31 5 
+initialdir   = query31.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee31.properties 31 6 
+initialdir   = query31.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee31.properties 31 7 
+initialdir   = query31.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee31.properties 31 8 
+initialdir   = query31.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee32.properties 32 1 
+initialdir   = query32.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee32.properties 32 2 
+initialdir   = query32.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee32.properties 32 3 
+initialdir   = query32.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee32.properties 32 4 
+initialdir   = query32.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee32.properties 32 5 
+initialdir   = query32.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee32.properties 32 6 
+initialdir   = query32.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee32.properties 32 7 
+initialdir   = query32.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee32.properties 32 8 
+initialdir   = query32.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee33.properties 33 1 
+initialdir   = query33.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee33.properties 33 2 
+initialdir   = query33.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee33.properties 33 3 
+initialdir   = query33.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee33.properties 33 4 
+initialdir   = query33.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee33.properties 33 5 
+initialdir   = query33.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee33.properties 33 6 
+initialdir   = query33.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee33.properties 33 7 
+initialdir   = query33.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee33.properties 33 8 
+initialdir   = query33.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee34.properties 34 1 
+initialdir   = query34.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee34.properties 34 2 
+initialdir   = query34.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee34.properties 34 3 
+initialdir   = query34.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee34.properties 34 4 
+initialdir   = query34.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee34.properties 34 5 
+initialdir   = query34.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee34.properties 34 6 
+initialdir   = query34.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee34.properties 34 7 
+initialdir   = query34.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee34.properties 34 8 
+initialdir   = query34.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee35.properties 35 1 
+initialdir   = query35.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee35.properties 35 2 
+initialdir   = query35.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee35.properties 35 3 
+initialdir   = query35.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee35.properties 35 4 
+initialdir   = query35.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee35.properties 35 5 
+initialdir   = query35.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee35.properties 35 6 
+initialdir   = query35.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee35.properties 35 7 
+initialdir   = query35.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_A[NOW]_anow_; snee35.properties 35 8 
+initialdir   = query35.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_C[NOW]_cnow_WHERE_sq1.sq1x=cnow.x; snee60.properties 60 1 
+initialdir   = query60.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_C[NOW]_cnow_WHERE_sq1.sq1x=cnow.x; snee60.properties 60 2 
+initialdir   = query60.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_C[NOW]_cnow_WHERE_sq1.sq1x=cnow.x; snee60.properties 60 3 
+initialdir   = query60.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_C[NOW]_cnow_WHERE_sq1.sq1x=cnow.x; snee60.properties 60 4 
+initialdir   = query60.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_C[NOW]_cnow_WHERE_sq1.sq1x=cnow.x; snee60.properties 60 5 
+initialdir   = query60.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_C[NOW]_cnow_WHERE_sq1.sq1x=cnow.x; snee60.properties 60 6 
+initialdir   = query60.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_C[NOW]_cnow_WHERE_sq1.sq1x=cnow.x; snee60.properties 60 7 
+initialdir   = query60.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_C[NOW]_cnow_WHERE_sq1.sq1x=cnow.x; snee60.properties 60 8 
+initialdir   = query60.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee61.properties 61 1 
+initialdir   = query61.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee61.properties 61 2 
+initialdir   = query61.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee61.properties 61 3 
+initialdir   = query61.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee61.properties 61 4 
+initialdir   = query61.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee61.properties 61 5 
+initialdir   = query61.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee61.properties 61 6 
+initialdir   = query61.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee61.properties 61 7 
+initialdir   = query61.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee61.properties 61 8 
+initialdir   = query61.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_(SELECT_cnow.x_as_sq2x_FROM_C[NOW]_cnow,_D[NOW]_dnow_WHERE_cnow.x=dnow.x)_sq2_WHERE_sq1.sq1x=sq2.sq2x; snee64.properties 64 1 
+initialdir   = query64.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_(SELECT_cnow.x_as_sq2x_FROM_C[NOW]_cnow,_D[NOW]_dnow_WHERE_cnow.x=dnow.x)_sq2_WHERE_sq1.sq1x=sq2.sq2x; snee64.properties 64 2 
+initialdir   = query64.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_(SELECT_cnow.x_as_sq2x_FROM_C[NOW]_cnow,_D[NOW]_dnow_WHERE_cnow.x=dnow.x)_sq2_WHERE_sq1.sq1x=sq2.sq2x; snee64.properties 64 3 
+initialdir   = query64.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_(SELECT_cnow.x_as_sq2x_FROM_C[NOW]_cnow,_D[NOW]_dnow_WHERE_cnow.x=dnow.x)_sq2_WHERE_sq1.sq1x=sq2.sq2x; snee64.properties 64 4 
+initialdir   = query64.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_(SELECT_cnow.x_as_sq2x_FROM_C[NOW]_cnow,_D[NOW]_dnow_WHERE_cnow.x=dnow.x)_sq2_WHERE_sq1.sq1x=sq2.sq2x; snee64.properties 64 5 
+initialdir   = query64.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_(SELECT_cnow.x_as_sq2x_FROM_C[NOW]_cnow,_D[NOW]_dnow_WHERE_cnow.x=dnow.x)_sq2_WHERE_sq1.sq1x=sq2.sq2x; snee64.properties 64 6 
+initialdir   = query64.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_(SELECT_cnow.x_as_sq2x_FROM_C[NOW]_cnow,_D[NOW]_dnow_WHERE_cnow.x=dnow.x)_sq2_WHERE_sq1.sq1x=sq2.sq2x; snee64.properties 64 7 
+initialdir   = query64.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_sq1.sq1x_as_qx_FROM_(SELECT_anow.x_as_sq1x_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x)_sq1,_(SELECT_cnow.x_as_sq2x_FROM_C[NOW]_cnow,_D[NOW]_dnow_WHERE_cnow.x=dnow.x)_sq2_WHERE_sq1.sq1x=sq2.sq2x; snee64.properties 64 8 
+initialdir   = query64.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x; snee65.properties 65 1 
+initialdir   = query65.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x; snee65.properties 65 2 
+initialdir   = query65.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x; snee65.properties 65 3 
+initialdir   = query65.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x; snee65.properties 65 4 
+initialdir   = query65.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x; snee65.properties 65 5 
+initialdir   = query65.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x; snee65.properties 65 6 
+initialdir   = query65.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x; snee65.properties 65 7 
+initialdir   = query65.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_B[NOW]_bnow_WHERE_anow.x=bnow.x; snee65.properties 65 8 
+initialdir   = query65.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee67.properties 67 1 
+initialdir   = query67.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee67.properties 67 2 
+initialdir   = query67.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee67.properties 67 3 
+initialdir   = query67.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee67.properties 67 4 
+initialdir   = query67.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee67.properties 67 5 
+initialdir   = query67.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee67.properties 67 6 
+initialdir   = query67.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee67.properties 67 7 
+initialdir   = query67.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_A[NOW]_anow,_(SELECT_bnow.x_as_sq1x_FROM_B[NOW]_bnow,_C[NOW]_cnow_WHERE_bnow.x=cnow.x)_sq1_WHERE_anow.x=sq1.sq1x; snee67.properties 67 8 
+initialdir   = query67.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 1 1 
+initialdir   = snipe1.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 1 2 
+initialdir   = snipe1.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 1 3 
+initialdir   = snipe1.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 1 4 
+initialdir   = snipe1.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 1 5 
+initialdir   = snipe1.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 1 6 
+initialdir   = snipe1.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 1 7 
+initialdir   = snipe1.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_anow.x_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 1 8 
+initialdir   = snipe1.8
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 2 1 
+initialdir   = snipe2.1
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 2 2 
+initialdir   = snipe2.2
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 2 3 
+initialdir   = snipe2.3
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 2 4 
+initialdir   = snipe2.4
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 2 5 
+initialdir   = snipe2.5
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 2 6 
+initialdir   = snipe2.6
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 2 7 
+initialdir   = snipe2.7
+queue 
+ 
+Arguments = SELECT_RSTREAM_AVG(anow.x)_as_qx_FROM_DetectorA[NOW]_anow_; sneeSnipe.properties 2 8 
+initialdir   = snipe2.8
+queue 
+ 
+Arguments = SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x; sneeSnipe.properties 3 1 
+initialdir   = snipe3.1
+queue 
+ 
+Arguments = SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x; sneeSnipe.properties 3 2 
+initialdir   = snipe3.2
+queue 
+ 
+Arguments = SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x; sneeSnipe.properties 3 3 
+initialdir   = snipe3.3
+queue 
+ 
+Arguments = SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x; sneeSnipe.properties 3 4 
+initialdir   = snipe3.4
+queue 
+ 
+Arguments = SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x; sneeSnipe.properties 3 5 
+initialdir   = snipe3.5
+queue 
+ 
+Arguments = SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x; sneeSnipe.properties 3 6 
+initialdir   = snipe3.6
+queue 
+ 
+Arguments = SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x; sneeSnipe.properties 3 7 
+initialdir   = snipe3.7
+queue 
+ 
+Arguments = SELECT * FROM DetectorA[now] a, DetectorB[now] b where a.x > b.x; sneeSnipe.properties 3 8 
+initialdir   = snipe3.8
+queue 
+ 

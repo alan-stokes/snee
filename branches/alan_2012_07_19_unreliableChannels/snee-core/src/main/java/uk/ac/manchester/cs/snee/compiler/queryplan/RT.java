@@ -303,8 +303,8 @@ public class RT extends SNEEAlgebraicForm {
     if(network.getRadioLink(sender, receiver) == null)
       if(network.getRadioLink(receiver, sender) == null)
       {
-        System.out.println();
-        return null;
+        return network.getRadioLink(network.getSite(sender.getID()), 
+                             network.getSite(receiver.getID()));
       }
       else
         return network.getRadioLink(receiver, sender);

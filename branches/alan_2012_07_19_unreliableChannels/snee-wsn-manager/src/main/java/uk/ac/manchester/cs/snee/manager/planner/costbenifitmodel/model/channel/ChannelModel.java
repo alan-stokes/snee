@@ -735,7 +735,7 @@ public class ChannelModel implements Serializable
         System.out.println();
       if(this.channelModel.get(Integer.parseInt(site.getID())) == null)
         System.out.println();
-      this.channelModel.get(Integer.parseInt(site.getID())).determineAggregationContribution(site.getID());
+      this.channelModel.get(Integer.parseInt(site.getID())).determineAggregationContribution(site.getID(),executorFolder);
     }
     return ChannelModelSite.getTuplesParticipatingInAggregation();
   }
