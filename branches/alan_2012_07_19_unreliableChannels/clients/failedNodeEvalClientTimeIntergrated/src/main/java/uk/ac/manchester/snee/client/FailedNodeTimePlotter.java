@@ -177,7 +177,7 @@ public class FailedNodeTimePlotter implements Serializable
     {
       System.out.println(e.getMessage());
     }
-    generatePlots(testID);
+    //generatePlots(testID);
   }
   
   
@@ -267,7 +267,7 @@ public class FailedNodeTimePlotter implements Serializable
     
     lifetimeWriter.flush();
     
-    generatePlots(testID);
+    //generatePlots(testID);
   }
   
   private void generatePlots(int testID)

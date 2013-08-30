@@ -712,7 +712,7 @@ public class Executer extends AutonomicManagerComponent
     String queryid = manager.getQueryID();
     DecimalFormat format = new DecimalFormat("#.##");
     
-    double overallShortestLifetimeA = overallShortestLifetime / (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000);
+    double overallShortestLifetimeA = overallShortestLifetime;
     if(runLogicalEdges)
       System.out.println(queryid + " " + "L" + " " + format.format(overallShortestLifetimeA));
     else
@@ -745,13 +745,13 @@ public class Executer extends AutonomicManagerComponent
     ArrayList<String> globalFailedNodes = new ArrayList<String>();
     double overallRQEPShortestLifetime = 0;
     NoiseModel Nmodel = new NoiseModel(network, manager.getCostsParamters(), seed);
-    
+    double lifetimebetweenFailure = 0.0;
     int numberofunpredictableFailures = 0;
     int expectedNumberOfUnexpectedFailures = 
       SNEEProperties.getIntSetting(SNEEPropertyNames.WSN_MANAGER_EDGE_LIFETIME_UNPREDICTABLEFAILURES_NO);
-    Long expectedlifetime = 
-      (long) SNEEProperties.getIntSetting(SNEEPropertyNames.WSN_MANAGER_EDGE_EXPECTEDLIFETIME);
-    int timeTillUnexpectedFailure = new Double(expectedlifetime / expectedNumberOfUnexpectedFailures).intValue();
+    Double expectedlifetime = 
+      Double.parseDouble(SNEEProperties.getSetting(SNEEPropertyNames.WSN_MANAGER_EDGE_EXPECTEDLIFETIME));
+    int timeTillUnexpectedFailure = new Double(expectedlifetime / (expectedNumberOfUnexpectedFailures+1)).intValue();
     
     while(alive)
     {
@@ -784,9 +784,10 @@ public class Executer extends AutonomicManagerComponent
         Node site = siteIter.next();
         RunTimeSite rSite = runningSites.get(site.getID());
         double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
+        System.out.println(site.getID() + " " + runningSites.get(site.getID()).getQepExecutionCost());
         double siteLifetime = (currentEnergySupply / runningSites.get(site.getID()).getQepExecutionCost());
         boolean useAcquires = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_K_RESILENCE_SENSE);
-        //uncomment out sections to not take the root site into account
+
         if (!site.getID().equals(rQEP.getIOT().getRT().getRoot().getID()) &&
            ((useAcquires) ||  (!useAcquires && !((Site) site).isSource())) &&
            !globalFailedNodes.contains(site.getID())) 
@@ -803,7 +804,7 @@ public class Executer extends AutonomicManagerComponent
       }
       
       // got expected first node failure, need to find out if its above or below unexpected failure
-      if(shortestLifetime > timeTillUnexpectedFailure * (numberofunpredictableFailures+1) &&
+      if(shortestLifetime > ((timeTillUnexpectedFailure * (numberofunpredictableFailures + 1))- lifetimebetweenFailure) &&
           numberofunpredictableFailures < expectedNumberOfUnexpectedFailures)
       {
         ArrayList<String> allNodes = new ArrayList<String>();
@@ -814,10 +815,10 @@ public class Executer extends AutonomicManagerComponent
         shortestLifetime = timeTillUnexpectedFailure * (numberofunpredictableFailures+1);
         numberofunpredictableFailures++;
       }
-      
+      lifetimebetweenFailure += shortestLifetime;
       //update runtimeSites energy levels
       updateSitesEnergyLevels(shortestLifetime, globalFailedNodes);
-      overallRQEPShortestLifetime += (shortestLifetime * agendaLength);
+      overallRQEPShortestLifetime += shortestLifetime;
       globalFailedNodes.add(failedSite);
       System.out.println("node " + failedSite);
       if(failedSite.equals("52"))

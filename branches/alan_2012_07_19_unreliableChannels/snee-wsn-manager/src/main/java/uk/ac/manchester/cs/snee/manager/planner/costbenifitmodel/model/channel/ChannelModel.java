@@ -304,8 +304,8 @@ public class ChannelModel implements Serializable
         continue;
       }
       
-      cpuActiveTimeBms += t.getDuration();
-      if (t instanceof FragmentTask) {
+      if (t instanceof FragmentTask && t.isRan()) {
+        cpuActiveTimeBms += t.getDuration();
         FragmentTask ft = (FragmentTask)t;
         Fragment f = ft.getFragment();
         if (f.containsOperatorType(SensornetAcquireOperator.class)) {
@@ -313,8 +313,9 @@ public class ChannelModel implements Serializable
         }
         sumEnergy += sensorEnergy;
       }
-      else if(t instanceof InstanceFragmentTask)
+      else if(t instanceof InstanceFragmentTask && t.isRan())
       {
+        cpuActiveTimeBms += t.getDuration();
         InstanceFragmentTask ft = (InstanceFragmentTask)t;
         InstanceFragment f = ft.getFragment();
         if (f.containsOperatorType(SensornetAcquireOperator.class)) {
@@ -323,10 +324,12 @@ public class ChannelModel implements Serializable
         sumEnergy += sensorEnergy;
       }
       else if (t instanceof CommunicationTask && t.isRan()) {
+        cpuActiveTimeBms += t.getDuration();
         CommunicationTask ct = (CommunicationTask)t;
         sumEnergy += getRadioEnergy(ct);
         
       } else if (t instanceof RadioOnTask && t.isRan()) {
+        cpuActiveTimeBms += t.getDuration();
         double taskDuration = AgendaIOT.bmsToMs(t.getDuration())/1000.0;
         double radioRXAmp = AvroraCostParameters.getRadioReceiveAmpere(); 
         double voltage = AvroraCostParameters.VOLTAGE;

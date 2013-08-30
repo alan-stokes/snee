@@ -226,13 +226,13 @@ public class ChannelModelUtils
       out.close();
       
       out = new PrintWriter(new BufferedWriter(new FileWriter(new File(superFolder + sep + "iterationPercentages" + iteration))));
-      out.write("1 " + totalPercentages.get("6").get("19188") + "\n");
-      out.write("3 " + totalPercentages.get("2").get("21206") + "\n");
-      out.write("4 " + totalPercentages.get("11").get("22223") + "\n");
-      out.write("5 " + totalPercentages.get("5").get("242511") + "\n");
-      out.write("7 " + totalPercentages.get("1").get("52627") + "\n");
-      out.write("8 " + totalPercentages.get("13").get("12829") + "\n");
-      out.write("9 " + totalPercentages.get("0").get("323313") + "\n");
+      //out.write("1 " + totalPercentages.get("6").get("19188") + "\n");
+      //out.write("3 " + totalPercentages.get("2").get("21206") + "\n");
+      //out.write("4 " + totalPercentages.get("11").get("22223") + "\n");
+     // out.write("5 " + totalPercentages.get("5").get("242511") + "\n");
+     // out.write("7 " + totalPercentages.get("1").get("52627") + "\n");
+     // out.write("8 " + totalPercentages.get("13").get("12829") + "\n");
+     // out.write("9 " + totalPercentages.get("0").get("323313") + "\n");
       out.flush();
       out.close();
     }

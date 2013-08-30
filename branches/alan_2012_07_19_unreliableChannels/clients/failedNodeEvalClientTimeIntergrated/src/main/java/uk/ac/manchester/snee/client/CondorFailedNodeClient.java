@@ -51,11 +51,13 @@ public class CondorFailedNodeClient extends SNEEClient
   protected static int numberOfExectutionCycles;
   protected static boolean calculated = false;
   protected static SensorNetworkQueryPlan originalQEP;
-  private static int queryid = 1;
+  private static int queryid = 64;
   protected static int testNo = 1;
   private static String sep = System.getProperty("file.separator");
   private static final FailedNodeTimeClientUtils utils = new FailedNodeTimeClientUtils();
   protected static CondorFailedNodeClient client;
+  protected static int faieldTests = 0;
+  protected static int preditctableNodeFailureIterations = 0;
   
   public CondorFailedNodeClient(String query, double duration,
       String queryParams, String csvFilename, String sneeProperties)
@@ -90,7 +92,7 @@ public class CondorFailedNodeClient extends SNEEClient
       //File result = new File(output.toString() + "/" + "ran" + query + queryid);
       //result.mkdir();
      // System.out.println("made folder output and " + output.toString() + "/" + "ran" + query + queryid);
-      recursiveRun(query, duration, queryParams, true, propertiesPath) ;
+      recursiveRun(query, duration, queryParams, false, propertiesPath) ;
     }
     catch (Exception e)
     {
@@ -221,10 +223,21 @@ public class CondorFailedNodeClient extends SNEEClient
         testNo++;
       }
       currentlyFailedNodes.clear();
-      double currentLifetime = numberOfExectutionCycles * currentNumberOfFailures ;
-      utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.PARTIAL, fails);
+      boolean successful = false;
+      double currentLifetime = 0.0;
+      if(faieldTests == 0)
+      {
+        successful = true;
+        currentLifetime = numberOfExectutionCycles * (currentNumberOfFailures);
+      }
+      else
+      {
+        currentLifetime = numberOfExectutionCycles * (currentNumberOfFailures - (faieldTests -1));
+      }
+      faieldTests = 0;
+      utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.PARTIAL, fails, successful);
       utils.plotTopology(testNo -1);
-      client.resetDataSources(originalQEP);
+      client.resetDataSources(originalQEP, false);
     }
   }
 
@@ -254,10 +267,21 @@ public class CondorFailedNodeClient extends SNEEClient
         testNo++;
       }
       currentlyFailedNodes.clear();
-      double currentLifetime = numberOfExectutionCycles * currentNumberOfFailures;
-      utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.GLOBAL, fails);
+      boolean successful = false;
+      double currentLifetime = 0.0;
+      if(faieldTests == 0)
+      {
+        successful = true;
+        currentLifetime = numberOfExectutionCycles * (currentNumberOfFailures);
+      }
+      else
+      {
+        currentLifetime = numberOfExectutionCycles * (currentNumberOfFailures - (faieldTests -1));
+      }
+      faieldTests = 0;
+      utils.storeAdaptation(queryid, testNo -1, currentLifetime, PlotterEnum.GLOBAL, fails, successful);
       utils.plotTopology(testNo -1);
-      client.resetDataSources(originalQEP);
+      client.resetDataSources(originalQEP, false);
     } 
   }
   
@@ -286,7 +310,7 @@ public class CondorFailedNodeClient extends SNEEClient
     return orginal.getLifetimeEstimate();
   }
   
-  private void resetDataSources(SensorNetworkQueryPlan qep) 
+  private void resetDataSources(SensorNetworkQueryPlan qep, boolean keepEnergySoruces) 
   throws SourceDoesNotExistException, SourceMetadataException,
   SNEEConfigurationException, SNCBException, TopologyReaderException, 
   OptimizationException, SchemaMetadataException, TypeMappingException, 
@@ -294,29 +318,88 @@ public class CondorFailedNodeClient extends SNEEClient
   {
     SNEEController control = (SNEEController) getController();
     control.resetMetaData(qep);
-    control.resetQEP(qep);
+    control.resetQEP(qep, keepEnergySoruces);
   }
   
-  private void runTests(CondorFailedNodeClient client, String currentQuery, 
+  private boolean runTests(CondorFailedNodeClient client, String currentQuery, 
       int queryid, boolean allowDeathOfAcquires, ArrayList<String> fails) 
   throws Exception
   {
-    updateSites(allowDeathOfAcquires);
-    if(applicableConfulenceSites.size() != 0)
+    try
     {
+      updateSites(allowDeathOfAcquires);
       String deadNode = chooseNodes();
-      getController().simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles);
-      client.runForTests(deadNode, queryid, fails); 
-      utils.updateRecoveryFile(queryid);
-      System.gc();
-      updateSites(allowDeathOfAcquires);  
+      if(applicableConfulenceSites.size() != 0)
+      {
+        Double energydrainLifetime = getController().getTimeTillNextNodefailsFromEnergyDelpetion();
+        String energydrainNode = getController().getNextNodefailsFromEnergyDelpetion();
+        
+        if(energydrainLifetime < (numberOfExectutionCycles - preditctableNodeFailureIterations))
+        {
+          System.out.println("having to run a predictable node failure");
+          System.out.println("runnign with node " + energydrainNode + " as lifetime is " + 
+                             energydrainLifetime + "and should be "  + numberOfExectutionCycles);
+          
+          
+          getController().simulateEnergyDrainofAganedaExecutionCycles(energydrainLifetime.intValue());
+          client.runExpectedNodeFailure(energydrainNode, queryid, fails);
+          preditctableNodeFailureIterations = energydrainLifetime.intValue();
+        }
+        else
+        {
+          getController().simulateEnergyDrainofAganedaExecutionCycles(numberOfExectutionCycles);
+          client.runForTests(deadNode, queryid, fails); 
+          preditctableNodeFailureIterations = 0;
+        }
+       // utils.updateRecoveryFile(queryid);
+        System.gc();
+        updateSites(allowDeathOfAcquires);  
+      }
+      else
+      {
+        System.out.println("were no avilable nodes to fail, will not run test");
+        faieldTests++;
+        client.updateAdpatationCount();
+      }
+      System.out.println("Stopping current query");
+      getController().close();
+      return true;
     }
-    else
+    catch(Exception e)
     {
       System.out.println("were no avilable nodes to fail, will not run test");
+      e.printStackTrace();
+      faieldTests++;
+      client.updateAdpatationCount();
+      System.out.println("Stopping current query");
+      getController().close();
+      return false;
     }
-    System.out.println("Stopping current query");
-    getController().close();
+  }
+  
+  private void runExpectedNodeFailure(String energydrainNode, int queryid,
+                                      ArrayList<String> fails)
+  throws Exception
+  {
+    if (logger.isDebugEnabled()) 
+      logger.debug("ENTER");
+    System.out.println("Query: " + _query);
+    System.out.println("Failed node [" + energydrainNode + "] ");
+    SNEEController control = (SNEEController) getController();
+    control.giveAutonomicManagerQuery(_query);
+    ArrayList<String> currentNodeFailures = new ArrayList<String>();
+    currentlyFailedNodes.add(energydrainNode);
+    currentNodeFailures.add(energydrainNode);
+    control.runSimulatedNodeFailure(currentNodeFailures);
+    fails.add(energydrainNode);   
+  }
+
+
+  private void updateAdpatationCount()
+  {
+    SNEEController control = (SNEEController) getController();
+    control.updateAdpatationCount();
+    
   }
 
   /**
@@ -437,6 +520,7 @@ public class CondorFailedNodeClient extends SNEEClient
     ArrayList<String> currentNodeFailures = new ArrayList<String>();
     currentlyFailedNodes.add(failedNode);
     currentNodeFailures.add(failedNode);
+    SensorNetworkQueryPlan lastQEP = client.getQEP();
     try
     {
       control.runSimulatedNodeFailure(currentNodeFailures);
@@ -470,7 +554,7 @@ public class CondorFailedNodeClient extends SNEEClient
   IOException, CodeGenerationException, SNEEConfigurationException
   {
     SNEEController control = (SNEEController) getController();
-    control.resetQEP(qep);
+    control.resetQEP(qep, true);
   }
 
   private void resetMetaData(SensorNetworkQueryPlan qep) 

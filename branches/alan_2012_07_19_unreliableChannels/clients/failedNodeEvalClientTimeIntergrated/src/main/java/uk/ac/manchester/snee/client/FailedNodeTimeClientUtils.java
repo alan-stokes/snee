@@ -208,7 +208,8 @@ public class FailedNodeTimeClientUtils
     return local;
   }
 
-  public void storeAdaptation(int queryid, int testid, double currentLifetime, PlotterEnum which, ArrayList<String> fails)
+  public void storeAdaptation(int queryid, int testid, double currentLifetime,
+                              PlotterEnum which, ArrayList<String> fails, boolean successful)
   {
     File inputFolder = new File("output" + sep + "query" + queryid + sep + "AutonomicManData" + sep + "Adaption" + testid + sep + "Planner" +  sep + "storedObjects");
     ArrayList<Adaptation> adaptations = this.readInObjects(inputFolder);
@@ -220,15 +221,23 @@ public class FailedNodeTimeClientUtils
     DecimalFormat df = new DecimalFormat("#.#####");
     if(which == PlotterEnum.GLOBAL && global != null)
     {
-      Double overallLifetime = new Double(global.getLifetimeEstimate().doubleValue() + currentLifetime);
+      Double overallLifetime = 0.0;
+      if(successful)
+        overallLifetime = new Double(global.getLifetimeEstimate().doubleValue() + currentLifetime);
+      else
+        overallLifetime = currentLifetime;
       System.out.println(df.format( overallLifetime));
-      plot.addGlobalLifetime(global.getLifetimeEstimate() + currentLifetime, fails);
+      plot.addGlobalLifetime(overallLifetime, fails);
     }
     else if(which == PlotterEnum.PARTIAL && partial != null)
     {
-      Double overallLifetime = new Double(partial.getLifetimeEstimate().doubleValue() + currentLifetime);
+      Double overallLifetime = 0.0;
+      if(successful)
+        overallLifetime = new Double(partial.getLifetimeEstimate().doubleValue() + currentLifetime);
+      else
+        overallLifetime = currentLifetime;
       System.out.println(df.format(overallLifetime ));
-      plot.addPartialLifetime(partial.getLifetimeEstimate() + currentLifetime, fails);
+      plot.addPartialLifetime(overallLifetime, fails);
     }
     else if(which == PlotterEnum.LOCAL & local != null)
     {

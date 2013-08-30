@@ -162,4 +162,12 @@ public interface SNEE {
 	 */
   public void simulateEnergyDrainofAganedaExecutionCycles(int fixedNumberOfAgendaExecutionCycles);
 
+  public Double getTimeTillNextNodefailsFromEnergyDelpetion() 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException, SNEEConfigurationException;
+
+  public String getNextNodefailsFromEnergyDelpetion() 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException, SNEEConfigurationException;
+
 }

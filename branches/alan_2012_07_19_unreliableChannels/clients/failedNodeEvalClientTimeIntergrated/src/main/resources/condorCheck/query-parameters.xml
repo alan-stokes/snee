@@ -27,7 +27,7 @@ xsi:schemaLocation="http://snee.cs.manchester.ac.uk query-parameters.xsd">
 		<buffering-factor>
 			<constraint>
 				<range>	
-					<min-val>0</min-val>
+					<min-val>10</min-val>
 					<max-val>200</max-val>					
 				</range>	
 			</constraint>

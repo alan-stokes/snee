@@ -16,6 +16,7 @@ import uk.ac.manchester.cs.snee.compiler.AgendaException;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.WhenSchedulerException;
 import uk.ac.manchester.cs.snee.compiler.AgendaLengthException;
+import uk.ac.manchester.cs.snee.compiler.queryplan.QueryExecutionPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Task;
 import uk.ac.manchester.cs.snee.manager.AutonomicManagerImpl;
@@ -224,11 +225,11 @@ public class Planner extends AutonomicManagerComponent
         if(choice.getStrategyId().toString().contains("Partial"))
         {
           Double choiceCost = choice.getLifetimeEstimate();
-          if(choiceCost > cost)
-          {
+          //if(choiceCost > cost)
+          //{
             finalChoice = choice;
             cost = choiceCost;
-          }
+          //}
         }
       }
       return finalChoice;
@@ -474,7 +475,7 @@ public class Planner extends AutonomicManagerComponent
   //                     this._metadataManager.getCostParameters());
     
     boolean runTupleSim = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_EXECUTOR_EDGE_TUPLES);  
-    if(true)
+    if(runTupleSim)
     {
       manager.simulateRunOfRQEP(rQEP, qep, seed, distanceConverter);
       
@@ -482,18 +483,28 @@ public class Planner extends AutonomicManagerComponent
    // assessor.assessOverlayChoice(storage, runningSites, rQEP.getLogicalOverlayNetwork(), 
          //                        local, channelModel);
     boolean runLifeSim = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_EXECUTOR_EDGE_LIFE);
-    if(false)
+    if(runLifeSim)
     {
       Storage storage = manager.calculateLifetimeDifferenceFromDeployments(rQEP, qep, seed, distanceConverter);
     System.out.println("new robust lifetime = " + 
-                       (storage.getRobustLifetime() / 
-                          (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000)));
+                       (storage.getRobustLifetime()));
     System.out.println("new lifetime = " + 
-        (storage.getNaiveLifetime() / 
-           (rQEP.getUnreliableAgenda().getDeliveryTime_ms() / 1000)));
+        (storage.getNaiveLifetime()));
     
     }
     return rQEP;
+  }
+
+  public Double getTimeTillNextNodefailsFromEnergyDelpetion(QueryExecutionPlan qep) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  {
+    return this.assessor.getTimeTillNextNodefailsFromEnergyDelpetion((SensorNetworkQueryPlan) qep);
+  }
+
+  public String getNextNodefailsFromEnergyDelpetion(QueryExecutionPlan qep) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  {
+    return this.assessor.getNextNodefailsFromEnergyDelpetion((SensorNetworkQueryPlan) qep);
   }
   
 }

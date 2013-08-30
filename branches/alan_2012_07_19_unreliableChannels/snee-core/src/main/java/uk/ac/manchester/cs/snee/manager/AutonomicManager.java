@@ -104,7 +104,7 @@ public interface AutonomicManager
 
   public abstract void setCurrentQEP(SensorNetworkQueryPlan newQEP);
 
-  public abstract void resetRunningSites(SensorNetworkQueryPlan qep)
+  public abstract void resetRunningSites(SensorNetworkQueryPlan qep, boolean keepingEnergyLevels)
   throws OptimizationException, SchemaMetadataException, TypeMappingException, 
   IOException, CodeGenerationException, SNEEConfigurationException;
 
@@ -123,4 +123,12 @@ public interface AutonomicManager
   OptimizationException, IOException, CodeGenerationException,
   NumberFormatException, WhenSchedulerException, AgendaException,
   AgendaLengthException;
+
+  public abstract void updateAdpatationCount();
+
+  public abstract Double getTimeTillNextNodefailsFromEnergyDelpetion(QueryExecutionPlan queryExecutionPlan) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException;
+
+  public abstract String getNextNodefailsFromEnergyDelpetion(QueryExecutionPlan queryExecutionPlan)
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException;
 }

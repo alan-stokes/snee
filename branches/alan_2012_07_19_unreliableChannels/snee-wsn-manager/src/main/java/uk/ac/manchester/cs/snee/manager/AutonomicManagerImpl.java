@@ -435,7 +435,7 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   {
     return adaptionCount;
   }
-
+  
   @Override
   public void setQueryParams(QoSExpectations qoS)
   {
@@ -471,12 +471,27 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   }
 
   @Override
-  public void resetRunningSites(SensorNetworkQueryPlan qep) 
+  public void resetRunningSites(SensorNetworkQueryPlan qep, boolean keepingEnergyLevels) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException, 
   IOException, CodeGenerationException, SNEEConfigurationException
   {
-    runningSites.clear();
+    if(!keepingEnergyLevels)
+      runningSites.clear();
+    else
+      transferEnergyLevels();
     setupRunningSites(qep);
+  }
+
+  private void transferEnergyLevels()
+  {
+    Iterator<Node> siteIterator = this.getWsnTopology().getNodes().iterator();
+    while(siteIterator.hasNext())
+    {
+      Site currentSite = (Site) siteIterator.next();
+      RunTimeSite energySite = runningSites.get(currentSite.getID());
+      currentSite.setEnergyStock(energySite.getCurrentEnergy().longValue());
+    }
+    runningSites.clear();
   }
 
   public HashMap<String, RunTimeSite> getCopyOfRunningSites()
@@ -647,9 +662,30 @@ public class AutonomicManagerImpl implements AutonomicManager, Serializable
   SchemaMetadataException, TypeMappingException, IOException, CodeGenerationException
   {
     boolean areUnpredictable = SNEEProperties.getBoolSetting(SNEEPropertyNames.WSN_MANAGER_EDGE_LIFETIME_UNPREDICTABLEFAILURES);
-    if(true)
+    if(areUnpredictable)
       return this.executer.calculateUnpredictableLifetimeDifferenceFromDeployments(rQEP, qep, seed, distanceConverter);
     else
       return this.executer.calculateLifetimeDifferenceFromDeployments(rQEP, qep, seed, distanceConverter);
+  }
+
+  @Override
+  public void updateAdpatationCount()
+  {
+    this.adaptionCount++;
+    
+  }
+
+  @Override
+  public Double getTimeTillNextNodefailsFromEnergyDelpetion(QueryExecutionPlan qep)
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  {
+    return this.planner.getTimeTillNextNodefailsFromEnergyDelpetion(qep);
+  }
+
+  @Override
+  public String getNextNodefailsFromEnergyDelpetion(QueryExecutionPlan qep) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  {
+    return this.planner.getNextNodefailsFromEnergyDelpetion(qep);
   }
 }

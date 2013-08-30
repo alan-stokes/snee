@@ -90,8 +90,6 @@ public class ChannelModelSite implements Serializable
                           ChannelModel model, boolean packetID)
   {
     this.expectedPackets = expectedPackets;
-    if(this.siteID == "6")
-      System.out.println();
     setupExpectedPackets();
     this.siteID = siteID;
     this.overlayNetwork = overlayNetwork;

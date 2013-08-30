@@ -722,11 +722,11 @@ public class SNEEController implements SNEE {
     sm.resetTopology();
   }
 
-  public void resetQEP(SensorNetworkQueryPlan qep) 
+  public void resetQEP(SensorNetworkQueryPlan qep, boolean keepingEnergyLevels) 
   throws OptimizationException, SchemaMetadataException, 
   TypeMappingException, IOException, CodeGenerationException, SNEEConfigurationException
   {
-    _dispatcher.resetQEP(qep);
+    _dispatcher.resetQEP(qep, keepingEnergyLevels);
   }
 
   public void removeNodeFromTheMetaData(String failedID, SensorNetworkQueryPlan qep) 
@@ -822,5 +822,26 @@ public class SNEEController implements SNEE {
     }
     return queryId;
     
+  }
+
+  public void updateAdpatationCount()
+  {
+    _dispatcher.updateAdaptationCount();
+  }
+
+  @Override
+  public Double getTimeTillNextNodefailsFromEnergyDelpetion() 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException, SNEEConfigurationException
+  {
+    return _dispatcher.getTimeTillNextNodefailsFromEnergyDelpetion(this.getQEP());
+  }
+
+  @Override
+  public String getNextNodefailsFromEnergyDelpetion() 
+  throws OptimizationException, SchemaMetadataException, 
+  TypeMappingException, SNEEConfigurationException
+  {
+    return _dispatcher.getNextNodefailsFromEnergyDelpetion(this.getQEP());
   }
 }

@@ -15,6 +15,7 @@ import uk.ac.manchester.cs.snee.common.SNEEPropertyNames;
 import uk.ac.manchester.cs.snee.common.graph.Node;
 import uk.ac.manchester.cs.snee.compiler.OptimizationException;
 import uk.ac.manchester.cs.snee.compiler.queryplan.Agenda;
+import uk.ac.manchester.cs.snee.compiler.queryplan.SensorNetworkQueryPlan;
 import uk.ac.manchester.cs.snee.compiler.queryplan.TraversalOrder;
 import uk.ac.manchester.cs.snee.manager.common.Adaptation;
 import uk.ac.manchester.cs.snee.manager.common.AdaptationUtils;
@@ -416,5 +417,65 @@ public class ChoiceAssessor implements Serializable
         rSite.removeDefinedCost(rSite.getQepExecutionCost() * shortestLifetime);
       }
     }
+  }
+
+  public Double getTimeTillNextNodefailsFromEnergyDelpetion(SensorNetworkQueryPlan qep) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  {
+    double shortestLifetime = Double.MAX_VALUE; //s
+    SiteEnergyModel siteModel = new SiteEnergyModel(qep.getAgendaIOT());
+    Iterator<Site> siteIter = qep.getIOT().getRT().siteIterator(TraversalOrder.POST_ORDER);
+    while (siteIter.hasNext()) 
+    {
+      Site site = siteIter.next();
+      RunTimeSite rSite = runningSites.get(site.getID());
+      double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
+      double siteEnergyCons = siteModel.getSiteEnergyConsumption(site); // J
+      runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
+      double siteLifetime = (currentEnergySupply / siteEnergyCons);
+      //uncomment out sections to not take the root site into account
+      if (site!=qep.getIOT().getRT().getRoot()) 
+      { 
+        if(shortestLifetime > siteLifetime)
+        {
+          if(!site.isDeadInSimulation())
+          {
+            shortestLifetime = siteLifetime;
+          }
+        }
+      }
+    }
+    return shortestLifetime;
+  }
+
+  public String getNextNodefailsFromEnergyDelpetion(SensorNetworkQueryPlan qep) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  {
+    double shortestLifetime = Double.MAX_VALUE; //s
+    String nodeID = "";
+    SiteEnergyModel siteModel = new SiteEnergyModel(qep.getAgendaIOT());
+    Iterator<Site> siteIter = qep.getIOT().getRT().siteIterator(TraversalOrder.POST_ORDER);
+    while (siteIter.hasNext()) 
+    {
+      Site site = siteIter.next();
+      RunTimeSite rSite = runningSites.get(site.getID());
+      double currentEnergySupply = rSite.getCurrentEnergy() - rSite.getCurrentAdaptationEnergyCost();
+      double siteEnergyCons = siteModel.getSiteEnergyConsumption(site); // J
+      runningSites.get(site.getID()).setQepExecutionCost(siteEnergyCons);
+      double siteLifetime = (currentEnergySupply / siteEnergyCons);
+      //uncomment out sections to not take the root site into account
+      if (site!=qep.getIOT().getRT().getRoot()) 
+      { 
+        if(shortestLifetime > siteLifetime)
+        {
+          if(!site.isDeadInSimulation())
+          {
+            shortestLifetime = siteLifetime;
+            nodeID = site.getID();
+          }
+        }
+      }
+    }
+    return nodeID;
   }
 }

@@ -346,12 +346,12 @@ public class Dispatcher {
     _autonomicManager.simulateEnergyDrainofAganedaExecutionCycles(fixedNumberOfAgendaExecutionCycles);
   }
 
-  public void resetQEP(SensorNetworkQueryPlan qep) 
+  public void resetQEP(SensorNetworkQueryPlan qep, boolean keepingEnergyLevels) 
   throws OptimizationException, SchemaMetadataException, TypeMappingException, 
   IOException, CodeGenerationException, SNEEConfigurationException
   {
     _autonomicManager.setCurrentQEP(qep); 
-    _autonomicManager.resetRunningSites(qep);
+    _autonomicManager.resetRunningSites(qep, keepingEnergyLevels);
   }
 
   public void setupOverlay() 
@@ -376,6 +376,24 @@ public class Dispatcher {
     SourceMetadataAbstract metadata = _metadata.getSource(snQueryPlan.getMetaData().getOutputAttributes().get(1).getExtentName());
     _autonomicManager.initilise(metadata, queryPlan, resultSet, queryId, seed, distanceConverter);
     
+  }
+
+  public void updateAdaptationCount()
+  {
+    _autonomicManager.updateAdpatationCount();
+    
+  }
+
+  public Double getTimeTillNextNodefailsFromEnergyDelpetion(QueryExecutionPlan queryExecutionPlan)
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  {
+    return _autonomicManager.getTimeTillNextNodefailsFromEnergyDelpetion(queryExecutionPlan);
+  }
+
+  public String getNextNodefailsFromEnergyDelpetion(QueryExecutionPlan queryExecutionPlan) 
+  throws OptimizationException, SchemaMetadataException, TypeMappingException, SNEEConfigurationException
+  {
+    return _autonomicManager.getNextNodefailsFromEnergyDelpetion(queryExecutionPlan);
   }
 
 }

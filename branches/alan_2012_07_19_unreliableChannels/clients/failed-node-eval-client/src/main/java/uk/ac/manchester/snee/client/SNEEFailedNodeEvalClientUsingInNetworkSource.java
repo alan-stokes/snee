@@ -395,7 +395,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSource extends SNEEClient
   SNEEConfigurationException 
   {
     SNEEController control = (SNEEController) getController();
-    control.resetQEP(qep);
+    control.resetQEP(qep, false);
   }
 
 private void resetMetaData() 
