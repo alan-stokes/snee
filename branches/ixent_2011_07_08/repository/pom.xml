@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>uk.ac.manchester.cs.snee</groupId>
+		<artifactId>SNEE</artifactId>
+		<version>1.6.5-SNAPSHOT</version>
+	</parent>
+	<artifactId>repository</artifactId>
+	<name>Local Repository</name>
+	<description>A dummy module for storing dependencies that we don't have in a proper Maven repository</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>eu.semsorgrid4env.service.sds</groupId>
+			<artifactId>sds-wsdl</artifactId>
+			<version>0.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.semsorgrid4env.service.wsdair</groupId>
+			<artifactId>wsdair-wsdl</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>net.tinyos</groupId>
+			<artifactId>tinyos</artifactId>
+			<version>2.1</version>
+		</dependency>
+	</dependencies>
+	<repositories>
+		<repository>
+			<id>my-local-repo</id>
+			<url>file://${project.basedir}/src/main/resources/lib/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+</project>
