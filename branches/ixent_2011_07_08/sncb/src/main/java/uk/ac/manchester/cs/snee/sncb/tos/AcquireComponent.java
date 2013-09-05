@@ -234,7 +234,7 @@ public class AcquireComponent extends NesCComponent {
 			replacements.put("__AVRORAPRINT_DEBUG1__",
 					"\tchar dbg_msg[30];\n");
 			replacements.put("__AVRORAPRINT_DEBUG2__",
-					"\t\t\t\tsprintf(dbg_msg, \"ACQUIRE(id=%d,ep=%d)\","+IDAttrName+","+evalTimeAttrName+");\n" + 
+					"\t\t\t\tsprintf(dbg_msg, \"ACQUIRE(id=%d,ep=%d)\",TOS_NODE_ID,"+evalTimeAttrName+");\n" + 
 					"\t\t\t\tprintStr(dbg_msg);\n");				
 		}
 		else
