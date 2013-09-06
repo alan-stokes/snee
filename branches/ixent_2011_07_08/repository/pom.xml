@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>uk.ac.manchester.cs.snee</groupId>
 		<artifactId>SNEE</artifactId>
-		<version>1.6.5-SNAPSHOT</version>
+		<version>1.6.4-SNAPSHOT</version>
 	</parent>
 	<artifactId>repository</artifactId>
 	<name>Local Repository</name>
