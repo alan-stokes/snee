@@ -18,11 +18,11 @@ public class PlotFolderGenerators
 {
   static private HashMap<String, Query> queries = new HashMap<String, Query>();
   static private File tupleInputFile = null;
-  static private File lifetimeInputFile = new File("/mnt/usb/1st1/edgeResults/data/lifetimeAndVarience");
+  static private File lifetimeInputFile = new File("/mnt/usb/1st1/Edge/edge_failure_overview_plots/curves/data/lifetimeAndVarience");
   static private File outputFolder = null;
   static private File outputFolderRoot = new File("/mnt/usb/1st1/edgeResults/plots/");
   static private String sep = File.separator;
-  static private File startupDataFolder = new File("/mnt/usb/1st1/edgeResults/data");
+  static private File startupDataFolder = new File("/mnt/usb/1st1/Edge/edge_failure_overview_plots/curves/data");
   
   
   public static void main(String [] args)
@@ -48,6 +48,9 @@ public class PlotFolderGenerators
             outputDistanceFolder = "32m";
           if(distances[distanceIndex].getName().equals("aggre1.0"))
             outputDistanceFolder = "40m";
+          
+          if(!outputFolderRoot.exists())
+            outputFolderRoot.mkdir();
             
           outputFolder = new File(outputFolderRoot.toString() + sep + typeOfNoise.getName() + sep + outputDistanceFolder);
           File queryTypeFolder = new File(outputFolderRoot.toString() + sep + typeOfNoise.getName());
@@ -85,10 +88,16 @@ public class PlotFolderGenerators
     " 40000, \"50\" 50000, \"60\" 60000, \"70\" 70000, \"80\" 80000 " +
     ", \"90\" 90000, \"100\" 100000, \"110\" 110000, \"120\" 120000) \n" +
     "set ytic (0,10,20,30,40,50,60,70,80,90,100) \n " +
-    "plot \""+mainDataFileDirectory.getAbsolutePath() + "\" u 1:4 w linespoints lc rgb \"blue\" " +
-    "pt 5 lt 3 ps 2 title \"K_e = 2 & K_n >= K_e\"," +
-    " \""+mainDataFileDirectory.getAbsolutePath() + "\" u 8:11 w linespoints lc rgb \"red\" " +
+    "plot  \""+mainDataFileDirectory.getAbsolutePath() + "\" u 22:25 w linespoints lc rgb" +
+    " \"green\" pt 5 lt 3 ps 2 title \"k_e =1 && k_n = 1 (Static)\", " +
+" \""+mainDataFileDirectory.getAbsolutePath() + "\" u 8:11 w linespoints lc rgb \"red\" " +
     "pt 5 lt 3 ps 2 title \"K_e = 1 & K_n >= K_e (optimistic)\", " +
+" \""+mainDataFileDirectory.getAbsolutePath() + "\" u 1:4 w linespoints lc rgb \"blue\" " +
+    "pt 5 lt 3 ps 2 title \"K_e = 2 & K_n >= K_e\"," +
+" \""+mainDataFileDirectoryk3.getAbsolutePath() + "\" u 1:4 w linespoints lc rgb \"orange\" " +
+    "pt 5 lt 3 ps 2 title \"K_e = 3 & K_n >= K_e\"," +
+" \""+mainDataFileDirectory.getAbsolutePath() + "\" u 15:18 w linespoints lc rgb" +
+    " \"brown\" pt 5 lt 3 ps 1 title \"K_e = K_n (Pessimistic)\", " +
     "\""+mainDataFileDirectory.getAbsolutePath() + "\" u 8:11:9:10 w xerrorbars lc rgb \"black\" " +
     "lt 1 pt 4 ps 2 notitle, \""+mainDataFileDirectory.getAbsolutePath() + "\" u 8:11:12:13 w " +
     "yerrorbars lc rgb \"black\" lt 1 pt 4 ps 2 notitle," +
@@ -96,19 +105,15 @@ public class PlotFolderGenerators
     " \""+DataOptDirectory2.getAbsolutePath() + "\" u 1:2:3 w labels offset -2.5,-1 notitle," +
     " \""+DataOptDirectory3.getAbsolutePath() + "\" u 1:2:3 w labels offset +2.5,-1 notitle," +
     " \""+DataOptDirectory4.getAbsolutePath() + "\" u 1:2:3 w labels offset +2.5,+1 notitle," +
-    " \""+mainDataFileDirectory.getAbsolutePath() + "\" u 22:25 w linespoints lc rgb" +
-    " \"green\" pt 5 lt 3 ps 2 title \"k_e =1 && k_n = 1 (Static)\"" +
-    ", \""+mainDataFileDirectory.getAbsolutePath() + "\" u 22:25:23:24 w xerrorbars lc rgb \"black\" " +
+    " \""+mainDataFileDirectory.getAbsolutePath() + "\" u 22:25:23:24 w xerrorbars lc rgb \"black\" " +
     "lt 1 pt 4 ps 2 notitle, \""+mainDataFileDirectory.getAbsolutePath() + "\" u 22:25:26:27 w " +
-    "yerrorbars lc rgb \"black\" lt 1 pt 4 ps 2 notitle," +
+    "yerrorbars lc rgb \"black\" lt 1 pt 4 ps 2 title \"variance from different topologies\"," +
     " \""+mainDataFileDirectory.getAbsolutePath() + "\" u 22:25:28 w labels offset -2.5,-0.5 notitle," +
-    " \""+mainDataFileDirectoryk3.getAbsolutePath() + "\" u 1:4 w linespoints lc rgb \"orange\" " +
-    "pt 5 lt 3 ps 2 title \"K_e = 3 & K_n >= K_e\", \""+mainDataFileDirectoryk3.getAbsolutePath() + "\"" +
+     " \""+mainDataFileDirectoryk3.getAbsolutePath() + "\"" +
     " u 1:4:3:2 w xerrorbars lc rgb \"black\" lt 1 pt 4 ps 2 notitle," +
     " \""+mainDataFileDirectoryk3.getAbsolutePath() + "\" u 1:4:5:6 w yerrorbars lc rgb \"black\" " +
     "lt 1 pt 4 ps 2 notitle, \""+mainDataFileDirectoryk3.getAbsolutePath() + "\" u 1:4:7 w labels offset" +
-    " -2.5,-0.5 notitle, \""+mainDataFileDirectory.getAbsolutePath() + "\" u 15:18 w linespoints lc rgb" +
-    " \"brown\" pt 5 lt 3 ps 1 title \"K_e = K_n (Pessimistic)\", " +
+    " -2.5,-0.5 notitle," + 
     "\""+mainDataFileDirectory.getAbsolutePath() + "\" u 15:18:16:17 w xerrorbars lc rgb \"black\" " +
     "lt 1 pt 4 ps 1 notitle, \""+mainDataFileDirectory.getAbsolutePath() + "\" u 15:18:19:20 w " +
     "yerrorbars lc rgb \"black\" lt 1 pt 4 ps 1 notitle," +

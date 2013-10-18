@@ -259,6 +259,7 @@ public class ChoiceAssessor implements Serializable
     {
       resetRunningSitesAdaptCost(); 
     }
+    new AdaptationUtils(orginal, _metadataManager.getCostParameters()).FileOutput(AssessmentFolder);
     return true;
     }catch(Exception e)
     {

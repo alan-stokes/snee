@@ -8,9 +8,27 @@
 		<column name="x">
 			<type class ="integer"/>
 		</column>
+		<column name="y">
+			<type class ="integer"/>
+		</column>
+		<column name="z">
+			<type class ="integer"/>
+		</column>
+		<column name="b">
+			<type class ="integer"/>
+		</column>
 	</stream> 
 	<stream name="B" type="pull">
 		<column name="x">
+			<type class ="integer"/>
+		</column>
+		<column name="y">
+			<type class ="integer"/>
+		</column>
+		<column name="z">
+			<type class ="integer"/>
+		</column>
+		<column name="a">
 			<type class ="integer"/>
 		</column>
 	</stream> 
@@ -24,5 +42,7 @@
 			<type class ="integer"/>
 		</column>
 	</stream> 
+	
+	
 
 </schema>

@@ -8,6 +8,15 @@
 		<column name="x">
 			<type class ="integer"/>
 		</column>
+		<column name="y">
+			<type class ="integer"/>
+		</column>
+		<column name="z">
+			<type class ="integer"/>
+		</column>
+		<column name="b">
+			<type class ="integer"/>
+		</column>
 	</stream> 
 
 </schema>

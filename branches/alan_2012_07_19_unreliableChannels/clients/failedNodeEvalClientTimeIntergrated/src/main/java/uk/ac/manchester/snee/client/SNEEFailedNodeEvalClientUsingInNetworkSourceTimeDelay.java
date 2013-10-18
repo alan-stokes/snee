@@ -59,12 +59,12 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	  Logger.getLogger(SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay.class.getName());
 	@SuppressWarnings("unused")
   private String sneeProperties;
-	private static int queryid = 31 ;
+	private static int queryid = 62 ;
 	protected static int testNo = 1;
-	private static String dictonary = "testsSize30";
+	private static String dictonary = "testsSize100";
 	
 	//used to calculate agenda cycles
-	protected static int maxNumberofFailures = 8;
+	protected static int maxNumberofFailures = 2;
 	protected static ArrayList<String> currentlyFailedNodes = new ArrayList<String>(maxNumberofFailures);
 	protected static double originalLifetime;
 	protected static int numberOfExectutionCycles;
@@ -116,15 +116,19 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	    queryIterator = queries.iterator();
 	    failedOutput = utils.createFailedTestListWriter();
 	    
-	    for(int index =1; index < queryid; index++)
-	    {
-	      queryIterator.next();
-	    }
+	   // for(int index =1; index < queryid; index++)
+	   // {
+	   //   queryIterator.next();
+	  //  }
 	    
 	  //  while(queryIterator.hasNext())
 	   // {
+	    for(int index = 0; index < 10; index++)
+	    {
 	      recursiveRun(queryIterator, duration, queryParams, false, failedOutput);
 	      calculated = false;
+	      queryid++;
+	    }
      // }
 	    failedOutput.write("\\end{document}");
 	    failedOutput.flush();
@@ -162,7 +166,9 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
 	{
 	//get query & schemas
     String currentQuery = queryIterator.next();
-    String propertiesPath = dictonary + "/snee" + queryid + ".properties";
+   // currentQuery = "SELECT RSTREAM anow.x, anow.y as qx FROM A[NOW] anow;";
+    //currentQuery = "SELECT RSTREAM anow.x as qx FROM A[now] anow, B[now] bnow WHERE anow.x=bnow.x AND anow.y>bnow.y;";
+    String propertiesPath = dictonary + "/snee" + "62" + ".properties";
     
     System.out.println("Running Tests on query " + (queryid));
     client = new  SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay(currentQuery, 
@@ -239,7 +245,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
     testNo = 1 + (cap * (position));
     System.out.println("running tests for partial ");
     SNEEProperties.setSetting(SNEEPropertyNames.CHOICE_ASSESSOR_PREFERENCE, ChoiceAssessorPreferenceEnum.Partial.toString());
-    
+    System.out.println("original lf = " + SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay.getOriginalLifetime());
     //run for partial 
     for(int currentNumberOfFailures = 1; currentNumberOfFailures <= maxNumberofFailures; currentNumberOfFailures++)
     {
@@ -509,7 +515,7 @@ public class SNEEFailedNodeEvalClientUsingInNetworkSourceTimeDelay extends SNEEC
   private static void collectQueries(ArrayList<String> queries) throws IOException
   {
     //String filePath = Utils.validateFileLocation("tests/queries.txt");
-    File queriesFile = new File("src/main/resources/" + dictonary + "/queries.txt");
+    File queriesFile = new File("src/main/resources/" + dictonary + "/QUERIESgENERATED");
     String filePath = queriesFile.getAbsolutePath();
     BufferedReader queryReader = new BufferedReader(new FileReader(filePath));
     String line = "";

@@ -1,0 +1,34 @@
+SELECT anow.z, bnow.x, bnow.y, bnow.z, bnow.a FROM A[range 10 SECONDS slide 20 SECONDS] anow, B[now] bnow WHERE bnow.y = anow.x AND anow.y>157 AND bnow.z<53;
+SELECT bnow.*, anow.* FROM B[now] bnow , A[now] anow WHERE anow.x = bnow.y AND bnow.y>856 AND bnow.a<56 AND anow.y<705 AND anow.b<700 AND anow.b<546 AND anow.b<194;
+SELECT bnow.*, anow.x FROM B[now] bnow, A[range 10 SECONDS slide 10 SECONDS] anow WHERE anow.x = bnow.y AND anow.y>736;
+SELECT bnow.a, anow.* FROM B[range 10 SECONDS slide 50 SECONDS] bnow, A[range 40 SECONDS slide 50 SECONDS] anow WHERE anow.x = bnow.y;
+SELECT bnow.*, anow.* FROM B[range 10 SECONDS slide 90 SECONDS] bnow, A[range 20 SECONDS slide 60 SECONDS] anow WHERE anow.x = bnow.y;
+SELECT anow.y, bnow.* FROM A[now] anow, B[range 10 SECONDS slide 50 SECONDS] bnow WHERE bnow.y = anow.x AND anow.b>64 AND bnow.a>344 AND bnow.y<62 AND bnow.a<819 AND bnow.a<179;
+
+SELECT anow.z as ax FROM A[range 50 SECONDS slide 40 SECONDS] anow WHERE anow.x<921;
+SELECT * FROM A[range 20 SECONDS slide 50 SECONDS] anow;
+SELECT * FROM A[now] anow WHERE anow.z>758;
+SELECT * FROM A[range 20 SECONDS slide 10 SECONDS] anow WHERE anow.b>984;
+SELECT anow.y FROM A[now] anow WHERE anow.b<640 AND anow.y>998 AND anow.x>220;
+SELECT anow.y FROM A[range 50 SECONDS slide 90 SECONDS] anow;
+SELECT anow.y, anow.z FROM A[range 80 SECONDS slide 50 SECONDS] anow WHERE anow.x>931;
+SELECT anow.y FROM A[now] anow;
+SELECT anow.b FROM A[range 10 SECONDS slide 80 SECONDS] anow;
+SELECT * FROM A[now] anow WHERE anow.b>417 AND anow.z<214 AND anow.z<547;
+
+SELECT COUNT(anow.b)  FROM A[now] anow WHERE anow.y<363;
+SELECT AVG(anow.y)  FROM A[now] anow;
+SELECT COUNT(anow.y)  FROM A[range 60 SECONDS slide 80 SECONDS] anow WHERE anow.z>423 AND anow.x>434 AND anow.b>48 AND anow.y>683;
+SELECT MAX(anow.x)  FROM A[range 90 SECONDS slide 70 SECONDS] anow WHERE anow.y<986 AND anow.y>110;
+SELECT COUNT(anow.z)  FROM A[range 30 SECONDS slide 80 SECONDS] anow WHERE anow.y<317 AND anow.z>438 AND anow.y>673 AND anow.z>198;
+SELECT MIN(anow.z)  FROM A[now] anow;
+SELECT SUM(anow.z)  FROM A[range 20 SECONDS slide 80 SECONDS] anow WHERE anow.y>626;
+SELECT MIN(anow.x)  FROM A[range 60 SECONDS slide 10 SECONDS] anow;
+SELECT AVG(anow.x)  FROM A[range 10 SECONDS slide 30 SECONDS] anow;
+SELECT AVG(anow.z)  FROM A[range 40 SECONDS slide 20 SECONDS] anow;
+
+SELECT bnow.a, anow.x FROM B[range 10 SECONDS slide 10 SECONDS] bnow, A[now] anow WHERE anow.x = bnow.y AND anow.x>255 AND anow.y<920;
+SELECT bnow.x, anow.b FROM B[now] bnow, A[range 10 SECONDS slide 10 SECONDS] anow WHERE anow.x = bnow.y AND bnow.y>493 AND bnow.z>124 AND anow.x<328;
+SELECT anow.b, anow.x, anow.y, bnow.a, bnow.x, bnow.y FROM A[range 10 SECONDS slide 40 SECONDS] anow, B[now] bnow WHERE bnow.y = anow.x AND bnow.z<163;
+SELECT anow.b, anow.x, anow.y, anow.z, bnow.z FROM A[now] anow, B[range 10 SECONDS slide 80 SECONDS] bnow WHERE bnow.y = anow.x;
+
